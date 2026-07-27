@@ -217,6 +217,39 @@
         .flashcard-controls { display: flex; justify-content: center; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .flashcard-controls.visible { opacity: 1; pointer-events: auto; }
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
+
+        /* Word-Forged Odyssey */
+        .odyssey-hud { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .odyssey-stat { flex: 1; min-width: 140px; background: var(--light-grey); border-radius: 10px; padding: 0.75rem 1rem; border-top: 3px solid var(--royal-blue); font-size: 0.9rem; }
+        .odyssey-stat strong { display: block; font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+        .odyssey-stat span { font-weight: 700; font-size: 1.05rem; }
+        .odyssey-hp-bar, .odyssey-morale-bar { height: 8px; background: #ddd; border-radius: 4px; margin-top: 0.4rem; overflow: hidden; }
+        .odyssey-hp-fill { height: 100%; background: var(--success-green); transition: width 0.4s; }
+        .odyssey-morale-fill { height: 100%; background: var(--royal-blue); transition: width 0.4s; }
+        .odyssey-layout { display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (max-width: 900px) { .odyssey-layout { grid-template-columns: 1fr; } }
+        .odyssey-story-log { background: #0d1117; color: #c9d1d9; font-family: 'Consolas', 'Courier New', monospace; border-radius: 12px; padding: 1.5rem; min-height: 280px; max-height: 380px; overflow-y: auto; border: 2px solid var(--royal-blue); line-height: 1.7; font-size: 0.95rem; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); }
+        .odyssey-story-log p { margin-bottom: 1rem; }
+        .odyssey-story-log p:last-child { margin-bottom: 0; color: #e6edf3; }
+        .odyssey-story-log .story-beat { color: #8b949e; font-style: italic; }
+        .odyssey-story-log .story-player { color: #58a6ff; border-left: 3px solid var(--pillarbox-red); padding-left: 0.75rem; margin: 1rem 0; }
+        .odyssey-feedback-panel { background: var(--light-grey); border-radius: 12px; padding: 1.25rem; border-left: 4px solid var(--success-green); min-height: 280px; }
+        .odyssey-feedback-panel h4 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem; }
+        .odyssey-feedback-panel .feedback-item { background: var(--bright-white); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 0.9rem; line-height: 1.5; }
+        .odyssey-feedback-panel .feedback-item.bonus { border-left: 3px solid var(--pillarbox-red); }
+        .odyssey-feedback-panel .feedback-item.xp { border-left: 3px solid var(--success-green); font-weight: 600; }
+        .odyssey-action-panel { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px; padding: 1.5rem; border-top: 4px solid var(--pillarbox-red); }
+        .odyssey-action-panel h3 { font-family: var(--font-primary); color: var(--royal-blue); margin-bottom: 1rem; font-size: 1.1rem; }
+        .odyssey-word-cards { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; justify-content: center; }
+        .odyssey-word-card { position: relative; background: rgba(1, 33, 105, 0.06); border: 2px solid var(--royal-blue); border-radius: 10px; padding: 0.6rem 1.2rem; font-family: var(--font-primary); font-weight: 700; color: var(--royal-blue); cursor: help; transition: 0.2s; }
+        .odyssey-word-card:hover { background: rgba(200, 16, 46, 0.08); border-color: var(--pillarbox-red); transform: translateY(-2px); }
+        .odyssey-word-card::before { content: "⚡ "; color: var(--pillarbox-red); }
+        .odyssey-word-card .tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--text-dark); color: white; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.8rem; font-weight: 400; width: max-content; max-width: 220px; z-index: 5; line-height: 1.4; }
+        .odyssey-word-card:hover .tooltip { display: block; }
+        .odyssey-input-wrap { display: flex; flex-direction: column; gap: 1rem; }
+        .odyssey-action-input { width: 100%; padding: 1rem 1.25rem; border: 2px solid var(--royal-blue); border-radius: 8px; font-size: 1rem; font-family: var(--font-secondary); resize: vertical; min-height: 80px; }
+        .odyssey-action-input:focus { outline: none; border-color: var(--pillarbox-red); }
+        .odyssey-action-input::placeholder { color: var(--text-muted); font-style: italic; }
     </style>
 </head>
 <body>
@@ -271,6 +304,7 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToSetup('devil')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToSetup('bloat')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToSetup('vocab')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToSetup('odyssey')">Play Now</button></div>
                 </div>
             </div>
 
@@ -293,12 +327,22 @@
                 </p>
                 <textarea id="glossary-input" placeholder="Example formatting:&#10;Apple = A red fruit&#10;House - A place to live"></textarea>
                 
-                <div class="form-group">
+                <div class="form-group" id="test-dir-settings">
                     <label>Test Direction:</label>
                     <div class="radio-group">
                         <label><input type="radio" name="test-dir" value="def" checked> Prompt with Definition, Type Term</label>
                         <label><input type="radio" name="test-dir" value="term"> Prompt with Term, Type Definition</label>
                     </div>
+                </div>
+
+                <div class="form-group" id="odyssey-settings" style="display: none;">
+                    <label><i class="fa-solid fa-compass"></i> Adventure Genre:</label>
+                    <select id="odyssey-genre" style="width: 100%; max-width: 320px; padding: 0.6rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem; margin-top: 0.5rem;">
+                        <option value="Cyberpunk">Cyberpunk</option>
+                        <option value="Fantasy">Fantasy</option>
+                        <option value="Mystery">Mystery</option>
+                    </select>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Requires at least 4 vocabulary terms. The AI Game Master will draw 3 target words from your list each turn.</p>
                 </div>
 
                 <div class="form-group" id="bomb-settings" style="display: none;">
@@ -419,6 +463,50 @@
             <div id="vocab-feedback" class="feedback"></div>
         </div>
 
+        <!-- WRITING SUITE: WORD-FORGED ODYSSEY -->
+        <div id="screen-odyssey" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-outline" onclick="initOdyssey()" id="odyssey-btn"><i class="fa-solid fa-rotate"></i> New Adventure</button>
+            </div>
+            <div class="game-header">
+                <h2>Word-Forged Odyssey <span class="live-badge">Cursor AI</span></h2>
+            </div>
+            <p class="game-desc">An interactive text adventure powered by AI. Use at least one target word from your glossary in each action. The Game Master judges grammar, logic, and vocabulary use.</p>
+
+            <div id="odyssey-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="odyssey-content">
+                <div class="odyssey-hud">
+                    <div class="odyssey-stat"><strong>Current Quest</strong><span id="odyssey-quest">—</span></div>
+                    <div class="odyssey-stat"><strong>Player HP</strong><span id="odyssey-hp-text">100/100</span><div class="odyssey-hp-bar"><div class="odyssey-hp-fill" id="odyssey-hp-fill" style="width:100%"></div></div></div>
+                    <div class="odyssey-stat"><strong>Story Morale</strong><span id="odyssey-morale-text">100/100</span><div class="odyssey-morale-bar"><div class="odyssey-morale-fill" id="odyssey-morale-fill" style="width:100%"></div></div></div>
+                    <div class="odyssey-stat"><strong>XP</strong><span id="odyssey-xp">0</span></div>
+                </div>
+
+                <div class="odyssey-layout">
+                    <div class="odyssey-story-log" id="odyssey-story-log"></div>
+                    <div class="odyssey-feedback-panel">
+                        <h4><i class="fa-solid fa-comment-dots"></i> AI Language Feedback</h4>
+                        <div id="odyssey-feedback-list">
+                            <div class="feedback-item">Awaiting your first action...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="odyssey-action-panel" id="odyssey-action-panel">
+                    <h3><i class="fa-solid fa-bolt"></i> Your Action Required! Use at least one of these words to survive:</h3>
+                    <div class="odyssey-word-cards" id="odyssey-word-cards"></div>
+                    <div class="odyssey-input-wrap">
+                        <textarea id="odyssey-action-input" class="odyssey-action-input" placeholder="Type your action here..." rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitOdysseyAction();}"></textarea>
+                        <button class="btn btn-blue" id="odyssey-submit-btn" onclick="submitOdysseyAction()" style="align-self: center; padding: 0.9rem 2.5rem;">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Action to AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="odyssey-status" class="feedback"></div>
+        </div>
+
         <!-- CORE VOCAB: BOMB DEFUSAL -->
         <div id="screen-bomb" class="screen engine-container">
             <div class="top-bar">
@@ -518,10 +606,13 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey'];
+            const hybridGames = ['odyssey'];
             
-            document.getElementById('vocab-setup-section').style.display = vocabGames.includes(gameType) ? 'block' : 'none';
+            document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
             document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
+            document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
+            document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
             
             showScreen('setup');
@@ -529,9 +620,10 @@
 
         function launchSelectedGame() {
             const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey'];
+            const hybridGames = ['odyssey'];
             
-            if(vocabGames.includes(activeGame)) {
+            if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
                 if(!parseGlossary()) return;
             }
             
@@ -547,6 +639,7 @@
             if(activeGame === 'devil') initDevil();
             if(activeGame === 'bloat') initBloat();
             if(activeGame === 'vocab') initVocab();
+            if(activeGame === 'odyssey') initOdyssey();
         }
 
         function toggleLoading(prefix, isLoading) {
@@ -938,6 +1031,232 @@
                 feedback.className = "feedback error";
                 feedback.textContent = "❌ Incorrect collocation or tone for this specific context.";
             }
+        }
+
+        // 6. WORD-FORGED ODYSSEY
+        let odysseyState = null;
+
+        function createOdysseyState() {
+            return {
+                genre: document.getElementById('odyssey-genre').value,
+                hp: 100,
+                maxHp: 100,
+                morale: 100,
+                maxMorale: 100,
+                xp: 0,
+                quest: '',
+                situation: '',
+                storyHistory: [],
+                targetWords: [],
+                turn: 0,
+                gameOver: false
+            };
+        }
+
+        function rollOdysseyTargetWords() {
+            const pool = vocabulary.map(v => ({ term: v.rawTerm, def: v.rawDef }));
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, Math.min(3, shuffled.length));
+        }
+
+        function renderOdysseyHud() {
+            const s = odysseyState;
+            document.getElementById('odyssey-quest').textContent = s.quest || '—';
+            document.getElementById('odyssey-hp-text').textContent = `${s.hp}/${s.maxHp}`;
+            document.getElementById('odyssey-morale-text').textContent = `${s.morale}/${s.maxMorale}`;
+            document.getElementById('odyssey-xp').textContent = s.xp;
+            document.getElementById('odyssey-hp-fill').style.width = `${(s.hp / s.maxHp) * 100}%`;
+            document.getElementById('odyssey-morale-fill').style.width = `${(s.morale / s.maxMorale) * 100}%`;
+        }
+
+        function renderOdysseyStoryLog() {
+            const log = document.getElementById('odyssey-story-log');
+            log.innerHTML = odysseyState.storyHistory.map(entry => {
+                if (entry.type === 'player') return `<p class="story-player"><strong>&gt; You:</strong> ${entry.text}</p>`;
+                if (entry.type === 'gm') return `<p>${entry.text}</p>`;
+                return `<p class="story-beat">${entry.text}</p>`;
+            }).join('');
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function renderOdysseyWordCards() {
+            const container = document.getElementById('odyssey-word-cards');
+            container.innerHTML = '';
+            odysseyState.targetWords.forEach(w => {
+                const card = document.createElement('div');
+                card.className = 'odyssey-word-card';
+                card.innerHTML = `${w.term}<span class="tooltip">${w.def}</span>`;
+                container.appendChild(card);
+            });
+        }
+
+        function renderOdysseyFeedback(items) {
+            const list = document.getElementById('odyssey-feedback-list');
+            if (!items || items.length === 0) {
+                list.innerHTML = '<div class="feedback-item">Awaiting your first action...</div>';
+                return;
+            }
+            list.innerHTML = items.map(item => {
+                let cls = 'feedback-item';
+                if (item.type === 'bonus') cls += ' bonus';
+                if (item.type === 'xp') cls += ' xp';
+                return `<div class="${cls}">${item.text}</div>`;
+            }).join('');
+        }
+
+        function setOdysseyLoading(isLoading) {
+            const loader = document.getElementById('odyssey-loading');
+            const content = document.getElementById('odyssey-content');
+            const btn = document.getElementById('odyssey-submit-btn');
+            const newBtn = document.getElementById('odyssey-btn');
+            if (isLoading) {
+                loader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> The Game Master is weaving your story...';
+                loader.style.display = 'block';
+                content.style.display = 'none';
+                if (btn) btn.disabled = true;
+                if (newBtn) newBtn.disabled = true;
+            } else {
+                loader.style.display = 'none';
+                content.style.display = 'block';
+                if (btn) btn.disabled = odysseyState.gameOver;
+                if (newBtn) newBtn.disabled = false;
+            }
+        }
+
+        async function initOdyssey() {
+            odysseyState = createOdysseyState();
+            odysseyState.targetWords = rollOdysseyTargetWords();
+            document.getElementById('odyssey-action-input').value = '';
+            document.getElementById('odyssey-status').textContent = '';
+            document.getElementById('odyssey-action-panel').style.opacity = '1';
+            document.getElementById('odyssey-submit-btn').disabled = false;
+            renderOdysseyFeedback([]);
+            renderOdysseyHud();
+            renderOdysseyWordCards();
+            setOdysseyLoading(true);
+
+            const wordList = odysseyState.targetWords.map(w => `${w.term} (${w.def})`).join(', ');
+            const prompt = `You are a Game Master for an interactive text adventure RPG for ESL learners at CEFR B2 to B2+ level.
+Genre: ${odysseyState.genre}.
+Create an opening scene with a clear quest objective and an immediate obstacle requiring player action.
+Target vocabulary words for the first turn (player must use at least one in their action later): ${wordList}.
+Write vivid, engaging prose in English suitable for upper-intermediate learners.
+Return ONLY a JSON object:
+{"questTitle":"Short quest name","situation":"2-3 sentences describing the current obstacle/scene","storyBeat":"1-2 sentences of immersive narrative to display"}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            setOdysseyLoading(false);
+
+            if (!data || data.__error || !data.situation) {
+                document.getElementById('odyssey-status').className = 'feedback error';
+                document.getElementById('odyssey-status').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            odysseyState.quest = data.questTitle;
+            odysseyState.situation = data.situation;
+            odysseyState.storyHistory = [
+                { type: 'beat', text: data.storyBeat || '' },
+                { type: 'gm', text: data.situation }
+            ];
+            renderOdysseyHud();
+            renderOdysseyStoryLog();
+        }
+
+        async function submitOdysseyAction() {
+            if (!odysseyState || odysseyState.gameOver) return;
+
+            const action = document.getElementById('odyssey-action-input').value.trim();
+            if (!action) {
+                document.getElementById('odyssey-status').className = 'feedback error';
+                document.getElementById('odyssey-status').textContent = 'Write an action before submitting.';
+                return;
+            }
+
+            const targetWords = odysseyState.targetWords.map(w => w.term);
+            const targetDetails = odysseyState.targetWords.map(w => `${w.term}: ${w.def}`).join('; ');
+            setOdysseyLoading(true);
+            document.getElementById('odyssey-status').textContent = '';
+
+            odysseyState.storyHistory.push({ type: 'player', text: action });
+            renderOdysseyStoryLog();
+
+            const prompt = `You are a Game Master for an ESL text adventure (CEFR B2 to B2+). Genre: ${odysseyState.genre}.
+Current quest: ${odysseyState.quest}
+Current situation: ${odysseyState.situation}
+Player stats: HP ${odysseyState.hp}/100, Morale ${odysseyState.morale}/100, XP ${odysseyState.xp}
+Target words this turn (with definitions): ${targetDetails}
+Player action: "${action}"
+
+Evaluate whether the player used at least ONE target word correctly in grammatical and logical context (allow inflected forms).
+Rules:
+- success=true if at least one target word is used correctly; continue the story dynamically based on their action.
+- success=false if no target word used, or words used incorrectly, or severe grammar breaks meaning.
+- On failure: hpChange negative (-10 to -25), moraleChange negative (-5 to -15).
+- On success: xpEarned=50 base; bonusXp=20 if 2+ target words used correctly in one sentence; hpChange 0 or small heal; moraleChange positive.
+- gameOver=true only if HP would reach 0 or below.
+
+Return ONLY JSON:
+{"success":true/false,"storyContinuation":"2-4 sentences continuing the story","languageFeedback":"Short feedback on vocabulary/grammar","wordsUsedCorrectly":["word1"],"xpEarned":50,"bonusXp":0,"bonusObjective":"Bonus objective text or empty","hpChange":0,"moraleChange":5,"newSituation":"Updated situation summary","gameOver":false,"gameOverReason":""}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            setOdysseyLoading(false);
+
+            if (!data || data.__error) {
+                odysseyState.storyHistory.pop();
+                renderOdysseyStoryLog();
+                document.getElementById('odyssey-status').className = 'feedback error';
+                document.getElementById('odyssey-status').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            const feedbackItems = [
+                { type: 'feedback', text: `<strong>AI Language Feedback:</strong> ${data.languageFeedback || '—'}` }
+            ];
+            if (data.wordsUsedCorrectly && data.wordsUsedCorrectly.length) {
+                feedbackItems.push({ type: 'feedback', text: `Words used well: ${data.wordsUsedCorrectly.join(', ')}` });
+            }
+            if (data.bonusXp > 0 && data.bonusObjective) {
+                feedbackItems.push({ type: 'bonus', text: `<strong>Bonus Objective:</strong> ${data.bonusObjective} (+${data.bonusXp} XP)` });
+            }
+            const totalXp = (data.xpEarned || 0) + (data.bonusXp || 0);
+            if (totalXp > 0) {
+                feedbackItems.push({ type: 'xp', text: `+${totalXp} XP earned` });
+            }
+            renderOdysseyFeedback(feedbackItems);
+
+            if (data.success) {
+                odysseyState.storyHistory.push({ type: 'gm', text: data.storyContinuation });
+                document.getElementById('odyssey-status').className = 'feedback success';
+                document.getElementById('odyssey-status').textContent = '✅ Action accepted! The story continues...';
+            } else {
+                odysseyState.storyHistory.push({ type: 'gm', text: data.storyContinuation || 'Your action fails. The consequences unfold...' });
+                document.getElementById('odyssey-status').className = 'feedback error';
+                document.getElementById('odyssey-status').textContent = '❌ Action failed. You suffer consequences.';
+            }
+
+            odysseyState.hp = Math.max(0, Math.min(odysseyState.maxHp, odysseyState.hp + (data.hpChange || 0)));
+            odysseyState.morale = Math.max(0, Math.min(odysseyState.maxMorale, odysseyState.morale + (data.moraleChange || 0)));
+            odysseyState.xp += totalXp;
+            odysseyState.situation = data.newSituation || odysseyState.situation;
+            odysseyState.turn++;
+
+            if (data.gameOver || odysseyState.hp <= 0) {
+                odysseyState.gameOver = true;
+                odysseyState.hp = 0;
+                document.getElementById('odyssey-status').className = 'feedback error';
+                document.getElementById('odyssey-status').textContent = data.gameOverReason || '💀 Game Over. Your adventure ends here.';
+                document.getElementById('odyssey-submit-btn').disabled = true;
+                document.getElementById('odyssey-action-panel').style.opacity = '0.5';
+            } else {
+                odysseyState.targetWords = rollOdysseyTargetWords();
+                renderOdysseyWordCards();
+                document.getElementById('odyssey-action-input').value = '';
+                document.getElementById('odyssey-action-panel').style.opacity = '1';
+            }
+
+            renderOdysseyHud();
+            renderOdysseyStoryLog();
         }
 
         // ==========================================
