@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LingoSpark: Gamify Your Words</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@600;700&family=Nunito:wght@600;700&family=Poppins:wght@600;700;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for sleek icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* British Style, Bright Theme & Custom Fonts */
+        :root {
+            --font-primary: 'Poppins', 'Montserrat', 'Nunito', sans-serif;
+            --font-secondary: 'Inter', 'Roboto', 'Lato', sans-serif;
+            --royal-blue: #012169;
+            --pillarbox-red: #C8102E;
+            --bright-white: #FFFFFF;
+            --light-grey: #F4F5F7;
+            --text-dark: #2D2D2D;
+            --text-muted: #5A5A5A;
+            --success-green: #00823B;
+            --border-light: #E0E0E0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-secondary); background-color: var(--light-grey); color: var(--text-dark); line-height: 1.6; }
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-primary); }
+        
+        /* HEADER & LOGO */
+        header { 
+            background-color: var(--royal-blue); 
+            color: var(--bright-white); 
+            text-align: center; 
+            padding: 2rem 1rem; 
+            border-bottom: 6px solid var(--pillarbox-red); 
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        /* 50% Opaque Union Jack Background */
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'%3E%3CclipPath id='t'%3E%3Cpath d='M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z'/%3E%3C/clipPath%3E%3Cpath d='M0,0 v30 h60 v-30 z' fill='%23012169'/%3E%3Cpath d='M0,0 L60,30 M60,0 L0,30' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M0,0 L60,30 M60,0 L0,30' clip-path='url(%23t)' stroke='%23C8102E' stroke-width='4'/%3E%3Cpath d='M30,0 v30 M0,15 h60' stroke='%23fff' stroke-width='10'/%3E%3Cpath d='M30,0 v30 M0,15 h60' stroke='%23C8102E' stroke-width='6'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.5; 
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Elevate header content above the transparent flag */
+        header > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Logo expanded to banner size, height reduced */
+        .main-logo-container { 
+            width: 100%; 
+            max-width: 1000px; 
+            height: auto;
+            max-height: 245px; 
+            margin: 0 auto 1rem auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        
+        .main-logo-container img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+        }
+
+        header p { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            color: #FFFFFF;
+            margin-top: 0.5rem; 
+            font-family: var(--font-primary); 
+            letter-spacing: 0.5px; 
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .engine-container { max-width: 1000px; margin: 0 auto; background: var(--bright-white); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 2rem; }
+
+        /* SCREENS & ACCORDIONS */
+        .screen { display: none; animation: fadeIn 0.4s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .category-header { display: flex; justify-content: center; align-items: center; gap: 15px; color: var(--royal-blue); margin: 2rem 0 1rem 0; padding-bottom: 1rem; border-bottom: 2px solid var(--border-light); cursor: pointer; transition: opacity 0.2s, border-color 0.2s; user-select: none; }
+        .category-header:first-child { margin-top: 1rem; }
+        .category-header:hover { opacity: 0.7; border-bottom-color: var(--pillarbox-red); }
+        .category-header h2 { font-size: 2rem; margin: 0; }
+        .cat-icon { font-size: 1.8rem; color: var(--pillarbox-red); }
+        .chevron { font-size: 1.2rem; transition: transform 0.3s; color: var(--text-muted); }
+        .category-header.expanded .chevron { transform: rotate(180deg); color: var(--royal-blue); }
+        .category-content { display: none; animation: fadeIn 0.4s; margin-bottom: 3rem; }
+        .category-content.active { display: block; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 1rem;}
+        .card { background-color: var(--bright-white); border-radius: 12px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease; border-top: 4px solid transparent; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-5px); border-top-color: var(--pillarbox-red); box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1); }
+        .icon-container { height: 70px; width: 70px; margin: 0 auto 1rem auto; background-color: rgba(1, 33, 105, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--royal-blue); font-size: 2rem; }
+        .card h2 { font-size: 1.4rem; color: var(--royal-blue); margin-bottom: 1rem; }
+        .card p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; flex-grow: 1; }
+
+        /* BUTTONS */
+        .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .btn { font-family: var(--font-primary); padding: 0.8rem 1.5rem; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 1rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; justify-content: center; letter-spacing: 0.5px; }
+        .btn-blue { background-color: var(--royal-blue); color: var(--bright-white); }
+        .btn-blue:hover { background-color: #011648; color: var(--bright-white); }
+        .btn-red { background-color: var(--pillarbox-red); color: var(--bright-white); }
+        .btn-red:hover { background-color: #a00d24; }
+        .btn-green { background-color: var(--success-green); color: var(--bright-white); }
+        .btn-green:hover { background-color: #00602b; }
+        .btn-grey { background-color: var(--text-muted); color: var(--bright-white); }
+        .btn-grey:hover { background-color: #333; }
+        .btn-outline { background-color: transparent; border: 2px solid var(--royal-blue); color: var(--royal-blue); }
+        .btn-outline:hover { background-color: var(--royal-blue); color: var(--bright-white); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* GAME UI */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid #eee; padding-bottom: 1rem; }
+        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .game-header h2 { color: var(--royal-blue); font-size: 2rem; display: flex; align-items: center; gap: 10px; }
+        .live-badge { font-size: 0.8rem; background: var(--success-green); color: white; padding: 3px 8px; border-radius: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; animation: pulse 2s infinite; }
+        .game-desc { color: var(--text-muted); margin-bottom: 2rem; font-size: 1.05rem; }
+        .feedback { margin-top: 1.5rem; text-align: center; font-weight: 700; font-family: var(--font-primary); font-size: 1.2rem; min-height: 2rem; }
+        .feedback.success { color: var(--success-green); }
+        .feedback.error { color: var(--pillarbox-red); }
+        .feedback.neutral { color: var(--royal-blue); }
+        .loading-spinner { text-align: center; padding: 3rem; color: var(--royal-blue); font-family: var(--font-primary); font-weight: bold; font-size: 1.2rem; }
+        
+        /* Writing Suite specific */
+        .frank-item { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .frank-item:hover { border-color: var(--royal-blue); }
+        .frank-controls button { background: var(--light-grey); border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; transition: 0.2s; font-size: 1.2rem; }
+        .frank-controls button:hover { background: var(--border-light); }
+        .trans-box { background: var(--light-grey); border-left: 4px solid var(--royal-blue); padding: 1.5rem; border-radius: 8px; font-size: 1.2rem; line-height: 1.8; margin-bottom: 2rem; }
+        .trans-slot { color: var(--royal-blue); font-weight: 700; text-decoration: underline; padding: 0 8px; }
+        .trans-slot.solved { color: var(--success-green); }
+        
+        .devil-thesis-box { background: rgba(1, 33, 105, 0.05); border: 2px solid rgba(1, 33, 105, 0.2); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; }
+        .devil-card { background: var(--bright-white); border: 2px solid var(--border-light); padding: 1.2rem; border-radius: 12px; margin-bottom: 1rem; cursor: pointer; transition: 0.2s; font-weight: 600; }
+        .devil-card:hover { border-color: var(--royal-blue); background: rgba(1, 33, 105, 0.02); transform: translateX(5px); }
+        .devil-card.correct { border-color: var(--success-green); background: rgba(0, 130, 59, 0.05); }
+        .devil-card.incorrect { border-color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.05); opacity: 0.6; }
+        .bloat-stats { display: flex; justify-content: space-around; background: var(--light-grey); padding: 1rem; border-radius: 8px; margin-bottom: 2rem; font-weight: 600; }
+        .bloat-stats span { font-family: var(--font-primary); font-size: 1.3rem; margin-left: 5px; }
+        .bloat-container { background: var(--bright-white); border: 2px solid var(--border-light); padding: 1.5rem; border-radius: 12px; line-height: 2.5; margin-bottom: 2rem; }
+        .bloat-word { display: inline-block; padding: 2px 8px; margin: 2px; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: 600; }
+        .bloat-word:hover { border-color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.05); color: var(--pillarbox-red); }
+        .bloat-word.deleted { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); text-decoration: line-through; border-color: transparent; }
+        .vocab-container { background: var(--light-grey); padding: 2rem; border-radius: 12px; line-height: 2.5; font-size: 1.2rem; margin-bottom: 2rem; }
+        .vocab-word.target { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); border: 2px solid rgba(200, 16, 46, 0.3); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .vocab-word.target:hover { background: rgba(1, 33, 105, 0.1); color: var(--royal-blue); border-color: var(--royal-blue); }
+        .vocab-word.upgraded { background: rgba(0, 130, 59, 0.1); color: var(--success-green); border-color: rgba(0, 130, 59, 0.3); pointer-events: none; }
+        
+        /* Core Vocab Engine specific */
+        textarea { width: 100%; height: 150px; padding: 1rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem; resize: vertical; margin-bottom: 1rem; font-family: inherit; }
+        textarea:focus, input[type="text"]:focus, input[type="password"]:focus { outline: none; border-color: var(--royal-blue); }
+        .form-group { margin-bottom: 1.5rem; background: var(--light-grey); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--royal-blue); text-align: left; }
+        .form-group label { font-family: var(--font-primary); font-weight: 600; display: block; margin-bottom: 0.5rem; color: var(--royal-blue); }
+        .radio-group { display: flex; gap: 15px; flex-wrap: wrap; font-family: var(--font-secondary); }
+        .radio-group label { font-weight: 400; color: var(--text-dark); display: flex; align-items: center; gap: 5px; cursor: pointer; margin-bottom: 0; }
+        input.game-input { font-family: var(--font-secondary); width: 80%; max-width: 400px; padding: 1rem; font-size: 1.5rem; text-align: center; border: 3px solid var(--royal-blue); border-radius: 8px; margin-bottom: 1rem; display: block; margin-left: auto; margin-right: auto; }
+        .word-prompt { font-family: var(--font-primary); font-size: 2.5rem; color: var(--royal-blue); margin-bottom: 1.5rem; font-weight: 700; text-align: center; }
+        #timer-display { font-family: var(--font-primary); font-size: 4.5rem; font-weight: 700; color: var(--pillarbox-red); text-align: center; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 1rem;}
+        .bomb-icon { font-size: 3rem; text-align: center; display: block; color: var(--text-dark); margin-bottom: 0.5rem; }
+        .bomb-icon.pulse { animation: pulse 0.8s infinite alternate; color: var(--pillarbox-red); }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.15); } }
+        @keyframes timerPulseGreen { 0%, 100% { color: var(--success-green); transform: scale(1); } 50% { color: var(--success-green); transform: scale(1.08); } }
+        @keyframes timerPulseRed { 0%, 100% { color: var(--pillarbox-red); transform: scale(1); } 50% { color: var(--pillarbox-red); transform: scale(1.08); } }
+        .timer-pulse-green { animation: timerPulseGreen 0.6s ease; }
+        .timer-pulse-red { animation: timerPulseRed 0.6s ease; }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+        /* Grid */
+        .turn-indicator { font-family: var(--font-primary); font-size: 1.5rem; font-weight: 600; margin: 0 auto 1.5rem auto; padding: 0.5rem 2rem; display: table; border-radius: 30px; text-align: center; }
+        .turn-blue { background: var(--royal-blue); color: white; }
+        .turn-red { background: var(--pillarbox-red); color: white; }
+        .grid-board { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin: 0 auto 2rem auto; }
+        .grid-cell { font-family: var(--font-primary); width: 100px; height: 100px; background: var(--light-grey); border: 2px solid #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3rem; cursor: pointer; transition: 0.2s; font-weight: 700; }
+        .grid-cell:hover:not(.claimed) { background: #e0e0e0; }
+        .claimed-x { color: var(--royal-blue); }
+        .claimed-o { color: var(--pillarbox-red); }
+        #grid-modal { display: none; background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; z-index: 10; }
+        .grid-modal-box { background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 450px; text-align: center; border-top: 6px solid var(--royal-blue); }
+
+        /* Taboo */
+        .taboo-card { border: 4px solid var(--royal-blue); border-radius: 16px; padding: 2rem; max-width: 400px; margin: 0 auto 2rem auto; background: var(--bright-white); box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; }
+        .taboo-word { font-family: var(--font-primary); font-size: 2.5rem; color: var(--royal-blue); border-bottom: 2px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 1rem; font-weight: 700; }
+        .taboo-forbidden { color: var(--pillarbox-red); font-size: 1.2rem; list-style: none; padding: 0; }
+        .taboo-forbidden li { font-family: var(--font-primary); margin: 0.8rem 0; font-weight: 600; text-transform: uppercase; }
+        .taboo-forbidden li::before { content: "🚫 "; }
+
+        /* Flashcards */
+        .flip-card { background-color: transparent; width: 100%; max-width: 500px; height: 300px; perspective: 1000px; margin: 0 auto 2rem auto; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { font-family: var(--font-primary); position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; border-radius: 16px; padding: 2rem; box-shadow: 0 8px 15px rgba(0,0,0,0.1); font-weight: 700; }
+        .flip-card-front { background-color: var(--bright-white); color: var(--royal-blue); border: 3px solid var(--royal-blue); }
+        .flip-card-back { background-color: var(--royal-blue); color: var(--bright-white); transform: rotateY(180deg); border: 3px solid var(--royal-blue); }
+        
+        .flashcard-controls { display: flex; justify-content: center; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .flashcard-controls.visible { opacity: 1; pointer-events: auto; }
+        .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="main-logo-container">
+            <img src="Projekt bez nazwy.png" alt="LingoSpark Logo">
+        </div>
+        <p>Gamify Your Words</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- HOME SCREEN -->
+        <div id="screen-home" class="screen active">
+            
+            <div class="category-header" onclick="toggleCategory('cat-vocab', this)">
+                <i class="fa-solid fa-book-open cat-icon"></i><h2>Vocab Review</h2><i class="fa-solid fa-chevron-down chevron"></i>
+            </div>
+            <div id="cat-vocab" class="category-content">
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Paste your own vocabulary lists to play these interactive modes.</p>
+                <div class="grid">
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Interactive flippable cards. "Don't know" cards stay in the deck until you master them.</p><button class="btn btn-outline" onclick="goToSetup('flashcard')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><button class="btn btn-outline" onclick="goToSetup('bomb')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>A strategic game of tic-tac-toe where claiming a square requires the correct answer.</p><button class="btn btn-outline" onclick="goToSetup('grid')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-masks-theater"></i></div><h2>Taboo Swap</h2><p>Describe the word to your team without saying the auto-generated forbidden terms.</p><button class="btn btn-outline" onclick="goToSetup('taboo')">Play Now</button></div>
+                </div>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory('cat-team', this)">
+                <i class="fa-solid fa-users cat-icon"></i><h2>Team Challenge</h2><i class="fa-solid fa-chevron-down chevron"></i>
+            </div>
+            <div id="cat-team" class="category-content">
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Ready-to-play visual challenges hosted externally.</p>
+                <div class="grid">
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-shuffle"></i></div><h2>Sentence Scramble</h2><p>Players race to build correct sentences from scrambled words.</p><a href="https://reytanesl.my.canva.site/c8q5sny0w8bbwt9w" target="_blank" class="btn btn-blue">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-list-ol"></i></div><h2>Quintagrams</h2><p>Solve 5 clues using all jumbled letters—once each.</p><a href="https://reytanesl.my.canva.site/five-a-side" target="_blank" class="btn btn-blue">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-table-cells"></i></div><h2>Wordle</h2><p>Identify a hidden five‑letter word in six attempts.</p><a href="https://reytanesl.my.canva.site/daxjbue14qa" target="_blank" class="btn btn-blue">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Word Chain</h2><p>Build word chains by connecting vocabulary items under time pressure.</p><a href="https://reytanesl.my.canva.site/word-chain" target="_blank" class="btn btn-blue">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-font"></i></div><h2>Word Board</h2><p>Create high‑scoring words using letter tiles on a shared board.</p><a href="https://reytanesl.my.canva.site/daxjbsma8ui" target="_blank" class="btn btn-blue">Play Now</a></div>
+                </div>
+            </div>
+
+            <div class="category-header" onclick="toggleCategory('cat-writing', this)">
+                <i class="fa-solid fa-pen-nib cat-icon"></i><h2>Writing Suite</h2><i class="fa-solid fa-chevron-down chevron"></i>
+            </div>
+            <div id="cat-writing" class="category-content">
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure and style. <strong>Powered entirely by Cursor AI.</strong></p>
+                <div class="grid">
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange completely unique, AI-generated sentences into a proper 5-part paragraph.</p><button class="btn btn-outline" onclick="goToSetup('frank')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><button class="btn btn-outline" onclick="goToSetup('trans')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToSetup('devil')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToSetup('bloat')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToSetup('vocab')">Play Now</button></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SETUP SCREEN -->
+        <div id="screen-setup" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <h2 style="margin:0; color: var(--royal-blue); font-family: var(--font-primary);" id="setup-title">Game Setup</h2>
+                <div style="width: 80px;"></div>
+            </div>
+            
+            <!-- Vocab Tools Setup -->
+            <div id="vocab-setup-section" style="display: none;">
+                <p style="margin-bottom: 0.5rem; color: var(--text-dark);"><strong>Paste your vocabulary list below.</strong></p>
+                <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+                    Supported formats: <code>Term = Definition</code> | <code>Term - Definition</code> | <code>Term : Definition</code><br>
+                    Or just paste the <strong>Term</strong> on one line, and the <strong>Definition</strong> on the next line.
+                </p>
+                <textarea id="glossary-input" placeholder="Example formatting:&#10;Apple = A red fruit&#10;House - A place to live"></textarea>
+                
+                <div class="form-group">
+                    <label>Test Direction:</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="test-dir" value="def" checked> Prompt with Definition, Type Term</label>
+                        <label><input type="radio" name="test-dir" value="term"> Prompt with Term, Type Definition</label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="bomb-settings" style="display: none;">
+                    <label>Bomb Starting Time (Seconds):</label>
+                    <input type="number" id="bomb-time-input" value="60" min="10" max="300" style="padding: 0.5rem; width: 100px;">
+                </div>
+            </div>
+
+            <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
+                <label style="color: #4f46e5;"><i class="fa-solid fa-robot"></i> Cursor AI Generation</label>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">The Writing Suite generates fresh academic content through the server-side Cursor AI integration. No API key is required in your browser.</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-blue" style="font-size: 1.2rem; padding: 1rem 3rem;" onclick="launchSelectedGame()">Launch Game <i class="fa-solid fa-rocket"></i></button>
+            </div>
+        </div>
+
+        <!-- WRITING SUITE: FRANKENSTEIN BUILDER -->
+        <div id="screen-frank" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            </div>
+            <div class="game-header">
+                <h2 id="frank-title">Frankenstein Builder <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initFrankenstein()" id="frank-btn">New Paragraph <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <p class="game-desc">Arrange the newly generated, scrambled paragraph parts into a typical high school essay format:<br><strong>Hook → Context → Thesis → Evidence → Analysis</strong></p>
+            
+            <div id="frank-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="frank-content">
+                <div id="frank-container" style="margin-bottom: 2rem;"></div>
+                <button class="btn btn-blue" style="width: 100%; padding: 1rem;" onclick="checkFrankenstein()" id="frank-check-btn">Check Order</button>
+            </div>
+            <div id="frank-feedback" class="feedback"></div>
+        </div>
+
+        <!-- WRITING SUITE: TRANSITION MATCHER -->
+        <div id="screen-trans" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            </div>
+            <div class="game-header"><h2 id="trans-title">Transition Matcher <span class="live-badge">Cursor AI</span></h2></div>
+            <p class="game-desc">Select the ideal logical discourse marker to bridge the two generated sentences.</p>
+            
+            <div id="trans-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="trans-content">
+                <div class="trans-box">
+                    <span id="trans-s1"></span> <span id="trans-slot" class="trans-slot">[ Select Transition ]</span> <span id="trans-s2"></span>
+                </div>
+                <div id="trans-options" class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem;"></div>
+            </div>
+            <div id="trans-feedback" class="feedback"></div>
+        </div>
+
+        <!-- WRITING SUITE: DEVIL'S ADVOCATE -->
+        <div id="screen-devil" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            </div>
+            <div class="game-header">
+                <h2 id="devil-title">The Devil's Advocate <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initDevil()" id="devil-btn">Next Case <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <p class="game-desc">Review the target thesis and select the strongest academic counter-argument.</p>
+            
+            <div id="devil-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="devil-content">
+                <div class="devil-thesis-box">
+                    <span style="display: block; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; color: var(--royal-blue); margin-bottom: 0.5rem;">Target Thesis:</span>
+                    <p id="devil-thesis" style="font-size: 1.2rem; font-weight: 600;"></p>
+                </div>
+                <div id="devil-cards"></div>
+            </div>
+            <div id="devil-feedback" class="feedback"></div>
+        </div>
+
+        <!-- WRITING SUITE: BLOAT SLASHER -->
+        <div id="screen-bloat" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            </div>
+            <div class="game-header">
+                <h2 id="bloat-title">Bloat Slasher <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initBloat()" id="bloat-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <p class="game-desc">Click words to delete over-worded academic filler. Maintain full grammatical correctness and logic!</p>
+            
+            <div id="bloat-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="bloat-content">
+                <div class="bloat-stats">
+                    <div>Original: <span id="bloat-orig-count" style="color: var(--text-dark);">0</span></div>
+                    <div>Current: <span id="bloat-curr-count" style="color: var(--royal-blue); font-size: 1.6rem;">0</span></div>
+                    <div>Target: <span id="bloat-target-count" style="color: var(--success-green);">0</span></div>
+                </div>
+                <div id="bloat-box" class="bloat-container"></div>
+                <button class="btn btn-blue" style="width: 100%; padding: 1rem;" onclick="checkBloat()" id="verify-bloat-btn">Verify Conciseness</button>
+            </div>
+            <div id="bloat-feedback" class="feedback"></div>
+        </div>
+
+        <!-- WRITING SUITE: VOCAB UPGRADE -->
+        <div id="screen-vocab" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            </div>
+            <div class="game-header">
+                <h2 id="vocab-title">Vocabulary Upgrade <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initVocab()" id="vocab-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <p class="game-desc">Click the highlighted basic word to swap it with precise academic terminology.</p>
+            
+            <div id="vocab-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="vocab-content">
+                <div id="vocab-box" class="vocab-container"></div>
+                <div id="vocab-options" class="btn-group" style="margin-bottom: 1rem;"></div>
+            </div>
+            <div id="vocab-feedback" class="feedback"></div>
+        </div>
+
+        <!-- CORE VOCAB: BOMB DEFUSAL -->
+        <div id="screen-bomb" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            </div>
+            <i id="bomb-icon" class="fa-solid fa-bomb bomb-icon pulse"></i>
+            <div id="timer-display">60</div>
+            <div class="word-prompt" id="bomb-prompt">Loading...</div>
+            <input type="text" id="bomb-answer" class="game-input" placeholder="Type answer and press Enter" onkeypress="handleBombInput(event)" autocomplete="off">
+            <div class="btn-group">
+                <button class="btn btn-blue" onclick="checkBombAnswer()">Defuse!</button>
+                <button class="btn btn-red" onclick="skipBombWord()">Skip (-5s)</button>
+            </div>
+        </div>
+
+        <!-- CORE VOCAB: GRID TERRITORY -->
+        <div id="screen-grid" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-outline" onclick="initGridTerritory()"><i class="fa-solid fa-rotate-right"></i> Reset Board</button>
+            </div>
+            <div id="turn-display" class="turn-indicator turn-blue">Team 1's Turn (X)</div>
+            <div class="grid-board" id="tic-tac-toe-board"></div>
+        </div>
+
+        <!-- CORE VOCAB: TABOO SWAP -->
+        <div id="screen-taboo" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <p style="color: var(--text-muted); font-weight: bold;">Don't say the forbidden words!</p>
+            </div>
+            <div class="taboo-card">
+                <div class="taboo-word" id="taboo-main">Loading...</div>
+                <ul class="taboo-forbidden" id="taboo-list"></ul>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn btn-blue" onclick="nextTabooCard()">Next Card <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- CORE VOCAB: CLASSIC FLASHCARDS -->
+        <div id="screen-flashcard" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <p style="color: var(--text-muted); font-weight: bold;">Tap card to flip</p>
+            </div>
+            <div class="fc-counter" id="fc-counter">Cards left in deck: 0</div>
+            <div class="flip-card" id="fc-card" onclick="flipCard()">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front" id="fc-front">Prompt</div>
+                    <div class="flip-card-back" id="fc-back">Answer</div>
+                </div>
+            </div>
+            <div class="flashcard-controls" id="fc-controls">
+                <button class="btn btn-red" onclick="markFc(false)"><i class="fa-solid fa-xmark"></i> Don't Know</button>
+                <button class="btn btn-green" onclick="markFc(true)"><i class="fa-solid fa-check"></i> Know</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DO GRID TERRITORY -->
+    <div id="grid-modal">
+        <div class="grid-modal-box">
+            <h3 style="color: var(--royal-blue); margin-bottom: 0.5rem; font-size: 1.8rem;">Claim Square</h3>
+            <div class="word-prompt" id="grid-prompt" style="font-size: 1.8rem;">Word</div>
+            <input type="text" id="grid-answer" class="game-input" style="width: 100%;" placeholder="Type answer..." onkeypress="handleGridInput(event)" autocomplete="off">
+            <div class="btn-group" style="margin-top: 1.5rem;">
+                <button class="btn btn-blue" onclick="checkGridAnswer()">Submit</button>
+                <button class="btn btn-grey" onclick="closeGridModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // UI CORE & ROUTING
+        // ==========================================
+        let activeGame = '';
+
+        function toggleCategory(catId, headerEl) {
+            const content = document.getElementById(catId);
+            if (content.classList.contains('active')) {
+                content.classList.remove('active'); headerEl.classList.remove('expanded');
+            } else {
+                content.classList.add('active'); headerEl.classList.add('expanded');
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+        }
+
+        function goToSetup(gameType) {
+            activeGame = gameType;
+            document.getElementById('setup-title').innerText = 'Game Setup';
+            
+            const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab'];
+            
+            document.getElementById('vocab-setup-section').style.display = vocabGames.includes(gameType) ? 'block' : 'none';
+            document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
+            document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
+            
+            showScreen('setup');
+        }
+
+        function launchSelectedGame() {
+            const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab'];
+            
+            if(vocabGames.includes(activeGame)) {
+                if(!parseGlossary()) return;
+            }
+            
+            showScreen(activeGame);
+            
+            if(activeGame === 'bomb') initBombDefusal();
+            if(activeGame === 'grid') initGridTerritory();
+            if(activeGame === 'taboo') nextTabooCard();
+            if(activeGame === 'flashcard') initFlashcards();
+            
+            if(activeGame === 'frank') initFrankenstein();
+            if(activeGame === 'trans') initTransitions();
+            if(activeGame === 'devil') initDevil();
+            if(activeGame === 'bloat') initBloat();
+            if(activeGame === 'vocab') initVocab();
+        }
+
+        function toggleLoading(prefix, isLoading) {
+            const loader = document.getElementById(`${prefix}-loading`);
+            const content = document.getElementById(`${prefix}-content`);
+            const btn = document.getElementById(`${prefix}-btn`);
+            if(isLoading) {
+                loader.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating live academic content via Cursor AI...`;
+                loader.style.display = 'block';
+                if(content) content.style.display = 'none';
+                if(btn) btn.disabled = true;
+            } else {
+                loader.style.display = 'none';
+                if(content) content.style.display = 'block';
+                if(btn) btn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // CURSOR AI PROXY FETCHER
+        // ==========================================
+        async function fetchGenerativeAI(prompt) {
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    console.error('Cursor AI Error:', data.error);
+                    return { __error: data.error || 'Generation failed' };
+                }
+                return data;
+            } catch (e) {
+                console.error('Fetch Error:', e);
+                return { __error: 'Cannot reach the LingoSpark server. Open http://localhost:3000 after running npm start.' };
+            }
+        }
+
+        function aiErrorMessage(result) {
+            if (result && result.__error) return result.__error;
+            return 'Failed to generate content. Make sure the LingoSpark server is running and CURSOR_API_KEY is configured.';
+        }
+
+        // ==========================================
+        // WRITING SUITE: STRICT PEDAGOGICAL LOGIC
+        // ==========================================
+
+        // 1. FRANKENSTEIN BUILDER
+        async function initFrankenstein() {
+            document.getElementById('frank-check-btn').style.display = 'none';
+            document.getElementById('frank-feedback').textContent = '';
+            toggleLoading('frank', true);
+
+            const prompt = `Write a well-structured high school essay paragraph suitable for ESL learners at CEFR B2 to B2+ level. Use clear, upper-intermediate academic vocabulary and natural transitions, avoiding overly dense or obscure words. It MUST strictly follow this 5-sentence structure: 1) Hook, 2) Context, 3) Thesis, 4) Evidence, 5) Analysis. Return ONLY a JSON array of 5 strings. No other text.`;
+            const paragraph = await fetchGenerativeAI(prompt);
+            
+            if (!paragraph || paragraph.__error || !Array.isArray(paragraph) || paragraph.length !== 5) {
+                toggleLoading('frank', false);
+                document.getElementById('frank-feedback').className = "feedback error";
+                document.getElementById('frank-feedback').textContent = aiErrorMessage(paragraph);
+                return;
+            }
+
+            const container = document.getElementById('frank-container');
+            container.innerHTML = '';
+            let objects = paragraph.map((text, idx) => ({ id: idx + 1, text: text }));
+            let shuffled = [...objects].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach((s) => {
+                let div = document.createElement('div');
+                div.className = "frank-item";
+                div.dataset.id = s.id;
+                div.innerHTML = `<span style="padding-right: 1rem;">${s.text}</span><div class="frank-controls"><button onclick="moveFrank(this, -1)" aria-label="Move up"><i class="fa-solid fa-chevron-up"></i></button><button onclick="moveFrank(this, 1)" aria-label="Move down"><i class="fa-solid fa-chevron-down"></i></button></div>`;
+                container.appendChild(div);
+            });
+
+            toggleLoading('frank', false);
+            document.getElementById('frank-check-btn').style.display = 'block';
+        }
+
+        function moveFrank(btn, direction) {
+            let item = btn.closest('div.frank-item');
+            let container = item.parentNode;
+            let items = Array.from(container.children);
+            let index = items.indexOf(item);
+            let targetIndex = index + direction;
+            if (targetIndex >= 0 && targetIndex < items.length) {
+                if (direction === -1) container.insertBefore(item, items[targetIndex]);
+                else container.insertBefore(items[targetIndex], item);
+            }
+        }
+
+        function checkFrankenstein() {
+            let items = Array.from(document.getElementById('frank-container').children);
+            let currentOrder = items.map(el => parseInt(el.dataset.id));
+            let correctOrder = [1, 2, 3, 4, 5];
+            let feedback = document.getElementById('frank-feedback');
+
+            if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
+                feedback.className = "feedback success";
+                feedback.textContent = "🎉 Perfect structure! Hook -> Context -> Thesis -> Evidence -> Analysis.";
+            } else {
+                feedback.className = "feedback error";
+                feedback.textContent = "❌ Logical flow is incorrect. Check your transition order!";
+            }
+        }
+
+        // 2. TRANSITION MATCHER
+        const transitionCategories = [
+            { type: "Contrast/Concession", words: ["However", "Nevertheless", "On the other hand", "Despite this", "Even so", "In contrast"] },
+            { type: "Addition/Elaboration", words: ["Furthermore", "Moreover", "In addition", "What is more", "Besides"] },
+            { type: "Cause/Effect", words: ["Consequently", "Therefore", "As a result", "Because of this", "Thus", "Hence"] },
+            { type: "Emphasis/Clarification", words: ["In fact", "Indeed", "Specifically", "In other words", "Clearly"] },
+            { type: "Condition/Reservation", words: ["Provided that", "Unless", "As long as", "Otherwise"] }
+        ];
+
+        async function initTransitions() {
+            document.getElementById('trans-feedback').textContent = '';
+            toggleLoading('trans', true);
+
+            const transBox = document.querySelector('.trans-box');
+            transBox.innerHTML = '<span id="trans-s1"></span> <span id="trans-slot" class="trans-slot">[ Select Transition ]</span> <span id="trans-s2"></span>';
+
+            const randomCat = transitionCategories[Math.floor(Math.random() * transitionCategories.length)];
+            const targetTransition = randomCat.words[Math.floor(Math.random() * randomCat.words.length)];
+
+            const prompt = `Write two clear academic sentences suitable for high school students and ESL learners at CEFR B2 to B2+ level that are logically bridged by the specific transition "${targetTransition}" (Logical relation: ${randomCat.type}). 
+            CRITICAL INSTRUCTION: The UI will display [s1] [button] [s2]. Therefore, you must split the text perfectly. 
+            's1' MUST be the first complete sentence ending in a period or semicolon. 
+            's2' MUST be the exact continuation AFTER the transition word, beginning with any necessary punctuation (like a comma) and continuing with a lowercase letter if appropriate. Do NOT include the transition word itself in s2.
+            Then, provide 3 plausible but logically incorrect formal distractor transitions.
+            Return ONLY a JSON object: {"s1":"First sentence.", "s2":", the rest of the second sentence.", "correct":"${targetTransition}", "options":["${targetTransition}","distractor1","distractor2","distractor3"]}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            
+            if (!data || data.__error || !data.s1) {
+                toggleLoading('trans', false);
+                document.getElementById('trans-feedback').className = "feedback error";
+                document.getElementById('trans-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            document.getElementById('trans-s1').textContent = data.s1;
+            document.getElementById('trans-slot').textContent = "[ ? ]";
+            document.getElementById('trans-slot').className = "trans-slot";
+            document.getElementById('trans-s2').textContent = data.s2;
+            
+            let optContainer = document.getElementById('trans-options');
+            optContainer.innerHTML = '';
+            let shuffledOptions = [...data.options].sort(() => Math.random() - 0.5);
+            shuffledOptions.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = "btn btn-outline";
+                btn.style.padding = "1rem";
+                btn.textContent = opt;
+                btn.onclick = () => {
+                    let feedback = document.getElementById('trans-feedback');
+                    if (opt === data.correct) {
+                        feedback.className = "feedback success";
+                        feedback.textContent = "✅ Correct logical link established!";
+                        const transBox = document.querySelector('.trans-box');
+                        transBox.innerHTML = `<span>${data.s1}</span> <span class="trans-slot solved">${opt}</span> <span>${data.s2}</span>`;
+                        setTimeout(initTransitions, 2000);
+                    } else {
+                        feedback.className = "feedback error";
+                        feedback.textContent = "❌ Incorrect transition. Check the logical relationship.";
+                    }
+                };
+                optContainer.appendChild(btn);
+            });
+
+            toggleLoading('trans', false);
+        }
+
+        // 3. DEVIL'S ADVOCATE 
+        async function initDevil() {
+            document.getElementById('devil-feedback').textContent = '';
+            toggleLoading('devil', true);
+
+            const prompt = `Write a high school debate thesis using academic language suitable for ESL learners at CEFR B2 to B2+ level. 
+            Provide 3 options for a response. ALL 3 options must be equally sophisticated, formal, and elaborate in their linguistic construction. 
+            - ONE option must be a strong, logical counter-argument (rebuttal) to the thesis (rebuttal: true). 
+            - The OTHER TWO options must be distractors that sound highly academic but are logically incorrect for a rebuttal—for example, they might secretly support the thesis, just rephrase the thesis using different words, or introduce a completely irrelevant off-topic academic point (rebuttal: false).
+            Return ONLY a JSON object: {"thesis":"...", "cards":[{"text":"...","rebuttal":true}, {"text":"...","rebuttal":false}, {"text":"...","rebuttal":false}]}`;
+            
+            const data = await fetchGenerativeAI(prompt);
+            
+            if (!data || data.__error || !data.thesis) {
+                toggleLoading('devil', false);
+                document.getElementById('devil-feedback').className = "feedback error";
+                document.getElementById('devil-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            document.getElementById('devil-thesis').textContent = data.thesis;
+            let container = document.getElementById('devil-cards');
+            container.innerHTML = '';
+            
+            let shuffledCards = [...data.cards].sort(() => Math.random() - 0.5);
+            shuffledCards.forEach(card => {
+                const isRebuttal = card.rebuttal === true || card.correct === true;
+                let div = document.createElement('div');
+                div.className = "devil-card";
+                div.textContent = card.text;
+                div.onclick = () => {
+                    let feedback = document.getElementById('devil-feedback');
+                    if (isRebuttal) {
+                        div.classList.add('correct');
+                        feedback.className = "feedback success";
+                        feedback.textContent = "🎯 Spot on! You identified the true structural counter-argument.";
+                        setTimeout(initDevil, 2500);
+                    } else {
+                        div.classList.add('incorrect');
+                        feedback.className = "feedback error";
+                        feedback.textContent = "Incorrect, this rephrases/supports";
+                    }
+                };
+                container.appendChild(div);
+            });
+
+            toggleLoading('devil', false);
+        }
+
+        // 4. BLOAT SLASHER (Updated for Formal, Academic Over-Worded Sentences & UI Constraints)
+        let bloatWords = [];
+        async function initBloat() {
+            document.getElementById('bloat-feedback').textContent = '';
+            toggleLoading('bloat', true);
+
+            const prompt = `Write a single, formally written academic sentence (around 25-30 words) with proper punctuation, aimed at high school students and ESL learners at CEFR B2 to B2+ level. 
+            CRITICAL STYLE INSTRUCTION: The sentence must be formal and academic in style, but intentionally inflated and over-worded using roundabout academic phrasing, redundant nominalizations, and circumlocution (avoid casual slang or conversational filler). This allows students to practice cutting unnecessary words for conciseness and precision. 
+            Return ONLY a JSON object: {"sentence": "..."}`;
+            
+            const data = await fetchGenerativeAI(prompt);
+            
+            if (!data || data.__error || !data.sentence) {
+                toggleLoading('bloat', false);
+                document.getElementById('bloat-feedback').className = "feedback error";
+                document.getElementById('bloat-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            bloatWords = data.sentence.split(' ').map((w, i) => ({ id: i, word: w, deleted: false }));
+            renderBloat();
+            toggleLoading('bloat', false);
+        }
+
+        function renderBloat() {
+            let container = document.getElementById('bloat-box');
+            container.innerHTML = '';
+            let origCount = bloatWords.length;
+            let currCount = bloatWords.filter(w => !w.deleted).length;
+            let targetCount = Math.floor(origCount * 0.6);
+
+            document.getElementById('bloat-orig-count').textContent = origCount;
+            document.getElementById('bloat-curr-count').textContent = currCount;
+            document.getElementById('bloat-target-count').textContent = targetCount;
+
+            bloatWords.forEach(w => {
+                let span = document.createElement('span');
+                span.className = w.deleted ? "bloat-word deleted" : "bloat-word";
+                span.textContent = w.word;
+                span.onclick = () => { w.deleted = !w.deleted; renderBloat(); };
+                container.appendChild(span);
+            });
+        }
+
+        async function checkBloat() {
+            let origCount = bloatWords.length;
+            let rawRemainingWords = bloatWords.filter(w => !w.deleted).map(w => w.word).join(" ");
+            let cleanedRemainingWordsForAI = rawRemainingWords.replace(/,/g, '');
+
+            let currCount = bloatWords.filter(w => !w.deleted).length;
+            let targetCount = Math.floor(origCount * 0.6);
+            let feedback = document.getElementById('bloat-feedback');
+            let btn = document.getElementById('verify-bloat-btn');
+
+            if (currCount > targetCount) {
+                feedback.className = "feedback error";
+                feedback.textContent = `⚠️ Still too wordy! Keep slashing to get below ${targetCount} words.`;
+                return;
+            }
+
+            // Verify logic with API
+            feedback.className = "feedback neutral";
+            feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing sentence logic and grammar...`;
+            btn.disabled = true;
+
+            const prompt = `A student was asked to reduce the bloat of an over-worded academic sentence using a game UI where they can ONLY click to delete whole words. They CANNOT edit punctuation or capitalisation.
+            The student's sequence of remaining words is: "${cleanedRemainingWordsForAI}"
+            Evaluate this sequence. Does it make logical sense? Did it retain the original core meaning? Does the sequence of words form a coherent academic thought?
+            CRITICAL INSTRUCTION: You MUST COMPLETELY IGNORE any capitalisation errors (like starting with a lowercase letter) and ALL punctuation errors (like stray commas attached to deleted words). Grade them ONLY on whether the sequence of remaining words forms a coherent sentence.
+            Return ONLY a JSON object: {"valid": true/false, "reason": "A short, 1-sentence explanation of why it is good, or specifically what structural/logical error the student created by deleting those words."}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            btn.disabled = false;
+
+            if (!data || data.__error) {
+                feedback.className = "feedback error";
+                feedback.textContent = aiErrorMessage(data);
+                return;
+            }
+
+            if (data.valid) {
+                feedback.className = "feedback success";
+                feedback.textContent = `⚡ ${data.reason}`;
+            } else {
+                feedback.className = "feedback error";
+                feedback.textContent = `❌ Logic Error: ${data.reason}`;
+            }
+        }
+
+        // 5. VOCAB UPGRADE 
+        let currentVocabToken = null;
+        async function initVocab() {
+            document.getElementById('vocab-feedback').textContent = '';
+            toggleLoading('vocab', true);
+
+            const topics = ["economics", "climate change", "psychology", "sociology", "literature", "technology", "history", "biology", "space exploration", "education policy"];
+            const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+
+            const prompt = `Generate a completely UNIQUE and original academic sentence (15-25 words) about ${randomTopic} suitable for high school CEFR B2 to B2+ level. 
+            Choose one informal word, phrasal verb, or everyday B1/B2 expression (e.g., 'look into', 'set up', 'bring about', 'deal with', 'figure out', 'get rid of', 'point out') in the middle of the sentence to act as the 'target'. 
+            Provide the sentence split into: 'baseText' (before target), 'target' (the informal word/phrase), and 'rest' (after target). 
+            Provide 'correct', which must be a precise, advanced formal academic synonym (B2+/C1 level). CRITICAL: The 'correct' synonym must fit seamlessly into the sentence, maintaining perfect grammar, preposition use, and natural academic collocations. 
+            Provide 'options' (an array with the correct synonym plus 3 distractors that are either too colloquial, slightly off-meaning, or fail the collocation test for this specific context). 
+            Return ONLY a JSON object: {"baseText":"...", "target":"...", "rest":"...", "correct":"...", "options":["...", "...", "...", "..."]}`;
+            
+            const data = await fetchGenerativeAI(prompt);
+            
+            if (!data || data.__error || !data.target) {
+                toggleLoading('vocab', false);
+                document.getElementById('vocab-feedback').className = "feedback error";
+                document.getElementById('vocab-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            currentVocabToken = {
+                baseText: data.baseText, target: data.target, rest: data.rest,
+                correct: data.correct, options: data.options.sort(() => Math.random() - 0.5), upgraded: null
+            };
+
+            renderVocabBox();
+            toggleLoading('vocab', false);
+        }
+
+        function renderVocabBox() {
+            let container = document.getElementById('vocab-box');
+            container.innerHTML = `
+                <span style="padding: 0 4px">${currentVocabToken.baseText}</span>
+                <span class="vocab-word target ${currentVocabToken.upgraded ? 'upgraded' : ''}" onclick="selectVocabToken()">
+                    ${currentVocabToken.upgraded || currentVocabToken.target}
+                </span>
+                <span style="padding: 0 4px">${currentVocabToken.rest}</span>
+            `;
+        }
+
+        function selectVocabToken() {
+            if (currentVocabToken.upgraded) return;
+            
+            let optContainer = document.getElementById('vocab-options');
+            optContainer.innerHTML = '';
+            let feedback = document.getElementById('vocab-feedback');
+            feedback.className = "feedback neutral";
+            feedback.textContent = `Select an academic upgrade for: "${currentVocabToken.target}"`;
+
+            currentVocabToken.options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = "btn btn-outline";
+                btn.textContent = opt;
+                btn.onclick = () => checkVocabChoice(opt);
+                optContainer.appendChild(btn);
+            });
+        }
+
+        function checkVocabChoice(choice) {
+            let feedback = document.getElementById('vocab-feedback');
+            if (choice === currentVocabToken.correct) {
+                currentVocabToken.upgraded = choice;
+                feedback.className = "feedback success";
+                feedback.textContent = `✨ Excellent precision! Swapped to "${choice}".`;
+                renderVocabBox();
+                document.getElementById('vocab-options').innerHTML = '';
+                setTimeout(() => { feedback.textContent = "🎉 Sentence fully upgraded! Click 'Next Sentence'."; }, 1000);
+            } else {
+                feedback.className = "feedback error";
+                feedback.textContent = "❌ Incorrect collocation or tone for this specific context.";
+            }
+        }
+
+        // ==========================================
+        // VOCAB REVIEW: ENGINE CORE
+        // ==========================================
+        let vocabulary = [];
+        
+        function parseGlossary() {
+            const raw = document.getElementById('glossary-input').value;
+            const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
+            const parsedList = [];
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                let separatorMatch = line.match(/(=|-|:|\t)/);
+                if (separatorMatch) {
+                    let sep = separatorMatch[0];
+                    let parts = line.split(sep);
+                    let term = parts[0].trim();
+                    let def = parts.slice(1).join(sep).trim();
+                    parsedList.push({ term, def });
+                } else {
+                    if (i + 1 < lines.length) {
+                        parsedList.push({ term: line, def: lines[i+1] }); i++; 
+                    }
+                }
+            }
+
+            const uniqueMap = new Map();
+            parsedList.forEach(item => {
+                const key = item.term.toLowerCase();
+                if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+            });
+            const uniqueList = Array.from(uniqueMap.values());
+
+            if(uniqueList.length < 4) {
+                alert("Please provide at least 4 unique word/definition pairs to play.");
+                return false;
+            }
+
+            const testDir = document.querySelector('input[name="test-dir"]:checked').value; 
+            vocabulary = uniqueList.map(item => {
+                const base = { rawTerm: item.term, rawDef: item.def, originalTerm: item.term };
+                if (testDir === 'term') return { ...base, prompt: item.term, answer: item.def.toLowerCase() };
+                return { ...base, prompt: item.def, answer: item.term.toLowerCase() };
+            });
+            return true;
+        }
+
+        function getRandomWord() { return vocabulary[Math.floor(Math.random() * vocabulary.length)]; }
+
+        // BOMB DEFUSAL
+        let bombTime = 60, bombTimerInterval, currentBombWord;
+        function initBombDefusal() {
+            let userTime = parseInt(document.getElementById('bomb-time-input').value);
+            bombTime = isNaN(userTime) || userTime < 10 ? 60 : userTime;
+            document.getElementById('bomb-icon').classList.add('pulse');
+            document.getElementById('bomb-answer').disabled = false;
+            nextBombWord();
+            clearInterval(bombTimerInterval);
+            bombTimerInterval = setInterval(() => {
+                bombTime--; updateBombDisplay();
+                if(bombTime <= 0) gameOverBomb();
+            }, 1000);
+        }
+        function pulseTimer(colorClass) {
+            const display = document.getElementById('timer-display');
+            display.classList.remove('timer-pulse-green', 'timer-pulse-red');
+            void display.offsetWidth;
+            display.classList.add(colorClass);
+            setTimeout(() => display.classList.remove(colorClass), 600);
+        }
+
+        function updateBombDisplay() {
+            const display = document.getElementById('timer-display');
+            display.innerText = bombTime;
+            display.style.color = bombTime <= 10 ? 'var(--pillarbox-red)' : 'var(--text-dark)';
+        }
+        function nextBombWord() {
+            currentBombWord = getRandomWord();
+            document.getElementById('bomb-prompt').innerText = currentBombWord.prompt;
+            document.getElementById('bomb-answer').value = "";
+            document.getElementById('bomb-answer').focus();
+        }
+        function handleBombInput(e) { if(e.key === 'Enter') checkBombAnswer(); }
+        function checkBombAnswer() {
+            const input = document.getElementById('bomb-answer').value.trim().toLowerCase();
+            if(input === currentBombWord.answer) {
+                bombTime += 5;
+                document.getElementById('timer-display').style.color = "var(--success-green)";
+                pulseTimer('timer-pulse-green');
+                setTimeout(updateBombDisplay, 400); nextBombWord();
+            } else penalizeBomb();
+        }
+        function skipBombWord() { penalizeBomb(); nextBombWord(); }
+        function penalizeBomb() {
+            bombTime -= 5;
+            const container = document.getElementById('screen-bomb');
+            container.classList.add('shake');
+            document.getElementById('timer-display').style.color = "var(--pillarbox-red)";
+            pulseTimer('timer-pulse-red');
+            setTimeout(() => container.classList.remove('shake'), 400);
+            updateBombDisplay();
+            if(bombTime <= 0) gameOverBomb();
+        }
+        function gameOverBomb() {
+            clearInterval(bombTimerInterval);
+            document.getElementById('timer-display').innerText = "BOOM!";
+            document.getElementById('bomb-icon').classList.remove('pulse');
+            document.getElementById('bomb-prompt').innerText = "Game Over!";
+            document.getElementById('bomb-answer').disabled = true;
+        }
+
+        // GRID TERRITORY
+        let gridState = Array(9).fill(null), currentPlayer = 'X', pendingCellIndex = null, currentGridWord = null;
+        function initGridTerritory() {
+            gridState = Array(9).fill(null); currentPlayer = 'X'; updateTurnDisplay(); renderGrid();
+        }
+        function updateTurnDisplay() {
+            const display = document.getElementById('turn-display');
+            display.innerText = currentPlayer === 'X' ? "Team 1's Turn (X)" : "Team 2's Turn (O)";
+            display.className = currentPlayer === 'X' ? "turn-indicator turn-blue" : "turn-indicator turn-red";
+        }
+        function renderGrid() {
+            const board = document.getElementById('tic-tac-toe-board'); board.innerHTML = "";
+            for(let i=0; i<9; i++) {
+                let cell = document.createElement('div'); cell.className = 'grid-cell';
+                if(gridState[i]) {
+                    const icon = document.createElement('i');
+                    if (gridState[i] === 'X') {
+                        icon.className = 'fa-solid fa-xmark';
+                        cell.classList.add('claimed-x');
+                    } else {
+                        icon.className = 'fa-regular fa-circle';
+                        cell.classList.add('claimed-o');
+                    }
+                    cell.appendChild(icon);
+                    cell.classList.add('claimed');
+                } else cell.onclick = () => openGridModal(i);
+                board.appendChild(cell);
+            }
+        }
+        function openGridModal(index) {
+            pendingCellIndex = index; currentGridWord = getRandomWord();
+            document.getElementById('grid-prompt').innerText = currentGridWord.prompt;
+            document.getElementById('grid-answer').value = "";
+            document.getElementById('grid-modal').style.display = 'flex';
+            setTimeout(() => document.getElementById('grid-answer').focus(), 100);
+        }
+        function closeGridModal() { document.getElementById('grid-modal').style.display = 'none'; }
+        function handleGridInput(e) { if(e.key === 'Enter') checkGridAnswer(); }
+        function checkGridAnswer() {
+            const input = document.getElementById('grid-answer').value.trim().toLowerCase();
+            if(input === currentGridWord.answer) {
+                gridState[pendingCellIndex] = currentPlayer; closeGridModal(); renderGrid();
+                if(checkWin(currentPlayer)) setTimeout(() => alert((currentPlayer === 'X' ? "Team 1" : "Team 2") + " WINS!"), 100);
+                else { currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; updateTurnDisplay(); }
+            } else {
+                alert("Incorrect! The answer was: " + currentGridWord.answer + ".\nTurn passes to the other team.");
+                closeGridModal(); currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; updateTurnDisplay();
+            }
+        }
+        function checkWin(player) {
+            const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return combos.some(c => c.every(idx => gridState[idx] === player));
+        }
+
+        // TABOO SWAP
+        function nextTabooCard() {
+            const mainWordPair = getRandomWord();
+            document.getElementById('taboo-main').innerText = mainWordPair.rawTerm;
+            let forbidden = [mainWordPair.rawDef];
+            let otherWords = vocabulary.filter(v => v.rawTerm !== mainWordPair.rawTerm);
+            otherWords.sort(() => 0.5 - Math.random());
+            if(otherWords.length > 0) forbidden.push(otherWords[0].rawDef);
+            if(otherWords.length > 1) forbidden.push(otherWords[1].rawDef);
+            const ul = document.getElementById('taboo-list'); ul.innerHTML = "";
+            forbidden.forEach(word => {
+                let li = document.createElement('li');
+                li.innerText = word.length > 40 ? word.substring(0, 40) + "..." : word;
+                ul.appendChild(li);
+            });
+        }
+
+        // CLASSIC FLASHCARDS
+        let fcDeck = [], fcIndex = 0;
+        function initFlashcards() {
+            fcDeck = [...vocabulary].sort(() => 0.5 - Math.random()); fcIndex = 0; renderFcCard();
+        }
+        function renderFcCard() {
+            const cardEl = document.getElementById('fc-card'), controls = document.getElementById('fc-controls'), counter = document.getElementById('fc-counter');
+            cardEl.classList.remove('flipped'); controls.classList.remove('visible');
+            if (fcDeck.length === 0) {
+                counter.innerText = "Mastery Achieved!";
+                document.getElementById('fc-front').innerText = "🎉 All words learned!";
+                document.getElementById('fc-back').innerText = "Great job!";
+                setTimeout(() => { if(confirm("Play again?")) initFlashcards(); }, 1000); return;
+            }
+            if (fcIndex >= fcDeck.length) fcIndex = 0;
+            counter.innerText = `Cards left in deck: ${fcDeck.length}`;
+            setTimeout(() => {
+                document.getElementById('fc-front').innerText = fcDeck[fcIndex].prompt;
+                document.getElementById('fc-back').innerText = fcDeck[fcIndex].answer;
+            }, 150);
+        }
+        function flipCard() {
+            if (fcDeck.length === 0) return;
+            const cardEl = document.getElementById('fc-card'), controls = document.getElementById('fc-controls');
+            if (!cardEl.classList.contains('flipped')) { cardEl.classList.add('flipped'); controls.classList.add('visible'); }
+        }
+        function markFc(knowIt) {
+            if (knowIt) { fcDeck.splice(fcIndex, 1); } else fcIndex++;
+            renderFcCard();
+        }
+    </script>
+</body>
+</html>

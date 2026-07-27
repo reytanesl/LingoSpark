@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: lingospark
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.13.0
+      - key: CURSOR_API_KEY
+        sync: false
