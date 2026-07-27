@@ -37,48 +37,27 @@
             background-color: var(--royal-blue); 
             color: var(--bright-white); 
             text-align: center; 
-            padding: 2rem 1rem; 
+            padding: 1.5rem 1rem 1.25rem; 
             border-bottom: 6px solid var(--pillarbox-red); 
             position: relative; 
-            overflow: hidden; 
         }
 
-        /* 50% Opaque Union Jack Background */
-        header::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'%3E%3CclipPath id='t'%3E%3Cpath d='M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z'/%3E%3C/clipPath%3E%3Cpath d='M0,0 v30 h60 v-30 z' fill='%23012169'/%3E%3Cpath d='M0,0 L60,30 M60,0 L0,30' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M0,0 L60,30 M60,0 L0,30' clip-path='url(%23t)' stroke='%23C8102E' stroke-width='4'/%3E%3Cpath d='M30,0 v30 M0,15 h60' stroke='%23fff' stroke-width='10'/%3E%3Cpath d='M30,0 v30 M0,15 h60' stroke='%23C8102E' stroke-width='6'/%3E%3C/svg%3E");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            opacity: 0.5; 
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Elevate header content above the transparent flag */
-        header > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Logo expanded to banner size, height reduced */
         .main-logo-container { 
             width: 100%; 
-            max-width: 1000px; 
-            height: auto;
-            max-height: 245px; 
-            margin: 0 auto 1rem auto; 
+            max-width: 900px; 
+            margin: 0 auto 0.75rem auto; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
         }
         
         .main-logo-container img { 
-            width: 100%; 
-            height: 100%; 
+            width: auto; 
+            max-width: 100%; 
+            height: auto; 
+            max-height: min(320px, 45vh); 
             object-fit: contain; 
+            display: block; 
         }
 
         header p { 
@@ -299,12 +278,12 @@
             <div id="cat-writing" class="category-content">
                 <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure and style. <strong>Powered entirely by Cursor AI.</strong></p>
                 <div class="grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange completely unique, AI-generated sentences into a proper 5-part paragraph.</p><button class="btn btn-outline" onclick="goToSetup('frank')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><button class="btn btn-outline" onclick="goToSetup('trans')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToSetup('devil')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToSetup('bloat')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToSetup('vocab')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToSetup('odyssey')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange completely unique, AI-generated sentences into a proper 5-part paragraph.</p><button class="btn btn-outline" onclick="goToWritingSetup('frank')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><button class="btn btn-outline" onclick="goToWritingSetup('trans')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToWritingSetup('devil')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToWritingSetup('bloat')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToWritingSetup('vocab')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToWritingSetup('odyssey')">Play Now</button></div>
                 </div>
             </div>
 
@@ -599,6 +578,22 @@
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
+        }
+
+        const WRITING_SUITE_PASSWORD = 'LinGoSparK';
+        let writingSuiteUnlocked = false;
+
+        function goToWritingSetup(gameType) {
+            if (!writingSuiteUnlocked) {
+                const entered = prompt('Enter Writing Suite password:');
+                if (entered === null) return;
+                if (entered !== WRITING_SUITE_PASSWORD) {
+                    alert('Incorrect password.');
+                    return;
+                }
+                writingSuiteUnlocked = true;
+            }
+            goToSetup(gameType);
         }
 
         function goToSetup(gameType) {
