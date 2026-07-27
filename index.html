@@ -197,6 +197,18 @@
         .flashcard-controls.visible { opacity: 1; pointer-events: auto; }
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 
+        /* Auth bar + paywall modal */
+        .auth-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1200px; margin: 0 auto; padding: 0.75rem 1.5rem 0; flex-wrap: wrap; }
+        .auth-bar .auth-user { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        .auth-bar .auth-user img { width: 28px; height: 28px; border-radius: 50%; }
+        .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+        .paywall-overlay.open { display: flex; }
+        .paywall-modal { background: var(--bright-white); border-radius: 12px; max-width: 440px; width: 100%; padding: 2rem; border-top: 6px solid var(--royal-blue); box-shadow: 0 12px 40px rgba(0,0,0,0.2); text-align: center; }
+        .paywall-modal h3 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.5rem; margin-bottom: 0.75rem; }
+        .paywall-modal p { color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+        .paywall-modal .paywall-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+        .paywall-modal .paywall-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; margin-bottom: 0; }
+
         /* Word-Forged Odyssey */
         .odyssey-hud { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
         .odyssey-stat { flex: 1; min-width: 140px; background: var(--light-grey); border-radius: 10px; padding: 0.75rem 1rem; border-top: 3px solid var(--royal-blue); font-size: 0.9rem; }
@@ -239,6 +251,8 @@
         </div>
         <p>Gamify Your Words</p>
     </header>
+
+    <div class="auth-bar" id="auth-bar"></div>
 
     <div class="container">
         
@@ -332,7 +346,7 @@
 
             <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
                 <label style="color: #4f46e5;"><i class="fa-solid fa-robot"></i> Cursor AI Generation</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">The Writing Suite generates fresh academic content through the server-side Cursor AI integration. No API key is required in your browser.</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Writing Suite access required (Google sign-in + Buy Me a Coffee or teacher approval). Content is generated via Cursor AI on the server.</p>
             </div>
 
             <div style="text-align: center; margin-top: 2rem;">
@@ -560,6 +574,17 @@
         </div>
     </div>
 
+    <!-- WRITING SUITE PAYWALL -->
+    <div class="paywall-overlay" id="paywall-overlay" onclick="if(event.target===this)closePaywall()">
+        <div class="paywall-modal" role="dialog" aria-labelledby="paywall-title">
+            <h3 id="paywall-title">Writing Suite Access</h3>
+            <p id="paywall-body">Sign in to continue.</p>
+            <div class="paywall-actions" id="paywall-actions"></div>
+            <p class="paywall-note" id="paywall-note"></p>
+            <button class="btn btn-grey" style="margin-top:1rem;" onclick="closePaywall()">Cancel</button>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // UI CORE & ROUTING
@@ -580,20 +605,102 @@
             document.getElementById('screen-' + screenId).classList.add('active');
         }
 
-        const WRITING_SUITE_PASSWORD = 'LinGoSparK';
-        let writingSuiteUnlocked = false;
+        const WRITING_SUITE_PASSWORD = null; // replaced by Google + Buy Me a Coffee paywall
+        let pendingWritingGame = null;
+        let authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false };
 
-        function goToWritingSetup(gameType) {
-            if (!writingSuiteUnlocked) {
-                const entered = prompt('Enter Writing Suite password:');
-                if (entered === null) return;
-                if (entered !== WRITING_SUITE_PASSWORD) {
-                    alert('Incorrect password.');
-                    return;
-                }
-                writingSuiteUnlocked = true;
+        async function refreshAuth() {
+            try {
+                const res = await fetch('/api/auth/me', { credentials: 'include' });
+                authState = await res.json();
+            } catch {
+                authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false };
             }
-            goToSetup(gameType);
+            renderAuthBar();
+            return authState;
+        }
+
+        function renderAuthBar() {
+            const bar = document.getElementById('auth-bar');
+            if (!bar) return;
+            if (authState.user) {
+                bar.innerHTML = `
+                    <div class="auth-user">
+                        ${authState.user.picture ? `<img src="${authState.user.picture}" alt="">` : '<i class="fa-solid fa-user"></i>'}
+                        <span>${authState.user.name || authState.user.email}</span>
+                        ${authState.hasAccess ? '<span style="color:var(--success-green);font-weight:700;">Premium</span>' : ''}
+                    </div>
+                    ${authState.isAdmin ? '<a class="btn btn-outline" href="/admin.html" style="padding:0.4rem 1rem;font-size:0.85rem;"><i class="fa-solid fa-shield-halved"></i> Admin</a>' : ''}
+                    <button class="btn btn-grey" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="logoutAuth()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                `;
+            } else {
+                bar.innerHTML = `
+                    <button class="btn btn-outline" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="location.href='/auth/google?returnTo='+encodeURIComponent(location.pathname)">
+                        <i class="fa-brands fa-google"></i> Sign in
+                    </button>
+                `;
+            }
+        }
+
+        async function logoutAuth() {
+            await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+            await refreshAuth();
+        }
+
+        function closePaywall() {
+            document.getElementById('paywall-overlay').classList.remove('open');
+            pendingWritingGame = null;
+        }
+
+        function openPaywallModal() {
+            const overlay = document.getElementById('paywall-overlay');
+            const body = document.getElementById('paywall-body');
+            const actions = document.getElementById('paywall-actions');
+            const note = document.getElementById('paywall-note');
+
+            if (!authState.user) {
+                body.textContent = 'Sign in with Google to unlock the Writing Suite.';
+                actions.innerHTML = `
+                    <a class="btn btn-blue" href="/auth/google?returnTo=${encodeURIComponent(location.pathname + location.search)}">
+                        <i class="fa-brands fa-google"></i> Sign in with Google
+                    </a>
+                `;
+                note.textContent = '';
+            } else if (!authState.hasAccess) {
+                body.textContent = 'Buy Access — 10 PLN / month to use the Writing Suite.';
+                const bmcUrl = authState.bmcPaymentUrl || '';
+                actions.innerHTML = bmcUrl
+                    ? `<a class="btn btn-blue" href="${bmcUrl}" target="_blank" rel="noopener"><i class="fa-solid fa-mug-hot"></i> Buy Access</a>
+                       <button class="btn btn-outline" onclick="checkAccessAfterPurchase()"><i class="fa-solid fa-rotate"></i> I already paid — refresh access</button>`
+                    : `<button class="btn btn-blue" disabled>Buy Access (not configured)</button>`;
+                note.textContent = 'Use the same email on Buy Me a Coffee as your Google account.';
+            } else {
+                closePaywall();
+                if (pendingWritingGame) goToSetup(pendingWritingGame);
+                return;
+            }
+            overlay.classList.add('open');
+        }
+
+        async function checkAccessAfterPurchase() {
+            await refreshAuth();
+            if (authState.hasAccess) {
+                closePaywall();
+                if (pendingWritingGame) goToSetup(pendingWritingGame);
+            } else {
+                alert('Access not found yet. Make sure you paid with the same email as Google, or wait a moment and try again. Your teacher can also approve your account.');
+            }
+        }
+
+        async function goToWritingSetup(gameType) {
+            pendingWritingGame = gameType;
+            await refreshAuth();
+            if (authState.hasAccess) {
+                goToSetup(gameType);
+                pendingWritingGame = null;
+                return;
+            }
+            openPaywallModal();
         }
 
         function goToSetup(gameType) {
@@ -612,6 +719,8 @@
             
             showScreen('setup');
         }
+
+        refreshAuth();
 
         function launchSelectedGame() {
             const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];

@@ -5,29 +5,29 @@ British Academic vocabulary and writing games for ESL learners.
 ## Local development
 
 1. `npm install`
-2. Copy `.env.example` to `.env` and set `CURSOR_API_KEY` ([get a key](https://cursor.com/dashboard/api))
+2. Copy `.env.example` to `.env` and fill in:
+   - `CURSOR_API_KEY`
+   - `DATABASE_URL` (Postgres)
+   - Google OAuth vars
+   - `ADMIN_EMAIL`
+   - `BMC_PAYMENT_URL` / `BMC_WEBHOOK_SECRET`
 3. `npm start`
 4. Open **http://localhost:3000**
 
-**Vocab Review** runs in the browser. **Writing Suite** uses Cursor AI via the server — students never see your API key.
+**Vocab Review** is free. **Writing Suite** requires Google sign-in plus Buy Me a Coffee payment or admin approval.
 
 ## Share with students
 
-Deploy once, share one URL. See **[DEPLOY.md](DEPLOY.md)** for step-by-step instructions (Render or Railway).
-
-Quick summary:
-
-1. Push this folder to GitHub (without `.env`)
-2. Deploy on [Render](https://render.com) or [Railway](https://railway.app)
-3. Set `CURSOR_API_KEY` in the host’s environment variables
-4. Share the public link with your class
+See **[DEPLOY.md](DEPLOY.md)** for Render + Google + Buy Me a Coffee setup.
 
 ## Project layout
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Full app UI and game logic |
-| `server.js` | Static hosting + `/api/generate` (Cursor SDK) |
-| `render.yaml` | One-click Render deploy config |
-| `railway.toml` | Railway deploy hints |
+| `index.html` | App UI, games, paywall modal |
+| `admin.html` | Approve / revoke Writing Suite access |
+| `server.js` | Express: static, auth, BMC webhook, Cursor AI |
+| `db.js` | Postgres users + access helpers |
+| `auth.js` | Google OAuth (Passport) |
+| `billing.js` | Buy Me a Coffee webhook handling |
 | `Projekt bez nazwy.png` | Header logo |

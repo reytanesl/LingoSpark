@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LingoSpark Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+            --royal-blue: #012169;
+            --pillarbox-red: #C8102E;
+            --bright-white: #FFFFFF;
+            --light-grey: #F4F5F7;
+            --text-dark: #2D2D2D;
+            --text-muted: #5A5A5A;
+            --success-green: #00823B;
+            --border-light: #E0E0E0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-secondary); background: var(--light-grey); color: var(--text-dark); }
+        header { background: var(--royal-blue); color: white; padding: 1.5rem; text-align: center; border-bottom: 6px solid var(--pillarbox-red); }
+        header h1 { font-family: var(--font-primary); font-size: 1.6rem; }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem; }
+        .panel { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .btn { font-family: var(--font-primary); padding: 0.6rem 1.2rem; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-blue { background: var(--royal-blue); color: white; }
+        .btn-green { background: var(--success-green); color: white; }
+        .btn-red { background: var(--pillarbox-red); color: white; }
+        .btn-grey { background: var(--text-muted); color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.85rem 0.5rem; border-bottom: 1px solid var(--border-light); font-size: 0.95rem; }
+        th { font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.8rem; text-transform: uppercase; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge-yes { background: rgba(0,130,59,0.12); color: var(--success-green); }
+        .badge-no { background: rgba(200,16,46,0.1); color: var(--pillarbox-red); }
+        .msg { margin-bottom: 1rem; font-weight: 600; }
+        .msg.error { color: var(--pillarbox-red); }
+        .user-cell { display: flex; align-items: center; gap: 0.75rem; }
+        .user-cell img { width: 36px; height: 36px; border-radius: 50%; }
+        .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fa-solid fa-shield-halved"></i> LingoSpark Admin</h1>
+    </header>
+    <div class="container">
+        <div class="panel">
+            <div class="top">
+                <div>
+                    <strong id="admin-label">Loading…</strong>
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">Approve or revoke Writing Suite access</div>
+                </div>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <a class="btn btn-grey" href="/"><i class="fa-solid fa-house"></i> Home</a>
+                    <button class="btn btn-blue" onclick="loadUsers()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    <button class="btn btn-red" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                </div>
+            </div>
+            <div id="msg" class="msg"></div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Source</th>
+                            <th>Access</th>
+                            <th>Until</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-body">
+                        <tr><td colspan="5">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function loadUsers() {
+            const msg = document.getElementById('msg');
+            msg.textContent = '';
+            msg.className = 'msg';
+            try {
+                const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+                const me = await meRes.json();
+                if (!me.user) {
+                    msg.className = 'msg error';
+                    msg.innerHTML = 'Please <a href="/auth/google?returnTo=/admin.html">sign in with Google</a> as the admin account.';
+                    document.getElementById('users-body').innerHTML = '';
+                    return;
+                }
+                document.getElementById('admin-label').textContent = me.user.email;
+                if (!me.isAdmin) {
+                    msg.className = 'msg error';
+                    msg.textContent = 'This Google account is not the admin (ADMIN_EMAIL).';
+                    document.getElementById('users-body').innerHTML = '';
+                    return;
+                }
+
+                const res = await fetch('/api/admin/users', { credentials: 'include' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to load users');
+
+                const body = document.getElementById('users-body');
+                if (!data.users.length) {
+                    body.innerHTML = '<tr><td colspan="5">No registered users yet.</td></tr>';
+                    return;
+                }
+                body.innerHTML = data.users.map(u => `
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                ${u.picture ? `<img src="${u.picture}" alt="">` : ''}
+                                <div>
+                                    <div><strong>${escapeHtml(u.name || '')}</strong></div>
+                                    <div style="color:var(--text-muted);font-size:0.85rem;">${escapeHtml(u.email)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${escapeHtml(u.accessSource || '—')}</td>
+                        <td><span class="badge ${u.hasAccess ? 'badge-yes' : 'badge-no'}">${u.hasAccess ? 'Yes' : 'No'}</span></td>
+                        <td>${u.accessUntil ? new Date(u.accessUntil).toLocaleDateString() : (u.accessSource === 'admin' || u.accessSource === 'bmc' ? 'Open' : '—')}</td>
+                        <td class="actions">
+                            <button class="btn btn-green" onclick="approve(${u.id})" ${u.hasAccess && u.accessSource === 'admin' ? 'disabled' : ''}><i class="fa-solid fa-check"></i> Approve</button>
+                            <button class="btn btn-red" onclick="revoke(${u.id})" ${!u.hasAccess ? 'disabled' : ''}><i class="fa-solid fa-ban"></i> Revoke</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                msg.className = 'msg error';
+                msg.textContent = err.message;
+            }
+        }
+
+        async function approve(id) {
+            await fetch(`/api/admin/users/${id}/approve`, { method: 'POST', credentials: 'include' });
+            loadUsers();
+        }
+
+        async function revoke(id) {
+            await fetch(`/api/admin/users/${id}/revoke`, { method: 'POST', credentials: 'include' });
+            loadUsers();
+        }
+
+        async function logout() {
+            await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+            location.href = '/';
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>
