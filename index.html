@@ -229,6 +229,23 @@
         .pe-pack-toggle.open .chevron { transform: rotate(180deg); color: var(--royal-blue); }
         .pe-pack-grid { display: none; margin-top: 1.25rem; }
         .pe-pack-grid.open { display: grid; }
+        .pe-level-row {
+            display: none; margin-top: 1.25rem; padding: 1rem 1.25rem; background: var(--light-grey);
+            border-radius: 12px; border-left: 4px solid var(--royal-blue); align-items: center; gap: 0.75rem; flex-wrap: wrap;
+        }
+        .pe-level-row.open { display: flex; }
+        .pe-level-row > span { font-family: var(--font-primary); font-weight: 700; color: var(--royal-blue); margin-right: 0.25rem; }
+        .pe-level-btn {
+            font-family: var(--font-primary); font-weight: 700; padding: 0.55rem 1.25rem; border-radius: 30px;
+            border: 2px solid var(--royal-blue); background: white; color: var(--royal-blue); cursor: pointer; transition: 0.2s;
+        }
+        .pe-level-btn:hover { background: rgba(1,33,105,0.06); }
+        .pe-level-btn.active { background: var(--royal-blue); color: white; border-color: var(--royal-blue); }
+        .pe-level-hint { width: 100%; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .pe-level-badge {
+            display: inline-flex; align-items: center; gap: 6px; background: rgba(1,33,105,0.08); color: var(--royal-blue);
+            font-family: var(--font-primary); font-weight: 700; font-size: 0.85rem; padding: 4px 10px; border-radius: 12px;
+        }
         .pe-instr { background: var(--light-grey); border-left: 4px solid var(--royal-blue); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; position: relative; }
         .pe-instr-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
         .pe-instr-head strong { font-family: var(--font-primary); color: var(--royal-blue); }
@@ -363,15 +380,22 @@
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">4 AI writing games for younger / exam-prep learners</span>
+                        <span class="pe-pack-meta">4 AI writing games — choose CEFR level A1, A2 or B1</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
+                <div class="pe-level-row" id="pe-level-row">
+                    <span>CEFR level:</span>
+                    <button type="button" class="pe-level-btn" data-level="A1" onclick="selectPeLevel('A1')">A1</button>
+                    <button type="button" class="pe-level-btn" data-level="A2" onclick="selectPeLevel('A2')">A2</button>
+                    <button type="button" class="pe-level-btn" data-level="B1" onclick="selectPeLevel('B1')">B1</button>
+                    <div class="pe-level-hint" id="pe-level-hint">Select a level first. AI language, vocabulary and task difficulty will match that CEFR band.</div>
+                </div>
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h2>Boring to Brilliant</h2><p>Upgrade bland vocabulary into richer, more interesting word choices.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-boring')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-detail')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-link')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-exam')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h2>Boring to Brilliant</h2><p>Upgrade bland vocabulary into richer, more interesting word choices.</p><button class="btn btn-outline" onclick="goToPeGame('pe-boring')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><button class="btn btn-outline" onclick="goToPeGame('pe-detail')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><button class="btn btn-outline" onclick="goToPeGame('pe-link')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><button class="btn btn-outline" onclick="goToPeGame('pe-exam')">Play Now</button></div>
                 </div>
             </div>
 
@@ -581,7 +605,7 @@
                 <span class="pe-points">Points: <span id="pe-points-boring">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Boring to Brilliant <span class="live-badge">Cursor AI</span></h2>
+                <h2>Boring to Brilliant <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
                 <button class="btn btn-outline" onclick="initPeBoring()" id="pe-boring-btn">New Prompt <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -608,7 +632,7 @@
                 <span class="pe-points">Points: <span id="pe-points-detail">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Detail Detective <span class="live-badge">Cursor AI</span></h2>
+                <h2>Detail Detective <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
                 <button class="btn btn-outline" onclick="initPeDetail()" id="pe-detail-btn">New Case <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -635,7 +659,7 @@
                 <span class="pe-points">Points: <span id="pe-points-link">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Link Master <span class="live-badge">Cursor AI</span></h2>
+                <h2>Link Master <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
                 <button class="btn btn-outline" onclick="initPeLink()" id="pe-link-btn">New Pair <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -662,7 +686,7 @@
                 <span class="pe-points">Points: <span id="pe-points-exam">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Exam Simulator <span class="live-badge">Cursor AI</span></h2>
+                <h2>Exam Simulator <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
                 <button class="btn btn-outline" onclick="initPeExam()" id="pe-exam-btn">New Task <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -772,6 +796,7 @@
         // UI CORE & ROUTING
         // ==========================================
         let activeGame = '';
+        let peCefrLevel = null; // 'A1' | 'A2' | 'B1'
 
         function toggleCategory(catId, headerEl) {
             const content = document.getElementById(catId);
@@ -785,8 +810,41 @@
         function togglePrimaryEnglishPack() {
             const btn = document.getElementById('pe-pack-toggle');
             const grid = document.getElementById('pe-pack-grid');
+            const levels = document.getElementById('pe-level-row');
             btn.classList.toggle('open');
             grid.classList.toggle('open');
+            levels.classList.toggle('open');
+        }
+
+        function selectPeLevel(level) {
+            peCefrLevel = level;
+            document.querySelectorAll('.pe-level-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.level === level);
+            });
+            const hints = {
+                A1: 'A1 — very simple words and short sentences (family, school, food, daily life).',
+                A2: 'A2 — everyday phrases, past/future basics, clear opinions and reasons.',
+                B1: 'B1 — wider vocabulary, linked ideas, short emails and descriptions with more detail.'
+            };
+            document.getElementById('pe-level-hint').textContent = hints[level] || '';
+            syncPeLevelBadges();
+        }
+
+        function syncPeLevelBadges() {
+            const label = peCefrLevel || '—';
+            document.querySelectorAll('[data-pe-level-badge]').forEach(el => {
+                el.textContent = label;
+            });
+        }
+
+        async function goToPeGame(gameType) {
+            if (!peCefrLevel) {
+                alert('Please select CEFR level A1, A2 or B1 first.');
+                const row = document.getElementById('pe-level-row');
+                if (row && !row.classList.contains('open')) togglePrimaryEnglishPack();
+                return;
+            }
+            await goToWritingSetup(gameType);
         }
 
         function togglePePolish(btn) {
@@ -1594,6 +1652,74 @@ Return ONLY JSON:
         let peDetailTask = null;
         let peLinkTask = null;
         let peExamTask = null;
+        const peRecentTopics = { boring: [], detail: [], link: [], exam: [] };
+
+        const PE_TOPICS = [
+            'family and home', 'school and lessons', 'friends and hobbies', 'food and cooking', 'pets and animals',
+            'sports and games', 'weather and seasons', 'shopping and clothes', 'travel and holidays', 'town and city',
+            'health and feelings', 'technology and phones', 'music and films', 'nature and parks', 'birthday and parties',
+            'routines and free time', 'jobs and future plans', 'books and stories', 'transport and getting around', 'environment and recycling'
+        ];
+
+        const PE_CEFR = {
+            A1: {
+                label: 'A1',
+                vocab: 'Use only very common A1 words and short sentences (I/you/he/she, present simple, basic adjectives like big/small/happy/nice, everyday nouns). Avoid idioms and complex grammar.',
+                upgrades: 'Accepted upgrades must still be simple A1–low A2 words a beginner can learn (e.g. nice→pretty/happy, big→large/huge, small→little/tiny, good→great/fun). Do not require advanced synonyms.',
+                detail: 'Student detail sentence should stay simple (present simple, and/but). Reward concrete easy details (colour, size, number, place).',
+                link: 'Sentences must be very short and clear. Linkers only because/so.',
+                exam: 'Email task for A1: 40–70 words, 3 simple bullet points about everyday life. Simple language only.',
+                examWords: { min: 40, max: 70 }
+            },
+            A2: {
+                label: 'A2',
+                vocab: 'Use clear A2 English: past simple, going to, comparatives, common collocations, everyday opinions. Avoid rare academic words.',
+                upgrades: 'Accepted upgrades should be richer but still A2-friendly (e.g. nice→lovely/wonderful, small→tiny/miniature, bad→terrible/awful, good→excellent/amazing).',
+                detail: 'Expect one clear sentence with 2+ concrete details (features, price, size, place, reason). Past or present OK.',
+                link: 'Clear cause–effect with because/so; short A2 sentences.',
+                exam: 'Email task for A2 / Polish primary exam style: 50–120 words, 3 bullet points.',
+                examWords: { min: 50, max: 120 }
+            },
+            B1: {
+                label: 'B1',
+                vocab: 'Use solid B1 English: wider everyday vocabulary, linking ideas, reasons/opinions, simple conditionals or present perfect if natural. Still learner-friendly — not academic C1.',
+                upgrades: 'Accepted upgrades can be more precise B1 words (e.g. nice→delightful/charming, big→enormous/significant, bad→disappointing/harmful) but still common in school English.',
+                detail: 'Expect a well-developed sentence with several specific details and natural linking.',
+                link: 'Cause–effect with because/so; sentences can be a bit longer and more natural at B1.',
+                exam: 'Email or short message for B1: 80–140 words, 3–4 content points, clearer cohesion expected.',
+                examWords: { min: 80, max: 140 }
+            }
+        };
+
+        function pePick(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function peFreshTopic(gameKey) {
+            const recent = peRecentTopics[gameKey] || [];
+            const pool = PE_TOPICS.filter(t => !recent.includes(t));
+            const topic = pePick(pool.length ? pool : PE_TOPICS);
+            peRecentTopics[gameKey] = [...recent, topic].slice(-8);
+            return topic;
+        }
+
+        function peSeed() {
+            return Math.floor(Math.random() * 1e9);
+        }
+
+        function peLevelGuide() {
+            return PE_CEFR[peCefrLevel] || PE_CEFR.A2;
+        }
+
+        function peRandomnessBlock(gameKey) {
+            const topic = peFreshTopic(gameKey);
+            const seed = peSeed();
+            const angle = pePick([
+                'surprising twist', 'funny everyday moment', 'slight problem to solve', 'happy memory',
+                'plan for tomorrow', 'opinion about something new', 'comparison of two options', 'mistake and fix'
+            ]);
+            return { topic, seed, angle };
+        }
 
         function peAddPoints(key, amount) {
             pePoints[key] += amount;
@@ -1610,9 +1736,21 @@ Return ONLY JSON:
         async function initPeBoring() {
             document.getElementById('pe-boring-feedback').textContent = '';
             document.getElementById('pe-boring-input').value = '';
+            syncPeLevelBadges();
             peToggleLoading('pe-boring', true);
-            const prompt = `Create a short, simple English sentence for young ESL learners (A2). Include exactly TWO bland/common adjectives that should be upgraded (e.g. nice, small, good, big, bad). Mark those two words with **double asterisks**.
-Return ONLY JSON: {"sentenceHtml":"Yesterday I saw a **nice** dog. It was very **small**.","blandWords":["nice","small"],"acceptedUpgrades":{"nice":["cute","lovely","beautiful","wonderful","amazing","friendly"],"small":["tiny","little","miniature","petite"]}}`;
+            const L = peLevelGuide();
+            const R = peRandomnessBlock('boring');
+            const blandPool = pePick([
+                'nice and small', 'good and big', 'bad and cold', 'happy and hot', 'old and new',
+                'funny and quiet', 'busy and tired', 'easy and hard', 'fast and slow', 'clean and dirty'
+            ]);
+            const prompt = `You create UNIQUE Primary English vocabulary upgrade tasks. CEFR level: ${L.label}.
+LEVEL RULES: ${L.vocab}
+UPGRADE RULES: ${L.upgrades}
+RANDOMISE HARD every time — never reuse similar sentences. Unique seed: ${R.seed}.
+Topic focus: ${R.topic}. Story angle: ${R.angle}. Prefer bland pair vibes like "${blandPool}" but invent fresh wording.
+Create ONE short English sentence with exactly TWO bland/common adjectives marked with **double asterisks**.
+Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords":["word1","word2"],"acceptedUpgrades":{"word1":["syn1","syn2","syn3","syn4"],"word2":["syn1","syn2","syn3","syn4"]}}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-boring', false);
             if (!data || data.__error || !data.sentenceHtml) {
@@ -1621,7 +1759,7 @@ Return ONLY JSON: {"sentenceHtml":"Yesterday I saw a **nice** dog. It was very *
                 return;
             }
             peBoringTask = data;
-            document.getElementById('pe-boring-prompt').innerHTML = `<strong>[Boring Bot]:</strong> ${data.sentenceHtml.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}`;
+            document.getElementById('pe-boring-prompt').innerHTML = `<strong>[Boring Bot · ${L.label}]:</strong> ${data.sentenceHtml.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}`;
         }
 
         async function checkPeBoring() {
@@ -1636,11 +1774,14 @@ Return ONLY JSON: {"sentenceHtml":"Yesterday I saw a **nice** dog. It was very *
             feedback.className = 'feedback neutral';
             feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking upgrades...';
             document.getElementById('pe-boring-check').disabled = true;
+            const L = peLevelGuide();
 
-            const prompt = `A student is upgrading bland words in this sentence: "${peBoringTask.sentenceHtml}".
+            const prompt = `CEFR ${L.label} ESL check. ${L.upgrades}
+Sentence: "${peBoringTask.sentenceHtml}".
 Bland targets: ${JSON.stringify(peBoringTask.blandWords)}.
+Hint list (not exclusive): ${JSON.stringify(peBoringTask.acceptedUpgrades || {})}.
 Student answer (two words, comma-separated): "${input}".
-Decide if both upgrades are richer, age-appropriate English synonyms that fit the sentence.
+Both upgrades must be richer, level-adequate English synonyms that fit the sentence.
 Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-boring-check').disabled = false;
@@ -1662,9 +1803,16 @@ Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feed
         async function initPeDetail() {
             document.getElementById('pe-detail-feedback').textContent = '';
             document.getElementById('pe-detail-input').value = '';
+            syncPeLevelBadges();
             peToggleLoading('pe-detail', true);
-            const prompt = `Create one short, under-detailed English statement for young ESL learners (A2), e.g. about a phone, bag, pet, or trip. Status should feel "mentioned only".
-Return ONLY JSON: {"statement":"I bought a new phone.","topic":"phone","hintDetails":["camera","price","screen","apps"]}`;
+            const L = peLevelGuide();
+            const R = peRandomnessBlock('detail');
+            const prompt = `Create a UNIQUE under-detailed English statement for CEFR ${L.label} ESL learners.
+LEVEL RULES: ${L.vocab}
+DETAIL EXPECTATION: ${L.detail}
+RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
+Never reuse the same object/situation as a previous typical phone/bag example unless the wording is totally different.
+Return ONLY JSON: {"statement":"short under-detailed sentence","topic":"short topic label","hintDetails":["detail1","detail2","detail3","detail4"]}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-detail', false);
             if (!data || data.__error || !data.statement) {
@@ -1673,7 +1821,7 @@ Return ONLY JSON: {"statement":"I bought a new phone.","topic":"phone","hintDeta
                 return;
             }
             peDetailTask = data;
-            document.getElementById('pe-detail-prompt').innerHTML = `<strong>[Target Statement]:</strong> ${data.statement} <i>(Status: Mentioned only)</i>`;
+            document.getElementById('pe-detail-prompt').innerHTML = `<strong>[Target · ${L.label}]:</strong> ${data.statement} <i>(Status: Mentioned only)</i>`;
         }
 
         async function checkPeDetail() {
@@ -1688,9 +1836,12 @@ Return ONLY JSON: {"statement":"I bought a new phone.","topic":"phone","hintDeta
             feedback.className = 'feedback neutral';
             feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reviewing evidence...';
             document.getElementById('pe-detail-check').disabled = true;
-            const prompt = `Original under-detailed statement: "${peDetailTask.statement}".
+            const L = peLevelGuide();
+            const prompt = `CEFR ${L.label} ESL check. ${L.detail}
+Original: "${peDetailTask.statement}".
 Student expanded sentence: "${input}".
-Require: one full English sentence, clearly longer/more specific, with concrete details about the topic (${peDetailTask.topic || 'the item'}).
+Hints of useful details: ${JSON.stringify(peDetailTask.hintDetails || [])}.
+Require one full English sentence that is clearly more specific about (${peDetailTask.topic || 'the topic'}), language appropriate for ${L.label}.
 Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-detail-check').disabled = false;
@@ -1707,9 +1858,16 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
         async function initPeLink() {
             document.getElementById('pe-link-feedback').textContent = '';
             document.getElementById('pe-link-input').value = '';
+            syncPeLevelBadges();
             peToggleLoading('pe-link', true);
-            const prompt = `Create two short related English sentences for young ESL learners (A2) that can be joined with "because" or "so" (clear cause-effect).
-Return ONLY JSON: {"s1":"I didn't have an umbrella.","s2":"I got completely wet.","preferredLinker":"so"}`;
+            const L = peLevelGuide();
+            const R = peRandomnessBlock('link');
+            const prompt = `Create TWO unique short related English sentences for CEFR ${L.label} that join with "because" or "so".
+LEVEL RULES: ${L.vocab}
+LINKER RULES: ${L.link}
+RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
+Invent a fresh cause–effect pair every time (school, home, weather, pets, travel, food, sports, etc.).
+Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"because"|"so"}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-link', false);
             if (!data || data.__error || !data.s1) {
@@ -1718,7 +1876,7 @@ Return ONLY JSON: {"s1":"I didn't have an umbrella.","s2":"I got completely wet.
                 return;
             }
             peLinkTask = data;
-            document.getElementById('pe-link-prompt').innerHTML = `<strong>[Storyteller Bot]:</strong><br>1. ${data.s1}<br>2. ${data.s2}`;
+            document.getElementById('pe-link-prompt').innerHTML = `<strong>[Storyteller · ${L.label}]:</strong><br>1. ${data.s1}<br>2. ${data.s2}`;
         }
 
         async function checkPeLink() {
@@ -1733,11 +1891,13 @@ Return ONLY JSON: {"s1":"I didn't have an umbrella.","s2":"I got completely wet.
             feedback.className = 'feedback neutral';
             feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking logic...';
             document.getElementById('pe-link-check').disabled = true;
-            const prompt = `Two sentences to connect:
+            const L = peLevelGuide();
+            const prompt = `CEFR ${L.label} ESL check. ${L.link}
 1) ${peLinkTask.s1}
 2) ${peLinkTask.s2}
-Student combined sentence: "${input}"
-Require use of "because" or "so" with correct cause-effect logic and acceptable grammar for A2 ESL.
+Preferred linker hint: ${peLinkTask.preferredLinker || 'because/so'}
+Student: "${input}"
+Require because or so with correct cause–effect and ${L.label}-adequate grammar.
 Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-link-check').disabled = false;
@@ -1754,9 +1914,23 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
         async function initPeExam() {
             document.getElementById('pe-exam-feedback').textContent = '';
             document.getElementById('pe-exam-input').value = '';
+            syncPeLevelBadges();
             peToggleLoading('pe-exam', true);
-            const prompt = `Create a Polish primary-school style English exam writing task (email) for A2 learners, similar to: school exchange in London, email to Andrew covering free time, sleeping place, and British food. 50-120 words. Sign as XYZ.
-Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task text with bullet points.","taskPl":"Full Polish task text with bullet points.","bulletsEn":["point1","point2","point3"],"minWords":50,"maxWords":120}`;
+            const L = peLevelGuide();
+            const R = peRandomnessBlock('exam');
+            const scenario = pePick([
+                'school exchange abroad', 'weekend visit to a friend', 'new hobby club invitation',
+                'birthday party plans', 'lost item and asking for help', 'holiday postcard-style email',
+                'sports day at school', 'helping with a school project', 'moving to a new flat',
+                'restaurant recommendation for a visitor', 'pet-sitting for a neighbour', 'museum trip with class'
+            ]);
+            const prompt = `Create a UNIQUE Polish primary/lower-secondary style English writing exam task (email) for CEFR ${L.label}.
+LEVEL RULES: ${L.vocab}
+EXAM RULES: ${L.exam}
+Word range: ${L.examWords.min}-${L.examWords.max}. Sign as XYZ.
+RANDOMISE HARD — seed ${R.seed}. Topic theme: ${R.topic}. Scenario idea: ${scenario}. Angle: ${R.angle}.
+Do NOT always use London exchange / Andrew — invent a fresh recipient and situation every time.
+Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task with bullet points.","taskPl":"Full Polish task with bullet points.","bulletsEn":["point1","point2","point3"],"minWords":${L.examWords.min},"maxWords":${L.examWords.max}}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-exam', false);
             if (!data || data.__error || !data.taskEn) {
@@ -1765,11 +1939,11 @@ Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task text with bul
                 return;
             }
             peExamTask = data;
-            document.getElementById('pe-exam-prompt').innerHTML = `<strong>[Exam Task]:</strong><br>${data.taskEn.replace(/\n/g, '<br>')}`;
-            document.getElementById('pe-exam-instr-en').textContent = 'Write the email according to the exam task below. Aim for 50–120 words and cover every bullet point. Sign as XYZ.';
+            document.getElementById('pe-exam-prompt').innerHTML = `<strong>[Exam · ${L.label}]:</strong><br>${data.taskEn.replace(/\n/g, '<br>')}`;
+            document.getElementById('pe-exam-instr-en').textContent = `Write the email according to the exam task below. Aim for ${data.minWords || L.examWords.min}–${data.maxWords || L.examWords.max} words and cover every bullet point. Sign as XYZ.`;
             document.getElementById('pe-exam-instr-pl').textContent = data.taskPl
                 ? data.taskPl
-                : 'Napisz e-mail zgodnie z poleceniem. 50–120 słów, wszystkie podpunkty, podpisz się jako XYZ.';
+                : `Napisz e-mail zgodnie z poleceniem. ${data.minWords || L.examWords.min}–${data.maxWords || L.examWords.max} słów, wszystkie podpunkty, podpisz się jako XYZ.`;
         }
 
         async function checkPeExam() {
@@ -1784,13 +1958,15 @@ Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task text with bul
             feedback.className = 'feedback neutral';
             feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Friendly examiner is reading...';
             document.getElementById('pe-exam-check').disabled = true;
-            const prompt = `You are a friendly English examiner for A2 / Polish primary exam writing.
+            const L = peLevelGuide();
+            const prompt = `You are a friendly English examiner for CEFR ${L.label} / Polish school writing.
+LEVEL RULES: ${L.vocab}
 Task: ${peExamTask.taskEn}
 Required points: ${JSON.stringify(peExamTask.bulletsEn || [])}
-Word limit: ${peExamTask.minWords || 50}-${peExamTask.maxWords || 120}
+Word limit: ${peExamTask.minWords || L.examWords.min}-${peExamTask.maxWords || L.examWords.max}
 Student email:
 """${input}"""
-Evaluate length, coverage of bullet points, cohesion (and/but/because/so), and overall readiness.
+Evaluate length, bullet coverage, cohesion, and language adequacy for ${L.label} (do not demand higher-level vocabulary).
 Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered":0,"bulletsTotal":3,"message":"HTML-safe multi-line feedback in English with short section labels for Length, Content, Cohesion, Summary."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-exam-check').disabled = false;
