@@ -214,6 +214,39 @@
         .about-panel a:hover { color: var(--pillarbox-red); }
         .about-pricing { background: var(--light-grey); border-left: 4px solid var(--royal-blue); border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; }
         .about-pricing strong { color: var(--royal-blue); font-family: var(--font-primary); }
+
+        /* Primary English pack */
+        .pe-pack-toggle {
+            width: 100%; text-align: left; margin-top: 1.5rem; padding: 1.25rem 1.5rem;
+            background: var(--bright-white); border: 2px solid var(--royal-blue); border-radius: 12px;
+            cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.25rem; font-weight: 700;
+            transition: 0.2s;
+        }
+        .pe-pack-toggle:hover { border-color: var(--pillarbox-red); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+        .pe-pack-toggle .pe-pack-meta { font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 400; color: var(--text-muted); display: block; margin-top: 0.25rem; }
+        .pe-pack-toggle .chevron { transition: transform 0.3s; color: var(--text-muted); }
+        .pe-pack-toggle.open .chevron { transform: rotate(180deg); color: var(--royal-blue); }
+        .pe-pack-grid { display: none; margin-top: 1.25rem; }
+        .pe-pack-grid.open { display: grid; }
+        .pe-instr { background: var(--light-grey); border-left: 4px solid var(--royal-blue); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; position: relative; }
+        .pe-instr-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .pe-instr-head strong { font-family: var(--font-primary); color: var(--royal-blue); }
+        .pe-flag-btn {
+            border: 2px solid var(--border-light); background: white; border-radius: 8px; cursor: pointer;
+            padding: 0.25rem 0.5rem; font-size: 1.25rem; line-height: 1; transition: 0.2s;
+        }
+        .pe-flag-btn:hover, .pe-flag-btn.active { border-color: var(--pillarbox-red); }
+        .pe-instr-pl { display: none; color: var(--text-muted); line-height: 1.55; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-light); }
+        .pe-instr-pl.open { display: block; }
+        .pe-instr-en { color: var(--text-dark); line-height: 1.55; }
+        .pe-prompt-box { background: rgba(1, 33, 105, 0.05); border: 2px solid rgba(1, 33, 105, 0.2); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; font-size: 1.1rem; line-height: 1.6; }
+        .pe-prompt-box strong { color: var(--royal-blue); font-family: var(--font-primary); }
+        .pe-points { font-family: var(--font-primary); color: var(--pillarbox-red); font-weight: 700; margin-left: auto; }
+        .pe-input { width: 100%; padding: 1rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem; font-family: inherit; margin-bottom: 1rem; }
+        .pe-input:focus { outline: none; border-color: var(--royal-blue); }
+        textarea.pe-input { min-height: 160px; resize: vertical; }
+
         .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
         .paywall-overlay.open { display: flex; }
         .paywall-modal { background: var(--bright-white); border-radius: 12px; max-width: 440px; width: 100%; padding: 2rem; border-top: 6px solid var(--royal-blue); box-shadow: 0 12px 40px rgba(0,0,0,0.2); text-align: center; }
@@ -325,6 +358,20 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToWritingSetup('bloat')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToWritingSetup('vocab')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToWritingSetup('odyssey')">Play Now</button></div>
+                </div>
+
+                <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
+                    <span>
+                        <i class="fa-solid fa-graduation-cap"></i> Primary English
+                        <span class="pe-pack-meta">4 AI writing games for younger / exam-prep learners</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down chevron"></i>
+                </button>
+                <div class="grid pe-pack-grid" id="pe-pack-grid">
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h2>Boring to Brilliant</h2><p>Upgrade bland vocabulary into richer, more interesting word choices.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-boring')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-detail')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-link')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><button class="btn btn-outline" onclick="goToWritingSetup('pe-exam')">Play Now</button></div>
                 </div>
             </div>
 
@@ -527,6 +574,114 @@
             <div id="odyssey-status" class="feedback"></div>
         </div>
 
+        <!-- PRIMARY ENGLISH: BORING TO BRILLIANT -->
+        <div id="screen-pe-boring" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-boring">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Boring to Brilliant <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initPeBoring()" id="pe-boring-btn">New Prompt <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Upgrade the highlighted bland words so the text sounds more interesting. Use richer vocabulary instead of very common words. Type two improved English words below, separated by a comma.</div>
+                <div class="pe-instr-pl">Ulepsz pogrubione słowa, aby tekst był ciekawszy! Zamiast bardzo pospolitych wyrazów, użyj bogatszego słownictwa. Wpisz po angielsku dwie nowe propozycje poniżej (oddzielone przecinkiem).</div>
+            </div>
+            <div id="pe-boring-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="pe-boring-content">
+                <div class="pe-prompt-box" id="pe-boring-prompt">Loading...</div>
+                <input type="text" class="pe-input" id="pe-boring-input" placeholder="e.g. cute, tiny" autocomplete="off">
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeBoring()" id="pe-boring-check">Upgrade!</button>
+            </div>
+            <div id="pe-boring-feedback" class="feedback"></div>
+        </div>
+
+        <!-- PRIMARY ENGLISH: DETAIL DETECTIVE -->
+        <div id="screen-pe-detail" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-detail">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Detail Detective <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initPeDetail()" id="pe-detail-btn">New Case <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Detective, you need more information! Develop the target statement into one full English sentence with clear details (features, size, price, camera, etc.).</div>
+                <div class="pe-instr-pl">Detektywie, masz za mało informacji! Twój cel to „rozwinąć” ten punkt w wypowiedzi. Napisz jedno pełne zdanie po angielsku, w którym podasz więcej szczegółów (np. funkcje, aparat lub cenę).</div>
+            </div>
+            <div id="pe-detail-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="pe-detail-content">
+                <div class="pe-prompt-box" id="pe-detail-prompt">Loading...</div>
+                <input type="text" class="pe-input" id="pe-detail-input" placeholder="Write a longer, detailed sentence here..." autocomplete="off">
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeDetail()" id="pe-detail-check">Submit Evidence</button>
+            </div>
+            <div id="pe-detail-feedback" class="feedback"></div>
+        </div>
+
+        <!-- PRIMARY ENGLISH: LINK MASTER -->
+        <div id="screen-pe-link" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-link">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Link Master <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initPeLink()" id="pe-link-btn">New Pair <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Join the two sentences into one coherent English sentence. Use <strong>because</strong> or <strong>so</strong> so the cause and effect make sense.</div>
+                <div class="pe-instr-pl">Połącz te dwa zdania w jedno spójne zdanie po angielsku. Wykorzystaj odpowiedni spójnik: <b>because</b> (ponieważ) lub <b>so</b> (więc). Pamiętaj, aby połączone zdanie miało sens!</div>
+            </div>
+            <div id="pe-link-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="pe-link-content">
+                <div class="pe-prompt-box" id="pe-link-prompt">Loading...</div>
+                <input type="text" class="pe-input" id="pe-link-input" placeholder="Your combined sentence..." autocomplete="off">
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeLink()" id="pe-link-check">Connect!</button>
+            </div>
+            <div id="pe-link-feedback" class="feedback"></div>
+        </div>
+
+        <!-- PRIMARY ENGLISH: EXAM SIMULATOR -->
+        <div id="screen-pe-exam" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-exam">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Exam Simulator <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initPeExam()" id="pe-exam-btn">New Task <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en" id="pe-exam-instr-en">Write the email according to the exam task below. Aim for 50–120 words and cover every bullet point.</div>
+                <div class="pe-instr-pl" id="pe-exam-instr-pl">Napisz e-mail zgodnie z poleceniem egzaminacyjnym poniżej. Długość wypowiedzi: 50–120 słów. Rozwiń wszystkie podpunkty.</div>
+            </div>
+            <div id="pe-exam-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="pe-exam-content">
+                <div class="pe-prompt-box" id="pe-exam-prompt">Loading...</div>
+                <textarea class="pe-input" id="pe-exam-input" placeholder="Hi Andrew..."></textarea>
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeExam()" id="pe-exam-check">Submit to Friendly Examiner</button>
+            </div>
+            <div id="pe-exam-feedback" class="feedback"></div>
+        </div>
+
         <!-- CORE VOCAB: BOMB DEFUSAL -->
         <div id="screen-bomb" class="screen engine-container">
             <div class="top-bar">
@@ -625,6 +780,20 @@
             } else {
                 content.classList.add('active'); headerEl.classList.add('expanded');
             }
+        }
+
+        function togglePrimaryEnglishPack() {
+            const btn = document.getElementById('pe-pack-toggle');
+            const grid = document.getElementById('pe-pack-grid');
+            btn.classList.toggle('open');
+            grid.classList.toggle('open');
+        }
+
+        function togglePePolish(btn) {
+            const box = btn.closest('.pe-instr');
+            const pl = box.querySelector('.pe-instr-pl');
+            pl.classList.toggle('open');
+            btn.classList.toggle('active', pl.classList.contains('open'));
         }
 
         function showScreen(screenId) {
@@ -759,7 +928,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -775,7 +944,6 @@
 
         function launchSelectedGame() {
             const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey'];
             const hybridGames = ['odyssey'];
             
             if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
@@ -795,6 +963,10 @@
             if(activeGame === 'bloat') initBloat();
             if(activeGame === 'vocab') initVocab();
             if(activeGame === 'odyssey') initOdyssey();
+            if(activeGame === 'pe-boring') initPeBoring();
+            if(activeGame === 'pe-detail') initPeDetail();
+            if(activeGame === 'pe-link') initPeLink();
+            if(activeGame === 'pe-exam') initPeExam();
         }
 
         function toggleLoading(prefix, isLoading) {
@@ -1412,6 +1584,224 @@ Return ONLY JSON:
 
             renderOdysseyHud();
             renderOdysseyStoryLog();
+        }
+
+        // ==========================================
+        // PRIMARY ENGLISH PACK (AI)
+        // ==========================================
+        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0 };
+        let peBoringTask = null;
+        let peDetailTask = null;
+        let peLinkTask = null;
+        let peExamTask = null;
+
+        function peAddPoints(key, amount) {
+            pePoints[key] += amount;
+            const el = document.getElementById(`pe-points-${key}`);
+            if (el) el.textContent = pePoints[key];
+        }
+
+        function peToggleLoading(prefix, isLoading) {
+            toggleLoading(prefix, isLoading);
+            const check = document.getElementById(`${prefix}-check`);
+            if (check) check.disabled = isLoading;
+        }
+
+        async function initPeBoring() {
+            document.getElementById('pe-boring-feedback').textContent = '';
+            document.getElementById('pe-boring-input').value = '';
+            peToggleLoading('pe-boring', true);
+            const prompt = `Create a short, simple English sentence for young ESL learners (A2). Include exactly TWO bland/common adjectives that should be upgraded (e.g. nice, small, good, big, bad). Mark those two words with **double asterisks**.
+Return ONLY JSON: {"sentenceHtml":"Yesterday I saw a **nice** dog. It was very **small**.","blandWords":["nice","small"],"acceptedUpgrades":{"nice":["cute","lovely","beautiful","wonderful","amazing","friendly"],"small":["tiny","little","miniature","petite"]}}`;
+            const data = await fetchGenerativeAI(prompt);
+            peToggleLoading('pe-boring', false);
+            if (!data || data.__error || !data.sentenceHtml) {
+                document.getElementById('pe-boring-feedback').className = 'feedback error';
+                document.getElementById('pe-boring-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+            peBoringTask = data;
+            document.getElementById('pe-boring-prompt').innerHTML = `<strong>[Boring Bot]:</strong> ${data.sentenceHtml.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}`;
+        }
+
+        async function checkPeBoring() {
+            if (!peBoringTask) return;
+            const input = document.getElementById('pe-boring-input').value.trim();
+            if (!input) {
+                document.getElementById('pe-boring-feedback').className = 'feedback error';
+                document.getElementById('pe-boring-feedback').textContent = 'Type two upgraded words separated by a comma.';
+                return;
+            }
+            const feedback = document.getElementById('pe-boring-feedback');
+            feedback.className = 'feedback neutral';
+            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking upgrades...';
+            document.getElementById('pe-boring-check').disabled = true;
+
+            const prompt = `A student is upgrading bland words in this sentence: "${peBoringTask.sentenceHtml}".
+Bland targets: ${JSON.stringify(peBoringTask.blandWords)}.
+Student answer (two words, comma-separated): "${input}".
+Decide if both upgrades are richer, age-appropriate English synonyms that fit the sentence.
+Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feedback in English."}`;
+            const data = await fetchGenerativeAI(prompt);
+            document.getElementById('pe-boring-check').disabled = false;
+            if (!data || data.__error) {
+                feedback.className = 'feedback error';
+                feedback.textContent = aiErrorMessage(data);
+                return;
+            }
+            if (data.valid) {
+                peAddPoints('boring', data.points || 20);
+                feedback.className = 'feedback success';
+                feedback.textContent = data.message || 'Upgrade successful!';
+            } else {
+                feedback.className = 'feedback error';
+                feedback.textContent = data.message || 'Try richer vocabulary.';
+            }
+        }
+
+        async function initPeDetail() {
+            document.getElementById('pe-detail-feedback').textContent = '';
+            document.getElementById('pe-detail-input').value = '';
+            peToggleLoading('pe-detail', true);
+            const prompt = `Create one short, under-detailed English statement for young ESL learners (A2), e.g. about a phone, bag, pet, or trip. Status should feel "mentioned only".
+Return ONLY JSON: {"statement":"I bought a new phone.","topic":"phone","hintDetails":["camera","price","screen","apps"]}`;
+            const data = await fetchGenerativeAI(prompt);
+            peToggleLoading('pe-detail', false);
+            if (!data || data.__error || !data.statement) {
+                document.getElementById('pe-detail-feedback').className = 'feedback error';
+                document.getElementById('pe-detail-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+            peDetailTask = data;
+            document.getElementById('pe-detail-prompt').innerHTML = `<strong>[Target Statement]:</strong> ${data.statement} <i>(Status: Mentioned only)</i>`;
+        }
+
+        async function checkPeDetail() {
+            if (!peDetailTask) return;
+            const input = document.getElementById('pe-detail-input').value.trim();
+            const feedback = document.getElementById('pe-detail-feedback');
+            if (!input) {
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Write one detailed sentence.';
+                return;
+            }
+            feedback.className = 'feedback neutral';
+            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reviewing evidence...';
+            document.getElementById('pe-detail-check').disabled = true;
+            const prompt = `Original under-detailed statement: "${peDetailTask.statement}".
+Student expanded sentence: "${input}".
+Require: one full English sentence, clearly longer/more specific, with concrete details about the topic (${peDetailTask.topic || 'the item'}).
+Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
+            const data = await fetchGenerativeAI(prompt);
+            document.getElementById('pe-detail-check').disabled = false;
+            if (!data || data.__error) {
+                feedback.className = 'feedback error';
+                feedback.textContent = aiErrorMessage(data);
+                return;
+            }
+            feedback.className = data.valid ? 'feedback success' : 'feedback error';
+            feedback.textContent = data.message || (data.valid ? 'Case closed!' : 'Add more detail.');
+            if (data.valid) peAddPoints('detail', data.points || 30);
+        }
+
+        async function initPeLink() {
+            document.getElementById('pe-link-feedback').textContent = '';
+            document.getElementById('pe-link-input').value = '';
+            peToggleLoading('pe-link', true);
+            const prompt = `Create two short related English sentences for young ESL learners (A2) that can be joined with "because" or "so" (clear cause-effect).
+Return ONLY JSON: {"s1":"I didn't have an umbrella.","s2":"I got completely wet.","preferredLinker":"so"}`;
+            const data = await fetchGenerativeAI(prompt);
+            peToggleLoading('pe-link', false);
+            if (!data || data.__error || !data.s1) {
+                document.getElementById('pe-link-feedback').className = 'feedback error';
+                document.getElementById('pe-link-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+            peLinkTask = data;
+            document.getElementById('pe-link-prompt').innerHTML = `<strong>[Storyteller Bot]:</strong><br>1. ${data.s1}<br>2. ${data.s2}`;
+        }
+
+        async function checkPeLink() {
+            if (!peLinkTask) return;
+            const input = document.getElementById('pe-link-input').value.trim();
+            const feedback = document.getElementById('pe-link-feedback');
+            if (!input) {
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Write one combined sentence.';
+                return;
+            }
+            feedback.className = 'feedback neutral';
+            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking logic...';
+            document.getElementById('pe-link-check').disabled = true;
+            const prompt = `Two sentences to connect:
+1) ${peLinkTask.s1}
+2) ${peLinkTask.s2}
+Student combined sentence: "${input}"
+Require use of "because" or "so" with correct cause-effect logic and acceptable grammar for A2 ESL.
+Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
+            const data = await fetchGenerativeAI(prompt);
+            document.getElementById('pe-link-check').disabled = false;
+            if (!data || data.__error) {
+                feedback.className = 'feedback error';
+                feedback.textContent = aiErrorMessage(data);
+                return;
+            }
+            feedback.className = data.valid ? 'feedback success' : 'feedback error';
+            feedback.textContent = data.message || (data.valid ? 'Perfect flow!' : 'Check your linker logic.');
+            if (data.valid) peAddPoints('link', data.points || 30);
+        }
+
+        async function initPeExam() {
+            document.getElementById('pe-exam-feedback').textContent = '';
+            document.getElementById('pe-exam-input').value = '';
+            peToggleLoading('pe-exam', true);
+            const prompt = `Create a Polish primary-school style English exam writing task (email) for A2 learners, similar to: school exchange in London, email to Andrew covering free time, sleeping place, and British food. 50-120 words. Sign as XYZ.
+Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task text with bullet points.","taskPl":"Full Polish task text with bullet points.","bulletsEn":["point1","point2","point3"],"minWords":50,"maxWords":120}`;
+            const data = await fetchGenerativeAI(prompt);
+            peToggleLoading('pe-exam', false);
+            if (!data || data.__error || !data.taskEn) {
+                document.getElementById('pe-exam-feedback').className = 'feedback error';
+                document.getElementById('pe-exam-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+            peExamTask = data;
+            document.getElementById('pe-exam-prompt').innerHTML = `<strong>[Exam Task]:</strong><br>${data.taskEn.replace(/\n/g, '<br>')}`;
+            document.getElementById('pe-exam-instr-en').textContent = 'Write the email according to the exam task below. Aim for 50–120 words and cover every bullet point. Sign as XYZ.';
+            document.getElementById('pe-exam-instr-pl').textContent = data.taskPl
+                ? data.taskPl
+                : 'Napisz e-mail zgodnie z poleceniem. 50–120 słów, wszystkie podpunkty, podpisz się jako XYZ.';
+        }
+
+        async function checkPeExam() {
+            if (!peExamTask) return;
+            const input = document.getElementById('pe-exam-input').value.trim();
+            const feedback = document.getElementById('pe-exam-feedback');
+            if (!input) {
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Write your email first.';
+                return;
+            }
+            feedback.className = 'feedback neutral';
+            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Friendly examiner is reading...';
+            document.getElementById('pe-exam-check').disabled = true;
+            const prompt = `You are a friendly English examiner for A2 / Polish primary exam writing.
+Task: ${peExamTask.taskEn}
+Required points: ${JSON.stringify(peExamTask.bulletsEn || [])}
+Word limit: ${peExamTask.minWords || 50}-${peExamTask.maxWords || 120}
+Student email:
+"""${input}"""
+Evaluate length, coverage of bullet points, cohesion (and/but/because/so), and overall readiness.
+Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered":0,"bulletsTotal":3,"message":"HTML-safe multi-line feedback in English with short section labels for Length, Content, Cohesion, Summary."}`;
+            const data = await fetchGenerativeAI(prompt);
+            document.getElementById('pe-exam-check').disabled = false;
+            if (!data || data.__error) {
+                feedback.className = 'feedback error';
+                feedback.textContent = aiErrorMessage(data);
+                return;
+            }
+            feedback.className = data.valid ? 'feedback success' : 'feedback error';
+            feedback.innerHTML = data.message || (data.valid ? 'Ready for the exam!' : 'Revise and try again.');
+            if (data.valid) peAddPoints('exam', data.points || 100);
         }
 
         // ==========================================
