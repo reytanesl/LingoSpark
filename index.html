@@ -34,18 +34,18 @@
         
         /* HEADER & LOGO */
         header { 
-            background-color: var(--royal-blue); 
-            color: var(--bright-white); 
+            background-color: #FFFFFF; 
+            color: var(--text-dark); 
             text-align: center; 
-            padding: 1.5rem 1rem 1.25rem; 
-            border-bottom: 6px solid var(--pillarbox-red); 
+            padding: 1.25rem 1rem 0.5rem; 
+            border-bottom: 1px solid var(--border-light); 
             position: relative; 
         }
 
         .main-logo-container { 
             width: 100%; 
             max-width: 900px; 
-            margin: 0 auto 0.75rem auto; 
+            margin: 0 auto; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -55,18 +55,10 @@
             width: auto; 
             max-width: 100%; 
             height: auto; 
-            max-height: min(320px, 45vh); 
+            max-height: min(280px, 40vh); 
             object-fit: contain; 
             display: block; 
-        }
-
-        header p { 
-            font-size: 1.5rem; 
-            font-weight: 700; 
-            color: #FFFFFF;
-            margin-top: 0.5rem; 
-            font-family: var(--font-primary); 
-            letter-spacing: 0.5px; 
+            background: #FFFFFF;
         }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
@@ -198,9 +190,30 @@
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 
         /* Auth bar + paywall modal */
-        .auth-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1200px; margin: 0 auto; padding: 0.75rem 1.5rem 0; flex-wrap: wrap; }
+        .auth-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1200px; margin: 0 auto; padding: 0.75rem 1.5rem 0; flex-wrap: wrap; background: #FFFFFF; }
         .auth-bar .auth-user { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.9rem; }
         .auth-bar .auth-user img { width: 28px; height: 28px; border-radius: 50%; }
+        .menu-btn {
+            width: 42px; height: 42px; border: 2px solid var(--royal-blue); background: #FFFFFF;
+            border-radius: 10px; cursor: pointer; display: inline-flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 5px; padding: 0; transition: 0.2s;
+        }
+        .menu-btn:hover, .menu-btn.open { background: rgba(1, 33, 105, 0.06); border-color: var(--pillarbox-red); }
+        .menu-btn span { display: block; width: 18px; height: 2.5px; background: var(--royal-blue); border-radius: 2px; transition: 0.2s; }
+        .menu-btn.open span { background: var(--pillarbox-red); }
+        .about-panel {
+            display: none; max-width: 1000px; margin: 0.75rem auto 0; padding: 1.5rem 1.75rem;
+            background: var(--bright-white); border-radius: 12px; border-top: 4px solid var(--royal-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); animation: fadeIn 0.35s;
+        }
+        .about-panel.open { display: block; }
+        .about-panel h2 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.6rem; margin-bottom: 0.35rem; }
+        .about-panel .about-tagline { color: var(--pillarbox-red); font-weight: 600; margin-bottom: 1rem; font-size: 1.05rem; }
+        .about-panel p { color: var(--text-muted); margin-bottom: 0.9rem; line-height: 1.65; }
+        .about-panel a { color: var(--royal-blue); font-weight: 600; word-break: break-all; }
+        .about-panel a:hover { color: var(--pillarbox-red); }
+        .about-pricing { background: var(--light-grey); border-left: 4px solid var(--royal-blue); border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; }
+        .about-pricing strong { color: var(--royal-blue); font-family: var(--font-primary); }
         .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
         .paywall-overlay.open { display: flex; }
         .paywall-modal { background: var(--bright-white); border-radius: 12px; max-width: 440px; width: 100%; padding: 2rem; border-top: 6px solid var(--royal-blue); box-shadow: 0 12px 40px rgba(0,0,0,0.2); text-align: center; }
@@ -249,10 +262,24 @@
         <div class="main-logo-container">
             <img src="Projekt bez nazwy.png" alt="LingoSpark Logo">
         </div>
-        <p>Gamify Your Words</p>
     </header>
 
     <div class="auth-bar" id="auth-bar"></div>
+
+    <div class="about-panel" id="about-panel" aria-hidden="true">
+        <h2>About LingoSpark</h2>
+        <p class="about-tagline">ESL vocab building and confidence boosting website.</p>
+        <p>LingoSpark is a growing collection of interactive ESL tools designed to make learning English fun, fast, and engaging. I build small, practical apps for teachers and learners—vocab games, writing challenges, team activities, and creative practice tools that turn everyday lessons into something students actually enjoy.</p>
+        <p>What I am really proud of is the Writing Suite, the feature that allows students to practice their writing skills and expand their glossaries individually and at their own pace. It can also be used by teachers as support for their writing classes.</p>
+        <p>More new activities coming soon!</p>
+        <p>If you like the project, want to test the AI features or support further development, your coffee helps me keep improving the platform, implementing new ideas and making English learning more appealing, natural and meaningful for everyone.</p>
+        <div class="about-pricing">
+            <p style="margin-bottom:0.4rem;"><strong>Support options</strong></p>
+            <p style="margin-bottom:0;">The monthly fee is <strong>10 PLN</strong>. If you choose to subscribe monthly, <strong>31 PLN</strong>, annually <strong>305 PLN</strong>.</p>
+        </div>
+        <p><a href="https://buymeacoffee.com/lingospark" target="_blank" rel="noopener">https://buymeacoffee.com/lingospark</a></p>
+        <p style="margin-bottom:0;">For any questions, email me: <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a></p>
+    </div>
 
     <div class="container">
         
@@ -623,6 +650,11 @@
         function renderAuthBar() {
             const bar = document.getElementById('auth-bar');
             if (!bar) return;
+            const menuBtn = `
+                <button type="button" class="menu-btn" id="about-menu-btn" aria-label="About menu" aria-expanded="false" onclick="toggleAboutPanel()">
+                    <span></span><span></span><span></span>
+                </button>
+            `;
             if (authState.user) {
                 bar.innerHTML = `
                     <div class="auth-user">
@@ -632,14 +664,33 @@
                     </div>
                     ${authState.isAdmin ? '<a class="btn btn-outline" href="/admin.html" style="padding:0.4rem 1rem;font-size:0.85rem;"><i class="fa-solid fa-shield-halved"></i> Admin</a>' : ''}
                     <button class="btn btn-grey" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="logoutAuth()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    ${menuBtn}
                 `;
             } else {
                 bar.innerHTML = `
                     <button class="btn btn-outline" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="location.href='/auth/google?returnTo='+encodeURIComponent(location.pathname)">
                         <i class="fa-brands fa-google"></i> Sign in
                     </button>
+                    ${menuBtn}
                 `;
             }
+            syncAboutMenuBtn();
+        }
+
+        function toggleAboutPanel() {
+            const panel = document.getElementById('about-panel');
+            panel.classList.toggle('open');
+            panel.setAttribute('aria-hidden', panel.classList.contains('open') ? 'false' : 'true');
+            syncAboutMenuBtn();
+        }
+
+        function syncAboutMenuBtn() {
+            const btn = document.getElementById('about-menu-btn');
+            const panel = document.getElementById('about-panel');
+            if (!btn || !panel) return;
+            const open = panel.classList.contains('open');
+            btn.classList.toggle('open', open);
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
 
         async function logoutAuth() {
