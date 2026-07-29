@@ -1257,9 +1257,19 @@
             document.getElementById('bloat-feedback').textContent = '';
             toggleLoading('bloat', true);
 
-            const prompt = `Write a single, formally written academic sentence (around 25-30 words) with proper punctuation, aimed at high school students and ESL learners at CEFR B2 to B2+ level. 
-            CRITICAL STYLE INSTRUCTION: The sentence must be formal and academic in style, but intentionally inflated and over-worded using roundabout academic phrasing, redundant nominalizations, and circumlocution (avoid casual slang or conversational filler). This allows students to practice cutting unnecessary words for conciseness and precision. 
-            Return ONLY a JSON object: {"sentence": "..."}`;
+            const bloatTopics = [
+                'education reform', 'urban planning', 'public health', 'renewable energy', 'digital literacy',
+                'globalisation', 'scientific research', 'economic inequality', 'media influence', 'cultural heritage',
+                'food security', 'transport policy', 'mental health awareness', 'data privacy', 'biodiversity',
+                'workplace ethics', 'youth unemployment', 'artificial intelligence', 'water management', 'space exploration'
+            ];
+            const bloatTopic = bloatTopics[Math.floor(Math.random() * bloatTopics.length)];
+            const bloatSeed = Math.floor(Math.random() * 1e9);
+            const prompt = `Write a single, formally written academic sentence (25-35 words) about "${bloatTopic}" with PERFECT grammar and punctuation, aimed at high school ESL learners (CEFR B2–B2+).
+CRITICAL: The sentence must be GRAMMATICALLY CORRECT AND FULLY MEANINGFUL — a real academic statement that happens to be over-worded.
+ORWELL'S RULE: "If it is possible to cut a word out, always cut it out." The sentence must contain redundant nominalisations, circumlocution, tautological phrases, and unnecessary modifiers that a student can remove while preserving a clear, formal, academic message. Do NOT use slang, conversational filler, or broken grammar.
+RANDOMISE HARD — unique seed ${bloatSeed}. Never repeat a previous sentence.
+Return ONLY a JSON object: {"sentence": "..."}`;
             
             const data = await fetchGenerativeAI(prompt);
             
@@ -1346,15 +1356,25 @@
             document.getElementById('vocab-feedback').textContent = '';
             toggleLoading('vocab', true);
 
-            const topics = ["economics", "climate change", "psychology", "sociology", "literature", "technology", "history", "biology", "space exploration", "education policy"];
-            const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+            const vocabTopics = [
+                'economics', 'climate change', 'psychology', 'sociology', 'literature', 'technology',
+                'history', 'biology', 'space exploration', 'education policy', 'urban development',
+                'criminal justice', 'nutrition science', 'philosophy', 'environmental law',
+                'media studies', 'political science', 'architecture', 'linguistics', 'anthropology',
+                'marine biology', 'public health', 'renewable energy', 'data ethics', 'archaeology'
+            ];
+            const vocabTopic = vocabTopics[Math.floor(Math.random() * vocabTopics.length)];
+            const vocabSeed = Math.floor(Math.random() * 1e9);
+            const vocabTargetType = ['phrasal verb', 'informal collocation', 'semi-formal expression', 'everyday idiom-like phrase'][Math.floor(Math.random() * 4)];
 
-            const prompt = `Generate a completely UNIQUE and original academic sentence (15-25 words) about ${randomTopic} suitable for high school CEFR B2 to B2+ level. 
-            Choose one informal word, phrasal verb, or everyday B1/B2 expression (e.g., 'look into', 'set up', 'bring about', 'deal with', 'figure out', 'get rid of', 'point out') in the middle of the sentence to act as the 'target'. 
-            Provide the sentence split into: 'baseText' (before target), 'target' (the informal word/phrase), and 'rest' (after target). 
-            Provide 'correct', which must be a precise, advanced formal academic synonym (B2+/C1 level). CRITICAL: The 'correct' synonym must fit seamlessly into the sentence, maintaining perfect grammar, preposition use, and natural academic collocations. 
-            Provide 'options' (an array with the correct synonym plus 3 distractors that are either too colloquial, slightly off-meaning, or fail the collocation test for this specific context). 
-            Return ONLY a JSON object: {"baseText":"...", "target":"...", "rest":"...", "correct":"...", "options":["...", "...", "...", "..."]}`;
+            const prompt = `Generate a UNIQUE academic sentence (15-25 words) about "${vocabTopic}" for high-school ESL learners (CEFR B2–B2+).
+RANDOMISE HARD — unique seed ${vocabSeed}. Never reuse a previous sentence or target.
+TARGET TYPE THIS ROUND: ${vocabTargetType}.
+Choose ONE informal/semi-formal word, phrasal verb, or everyday collocation (e.g. 'look into', 'come up with', 'get rid of', 'deal with', 'figure out', 'set up', 'bring about', 'carry out', 'point out', 'turn down', 'put forward', 'go through', 'make up for', 'run out of') as the target. Vary widely — do NOT always pick the same phrasal verbs.
+Split the sentence into: 'baseText' (before target), 'target' (the informal phrase), 'rest' (after target).
+'correct' must be a FORMAL, ACADEMIC equivalent (B2/B2+ level, suitable for a school essay — not C2 obscure). It must fit the sentence perfectly in grammar, preposition and collocation.
+'options': array of 4 items — the correct one plus 3 plausible distractors. Distractors should be either too colloquial, slightly wrong in meaning, or fail the collocation for this context. All 4 must look tempting.
+Return ONLY JSON: {"baseText":"...", "target":"...", "rest":"...", "correct":"...", "options":["...","...","...","..."]}`;
             
             const data = await fetchGenerativeAI(prompt);
             
