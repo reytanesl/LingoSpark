@@ -170,13 +170,6 @@
         #grid-modal { display: none; background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; z-index: 10; }
         .grid-modal-box { background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 450px; text-align: center; border-top: 6px solid var(--royal-blue); }
 
-        /* Taboo */
-        .taboo-card { border: 4px solid var(--royal-blue); border-radius: 16px; padding: 2rem; max-width: 400px; margin: 0 auto 2rem auto; background: var(--bright-white); box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; }
-        .taboo-word { font-family: var(--font-primary); font-size: 2.5rem; color: var(--royal-blue); border-bottom: 2px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 1rem; font-weight: 700; }
-        .taboo-forbidden { color: var(--pillarbox-red); font-size: 1.2rem; list-style: none; padding: 0; }
-        .taboo-forbidden li { font-family: var(--font-primary); margin: 0.8rem 0; font-weight: 600; text-transform: uppercase; }
-        .taboo-forbidden li::before { content: "🚫 "; }
-
         /* Flashcards */
         .flip-card { background-color: transparent; width: 100%; max-width: 500px; height: 300px; perspective: 1000px; margin: 0 auto 2rem auto; cursor: pointer; }
         .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
@@ -190,17 +183,21 @@
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 
         /* Auth bar + paywall modal */
-        .auth-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1200px; margin: 0 auto; padding: 0.75rem 1.5rem 0; flex-wrap: wrap; background: #FFFFFF; }
-        .auth-bar .auth-user { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        .auth-bar {
+            display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1200px;
+            margin: 0 auto; padding: 0.75rem 1.5rem; flex-wrap: wrap; background: var(--pillarbox-red);
+            border-radius: 0 0 10px 10px;
+        }
+        .auth-bar .auth-user { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 0.9rem; }
         .auth-bar .auth-user img { width: 28px; height: 28px; border-radius: 50%; }
         .menu-btn {
-            width: 42px; height: 42px; border: 2px solid var(--royal-blue); background: #FFFFFF;
+            width: 42px; height: 42px; border: 2px solid #fff; background: transparent;
             border-radius: 10px; cursor: pointer; display: inline-flex; flex-direction: column;
             align-items: center; justify-content: center; gap: 5px; padding: 0; transition: 0.2s;
         }
-        .menu-btn:hover, .menu-btn.open { background: rgba(1, 33, 105, 0.06); border-color: var(--pillarbox-red); }
-        .menu-btn span { display: block; width: 18px; height: 2.5px; background: var(--royal-blue); border-radius: 2px; transition: 0.2s; }
-        .menu-btn.open span { background: var(--pillarbox-red); }
+        .menu-btn:hover, .menu-btn.open { background: rgba(255,255,255,0.15); border-color: #fff; }
+        .menu-btn span { display: block; width: 18px; height: 2.5px; background: #fff; border-radius: 2px; transition: 0.2s; }
+        .menu-btn.open span { background: #fff; }
         .about-panel {
             display: none; max-width: 1000px; margin: 0.75rem auto 0; padding: 1.5rem 1.75rem;
             background: var(--bright-white); border-radius: 12px; border-top: 4px solid var(--royal-blue);
@@ -241,7 +238,16 @@
         }
         .pe-level-btn:hover { background: rgba(1,33,105,0.06); }
         .pe-level-btn.active { background: var(--royal-blue); color: white; border-color: var(--royal-blue); }
+        .pe-level-btn.custom-active { background: var(--pillarbox-red); border-color: var(--pillarbox-red); color: #fff; }
         .pe-level-hint { width: 100%; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .pe-custom-panel { width: 100%; display: none; margin-top: 0.35rem; }
+        .pe-custom-panel.open { display: block; }
+        .pe-custom-panel textarea {
+            width: 100%; min-height: 96px; resize: vertical; border: 2px solid var(--border-light);
+            border-radius: 8px; padding: 0.8rem; font-family: var(--font-secondary); margin-bottom: 0.5rem;
+        }
+        .pe-custom-panel textarea:focus { outline: none; border-color: var(--royal-blue); }
+        .pe-custom-status { font-size: 0.82rem; color: var(--text-muted); }
         .pe-level-badge {
             display: inline-flex; align-items: center; gap: 6px; background: rgba(1,33,105,0.08); color: var(--royal-blue);
             font-family: var(--font-primary); font-weight: 700; font-size: 0.85rem; padding: 4px 10px; border-radius: 12px;
@@ -345,7 +351,6 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Interactive flippable cards. "Don't know" cards stay in the deck until you master them.</p><button class="btn btn-outline" onclick="goToSetup('flashcard')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><button class="btn btn-outline" onclick="goToSetup('bomb')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>A strategic game of tic-tac-toe where claiming a square requires the correct answer.</p><button class="btn btn-outline" onclick="goToSetup('grid')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-masks-theater"></i></div><h2>Taboo Swap</h2><p>Describe the word to your team without saying the auto-generated forbidden terms.</p><button class="btn btn-outline" onclick="goToSetup('taboo')">Play Now</button></div>
                 </div>
             </div>
 
@@ -389,7 +394,13 @@
                     <button type="button" class="pe-level-btn" data-level="A1" onclick="selectPeLevel('A1')">A1</button>
                     <button type="button" class="pe-level-btn" data-level="A2" onclick="selectPeLevel('A2')">A2</button>
                     <button type="button" class="pe-level-btn" data-level="B1" onclick="selectPeLevel('B1')">B1</button>
-                    <div class="pe-level-hint" id="pe-level-hint">Select a level first. AI language, vocabulary and task difficulty will match that CEFR band.</div>
+                    <button type="button" class="pe-level-btn" id="pe-custom-toggle-btn" onclick="togglePeCustomMode()">Custom Vocab</button>
+                    <div class="pe-level-hint" id="pe-level-hint">Select CEFR level or Custom Vocab first. AI language, vocabulary and task difficulty will match your mode.</div>
+                    <div class="pe-custom-panel" id="pe-custom-panel">
+                        <textarea id="pe-custom-glossary-input" placeholder="Paste custom glossary words/phrases (one per line, or use Term = Meaning format)"></textarea>
+                        <button type="button" class="btn btn-outline" onclick="applyPeCustomGlossary()">Apply Custom Glossary</button>
+                        <div class="pe-custom-status" id="pe-custom-status">No custom glossary applied yet.</div>
+                    </div>
                 </div>
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h2>Boring to Brilliant</h2><p>Upgrade bland vocabulary into richer, more interesting word choices.</p><button class="btn btn-outline" onclick="goToPeGame('pe-boring')">Play Now</button></div>
@@ -588,7 +599,7 @@
                     <h3><i class="fa-solid fa-bolt"></i> Your Action Required! Use at least one of these words to survive:</h3>
                     <div class="odyssey-word-cards" id="odyssey-word-cards"></div>
                     <div class="odyssey-input-wrap">
-                        <textarea id="odyssey-action-input" class="odyssey-action-input" placeholder="Type your action here..." rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitOdysseyAction();}"></textarea>
+                        <textarea id="odyssey-action-input" class="odyssey-action-input" placeholder="Write a full sentence describing your action (e.g. I carefully open the old door and step inside.)" rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitOdysseyAction();}"></textarea>
                         <button class="btn btn-blue" id="odyssey-submit-btn" onclick="submitOdysseyAction()" style="align-self: center; padding: 0.9rem 2.5rem;">
                             <i class="fa-solid fa-paper-plane"></i> Submit Action to AI
                         </button>
@@ -699,6 +710,7 @@
             </div>
             <div id="pe-exam-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-exam-content">
+                <button class="btn btn-outline" type="button" id="pe-exam-translate-btn" onclick="togglePeExamTaskLanguage()">Show task in Polish 🇵🇱</button>
                 <div class="pe-prompt-box" id="pe-exam-prompt">Loading...</div>
                 <textarea class="pe-input" id="pe-exam-input" placeholder="Hi Andrew..."></textarea>
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeExam()" id="pe-exam-check">Submit to Friendly Examiner</button>
@@ -729,21 +741,6 @@
             </div>
             <div id="turn-display" class="turn-indicator turn-blue">Team 1's Turn (X)</div>
             <div class="grid-board" id="tic-tac-toe-board"></div>
-        </div>
-
-        <!-- CORE VOCAB: TABOO SWAP -->
-        <div id="screen-taboo" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <p style="color: var(--text-muted); font-weight: bold;">Don't say the forbidden words!</p>
-            </div>
-            <div class="taboo-card">
-                <div class="taboo-word" id="taboo-main">Loading...</div>
-                <ul class="taboo-forbidden" id="taboo-list"></ul>
-            </div>
-            <div style="text-align: center;">
-                <button class="btn btn-blue" onclick="nextTabooCard()">Next Card <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
         </div>
 
         <!-- CORE VOCAB: CLASSIC FLASHCARDS -->
@@ -797,6 +794,10 @@
         // ==========================================
         let activeGame = '';
         let peCefrLevel = null; // 'A1' | 'A2' | 'B1'
+        let peMode = 'cefr'; // 'cefr' | 'custom'
+        let peCustomGlossary = [];
+        let peCustomDeck = [];
+        let peCustomDeckIndex = 0;
 
         function toggleCategory(catId, headerEl) {
             const content = document.getElementById(catId);
@@ -817,29 +818,117 @@
         }
 
         function selectPeLevel(level) {
+            peMode = 'cefr';
             peCefrLevel = level;
             document.querySelectorAll('.pe-level-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.level === level);
             });
+            const customBtn = document.getElementById('pe-custom-toggle-btn');
+            if (customBtn) customBtn.classList.remove('custom-active');
             const hints = {
                 A1: 'A1 — very simple words and short sentences (family, school, food, daily life).',
                 A2: 'A2 — everyday phrases, past/future basics, clear opinions and reasons.',
                 B1: 'B1 — wider vocabulary, linked ideas, short emails and descriptions with more detail.'
             };
             document.getElementById('pe-level-hint').textContent = hints[level] || '';
+            document.getElementById('pe-custom-panel').classList.remove('open');
             syncPeLevelBadges();
         }
 
+        function togglePeCustomMode() {
+            const panel = document.getElementById('pe-custom-panel');
+            panel.classList.toggle('open');
+        }
+
+        function peShuffle(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function parsePeCustomGlossary(raw) {
+            const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+            const items = [];
+            lines.forEach(line => {
+                const sepMatch = line.match(/(=|-|:|\t)/);
+                if (sepMatch) {
+                    const sep = sepMatch[0];
+                    const parts = line.split(sep);
+                    const term = (parts[0] || '').trim();
+                    if (term) items.push(term);
+                } else {
+                    line.split(',').map(x => x.trim()).filter(Boolean).forEach(x => items.push(x));
+                }
+            });
+            const unique = [];
+            const seen = new Set();
+            items.forEach(item => {
+                const key = item.toLowerCase();
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(item);
+                }
+            });
+            return unique;
+        }
+
+        function applyPeCustomGlossary() {
+            const raw = document.getElementById('pe-custom-glossary-input').value.trim();
+            const list = parsePeCustomGlossary(raw);
+            const status = document.getElementById('pe-custom-status');
+            if (list.length < 4) {
+                status.textContent = 'Please provide at least 4 unique custom words/phrases.';
+                status.style.color = 'var(--pillarbox-red)';
+                return;
+            }
+            peMode = 'custom';
+            peCustomGlossary = list;
+            peCustomDeck = peShuffle(peCustomGlossary);
+            peCustomDeckIndex = 0;
+            peCefrLevel = null;
+            document.querySelectorAll('.pe-level-btn[data-level]').forEach(btn => btn.classList.remove('active'));
+            const customBtn = document.getElementById('pe-custom-toggle-btn');
+            if (customBtn) customBtn.classList.add('custom-active');
+            status.textContent = `Custom glossary active: ${list.length} entries loaded.`;
+            status.style.color = 'var(--success-green)';
+            document.getElementById('pe-level-hint').textContent = 'Custom Vocab mode active. Tasks now require your glossary words; CEFR levels are ignored.';
+            syncPeLevelBadges();
+        }
+
+        function peGetRequiredCustomWords(count = 2) {
+            if (peMode !== 'custom' || peCustomGlossary.length === 0) return [];
+            const words = [];
+            while (words.length < count) {
+                if (peCustomDeckIndex >= peCustomDeck.length) {
+                    peCustomDeck = peShuffle(peCustomGlossary);
+                    peCustomDeckIndex = 0;
+                }
+                words.push(peCustomDeck[peCustomDeckIndex]);
+                peCustomDeckIndex++;
+            }
+            return words;
+        }
+
         function syncPeLevelBadges() {
-            const label = peCefrLevel || '—';
+            const label = peMode === 'custom' ? 'CUSTOM' : (peCefrLevel || '—');
             document.querySelectorAll('[data-pe-level-badge]').forEach(el => {
                 el.textContent = label;
             });
         }
 
         async function goToPeGame(gameType) {
-            if (!peCefrLevel) {
-                alert('Please select CEFR level A1, A2 or B1 first.');
+            if (peMode === 'custom' && peCustomGlossary.length < 4) {
+                alert('Please apply a custom glossary with at least 4 items first.');
+                const row = document.getElementById('pe-level-row');
+                if (row && !row.classList.contains('open')) togglePrimaryEnglishPack();
+                document.getElementById('pe-custom-panel').classList.add('open');
+                return;
+            }
+            if (peMode !== 'custom' && !peCefrLevel) {
+                alert('Please select CEFR level A1, A2 or B1, or switch to Custom Vocab.');
                 const row = document.getElementById('pe-level-row');
                 if (row && !row.classList.contains('open')) togglePrimaryEnglishPack();
                 return;
@@ -889,13 +978,13 @@
                         <span>${authState.user.name || authState.user.email}</span>
                         ${authState.hasAccess ? '<span style="color:var(--success-green);font-weight:700;">Premium</span>' : ''}
                     </div>
-                    ${authState.isAdmin ? '<a class="btn btn-outline" href="/admin.html" style="padding:0.4rem 1rem;font-size:0.85rem;"><i class="fa-solid fa-shield-halved"></i> Admin</a>' : ''}
+                    ${authState.isAdmin ? '<a class="btn btn-outline" href="/admin.html" style="padding:0.4rem 1rem;font-size:0.85rem;border-color:#fff;color:#fff;"><i class="fa-solid fa-shield-halved"></i> Admin</a>' : ''}
                     <button class="btn btn-grey" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="logoutAuth()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
                     ${menuBtn}
                 `;
             } else {
                 bar.innerHTML = `
-                    <button class="btn btn-outline" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="location.href='/auth/google?returnTo='+encodeURIComponent(location.pathname)">
+                    <button class="btn btn-red" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="location.href='/auth/google?returnTo='+encodeURIComponent(location.pathname)">
                         <i class="fa-brands fa-google"></i> Sign in
                     </button>
                     ${menuBtn}
@@ -985,7 +1074,7 @@
             activeGame = gameType;
             document.getElementById('setup-title').innerText = 'Game Setup';
             
-            const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
+            const vocabGames = ['flashcard', 'bomb', 'grid'];
             const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam'];
             const hybridGames = ['odyssey'];
             
@@ -1001,7 +1090,7 @@
         refreshAuth();
 
         function launchSelectedGame() {
-            const vocabGames = ['flashcard', 'bomb', 'grid', 'taboo'];
+            const vocabGames = ['flashcard', 'bomb', 'grid'];
             const hybridGames = ['odyssey'];
             
             if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
@@ -1012,7 +1101,6 @@
             
             if(activeGame === 'bomb') initBombDefusal();
             if(activeGame === 'grid') initGridTerritory();
-            if(activeGame === 'taboo') nextTabooCard();
             if(activeGame === 'flashcard') initFlashcards();
             
             if(activeGame === 'frank') initFrankenstein();
@@ -1541,13 +1629,12 @@ Return ONLY JSON: {"baseText":"...", "target":"...", "rest":"...", "correct":"..
             setOdysseyLoading(true);
 
             const wordList = odysseyState.targetWords.map(w => `${w.term} (${w.def})`).join(', ');
-            const prompt = `You are a Game Master for an interactive text adventure RPG for ESL learners at CEFR B2 to B2+ level.
-Genre: ${odysseyState.genre}.
-Create an opening scene with a clear quest objective and an immediate obstacle requiring player action.
-Target vocabulary words for the first turn (player must use at least one in their action later): ${wordList}.
-Write vivid, engaging prose in English suitable for upper-intermediate learners.
-Return ONLY a JSON object:
-{"questTitle":"Short quest name","situation":"2-3 sentences describing the current obstacle/scene","storyBeat":"1-2 sentences of immersive narrative to display"}`;
+            const prompt = `You are a concise Game Master for an ESL text adventure (CEFR B2–B2+). Genre: ${odysseyState.genre}.
+Create an opening scene: a clear quest objective and one immediate obstacle.
+KEEP IT SHORT — max 2 sentences for the story beat, max 2 sentences for the situation. No long descriptions.
+Target vocabulary for turn 1 (player must use at least one later): ${wordList}.
+Return ONLY JSON:
+{"questTitle":"Short quest name","situation":"1-2 concise sentences: the obstacle","storyBeat":"1-2 concise sentences: scene-setting"}`;
 
             const data = await fetchGenerativeAI(prompt);
             setOdysseyLoading(false);
@@ -1577,6 +1664,12 @@ Return ONLY a JSON object:
                 document.getElementById('odyssey-status').textContent = 'Write an action before submitting.';
                 return;
             }
+            const wordCount = action.split(/\s+/).length;
+            if (wordCount < 5 || !/[.!?]$/.test(action)) {
+                document.getElementById('odyssey-status').className = 'feedback error';
+                document.getElementById('odyssey-status').textContent = 'Write at least one full sentence (5+ words, ending with . ! or ?).';
+                return;
+            }
 
             const targetWords = odysseyState.targetWords.map(w => w.term);
             const targetDetails = odysseyState.targetWords.map(w => `${w.term}: ${w.def}`).join('; ');
@@ -1586,23 +1679,24 @@ Return ONLY a JSON object:
             odysseyState.storyHistory.push({ type: 'player', text: action });
             renderOdysseyStoryLog();
 
-            const prompt = `You are a Game Master for an ESL text adventure (CEFR B2 to B2+). Genre: ${odysseyState.genre}.
-Current quest: ${odysseyState.quest}
-Current situation: ${odysseyState.situation}
-Player stats: HP ${odysseyState.hp}/100, Morale ${odysseyState.morale}/100, XP ${odysseyState.xp}
-Target words this turn (with definitions): ${targetDetails}
+            const prompt = `You are a CONCISE Game Master for an ESL text adventure (CEFR B2–B2+). Genre: ${odysseyState.genre}.
+Quest: ${odysseyState.quest}
+Situation: ${odysseyState.situation}
+Stats: HP ${odysseyState.hp}/100, Morale ${odysseyState.morale}/100, XP ${odysseyState.xp}
+Target words (with defs): ${targetDetails}
 Player action: "${action}"
 
-Evaluate whether the player used at least ONE target word correctly in grammatical and logical context (allow inflected forms).
+Evaluate: did the player use at least ONE target word correctly (inflected forms OK)?
 Rules:
-- success=true if at least one target word is used correctly; continue the story dynamically based on their action.
-- success=false if no target word used, or words used incorrectly, or severe grammar breaks meaning.
-- On failure: hpChange negative (-10 to -25), moraleChange negative (-5 to -15).
-- On success: xpEarned=50 base; bonusXp=20 if 2+ target words used correctly in one sentence; hpChange 0 or small heal; moraleChange positive.
-- gameOver=true only if HP would reach 0 or below.
+- success=true → continue story based on their action. success=false → no target word or wrong usage or grammar breaks meaning.
+- Failure: hpChange -10 to -25, moraleChange -5 to -15.
+- Success: xpEarned=50; bonusXp=20 if 2+ words used well; small heal; morale up.
+- gameOver=true only if HP would hit 0.
+
+KEEP PROSE SHORT — storyContinuation max 2 sentences, newSituation max 1-2 sentences. No long paragraphs.
 
 Return ONLY JSON:
-{"success":true/false,"storyContinuation":"2-4 sentences continuing the story","languageFeedback":"Short feedback on vocabulary/grammar","wordsUsedCorrectly":["word1"],"xpEarned":50,"bonusXp":0,"bonusObjective":"Bonus objective text or empty","hpChange":0,"moraleChange":5,"newSituation":"Updated situation summary","gameOver":false,"gameOverReason":""}`;
+{"success":true/false,"storyContinuation":"1-2 concise sentences","languageFeedback":"Short feedback","wordsUsedCorrectly":["word1"],"xpEarned":50,"bonusXp":0,"bonusObjective":"or empty","hpChange":0,"moraleChange":5,"newSituation":"1-2 sentences","gameOver":false,"gameOverReason":""}`;
 
             const data = await fetchGenerativeAI(prompt);
             setOdysseyLoading(false);
@@ -1728,6 +1822,17 @@ Return ONLY JSON:
         }
 
         function peLevelGuide() {
+            if (peMode === 'custom') {
+                return {
+                    label: 'CUSTOM',
+                    vocab: 'Custom vocabulary mode is active. CEFR levels do not apply. Language should stay clear and learner-friendly for school students.',
+                    upgrades: 'If custom words are required, student must include them exactly (case-insensitive) in their answer.',
+                    detail: 'Student must write one full sentence and include required custom glossary word(s).',
+                    link: 'Student must join ideas with because/so and include required custom glossary word(s).',
+                    exam: 'Exam email format required: clear instruction, explicit word count, bullet points, sign as XYZ. Enforce task guidelines strictly.',
+                    examWords: { min: 60, max: 130 }
+                };
+            }
             return PE_CEFR[peCefrLevel] || PE_CEFR.A2;
         }
 
@@ -1760,6 +1865,7 @@ Return ONLY JSON:
             peToggleLoading('pe-boring', true);
             const L = peLevelGuide();
             const R = peRandomnessBlock('boring');
+            const requiredCustomWords = peGetRequiredCustomWords(2);
             const blandPool = pePick([
                 'nice and small', 'good and big', 'bad and cold', 'happy and hot', 'old and new',
                 'funny and quiet', 'busy and tired', 'easy and hard', 'fast and slow', 'clean and dirty'
@@ -1769,6 +1875,7 @@ LEVEL RULES: ${L.vocab}
 UPGRADE RULES: ${L.upgrades}
 RANDOMISE HARD every time — never reuse similar sentences. Unique seed: ${R.seed}.
 Topic focus: ${R.topic}. Story angle: ${R.angle}. Prefer bland pair vibes like "${blandPool}" but invent fresh wording.
+${peMode === 'custom' ? `CUSTOM VOCAB (required this round): ${requiredCustomWords.join(', ')}. Ensure accepted upgrades include these exact word(s) so student must apply glossary vocabulary.` : ''}
 Create ONE short English sentence with exactly TWO bland/common adjectives marked with **double asterisks**.
 Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords":["word1","word2"],"acceptedUpgrades":{"word1":["syn1","syn2","syn3","syn4"],"word2":["syn1","syn2","syn3","syn4"]}}`;
             const data = await fetchGenerativeAI(prompt);
@@ -1778,8 +1885,11 @@ Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords"
                 document.getElementById('pe-boring-feedback').textContent = aiErrorMessage(data);
                 return;
             }
-            peBoringTask = data;
-            document.getElementById('pe-boring-prompt').innerHTML = `<strong>[Boring Bot · ${L.label}]:</strong> ${data.sentenceHtml.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}`;
+            peBoringTask = { ...data, requiredWords: requiredCustomWords };
+            const requiredHtml = peMode === 'custom'
+                ? `<br><small><strong>Use from your glossary:</strong> ${requiredCustomWords.join(', ')}</small>`
+                : '';
+            document.getElementById('pe-boring-prompt').innerHTML = `<strong>[Boring Bot · ${L.label}]:</strong> ${data.sentenceHtml.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')}${requiredHtml}`;
         }
 
         async function checkPeBoring() {
@@ -1802,6 +1912,7 @@ Bland targets: ${JSON.stringify(peBoringTask.blandWords)}.
 Hint list (not exclusive): ${JSON.stringify(peBoringTask.acceptedUpgrades || {})}.
 Student answer (two words, comma-separated): "${input}".
 Both upgrades must be richer, level-adequate English synonyms that fit the sentence.
+${peMode === 'custom' ? `MANDATORY: Student answer must include custom glossary word(s): ${JSON.stringify(peBoringTask.requiredWords || [])}.` : ''}
 Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-boring-check').disabled = false;
@@ -1827,11 +1938,13 @@ Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feed
             peToggleLoading('pe-detail', true);
             const L = peLevelGuide();
             const R = peRandomnessBlock('detail');
+            const requiredCustomWords = peGetRequiredCustomWords(2);
             const prompt = `Create a UNIQUE under-detailed English statement for CEFR ${L.label} ESL learners.
 LEVEL RULES: ${L.vocab}
 DETAIL EXPECTATION: ${L.detail}
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
 Never reuse the same object/situation as a previous typical phone/bag example unless the wording is totally different.
+${peMode === 'custom' ? `CUSTOM VOCAB required in student answer: ${requiredCustomWords.join(', ')}.` : ''}
 Return ONLY JSON: {"statement":"short under-detailed sentence","topic":"short topic label","hintDetails":["detail1","detail2","detail3","detail4"]}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-detail', false);
@@ -1840,8 +1953,11 @@ Return ONLY JSON: {"statement":"short under-detailed sentence","topic":"short to
                 document.getElementById('pe-detail-feedback').textContent = aiErrorMessage(data);
                 return;
             }
-            peDetailTask = data;
-            document.getElementById('pe-detail-prompt').innerHTML = `<strong>[Target · ${L.label}]:</strong> ${data.statement} <i>(Status: Mentioned only)</i>`;
+            peDetailTask = { ...data, requiredWords: requiredCustomWords };
+            const requiredHtml = peMode === 'custom'
+                ? `<br><small><strong>Required glossary words:</strong> ${requiredCustomWords.join(', ')}</small>`
+                : '';
+            document.getElementById('pe-detail-prompt').innerHTML = `<strong>[Target · ${L.label}]:</strong> ${data.statement} <i>(Status: Mentioned only)</i>${requiredHtml}`;
         }
 
         async function checkPeDetail() {
@@ -1862,6 +1978,7 @@ Original: "${peDetailTask.statement}".
 Student expanded sentence: "${input}".
 Hints of useful details: ${JSON.stringify(peDetailTask.hintDetails || [])}.
 Require one full English sentence that is clearly more specific about (${peDetailTask.topic || 'the topic'}), language appropriate for ${L.label}.
+${peMode === 'custom' ? `MANDATORY: include custom glossary word(s) in the sentence: ${JSON.stringify(peDetailTask.requiredWords || [])}.` : ''}
 Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-detail-check').disabled = false;
@@ -1882,11 +1999,13 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             peToggleLoading('pe-link', true);
             const L = peLevelGuide();
             const R = peRandomnessBlock('link');
+            const requiredCustomWords = peGetRequiredCustomWords(2);
             const prompt = `Create TWO unique short related English sentences for CEFR ${L.label} that join with "because" or "so".
 LEVEL RULES: ${L.vocab}
 LINKER RULES: ${L.link}
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
 Invent a fresh cause–effect pair every time (school, home, weather, pets, travel, food, sports, etc.).
+${peMode === 'custom' ? `CUSTOM VOCAB required in student combined sentence: ${requiredCustomWords.join(', ')}.` : ''}
 Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"because"|"so"}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-link', false);
@@ -1895,8 +2014,11 @@ Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"because"|"so"}`;
                 document.getElementById('pe-link-feedback').textContent = aiErrorMessage(data);
                 return;
             }
-            peLinkTask = data;
-            document.getElementById('pe-link-prompt').innerHTML = `<strong>[Storyteller · ${L.label}]:</strong><br>1. ${data.s1}<br>2. ${data.s2}`;
+            peLinkTask = { ...data, requiredWords: requiredCustomWords };
+            const requiredHtml = peMode === 'custom'
+                ? `<br><small><strong>Required glossary words:</strong> ${requiredCustomWords.join(', ')}</small>`
+                : '';
+            document.getElementById('pe-link-prompt').innerHTML = `<strong>[Storyteller · ${L.label}]:</strong><br>1. ${data.s1}<br>2. ${data.s2}${requiredHtml}`;
         }
 
         async function checkPeLink() {
@@ -1918,6 +2040,7 @@ Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"because"|"so"}`;
 Preferred linker hint: ${peLinkTask.preferredLinker || 'because/so'}
 Student: "${input}"
 Require because or so with correct cause–effect and ${L.label}-adequate grammar.
+${peMode === 'custom' ? `MANDATORY: include custom glossary word(s): ${JSON.stringify(peLinkTask.requiredWords || [])}.` : ''}
 Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-link-check').disabled = false;
@@ -1938,6 +2061,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             peToggleLoading('pe-exam', true);
             const L = peLevelGuide();
             const R = peRandomnessBlock('exam');
+            const requiredCustomWords = peGetRequiredCustomWords(3);
             const scenario = pePick([
                 'school exchange abroad', 'weekend visit to a friend', 'new hobby club invitation',
                 'birthday party plans', 'lost item and asking for help', 'holiday postcard-style email',
@@ -1950,7 +2074,13 @@ EXAM RULES: ${L.exam}
 Word range: ${L.examWords.min}-${L.examWords.max}. Sign as XYZ.
 RANDOMISE HARD — seed ${R.seed}. Topic theme: ${R.topic}. Scenario idea: ${scenario}. Angle: ${R.angle}.
 Do NOT always use London exchange / Andrew — invent a fresh recipient and situation every time.
-Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task with bullet points.","taskPl":"Full Polish task with bullet points.","bulletsEn":["point1","point2","point3"],"minWords":${L.examWords.min},"maxWords":${L.examWords.max}}`;
+${peMode === 'custom' ? `CUSTOM VOCAB MODE: require student to use these glossary words in their email: ${requiredCustomWords.join(', ')}. Include that requirement explicitly in taskEn and taskPl.` : ''}
+CRITICAL EXAM GUIDELINE CONSISTENCY:
+- taskEn must clearly include the exact word count range (${L.examWords.min}-${L.examWords.max})
+- taskEn must include bullet points matching bulletsEn exactly
+- taskPl must be a faithful Polish translation of taskEn (same bullets and word count)
+- Use 3 bullet points (A1/A2/custom) or 4 at B1 if natural; bulletsEn array must match the instruction text
+Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task with bullet points and word-count line.","taskPl":"Accurate Polish translation of the same task.","bulletsEn":["point1","point2","point3"],"minWords":${L.examWords.min},"maxWords":${L.examWords.max}}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-exam', false);
             if (!data || data.__error || !data.taskEn) {
@@ -1958,12 +2088,37 @@ Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task with bullet p
                 document.getElementById('pe-exam-feedback').textContent = aiErrorMessage(data);
                 return;
             }
-            peExamTask = data;
+            peExamTask = { ...data, requiredWords: requiredCustomWords };
             document.getElementById('pe-exam-prompt').innerHTML = `<strong>[Exam · ${L.label}]:</strong><br>${data.taskEn.replace(/\n/g, '<br>')}`;
+            document.getElementById('pe-exam-translate-btn').textContent = 'Show task in Polish 🇵🇱';
+            document.getElementById('pe-exam-translate-btn').dataset.lang = 'en';
             document.getElementById('pe-exam-instr-en').textContent = `Write the email according to the exam task below. Aim for ${data.minWords || L.examWords.min}–${data.maxWords || L.examWords.max} words and cover every bullet point. Sign as XYZ.`;
             document.getElementById('pe-exam-instr-pl').textContent = data.taskPl
                 ? data.taskPl
                 : `Napisz e-mail zgodnie z poleceniem. ${data.minWords || L.examWords.min}–${data.maxWords || L.examWords.max} słów, wszystkie podpunkty, podpisz się jako XYZ.`;
+        }
+
+        async function togglePeExamTaskLanguage() {
+            if (!peExamTask) return;
+            const btn = document.getElementById('pe-exam-translate-btn');
+            const promptBox = document.getElementById('pe-exam-prompt');
+            const current = btn.dataset.lang || 'en';
+            if (current === 'en') {
+                if (!peExamTask.taskPl) {
+                    const trPrompt = `Translate this English exam task into Polish. Keep the same bullet points and exact word-count range. Return ONLY JSON: {"taskPl":"..."}\nTask:\n${peExamTask.taskEn}`;
+                    const trData = await fetchGenerativeAI(trPrompt);
+                    if (trData && !trData.__error && trData.taskPl) peExamTask.taskPl = trData.taskPl;
+                }
+                if (peExamTask.taskPl) {
+                    promptBox.innerHTML = `<strong>[Exam · Polish]:</strong><br>${peExamTask.taskPl.replace(/\n/g, '<br>')}`;
+                    btn.textContent = 'Show task in English 🇬🇧';
+                    btn.dataset.lang = 'pl';
+                }
+                return;
+            }
+            promptBox.innerHTML = `<strong>[Exam · ${peLevelGuide().label}]:</strong><br>${(peExamTask.taskEn || '').replace(/\n/g, '<br>')}`;
+            btn.textContent = 'Show task in Polish 🇵🇱';
+            btn.dataset.lang = 'en';
         }
 
         async function checkPeExam() {
@@ -1987,6 +2142,7 @@ Word limit: ${peExamTask.minWords || L.examWords.min}-${peExamTask.maxWords || L
 Student email:
 """${input}"""
 Evaluate length, bullet coverage, cohesion, and language adequacy for ${L.label} (do not demand higher-level vocabulary).
+${peMode === 'custom' ? `MANDATORY: student must correctly use the required custom glossary words: ${JSON.stringify(peExamTask.requiredWords || [])}.` : ''}
 Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered":0,"bulletsTotal":3,"message":"HTML-safe multi-line feedback in English with short section labels for Length, Content, Cohesion, Summary."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-exam-check').disabled = false;
@@ -2162,23 +2318,6 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         function checkWin(player) {
             const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
             return combos.some(c => c.every(idx => gridState[idx] === player));
-        }
-
-        // TABOO SWAP
-        function nextTabooCard() {
-            const mainWordPair = getRandomWord();
-            document.getElementById('taboo-main').innerText = mainWordPair.rawTerm;
-            let forbidden = [mainWordPair.rawDef];
-            let otherWords = vocabulary.filter(v => v.rawTerm !== mainWordPair.rawTerm);
-            otherWords.sort(() => 0.5 - Math.random());
-            if(otherWords.length > 0) forbidden.push(otherWords[0].rawDef);
-            if(otherWords.length > 1) forbidden.push(otherWords[1].rawDef);
-            const ul = document.getElementById('taboo-list'); ul.innerHTML = "";
-            forbidden.forEach(word => {
-                let li = document.createElement('li');
-                li.innerText = word.length > 40 ? word.substring(0, 40) + "..." : word;
-                ul.appendChild(li);
-            });
         }
 
         // CLASSIC FLASHCARDS
