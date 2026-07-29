@@ -374,7 +374,7 @@
             <div id="cat-writing" class="category-content">
                 <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure and style. <strong>Powered entirely by Cursor AI.</strong></p>
                 <div class="grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange completely unique, AI-generated sentences into a proper 5-part paragraph.</p><button class="btn btn-outline" onclick="goToWritingSetup('frank')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange AI-generated sentences from essays, formal letters or articles into the correct 5-part order.</p><button class="btn btn-outline" onclick="goToWritingSetup('frank')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><button class="btn btn-outline" onclick="goToWritingSetup('trans')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToWritingSetup('devil')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToWritingSetup('bloat')">Play Now</button></div>
@@ -472,7 +472,7 @@
                 <h2 id="frank-title">Frankenstein Builder <span class="live-badge">Cursor AI</span></h2>
                 <button class="btn btn-outline" onclick="initFrankenstein()" id="frank-btn">New Paragraph <i class="fa-solid fa-rotate"></i></button>
             </div>
-            <p class="game-desc">Arrange the newly generated, scrambled paragraph parts into a typical high school essay format:<br><strong>Hook → Context → Thesis → Evidence → Analysis</strong></p>
+            <p class="game-desc" id="frank-game-desc">Arrange the scrambled parts into the correct rhetorical order for this text type.<br><strong id="frank-structure-label">Hook → Context → Thesis → Evidence → Analysis</strong></p>
             
             <div id="frank-loading" class="loading-spinner" style="display:none;"></div>
             <div id="frank-content">
@@ -651,8 +651,8 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Detective, you need more information! Develop the target statement into one full English sentence with clear details (features, size, price, camera, etc.).</div>
-                <div class="pe-instr-pl">Detektywie, masz za mało informacji! Twój cel to „rozwinąć” ten punkt w wypowiedzi. Napisz jedno pełne zdanie po angielsku, w którym podasz więcej szczegółów (np. funkcje, aparat lub cenę).</div>
+                <div class="pe-instr-en">Detective, you need more information! Read the tip under the sentence — it tells you what to develop, expand or explain. Write one fuller English sentence with those details.</div>
+                <div class="pe-instr-pl">Detektywie, masz za mało informacji! Przeczytaj wskazówkę pod zdaniem — mówi, co rozwinąć, uzupełnić lub wyjaśnić. Napisz jedno pełniejsze zdanie po angielsku z tymi szczegółami.</div>
             </div>
             <div id="pe-detail-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-detail-content">
@@ -678,8 +678,8 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Join the two sentences into one coherent English sentence. Use <strong>because</strong> or <strong>so</strong> so the cause and effect make sense.</div>
-                <div class="pe-instr-pl">Połącz te dwa zdania w jedno spójne zdanie po angielsku. Wykorzystaj odpowiedni spójnik: <b>because</b> (ponieważ) lub <b>so</b> (więc). Pamiętaj, aby połączone zdanie miało sens!</div>
+                <div class="pe-instr-en" id="pe-link-instr-en">Join the two sentences into one coherent English sentence using a suitable linker for your level.</div>
+                <div class="pe-instr-pl" id="pe-link-instr-pl">Połącz te dwa zdania w jedno spójne zdanie po angielsku, używając spójnika odpowiedniego do Twojego poziomu.</div>
             </div>
             <div id="pe-link-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-link-content">
@@ -712,7 +712,8 @@
             <div id="pe-exam-content">
                 <button class="btn btn-outline" type="button" id="pe-exam-translate-btn" onclick="togglePeExamTaskLanguage()">Show task in Polish 🇵🇱</button>
                 <div class="pe-prompt-box" id="pe-exam-prompt">Loading...</div>
-                <textarea class="pe-input" id="pe-exam-input" placeholder="Hi Sara..."></textarea>
+                <textarea class="pe-input" id="pe-exam-input" placeholder="Hi Sara..." oninput="updatePeExamWordCount()"></textarea>
+                <div id="pe-exam-wordcount" style="text-align:right;font-size:0.9rem;color:var(--text-muted);margin:-0.35rem 0 1rem;font-family:var(--font-primary);font-weight:600;">Words: 0</div>
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeExam()" id="pe-exam-check">Submit to Friendly Examiner</button>
             </div>
             <div id="pe-exam-feedback" class="feedback"></div>
@@ -833,6 +834,7 @@
             document.getElementById('pe-level-hint').textContent = hints[level] || '';
             document.getElementById('pe-custom-panel').classList.remove('open');
             syncPeLevelBadges();
+            syncPeLinkInstructions();
         }
 
         function togglePeCustomMode() {
@@ -1162,28 +1164,123 @@
         // ==========================================
         // WRITING SUITE: STRICT PEDAGOGICAL LOGIC
         // ==========================================
+        const WS_LEVEL =
+            'CEFR B1+ to C1+ (target mostly B2–C1). Formal written English for upper-secondary school leaving / advanced high-school writing: clear argumentation, precise vocabulary, natural cohesion. Never exceed C1+. Avoid rare C2 literary obscurity. Do NOT name any specific national exam in the generated text.';
+
+        const WS_TOPICS = [
+            'education and lifelong learning', 'digital media and attention', 'climate responsibility', 'urban living',
+            'public health habits', 'artificial intelligence at school', 'cultural heritage', 'youth employment',
+            'sport and teamwork', 'travel and intercultural contact', 'consumerism', 'privacy online',
+            'science and everyday life', 'volunteering', 'fast fashion', 'food and sustainability',
+            'space research', 'language learning', 'music and identity', 'transport of the future',
+            'mental wellbeing', 'books vs screens', 'globalisation', 'gender stereotypes in media',
+            'animal welfare', 'renewable energy', 'social media activism', 'architecture and cities',
+            'tourism impact', 'exam stress and study habits', 'history and memory', 'advertising influence',
+            'water scarcity', 'remote work', 'friendship in the digital age', 'crime and community safety',
+            'art funding', 'healthy diet trends', 'migration and belonging', 'innovation in medicine'
+        ];
+        let wsRecentTopics = [];
+
+        function wsPick(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function wsSeed() {
+            return Math.floor(Math.random() * 1e9);
+        }
+
+        function wsFreshTopic() {
+            const pool = WS_TOPICS.filter(t => !wsRecentTopics.includes(t));
+            const topic = wsPick(pool.length ? pool : WS_TOPICS);
+            wsRecentTopics = [...wsRecentTopics, topic].slice(-12);
+            return topic;
+        }
+
+        function wsRandomnessBlock() {
+            return {
+                topic: wsFreshTopic(),
+                seed: wsSeed(),
+                angle: wsPick([
+                    'balanced argument', 'problem–solution', 'cause–effect', 'compare contrasting views',
+                    'personal yet formal stance', 'evidence-led claim', 'future outlook', 'social impact focus'
+                ])
+            };
+        }
 
         // 1. FRANKENSTEIN BUILDER
+        let frankensteinState = null;
+        const FRANK_GENRES = {
+            essay: {
+                key: 'essay',
+                label: 'academic essay paragraph',
+                roles: ['Hook', 'Context', 'Thesis', 'Evidence', 'Analysis'],
+                structureLine: 'Hook → Context → Thesis → Evidence → Analysis',
+                structurePrompt: '1) Hook 2) Context 3) Thesis 4) Evidence 5) Analysis'
+            },
+            letter: {
+                key: 'letter',
+                label: 'formal letter paragraph sequence',
+                roles: ['Opening purpose', 'Background', 'Main point', 'Supporting detail', 'Polite closing'],
+                structureLine: 'Opening purpose → Background → Main point → Supporting detail → Polite closing',
+                structurePrompt: '1) Opening stating purpose 2) Background/context 3) Main request or point 4) Supporting detail/justification 5) Polite closing / next step'
+            },
+            article: {
+                key: 'article',
+                label: 'article paragraph sequence',
+                roles: ['Lead', 'Background', 'Main angle', 'Evidence/example', 'Closing comment'],
+                structureLine: 'Lead → Background → Main angle → Evidence/example → Closing comment',
+                structurePrompt: '1) Attention-grabbing lead 2) Background context 3) Main angle/claim 4) Evidence or concrete example 5) Closing comment/implication'
+            }
+        };
+
         async function initFrankenstein() {
             document.getElementById('frank-check-btn').style.display = 'none';
             document.getElementById('frank-feedback').textContent = '';
             toggleLoading('frank', true);
 
-            const prompt = `Write a well-structured high school essay paragraph suitable for ESL learners at CEFR B2 to B2+ level. Use clear, upper-intermediate academic vocabulary and natural transitions, avoiding overly dense or obscure words. It MUST strictly follow this 5-sentence structure: 1) Hook, 2) Context, 3) Thesis, 4) Evidence, 5) Analysis. Return ONLY a JSON array of 5 strings. No other text.`;
-            const paragraph = await fetchGenerativeAI(prompt);
-            
-            if (!paragraph || paragraph.__error || !Array.isArray(paragraph) || paragraph.length !== 5) {
+            const genre = FRANK_GENRES[wsPick(Object.keys(FRANK_GENRES))];
+            const R = wsRandomnessBlock();
+            document.getElementById('frank-structure-label').textContent = genre.structureLine;
+            document.getElementById('frank-game-desc').innerHTML =
+                `Arrange the scrambled parts into the correct order for this <strong>${genre.label}</strong>.<br><strong id="frank-structure-label">${genre.structureLine}</strong>`;
+
+            const prompt = `Create a UNIQUE ${genre.label} as exactly 5 consecutive sentences for advanced high-school ESL writers.
+LEVEL: ${WS_LEVEL}
+RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}. Never reuse near-identical content.
+Structure MUST be exactly: ${genre.structurePrompt}.
+CRITICAL FOR FAIR MARKING:
+- Return sentences in the ONLY correct rhetorical order (index 0 = role 1, … index 4 = role 5).
+- Each sentence must clearly perform its role so that no other order is logically valid.
+- Do not make sentences interchangeable; use clear discourse signals appropriate to the text type.
+- Formal register; no slang.
+Return ONLY a JSON object: {"genre":"${genre.key}","sentences":["s1","s2","s3","s4","s5"],"roles":${JSON.stringify(genre.roles)}}`;
+
+            const data = await fetchGenerativeAI(prompt);
+
+            if (!data || data.__error || !Array.isArray(data.sentences) || data.sentences.length !== 5) {
                 toggleLoading('frank', false);
                 document.getElementById('frank-feedback').className = "feedback error";
-                document.getElementById('frank-feedback').textContent = aiErrorMessage(paragraph);
+                document.getElementById('frank-feedback').textContent = aiErrorMessage(data);
                 return;
             }
 
+            frankensteinState = {
+                genre: genre.key,
+                roles: data.roles || genre.roles,
+                structureLine: genre.structureLine
+            };
+
             const container = document.getElementById('frank-container');
             container.innerHTML = '';
-            let objects = paragraph.map((text, idx) => ({ id: idx + 1, text: text }));
+            let objects = data.sentences.map((text, idx) => ({ id: idx + 1, text }));
             let shuffled = [...objects].sort(() => Math.random() - 0.5);
-            
+            // Ensure the starting order is not already correct (fair challenge)
+            let guard = 0;
+            while (guard < 8 && shuffled.every((s, i) => s.id === i + 1)) {
+                shuffled = [...objects].sort(() => Math.random() - 0.5);
+                guard++;
+            }
+
             shuffled.forEach((s) => {
                 let div = document.createElement('div');
                 div.className = "frank-item";
@@ -1210,16 +1307,21 @@
 
         function checkFrankenstein() {
             let items = Array.from(document.getElementById('frank-container').children);
-            let currentOrder = items.map(el => parseInt(el.dataset.id));
+            let currentOrder = items.map(el => parseInt(el.dataset.id, 10));
             let correctOrder = [1, 2, 3, 4, 5];
             let feedback = document.getElementById('frank-feedback');
+            const roles = (frankensteinState && frankensteinState.roles) || FRANK_GENRES.essay.roles;
+            const structureLine = (frankensteinState && frankensteinState.structureLine) || FRANK_GENRES.essay.structureLine;
 
             if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
                 feedback.className = "feedback success";
-                feedback.textContent = "🎉 Perfect structure! Hook -> Context -> Thesis -> Evidence -> Analysis.";
+                feedback.textContent = `🎉 Perfect structure! ${structureLine}`;
             } else {
+                // Fair, specific feedback: first misplaced slot
+                let firstWrong = currentOrder.findIndex((id, i) => id !== i + 1);
+                const expected = firstWrong >= 0 ? roles[firstWrong] : 'the next part';
                 feedback.className = "feedback error";
-                feedback.textContent = "❌ Logical flow is incorrect. Check your transition order!";
+                feedback.textContent = `❌ Order not quite right. Check position ${firstWrong + 1}: it should be the ${expected}. Target flow: ${structureLine}`;
             }
         }
 
@@ -1241,13 +1343,15 @@
 
             const randomCat = transitionCategories[Math.floor(Math.random() * transitionCategories.length)];
             const targetTransition = randomCat.words[Math.floor(Math.random() * randomCat.words.length)];
+            const R = wsRandomnessBlock();
 
-            const prompt = `Write two clear academic sentences suitable for high school students and ESL learners at CEFR B2 to B2+ level that are logically bridged by the specific transition "${targetTransition}" (Logical relation: ${randomCat.type}). 
-            CRITICAL INSTRUCTION: The UI will display [s1] [button] [s2]. Therefore, you must split the text perfectly. 
-            's1' MUST be the first complete sentence ending in a period or semicolon. 
-            's2' MUST be the exact continuation AFTER the transition word, beginning with any necessary punctuation (like a comma) and continuing with a lowercase letter if appropriate. Do NOT include the transition word itself in s2.
-            Then, provide 3 plausible but logically incorrect formal distractor transitions.
-            Return ONLY a JSON object: {"s1":"First sentence.", "s2":", the rest of the second sentence.", "correct":"${targetTransition}", "options":["${targetTransition}","distractor1","distractor2","distractor3"]}`;
+            const prompt = `Write two formal written sentences (${WS_LEVEL}) that are logically bridged ONLY by the transition "${targetTransition}" (relation: ${randomCat.type}).
+RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}. Never reuse near-identical pairs.
+CRITICAL: UI shows [s1] [button] [s2].
+'s1' = first complete sentence ending in . or ;
+'s2' = continuation AFTER the transition (leading comma/lowercase if needed). Do NOT include the transition in s2.
+Provide 3 plausible but logically wrong formal distractors.
+Return ONLY JSON: {"s1":"...","s2":"...","correct":"${targetTransition}","options":["${targetTransition}","d1","d2","d3"]}`;
 
             const data = await fetchGenerativeAI(prompt);
             
@@ -1294,13 +1398,15 @@
         async function initDevil() {
             document.getElementById('devil-feedback').textContent = '';
             toggleLoading('devil', true);
+            const R = wsRandomnessBlock();
 
-            const prompt = `Write a high school debate thesis using academic language suitable for ESL learners at CEFR B2 to B2+ level. 
-            Provide 3 options for a response. ALL 3 options must be equally sophisticated, formal, and elaborate in their linguistic construction. 
-            - ONE option must be a strong, logical counter-argument (rebuttal) to the thesis (rebuttal: true). 
-            - The OTHER TWO options must be distractors that sound highly academic but are logically incorrect for a rebuttal—for example, they might secretly support the thesis, just rephrase the thesis using different words, or introduce a completely irrelevant off-topic academic point (rebuttal: false).
-            Return ONLY a JSON object: {"thesis":"...", "cards":[{"text":"...","rebuttal":true}, {"text":"...","rebuttal":false}, {"text":"...","rebuttal":false}]}`;
-            
+            const prompt = `Write a debate thesis in formal written English (${WS_LEVEL}).
+RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}. Never reuse a near-identical thesis.
+Provide 3 options. ALL 3 must be equally sophisticated and elaborate.
+- ONE = strong logical counter-argument (rebuttal: true)
+- TWO = distractors that sound academic but are wrong as rebuttals (support/rephrase thesis or go off-topic) (rebuttal: false)
+Return ONLY JSON: {"thesis":"...","cards":[{"text":"...","rebuttal":true},{"text":"...","rebuttal":false},{"text":"...","rebuttal":false}]}`;
+
             const data = await fetchGenerativeAI(prompt);
             
             if (!data || data.__error || !data.thesis) {
@@ -1345,20 +1451,14 @@
             document.getElementById('bloat-feedback').textContent = '';
             toggleLoading('bloat', true);
 
-            const bloatTopics = [
-                'education reform', 'urban planning', 'public health', 'renewable energy', 'digital literacy',
-                'globalisation', 'scientific research', 'economic inequality', 'media influence', 'cultural heritage',
-                'food security', 'transport policy', 'mental health awareness', 'data privacy', 'biodiversity',
-                'workplace ethics', 'youth unemployment', 'artificial intelligence', 'water management', 'space exploration'
-            ];
-            const bloatTopic = bloatTopics[Math.floor(Math.random() * bloatTopics.length)];
-            const bloatSeed = Math.floor(Math.random() * 1e9);
-            const prompt = `Write a single, formally written academic sentence (25-35 words) about "${bloatTopic}" with PERFECT grammar and punctuation, aimed at high school ESL learners (CEFR B2–B2+).
-CRITICAL: The sentence must be GRAMMATICALLY CORRECT AND FULLY MEANINGFUL — a real academic statement that happens to be over-worded.
-ORWELL'S RULE: "If it is possible to cut a word out, always cut it out." The sentence must contain redundant nominalisations, circumlocution, tautological phrases, and unnecessary modifiers that a student can remove while preserving a clear, formal, academic message. Do NOT use slang, conversational filler, or broken grammar.
-RANDOMISE HARD — unique seed ${bloatSeed}. Never repeat a previous sentence.
-Return ONLY a JSON object: {"sentence": "..."}`;
-            
+            const R = wsRandomnessBlock();
+            const prompt = `Write ONE formally written academic sentence (25-35 words) about "${R.topic}" with PERFECT grammar and punctuation.
+LEVEL: ${WS_LEVEL}
+CRITICAL: Grammatically correct and fully meaningful — intentionally over-worded with redundant nominalisations, circumlocution, and unnecessary modifiers.
+ORWELL: if a word can be cut, it should be cuttable by the student while keeping a clear formal message. No slang.
+RANDOMISE HARD — seed ${R.seed}. Angle: ${R.angle}. Never repeat a previous sentence.
+Return ONLY JSON: {"sentence":"..."}`;
+
             const data = await fetchGenerativeAI(prompt);
             
             if (!data || data.__error || !data.sentence) {
@@ -1444,26 +1544,19 @@ Return ONLY a JSON object: {"sentence": "..."}`;
             document.getElementById('vocab-feedback').textContent = '';
             toggleLoading('vocab', true);
 
-            const vocabTopics = [
-                'economics', 'climate change', 'psychology', 'sociology', 'literature', 'technology',
-                'history', 'biology', 'space exploration', 'education policy', 'urban development',
-                'criminal justice', 'nutrition science', 'philosophy', 'environmental law',
-                'media studies', 'political science', 'architecture', 'linguistics', 'anthropology',
-                'marine biology', 'public health', 'renewable energy', 'data ethics', 'archaeology'
-            ];
-            const vocabTopic = vocabTopics[Math.floor(Math.random() * vocabTopics.length)];
-            const vocabSeed = Math.floor(Math.random() * 1e9);
-            const vocabTargetType = ['phrasal verb', 'informal collocation', 'semi-formal expression', 'everyday idiom-like phrase'][Math.floor(Math.random() * 4)];
+            const R = wsRandomnessBlock();
+            const vocabTargetType = wsPick(['phrasal verb', 'informal collocation', 'semi-formal expression', 'everyday idiom-like phrase']);
 
-            const prompt = `Generate a UNIQUE academic sentence (15-25 words) about "${vocabTopic}" for high-school ESL learners (CEFR B2–B2+).
-RANDOMISE HARD — unique seed ${vocabSeed}. Never reuse a previous sentence or target.
-TARGET TYPE THIS ROUND: ${vocabTargetType}.
-Choose ONE informal/semi-formal word, phrasal verb, or everyday collocation (e.g. 'look into', 'come up with', 'get rid of', 'deal with', 'figure out', 'set up', 'bring about', 'carry out', 'point out', 'turn down', 'put forward', 'go through', 'make up for', 'run out of') as the target. Vary widely — do NOT always pick the same phrasal verbs.
-Split the sentence into: 'baseText' (before target), 'target' (the informal phrase), 'rest' (after target).
-'correct' must be a FORMAL, ACADEMIC equivalent (B2/B2+ level, suitable for a school essay — not C2 obscure). It must fit the sentence perfectly in grammar, preposition and collocation.
-'options': array of 4 items — the correct one plus 3 plausible distractors. Distractors should be either too colloquial, slightly wrong in meaning, or fail the collocation for this context. All 4 must look tempting.
-Return ONLY JSON: {"baseText":"...", "target":"...", "rest":"...", "correct":"...", "options":["...","...","...","..."]}`;
-            
+            const prompt = `Generate a UNIQUE formal written sentence (15-25 words) about "${R.topic}".
+LEVEL: ${WS_LEVEL}
+RANDOMISE HARD — seed ${R.seed}. Angle: ${R.angle}. Never reuse a previous sentence/target.
+TARGET TYPE: ${vocabTargetType}.
+Choose ONE informal/semi-formal word, phrasal verb, or everyday collocation as the target (vary widely).
+Split into baseText / target / rest.
+'correct' = formal academic equivalent at B2–C1 (high-school adequate; max C1+; not obscure C2). Must fit grammar/prepositions/collocation perfectly.
+'options' = 4 items (correct + 3 tempting distractors: too colloquial, off-meaning, or bad collocation).
+Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...","options":["...","...","...","..."]}`;
+
             const data = await fetchGenerativeAI(prompt);
             
             if (!data || data.__error || !data.target) {
@@ -1546,8 +1639,50 @@ Return ONLY JSON: {"baseText":"...", "target":"...", "rest":"...", "correct":"..
             };
         }
 
+        function textHasPolishChars(s) {
+            return /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(s || '');
+        }
+
+        function isLikelyEnglishVocab(s) {
+            const t = (s || '').trim();
+            if (!t || t.length < 2) return false;
+            if (textHasPolishChars(t)) return false;
+            // Allow letters, spaces, hyphens, apostrophes, dots (phrasal / abbreviations)
+            if (!/^[A-Za-z][A-Za-z0-9\s\-'’\.\/]*$/.test(t)) return false;
+            if (!/[aeiouyAEIOUY]/.test(t)) return false;
+            return true;
+        }
+
+        function pickEnglishFromPair(term, def) {
+            const t = (term || '').trim();
+            const d = (def || '').trim();
+            const termEn = isLikelyEnglishVocab(t);
+            const defEn = isLikelyEnglishVocab(d);
+            if (termEn && !defEn) return { term: t, def: d };
+            if (defEn && !termEn) return { term: d, def: t }; // swapped glossary order
+            if (termEn && defEn) {
+                // Prefer the shorter side as the headword / playable term
+                return t.length <= d.length ? { term: t, def: d } : { term: d, def: t };
+            }
+            return null;
+        }
+
+        function buildOdysseyEnglishPool() {
+            const pool = [];
+            const seen = new Set();
+            vocabulary.forEach(v => {
+                const picked = pickEnglishFromPair(v.rawTerm, v.rawDef);
+                if (!picked) return;
+                const key = picked.term.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                pool.push(picked);
+            });
+            return pool;
+        }
+
         function rollOdysseyTargetWords() {
-            const pool = vocabulary.map(v => ({ term: v.rawTerm, def: v.rawDef }));
+            const pool = buildOdysseyEnglishPool();
             const shuffled = [...pool].sort(() => Math.random() - 0.5);
             return shuffled.slice(0, Math.min(3, shuffled.length));
         }
@@ -1626,13 +1761,22 @@ Return ONLY JSON: {"baseText":"...", "target":"...", "rest":"...", "correct":"..
             renderOdysseyFeedback([]);
             renderOdysseyHud();
             renderOdysseyWordCards();
+
+            if (!odysseyState.targetWords.length) {
+                document.getElementById('odyssey-status').className = 'feedback error';
+                document.getElementById('odyssey-status').textContent =
+                    'No English vocabulary terms found in your glossary. Add English words (even if definitions are in Polish or the columns are swapped).';
+                document.getElementById('odyssey-submit-btn').disabled = true;
+                return;
+            }
+
             setOdysseyLoading(true);
 
             const wordList = odysseyState.targetWords.map(w => `${w.term} (${w.def})`).join(', ');
-            const prompt = `You are a concise Game Master for an ESL text adventure (CEFR B2–B2+). Genre: ${odysseyState.genre}.
+            const prompt = `You are a concise Game Master for an ESL text adventure (${WS_LEVEL}). Genre: ${odysseyState.genre}.
 Create an opening scene: a clear quest objective and one immediate obstacle.
 KEEP IT SHORT — max 2 sentences for the story beat, max 2 sentences for the situation. No long descriptions.
-Target vocabulary for turn 1 (player must use at least one later): ${wordList}.
+Target ENGLISH vocabulary for turn 1 (player must use at least one later): ${wordList}.
 Return ONLY JSON:
 {"questTitle":"Short quest name","situation":"1-2 concise sentences: the obstacle","storyBeat":"1-2 concise sentences: scene-setting"}`;
 
@@ -1679,14 +1823,14 @@ Return ONLY JSON:
             odysseyState.storyHistory.push({ type: 'player', text: action });
             renderOdysseyStoryLog();
 
-            const prompt = `You are a CONCISE Game Master for an ESL text adventure (CEFR B2–B2+). Genre: ${odysseyState.genre}.
+            const prompt = `You are a CONCISE Game Master for an ESL text adventure (${WS_LEVEL}). Genre: ${odysseyState.genre}.
 Quest: ${odysseyState.quest}
 Situation: ${odysseyState.situation}
 Stats: HP ${odysseyState.hp}/100, Morale ${odysseyState.morale}/100, XP ${odysseyState.xp}
-Target words (with defs): ${targetDetails}
+Target ENGLISH words only (with defs): ${targetDetails}
 Player action: "${action}"
 
-Evaluate: did the player use at least ONE target word correctly (inflected forms OK)?
+Evaluate: did the player use at least ONE target ENGLISH word correctly (inflected forms OK)? Ignore non-English glossary text.
 Rules:
 - success=true → continue story based on their action. success=false → no target word or wrong usage or grammar breaks meaning.
 - Failure: hpChange -10 to -25, moraleChange -5 to -15.
@@ -1780,8 +1924,9 @@ Return ONLY JSON:
                 label: 'A1',
                 vocab: 'Use only very common A1 words and short sentences (I/you/he/she, present simple, basic adjectives like big/small/happy/nice, everyday nouns). Avoid idioms and complex grammar.',
                 upgrades: 'Accepted upgrades must still be simple A1–low A2 words a beginner can learn (e.g. nice→pretty/happy, big→large/huge, small→little/tiny, good→great/fun). Do not require advanced synonyms.',
-                detail: 'Student detail sentence should stay simple (present simple, and/but). Reward concrete easy details (colour, size, number, place).',
-                link: 'Sentences must be very short and clear. Linkers only because/so.',
+                detail: 'Prompt statement MUST be a very short, simple sentence (max ~6–8 words). Student expands it with easy concrete details. Language of the prompt stays ultra-simple at every CEFR level.',
+                link: 'Allowed linkers ONLY: because, so. Sentences must be very short and clear.',
+                linkers: ['because', 'so'],
                 exam: 'Email task for A1: 40–70 words, 3 simple bullet points about everyday life. Simple language only.',
                 examWords: { min: 40, max: 70 }
             },
@@ -1789,8 +1934,9 @@ Return ONLY JSON:
                 label: 'A2',
                 vocab: 'Use clear A2 English: past simple, going to, comparatives, common collocations, everyday opinions. Avoid rare academic words.',
                 upgrades: 'Accepted upgrades should be richer but still A2-friendly (e.g. nice→lovely/wonderful, small→tiny/miniature, bad→terrible/awful, good→excellent/amazing).',
-                detail: 'Expect one clear sentence with 2+ concrete details (features, price, size, place, reason). Past or present OK.',
-                link: 'Clear cause–effect with because/so; short A2 sentences.',
+                detail: 'Prompt statement MUST still be a very short, simple sentence. Student adds 2+ concrete details. Expect clearer expansion than A1, but keep the prompt itself ultra-simple.',
+                link: 'Allowed linkers: because, so, and, but, when, after, before.',
+                linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before'],
                 exam: 'Email task for A2 / Polish primary exam style: 50–120 words, 3 bullet points.',
                 examWords: { min: 50, max: 120 }
             },
@@ -1798,10 +1944,11 @@ Return ONLY JSON:
                 label: 'B1',
                 vocab: 'Use solid B1 English: wider everyday vocabulary, linking ideas, reasons/opinions, simple conditionals or present perfect if natural. Still learner-friendly — not academic C1.',
                 upgrades: 'Accepted upgrades can be more precise B1 words (e.g. nice→delightful/charming, big→enormous/significant, bad→disappointing/harmful) but still common in school English.',
-                detail: 'Expect a well-developed sentence with several specific details and natural linking.',
-                link: 'Cause–effect with because/so; sentences can be a bit longer and more natural at B1.',
-                exam: 'Email or short message for B1: 80–140 words, 3–4 content points, clearer cohesion expected.',
-                examWords: { min: 80, max: 140 }
+                detail: 'Prompt statement MUST still be a very short, simple sentence. Student writes a richer expanded sentence with several details and natural linking — but the prompt itself stays ultra-simple.',
+                link: 'Allowed linkers: because, so, and, but, when, after, before, although, however, while, if, therefore.',
+                linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'however', 'while', 'if', 'therefore'],
+                exam: 'Email or short message for B1: 50–120 words, 3–4 content points, clearer cohesion expected.',
+                examWords: { min: 50, max: 120 }
             }
         };
 
@@ -1827,13 +1974,49 @@ Return ONLY JSON:
                     label: 'CUSTOM',
                     vocab: 'Custom vocabulary mode is active. CEFR levels do not apply. Language should stay clear and learner-friendly for school students.',
                     upgrades: 'If custom words are required, student must include them exactly (case-insensitive) in their answer.',
-                    detail: 'Student must write one full sentence and include required custom glossary word(s).',
-                    link: 'Student must join ideas with because/so and include required custom glossary word(s).',
+                    detail: 'Prompt statement must be a very short simple sentence. Student expands it and must include required custom glossary word(s).',
+                    link: 'Student must join ideas with a clear linker (because, so, and, but, when, although, if, etc.) and include required custom glossary word(s).',
+                    linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'if'],
                     exam: 'Exam email format required: clear instruction, explicit word count, bullet points, sign as XYZ. Enforce task guidelines strictly.',
-                    examWords: { min: 60, max: 130 }
+                    examWords: { min: 50, max: 120 }
                 };
             }
             return PE_CEFR[peCefrLevel] || PE_CEFR.A2;
+        }
+
+        function peAllowedLinkers() {
+            const L = peLevelGuide();
+            return L.linkers || ['because', 'so'];
+        }
+
+        function syncPeLinkInstructions() {
+            const linkers = peAllowedLinkers();
+            const list = linkers.join(', ');
+            const en = document.getElementById('pe-link-instr-en');
+            const pl = document.getElementById('pe-link-instr-pl');
+            if (en) en.innerHTML = `Join the two sentences into one coherent English sentence. Use a suitable linker for your level: <strong>${list}</strong>.`;
+            if (pl) pl.innerHTML = `Połącz te dwa zdania w jedno spójne zdanie po angielsku. Użyj spójnika odpowiedniego do poziomu: <b>${list}</b>.`;
+        }
+
+        function updatePeExamWordCount() {
+            const el = document.getElementById('pe-exam-input');
+            const counter = document.getElementById('pe-exam-wordcount');
+            if (!el || !counter) return;
+            const text = el.value.trim();
+            const count = text ? text.split(/\s+/).filter(Boolean).length : 0;
+            const min = (peExamTask && peExamTask.minWords) || (peLevelGuide().examWords || {}).min || 50;
+            const max = (peExamTask && peExamTask.maxWords) || (peLevelGuide().examWords || {}).max || 120;
+            counter.textContent = `Words: ${count}  (target ${min}–${max})`;
+            if (count === 0) counter.style.color = 'var(--text-muted)';
+            else if (count < min || count > max) counter.style.color = 'var(--pillarbox-red)';
+            else counter.style.color = 'var(--success-green)';
+        }
+
+        function peExamOpening(recipientName) {
+            const name = (recipientName || 'Friend').trim();
+            // Prefer casual greeting for classmate-style tasks; keep first name only
+            const first = name.split(/\s+/)[0];
+            return `Hi ${first},\n\n`;
         }
 
         function peRandomnessBlock(gameKey) {
@@ -1939,13 +2122,15 @@ Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feed
             const L = peLevelGuide();
             const R = peRandomnessBlock('detail');
             const requiredCustomWords = peGetRequiredCustomWords(2);
-            const prompt = `Create a UNIQUE under-detailed English statement for CEFR ${L.label} ESL learners.
-LEVEL RULES: ${L.vocab}
-DETAIL EXPECTATION: ${L.detail}
+            const prompt = `Create a UNIQUE under-detailed English statement for Primary English Detail Detective.
+CRITICAL: The statement itself must ALWAYS be a VERY SIMPLE short sentence (about 5–8 words), regardless of CEFR level ${L.label}. Example style: "I bought a phone." / "We went to the park."
+Do NOT make the prompt sentence complex even for B1.
+DETAIL EXPECTATION for the STUDENT answer: ${L.detail}
+Also provide developFocus: a short clear instruction telling the student WHAT kind of information to develop/expand/explain (e.g. "Add colour, size and price." or "Explain when, where and who with.").
+Provide hintDetails as 3–4 concrete detail types matching developFocus.
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
-Never reuse the same object/situation as a previous typical phone/bag example unless the wording is totally different.
 ${peMode === 'custom' ? `CUSTOM VOCAB required in student answer: ${requiredCustomWords.join(', ')}.` : ''}
-Return ONLY JSON: {"statement":"short under-detailed sentence","topic":"short topic label","hintDetails":["detail1","detail2","detail3","detail4"]}`;
+Return ONLY JSON: {"statement":"very short simple sentence","topic":"short topic label","developFocus":"What to develop/expand/explain...","hintDetails":["detail1","detail2","detail3","detail4"]}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-detail', false);
             if (!data || data.__error || !data.statement) {
@@ -1954,10 +2139,14 @@ Return ONLY JSON: {"statement":"short under-detailed sentence","topic":"short to
                 return;
             }
             peDetailTask = { ...data, requiredWords: requiredCustomWords };
+            const focus = data.developFocus || (Array.isArray(data.hintDetails) ? `Develop: ${data.hintDetails.join(', ')}` : 'Add more concrete details.');
             const requiredHtml = peMode === 'custom'
                 ? `<br><small><strong>Required glossary words:</strong> ${requiredCustomWords.join(', ')}</small>`
                 : '';
-            document.getElementById('pe-detail-prompt').innerHTML = `<strong>[Target · ${L.label}]:</strong> ${data.statement} <i>(Status: Mentioned only)</i>${requiredHtml}`;
+            document.getElementById('pe-detail-prompt').innerHTML =
+                `<strong>[Target · ${L.label}]:</strong> ${data.statement} <i>(Status: Mentioned only)</i>` +
+                `<br><strong>Develop / expand / explain:</strong> ${focus}` +
+                requiredHtml;
         }
 
         async function checkPeDetail() {
@@ -1973,11 +2162,12 @@ Return ONLY JSON: {"statement":"short under-detailed sentence","topic":"short to
             feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reviewing evidence...';
             document.getElementById('pe-detail-check').disabled = true;
             const L = peLevelGuide();
-            const prompt = `CEFR ${L.label} ESL check. ${L.detail}
-Original: "${peDetailTask.statement}".
+            const prompt = `CEFR ${L.label} ESL check for Detail Detective.
+Original simple statement: "${peDetailTask.statement}".
+Student must develop/expand/explain: "${peDetailTask.developFocus || ''}"
+Useful detail types: ${JSON.stringify(peDetailTask.hintDetails || [])}.
 Student expanded sentence: "${input}".
-Hints of useful details: ${JSON.stringify(peDetailTask.hintDetails || [])}.
-Require one full English sentence that is clearly more specific about (${peDetailTask.topic || 'the topic'}), language appropriate for ${L.label}.
+Require one full English sentence that clearly adds the requested information about (${peDetailTask.topic || 'the topic'}). Student language may match ${L.label}; the original prompt was intentionally ultra-simple.
 ${peMode === 'custom' ? `MANDATORY: include custom glossary word(s) in the sentence: ${JSON.stringify(peDetailTask.requiredWords || [])}.` : ''}
 Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
@@ -1996,17 +2186,22 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             document.getElementById('pe-link-feedback').textContent = '';
             document.getElementById('pe-link-input').value = '';
             syncPeLevelBadges();
+            syncPeLinkInstructions();
             peToggleLoading('pe-link', true);
             const L = peLevelGuide();
             const R = peRandomnessBlock('link');
+            const allowed = peAllowedLinkers();
+            const preferred = pePick(allowed);
             const requiredCustomWords = peGetRequiredCustomWords(2);
-            const prompt = `Create TWO unique short related English sentences for CEFR ${L.label} that join with "because" or "so".
+            const prompt = `Create TWO unique short related English sentences for CEFR ${L.label} that can be joined with a linker.
 LEVEL RULES: ${L.vocab}
 LINKER RULES: ${L.link}
+ALLOWED LINKERS for this level: ${allowed.join(', ')}.
+Preferred linker for this round: "${preferred}" — design the pair so this linker fits best (but accept other allowed linkers if logic still works).
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
-Invent a fresh cause–effect pair every time (school, home, weather, pets, travel, food, sports, etc.).
+Invent a fresh pair every time (school, home, weather, pets, travel, food, sports, etc.).
 ${peMode === 'custom' ? `CUSTOM VOCAB required in student combined sentence: ${requiredCustomWords.join(', ')}.` : ''}
-Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"because"|"so"}`;
+Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"${preferred}","allowedLinkers":${JSON.stringify(allowed)}}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-link', false);
             if (!data || data.__error || !data.s1) {
@@ -2014,11 +2209,14 @@ Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"because"|"so"}`;
                 document.getElementById('pe-link-feedback').textContent = aiErrorMessage(data);
                 return;
             }
-            peLinkTask = { ...data, requiredWords: requiredCustomWords };
+            peLinkTask = { ...data, requiredWords: requiredCustomWords, allowedLinkers: data.allowedLinkers || allowed };
             const requiredHtml = peMode === 'custom'
                 ? `<br><small><strong>Required glossary words:</strong> ${requiredCustomWords.join(', ')}</small>`
                 : '';
-            document.getElementById('pe-link-prompt').innerHTML = `<strong>[Storyteller · ${L.label}]:</strong><br>1. ${data.s1}<br>2. ${data.s2}${requiredHtml}`;
+            document.getElementById('pe-link-prompt').innerHTML =
+                `<strong>[Storyteller · ${L.label}]:</strong><br>1. ${data.s1}<br>2. ${data.s2}` +
+                `<br><small><strong>Suggested linker:</strong> ${data.preferredLinker || preferred} · <strong>Allowed:</strong> ${(data.allowedLinkers || allowed).join(', ')}</small>` +
+                requiredHtml;
         }
 
         async function checkPeLink() {
@@ -2034,12 +2232,14 @@ Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"because"|"so"}`;
             feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking logic...';
             document.getElementById('pe-link-check').disabled = true;
             const L = peLevelGuide();
+            const allowed = peLinkTask.allowedLinkers || peAllowedLinkers();
             const prompt = `CEFR ${L.label} ESL check. ${L.link}
 1) ${peLinkTask.s1}
 2) ${peLinkTask.s2}
 Preferred linker hint: ${peLinkTask.preferredLinker || 'because/so'}
+Allowed linkers: ${allowed.join(', ')}
 Student: "${input}"
-Require because or so with correct cause–effect and ${L.label}-adequate grammar.
+Require use of ONE allowed linker with correct logic and ${L.label}-adequate grammar. Prefer the suggested linker but accept another allowed linker if the meaning is coherent.
 ${peMode === 'custom' ? `MANDATORY: include custom glossary word(s): ${JSON.stringify(peLinkTask.requiredWords || [])}.` : ''}
 Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feedback in English."}`;
             const data = await fetchGenerativeAI(prompt);
@@ -2057,6 +2257,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
         async function initPeExam() {
             document.getElementById('pe-exam-feedback').textContent = '';
             document.getElementById('pe-exam-input').value = '';
+            updatePeExamWordCount();
             syncPeLevelBadges();
             peToggleLoading('pe-exam', true);
             const L = peLevelGuide();
@@ -2073,14 +2274,15 @@ LEVEL RULES: ${L.vocab}
 EXAM RULES: ${L.exam}
 Word range: ${L.examWords.min}-${L.examWords.max}. Sign as XYZ.
 RANDOMISE HARD — seed ${R.seed}. Topic theme: ${R.topic}. Scenario idea: ${scenario}. Angle: ${R.angle}.
-Do NOT always use London exchange / Andrew — invent a fresh recipient and situation every time.
+Invent a fresh recipient first name every time (not always Sara/Andrew).
 ${peMode === 'custom' ? `CUSTOM VOCAB MODE: require student to use these glossary words in their email: ${requiredCustomWords.join(', ')}. Include that requirement explicitly in taskEn and taskPl.` : ''}
 CRITICAL EXAM GUIDELINE CONSISTENCY:
 - taskEn must clearly include the exact word count range (${L.examWords.min}-${L.examWords.max})
 - taskEn must include bullet points matching bulletsEn exactly
 - taskPl must be a faithful Polish translation of taskEn (same bullets and word count)
 - Use 3 bullet points (A1/A2/custom) or 4 at B1 if natural; bulletsEn array must match the instruction text
-Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task with bullet points and word-count line.","taskPl":"Accurate Polish translation of the same task.","bulletsEn":["point1","point2","point3"],"minWords":${L.examWords.min},"maxWords":${L.examWords.max}}`;
+- recipientName must be the exact first name used in the task (e.g. "Tom")
+Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Full English task with bullet points and word-count line.","taskPl":"Accurate Polish translation of the same task.","bulletsEn":["point1","point2","point3"],"minWords":${L.examWords.min},"maxWords":${L.examWords.max}}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-exam', false);
             if (!data || data.__error || !data.taskEn) {
@@ -2096,6 +2298,11 @@ Return ONLY JSON: {"title":"Exam task","taskEn":"Full English task with bullet p
             document.getElementById('pe-exam-instr-pl').textContent = data.taskPl
                 ? data.taskPl
                 : `Napisz e-mail zgodnie z poleceniem. ${data.minWords || L.examWords.min}–${data.maxWords || L.examWords.max} słów, wszystkie podpunkty, podpisz się jako XYZ.`;
+
+            const recipient = data.recipientName || 'Friend';
+            document.getElementById('pe-exam-input').value = peExamOpening(recipient);
+            document.getElementById('pe-exam-input').placeholder = `Hi ${recipient.split(/\s+/)[0]}...`;
+            updatePeExamWordCount();
         }
 
         async function togglePeExamTaskLanguage() {
