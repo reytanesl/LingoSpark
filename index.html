@@ -1935,7 +1935,7 @@ Return ONLY JSON:
                 vocab: 'Use clear A2 English: past simple, going to, comparatives, common collocations, everyday opinions. Avoid rare academic words.',
                 upgrades: 'Accepted upgrades should be richer but still A2-friendly (e.g. nice→lovely/wonderful, small→tiny/miniature, bad→terrible/awful, good→excellent/amazing).',
                 detail: 'Prompt statement MUST still be a very short, simple sentence. Student adds 2+ concrete details. Expect clearer expansion than A1, but keep the prompt itself ultra-simple.',
-                link: 'Allowed linkers: because, so, and, but, when, after, before.',
+                link: 'Allowed linkers: because, so, and, but, when, after, before. CRITICAL: Keep BOTH sentences very short and simple (about 4–8 words each). Everyday vocabulary only. Complexity must come from choosing the linker, NOT from difficult sentence content.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before'],
                 exam: 'Email task for A2 / Polish primary exam style: 50–120 words, 3 bullet points.',
                 examWords: { min: 50, max: 120 }
@@ -1945,7 +1945,7 @@ Return ONLY JSON:
                 vocab: 'Use solid B1 English: wider everyday vocabulary, linking ideas, reasons/opinions, simple conditionals or present perfect if natural. Still learner-friendly — not academic C1.',
                 upgrades: 'Accepted upgrades can be more precise B1 words (e.g. nice→delightful/charming, big→enormous/significant, bad→disappointing/harmful) but still common in school English.',
                 detail: 'Prompt statement MUST still be a very short, simple sentence. Student writes a richer expanded sentence with several details and natural linking — but the prompt itself stays ultra-simple.',
-                link: 'Allowed linkers: because, so, and, but, when, after, before, although, however, while, if, therefore.',
+                link: 'Allowed linkers: because, so, and, but, when, after, before, although, however, while, if, therefore. CRITICAL: Keep BOTH sentences short and clear (about 5–10 words each). No complex clauses inside s1/s2. Everyday school English only. The challenge is choosing the right linker, not decoding hard sentences.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'however', 'while', 'if', 'therefore'],
                 exam: 'Email or short message for B1: 50–120 words, 3–4 content points, clearer cohesion expected.',
                 examWords: { min: 50, max: 120 }
@@ -2198,6 +2198,11 @@ LEVEL RULES: ${L.vocab}
 LINKER RULES: ${L.link}
 ALLOWED LINKERS for this level: ${allowed.join(', ')}.
 Preferred linker for this round: "${preferred}" — design the pair so this linker fits best (but accept other allowed linkers if logic still works).
+SENTENCE SIMPLICITY (CRITICAL for A2/B1):
+- s1 and s2 must each be SHORT, CLEAR, everyday sentences.
+- A1/A2: about 4–8 words each. B1: about 5–10 words each.
+- No long relative clauses, no dense academic wording, no multi-part sentences.
+- The USER's job is to link them correctly — do NOT make the sentences hard to understand.
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
 Invent a fresh pair every time (school, home, weather, pets, travel, food, sports, etc.).
 ${peMode === 'custom' ? `CUSTOM VOCAB required in student combined sentence: ${requiredCustomWords.join(', ')}.` : ''}
