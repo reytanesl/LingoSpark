@@ -64,7 +64,7 @@ URL example: `https://lingospark.onrender.com`
 | `GOOGLE_CLIENT_SECRET` | Google Cloud OAuth secret |
 | `GOOGLE_CALLBACK_URL` | `https://your-app.onrender.com/auth/google/callback` |
 | `ADMIN_EMAIL` | your Gmail (admin panel) |
-| `BMC_PAYMENT_URL` | Buy Me a Coffee membership/checkout link |
+| `BMC_PAYMENT_URL` | `https://buymeacoffee.com/lingospark/extras` |
 | `BMC_WEBHOOK_SECRET` | from BMC Integrations → Webhooks |
 | `NODE_ENV` | `production` |
 
@@ -80,7 +80,7 @@ URL example: `https://lingospark.onrender.com`
    - **$3** → weekly access (webhook grants **7 days**)
    - **$10** → monthly access (webhook grants **30 days**)
    Use Extras (shop items) and/or memberships — name them clearly (e.g. “Week — $3”, “Month — $10”).
-2. Copy the payment page URL → `BMC_PAYMENT_URL`
+2. Copy the payment page URL → `BMC_PAYMENT_URL` (use `https://buymeacoffee.com/lingospark/extras`)
 3. Studio → Integrations → Webhooks → endpoint:
    `https://lingospark.study/api/billing/bmc-webhook`
 4. Enable at least: `donation.created`, `extra_purchase.created`, `membership.started`, `membership.updated`, and the matching `*.refunded` events

@@ -7,7 +7,22 @@ import session from 'express-session';
 import passport from 'passport';
 import connectPgSimple from 'connect-pg-simple';
 import { Agent } from '@cursor/sdk';
-import { initDb, getPool, listUsers, approveUser, revokeUser, publicUser, hasWritingAccess, isAdminEmail } from './db.js';
+import {
+    initDb,
+    getPool,
+    listUsers,
+    approveUser,
+    revokeUser,
+    publicUser,
+    hasWritingAccess,
+    isAdminEmail,
+    getAccessStatus,
+    recordSiteVisit,
+    recordUserVisit,
+    getSiteVisitCount,
+    expireStaleAccess,
+    expireUserIfNeeded,
+} from './db.js';
 import { configurePassport, requireAdmin, requireWritingAccess } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook } from './billing.js';
 
@@ -119,33 +134,98 @@ async function start() {
         });
     });
 
-    app.get('/api/auth/me', (req, res) => {
-        const user = req.user || null;
+    app.get('/api/auth/me', async (req, res) => {
+        let user = req.user || null;
+        if (user) {
+            try {
+                user = (await expireUserIfNeeded(user)) || user;
+                req.user = user;
+            } catch {
+                /* ignore */
+            }
+        }
         res.json({
             user: publicUser(user),
             isAdmin: user ? isAdminEmail(user.email) : false,
             hasAccess: hasWritingAccess(user),
+            status: getAccessStatus(user),
             googleConfigured: googleReady,
-            bmcPaymentUrl: process.env.BMC_PAYMENT_URL || '',
+            bmcPaymentUrl: process.env.BMC_PAYMENT_URL || 'https://buymeacoffee.com/lingospark/extras',
             dbReady,
         });
     });
 
+    // Count a visit once per browser session (site total + signed-in user).
+    app.post('/api/visit', async (req, res) => {
+        try {
+            if (!dbReady) return res.json({ ok: true, counted: false });
+            let siteVisits = 0;
+            try {
+                siteVisits = await getSiteVisitCount();
+            } catch {
+                siteVisits = 0;
+            }
+            if (!req.session.visitCounted) {
+                req.session.visitCounted = true;
+                try {
+                    siteVisits = await recordSiteVisit();
+                } catch (err) {
+                    console.warn('recordSiteVisit failed:', err.message);
+                }
+            }
+            if (req.user?.id && !req.session.userVisitCounted) {
+                req.session.userVisitCounted = true;
+                try {
+                    await recordUserVisit(req.user.id);
+                } catch (err) {
+                    console.warn('recordUserVisit failed:', err.message);
+                }
+            }
+            res.json({ ok: true, counted: true, siteVisits });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
     app.get('/api/billing/bmc-url', (_req, res) => {
-        const url = process.env.BMC_PAYMENT_URL || '';
-        if (!url) return res.status(503).json({ error: 'BMC_PAYMENT_URL is not configured.' });
+        const url = process.env.BMC_PAYMENT_URL || 'https://buymeacoffee.com/lingospark/extras';
         res.json({ url });
     });
 
     app.get('/api/admin/users', requireAdmin, async (_req, res) => {
         try {
+            try {
+                await expireStaleAccess();
+            } catch (err) {
+                console.warn('expireStaleAccess failed:', err.message);
+            }
             const users = await listUsers();
-            res.json({
-                users: users.map((u) => ({
+            const mapped = users.map((u) => {
+                const status = getAccessStatus(u);
+                return {
                     ...publicUser(u),
                     hasAccess: hasWritingAccess(u),
+                    status,
                     createdAt: u.created_at,
-                })),
+                };
+            });
+            const counts = {
+                all: mapped.length,
+                active: mapped.filter((u) => u.status === 'active').length,
+                inactive: mapped.filter((u) => u.status === 'inactive').length,
+                expired: mapped.filter((u) => u.status === 'expired').length,
+                loggedInVisits: mapped.reduce((sum, u) => sum + Number(u.visitCount || 0), 0),
+            };
+            let siteVisits = 0;
+            try {
+                siteVisits = await getSiteVisitCount();
+            } catch (err) {
+                console.warn('getSiteVisitCount failed:', err.message);
+            }
+            res.json({
+                users: mapped,
+                counts,
+                siteVisits,
             });
         } catch (err) {
             res.status(500).json({ error: err.message });
