@@ -332,7 +332,7 @@
         <div class="about-pricing">
             <p style="margin-bottom:0.4rem;"><strong>Support options</strong></p>
             <p style="margin-bottom:0.6rem;"><strong>Vocab practice: FREE FOREVER!</strong> Flashcards, Bomb Defusal, Grid Territory and Team Challenge stay free.</p>
-            <p style="margin-bottom:0;">Writing Suite &amp; Primary English: the coffee is ONLY <strong>10 PLN</strong> a week, <strong>40 PLN</strong> a month for unlimited use!</p>
+            <p style="margin-bottom:0;">Writing Suite &amp; Primary English: the coffee is ONLY <strong>$3</strong> a week, <strong>$10</strong> a month for unlimited use!</p>
         </div>
         <p><a href="https://buymeacoffee.com/lingospark" target="_blank" rel="noopener">https://buymeacoffee.com/lingospark</a></p>
         <p style="margin-bottom:0;">For any questions, email me: <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a></p>
@@ -966,6 +966,14 @@
             return authState;
         }
 
+        async function trackVisit() {
+            try {
+                await fetch('/api/visit', { method: 'POST', credentials: 'include' });
+            } catch {
+                /* ignore */
+            }
+        }
+
         function renderAuthBar() {
             const bar = document.getElementById('auth-bar');
             if (!bar) return;
@@ -1037,7 +1045,7 @@
                 `;
                 note.textContent = '';
             } else if (!authState.hasAccess) {
-                body.textContent = 'Buy Access for Writing Suite & Primary English — 10 PLN / week or 40 PLN / month. Vocab practice stays FREE FOREVER.';
+                body.textContent = 'Buy Access for Writing Suite & Primary English — $3 / week or $10 / month. Vocab practice stays FREE FOREVER.';
                 const bmcUrl = authState.bmcPaymentUrl || '';
                 actions.innerHTML = bmcUrl
                     ? `<a class="btn btn-blue" href="${bmcUrl}" target="_blank" rel="noopener"><i class="fa-solid fa-mug-hot"></i> Buy Access</a>
@@ -1090,7 +1098,7 @@
             showScreen('setup');
         }
 
-        refreshAuth();
+        refreshAuth().then(() => trackVisit());
 
         function launchSelectedGame() {
             const vocabGames = ['flashcard', 'bomb', 'grid'];
