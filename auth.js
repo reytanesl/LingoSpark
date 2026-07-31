@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { upsertGoogleUser, getUserById, hasWritingAccess, isAdminEmail } from './db.js';
+import { upsertGoogleUser, getUserById, hasWritingAccess, isAdminEmail, expireUserIfNeeded } from './db.js';
 
 export function configurePassport() {
     const clientID = process.env.GOOGLE_CLIENT_ID;
@@ -54,9 +54,15 @@ export function requireAdmin(req, res, next) {
     return next();
 }
 
-export function requireWritingAccess(req, res, next) {
+export async function requireWritingAccess(req, res, next) {
     if (!req.isAuthenticated?.() || !req.user) {
         return res.status(401).json({ error: 'Sign in with Google required.' });
+    }
+    try {
+        const fresh = await expireUserIfNeeded(req.user);
+        req.user = fresh || req.user;
+    } catch {
+        /* ignore expiry cleanup failures */
     }
     if (!hasWritingAccess(req.user)) {
         return res.status(403).json({ error: 'Writing Suite access required. Use Buy Access or get admin approval.' });
