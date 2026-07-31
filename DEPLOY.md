@@ -15,7 +15,7 @@ You host one server with:
 1. **Cursor API key** — [cursor.com/dashboard/api](https://cursor.com/dashboard/api)
 2. **Postgres** — Render Postgres or [Neon](https://neon.tech)
 3. **Google Cloud OAuth** — [console.cloud.google.com](https://console.cloud.google.com/)
-4. **Buy Me a Coffee** page + membership (~10 PLN/month)
+4. **Buy Me a Coffee** — shop Extras: **$3 = 7 days**, **$10 = 30 days** (BMC is USD-only)
 5. **GitHub** + Git (optional but recommended)
 
 ---
@@ -76,14 +76,19 @@ URL example: `https://lingospark.onrender.com`
 
 ### Buy Me a Coffee setup
 
-1. Create a membership (~10 PLN/month) or one-time Extra (~10 PLN for 30 days)
+1. Create two paid options that match the site copy:
+   - **$3** → weekly access (webhook grants **7 days**)
+   - **$10** → monthly access (webhook grants **30 days**)
+   Use Extras (shop items) and/or memberships — name them clearly (e.g. “Week — $3”, “Month — $10”).
 2. Copy the payment page URL → `BMC_PAYMENT_URL`
 3. Studio → Integrations → Webhooks → endpoint:
-   `https://your-app.onrender.com/api/billing/bmc-webhook`
-4. Enable events: `membership.started`, `membership.updated`, `membership.cancelled`, `membership.paused`, and/or donation/extra purchase events
+   `https://lingospark.study/api/billing/bmc-webhook`
+4. Enable at least: `donation.created`, `extra_purchase.created`, `membership.started`, `membership.updated`, and the matching `*.refunded` events
 5. Copy signing secret → `BMC_WEBHOOK_SECRET`
 
 Students must pay with the **same email** as their Google account (or you Approve them in Admin).
+
+Access is automatic after a successful webhook: Writing Suite **and** Primary English use the same premium flag.
 
 ---
 
@@ -91,10 +96,13 @@ Students must pay with the **same email** as their Google account (or you Approv
 
 | Path | Result |
 |------|--------|
-| Admin Approves user at `/admin.html` | Writing Suite unlocked until Revoke |
-| Buy Me a Coffee membership | Unlocked while membership active |
-| One-time BMC purchase | Unlocked for 30 days |
-| No access | Play Now shows Sign in / Buy Access only (no “ask teacher” message) |
+| BMC payment period ends | Premium auto-revoked (`access_source` cleared; status **Expired** in Admin) |
+| Admin Approves user at `/admin.html` | Writing Suite + Primary English until you Revoke (BMC does not change this) |
+| BMC payment ≈ **$3** | Premium for **7 days** (stacks if they renew while still active) |
+| BMC payment ≈ **$10** | Premium for **30 days** (stacks the same way) |
+| BMC refund | BMC premium removed (admin Approve untouched) |
+| Membership cancel/pause | Remaining paid days kept until `access_until` |
+| No access | Play Now shows Sign in / Buy Access only |
 
 ---
 
