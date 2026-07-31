@@ -30,8 +30,22 @@ export async function initDb() {
             access_until TIMESTAMPTZ,
             bmc_supporter_email TEXT,
             bmc_membership_id TEXT,
+            visit_count INTEGER NOT NULL DEFAULT 0,
+            last_visit_at TIMESTAMPTZ,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
+    `);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS visit_count INTEGER NOT NULL DEFAULT 0`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_visit_at TIMESTAMPTZ`);
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS app_stats (
+            key TEXT PRIMARY KEY,
+            value BIGINT NOT NULL DEFAULT 0
+        );
+    `);
+    await db.query(`
+        INSERT INTO app_stats (key, value) VALUES ('site_visits', 0)
+        ON CONFLICT (key) DO NOTHING
     `);
     await db.query(`
         CREATE TABLE IF NOT EXISTS session (
@@ -47,6 +61,32 @@ export async function initDb() {
         END $$;
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS IDX_session_expire ON session (expire);`);
+}
+
+/** Clear BMC source when the paid period has ended (keeps access_until for history). */
+export async function expireStaleAccess() {
+    const db = getPool();
+    await db.query(`
+        UPDATE users
+        SET access_source = NULL
+        WHERE access_source = 'bmc'
+          AND access_until IS NOT NULL
+          AND access_until <= NOW()
+    `);
+}
+
+export async function expireUserIfNeeded(user) {
+    if (!user) return user;
+    if (user.access_source !== 'bmc') return user;
+    if (!user.access_until) return user;
+    if (new Date(user.access_until) > new Date()) return user;
+
+    const db = getPool();
+    const result = await db.query(
+        `UPDATE users SET access_source = NULL WHERE id = $1 RETURNING *`,
+        [user.id]
+    );
+    return result.rows[0] || user;
 }
 
 export async function upsertGoogleUser(profile) {
@@ -72,10 +112,11 @@ export async function upsertGoogleUser(profile) {
 export async function getUserById(id) {
     const db = getPool();
     const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
-    return result.rows[0] || null;
+    return expireUserIfNeeded(result.rows[0] || null);
 }
 
 export async function listUsers() {
+    await expireStaleAccess();
     const db = getPool();
     const result = await db.query('SELECT * FROM users ORDER BY created_at DESC');
     return result.rows;
@@ -99,14 +140,28 @@ export async function revokeUser(id) {
     return result.rows[0] || null;
 }
 
-export async function grantBmcAccessByEmail(email, { membershipId = null, days = null } = {}) {
+export async function grantBmcAccessByEmail(email, { membershipId = null, days = 7 } = {}) {
     const db = getPool();
     const normalized = (email || '').toLowerCase().trim();
     if (!normalized) return null;
 
-    const accessUntil = days
-        ? new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-        : null;
+    const existing = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalized]);
+    const user = existing.rows[0];
+    if (!user) return null;
+
+    // Manual admin Approve stays as-is — BMC must not overwrite it.
+    if (user.access_source === 'admin') {
+        return user;
+    }
+
+    const grantDays = Number.isFinite(Number(days)) && Number(days) > 0 ? Number(days) : 7;
+    const now = Date.now();
+    let base = now;
+    if (user.access_source === 'bmc' && user.access_until) {
+        const untilMs = new Date(user.access_until).getTime();
+        if (untilMs > base) base = untilMs;
+    }
+    const accessUntil = new Date(base + grantDays * 24 * 60 * 60 * 1000);
 
     const result = await db.query(
         `UPDATE users SET
@@ -140,11 +195,48 @@ export function hasWritingAccess(user) {
     if (!user) return false;
     if (user.access_source === 'admin') return true;
     if (user.access_source === 'bmc') {
-        if (!user.access_until) return true;
+        if (!user.access_until) return false; // timed BMC only — no open-ended BMC
         return new Date(user.access_until) > new Date();
     }
-    if (user.access_until && new Date(user.access_until) > new Date()) return true;
     return false;
+}
+
+/** active | expired | inactive */
+export function getAccessStatus(user) {
+    if (!user) return 'inactive';
+    if (hasWritingAccess(user)) return 'active';
+    if (user.access_until && new Date(user.access_until) <= new Date()) {
+        return 'expired';
+    }
+    return 'inactive';
+}
+
+export async function recordSiteVisit() {
+    const db = getPool();
+    const result = await db.query(
+        `UPDATE app_stats SET value = value + 1 WHERE key = 'site_visits' RETURNING value`
+    );
+    return Number(result.rows[0]?.value || 0);
+}
+
+export async function recordUserVisit(userId) {
+    if (!userId) return null;
+    const db = getPool();
+    const result = await db.query(
+        `UPDATE users
+         SET visit_count = COALESCE(visit_count, 0) + 1,
+             last_visit_at = NOW()
+         WHERE id = $1
+         RETURNING visit_count, last_visit_at`,
+        [userId]
+    );
+    return result.rows[0] || null;
+}
+
+export async function getSiteVisitCount() {
+    const db = getPool();
+    const result = await db.query(`SELECT value FROM app_stats WHERE key = 'site_visits'`);
+    return Number(result.rows[0]?.value || 0);
 }
 
 export function isAdminEmail(email) {
@@ -162,5 +254,8 @@ export function publicUser(user) {
         picture: user.picture,
         accessSource: user.access_source,
         accessUntil: user.access_until,
+        visitCount: Number(user.visit_count || 0),
+        lastVisitAt: user.last_visit_at || null,
+        status: getAccessStatus(user),
     };
 }
