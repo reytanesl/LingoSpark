@@ -351,7 +351,7 @@
                 <div class="grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Interactive flippable cards. "Don't know" cards stay in the deck until you master them.</p><button class="btn btn-outline" onclick="goToSetup('flashcard')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><button class="btn btn-outline" onclick="goToSetup('bomb')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>A strategic game of tic-tac-toe where claiming a square requires the correct answer.</p><button class="btn btn-outline" onclick="goToSetup('grid')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Humans claim squares by answering correctly.</p><button class="btn btn-outline" onclick="goToSetup('grid')">Play Now</button></div>
                 </div>
             </div>
 
@@ -451,6 +451,14 @@
                 <div class="form-group" id="bomb-settings" style="display: none;">
                     <label>Bomb Starting Time (Seconds):</label>
                     <input type="number" id="bomb-time-input" value="60" min="10" max="300" style="padding: 0.5rem; width: 100px;">
+                </div>
+
+                <div class="form-group" id="grid-settings" style="display: none;">
+                    <label><i class="fa-solid fa-border-all"></i> Grid Territory Mode:</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="grid-mode" value="bot" checked> Single player (vs bot) — you answer vocab; bot just plays</label>
+                        <label><input type="radio" name="grid-mode" value="pvp"> Two players — both teams answer to claim squares</label>
+                    </div>
                 </div>
             </div>
 
@@ -1091,6 +1099,7 @@
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
             document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
+            document.getElementById('grid-settings').style.display = (gameType === 'grid') ? 'block' : 'none';
             document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
@@ -2488,20 +2497,55 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         }
 
         // GRID TERRITORY
-        let gridState = Array(9).fill(null), currentPlayer = 'X', pendingCellIndex = null, currentGridWord = null;
+        let gridState = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let pendingCellIndex = null;
+        let currentGridWord = null;
+        let gridMode = 'bot'; // 'bot' | 'pvp'
+        let gridGameOver = false;
+        let gridBotTimer = null;
+        const GRID_WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
         function initGridTerritory() {
-            gridState = Array(9).fill(null); currentPlayer = 'X'; updateTurnDisplay(); renderGrid();
+            if (gridBotTimer) {
+                clearTimeout(gridBotTimer);
+                gridBotTimer = null;
+            }
+            const modeEl = document.querySelector('input[name="grid-mode"]:checked');
+            gridMode = modeEl ? modeEl.value : 'bot';
+            gridState = Array(9).fill(null);
+            currentPlayer = 'X';
+            gridGameOver = false;
+            pendingCellIndex = null;
+            updateTurnDisplay();
+            renderGrid();
         }
+
         function updateTurnDisplay() {
             const display = document.getElementById('turn-display');
-            display.innerText = currentPlayer === 'X' ? "Team 1's Turn (X)" : "Team 2's Turn (O)";
-            display.className = currentPlayer === 'X' ? "turn-indicator turn-blue" : "turn-indicator turn-red";
+            if (gridGameOver) {
+                display.innerText = 'Game over';
+                display.className = 'turn-indicator turn-blue';
+                return;
+            }
+            if (gridMode === 'bot') {
+                display.innerText = currentPlayer === 'X'
+                    ? "Your turn (X) — answer correctly to claim a square"
+                    : "Bot's turn (O)…";
+            } else {
+                display.innerText = currentPlayer === 'X' ? "Team 1's Turn (X)" : "Team 2's Turn (O)";
+            }
+            display.className = currentPlayer === 'X' ? 'turn-indicator turn-blue' : 'turn-indicator turn-red';
         }
+
         function renderGrid() {
-            const board = document.getElementById('tic-tac-toe-board'); board.innerHTML = "";
-            for(let i=0; i<9; i++) {
-                let cell = document.createElement('div'); cell.className = 'grid-cell';
-                if(gridState[i]) {
+            const board = document.getElementById('tic-tac-toe-board');
+            board.innerHTML = '';
+            const humanCanClick = !gridGameOver && (gridMode === 'pvp' || currentPlayer === 'X');
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                if (gridState[i]) {
                     const icon = document.createElement('i');
                     if (gridState[i] === 'X') {
                         icon.className = 'fa-solid fa-xmark';
@@ -2512,33 +2556,132 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                     }
                     cell.appendChild(icon);
                     cell.classList.add('claimed');
-                } else cell.onclick = () => openGridModal(i);
+                } else if (humanCanClick) {
+                    cell.onclick = () => openGridModal(i);
+                }
                 board.appendChild(cell);
             }
         }
+
         function openGridModal(index) {
-            pendingCellIndex = index; currentGridWord = getRandomWord();
+            if (gridGameOver) return;
+            if (gridMode === 'bot' && currentPlayer !== 'X') return;
+            pendingCellIndex = index;
+            currentGridWord = getRandomWord();
             document.getElementById('grid-prompt').innerText = currentGridWord.prompt;
-            document.getElementById('grid-answer').value = "";
+            document.getElementById('grid-answer').value = '';
             document.getElementById('grid-modal').style.display = 'flex';
             setTimeout(() => document.getElementById('grid-answer').focus(), 100);
         }
+
         function closeGridModal() { document.getElementById('grid-modal').style.display = 'none'; }
-        function handleGridInput(e) { if(e.key === 'Enter') checkGridAnswer(); }
-        function checkGridAnswer() {
-            const input = document.getElementById('grid-answer').value.trim().toLowerCase();
-            if(input === currentGridWord.answer) {
-                gridState[pendingCellIndex] = currentPlayer; closeGridModal(); renderGrid();
-                if(checkWin(currentPlayer)) setTimeout(() => alert((currentPlayer === 'X' ? "Team 1" : "Team 2") + " WINS!"), 100);
-                else { currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; updateTurnDisplay(); }
-            } else {
-                alert("Incorrect! The answer was: " + currentGridWord.answer + ".\nTurn passes to the other team.");
-                closeGridModal(); currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; updateTurnDisplay();
+        function handleGridInput(e) { if (e.key === 'Enter') checkGridAnswer(); }
+
+        function gridEmptyIndices() {
+            return gridState.map((v, i) => (v == null ? i : null)).filter((i) => i != null);
+        }
+
+        function isGridDraw() {
+            return gridEmptyIndices().length === 0 && !checkWin('X') && !checkWin('O');
+        }
+
+        function findWinningMove(player) {
+            for (const combo of GRID_WINS) {
+                const marks = combo.map((i) => gridState[i]);
+                const mine = marks.filter((m) => m === player).length;
+                const emptyIdx = combo.find((i) => gridState[i] == null);
+                if (mine === 2 && emptyIdx != null) return emptyIdx;
+            }
+            return null;
+        }
+
+        /** Moderate bot: always win/block; otherwise ~55% smart heuristic, ~45% random. */
+        function pickBotMove() {
+            const win = findWinningMove('O');
+            if (win != null) return win;
+            const block = findWinningMove('X');
+            if (block != null) return block;
+
+            const empty = gridEmptyIndices();
+            if (!empty.length) return null;
+
+            if (Math.random() < 0.55) {
+                if (gridState[4] == null) return 4;
+                const corners = [0, 2, 6, 8].filter((i) => gridState[i] == null);
+                if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+                const sides = [1, 3, 5, 7].filter((i) => gridState[i] == null);
+                if (sides.length) return sides[Math.floor(Math.random() * sides.length)];
+            }
+            return empty[Math.floor(Math.random() * empty.length)];
+        }
+
+        function finishGridIfNeeded(playerJustMoved) {
+            if (checkWin(playerJustMoved)) {
+                gridGameOver = true;
+                updateTurnDisplay();
+                renderGrid();
+                const label = gridMode === 'bot'
+                    ? (playerJustMoved === 'X' ? 'You win!' : 'Bot wins!')
+                    : ((playerJustMoved === 'X' ? 'Team 1' : 'Team 2') + ' WINS!');
+                setTimeout(() => alert(label), 80);
+                return true;
+            }
+            if (isGridDraw()) {
+                gridGameOver = true;
+                updateTurnDisplay();
+                renderGrid();
+                setTimeout(() => alert("It's a draw!"), 80);
+                return true;
+            }
+            return false;
+        }
+
+        function passGridTurn() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            updateTurnDisplay();
+            renderGrid();
+            if (gridMode === 'bot' && currentPlayer === 'O' && !gridGameOver) {
+                scheduleBotMove();
             }
         }
+
+        function scheduleBotMove() {
+            if (gridBotTimer) clearTimeout(gridBotTimer);
+            updateTurnDisplay();
+            renderGrid();
+            gridBotTimer = setTimeout(() => {
+                gridBotTimer = null;
+                if (gridGameOver || currentPlayer !== 'O') return;
+                const move = pickBotMove();
+                if (move == null) return;
+                gridState[move] = 'O';
+                if (finishGridIfNeeded('O')) return;
+                currentPlayer = 'X';
+                updateTurnDisplay();
+                renderGrid();
+            }, 550);
+        }
+
+        function checkGridAnswer() {
+            if (gridGameOver || pendingCellIndex == null) return;
+            const input = document.getElementById('grid-answer').value.trim().toLowerCase();
+            if (input === currentGridWord.answer) {
+                gridState[pendingCellIndex] = currentPlayer;
+                closeGridModal();
+                if (finishGridIfNeeded(currentPlayer)) return;
+                passGridTurn();
+            } else {
+                const passMsg = gridMode === 'bot'
+                    ? 'Incorrect! The answer was: ' + currentGridWord.answer + '.\nTurn passes to the bot.'
+                    : 'Incorrect! The answer was: ' + currentGridWord.answer + '.\nTurn passes to the other team.';
+                alert(passMsg);
+                closeGridModal();
+                passGridTurn();
+            }
+        }
+
         function checkWin(player) {
-            const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            return combos.some(c => c.every(idx => gridState[idx] === player));
+            return GRID_WINS.some((c) => c.every((idx) => gridState[idx] === player));
         }
 
         // CLASSIC FLASHCARDS
