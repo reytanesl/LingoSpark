@@ -166,8 +166,12 @@ export async function handleBmcWebhook(eventType, payload) {
             days,
             amount,
             user: user?.email || null,
+            pending: !user,
             skippedAdmin: user?.access_source === 'admin',
             accessUntil: user?.access_until || null,
+            note: user
+                ? null
+                : 'No account yet — payment queued and will apply when this email registers or signs in.',
         };
     }
 

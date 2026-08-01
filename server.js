@@ -22,8 +22,9 @@ import {
     getSiteVisitCount,
     expireStaleAccess,
     expireUserIfNeeded,
+    applyPendingBmcPayments,
 } from './db.js';
-import { configurePassport, requireAdmin, requireWritingAccess } from './auth.js';
+import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook } from './billing.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -99,7 +100,7 @@ async function start() {
 
     app.use(session(sessionConfig));
 
-    const googleReady = configurePassport();
+    const { googleReady } = configurePassport();
     app.use(passport.initialize());
     app.use(passport.session());
 
@@ -124,6 +125,53 @@ async function start() {
         );
     }
 
+    app.post('/auth/register', async (req, res, next) => {
+        try {
+            if (!dbReady) {
+                return res.status(503).json({ error: 'Database not available.' });
+            }
+            const user = await registerLocalAccount({
+                email: req.body?.email,
+                password: req.body?.password,
+                name: req.body?.name,
+            });
+            req.login(user, (err) => {
+                if (err) return next(err);
+                res.json({
+                    ok: true,
+                    user: publicUser(user),
+                    hasAccess: hasWritingAccess(user),
+                    status: getAccessStatus(user),
+                });
+            });
+        } catch (err) {
+            const status = err.status || 500;
+            if (status === 500) console.error('Register error:', err);
+            res.status(status).json({ error: err.message || 'Registration failed' });
+        }
+    });
+
+    app.post('/auth/login', (req, res, next) => {
+        if (!dbReady) {
+            return res.status(503).json({ error: 'Database not available.' });
+        }
+        passport.authenticate('local', (err, user, info) => {
+            if (err) return next(err);
+            if (!user) {
+                return res.status(401).json({ error: info?.message || 'Invalid email or password.' });
+            }
+            req.login(user, (loginErr) => {
+                if (loginErr) return next(loginErr);
+                res.json({
+                    ok: true,
+                    user: publicUser(user),
+                    hasAccess: hasWritingAccess(user),
+                    status: getAccessStatus(user),
+                });
+            });
+        })(req, res, next);
+    });
+
     app.post('/auth/logout', (req, res, next) => {
         req.logout((err) => {
             if (err) return next(err);
@@ -139,6 +187,7 @@ async function start() {
         if (user) {
             try {
                 user = (await expireUserIfNeeded(user)) || user;
+                user = (await applyPendingBmcPayments(user)) || user;
                 req.user = user;
             } catch {
                 /* ignore */
@@ -150,6 +199,7 @@ async function start() {
             hasAccess: hasWritingAccess(user),
             status: getAccessStatus(user),
             googleConfigured: googleReady,
+            localAuthEnabled: dbReady,
             bmcPaymentUrl: process.env.BMC_PAYMENT_URL || 'https://buymeacoffee.com/lingospark/extras',
             dbReady,
         });
@@ -298,6 +348,7 @@ async function start() {
             ok: true,
             cursorConfigured: Boolean(process.env.CURSOR_API_KEY),
             googleConfigured: googleReady,
+            localAuthEnabled: dbReady,
             dbReady,
             bmcConfigured: Boolean(process.env.BMC_PAYMENT_URL),
         });
@@ -311,7 +362,7 @@ async function start() {
             console.warn('Warning: CURSOR_API_KEY is not set.');
         }
         if (!googleReady) {
-            console.warn('Warning: Google OAuth not configured.');
+            console.warn('Warning: Google OAuth not configured (email/password login still available).');
         }
         if (!process.env.BMC_PAYMENT_URL) {
             console.warn('Warning: BMC_PAYMENT_URL is not set.');

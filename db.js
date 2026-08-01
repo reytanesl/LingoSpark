@@ -22,10 +22,11 @@ export async function initDb() {
     await db.query(`
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
-            google_id TEXT UNIQUE NOT NULL,
+            google_id TEXT UNIQUE,
             email TEXT UNIQUE NOT NULL,
             name TEXT,
             picture TEXT,
+            password_hash TEXT,
             access_source TEXT,
             access_until TIMESTAMPTZ,
             bmc_supporter_email TEXT,
@@ -35,8 +36,26 @@ export async function initDb() {
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
     `);
+    // Migrations for existing installs (Google-only → Google + email/password)
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS visit_count INTEGER NOT NULL DEFAULT 0`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_visit_at TIMESTAMPTZ`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
+    await db.query(`
+        DO $$ BEGIN
+            ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL;
+        EXCEPTION WHEN others THEN NULL;
+        END $$;
+    `);
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS pending_bmc_payments (
+            id SERIAL PRIMARY KEY,
+            email TEXT NOT NULL,
+            days INTEGER NOT NULL DEFAULT 7,
+            membership_id TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_pending_bmc_email ON pending_bmc_payments (LOWER(email))`);
     await db.query(`
         CREATE TABLE IF NOT EXISTS app_stats (
             key TEXT PRIMARY KEY,
@@ -96,23 +115,72 @@ export async function upsertGoogleUser(profile) {
     const name = profile.displayName || email;
     const picture = profile.photos?.[0]?.value || null;
 
+    if (!email) {
+        throw new Error('Google account did not provide an email');
+    }
+
+    // Existing Google account
+    const byGoogle = await db.query('SELECT * FROM users WHERE google_id = $1', [googleId]);
+    if (byGoogle.rows[0]) {
+        const result = await db.query(
+            `UPDATE users SET email = $2, name = $3, picture = $4 WHERE google_id = $1 RETURNING *`,
+            [googleId, email, name, picture]
+        );
+        return applyPendingBmcPayments(result.rows[0]);
+    }
+
+    // Link Google to an existing email/password account
+    const byEmail = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
+    if (byEmail.rows[0]) {
+        if (byEmail.rows[0].google_id && byEmail.rows[0].google_id !== googleId) {
+            throw new Error('This email is already linked to a different Google account');
+        }
+        const result = await db.query(
+            `UPDATE users SET google_id = $1, name = COALESCE(NULLIF($2, ''), name), picture = COALESCE($3, picture)
+             WHERE id = $4 RETURNING *`,
+            [googleId, name, picture, byEmail.rows[0].id]
+        );
+        return applyPendingBmcPayments(result.rows[0]);
+    }
+
     const result = await db.query(
         `INSERT INTO users (google_id, email, name, picture)
          VALUES ($1, $2, $3, $4)
-         ON CONFLICT (google_id) DO UPDATE SET
-            email = EXCLUDED.email,
-            name = EXCLUDED.name,
-            picture = EXCLUDED.picture
          RETURNING *`,
         [googleId, email, name, picture]
     );
-    return result.rows[0];
+    return applyPendingBmcPayments(result.rows[0]);
+}
+
+export async function createLocalUser({ email, passwordHash, name }) {
+    const db = getPool();
+    const normalized = (email || '').toLowerCase().trim();
+    if (!normalized) throw new Error('Email is required');
+    if (!passwordHash) throw new Error('Password is required');
+
+    const result = await db.query(
+        `INSERT INTO users (email, password_hash, name, google_id)
+         VALUES ($1, $2, $3, NULL)
+         RETURNING *`,
+        [normalized, passwordHash, name || normalized.split('@')[0]]
+    );
+    return applyPendingBmcPayments(result.rows[0]);
+}
+
+export async function getUserByEmail(email) {
+    const db = getPool();
+    const normalized = (email || '').toLowerCase().trim();
+    if (!normalized) return null;
+    const result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalized]);
+    return expireUserIfNeeded(result.rows[0] || null);
 }
 
 export async function getUserById(id) {
     const db = getPool();
     const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
-    return expireUserIfNeeded(result.rows[0] || null);
+    const user = await expireUserIfNeeded(result.rows[0] || null);
+    if (!user) return null;
+    return applyPendingBmcPayments(user);
 }
 
 export async function listUsers() {
@@ -140,14 +208,53 @@ export async function revokeUser(id) {
     return result.rows[0] || null;
 }
 
-export async function grantBmcAccessByEmail(email, { membershipId = null, days = 7 } = {}) {
+async function queuePendingBmcPayment(email, { membershipId = null, days = 7 } = {}) {
+    const db = getPool();
+    const normalized = (email || '').toLowerCase().trim();
+    const grantDays = Number.isFinite(Number(days)) && Number(days) > 0 ? Number(days) : 7;
+    await db.query(
+        `INSERT INTO pending_bmc_payments (email, days, membership_id) VALUES ($1, $2, $3)`,
+        [normalized, grantDays, membershipId]
+    );
+}
+
+/** Apply any BMC payments that arrived before the user registered. */
+export async function applyPendingBmcPayments(user) {
+    if (!user?.email) return user;
+    const db = getPool();
+    const normalized = user.email.toLowerCase().trim();
+    const pending = await db.query(
+        `SELECT * FROM pending_bmc_payments WHERE LOWER(email) = $1 ORDER BY created_at ASC`,
+        [normalized]
+    );
+    if (!pending.rows.length) return user;
+
+    let current = user;
+    for (const row of pending.rows) {
+        current =
+            (await grantBmcAccessByEmail(normalized, {
+                membershipId: row.membership_id,
+                days: row.days,
+                skipQueue: true,
+            })) || current;
+    }
+    await db.query(`DELETE FROM pending_bmc_payments WHERE LOWER(email) = $1`, [normalized]);
+    return current;
+}
+
+export async function grantBmcAccessByEmail(email, { membershipId = null, days = 7, skipQueue = false } = {}) {
     const db = getPool();
     const normalized = (email || '').toLowerCase().trim();
     if (!normalized) return null;
 
     const existing = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalized]);
     const user = existing.rows[0];
-    if (!user) return null;
+    if (!user) {
+        if (!skipQueue) {
+            await queuePendingBmcPayment(normalized, { membershipId, days });
+        }
+        return null;
+    }
 
     // Manual admin Approve stays as-is — BMC must not overwrite it.
     if (user.access_source === 'admin') {
@@ -188,6 +295,8 @@ export async function revokeBmcAccessByEmail(email) {
          RETURNING *`,
         [normalized]
     );
+    // Also clear pending grants on refund
+    await db.query(`DELETE FROM pending_bmc_payments WHERE LOWER(email) = $1`, [normalized]);
     return result.rows[0] || null;
 }
 
@@ -252,6 +361,8 @@ export function publicUser(user) {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        hasPassword: Boolean(user.password_hash),
+        hasGoogle: Boolean(user.google_id),
         accessSource: user.access_source,
         accessUntil: user.access_until,
         visitCount: Number(user.visit_count || 0),

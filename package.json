@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@cursor/sdk": "^1.0.23",
+    "bcrypt": "^6.0.0",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -21,6 +22,7 @@
     "express-session": "^1.18.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
     "pg": "^8.14.1"
   }
 }

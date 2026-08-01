@@ -277,6 +277,22 @@
         .paywall-modal p { color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
         .paywall-modal .paywall-actions { display: flex; flex-direction: column; gap: 0.75rem; }
         .paywall-modal .paywall-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; margin-bottom: 0; }
+        .auth-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .auth-tabs button {
+            flex: 1; padding: 0.55rem; border: 2px solid var(--light-grey); background: var(--light-grey);
+            border-radius: 8px; font-family: var(--font-secondary); font-weight: 700; cursor: pointer; color: var(--text-muted);
+        }
+        .auth-tabs button.active { border-color: var(--royal-blue); background: #eef4ff; color: var(--royal-blue); }
+        .auth-form { text-align: left; display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 0.75rem; }
+        .auth-form label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+        .auth-form input {
+            width: 100%; padding: 0.65rem 0.75rem; border: 2px solid #dde3ea; border-radius: 8px;
+            font-family: var(--font-secondary); font-size: 0.95rem; box-sizing: border-box;
+        }
+        .auth-form input:focus { outline: none; border-color: var(--royal-blue); }
+        .auth-error { color: var(--pillarbox-red); font-size: 0.85rem; min-height: 1.2em; margin: 0.25rem 0 0.5rem; text-align: left; }
+        .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); font-size: 0.8rem; margin: 0.75rem 0; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #dde3ea; }
 
         /* Word-Forged Odyssey */
         .odyssey-hud { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
@@ -351,7 +367,7 @@
                 <div class="grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Interactive flippable cards. "Don't know" cards stay in the deck until you master them.</p><button class="btn btn-outline" onclick="goToSetup('flashcard')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><button class="btn btn-outline" onclick="goToSetup('bomb')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>A strategic game of tic-tac-toe where claiming a square requires the correct answer.</p><button class="btn btn-outline" onclick="goToSetup('grid')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Humans claim squares by answering correctly.</p><button class="btn btn-outline" onclick="goToSetup('grid')">Play Now</button></div>
                 </div>
             </div>
 
@@ -452,11 +468,19 @@
                     <label>Bomb Starting Time (Seconds):</label>
                     <input type="number" id="bomb-time-input" value="60" min="10" max="300" style="padding: 0.5rem; width: 100px;">
                 </div>
+
+                <div class="form-group" id="grid-settings" style="display: none;">
+                    <label><i class="fa-solid fa-border-all"></i> Grid Territory Mode:</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="grid-mode" value="bot" checked> Single player (vs bot) — you answer vocab; bot just plays</label>
+                        <label><input type="radio" name="grid-mode" value="pvp"> Two players — both teams answer to claim squares</label>
+                    </div>
+                </div>
             </div>
 
             <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
                 <label style="color: #4f46e5;"><i class="fa-solid fa-robot"></i> Cursor AI Generation</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Writing Suite access required (Google sign-in + Buy Me a Coffee or teacher approval). Content is generated via Cursor AI on the server.</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Writing Suite access required (sign in with email or Google + Buy Me a Coffee or teacher approval). Content is generated via Cursor AI on the server.</p>
             </div>
 
             <div style="text-align: center; margin-top: 2rem;">
@@ -790,6 +814,37 @@
         </div>
     </div>
 
+    <!-- EMAIL / PASSWORD + GOOGLE AUTH -->
+    <div class="paywall-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+        <div class="paywall-modal" role="dialog" aria-labelledby="auth-title">
+            <h3 id="auth-title">Sign in</h3>
+            <div class="auth-tabs">
+                <button type="button" id="auth-tab-login" class="active" onclick="setAuthTab('login')">Sign in</button>
+                <button type="button" id="auth-tab-register" onclick="setAuthTab('register')">Create account</button>
+            </div>
+            <form class="auth-form" id="auth-form" onsubmit="submitAuthForm(event)">
+                <div id="auth-name-wrap" style="display:none;">
+                    <label for="auth-name">Name (optional)</label>
+                    <input type="text" id="auth-name" name="name" autocomplete="name" maxlength="80">
+                </div>
+                <label for="auth-email">Email</label>
+                <input type="email" id="auth-email" name="email" required autocomplete="email">
+                <label for="auth-password">Password</label>
+                <input type="password" id="auth-password" name="password" required autocomplete="current-password" minlength="8">
+                <p class="auth-error" id="auth-error"></p>
+                <button type="submit" class="btn btn-blue" id="auth-submit-btn" style="width:100%;">Sign in</button>
+            </form>
+            <div id="auth-google-wrap" style="display:none;">
+                <div class="auth-divider">or</div>
+                <a class="btn btn-outline" id="auth-google-btn" href="/auth/google" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
+                    <i class="fa-brands fa-google"></i> Continue with Google
+                </a>
+            </div>
+            <p class="paywall-note">Use the same email on Buy Me a Coffee as your LingoSpark account.</p>
+            <button type="button" class="btn btn-grey" style="margin-top:0.75rem;width:100%;" onclick="closeAuthModal()">Cancel</button>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // UI CORE & ROUTING
@@ -951,16 +1006,17 @@
             document.getElementById('screen-' + screenId).classList.add('active');
         }
 
-        const WRITING_SUITE_PASSWORD = null; // replaced by Google + Buy Me a Coffee paywall
+        const WRITING_SUITE_PASSWORD = null; // replaced by account login + Buy Me a Coffee paywall
         let pendingWritingGame = null;
-        let authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false };
+        let authTab = 'login';
+        let authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false, localAuthEnabled: true };
 
         async function refreshAuth() {
             try {
                 const res = await fetch('/api/auth/me', { credentials: 'include' });
                 authState = await res.json();
             } catch {
-                authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false };
+                authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false, localAuthEnabled: true };
             }
             renderAuthBar();
             return authState;
@@ -995,13 +1051,82 @@
                 `;
             } else {
                 bar.innerHTML = `
-                    <button class="btn btn-red" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="location.href='/auth/google?returnTo='+encodeURIComponent(location.pathname)">
-                        <i class="fa-brands fa-google"></i> Sign in
+                    <button class="btn btn-red" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="openAuthModal('login')">
+                        <i class="fa-solid fa-right-to-bracket"></i> Sign in
                     </button>
                     ${menuBtn}
                 `;
             }
             syncAboutMenuBtn();
+        }
+
+        function setAuthTab(tab) {
+            authTab = tab === 'register' ? 'register' : 'login';
+            document.getElementById('auth-tab-login').classList.toggle('active', authTab === 'login');
+            document.getElementById('auth-tab-register').classList.toggle('active', authTab === 'register');
+            document.getElementById('auth-title').textContent = authTab === 'register' ? 'Create account' : 'Sign in';
+            document.getElementById('auth-name-wrap').style.display = authTab === 'register' ? 'block' : 'none';
+            document.getElementById('auth-submit-btn').textContent = authTab === 'register' ? 'Create account' : 'Sign in';
+            document.getElementById('auth-password').autocomplete = authTab === 'register' ? 'new-password' : 'current-password';
+            document.getElementById('auth-error').textContent = '';
+        }
+
+        function openAuthModal(tab) {
+            setAuthTab(tab || 'login');
+            document.getElementById('auth-error').textContent = '';
+            document.getElementById('auth-email').value = '';
+            document.getElementById('auth-password').value = '';
+            document.getElementById('auth-name').value = '';
+            const googleWrap = document.getElementById('auth-google-wrap');
+            const googleBtn = document.getElementById('auth-google-btn');
+            if (authState.googleConfigured) {
+                googleWrap.style.display = 'block';
+                googleBtn.href = '/auth/google?returnTo=' + encodeURIComponent(location.pathname + location.search);
+            } else {
+                googleWrap.style.display = 'none';
+            }
+            document.getElementById('auth-overlay').classList.add('open');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-overlay').classList.remove('open');
+        }
+
+        async function submitAuthForm(event) {
+            event.preventDefault();
+            const errorEl = document.getElementById('auth-error');
+            errorEl.textContent = '';
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const name = document.getElementById('auth-name').value.trim();
+            const endpoint = authTab === 'register' ? '/auth/register' : '/auth/login';
+            const btn = document.getElementById('auth-submit-btn');
+            btn.disabled = true;
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, name }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Sign in failed');
+                await refreshAuth();
+                closeAuthModal();
+                await trackVisit();
+                if (pendingWritingGame) {
+                    if (authState.hasAccess) {
+                        goToSetup(pendingWritingGame);
+                        pendingWritingGame = null;
+                    } else {
+                        openPaywallModal();
+                    }
+                }
+            } catch (err) {
+                errorEl.textContent = err.message || 'Something went wrong';
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         function toggleAboutPanel() {
@@ -1037,13 +1162,13 @@
             const note = document.getElementById('paywall-note');
 
             if (!authState.user) {
-                body.textContent = 'Sign in with Google to unlock the Writing Suite.';
+                body.textContent = 'Sign in with email/password or Google to unlock the Writing Suite.';
                 actions.innerHTML = `
-                    <a class="btn btn-blue" href="/auth/google?returnTo=${encodeURIComponent(location.pathname + location.search)}">
-                        <i class="fa-brands fa-google"></i> Sign in with Google
-                    </a>
+                    <button class="btn btn-blue" onclick="closePaywall(); openAuthModal('login')">
+                        <i class="fa-solid fa-right-to-bracket"></i> Sign in / Create account
+                    </button>
                 `;
-                note.textContent = '';
+                note.textContent = 'After signing in, buy access with the same email on Buy Me a Coffee.';
             } else if (!authState.hasAccess) {
                 body.textContent = 'Buy Access for Writing Suite & Primary English — $3 / week or $10 / month. Vocab practice stays FREE FOREVER.';
                 const bmcUrl = authState.bmcPaymentUrl || '';
@@ -1051,7 +1176,7 @@
                     ? `<a class="btn btn-blue" href="${bmcUrl}" target="_blank" rel="noopener"><i class="fa-solid fa-mug-hot"></i> Buy Access</a>
                        <button class="btn btn-outline" onclick="checkAccessAfterPurchase()"><i class="fa-solid fa-rotate"></i> I already paid — refresh access</button>`
                     : `<button class="btn btn-blue" disabled>Buy Access (not configured)</button>`;
-                note.textContent = 'Use the same email on Buy Me a Coffee as your Google account.';
+                note.textContent = 'Use the same email on Buy Me a Coffee as your LingoSpark account (' + (authState.user.email || '') + ').';
             } else {
                 closePaywall();
                 if (pendingWritingGame) goToSetup(pendingWritingGame);
@@ -1066,7 +1191,7 @@
                 closePaywall();
                 if (pendingWritingGame) goToSetup(pendingWritingGame);
             } else {
-                alert('Access not found yet. Make sure you paid with the same email as Google, or wait a moment and try again. Your teacher can also approve your account.');
+                alert('Access not found yet. Make sure you paid with the same email as your LingoSpark account, or wait a moment and try again. Your teacher can also approve your account.');
             }
         }
 
@@ -1091,6 +1216,7 @@
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
             document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
+            document.getElementById('grid-settings').style.display = (gameType === 'grid') ? 'block' : 'none';
             document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
@@ -2488,20 +2614,55 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         }
 
         // GRID TERRITORY
-        let gridState = Array(9).fill(null), currentPlayer = 'X', pendingCellIndex = null, currentGridWord = null;
+        let gridState = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let pendingCellIndex = null;
+        let currentGridWord = null;
+        let gridMode = 'bot'; // 'bot' | 'pvp'
+        let gridGameOver = false;
+        let gridBotTimer = null;
+        const GRID_WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
         function initGridTerritory() {
-            gridState = Array(9).fill(null); currentPlayer = 'X'; updateTurnDisplay(); renderGrid();
+            if (gridBotTimer) {
+                clearTimeout(gridBotTimer);
+                gridBotTimer = null;
+            }
+            const modeEl = document.querySelector('input[name="grid-mode"]:checked');
+            gridMode = modeEl ? modeEl.value : 'bot';
+            gridState = Array(9).fill(null);
+            currentPlayer = 'X';
+            gridGameOver = false;
+            pendingCellIndex = null;
+            updateTurnDisplay();
+            renderGrid();
         }
+
         function updateTurnDisplay() {
             const display = document.getElementById('turn-display');
-            display.innerText = currentPlayer === 'X' ? "Team 1's Turn (X)" : "Team 2's Turn (O)";
-            display.className = currentPlayer === 'X' ? "turn-indicator turn-blue" : "turn-indicator turn-red";
+            if (gridGameOver) {
+                display.innerText = 'Game over';
+                display.className = 'turn-indicator turn-blue';
+                return;
+            }
+            if (gridMode === 'bot') {
+                display.innerText = currentPlayer === 'X'
+                    ? "Your turn (X) — answer correctly to claim a square"
+                    : "Bot's turn (O)…";
+            } else {
+                display.innerText = currentPlayer === 'X' ? "Team 1's Turn (X)" : "Team 2's Turn (O)";
+            }
+            display.className = currentPlayer === 'X' ? 'turn-indicator turn-blue' : 'turn-indicator turn-red';
         }
+
         function renderGrid() {
-            const board = document.getElementById('tic-tac-toe-board'); board.innerHTML = "";
-            for(let i=0; i<9; i++) {
-                let cell = document.createElement('div'); cell.className = 'grid-cell';
-                if(gridState[i]) {
+            const board = document.getElementById('tic-tac-toe-board');
+            board.innerHTML = '';
+            const humanCanClick = !gridGameOver && (gridMode === 'pvp' || currentPlayer === 'X');
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                if (gridState[i]) {
                     const icon = document.createElement('i');
                     if (gridState[i] === 'X') {
                         icon.className = 'fa-solid fa-xmark';
@@ -2512,33 +2673,132 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                     }
                     cell.appendChild(icon);
                     cell.classList.add('claimed');
-                } else cell.onclick = () => openGridModal(i);
+                } else if (humanCanClick) {
+                    cell.onclick = () => openGridModal(i);
+                }
                 board.appendChild(cell);
             }
         }
+
         function openGridModal(index) {
-            pendingCellIndex = index; currentGridWord = getRandomWord();
+            if (gridGameOver) return;
+            if (gridMode === 'bot' && currentPlayer !== 'X') return;
+            pendingCellIndex = index;
+            currentGridWord = getRandomWord();
             document.getElementById('grid-prompt').innerText = currentGridWord.prompt;
-            document.getElementById('grid-answer').value = "";
+            document.getElementById('grid-answer').value = '';
             document.getElementById('grid-modal').style.display = 'flex';
             setTimeout(() => document.getElementById('grid-answer').focus(), 100);
         }
+
         function closeGridModal() { document.getElementById('grid-modal').style.display = 'none'; }
-        function handleGridInput(e) { if(e.key === 'Enter') checkGridAnswer(); }
-        function checkGridAnswer() {
-            const input = document.getElementById('grid-answer').value.trim().toLowerCase();
-            if(input === currentGridWord.answer) {
-                gridState[pendingCellIndex] = currentPlayer; closeGridModal(); renderGrid();
-                if(checkWin(currentPlayer)) setTimeout(() => alert((currentPlayer === 'X' ? "Team 1" : "Team 2") + " WINS!"), 100);
-                else { currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; updateTurnDisplay(); }
-            } else {
-                alert("Incorrect! The answer was: " + currentGridWord.answer + ".\nTurn passes to the other team.");
-                closeGridModal(); currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; updateTurnDisplay();
+        function handleGridInput(e) { if (e.key === 'Enter') checkGridAnswer(); }
+
+        function gridEmptyIndices() {
+            return gridState.map((v, i) => (v == null ? i : null)).filter((i) => i != null);
+        }
+
+        function isGridDraw() {
+            return gridEmptyIndices().length === 0 && !checkWin('X') && !checkWin('O');
+        }
+
+        function findWinningMove(player) {
+            for (const combo of GRID_WINS) {
+                const marks = combo.map((i) => gridState[i]);
+                const mine = marks.filter((m) => m === player).length;
+                const emptyIdx = combo.find((i) => gridState[i] == null);
+                if (mine === 2 && emptyIdx != null) return emptyIdx;
+            }
+            return null;
+        }
+
+        /** Moderate bot: always win/block; otherwise ~55% smart heuristic, ~45% random. */
+        function pickBotMove() {
+            const win = findWinningMove('O');
+            if (win != null) return win;
+            const block = findWinningMove('X');
+            if (block != null) return block;
+
+            const empty = gridEmptyIndices();
+            if (!empty.length) return null;
+
+            if (Math.random() < 0.55) {
+                if (gridState[4] == null) return 4;
+                const corners = [0, 2, 6, 8].filter((i) => gridState[i] == null);
+                if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+                const sides = [1, 3, 5, 7].filter((i) => gridState[i] == null);
+                if (sides.length) return sides[Math.floor(Math.random() * sides.length)];
+            }
+            return empty[Math.floor(Math.random() * empty.length)];
+        }
+
+        function finishGridIfNeeded(playerJustMoved) {
+            if (checkWin(playerJustMoved)) {
+                gridGameOver = true;
+                updateTurnDisplay();
+                renderGrid();
+                const label = gridMode === 'bot'
+                    ? (playerJustMoved === 'X' ? 'You win!' : 'Bot wins!')
+                    : ((playerJustMoved === 'X' ? 'Team 1' : 'Team 2') + ' WINS!');
+                setTimeout(() => alert(label), 80);
+                return true;
+            }
+            if (isGridDraw()) {
+                gridGameOver = true;
+                updateTurnDisplay();
+                renderGrid();
+                setTimeout(() => alert("It's a draw!"), 80);
+                return true;
+            }
+            return false;
+        }
+
+        function passGridTurn() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            updateTurnDisplay();
+            renderGrid();
+            if (gridMode === 'bot' && currentPlayer === 'O' && !gridGameOver) {
+                scheduleBotMove();
             }
         }
+
+        function scheduleBotMove() {
+            if (gridBotTimer) clearTimeout(gridBotTimer);
+            updateTurnDisplay();
+            renderGrid();
+            gridBotTimer = setTimeout(() => {
+                gridBotTimer = null;
+                if (gridGameOver || currentPlayer !== 'O') return;
+                const move = pickBotMove();
+                if (move == null) return;
+                gridState[move] = 'O';
+                if (finishGridIfNeeded('O')) return;
+                currentPlayer = 'X';
+                updateTurnDisplay();
+                renderGrid();
+            }, 550);
+        }
+
+        function checkGridAnswer() {
+            if (gridGameOver || pendingCellIndex == null) return;
+            const input = document.getElementById('grid-answer').value.trim().toLowerCase();
+            if (input === currentGridWord.answer) {
+                gridState[pendingCellIndex] = currentPlayer;
+                closeGridModal();
+                if (finishGridIfNeeded(currentPlayer)) return;
+                passGridTurn();
+            } else {
+                const passMsg = gridMode === 'bot'
+                    ? 'Incorrect! The answer was: ' + currentGridWord.answer + '.\nTurn passes to the bot.'
+                    : 'Incorrect! The answer was: ' + currentGridWord.answer + '.\nTurn passes to the other team.';
+                alert(passMsg);
+                closeGridModal();
+                passGridTurn();
+            }
+        }
+
         function checkWin(player) {
-            const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            return combos.some(c => c.every(idx => gridState[idx] === player));
+            return GRID_WINS.some((c) => c.every((idx) => gridState[idx] === player));
         }
 
         // CLASSIC FLASHCARDS

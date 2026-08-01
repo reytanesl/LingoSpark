@@ -92,7 +92,7 @@
                 <div class="stat logged">
                     <div class="label">Logged in</div>
                     <div class="value" id="stat-all">—</div>
-                    <div class="hint">Google accounts registered</div>
+                    <div class="hint">Accounts registered</div>
                 </div>
                 <div class="stat active">
                     <div class="label">Active</div>
@@ -221,14 +221,14 @@
                 const me = await meRes.json();
                 if (!me.user) {
                     msg.className = 'msg error';
-                    msg.innerHTML = 'Please <a href="/auth/google?returnTo=/admin.html">sign in with Google</a> as the admin account.';
+                    msg.innerHTML = 'Please <a href="/">sign in</a> as the admin account (email/password or Google), then open Admin again.';
                     document.getElementById('users-body').innerHTML = '';
                     return;
                 }
                 document.getElementById('admin-label').textContent = me.user.email;
                 if (!me.isAdmin) {
                     msg.className = 'msg error';
-                    msg.textContent = 'This Google account is not the admin (ADMIN_EMAIL).';
+                    msg.textContent = 'This account is not the admin (ADMIN_EMAIL).';
                     document.getElementById('users-body').innerHTML = '';
                     return;
                 }
