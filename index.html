@@ -180,6 +180,18 @@
         
         .flashcard-controls { display: flex; justify-content: center; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .flashcard-controls.visible { opacity: 1; pointer-events: auto; }
+
+        /* Vocab Auction embed */
+        .auction-screen { padding-bottom: 0; overflow: hidden; }
+        .auction-frame {
+            width: 100%;
+            border: none;
+            display: block;
+            min-height: 75vh;
+            height: calc(100vh - 180px);
+            background: var(--light-grey);
+            border-radius: 0 0 12px 12px;
+        }
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 
         /* Auth bar + paywall modal */
@@ -363,11 +375,12 @@
                 <i class="fa-solid fa-book-open cat-icon"></i><h2>Vocab Review</h2><i class="fa-solid fa-chevron-down chevron"></i>
             </div>
             <div id="cat-vocab" class="category-content">
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Paste your own vocabulary lists to play these interactive modes.</p>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Paste your own vocabulary lists to play — or jump into Vocab Auction with built-in word pools.</p>
                 <div class="grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Interactive flippable cards. "Don't know" cards stay in the deck until you master them.</p><button class="btn btn-outline" onclick="goToSetup('flashcard')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><button class="btn btn-outline" onclick="goToSetup('bomb')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Humans claim squares by answering correctly.</p><button class="btn btn-outline" onclick="goToSetup('grid')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word that matches the definition. Confidence pays — mistakes cost. Built-in levels or your own word list.</p><button class="btn btn-outline" onclick="goToAuction()">Play Now</button></div>
                 </div>
             </div>
 
@@ -786,6 +799,16 @@
                 <button class="btn btn-red" onclick="markFc(false)"><i class="fa-solid fa-xmark"></i> Don't Know</button>
                 <button class="btn btn-green" onclick="markFc(true)"><i class="fa-solid fa-check"></i> Know</button>
             </div>
+        </div>
+
+        <!-- CORE VOCAB: VOCAB AUCTION -->
+        <div id="screen-auction" class="screen engine-container auction-screen">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="exitAuction()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <h2 style="margin:0; color: var(--royal-blue); font-family: var(--font-primary); font-size: 1.35rem;"><i class="fa-solid fa-gavel"></i> Vocab Auction</h2>
+                <div style="width: 80px;"></div>
+            </div>
+            <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank"></iframe>
         </div>
 
     </div>
@@ -1343,6 +1366,22 @@
             document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
             
             showScreen('setup');
+        }
+
+        /** Vocab Auction has its own in-game menu — skip glossary setup. */
+        function goToAuction() {
+            activeGame = 'auction';
+            const frame = document.getElementById('auction-frame');
+            // Cache-bust so a fresh run always loads current vocab-auction.html
+            frame.src = 'vocab-auction.html?embed=1&t=' + Date.now();
+            showScreen('auction');
+            trackPageView('auction');
+        }
+
+        function exitAuction() {
+            const frame = document.getElementById('auction-frame');
+            frame.src = 'about:blank';
+            showScreen('home');
         }
 
         refreshAuth().then(() => {

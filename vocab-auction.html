@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocab Auction | LingoSpark</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* LingoSpark British Style — bright theme tokens */
+        :root {
+            --font-primary: 'Poppins', 'Montserrat', 'Nunito', sans-serif;
+            --font-secondary: 'Inter', 'Roboto', 'Lato', sans-serif;
+            --royal-blue: #012169;
+            --pillarbox-red: #C8102E;
+            --bright-white: #FFFFFF;
+            --light-grey: #F4F5F7;
+            --text-dark: #2D2D2D;
+            --text-muted: #5A5A5A;
+            --success-green: #00823B;
+            --border-light: #E0E0E0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: var(--light-grey);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4 { font-family: var(--font-primary); }
+
+        /* Header */
+        header {
+            background: var(--bright-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 1.5rem;
+            text-align: center;
+        }
+
+        .brand {
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--royal-blue);
+            letter-spacing: -0.5px;
+        }
+
+        .brand span { color: var(--pillarbox-red); }
+
+        .brand-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        /* Shell */
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 3rem;
+        }
+
+        .panel {
+            background: var(--bright-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+
+        /* Screens */
+        .screen { display: none; animation: fadeIn 0.35s ease; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .screen-title {
+            color: var(--royal-blue);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .screen-desc {
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
+            font-size: 1.05rem;
+        }
+
+        /* Settings form */
+        .form-group {
+            background: var(--light-grey);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.1rem;
+            border-left: 4px solid var(--royal-blue);
+        }
+
+        .form-group label.group-label {
+            display: block;
+            font-family: var(--font-primary);
+            font-weight: 700;
+            color: var(--royal-blue);
+            margin-bottom: 0.65rem;
+            font-size: 0.95rem;
+        }
+
+        .option-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1.25rem;
+        }
+
+        .option-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .option-row input[type="radio"] {
+            accent-color: var(--royal-blue);
+            width: 16px;
+            height: 16px;
+        }
+
+        #custom-words-wrap {
+            display: none;
+            margin-top: 0.85rem;
+        }
+
+        #custom-words-wrap.visible { display: block; }
+
+        #custom-words {
+            width: 100%;
+            min-height: 90px;
+            border: 2px solid #dde3ea;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-secondary);
+            font-size: 0.95rem;
+            resize: vertical;
+            color: var(--text-dark);
+        }
+
+        #custom-words:focus {
+            outline: none;
+            border-color: var(--royal-blue);
+        }
+
+        /* Buttons */
+        .btn {
+            font-family: var(--font-primary);
+            padding: 0.85rem 1.6rem;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-blue { background: var(--royal-blue); color: #fff; }
+        .btn-blue:hover { background: #011648; }
+        .btn-red { background: var(--pillarbox-red); color: #fff; }
+        .btn-red:hover { background: #a00d24; }
+        .btn-green { background: var(--success-green); color: #fff; }
+        .btn-green:hover { background: #00602b; }
+        .btn-grey { background: var(--text-muted); color: #fff; }
+        .btn-grey:hover { background: #333; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-lg {
+            padding: 1rem 2.25rem;
+            font-size: 1.15rem;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        /* Round HUD */
+        .hud {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hud-chip {
+            background: var(--light-grey);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+
+        .hud-chip .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-family: var(--font-primary);
+            font-weight: 600;
+        }
+
+        .hud-chip .value {
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: var(--royal-blue);
+            line-height: 1.2;
+        }
+
+        .hud-chip.bankroll .value { color: var(--success-green); }
+
+        .definition-box {
+            background: rgba(1, 33, 105, 0.05);
+            border: 2px solid var(--royal-blue);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .definition-box .eyebrow {
+            font-family: var(--font-primary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--pillarbox-red);
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .definition-box p {
+            font-size: 1.15rem;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            background: var(--royal-blue);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-family: var(--font-primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        /* Multiple choice cards */
+        .bet-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .bet-grid { grid-template-columns: 1fr; }
+            .hud { grid-template-columns: 1fr 1fr; }
+            .screen-title { font-size: 1.55rem; }
+        }
+
+        .bet-card {
+            background: var(--bright-white);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.1rem 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .bet-card:hover:not(.locked) {
+            border-color: var(--royal-blue);
+            box-shadow: 0 6px 14px rgba(1, 33, 105, 0.08);
+        }
+
+        .bet-card.correct {
+            border-color: var(--success-green);
+            background: rgba(0, 130, 59, 0.08);
+        }
+
+        .bet-card.wrong {
+            border-color: var(--pillarbox-red);
+            background: rgba(200, 16, 46, 0.08);
+        }
+
+        .bet-card .word {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--royal-blue);
+            text-align: center;
+            margin-bottom: 0.85rem;
+            word-break: break-word;
+        }
+
+        .bet-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .bet-controls input[type="range"] {
+            width: 100%;
+            accent-color: var(--royal-blue);
+            cursor: pointer;
+        }
+
+        .bet-controls input[type="range"]:disabled { cursor: not-allowed; }
+
+        .bet-amount-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .bet-amount-row span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .bet-amount-row input[type="number"] {
+            width: 90px;
+            border: 2px solid #dde3ea;
+            border-radius: 8px;
+            padding: 0.35rem 0.5rem;
+            font-family: var(--font-secondary);
+            font-weight: 700;
+            color: var(--royal-blue);
+            text-align: right;
+        }
+
+        .bet-amount-row input[type="number"]:focus {
+            outline: none;
+            border-color: var(--royal-blue);
+        }
+
+        .chips-left {
+            text-align: center;
+            margin-top: 1rem;
+            font-family: var(--font-primary);
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .chips-left strong { color: var(--royal-blue); }
+
+        /* Typed input mode */
+        .typed-wrap {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .typed-wrap input[type="text"] {
+            width: 100%;
+            border: 3px solid var(--royal-blue);
+            border-radius: 8px;
+            padding: 0.9rem 1rem;
+            font-size: 1.35rem;
+            font-family: var(--font-primary);
+            font-weight: 700;
+            color: var(--royal-blue);
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .typed-wrap input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(1, 33, 105, 0.15);
+        }
+
+        .typed-wrap input[type="text"].correct {
+            border-color: var(--success-green);
+            background: rgba(0, 130, 59, 0.08);
+        }
+
+        .typed-wrap input[type="text"].wrong {
+            border-color: var(--pillarbox-red);
+            background: rgba(200, 16, 46, 0.08);
+        }
+
+        .typed-bet {
+            background: var(--light-grey);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .typed-bet .word {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            color: var(--royal-blue);
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .hint-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .hint-display {
+            display: none;
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: 1.55rem;
+            letter-spacing: 0.35em;
+            color: var(--royal-blue);
+            background: rgba(1, 33, 105, 0.05);
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        .hint-display.visible { display: block; }
+
+        .example-hint {
+            display: none;
+            font-family: var(--font-secondary);
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            background: rgba(200, 16, 46, 0.05);
+            border-left: 4px solid var(--pillarbox-red);
+            border-radius: 0 8px 8px 0;
+            padding: 0.85rem 1.1rem;
+            text-align: left;
+            line-height: 1.5;
+            max-width: 100%;
+        }
+
+        .example-hint.visible { display: block; }
+
+        .example-hint .blank {
+            font-style: normal;
+            font-family: var(--font-primary);
+            font-weight: 800;
+            color: var(--pillarbox-red);
+            letter-spacing: 0.08em;
+        }
+
+        .hint-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-hint {
+            background: transparent;
+            border: 2px solid var(--royal-blue);
+            color: var(--royal-blue);
+            padding: 0.55rem 1.25rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-hint:hover:not(:disabled) {
+            background: var(--royal-blue);
+            color: #fff;
+        }
+
+        .btn-hint-free {
+            border-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        .btn-hint-free:hover:not(:disabled) {
+            background: var(--success-green);
+            color: #fff;
+        }
+
+        .hint-cost-note {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Lock In — generous separation from sliders */
+        .lock-in-wrap {
+            margin-top: 3.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Result summary */
+        .result-banner {
+            margin-top: 1.75rem;
+            text-align: center;
+            padding: 1.25rem;
+            border-radius: 12px;
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .result-banner.win {
+            background: rgba(0, 130, 59, 0.1);
+            color: var(--success-green);
+        }
+
+        .result-banner.lose {
+            background: rgba(200, 16, 46, 0.1);
+            color: var(--pillarbox-red);
+        }
+
+        .result-banner.neutral {
+            background: rgba(1, 33, 105, 0.08);
+            color: var(--royal-blue);
+        }
+
+        .correct-reveal {
+            text-align: center;
+            margin-top: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .correct-reveal strong { color: var(--success-green); }
+
+        /* Game over */
+        .gameover-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.25rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            background: rgba(1, 33, 105, 0.05);
+            color: var(--royal-blue);
+        }
+
+        .gameover-icon.victory { color: var(--success-green); background: rgba(0, 130, 59, 0.1); }
+        .gameover-icon.bankrupt { color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.1); }
+
+        .gameover-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.75rem 0;
+        }
+
+        .stat-box {
+            background: var(--light-grey);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-box .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-family: var(--font-primary);
+            font-weight: 600;
+        }
+
+        .stat-box .value {
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: 1.75rem;
+            color: var(--royal-blue);
+        }
+
+        .loading-overlay {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--royal-blue);
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .loading-overlay i {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.75rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none !important; }
+
+        body.embed header,
+        body.embed footer {
+            display: none;
+        }
+
+        body.embed .container {
+            padding-top: 1rem;
+            padding-bottom: 1.5rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand">Lingo<span>Spark</span></div>
+    <div class="brand-sub">Vocab Auction</div>
+</header>
+
+<main class="container">
+
+    <!-- ========== MAIN MENU ========== -->
+    <section id="screen-menu" class="screen active panel">
+        <h1 class="screen-title"><i class="fa-solid fa-gavel"></i> Vocab Auction</h1>
+        <p class="screen-desc">Bet chips on the word that matches the definition. Confidence pays — mistakes cost.</p>
+
+        <div class="form-group">
+            <label class="group-label"><i class="fa-solid fa-layer-group"></i> Level</label>
+            <div class="option-row" id="level-options">
+                <label><input type="radio" name="level" value="beginner" checked> Beginner</label>
+                <label><input type="radio" name="level" value="easy"> Easy</label>
+                <label><input type="radio" name="level" value="intermediate"> Intermediate</label>
+                <label><input type="radio" name="level" value="hard"> Hard</label>
+                <label><input type="radio" name="level" value="custom"> Custom</label>
+            </div>
+            <div id="custom-words-wrap">
+                <textarea id="custom-words" placeholder="Enter words separated by commas, e.g. apple, journey, resilient, luminous…"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="group-label"><i class="fa-solid fa-flag-checkered"></i> Game Length</label>
+            <div class="option-row">
+                <label><input type="radio" name="length" value="10" checked> 10 Rounds</label>
+                <label><input type="radio" name="length" value="survival"> Survival</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="group-label"><i class="fa-solid fa-keyboard"></i> Input Style</label>
+            <div class="option-row">
+                <label><input type="radio" name="inputStyle" value="mc" checked> Multiple Choice Only</label>
+                <label><input type="radio" name="inputStyle" value="mixed"> Mixed Mode</label>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn btn-blue btn-lg" id="btn-start">
+                <i class="fa-solid fa-play"></i> Start Game
+            </button>
+        </div>
+    </section>
+
+    <!-- ========== ACTIVE ROUND ========== -->
+    <section id="screen-round" class="screen panel">
+        <div id="round-loading" class="loading-overlay hidden">
+            <i class="fa-solid fa-spinner"></i>
+            Fetching definition…
+        </div>
+
+        <div id="round-content" class="hidden">
+            <div class="hud">
+                <div class="hud-chip">
+                    <div class="label">Round</div>
+                    <div class="value" id="hud-round">1</div>
+                </div>
+                <div class="hud-chip bankroll">
+                    <div class="label">Bankroll</div>
+                    <div class="value" id="hud-bankroll">1,000</div>
+                </div>
+            </div>
+
+            <div class="definition-box">
+                <div class="eyebrow">Definition</div>
+                <p id="definition-text">—</p>
+            </div>
+
+            <div id="mode-badge" class="mode-badge">Multiple Choice</div>
+
+            <!-- Multiple Choice UI -->
+            <div id="mc-ui">
+                <div class="bet-grid" id="bet-grid"></div>
+                <div class="chips-left">Available chips: <strong id="chips-available">1,000</strong></div>
+            </div>
+
+            <!-- Typed Input UI (Mixed Mode) -->
+            <div id="typed-ui" class="typed-wrap hidden">
+                <div class="hint-row">
+                    <div class="hint-buttons">
+                        <button type="button" class="btn btn-hint" id="btn-hint">
+                            <i class="fa-solid fa-lightbulb"></i> Hint
+                        </button>
+                        <button type="button" class="btn btn-hint btn-hint-free" id="btn-hint2" disabled>
+                            <i class="fa-solid fa-quote-left"></i> Example
+                        </button>
+                    </div>
+                    <p class="hint-cost-note" id="hint-cost-note">Reveal ~40% of letters · costs chips</p>
+                    <div id="hint-display" class="hint-display" aria-live="polite"></div>
+                    <div id="example-hint" class="example-hint" aria-live="polite"></div>
+                </div>
+                <input type="text" id="typed-answer" placeholder="Type the word…" autocomplete="off" spellcheck="false">
+                <div class="typed-bet">
+                    <div class="word">Your Bet</div>
+                    <div class="bet-controls">
+                        <input type="range" id="typed-slider" min="0" value="0" step="10">
+                        <div class="bet-amount-row">
+                            <span>Chips</span>
+                            <input type="number" id="typed-amount" min="0" value="0" step="10">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lock-in-wrap">
+                <button type="button" class="btn btn-red btn-lg" id="btn-lock">
+                    <i class="fa-solid fa-lock"></i> Lock In Bets
+                </button>
+            </div>
+
+            <!-- Result area (shown after lock-in, still within round screen) -->
+            <div id="result-area" class="hidden">
+                <div id="result-banner" class="result-banner"></div>
+                <p id="correct-reveal" class="correct-reveal"></p>
+                <div class="actions" style="margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-blue btn-lg" id="btn-next">
+                        <i class="fa-solid fa-arrow-right"></i> Next Round
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== GAME OVER ========== -->
+    <section id="screen-gameover" class="screen panel" style="text-align: center;">
+        <div id="gameover-icon" class="gameover-icon">
+            <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h1 class="screen-title" style="justify-content: center;" id="gameover-title">Game Over</h1>
+        <p class="screen-desc" id="gameover-message">—</p>
+
+        <div class="gameover-stats">
+            <div class="stat-box">
+                <div class="label">Rounds Played</div>
+                <div class="value" id="go-rounds">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Final Chips</div>
+                <div class="value" id="go-chips">0</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn btn-blue btn-lg" id="btn-again">
+                <i class="fa-solid fa-rotate-left"></i> Play Again
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<footer>LingoSpark · Vocab Auction</footer>
+
+<script>
+/**
+ * Vocab Auction — LingoSpark
+ * Single-file gamified vocab practice with chip betting.
+ */
+
+/* =========================================================
+   1. BUILT-IN WORD POOLS (~80 words each, CEFR-aligned)
+   ========================================================= */
+const WORD_POOLS = {
+    beginner: [
+        "apple", "house", "water", "happy", "school",
+        "friend", "book", "dog", "cat", "food",
+        "sleep", "run", "big", "small", "family",
+        "car", "sun", "rain", "milk", "ball",
+        "bird", "tree", "fish", "bread", "chair",
+        "table", "door", "window", "hand", "foot",
+        "eye", "ear", "nose", "mouth", "head",
+        "arm", "leg", "red", "blue", "green",
+        "yellow", "black", "white", "hot", "cold",
+        "old", "young", "new", "good", "bad",
+        "day", "night", "morning", "evening", "week",
+        "month", "year", "today", "tomorrow", "yesterday",
+        "mother", "father", "brother", "sister", "baby",
+        "boy", "girl", "man", "woman", "child",
+        "teacher", "student", "class", "desk", "pen",
+        "paper", "bag", "shoe", "hat", "coat",
+        "eat", "drink", "walk", "talk", "play"
+    ],
+    easy: [
+        "journey", "quietly", "carefully", "weather", "breakfast",
+        "neighbour", "library", "holiday", "kitchen", "garden",
+        "angry", "polite", "hungry", "famous", "sudden",
+        "village", "ticket", "answer", "question", "invite",
+        "afternoon", "beautiful", "bicycle", "birthday", "boring",
+        "bottle", "bridge", "building", "busy", "calendar",
+        "camera", "cheap", "choose", "clean", "clothes",
+        "cloudy", "comfortable", "cook", "country", "delicious",
+        "dinner", "dirty", "doctor", "early", "expensive",
+        "factory", "favourite", "finish", "forget", "friendly",
+        "fruit", "furniture", "future", "healthy", "important",
+        "interesting", "language", "lunch", "market", "medicine",
+        "meeting", "museum", "music", "nature", "noisy",
+        "office", "often", "outside", "patient", "picture",
+        "pocket", "popular", "present", "problem", "quickly",
+        "remember", "restaurant", "river", "season", "shopping",
+        "slowly", "station", "strange", "strong", "surprised",
+        "telephone", "thirsty", "traffic", "travel", "useful"
+    ],
+    intermediate: [
+        "reluctant", "ambitious", "consequence", "negotiate", "reliable",
+        "persuade", "efficient", "appreciate", "obstacle", "significant",
+        "contribute", "evidence", "maintain", "priority", "temporary",
+        "flexible", "perspective", "confident", "benefit", "challenge",
+        "accomplish", "accurate", "adapt", "adequate", "analyse",
+        "anxious", "approach", "assess", "assume", "aware",
+        "capacity", "circumstance", "clarify", "commitment", "compromise",
+        "conclude", "conduct", "confirm", "consider", "consistent",
+        "convince", "criteria", "crucial", "debate", "decline",
+        "demonstrate", "despite", "determine", "develop", "discuss",
+        "distinguish", "effective", "emphasise", "encourage", "enhance",
+        "ensure", "establish", "evaluate", "eventually", "expand",
+        "experience", "explore", "express", "factor", "feature",
+        "focus", "formal", "function", "generate", "genuine",
+        "identify", "impact", "implement", "improve", "indicate",
+        "initial", "influence", "instance", "interpret", "investigate",
+        "involve", "justify", "method", "occur", "outcome",
+        "potential", "practise", "previous", "primary", "principle",
+        "process", "promote", "proposal", "recognise", "reflect",
+        "relevant", "require", "resource", "respond", "restrict",
+        "strategy", "structure", "summarise", "support", "technique",
+        "tendency", "theory", "throughout", "undertake", "various"
+    ],
+    hard: [
+        "ephemeral", "ubiquitous", "pragmatic", "eloquent", "meticulous",
+        "ambiguous", "resilient", "unprecedented", "conundrum", "scrutinise",
+        "alleviate", "juxtapose", "perpetuate", "idiosyncrasy", "magnanimous",
+        "equivocal", "lucid", "tenacious", "volatile", "aesthetic",
+        "aberration", "abhorrent", "acquiesce", "admonish", "adverse",
+        "alacrity", "ameliorate", "anachronism", "antithesis", "apathy",
+        "arbitrary", "arcane", "assiduous", "astute", "austere",
+        "belligerent", "benevolent", "capricious", "catalyst", "circumspect",
+        "coalesce", "cogent", "complacent", "conjecture", "consensus",
+        "contentious", "copious", "corroborate", "cursory", "deference",
+        "delineate", "demagogue", "denigrate", "didactic", "disparate",
+        "disseminate", "dogmatic", "duplicity", "eclectic", "egregious",
+        "elucidate", "emulate", "enervate", "enigma", "epitome",
+        "exacerbate", "exemplify", "exonerate", "expedite", "extrapolate",
+        "fastidious", "fortuitous", "gratuitous", "harangue", "hegemony",
+        "iconoclast", "ignominious", "immutable", "impartial", "impetuous",
+        "incongruous", "indigenous", "inexorable", "innocuous", "insidious",
+        "intrinsic", "invective", "juxtaposition", "laconic", "languid",
+        "maverick", "misanthrope", "nefarious", "obfuscate", "obsequious",
+        "paradigm", "paragon", "perfunctory", "pernicious", "perspicacious",
+        "precarious", "precipitate", "predilection", "proclivity", "prolific",
+        "propensity", "prosaic", "quintessential", "recalcitrant", "recondite",
+        "redundant", "reiterate", "salient", "sanctimonious", "sanguine",
+        "sardonic", "spurious", "stagnant", "substantiate", "superfluous",
+        "surreptitious", "sycophant", "taciturn", "tangible", "tantamount",
+        "transient", "unilateral", "vacillate", "venerable", "veracity",
+        "vicarious", "vindicate", "vitriolic", "vociferous", "wary"
+    ]
+};
+
+/* =========================================================
+   1b. RECENT HISTORY (localStorage — cross-session variety)
+   Persists last RECENT_HISTORY_LIMIT words per level so repeats
+   are rare even across separate games. Never cleared on Play Again.
+   ========================================================= */
+const RECENT_HISTORY_KEY = "lingospark_vocab_auction_recent";
+const RECENT_HISTORY_LIMIT = 50;
+
+function loadRecentHistory() {
+    try {
+        const raw = localStorage.getItem(RECENT_HISTORY_KEY);
+        if (!raw) return { beginner: [], easy: [], intermediate: [], hard: [], custom: [] };
+        const parsed = JSON.parse(raw);
+        return {
+            beginner: Array.isArray(parsed.beginner) ? parsed.beginner : [],
+            easy: Array.isArray(parsed.easy) ? parsed.easy : [],
+            intermediate: Array.isArray(parsed.intermediate) ? parsed.intermediate : [],
+            hard: Array.isArray(parsed.hard) ? parsed.hard : [],
+            custom: Array.isArray(parsed.custom) ? parsed.custom : []
+        };
+    } catch {
+        return { beginner: [], easy: [], intermediate: [], hard: [], custom: [] };
+    }
+}
+
+function saveRecentWord(level, word) {
+    const history = loadRecentHistory();
+    const key = level in history ? level : "custom";
+    const list = history[key].filter((w) => w !== word);
+    list.push(word);
+    history[key] = list.slice(-RECENT_HISTORY_LIMIT);
+    try {
+        localStorage.setItem(RECENT_HISTORY_KEY, JSON.stringify(history));
+    } catch (err) {
+        console.warn("Could not save recent history:", err);
+    }
+}
+
+function getRecentForLevel(level) {
+    const history = loadRecentHistory();
+    const key = level in history ? level : "custom";
+    return history[key] || [];
+}
+
+/* =========================================================
+   2. GAME STATE
+   ========================================================= */
+const STARTING_BANKROLL = 1000;
+
+const state = {
+    screen: "menu",          // menu | round | result | gameover
+    level: "beginner",
+    customWords: [],
+    gameLength: "10",        // "10" | "survival"
+    inputStyle: "mc",        // "mc" | "mixed"
+    bankroll: STARTING_BANKROLL,
+    round: 0,
+    activePool: [],
+    currentWord: null,
+    definition: null,
+    choices: [],             // MC options (shuffled)
+    isTypedRound: false,
+    bets: {},                // word -> bet amount (MC)
+    typedBet: 0,
+    locked: false,
+    hintUsed: false,         // letter hint used this typed round
+    hint2Used: false,        // free example-sentence hint used this typed round
+    sessionUsed: [],         // words used in the current game session
+    deck: [],                // shuffled deal order for this session
+    deckIndex: 0,
+    skippedWords: new Set()  // words skipped this session (404 or leaking defs)
+};
+
+/** Hint costs 15% of bankroll (min 50, rounded to 10). */
+const HINT_COST_PCT = 0.15;
+const HINT_COST_MIN = 50;
+
+/* =========================================================
+   3. DOM REFS
+   ========================================================= */
+const $ = (sel) => document.querySelector(sel);
+
+const els = {
+    screens: {
+        menu: $("#screen-menu"),
+        round: $("#screen-round"),
+        gameover: $("#screen-gameover")
+    },
+    customWrap: $("#custom-words-wrap"),
+    customWords: $("#custom-words"),
+    btnStart: $("#btn-start"),
+    roundLoading: $("#round-loading"),
+    roundContent: $("#round-content"),
+    hudRound: $("#hud-round"),
+    hudBankroll: $("#hud-bankroll"),
+    definitionText: $("#definition-text"),
+    modeBadge: $("#mode-badge"),
+    mcUi: $("#mc-ui"),
+    typedUi: $("#typed-ui"),
+    betGrid: $("#bet-grid"),
+    chipsAvailable: $("#chips-available"),
+    typedAnswer: $("#typed-answer"),
+    typedSlider: $("#typed-slider"),
+    typedAmount: $("#typed-amount"),
+    btnHint: $("#btn-hint"),
+    btnHint2: $("#btn-hint2"),
+    hintDisplay: $("#hint-display"),
+    exampleHint: $("#example-hint"),
+    hintCostNote: $("#hint-cost-note"),
+    btnLock: $("#btn-lock"),
+    resultArea: $("#result-area"),
+    resultBanner: $("#result-banner"),
+    correctReveal: $("#correct-reveal"),
+    btnNext: $("#btn-next"),
+    gameoverIcon: $("#gameover-icon"),
+    gameoverTitle: $("#gameover-title"),
+    gameoverMessage: $("#gameover-message"),
+    goRounds: $("#go-rounds"),
+    goChips: $("#go-chips"),
+    btnAgain: $("#btn-again")
+};
+
+/* =========================================================
+   4. SCREEN MANAGEMENT
+   ========================================================= */
+function showScreen(name) {
+    state.screen = name;
+    Object.values(els.screens).forEach((el) => el.classList.remove("active"));
+    if (name === "menu") els.screens.menu.classList.add("active");
+    else if (name === "round" || name === "result") els.screens.round.classList.add("active");
+    else if (name === "gameover") els.screens.gameover.classList.add("active");
+}
+
+function formatChips(n) {
+    return Math.max(0, Math.round(n)).toLocaleString("en-GB");
+}
+
+function updateHud() {
+    const maxRounds = state.gameLength === "10" ? " / 10" : "";
+    els.hudRound.textContent = state.round + maxRounds;
+    els.hudBankroll.textContent = formatChips(state.bankroll);
+}
+
+/* =========================================================
+   5. MENU — LEVEL / CUSTOM WORDS
+   ========================================================= */
+document.querySelectorAll('input[name="level"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+        if (radio.value === "custom" && radio.checked) {
+            els.customWrap.classList.add("visible");
+        } else if (radio.checked) {
+            els.customWrap.classList.remove("visible");
+        }
+    });
+});
+
+function readMenuSettings() {
+    state.level = document.querySelector('input[name="level"]:checked').value;
+    state.gameLength = document.querySelector('input[name="length"]:checked').value;
+    state.inputStyle = document.querySelector('input[name="inputStyle"]:checked').value;
+
+    if (state.level === "custom") {
+        const raw = els.customWords.value
+            .split(",")
+            .map((w) => w.trim().toLowerCase())
+            .filter((w) => w.length > 0);
+        // Deduplicate
+        state.customWords = [...new Set(raw)];
+        state.activePool = state.customWords.slice();
+    } else {
+        state.activePool = WORD_POOLS[state.level].slice();
+    }
+}
+
+els.btnStart.addEventListener("click", () => {
+    readMenuSettings();
+
+    if (state.activePool.length < 4) {
+        alert("Please provide at least 4 unique words (needed for multiple-choice distractors).");
+        return;
+    }
+
+    // Reset run variables (localStorage recent history is preserved)
+    state.bankroll = STARTING_BANKROLL;
+    state.round = 0;
+    state.sessionUsed = [];
+    state.skippedWords = new Set();
+    buildDeck();
+    startNextRound();
+});
+
+/* =========================================================
+   5b. DECK BUILDING — Fisher-Yates shuffle with history bias
+   Prefers words NOT in recent localStorage history and NOT yet
+   used this session. Falls back to full pool minus sessionUsed,
+   then to the full pool if needed.
+   ========================================================= */
+function fisherYatesShuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function buildDeck() {
+    const pool = state.activePool.slice();
+    const recent = getRecentForLevel(state.level);
+    const recentSet = new Set(recent);
+
+    // Tier 1: avoid recent history AND current-session words/skips
+    let preferred = pool.filter(
+        (w) => !recentSet.has(w) && !state.sessionUsed.includes(w) && !state.skippedWords.has(w)
+    );
+
+    // Tier 2: fall back to full pool minus session-used
+    if (preferred.length === 0) {
+        preferred = pool.filter((w) => !state.sessionUsed.includes(w) && !state.skippedWords.has(w));
+    }
+
+    // Tier 3: last resort — entire pool (minus skipped if possible)
+    if (preferred.length === 0) {
+        preferred = pool.filter((w) => !state.skippedWords.has(w));
+    }
+    if (preferred.length === 0) {
+        preferred = pool.slice();
+    }
+
+    state.deck = fisherYatesShuffle(preferred);
+    state.deckIndex = 0;
+}
+
+/* =========================================================
+   6. API — Free Dictionary API
+   Scans all meanings/definitions and rejects any that leak the
+   answer (whole-word match, derived suffixes, or stem ≥ 4 chars).
+   Returns null on 404, API failure, or if every definition leaks.
+   ========================================================= */
+
+/**
+ * Returns true if a definition text would give away the target word.
+ * Primary check: whole-word match of the exact term (case-insensitive).
+ * Also rejects word + common suffixes (ly, ness, tion, ing, ed, …).
+ * For words ≥ 4 chars, also rejects any 4+ char prefix stem as a whole word.
+ */
+function definitionLeaksAnswer(definition, word) {
+    if (!definition || !word) return true;
+
+    const w = word.toLowerCase().replace(/[^a-z'-]/g, "");
+    if (!w) return true;
+
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Whole-word match of the exact term
+    if (new RegExp("\\b" + escaped + "\\b", "i").test(definition)) {
+        return true;
+    }
+
+    // Word + optional derived suffix (e.g. "lucid" → "lucidity" in def)
+    const suffixPattern = new RegExp(
+        "\\b" + escaped + "(ly|ness|ity|ities|tion|ing|ed|er|est|s|es|ial|ous|ive|ment)?\\b",
+        "i"
+    );
+    if (suffixPattern.test(definition)) {
+        return true;
+    }
+
+    // Stem check for words of length ≥ 4: any prefix stem ≥ 4 chars as whole word
+    if (w.length >= 4) {
+        for (let len = w.length - 1; len >= 4; len--) {
+            const stem = w.slice(0, len);
+            const stemEsc = stem.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            if (new RegExp("\\b" + stemEsc + "\\b", "i").test(definition)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+async function fetchDefinition(word) {
+    const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
+
+    try {
+        const res = await fetch(url);
+
+        if (res.status === 404) {
+            return null;
+        }
+        if (!res.ok) {
+            return null;
+        }
+
+        const data = await res.json();
+
+        // Scan ALL meanings and definitions across every entry
+        for (const entry of data) {
+            for (const meaning of entry.meanings || []) {
+                for (const defObj of meaning.definitions || []) {
+                    const text = defObj.definition;
+                    if (text && !definitionLeaksAnswer(text, word)) {
+                        return text;
+                    }
+                }
+            }
+        }
+
+        // Every definition leaked the answer (or none found)
+        return null;
+    } catch (err) {
+        console.warn("Dictionary API error:", err);
+        return null;
+    }
+}
+
+/**
+ * Draw the next word from the shuffled deck.
+ * Rebuilds the deck when exhausted, still preferring non-recent words.
+ */
+function pickTargetWord() {
+    if (state.deckIndex >= state.deck.length) {
+        buildDeck();
+    }
+
+    while (state.deckIndex < state.deck.length) {
+        const word = state.deck[state.deckIndex++];
+        if (!state.skippedWords.has(word)) {
+            return word;
+        }
+    }
+
+    // All remaining deck entries were skipped — rebuild once more
+    buildDeck();
+    if (state.deckIndex < state.deck.length) {
+        return state.deck[state.deckIndex++];
+    }
+
+    // Absolute fallback (should not happen with ≥4-word pool)
+    return state.activePool[Math.floor(Math.random() * state.activePool.length)];
+}
+
+/**
+ * Resolve a valid (word, definition) pair.
+ * Skips words whose definitions leak or are missing (404).
+ * Failed words go into skippedWords so we don't retry them endlessly.
+ */
+async function resolveWordAndDefinition() {
+    const maxAttempts = Math.min(40, state.activePool.length * 2);
+
+    for (let i = 0; i < maxAttempts; i++) {
+        const word = pickTargetWord();
+
+        const definition = await fetchDefinition(word);
+        if (definition) {
+            state.sessionUsed.push(word);
+            saveRecentWord(state.level, word);
+            return { word, definition };
+        }
+
+        // Leaking definition or API miss — skip without penalising
+        state.skippedWords.add(word);
+        console.info(`Skipping "${word}" (no safe definition found).`);
+    }
+
+    return null;
+}
+
+/**
+ * Build 4 MC choices: 1 correct + 3 distractors from the same pool, shuffled.
+ */
+function buildChoices(correctWord) {
+    const distractors = state.activePool
+        .filter((w) => w.toLowerCase() !== correctWord.toLowerCase())
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+
+    // If pool is tiny, pad with placeholders (shouldn't happen after menu check)
+    while (distractors.length < 3) {
+        distractors.push("—");
+    }
+
+    const choices = [correctWord, ...distractors];
+    // Fisher–Yates shuffle
+    for (let i = choices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+    return choices;
+}
+
+/* =========================================================
+   7. ROUND SETUP
+   ========================================================= */
+async function startNextRound() {
+    state.round += 1;
+    state.locked = false;
+    state.bets = {};
+    state.typedBet = 0;
+    state.hintUsed = false;
+    state.hint2Used = false;
+    state.currentWord = null;
+    state.definition = null;
+    state.choices = [];
+
+    // Mixed mode: odd rounds = MC, even rounds = typed
+    // Round 1 → MC, Round 2 → Typed, Round 3 → MC, …
+    state.isTypedRound =
+        state.inputStyle === "mixed" && state.round % 2 === 0;
+
+    showScreen("round");
+    els.resultArea.classList.add("hidden");
+    els.roundContent.classList.add("hidden");
+    els.roundLoading.classList.remove("hidden");
+    els.btnLock.disabled = false;
+    els.btnLock.classList.remove("hidden");
+
+    const resolved = await resolveWordAndDefinition();
+
+    if (!resolved) {
+        alert("Could not load definitions from the dictionary API. Please try again or use different words.");
+        resetToMenu();
+        return;
+    }
+
+    state.currentWord = resolved.word;
+    state.definition = resolved.definition;
+    state.choices = buildChoices(state.currentWord);
+
+    // Initialise bets to 0 for each choice
+    state.choices.forEach((w) => { state.bets[w] = 0; });
+
+    renderRound();
+}
+
+function renderRound() {
+    els.roundLoading.classList.add("hidden");
+    els.roundContent.classList.remove("hidden");
+
+    updateHud();
+    els.definitionText.textContent = state.definition;
+
+    if (state.isTypedRound) {
+        els.modeBadge.textContent = "Typed Input";
+        els.mcUi.classList.add("hidden");
+        els.typedUi.classList.remove("hidden");
+        renderTypedUI();
+    } else {
+        els.modeBadge.textContent = "Multiple Choice";
+        els.typedUi.classList.add("hidden");
+        els.mcUi.classList.remove("hidden");
+        renderMcUI();
+    }
+}
+
+/* =========================================================
+   8. SLIDER STATE MANAGEMENT (Multiple Choice)
+   ---------------------------------------------------------
+   Rule: sum of all 4 bets ≤ bankroll.
+   When one slider moves up, if the new sum would exceed
+   bankroll, the moving slider is capped to whatever chips
+   remain after the other three bets.
+   ========================================================= */
+
+/**
+ * Sum of bets on every card except the one being edited.
+ */
+function sumOtherBets(excludeWord) {
+    return Object.entries(state.bets).reduce((sum, [word, amt]) => {
+        return word === excludeWord ? sum : sum + (amt || 0);
+    }, 0);
+}
+
+/**
+ * Clamp a proposed bet so total never exceeds bankroll.
+ */
+function clampBet(word, proposed) {
+    const others = sumOtherBets(word);
+    const maxForThis = Math.max(0, state.bankroll - others);
+    let value = Math.max(0, Math.round(Number(proposed) || 0));
+    if (value > maxForThis) value = maxForThis;
+    if (value > state.bankroll) value = state.bankroll;
+    return value;
+}
+
+function totalBets() {
+    return Object.values(state.bets).reduce((s, v) => s + (v || 0), 0);
+}
+
+function updateAvailableChipsDisplay() {
+    const available = Math.max(0, state.bankroll - totalBets());
+    els.chipsAvailable.textContent = formatChips(available);
+}
+
+/**
+ * Sync range + number inputs for one card after a change.
+ * Also refreshes max attributes on sibling sliders so the
+ * browser UI reflects remaining room (soft guidance; hard
+ * cap is still enforced in clampBet).
+ */
+function syncCardInputs(word, value) {
+    state.bets[word] = value;
+
+    const slider = document.querySelector(`.bet-slider[data-word="${CSS.escape(word)}"]`);
+    const number = document.querySelector(`.bet-number[data-word="${CSS.escape(word)}"]`);
+    if (slider) slider.value = value;
+    if (number) number.value = value;
+
+    // Refresh max on all sliders/numbers based on current distribution
+    state.choices.forEach((w) => {
+        const maxFor = Math.max(0, state.bankroll - sumOtherBets(w));
+        const s = document.querySelector(`.bet-slider[data-word="${CSS.escape(w)}"]`);
+        const n = document.querySelector(`.bet-number[data-word="${CSS.escape(w)}"]`);
+        if (s) s.max = Math.max(maxFor, state.bets[w] || 0);
+        if (n) n.max = Math.max(maxFor, state.bets[w] || 0);
+    });
+
+    updateAvailableChipsDisplay();
+}
+
+function renderMcUI() {
+    els.betGrid.innerHTML = "";
+
+    state.choices.forEach((word) => {
+        const card = document.createElement("div");
+        card.className = "bet-card";
+        card.dataset.word = word;
+
+        card.innerHTML = `
+            <div class="word">${escapeHtml(word)}</div>
+            <div class="bet-controls">
+                <input type="range" class="bet-slider" data-word="${escapeAttr(word)}"
+                       min="0" max="${state.bankroll}" value="0" step="10">
+                <div class="bet-amount-row">
+                    <span>Bet</span>
+                    <input type="number" class="bet-number" data-word="${escapeAttr(word)}"
+                           min="0" max="${state.bankroll}" value="0" step="10">
+                </div>
+            </div>
+        `;
+
+        els.betGrid.appendChild(card);
+    });
+
+    // Wire slider ↔ number with mutual capping
+    els.betGrid.querySelectorAll(".bet-slider").forEach((slider) => {
+        slider.addEventListener("input", () => {
+            if (state.locked) return;
+            const word = slider.dataset.word;
+            const clamped = clampBet(word, slider.value);
+            syncCardInputs(word, clamped);
+        });
+    });
+
+    els.betGrid.querySelectorAll(".bet-number").forEach((input) => {
+        input.addEventListener("input", () => {
+            if (state.locked) return;
+            const word = input.dataset.word;
+            const clamped = clampBet(word, input.value);
+            syncCardInputs(word, clamped);
+        });
+    });
+
+    updateAvailableChipsDisplay();
+}
+
+/* =========================================================
+   9. TYPED INPUT UI + HINTS (Mixed Mode)
+   Hint 1: reveal ~30–50% of letters (costs chips).
+   Hint 2: free example sentence with the word blanked out
+           (unlocked only after Hint 1).
+   ========================================================= */
+
+function getHintCost() {
+    const raw = Math.round(state.bankroll * HINT_COST_PCT);
+    const rounded = Math.round(raw / 10) * 10;
+    return Math.min(state.bankroll, Math.max(HINT_COST_MIN, rounded));
+}
+
+/**
+ * Build a partial reveal: show between 30% and 50% of letter positions.
+ * Non-letter characters (rare) stay visible. At least one letter is
+ * revealed for words of length ≥ 2; never reveal the entire word.
+ */
+function buildHintPattern(word) {
+    const chars = word.split("");
+    const letterIndexes = [];
+    chars.forEach((ch, i) => {
+        if (/[a-zA-Z]/.test(ch)) letterIndexes.push(i);
+    });
+
+    const n = letterIndexes.length;
+    if (n === 0) return word;
+
+    // Target reveal ratio: random in [0.30, 0.50]
+    let revealCount = Math.round(n * (0.3 + Math.random() * 0.2));
+    revealCount = Math.max(1, Math.min(revealCount, n - 1)); // never full word if n > 1
+    if (n === 1) revealCount = 1;
+
+    // Shuffle letter indexes and pick the first revealCount
+    const shuffled = letterIndexes.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const revealSet = new Set(shuffled.slice(0, revealCount));
+
+    return chars
+        .map((ch, i) => {
+            if (!/[a-zA-Z]/.test(ch)) return ch;
+            return revealSet.has(i) ? ch : "_";
+        })
+        .join(" ");
+}
+
+/**
+ * Blank the target word (and common inflections) in an example sentence.
+ */
+function blankWordInSentence(sentence, word) {
+    const w = word.replace(/[^a-zA-Z'-]/g, "");
+    if (!w) return sentence;
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Match the lemma plus light inflectional endings so e.g. "running" blanks for "run"
+    const re = new RegExp(
+        "\\b(" + escaped + "(?:s|es|ed|ing|er|ers|est|ly|ness|ity|ities)?)\\b",
+        "gi"
+    );
+    return sentence.replace(re, "_____");
+}
+
+/**
+ * Fetch an example sentence from the Free Dictionary API and blank the word.
+ * Returns the blanked sentence string, or null if none found.
+ */
+async function fetchBlankedExample(word) {
+    const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        const examples = [];
+
+        for (const entry of data) {
+            for (const meaning of entry.meanings || []) {
+                for (const defObj of meaning.definitions || []) {
+                    if (defObj.example && typeof defObj.example === "string") {
+                        examples.push(defObj.example.trim());
+                    }
+                }
+            }
+        }
+
+        if (examples.length === 0) return null;
+
+        // Prefer an example that actually contains the target word
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const containsWord = new RegExp("\\b" + escaped, "i");
+        const preferred = examples.filter((ex) => containsWord.test(ex));
+        const pool = preferred.length > 0 ? preferred : examples;
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+
+        return blankWordInSentence(chosen, word);
+    } catch (err) {
+        console.warn("Example sentence fetch failed:", err);
+        return null;
+    }
+}
+
+function syncTypedBetLimits() {
+    els.typedSlider.max = state.bankroll;
+    els.typedAmount.max = state.bankroll;
+    if (state.typedBet > state.bankroll) {
+        state.typedBet = state.bankroll;
+        els.typedSlider.value = state.typedBet;
+        els.typedAmount.value = state.typedBet;
+    }
+}
+
+function updateHintButtonUI() {
+    if (!els.btnHint) return;
+    const cost = getHintCost();
+    const canAfford = cost > 0 && state.bankroll >= cost;
+
+    // Status note under the buttons
+    if (state.hint2Used) {
+        els.hintCostNote.textContent = "Both hints used this round";
+    } else if (state.hintUsed) {
+        els.hintCostNote.textContent = "Free example sentence available (no chip cost)";
+    } else {
+        els.hintCostNote.textContent =
+            `Reveal ~30–50% of letters · costs ${formatChips(cost)} chips`;
+    }
+
+    els.btnHint.disabled = state.locked || state.hintUsed || !canAfford;
+    els.btnHint.innerHTML = state.hintUsed
+        ? '<i class="fa-solid fa-lightbulb"></i> Hint used'
+        : `<i class="fa-solid fa-lightbulb"></i> Hint (−${formatChips(cost)})`;
+
+    if (els.btnHint2) {
+        // Unlocked only after the paid letter hint
+        els.btnHint2.disabled = state.locked || !state.hintUsed || state.hint2Used;
+        els.btnHint2.innerHTML = state.hint2Used
+            ? '<i class="fa-solid fa-quote-left"></i> Example used'
+            : '<i class="fa-solid fa-quote-left"></i> Example (free)';
+    }
+}
+
+function useHint() {
+    if (state.locked || state.hintUsed || !state.isTypedRound || !state.currentWord) return;
+
+    const cost = getHintCost();
+    if (cost <= 0 || state.bankroll < cost) {
+        updateHintButtonUI();
+        return;
+    }
+
+    state.bankroll -= cost;
+    state.hintUsed = true;
+
+    const pattern = buildHintPattern(state.currentWord);
+    els.hintDisplay.textContent = pattern;
+    els.hintDisplay.classList.add("visible");
+
+    updateHud();
+    syncTypedBetLimits();
+    updateHintButtonUI();
+
+    // Hint can bankrupt the player before they lock in
+    if (state.bankroll <= 0) {
+        state.locked = true;
+        els.typedAnswer.disabled = true;
+        els.typedSlider.disabled = true;
+        els.typedAmount.disabled = true;
+        els.btnLock.disabled = true;
+        els.btnLock.classList.add("hidden");
+        if (els.btnHint2) els.btnHint2.disabled = true;
+        endGame("bankrupt");
+    }
+}
+
+async function useExampleHint() {
+    if (
+        state.locked ||
+        !state.hintUsed ||
+        state.hint2Used ||
+        !state.isTypedRound ||
+        !state.currentWord
+    ) {
+        return;
+    }
+
+    els.btnHint2.disabled = true;
+    els.btnHint2.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading…';
+    els.hintCostNote.textContent = "Fetching example sentence…";
+
+    const blanked = await fetchBlankedExample(state.currentWord);
+
+    // Round may have ended while we waited
+    if (state.locked || !state.isTypedRound) return;
+
+    state.hint2Used = true;
+
+    if (blanked) {
+        // Highlight the blank visually
+        els.exampleHint.innerHTML =
+            '"' + escapeHtml(blanked).replace(/_____/g, '<span class="blank">_____</span>') + '"';
+        els.exampleHint.classList.add("visible");
+    } else {
+        els.exampleHint.textContent =
+            "No example sentence found for this word — sorry!";
+        els.exampleHint.classList.add("visible");
+    }
+
+    updateHintButtonUI();
+}
+
+function renderTypedUI() {
+    els.typedAnswer.value = "";
+    els.typedAnswer.classList.remove("correct", "wrong");
+    els.typedAnswer.disabled = false;
+
+    els.typedSlider.max = state.bankroll;
+    els.typedSlider.value = 0;
+    els.typedAmount.max = state.bankroll;
+    els.typedAmount.value = 0;
+    state.typedBet = 0;
+    state.hintUsed = false;
+    state.hint2Used = false;
+
+    els.typedSlider.disabled = false;
+    els.typedAmount.disabled = false;
+
+    els.hintDisplay.textContent = "";
+    els.hintDisplay.classList.remove("visible");
+    els.exampleHint.innerHTML = "";
+    els.exampleHint.classList.remove("visible");
+    updateHintButtonUI();
+}
+
+els.btnHint.addEventListener("click", useHint);
+els.btnHint2.addEventListener("click", useExampleHint);
+
+els.typedSlider.addEventListener("input", () => {
+    if (state.locked) return;
+    let v = Math.max(0, Math.min(state.bankroll, Number(els.typedSlider.value) || 0));
+    state.typedBet = v;
+    els.typedAmount.value = v;
+});
+
+els.typedAmount.addEventListener("input", () => {
+    if (state.locked) return;
+    let v = Math.max(0, Math.min(state.bankroll, Number(els.typedAmount.value) || 0));
+    state.typedBet = v;
+    els.typedSlider.value = v;
+    els.typedAmount.value = v;
+});
+
+/* =========================================================
+   10. LOCK IN / SCORING
+   ---------------------------------------------------------
+   Math:
+     1. Deduct ALL chips bet from bankroll.
+     2. If bet on correct answer (or typed correctly),
+        add (Bet Amount * 2) back.
+   Net on a correct bet of X: -X + 2X = +X profit.
+   Net on a wrong / missed bet of X: -X.
+   ========================================================= */
+els.btnLock.addEventListener("click", () => {
+    if (state.locked) return;
+    resolveRound();
+});
+
+function resolveRound() {
+    state.locked = true;
+    state.screen = "result";
+
+    // Disable inputs
+    els.btnLock.disabled = true;
+    document.querySelectorAll(".bet-slider, .bet-number").forEach((el) => {
+        el.disabled = true;
+    });
+    els.typedAnswer.disabled = true;
+    els.typedSlider.disabled = true;
+    els.typedAmount.disabled = true;
+    if (els.btnHint) {
+        els.btnHint.disabled = true;
+    }
+    if (els.btnHint2) {
+        els.btnHint2.disabled = true;
+    }
+    updateHintButtonUI();
+
+    const correct = state.currentWord;
+    let totalWagered = 0;
+    let correctBet = 0;
+    let won = false;
+
+    if (state.isTypedRound) {
+        totalWagered = state.typedBet;
+        const guess = (els.typedAnswer.value || "").trim().toLowerCase();
+        const isCorrect = guess === correct.toLowerCase();
+
+        if (isCorrect) {
+            correctBet = state.typedBet;
+            won = true;
+            els.typedAnswer.classList.add("correct");
+        } else {
+            els.typedAnswer.classList.add("wrong");
+        }
+    } else {
+        // Highlight cards
+        document.querySelectorAll(".bet-card").forEach((card) => {
+            const word = card.dataset.word;
+            card.classList.add("locked");
+            if (word.toLowerCase() === correct.toLowerCase()) {
+                card.classList.add("correct");
+            } else if ((state.bets[word] || 0) > 0) {
+                // Bet placed on a wrong answer → red
+                card.classList.add("wrong");
+            }
+        });
+
+        totalWagered = totalBets();
+        correctBet = state.bets[correct] || 0;
+        // Also match case-insensitive key if needed
+        if (!correctBet) {
+            const key = Object.keys(state.bets).find(
+                (k) => k.toLowerCase() === correct.toLowerCase()
+            );
+            if (key) correctBet = state.bets[key] || 0;
+        }
+        won = correctBet > 0;
+    }
+
+    // Apply scoring
+    const bankBefore = state.bankroll;
+    state.bankroll -= totalWagered;
+    if (correctBet > 0) {
+        state.bankroll += correctBet * 2;
+    }
+    state.bankroll = Math.max(0, state.bankroll);
+
+    const net = state.bankroll - bankBefore;
+    updateHud();
+
+    // Result banner
+    els.resultArea.classList.remove("hidden");
+    els.resultBanner.classList.remove("win", "lose", "neutral");
+
+    if (net > 0) {
+        els.resultBanner.classList.add("win");
+        els.resultBanner.textContent = `You won ${formatChips(net)} chips!`;
+    } else if (net < 0) {
+        els.resultBanner.classList.add("lose");
+        els.resultBanner.textContent = `You lost ${formatChips(Math.abs(net))} chips.`;
+    } else {
+        els.resultBanner.classList.add("neutral");
+        els.resultBanner.textContent = won
+            ? "Break even — no chips gained or lost."
+            : "No bets placed — bankroll unchanged.";
+    }
+
+    els.correctReveal.innerHTML = `Correct word: <strong>${escapeHtml(correct)}</strong>`;
+
+    // After settlement, available chips = current bankroll (no open bets)
+    if (!state.isTypedRound) {
+        els.chipsAvailable.textContent = formatChips(state.bankroll);
+    }
+
+    // Hide lock button once resolved
+    els.btnLock.classList.add("hidden");
+}
+
+els.btnNext.addEventListener("click", () => {
+    // Game-over checks after each resolved round
+    if (state.bankroll <= 0) {
+        endGame("bankrupt");
+        return;
+    }
+    if (state.gameLength === "10" && state.round >= 10) {
+        endGame("victory");
+        return;
+    }
+    startNextRound();
+});
+
+/* =========================================================
+   11. GAME OVER
+   ========================================================= */
+function endGame(outcome) {
+    showScreen("gameover");
+
+    const icon = els.gameoverIcon;
+    icon.classList.remove("victory", "bankrupt");
+    icon.innerHTML = "";
+
+    if (outcome === "victory") {
+        icon.classList.add("victory");
+        icon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+        els.gameoverTitle.textContent = "Victory!";
+        els.gameoverMessage.textContent =
+            `You survived all 10 rounds with ${formatChips(state.bankroll)} chips remaining.`;
+    } else {
+        icon.classList.add("bankrupt");
+        icon.innerHTML = '<i class="fa-solid fa-skull"></i>';
+        els.gameoverTitle.textContent = "You went bankrupt!";
+        els.gameoverMessage.textContent =
+            `You survived until round ${state.round}. Better luck next auction.`;
+    }
+
+    els.goRounds.textContent = state.round;
+    els.goChips.textContent = formatChips(state.bankroll);
+}
+
+function resetToMenu() {
+    state.bankroll = STARTING_BANKROLL;
+    state.round = 0;
+    state.locked = false;
+    state.bets = {};
+    state.typedBet = 0;
+    state.hintUsed = false;
+    state.hint2Used = false;
+    state.currentWord = null;
+    state.definition = null;
+    state.choices = [];
+    state.sessionUsed = [];
+    state.deck = [];
+    state.deckIndex = 0;
+    state.skippedWords = new Set();
+    state.activePool = [];
+    showScreen("menu");
+}
+
+els.btnAgain.addEventListener("click", resetToMenu);
+
+/* =========================================================
+   12. UTILITIES
+   ========================================================= */
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function escapeAttr(str) {
+    return escapeHtml(str).replace(/'/g, "&#39;");
+}
+
+/* Embed mode when loaded inside LingoSpark (iframe ?embed=1) */
+if (new URLSearchParams(location.search).get("embed") === "1") {
+    document.body.classList.add("embed");
+}
+</script>
+</body>
+</html>
