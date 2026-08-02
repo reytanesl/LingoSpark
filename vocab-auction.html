@@ -630,9 +630,65 @@
             display: none;
         }
 
+        /* Fill the parent iframe exactly; one internal scroll on .container if needed */
+        body.embed {
+            height: 100%;
+            overflow: hidden;
+            background: var(--light-grey);
+        }
+
+        html.embed-root {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body.embed .container {
-            padding-top: 1rem;
-            padding-bottom: 1.5rem;
+            height: 100%;
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 0.75rem 1rem 1rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-light) transparent;
+        }
+
+        /* Compact spacing so menu/rounds fit more often without scrolling */
+        body.embed .panel {
+            padding: 1.25rem 1.35rem;
+            box-shadow: none;
+        }
+
+        body.embed .screen-title {
+            font-size: 1.55rem;
+            margin-bottom: 0.25rem;
+        }
+
+        body.embed .screen-desc {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        body.embed .form-group {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        body.embed .lock-in-wrap {
+            margin-top: 1.75rem;
+        }
+
+        body.embed .hud {
+            margin-bottom: 0.85rem;
+        }
+
+        body.embed .definition-box {
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.85rem;
+        }
+
+        body.embed .definition-box p {
+            font-size: 1.05rem;
         }
 
         footer {
@@ -1922,6 +1978,7 @@ function escapeAttr(str) {
 
 /* Embed mode when loaded inside LingoSpark (iframe ?embed=1) */
 if (new URLSearchParams(location.search).get("embed") === "1") {
+    document.documentElement.classList.add("embed-root");
     document.body.classList.add("embed");
 }
 </script>

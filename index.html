@@ -181,16 +181,53 @@
         .flashcard-controls { display: flex; justify-content: center; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .flashcard-controls.visible { opacity: 1; pointer-events: auto; }
 
-        /* Vocab Auction embed */
-        .auction-screen { padding-bottom: 0; overflow: hidden; }
+        /* Vocab Auction embed — full-viewport, no nested iframe scrollbar */
+        body.auction-active > header,
+        body.auction-active .auth-bar,
+        body.auction-active .about-panel {
+            display: none !important;
+        }
+        body.auction-active .container {
+            max-width: none;
+            padding: 0;
+            margin: 0;
+        }
+        body.auction-active {
+            overflow: hidden;
+            height: 100vh;
+        }
+        .auction-screen {
+            display: none;
+            flex-direction: column;
+            max-width: none;
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: hidden;
+            background: var(--light-grey);
+        }
+        .auction-screen.active {
+            display: flex !important;
+        }
+        .auction-screen .top-bar {
+            flex-shrink: 0;
+            margin: 0;
+            padding: 0.75rem 1.25rem;
+            background: var(--bright-white);
+            border-bottom: 1px solid var(--border-light);
+        }
         .auction-frame {
+            flex: 1 1 auto;
             width: 100%;
             border: none;
             display: block;
-            min-height: 75vh;
-            height: calc(100vh - 180px);
+            min-height: 0;
+            height: 100%;
             background: var(--light-grey);
-            border-radius: 0 0 12px 12px;
+            overflow: hidden;
         }
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 
@@ -808,7 +845,7 @@
                 <h2 style="margin:0; color: var(--royal-blue); font-family: var(--font-primary); font-size: 1.35rem;"><i class="fa-solid fa-gavel"></i> Vocab Auction</h2>
                 <div style="width: 80px;"></div>
             </div>
-            <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank"></iframe>
+            <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank" scrolling="no"></iframe>
         </div>
 
     </div>
@@ -1371,15 +1408,29 @@
         /** Vocab Auction has its own in-game menu — skip glossary setup. */
         function goToAuction() {
             activeGame = 'auction';
+            document.body.classList.add('auction-active');
             const frame = document.getElementById('auction-frame');
-            // Cache-bust so a fresh run always loads current vocab-auction.html
+            frame.onload = () => {
+                try {
+                    const doc = frame.contentDocument;
+                    if (!doc) return;
+                    // Keep iframe body from showing its own scrollbar; page fills the frame
+                    doc.documentElement.style.height = '100%';
+                    doc.documentElement.style.overflow = 'hidden';
+                    doc.body.style.height = '100%';
+                    doc.body.style.overflow = 'hidden';
+                    doc.body.style.minHeight = '100%';
+                } catch (_) { /* ignore cross-origin */ }
+            };
             frame.src = 'vocab-auction.html?embed=1&t=' + Date.now();
             showScreen('auction');
             trackPageView('auction');
         }
 
         function exitAuction() {
+            document.body.classList.remove('auction-active');
             const frame = document.getElementById('auction-frame');
+            frame.onload = null;
             frame.src = 'about:blank';
             showScreen('home');
         }
