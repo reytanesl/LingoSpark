@@ -862,6 +862,7 @@
                 content.classList.remove('active'); headerEl.classList.remove('expanded');
             } else {
                 content.classList.add('active'); headerEl.classList.add('expanded');
+                trackSectionOpen('section:' + catId);
             }
         }
 
@@ -869,9 +870,11 @@
             const btn = document.getElementById('pe-pack-toggle');
             const grid = document.getElementById('pe-pack-grid');
             const levels = document.getElementById('pe-level-row');
+            const opening = !btn.classList.contains('open');
             btn.classList.toggle('open');
             grid.classList.toggle('open');
             levels.classList.toggle('open');
+            if (opening) trackSectionOpen('section:primary-english');
         }
 
         function selectPeLevel(level) {
@@ -1004,7 +1007,125 @@
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
+            let pageKey = screenId;
+            if (screenId === 'setup' && activeGame) pageKey = 'setup:' + activeGame;
+            trackPageView(pageKey);
         }
+
+        // --- Game popularity analytics (works for anonymous + logged-in) ---
+        function getAnalyticsVisitorId() {
+            try {
+                let id = localStorage.getItem('ls_visitor_id');
+                if (!id) {
+                    id = (crypto.randomUUID && crypto.randomUUID()) ||
+                        ('v-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10));
+                    localStorage.setItem('ls_visitor_id', id);
+                }
+                return id;
+            } catch {
+                return 'anon-' + Date.now().toString(36);
+            }
+        }
+
+        let analyticsCurrent = { visitId: null, pageKey: null, startedAt: 0, heartbeatTimer: null };
+        const ANALYTICS_HEARTBEAT_MS = 10000;
+
+        function analyticsDurationMs() {
+            if (!analyticsCurrent.startedAt) return 0;
+            return Math.max(0, Date.now() - analyticsCurrent.startedAt);
+        }
+
+        function sendAnalytics(path, payload, useBeacon) {
+            const body = JSON.stringify(payload);
+            if (useBeacon && navigator.sendBeacon) {
+                try {
+                    const blob = new Blob([body], { type: 'application/json' });
+                    navigator.sendBeacon(path, blob);
+                    return;
+                } catch {
+                    /* fall through */
+                }
+            }
+            fetch(path, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body,
+                keepalive: true,
+            }).catch(() => {});
+        }
+
+        function stopAnalyticsHeartbeat() {
+            if (analyticsCurrent.heartbeatTimer) {
+                clearInterval(analyticsCurrent.heartbeatTimer);
+                analyticsCurrent.heartbeatTimer = null;
+            }
+        }
+
+        function flushAnalyticsDwell(isLeave, useBeacon) {
+            if (!analyticsCurrent.visitId) return;
+            const durationMs = analyticsDurationMs();
+            const payload = {
+                visitId: analyticsCurrent.visitId,
+                visitorSessionId: getAnalyticsVisitorId(),
+                durationMs,
+            };
+            sendAnalytics(isLeave ? '/api/analytics/leave' : '/api/analytics/dwell', payload, useBeacon);
+        }
+
+        function startAnalyticsHeartbeat() {
+            stopAnalyticsHeartbeat();
+            analyticsCurrent.heartbeatTimer = setInterval(() => {
+                if (document.visibilityState === 'hidden') return;
+                flushAnalyticsDwell(false, false);
+            }, ANALYTICS_HEARTBEAT_MS);
+        }
+
+        async function trackPageView(pageKey) {
+            if (!pageKey) return;
+            // Close previous page visit
+            if (analyticsCurrent.visitId) {
+                flushAnalyticsDwell(true, false);
+                stopAnalyticsHeartbeat();
+            }
+            analyticsCurrent = { visitId: null, pageKey, startedAt: Date.now(), heartbeatTimer: null };
+            try {
+                const res = await fetch('/api/analytics/enter', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pageKey,
+                        visitorSessionId: getAnalyticsVisitorId(),
+                    }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (data.visitId && analyticsCurrent.pageKey === pageKey) {
+                    analyticsCurrent.visitId = data.visitId;
+                    startAnalyticsHeartbeat();
+                }
+            } catch {
+                /* ignore */
+            }
+        }
+
+        function trackSectionOpen(sectionKey) {
+            // Fire-and-forget short "visit" for section expand (no long dwell tracking)
+            sendAnalytics('/api/analytics/enter', {
+                pageKey: sectionKey,
+                visitorSessionId: getAnalyticsVisitorId(),
+            }, false);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                flushAnalyticsDwell(false, true);
+            }
+        });
+        window.addEventListener('pagehide', () => {
+            flushAnalyticsDwell(true, true);
+            stopAnalyticsHeartbeat();
+        });
 
         const WRITING_SUITE_PASSWORD = null; // replaced by account login + Buy Me a Coffee paywall
         let pendingWritingGame = null;
@@ -1224,7 +1345,10 @@
             showScreen('setup');
         }
 
-        refreshAuth().then(() => trackVisit());
+        refreshAuth().then(() => {
+            trackVisit();
+            trackPageView('home');
+        });
 
         function launchSelectedGame() {
             const vocabGames = ['flashcard', 'bomb', 'grid'];

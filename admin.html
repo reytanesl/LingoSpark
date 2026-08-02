@@ -27,7 +27,7 @@
         header { background: var(--royal-blue); color: white; padding: 1.5rem; text-align: center; border-bottom: 6px solid var(--pillarbox-red); }
         header h1 { font-family: var(--font-primary); font-size: 1.6rem; }
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
-        .panel { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .panel { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
         .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
         .stat { background: var(--light-grey); border-radius: 10px; padding: 1rem 1.1rem; border-left: 4px solid var(--royal-blue); }
@@ -51,10 +51,13 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { text-align: left; padding: 0.85rem 0.5rem; border-bottom: 1px solid var(--border-light); font-size: 0.9rem; vertical-align: middle; }
         th { font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.75rem; text-transform: uppercase; }
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { color: var(--pillarbox-red); }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .badge-active { background: rgba(0,130,59,0.12); color: var(--success-green); }
         .badge-inactive { background: rgba(90,90,90,0.12); color: var(--text-muted); }
         .badge-expired { background: rgba(180,83,9,0.15); color: var(--warn-amber); }
+        .badge-type { background: rgba(1,33,105,0.08); color: var(--royal-blue); text-transform: none; font-weight: 600; }
         .msg { margin-bottom: 1rem; font-weight: 600; }
         .msg.error { color: var(--pillarbox-red); }
         .user-cell { display: flex; align-items: center; gap: 0.75rem; }
@@ -62,6 +65,14 @@
         .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .muted { color: var(--text-muted); font-size: 0.85rem; }
         h2.section-title { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.1rem; margin-bottom: 0.75rem; }
+        .bar-wrap { background: #e8edf5; border-radius: 6px; height: 8px; overflow: hidden; min-width: 80px; }
+        .bar-fill { background: var(--royal-blue); height: 100%; border-radius: 6px; }
+        .page-name { font-weight: 700; color: var(--text-dark); }
+        .page-key { font-size: 0.75rem; color: var(--text-muted); }
+        select.days-select {
+            font-family: var(--font-primary); font-weight: 600; padding: 0.45rem 0.75rem;
+            border: 2px solid var(--border-light); border-radius: 20px; background: white; color: var(--royal-blue);
+        }
     </style>
 </head>
 <body>
@@ -77,7 +88,7 @@
                 </div>
                 <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                     <a class="btn btn-grey" href="/"><i class="fa-solid fa-house"></i> Home</a>
-                    <button class="btn btn-blue" onclick="loadUsers()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    <button class="btn btn-blue" onclick="refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
                     <button class="btn btn-red" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
                 </div>
             </div>
@@ -139,10 +150,114 @@
                 </table>
             </div>
         </div>
+
+        <div class="panel">
+            <div class="top" style="margin-bottom:1rem;">
+                <div>
+                    <h2 class="section-title" style="margin-bottom:0.25rem;">Game &amp; section popularity</h2>
+                    <div class="muted">Includes anonymous visitors · tracked dwell time while the screen is open</div>
+                </div>
+                <label class="muted" style="display:flex;align-items:center;gap:0.5rem;">
+                    Period
+                    <select class="days-select" id="stats-days" onchange="loadGameStats()">
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="365">Last year</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="stats" id="game-overview-stats">
+                <div class="stat visitors">
+                    <div class="label">Page views</div>
+                    <div class="value" id="gstat-visits">—</div>
+                    <div class="hint">All screens &amp; sections</div>
+                </div>
+                <div class="stat logged">
+                    <div class="label">Unique visitors</div>
+                    <div class="value" id="gstat-unique">—</div>
+                    <div class="hint">Browser sessions</div>
+                </div>
+                <div class="stat active">
+                    <div class="label">Logged-in views</div>
+                    <div class="value" id="gstat-logged">—</div>
+                    <div class="hint">While signed in</div>
+                </div>
+                <div class="stat requested">
+                    <div class="label">Anonymous views</div>
+                    <div class="value" id="gstat-anon">—</div>
+                    <div class="hint">Not signed in</div>
+                </div>
+                <div class="stat expired">
+                    <div class="label">Total time</div>
+                    <div class="value" id="gstat-time" style="font-size:1.35rem;">—</div>
+                    <div class="hint">Sum of dwell time</div>
+                </div>
+            </div>
+
+            <div id="game-stats-msg" class="msg"></div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortGameStats('label')">Page / game</th>
+                            <th>Type</th>
+                            <th class="sortable" onclick="sortGameStats('visits')">Views</th>
+                            <th class="sortable" onclick="sortGameStats('unique')">Unique</th>
+                            <th class="sortable" onclick="sortGameStats('logged')">Logged in</th>
+                            <th class="sortable" onclick="sortGameStats('anon')">Anon</th>
+                            <th class="sortable" onclick="sortGameStats('totalTime')">Total time</th>
+                            <th class="sortable" onclick="sortGameStats('avgTime')">Avg time</th>
+                            <th class="sortable" onclick="sortGameStats('last')">Last seen</th>
+                            <th>Popularity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="game-stats-body">
+                        <tr><td colspan="10">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     <script>
         let allUsers = [];
         let currentFilter = 'all';
+        let gamePages = [];
+        let gameSort = { key: 'visits', dir: 'desc' };
+        let maxVisits = 1;
+
+        const PAGE_META = {
+            home: { label: 'Home', type: 'Screen' },
+            setup: { label: 'Game setup', type: 'Screen' },
+            flashcard: { label: 'Classic Flashcards', type: 'Game' },
+            bomb: { label: 'Vocab Bomb Defusal', type: 'Game' },
+            grid: { label: 'Grid Territory', type: 'Game' },
+            frank: { label: 'Frankenstein Builder', type: 'Game' },
+            trans: { label: 'Transition Matcher', type: 'Game' },
+            devil: { label: "Devil's Advocate", type: 'Game' },
+            bloat: { label: 'Bloat Slasher', type: 'Game' },
+            vocab: { label: 'Vocabulary Upgrade', type: 'Game' },
+            odyssey: { label: 'Word-Forged Odyssey', type: 'Game' },
+            'pe-boring': { label: 'Primary: Boring Sentences', type: 'Game' },
+            'pe-detail': { label: 'Primary: Add Detail', type: 'Game' },
+            'pe-link': { label: 'Primary: Link Ideas', type: 'Game' },
+            'pe-exam': { label: 'Exam Email Simulator', type: 'Game' },
+            'section:cat-vocab': { label: 'Vocab Review (section open)', type: 'Section' },
+            'section:cat-team': { label: 'Team Challenge (section open)', type: 'Section' },
+            'section:cat-writing': { label: 'Writing Suite (section open)', type: 'Section' },
+            'section:primary-english': { label: 'Primary English (section open)', type: 'Section' },
+        };
+
+        function pageMeta(key) {
+            if (PAGE_META[key]) return PAGE_META[key];
+            if (String(key).startsWith('setup:')) {
+                const game = key.slice(6);
+                const g = PAGE_META[game];
+                return { label: `Setup → ${g ? g.label : game}`, type: 'Setup' };
+            }
+            return { label: key, type: 'Other' };
+        }
 
         function setFilter(filter) {
             currentFilter = filter;
@@ -174,6 +289,19 @@
             if (u.accessSource === 'admin') return 'Open';
             if (!u.accessUntil) return '—';
             return new Date(u.accessUntil).toLocaleDateString();
+        }
+
+        function formatDuration(ms) {
+            const n = Math.max(0, Number(ms) || 0);
+            if (n < 1000) return '<1s';
+            const sec = Math.round(n / 1000);
+            if (sec < 60) return sec + 's';
+            const min = Math.floor(sec / 60);
+            const rem = sec % 60;
+            if (min < 60) return rem ? `${min}m ${rem}s` : `${min}m`;
+            const hr = Math.floor(min / 60);
+            const m2 = min % 60;
+            return m2 ? `${hr}h ${m2}m` : `${hr}h`;
         }
 
         function renderUsers() {
@@ -212,6 +340,68 @@
             `).join('');
         }
 
+        function enrichPage(row) {
+            const meta = pageMeta(row.page_key);
+            return {
+                ...row,
+                label: meta.label,
+                type: meta.type,
+                visits: Number(row.visits || 0),
+                unique: Number(row.unique_visitors || 0),
+                logged: Number(row.logged_in_visits || 0),
+                anon: Number(row.anonymous_visits || 0),
+                totalTime: Number(row.total_dwell_ms || 0),
+                avgTime: Number(row.avg_dwell_ms || 0),
+                last: row.last_visit_at ? new Date(row.last_visit_at).getTime() : 0,
+            };
+        }
+
+        function sortGameStats(key) {
+            if (gameSort.key === key) {
+                gameSort.dir = gameSort.dir === 'desc' ? 'asc' : 'desc';
+            } else {
+                gameSort = { key, dir: 'desc' };
+            }
+            renderGameStats();
+        }
+
+        function renderGameStats() {
+            const body = document.getElementById('game-stats-body');
+            if (!gamePages.length) {
+                body.innerHTML = '<tr><td colspan="10">No page views recorded yet for this period. Browse the site to start collecting data.</td></tr>';
+                return;
+            }
+
+            const sorted = [...gamePages].sort((a, b) => {
+                const av = a[gameSort.key];
+                const bv = b[gameSort.key];
+                if (typeof av === 'string') {
+                    return gameSort.dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+                }
+                return gameSort.dir === 'asc' ? av - bv : bv - av;
+            });
+
+            body.innerHTML = sorted.map((p) => {
+                const pct = maxVisits ? Math.round((p.visits / maxVisits) * 100) : 0;
+                return `
+                <tr>
+                    <td>
+                        <div class="page-name">${escapeHtml(p.label)}</div>
+                        <div class="page-key">${escapeHtml(p.page_key)}</div>
+                    </td>
+                    <td><span class="badge badge-type">${escapeHtml(p.type)}</span></td>
+                    <td><strong>${p.visits}</strong></td>
+                    <td>${p.unique}</td>
+                    <td>${p.logged}</td>
+                    <td>${p.anon}</td>
+                    <td>${formatDuration(p.totalTime)}</td>
+                    <td>${formatDuration(p.avgTime)}</td>
+                    <td class="muted">${formatDate(p.last_visit_at)}</td>
+                    <td><div class="bar-wrap" title="${pct}%"><div class="bar-fill" style="width:${pct}%"></div></div></td>
+                </tr>`;
+            }).join('');
+        }
+
         async function loadUsers() {
             const msg = document.getElementById('msg');
             msg.textContent = '';
@@ -223,14 +413,16 @@
                     msg.className = 'msg error';
                     msg.innerHTML = 'Please <a href="/">sign in</a> as the admin account (email/password or Google), then open Admin again.';
                     document.getElementById('users-body').innerHTML = '';
-                    return;
+                    document.getElementById('game-stats-body').innerHTML = '';
+                    return false;
                 }
                 document.getElementById('admin-label').textContent = me.user.email;
                 if (!me.isAdmin) {
                     msg.className = 'msg error';
                     msg.textContent = 'This account is not the admin (ADMIN_EMAIL).';
                     document.getElementById('users-body').innerHTML = '';
-                    return;
+                    document.getElementById('game-stats-body').innerHTML = '';
+                    return false;
                 }
 
                 const res = await fetch('/api/admin/users', { credentials: 'include' });
@@ -246,10 +438,43 @@
                 document.getElementById('stat-login-visits').textContent =
                     `Signed-in session visits (sum of account visits): ${data.counts?.loggedInVisits ?? 0}`;
                 renderUsers();
+                return true;
+            } catch (err) {
+                msg.className = 'msg error';
+                msg.textContent = err.message;
+                return false;
+            }
+        }
+
+        async function loadGameStats() {
+            const msg = document.getElementById('game-stats-msg');
+            msg.textContent = '';
+            msg.className = 'msg';
+            const days = document.getElementById('stats-days').value || '30';
+            try {
+                const res = await fetch(`/api/admin/game-stats?days=${encodeURIComponent(days)}`, { credentials: 'include' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to load game stats');
+
+                const t = data.totals || {};
+                document.getElementById('gstat-visits').textContent = t.visits ?? 0;
+                document.getElementById('gstat-unique').textContent = t.unique_visitors ?? 0;
+                document.getElementById('gstat-logged').textContent = t.logged_in_visits ?? 0;
+                document.getElementById('gstat-anon').textContent = t.anonymous_visits ?? 0;
+                document.getElementById('gstat-time').textContent = formatDuration(t.total_dwell_ms);
+
+                gamePages = (data.pages || []).map(enrichPage);
+                maxVisits = Math.max(1, ...gamePages.map((p) => p.visits));
+                renderGameStats();
             } catch (err) {
                 msg.className = 'msg error';
                 msg.textContent = err.message;
             }
+        }
+
+        async function refreshAll() {
+            const ok = await loadUsers();
+            if (ok) await loadGameStats();
         }
 
         async function approve(id) {
@@ -271,7 +496,7 @@
             return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
-        loadUsers();
+        refreshAll();
     </script>
 </body>
 </html>

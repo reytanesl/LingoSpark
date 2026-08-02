@@ -80,6 +80,22 @@ export async function initDb() {
         END $$;
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS IDX_session_expire ON session (expire);`);
+
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS analytics_page_visits (
+            id SERIAL PRIMARY KEY,
+            visitor_session_id TEXT NOT NULL,
+            user_id INTEGER,
+            page_key TEXT NOT NULL,
+            started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            duration_ms INTEGER NOT NULL DEFAULT 0,
+            ended_at TIMESTAMPTZ,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_analytics_page_key ON analytics_page_visits (page_key)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_analytics_started ON analytics_page_visits (started_at DESC)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_analytics_visitor ON analytics_page_visits (visitor_session_id)`);
 }
 
 /** Clear BMC source when the paid period has ended (keeps access_until for history). */
@@ -368,5 +384,142 @@ export function publicUser(user) {
         visitCount: Number(user.visit_count || 0),
         lastVisitAt: user.last_visit_at || null,
         status: getAccessStatus(user),
+    };
+}
+
+/** Allowed analytics page keys (screens + home sections). */
+export const ANALYTICS_PAGE_KEYS = new Set([
+    'home',
+    'setup',
+    'flashcard',
+    'bomb',
+    'grid',
+    'frank',
+    'trans',
+    'devil',
+    'bloat',
+    'vocab',
+    'odyssey',
+    'pe-boring',
+    'pe-detail',
+    'pe-link',
+    'pe-exam',
+    'section:cat-vocab',
+    'section:cat-team',
+    'section:cat-writing',
+    'section:primary-english',
+]);
+
+const SETUP_PREFIX = 'setup:';
+
+export function normalizeAnalyticsPageKey(raw) {
+    const key = String(raw || '').trim().toLowerCase();
+    if (!key || key.length > 64) return null;
+    if (ANALYTICS_PAGE_KEYS.has(key)) return key;
+    if (key.startsWith(SETUP_PREFIX)) {
+        const game = key.slice(SETUP_PREFIX.length);
+        if (ANALYTICS_PAGE_KEYS.has(game) && game !== 'home' && game !== 'setup' && !game.startsWith('section:')) {
+            return `${SETUP_PREFIX}${game}`;
+        }
+    }
+    return null;
+}
+
+export async function startAnalyticsVisit({ visitorSessionId, userId = null, pageKey }) {
+    const page = normalizeAnalyticsPageKey(pageKey);
+    const sid = String(visitorSessionId || '').trim().slice(0, 80);
+    if (!page || !sid) return null;
+
+    const db = getPool();
+    const result = await db.query(
+        `INSERT INTO analytics_page_visits (visitor_session_id, user_id, page_key)
+         VALUES ($1, $2, $3)
+         RETURNING id, page_key, started_at, duration_ms`,
+        [sid, userId || null, page]
+    );
+    return result.rows[0] || null;
+}
+
+export async function updateAnalyticsDwell({ visitId, visitorSessionId, durationMs }) {
+    const id = Number(visitId);
+    const sid = String(visitorSessionId || '').trim().slice(0, 80);
+    const ms = Math.max(0, Math.min(Number(durationMs) || 0, 24 * 60 * 60 * 1000));
+    if (!Number.isFinite(id) || id <= 0 || !sid) return null;
+
+    const db = getPool();
+    const result = await db.query(
+        `UPDATE analytics_page_visits
+         SET duration_ms = GREATEST(duration_ms, $3),
+             updated_at = NOW()
+         WHERE id = $1 AND visitor_session_id = $2
+         RETURNING id, page_key, duration_ms`,
+        [id, sid, ms]
+    );
+    return result.rows[0] || null;
+}
+
+export async function endAnalyticsVisit({ visitId, visitorSessionId, durationMs }) {
+    const id = Number(visitId);
+    const sid = String(visitorSessionId || '').trim().slice(0, 80);
+    const ms = Math.max(0, Math.min(Number(durationMs) || 0, 24 * 60 * 60 * 1000));
+    if (!Number.isFinite(id) || id <= 0 || !sid) return null;
+
+    const db = getPool();
+    const result = await db.query(
+        `UPDATE analytics_page_visits
+         SET duration_ms = GREATEST(duration_ms, $3),
+             ended_at = NOW(),
+             updated_at = NOW()
+         WHERE id = $1 AND visitor_session_id = $2
+         RETURNING id, page_key, duration_ms, ended_at`,
+        [id, sid, ms]
+    );
+    return result.rows[0] || null;
+}
+
+export async function getGamePopularityStats({ days = 30 } = {}) {
+    const db = getPool();
+    const windowDays = Math.max(1, Math.min(Number(days) || 30, 365));
+
+    const result = await db.query(
+        `SELECT
+            page_key,
+            COUNT(*)::int AS visits,
+            COUNT(DISTINCT visitor_session_id)::int AS unique_visitors,
+            COUNT(*) FILTER (WHERE user_id IS NOT NULL)::int AS logged_in_visits,
+            COUNT(*) FILTER (WHERE user_id IS NULL)::int AS anonymous_visits,
+            COALESCE(SUM(duration_ms), 0)::bigint AS total_dwell_ms,
+            COALESCE(AVG(duration_ms), 0)::float AS avg_dwell_ms,
+            COALESCE(MAX(duration_ms), 0)::int AS max_dwell_ms,
+            MAX(started_at) AS last_visit_at
+         FROM analytics_page_visits
+         WHERE started_at >= NOW() - make_interval(days => $1::int)
+         GROUP BY page_key
+         ORDER BY visits DESC, total_dwell_ms DESC`,
+        [windowDays]
+    );
+
+    const totalsResult = await db.query(
+        `SELECT
+            COUNT(*)::int AS visits,
+            COUNT(DISTINCT visitor_session_id)::int AS unique_visitors,
+            COUNT(*) FILTER (WHERE user_id IS NOT NULL)::int AS logged_in_visits,
+            COUNT(*) FILTER (WHERE user_id IS NULL)::int AS anonymous_visits,
+            COALESCE(SUM(duration_ms), 0)::bigint AS total_dwell_ms
+         FROM analytics_page_visits
+         WHERE started_at >= NOW() - make_interval(days => $1::int)`,
+        [windowDays]
+    );
+
+    return {
+        days: windowDays,
+        totals: totalsResult.rows[0] || {
+            visits: 0,
+            unique_visitors: 0,
+            logged_in_visits: 0,
+            anonymous_visits: 0,
+            total_dwell_ms: 0,
+        },
+        pages: result.rows,
     };
 }

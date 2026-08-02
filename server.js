@@ -23,6 +23,10 @@ import {
     expireStaleAccess,
     expireUserIfNeeded,
     applyPendingBmcPayments,
+    startAnalyticsVisit,
+    updateAnalyticsDwell,
+    endAnalyticsVisit,
+    getGamePopularityStats,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook } from './billing.js';
@@ -242,6 +246,55 @@ async function start() {
         res.json({ url });
     });
 
+    // Anonymous + logged-in game/section popularity tracking
+    app.post('/api/analytics/enter', async (req, res) => {
+        try {
+            if (!dbReady) return res.json({ ok: false, disabled: true });
+            const visit = await startAnalyticsVisit({
+                visitorSessionId: req.body?.visitorSessionId,
+                userId: req.user?.id || null,
+                pageKey: req.body?.pageKey,
+            });
+            if (!visit) return res.status(400).json({ error: 'Invalid page or session' });
+            res.json({ ok: true, visitId: visit.id, pageKey: visit.page_key });
+        } catch (err) {
+            console.warn('analytics enter failed:', err.message);
+            res.status(500).json({ error: 'Analytics failed' });
+        }
+    });
+
+    app.post('/api/analytics/dwell', async (req, res) => {
+        try {
+            if (!dbReady) return res.json({ ok: false, disabled: true });
+            const row = await updateAnalyticsDwell({
+                visitId: req.body?.visitId,
+                visitorSessionId: req.body?.visitorSessionId,
+                durationMs: req.body?.durationMs,
+            });
+            if (!row) return res.status(400).json({ error: 'Invalid visit' });
+            res.json({ ok: true, durationMs: row.duration_ms });
+        } catch (err) {
+            console.warn('analytics dwell failed:', err.message);
+            res.status(500).json({ error: 'Analytics failed' });
+        }
+    });
+
+    app.post('/api/analytics/leave', async (req, res) => {
+        try {
+            if (!dbReady) return res.json({ ok: false, disabled: true });
+            const row = await endAnalyticsVisit({
+                visitId: req.body?.visitId,
+                visitorSessionId: req.body?.visitorSessionId,
+                durationMs: req.body?.durationMs,
+            });
+            if (!row) return res.status(400).json({ error: 'Invalid visit' });
+            res.json({ ok: true, durationMs: row.duration_ms });
+        } catch (err) {
+            console.warn('analytics leave failed:', err.message);
+            res.status(500).json({ error: 'Analytics failed' });
+        }
+    });
+
     app.get('/api/admin/users', requireAdmin, async (_req, res) => {
         try {
             try {
@@ -297,6 +350,16 @@ async function start() {
             const user = await revokeUser(Number(req.params.id));
             if (!user) return res.status(404).json({ error: 'User not found' });
             res.json({ user: publicUser(user), hasAccess: hasWritingAccess(user) });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    app.get('/api/admin/game-stats', requireAdmin, async (req, res) => {
+        try {
+            const days = Number(req.query.days) || 30;
+            const stats = await getGamePopularityStats({ days });
+            res.json(stats);
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
