@@ -313,12 +313,27 @@
         .about-panel a:hover { color: var(--pillarbox-red); }
         .about-pricing { background: var(--light-grey); border-left: 4px solid var(--royal-blue); border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; }
         .about-pricing strong { color: var(--royal-blue); font-family: var(--font-primary); }
-        .about-guide { margin-top: 1.5rem; }
+        .menu-nav {
+            display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.35rem;
+            padding-bottom: 1rem; border-bottom: 2px solid var(--border-light);
+        }
+        .menu-nav-btn {
+            font-family: var(--font-primary); font-weight: 600; font-size: 0.95rem; letter-spacing: 0.3px;
+            padding: 0.55rem 1.25rem; border-radius: 30px; cursor: pointer; transition: 0.2s;
+            background: transparent; border: 2px solid var(--royal-blue); color: var(--royal-blue);
+        }
+        .menu-nav-btn:hover { background: rgba(1, 33, 105, 0.06); }
+        .menu-nav-btn.active {
+            background: var(--royal-blue); color: var(--bright-white); border-color: var(--royal-blue);
+        }
+        .menu-view { display: none; animation: fadeIn 0.3s; }
+        .menu-view.active { display: block; }
+        .about-guide { margin-top: 0; }
         .about-guide h3 {
             font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.2rem;
             margin: 1.35rem 0 0.65rem; padding-bottom: 0.35rem; border-bottom: 2px solid var(--border-light);
         }
-        .about-guide h3:first-child { margin-top: 0.5rem; }
+        .about-guide h3:first-of-type { margin-top: 0.5rem; }
         .guide-item {
             background: var(--light-grey); border-radius: 10px; padding: 0.85rem 1rem;
             margin-bottom: 0.65rem; border-left: 3px solid var(--pillarbox-red);
@@ -453,50 +468,59 @@
     <div class="auth-bar" id="auth-bar"></div>
 
     <div class="about-panel" id="about-panel" aria-hidden="true">
-        <h2>About LingoSpark</h2>
-        <p class="about-tagline">ESL vocab building and confidence boosting website.</p>
-        <p>LingoSpark is a growing collection of interactive ESL tools designed to make learning English fun, fast, and engaging. I build small, practical apps for teachers and learners—vocab games, writing challenges, team activities, and creative practice tools that turn everyday lessons into something students actually enjoy.</p>
-        <p>What I am really proud of is the Writing Suite, the feature that allows students to practice their writing skills and expand their glossaries individually and at their own pace. It can also be used by teachers as support for their writing classes.</p>
-        <p>More new activities coming soon!</p>
-        <p>If you like the project, want to test the AI features or support further development, your coffee helps me keep improving the platform, implementing new ideas and making English learning more appealing, natural and meaningful for everyone.</p>
-        <div class="about-pricing">
-            <p style="margin-bottom:0.4rem;"><strong>Support options</strong></p>
-            <p style="margin-bottom:0.6rem;"><strong>Vocab practice: FREE FOREVER!</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction and Team Challenge stay free.</p>
-            <p style="margin-bottom:0;">Writing Suite &amp; Primary English: the coffee is ONLY <strong>$3</strong> a week, <strong>$10</strong> a month for unlimited use!</p>
+        <div class="menu-nav" role="tablist" aria-label="Menu sections">
+            <button type="button" class="menu-nav-btn active" id="menu-btn-about" role="tab" aria-selected="true" aria-controls="menu-view-about" onclick="showMenuView('about')">About</button>
+            <button type="button" class="menu-nav-btn" id="menu-btn-howto" role="tab" aria-selected="false" aria-controls="menu-view-howto" onclick="showMenuView('howto')">How to play</button>
         </div>
-        <p><a href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">https://buymeacoffee.com/lingospark/extras</a></p>
-        <p>For any questions, email me: <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a></p>
 
-        <div class="about-guide">
-            <h2 style="margin-top:1.75rem;">How to play — short guide</h2>
-            <p>Open a section from the home squares, pick a game, then follow the setup screen if it asks for a word list.</p>
+        <div id="menu-view-about" class="menu-view active" role="tabpanel" aria-labelledby="menu-btn-about">
+            <h2>About LingoSpark</h2>
+            <p class="about-tagline">ESL vocab building and confidence boosting website.</p>
+            <p>LingoSpark is a growing collection of interactive ESL tools designed to make learning English fun, fast, and engaging. I build small, practical apps for teachers and learners—vocab games, writing challenges, team activities, and creative practice tools that turn everyday lessons into something students actually enjoy.</p>
+            <p>What I am really proud of is the Writing Suite, the feature that allows students to practice their writing skills and expand their glossaries individually and at their own pace. It can also be used by teachers as support for their writing classes.</p>
+            <p>More new activities coming soon!</p>
+            <p>If you like the project, want to test the AI features or support further development, your coffee helps me keep improving the platform, implementing new ideas and making English learning more appealing, natural and meaningful for everyone.</p>
+            <div class="about-pricing">
+                <p style="margin-bottom:0.4rem;"><strong>Support options</strong></p>
+                <p style="margin-bottom:0.6rem;"><strong>Vocab practice: FREE FOREVER!</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction and Team Challenge stay free.</p>
+                <p style="margin-bottom:0;">Writing Suite &amp; Primary English: the coffee is ONLY <strong>$3</strong> a week, <strong>$10</strong> a month for unlimited use!</p>
+            </div>
+            <p><a href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">https://buymeacoffee.com/lingospark/extras</a></p>
+            <p>For any questions, email me: <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a></p>
+        </div>
 
-            <h3>Vocab Review</h3>
-            <div class="guide-item"><strong>Classic Flashcards</strong><p>Paste a glossary, flip each card, then mark Know / Don’t know. Unknown cards stay in the deck until you master them.</p></div>
-            <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
-            <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
-            <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word that matches the definition. Higher confidence can win more — wrong bids cost chips. Use built-in levels or your own list.</p></div>
+        <div id="menu-view-howto" class="menu-view" role="tabpanel" aria-labelledby="menu-btn-howto">
+            <div class="about-guide">
+                <h2>How to play — short guide</h2>
+                <p>Open a section from the home squares, pick a game, then follow the setup screen if it asks for a word list.</p>
 
-            <h3>Team Challenge</h3>
-            <div class="guide-item"><strong>Sentence Scramble</strong><p>Race to rebuild correct sentences from scrambled words. Great on a classroom projector.</p></div>
-            <div class="guide-item"><strong>Quintagrams</strong><p>Solve five clues using every jumbled letter exactly once.</p></div>
-            <div class="guide-item"><strong>Wordle</strong><p>Guess the hidden five-letter word in six tries. Use letter colour feedback to narrow it down.</p></div>
-            <div class="guide-item"><strong>Word Chain</strong><p>Connect vocabulary into chains under time pressure — keep the links valid and keep going.</p></div>
-            <div class="guide-item"><strong>Word Board</strong><p>Build high-scoring words from letter tiles on a shared board with your team.</p></div>
+                <h3>Vocab Review</h3>
+                <div class="guide-item"><strong>Classic Flashcards</strong><p>Paste a glossary, flip each card, then mark Know / Don’t know. Unknown cards stay in the deck until you master them.</p></div>
+                <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
+                <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
+                <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word that matches the definition. Higher confidence can win more — wrong bids cost chips. Use built-in levels or your own list.</p></div>
 
-            <h3>Writing Suite</h3>
-            <div class="guide-item"><strong>Frankenstein Builder</strong><p>Drag sentence blocks into the right essay order (hook → context → thesis → evidence → analysis).</p></div>
-            <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
-            <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
-            <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
-            <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives.</p></div>
-            <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
+                <h3>Team Challenge</h3>
+                <div class="guide-item"><strong>Sentence Scramble</strong><p>Race to rebuild correct sentences from scrambled words. Great on a classroom projector.</p></div>
+                <div class="guide-item"><strong>Quintagrams</strong><p>Solve five clues using every jumbled letter exactly once.</p></div>
+                <div class="guide-item"><strong>Wordle</strong><p>Guess the hidden five-letter word in six tries. Use letter colour feedback to narrow it down.</p></div>
+                <div class="guide-item"><strong>Word Chain</strong><p>Connect vocabulary into chains under time pressure — keep the links valid and keep going.</p></div>
+                <div class="guide-item"><strong>Word Board</strong><p>Build high-scoring words from letter tiles on a shared board with your team.</p></div>
 
-            <h3>Primary English</h3>
-            <div class="guide-item"><strong>Boring to Brilliant</strong><p>Upgrade bland wording into richer choices at A1 / A2 / B1 (or with a custom glossary).</p></div>
-            <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
-            <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
-            <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
+                <h3>Writing Suite</h3>
+                <div class="guide-item"><strong>Frankenstein Builder</strong><p>Drag sentence blocks into the right essay order (hook → context → thesis → evidence → analysis).</p></div>
+                <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
+                <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
+                <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
+                <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives.</p></div>
+                <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
+
+                <h3>Primary English</h3>
+                <div class="guide-item"><strong>Boring to Brilliant</strong><p>Upgrade bland wording into richer choices at A1 / A2 / B1 (or with a custom glossary).</p></div>
+                <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
+                <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
+                <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
+            </div>
         </div>
     </div>
 
@@ -1445,10 +1469,27 @@
             }
         }
 
+        function showMenuView(view) {
+            const isHowto = view === 'howto';
+            const aboutView = document.getElementById('menu-view-about');
+            const howtoView = document.getElementById('menu-view-howto');
+            const aboutBtn = document.getElementById('menu-btn-about');
+            const howtoBtn = document.getElementById('menu-btn-howto');
+            if (!aboutView || !howtoView || !aboutBtn || !howtoBtn) return;
+            aboutView.classList.toggle('active', !isHowto);
+            howtoView.classList.toggle('active', isHowto);
+            aboutBtn.classList.toggle('active', !isHowto);
+            howtoBtn.classList.toggle('active', isHowto);
+            aboutBtn.setAttribute('aria-selected', !isHowto ? 'true' : 'false');
+            howtoBtn.setAttribute('aria-selected', isHowto ? 'true' : 'false');
+        }
+
         function toggleAboutPanel() {
             const panel = document.getElementById('about-panel');
+            const opening = !panel.classList.contains('open');
             panel.classList.toggle('open');
             panel.setAttribute('aria-hidden', panel.classList.contains('open') ? 'false' : 'true');
+            if (opening) showMenuView('about');
             syncAboutMenuBtn();
         }
 
