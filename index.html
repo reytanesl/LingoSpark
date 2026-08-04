@@ -81,29 +81,55 @@
         }
         .home-hub.active { display: flex; }
         .hub-square {
-            width: min(100%, 360px); aspect-ratio: 1 / 1; border: none; border-radius: 18px;
+            width: min(100%, 360px); aspect-ratio: 1 / 1; border: none; border-radius: 12px;
             cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 1rem; padding: 1.5rem; text-align: center; color: #fff;
-            font-family: var(--font-primary); box-shadow: 0 10px 28px rgba(1, 33, 105, 0.18);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-            background:
-                radial-gradient(circle at 20% 15%, rgba(255,255,255,0.18), transparent 45%),
-                linear-gradient(145deg, var(--royal-blue) 0%, #0a2f7a 55%, #011033 100%);
+            gap: 0.85rem; padding: 1.5rem 1.25rem; text-align: center;
+            background: var(--bright-white); color: var(--text-dark);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid var(--royal-blue);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-top-color 0.3s ease;
         }
-        .hub-square:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 14px 34px rgba(1, 33, 105, 0.28); }
-        .hub-square.team {
-            background:
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.16), transparent 40%),
-                linear-gradient(145deg, var(--pillarbox-red) 0%, #9e0d24 55%, #6e0818 100%);
+        .hub-square:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+            border-top-color: var(--pillarbox-red);
         }
-        .hub-square.writing {
-            background:
-                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.14), transparent 42%),
-                linear-gradient(145deg, #00823B 0%, #0a5c2e 50%, #012169 100%);
+        .hub-square.team { border-top-color: var(--pillarbox-red); }
+        .hub-square.team:hover { border-top-color: var(--royal-blue); }
+        .hub-square.writing { border-top-color: var(--success-green); }
+        .hub-square.writing:hover { border-top-color: var(--pillarbox-red); }
+        .hub-square .hub-icon {
+            height: 70px; width: 70px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background-color: rgba(1, 33, 105, 0.05); color: var(--royal-blue); font-size: 2rem;
         }
-        .hub-square i { font-size: 3rem; opacity: 0.95; }
-        .hub-square .hub-title { font-size: 1.7rem; font-weight: 800; line-height: 1.15; }
-        .hub-square .hub-sub { font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 500; opacity: 0.9; max-width: 16rem; line-height: 1.4; }
+        .hub-square.team .hub-icon {
+            background-color: rgba(200, 16, 46, 0.08); color: var(--pillarbox-red);
+        }
+        .hub-square.writing .hub-icon {
+            background-color: rgba(0, 130, 59, 0.08); color: var(--success-green);
+        }
+        .hub-square .hub-title {
+            font-family: var(--font-primary); font-size: 1.45rem; font-weight: 700;
+            line-height: 1.2; color: var(--royal-blue); letter-spacing: 0.3px;
+        }
+        .hub-square .hub-sub {
+            font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 400;
+            color: var(--text-muted); max-width: 16rem; line-height: 1.5;
+        }
+        @media (min-width: 768px) {
+            .home-hub {
+                flex-direction: row; justify-content: center; align-items: stretch;
+                max-width: 960px; gap: 1.5rem; padding: 0 1rem;
+            }
+            .hub-square {
+                width: auto; flex: 1 1 0; max-width: 280px; min-width: 0;
+                aspect-ratio: 1 / 1; padding: 1.25rem 1rem; gap: 0.75rem;
+            }
+            .hub-square .hub-icon { height: 64px; width: 64px; font-size: 1.75rem; }
+            .hub-square .hub-title { font-size: 1.3rem; }
+            .hub-square .hub-sub { font-size: 0.88rem; max-width: none; }
+        }
         .section-back-row { margin-bottom: 1.25rem; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 1rem;}
@@ -481,17 +507,17 @@
 
             <div id="home-hub" class="home-hub active">
                 <button type="button" class="hub-square" onclick="openHomeSection('vocab')">
-                    <i class="fa-solid fa-book-open"></i>
+                    <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
                     <span class="hub-title">Vocab Review</span>
                     <span class="hub-sub">Flashcards, Bomb, Grid &amp; Auction — free forever</span>
                 </button>
                 <button type="button" class="hub-square team" onclick="openHomeSection('team')">
-                    <i class="fa-solid fa-users"></i>
+                    <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
                     <span class="hub-title">Team Challenge</span>
                     <span class="hub-sub">Classroom board games for the big screen</span>
                 </button>
                 <button type="button" class="hub-square writing" onclick="openHomeSection('writing')">
-                    <i class="fa-solid fa-pen-nib"></i>
+                    <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-pen-nib"></i></span>
                     <span class="hub-title">Writing Suite</span>
                     <span class="hub-sub">AI essay tools &amp; Primary English prep</span>
                 </button>
