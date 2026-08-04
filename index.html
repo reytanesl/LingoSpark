@@ -649,12 +649,15 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><button class="btn btn-outline" onclick="goToPeGame('pe-exam')">Play Now</button></div>
                 </div>
 
-                <!-- Advanced English Sub-section -->
-                <div class="sub-section-header">
-                    <h3><i class="fa-solid fa-feather-pointed" style="color: var(--pillarbox-red);"></i> Advanced English</h3>
-                    <p>6 AI essay &amp; writing tools for academic structure, vocabulary, and logic.</p>
-                </div>
-                <div class="grid">
+                <!-- Advanced English -->
+                <button type="button" class="pe-pack-toggle" id="adv-pack-toggle" onclick="toggleAdvancedEnglishPack()">
+                    <span>
+                        <i class="fa-solid fa-feather-pointed" style="color: var(--pillarbox-red);"></i> Advanced English
+                        <span class="pe-pack-meta">6 AI essay &amp; writing tools for academic structure, vocabulary, and logic</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down chevron"></i>
+                </button>
+                <div class="grid pe-pack-grid" id="adv-pack-grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange AI-generated sentences from essays, formal letters or articles into the correct 5-part order.</p><button class="btn btn-outline" onclick="goToWritingSetup('frank')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><button class="btn btn-outline" onclick="goToWritingSetup('trans')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToWritingSetup('devil')">Play Now</button></div>
@@ -1132,6 +1135,16 @@
             grid.classList.toggle('open');
             levels.classList.toggle('open');
             if (opening) trackSectionOpen('section:primary-english');
+        }
+
+        function toggleAdvancedEnglishPack() {
+            const btn = document.getElementById('adv-pack-toggle');
+            const grid = document.getElementById('adv-pack-grid');
+            if (!btn || !grid) return;
+            const opening = !btn.classList.contains('open');
+            btn.classList.toggle('open');
+            grid.classList.toggle('open');
+            if (opening) trackSectionOpen('section:advanced-english');
         }
 
         function selectPeLevel(level) {
