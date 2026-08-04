@@ -146,6 +146,11 @@
         #screen-home .card p { font-size: 1.2rem; }
         #screen-home .pe-pack-toggle { font-size: 1.58rem; }
         #screen-home .pe-pack-toggle .pe-pack-meta { font-size: 1.14rem; }
+        .sub-section-header { text-align: center; margin: 2.5rem 0 1.25rem 0; }
+        .sub-section-header h3 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; margin: 0; }
+        .sub-section-header p { color: var(--text-muted); font-size: 1.1rem; margin-top: 0.35rem; }
+        #screen-home .sub-section-header h3 { font-size: 2.1rem; }
+        #screen-home .sub-section-header p { font-size: 1.2rem; }
         @media (max-width: 767px) {
             #screen-home .category-header h2 { font-size: clamp(1.85rem, 7vw, 2.4rem); }
             #screen-home .cat-icon { font-size: clamp(1.7rem, 6vw, 2.15rem); }
@@ -154,6 +159,8 @@
             #screen-home .card p { font-size: clamp(1.08rem, 4vw, 1.25rem); }
             #screen-home .pe-pack-toggle { font-size: clamp(1.35rem, 5.2vw, 1.7rem); }
             #screen-home .pe-pack-toggle .pe-pack-meta { font-size: clamp(1.02rem, 3.8vw, 1.2rem); }
+            #screen-home .sub-section-header h3 { font-size: clamp(1.6rem, 6vw, 2.1rem); }
+            #screen-home .sub-section-header p { font-size: clamp(1.02rem, 3.8vw, 1.2rem); }
         }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 1rem;}
@@ -532,18 +539,19 @@
                 <div class="guide-item"><strong>Word Board</strong><p>Build high-scoring words from letter tiles on a shared board with your team.</p></div>
 
                 <h3>Writing Suite</h3>
+                <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 0.8rem 0 0.4rem; font-size: 1.1rem;">Primary English</h4>
+                <div class="guide-item"><strong>Boring to Brilliant</strong><p>Upgrade bland wording into richer choices at A1 / A2 / B1 (or with a custom glossary).</p></div>
+                <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
+                <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
+                <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
+
+                <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
                 <div class="guide-item"><strong>Frankenstein Builder</strong><p>Drag sentence blocks into the right essay order (hook → context → thesis → evidence → analysis).</p></div>
                 <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
                 <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
-
-                <h3>Primary English</h3>
-                <div class="guide-item"><strong>Boring to Brilliant</strong><p>Upgrade bland wording into richer choices at A1 / A2 / B1 (or with a custom glossary).</p></div>
-                <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
-                <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
-                <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
             </div>
         </div>
     </div>
@@ -611,16 +619,9 @@
                 <div class="category-header">
                     <i class="fa-solid fa-pen-nib cat-icon"></i><h2>Writing Suite</h2>
                 </div>
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure and style. <strong>Powered entirely by Cursor AI.</strong></p>
-                <div class="grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange AI-generated sentences from essays, formal letters or articles into the correct 5-part order.</p><button class="btn btn-outline" onclick="goToWritingSetup('frank')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><button class="btn btn-outline" onclick="goToWritingSetup('trans')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToWritingSetup('devil')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToWritingSetup('bloat')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToWritingSetup('vocab')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToWritingSetup('odyssey')">Play Now</button></div>
-                </div>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills. <strong>Powered entirely by Cursor AI.</strong></p>
 
+                <!-- Primary English -->
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
@@ -646,6 +647,20 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><button class="btn btn-outline" onclick="goToPeGame('pe-detail')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><button class="btn btn-outline" onclick="goToPeGame('pe-link')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><button class="btn btn-outline" onclick="goToPeGame('pe-exam')">Play Now</button></div>
+                </div>
+
+                <!-- Advanced English Sub-section -->
+                <div class="sub-section-header">
+                    <h3><i class="fa-solid fa-feather-pointed" style="color: var(--pillarbox-red);"></i> Advanced English</h3>
+                    <p>6 AI essay &amp; writing tools for academic structure, vocabulary, and logic.</p>
+                </div>
+                <div class="grid">
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange AI-generated sentences from essays, formal letters or articles into the correct 5-part order.</p><button class="btn btn-outline" onclick="goToWritingSetup('frank')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><button class="btn btn-outline" onclick="goToWritingSetup('trans')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><button class="btn btn-outline" onclick="goToWritingSetup('devil')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToWritingSetup('bloat')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToWritingSetup('vocab')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToWritingSetup('odyssey')">Play Now</button></div>
                 </div>
             </div>
 
