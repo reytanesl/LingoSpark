@@ -110,11 +110,11 @@
             background-color: rgba(0, 130, 59, 0.08); color: var(--success-green);
         }
         .hub-square .hub-title {
-            font-family: var(--font-primary); font-size: 1.45rem; font-weight: 700;
+            font-family: var(--font-primary); font-size: 1.63rem; font-weight: 700;
             line-height: 1.2; color: var(--royal-blue); letter-spacing: 0.3px;
         }
         .hub-square .hub-sub {
-            font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 400;
+            font-family: var(--font-secondary); font-size: 1.07rem; font-weight: 400;
             color: var(--text-muted); max-width: 16rem; line-height: 1.5;
         }
         @media (min-width: 768px) {
@@ -127,10 +127,19 @@
                 aspect-ratio: 1 / 1; padding: 1.25rem 1rem; gap: 0.75rem;
             }
             .hub-square .hub-icon { height: 64px; width: 64px; font-size: 1.75rem; }
-            .hub-square .hub-title { font-size: 1.3rem; }
-            .hub-square .hub-sub { font-size: 0.88rem; max-width: none; }
+            .hub-square .hub-title { font-size: 1.46rem; }
+            .hub-square .hub-sub { font-size: 0.99rem; max-width: none; }
         }
         .section-back-row { margin-bottom: 1.25rem; }
+
+        /* Front page type ~12% larger (logo lives outside #screen-home) */
+        #screen-home .category-header h2 { font-size: 2.05rem; }
+        #screen-home .cat-icon { font-size: 1.8rem; }
+        #screen-home .home-section > p { font-size: 1.07rem; }
+        #screen-home .card h2 { font-size: 1.58rem; }
+        #screen-home .card p { font-size: 1.07rem; }
+        #screen-home .pe-pack-toggle { font-size: 1.4rem; }
+        #screen-home .pe-pack-toggle .pe-pack-meta { font-size: 1.01rem; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 1rem;}
         .card { background-color: var(--bright-white); border-radius: 12px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease; border-top: 4px solid transparent; display: flex; flex-direction: column; }
