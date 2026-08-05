@@ -486,6 +486,58 @@
         .odyssey-action-input { width: 100%; padding: 1rem 1.25rem; border: 2px solid var(--royal-blue); border-radius: 8px; font-size: 1rem; font-family: var(--font-secondary); resize: vertical; min-height: 80px; }
         .odyssey-action-input:focus { outline: none; border-color: var(--pillarbox-red); }
         .odyssey-action-input::placeholder { color: var(--text-muted); font-style: italic; }
+
+        /* Mission: Chat */
+        .mission-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.85rem; margin-top: 0.75rem; }
+        .mission-pick-card {
+            text-align: left; cursor: pointer; background: var(--bright-white); border: 2px solid var(--border-light);
+            border-radius: 10px; padding: 1rem; transition: 0.2s; font-family: var(--font-secondary);
+        }
+        .mission-pick-card:hover { border-color: var(--royal-blue); transform: translateY(-2px); }
+        .mission-pick-card.selected { border-color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.04); box-shadow: 0 0 0 1px var(--pillarbox-red); }
+        .mission-pick-card .mission-cat { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--royal-blue); font-weight: 700; margin-bottom: 0.35rem; }
+        .mission-pick-card h4 { font-family: var(--font-primary); color: var(--text-dark); margin: 0 0 0.4rem; font-size: 1rem; }
+        .mission-pick-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.4; }
+        .mission-hud { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem; align-items: stretch; }
+        .mission-brief {
+            flex: 2; min-width: 220px; background: var(--light-grey); border-radius: 10px; padding: 1rem 1.15rem;
+            border-left: 4px solid var(--royal-blue);
+        }
+        .mission-brief strong { display: block; font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem; }
+        .mission-brief .mission-goal-text { font-weight: 600; font-size: 1rem; color: var(--text-dark); line-height: 1.4; }
+        .mission-brief .mission-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.45; }
+        .mission-progress-stat { flex: 1; min-width: 160px; background: var(--light-grey); border-radius: 10px; padding: 0.85rem 1rem; border-top: 3px solid var(--success-green); }
+        .mission-progress-stat strong { display: block; font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem; }
+        .mission-progress-stat .pct { font-weight: 700; font-size: 1.15rem; }
+        .mission-progress-bar { height: 10px; background: #ddd; border-radius: 5px; margin-top: 0.5rem; overflow: hidden; }
+        .mission-progress-fill { height: 100%; width: 0%; background: var(--success-green); transition: width 0.45s ease; border-radius: 5px; }
+        .mission-progress-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; min-height: 1.2em; }
+        .mission-chat-log {
+            background: #f7f8fb; border: 2px solid var(--border-light); border-radius: 12px; padding: 1.25rem;
+            min-height: 300px; max-height: 420px; overflow-y: auto; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;
+        }
+        .mission-bubble { max-width: 85%; padding: 0.75rem 1rem; border-radius: 14px; line-height: 1.55; font-size: 0.95rem; }
+        .mission-bubble.npc { align-self: flex-start; background: var(--bright-white); border: 1px solid #dde3ea; border-bottom-left-radius: 4px; }
+        .mission-bubble.npc .bubble-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--royal-blue); margin-bottom: 0.3rem; }
+        .mission-bubble.you { align-self: flex-end; background: rgba(1, 33, 105, 0.08); border: 1px solid rgba(1, 33, 105, 0.2); border-bottom-right-radius: 4px; color: var(--text-dark); }
+        .mission-bubble.you .bubble-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--pillarbox-red); margin-bottom: 0.3rem; text-align: right; }
+        .mission-bubble.system { align-self: center; background: transparent; color: var(--text-muted); font-style: italic; font-size: 0.85rem; text-align: center; max-width: 95%; }
+        .mission-compose {
+            background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px; padding: 1.25rem;
+            border-top: 4px solid var(--pillarbox-red); display: flex; flex-direction: column; gap: 0.85rem;
+        }
+        .mission-compose textarea {
+            width: 100%; padding: 0.9rem 1.1rem; border: 2px solid var(--royal-blue); border-radius: 8px;
+            font-size: 1rem; font-family: var(--font-secondary); resize: vertical; min-height: 72px; box-sizing: border-box;
+        }
+        .mission-compose textarea:focus { outline: none; border-color: var(--pillarbox-red); }
+        .mission-compose-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; align-items: center; }
+        .mission-win-banner {
+            display: none; background: rgba(22, 163, 74, 0.1); border: 2px solid var(--success-green); border-radius: 12px;
+            padding: 1.25rem; text-align: center; margin-bottom: 1.25rem;
+        }
+        .mission-win-banner.visible { display: block; }
+        .mission-win-banner h3 { font-family: var(--font-primary); color: var(--success-green); margin: 0 0 0.4rem; }
     </style>
 </head>
 <body>
@@ -653,7 +705,7 @@
                 <button type="button" class="pe-pack-toggle" id="adv-pack-toggle" onclick="toggleAdvancedEnglishPack()">
                     <span>
                         <i class="fa-solid fa-feather-pointed" style="color: var(--pillarbox-red);"></i> Advanced English
-                        <span class="pe-pack-meta">6 AI essay &amp; writing tools for academic structure, vocabulary, and logic</span>
+                        <span class="pe-pack-meta">7 AI essay, writing &amp; speaking tools for academic structure, vocabulary, and fluency</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
@@ -664,6 +716,7 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToWritingSetup('bloat')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToWritingSetup('vocab')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToWritingSetup('odyssey')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — the AI stays in character and never grades your grammar.</p><button class="btn btn-outline" onclick="goToWritingSetup('mission')">Play Now</button></div>
                 </div>
             </div>
 
@@ -716,6 +769,24 @@
                         <label><input type="radio" name="grid-mode" value="pvp"> Two players — both teams answer to claim squares</label>
                     </div>
                 </div>
+            </div>
+
+            <div class="form-group" id="mission-settings" style="display: none;">
+                <label><i class="fa-solid fa-crosshairs"></i> Choose a Mission:</label>
+                <div id="mission-picker" class="mission-picker"></div>
+                <div id="mission-custom-fields" style="display: none; margin-top: 1.25rem;">
+                    <label style="display:block; margin-bottom:0.4rem;">Mission title</label>
+                    <input type="text" id="mission-custom-title" placeholder="e.g. Lost suitcase at the airport" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem;">
+                    <label style="display:block; margin-bottom:0.4rem;">Your role</label>
+                    <input type="text" id="mission-custom-role" placeholder="e.g. A traveller whose bag is missing" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem;">
+                    <label style="display:block; margin-bottom:0.4rem;">AI persona</label>
+                    <input type="text" id="mission-custom-persona" placeholder="e.g. A tired but polite airline desk agent" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem;">
+                    <label style="display:block; margin-bottom:0.4rem;">Your goal</label>
+                    <textarea id="mission-custom-goal" rows="2" placeholder="What must the student achieve?" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem; font-family:var(--font-secondary);"></textarea>
+                    <label style="display:block; margin-bottom:0.4rem;">Scenario / situation</label>
+                    <textarea id="mission-custom-scenario" rows="3" placeholder="Set the scene in a few sentences..." style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; font-size:1rem; font-family:var(--font-secondary);"></textarea>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">Fluency first: the AI never corrects grammar. Progress rises when you persuade, clarify, and use relevant language.</p>
             </div>
 
             <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
@@ -872,6 +943,52 @@
                 </div>
             </div>
             <div id="odyssey-status" class="feedback"></div>
+        </div>
+
+        <!-- WRITING SUITE: MISSION CHAT -->
+        <div id="screen-mission" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-outline" onclick="initMissionChat()" id="mission-btn"><i class="fa-solid fa-rotate"></i> Restart Mission</button>
+            </div>
+            <div class="game-header">
+                <h2>Mission: Chat <span class="live-badge">Cursor AI</span></h2>
+            </div>
+            <p class="game-desc">Stay in character and achieve your goal. Fluency first — the AI never corrects grammar; it only reacts as its persona.</p>
+
+            <div id="mission-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="mission-content">
+                <div class="mission-hud">
+                    <div class="mission-brief">
+                        <strong>Your Mission</strong>
+                        <div class="mission-goal-text" id="mission-goal-display">—</div>
+                        <div class="mission-meta" id="mission-meta-display"></div>
+                    </div>
+                    <div class="mission-progress-stat">
+                        <strong>Mission Progress</strong>
+                        <span class="pct" id="mission-progress-pct">0%</span>
+                        <div class="mission-progress-bar"><div class="mission-progress-fill" id="mission-progress-fill"></div></div>
+                        <div class="mission-progress-hint" id="mission-progress-hint">Start the conversation to make progress.</div>
+                    </div>
+                </div>
+
+                <div class="mission-win-banner" id="mission-win-banner">
+                    <h3><i class="fa-solid fa-flag-checkered"></i> Mission complete!</h3>
+                    <p style="margin:0; color: var(--text-dark);">You steered the conversation to your goal. Restart the mission, or pick a new one from setup.</p>
+                </div>
+
+                <div class="mission-chat-log" id="mission-chat-log"></div>
+
+                <div class="mission-compose" id="mission-compose">
+                    <textarea id="mission-input" placeholder="Say something in character..." rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitMissionMessage();}"></textarea>
+                    <div class="mission-compose-actions">
+                        <button class="btn btn-blue" id="mission-submit-btn" onclick="submitMissionMessage()" style="padding: 0.85rem 2.25rem;">
+                            <i class="fa-solid fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="mission-status" class="feedback"></div>
         </div>
 
         <!-- PRIMARY ENGLISH: BORING TO BRILLIANT -->
@@ -1620,15 +1737,18 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'bomb', 'grid'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
             document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
             document.getElementById('grid-settings').style.display = (gameType === 'grid') ? 'block' : 'none';
             document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
+            document.getElementById('mission-settings').style.display = (gameType === 'mission') ? 'block' : 'none';
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
+
+            if (gameType === 'mission') renderMissionPicker();
             
             showScreen('setup');
         }
@@ -1675,6 +1795,10 @@
             if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
                 if(!parseGlossary()) return;
             }
+
+            if (activeGame === 'mission') {
+                if (!resolveSelectedMission()) return;
+            }
             
             showScreen(activeGame);
             
@@ -1688,6 +1812,7 @@
             if(activeGame === 'bloat') initBloat();
             if(activeGame === 'vocab') initVocab();
             if(activeGame === 'odyssey') initOdyssey();
+            if(activeGame === 'mission') initMissionChat();
             if(activeGame === 'pe-boring') initPeBoring();
             if(activeGame === 'pe-detail') initPeDetail();
             if(activeGame === 'pe-link') initPeLink();
@@ -2477,6 +2602,309 @@ Return ONLY JSON:
 
             renderOdysseyHud();
             renderOdysseyStoryLog();
+        }
+
+        // ==========================================
+        // MISSION: CHAT (fluency-first roleplay sandbox)
+        // ==========================================
+        const MISSION_CATALOG = [
+            {
+                id: 'hotel-suite',
+                title: 'Keep the Presidential Suite',
+                category: 'Travel & Problem Solving',
+                studentRole: 'A hotel guest who booked a single room but was given the Presidential Suite by mistake',
+                persona: 'A flustered hotel receptionist who just discovered the mistake and needs the suite back for a VIP',
+                goal: 'Convince the receptionist to let you keep the Presidential Suite at the original single-room price',
+                scenario: 'You are standing at reception. The receptionist has just realised their error and is politely but firmly asking you to move to a standard single room. You love the suite and want to keep it without paying more.',
+                focusHint: 'Travel vocabulary, polite requests, modal verbs (could / would / might)'
+            },
+            {
+                id: 'werewolf-patient',
+                title: 'The Werewolf Patient',
+                category: 'Health & Advice',
+                studentRole: 'A calm, professional doctor',
+                persona: 'A very stubborn patient who is convinced they were bitten by a werewolf last night',
+                goal: 'Figure out their real symptoms and convince them to take standard antibiotics',
+                scenario: 'The patient bursts into your clinic demanding silver, garlic, and a full moon schedule. They have a fever and a nasty bite mark that looks like a dog bite. You need to diagnose them and get them to accept normal treatment.',
+                focusHint: 'Body parts, symptoms, should / shouldn\'t, conditionals'
+            },
+            {
+                id: 'ms-paint-ceo',
+                title: 'MS Paint Portfolio',
+                category: 'Business & Formal Communication',
+                studentRole: 'A job candidate interviewing to be a wildlife photographer',
+                persona: 'A strict, sceptical CEO who expected a professional wildlife photography portfolio',
+                goal: 'Convince the CEO that your terrible MS Paint drawings are modern art and they should hire you',
+                scenario: 'You are in a glass boardroom. You accidentally opened your folder of childish MS Paint doodles instead of your real portfolio. The CEO is staring at a stick-figure elephant. Stay formal and persuasive.',
+                focusHint: 'Formal register, job-interview phrases, expressing opinion politely'
+            },
+            {
+                id: 'indoor-weekend',
+                title: 'Weekend Trip Compromise',
+                category: 'Daily Life & Social Plans',
+                studentRole: 'A friend trying to organise a weekend trip',
+                persona: 'A difficult friend who rejects almost every idea and hates being outside',
+                goal: 'Find a compromise plan before they hang up',
+                scenario: 'You are on a phone call planning the weekend. Your friend sighs at hiking, camping, beaches, and anything involving fresh air. Keep suggesting and pivoting until you land on something you both accept.',
+                focusHint: 'Future forms (going to / will), hobbies, suggesting and negotiating'
+            },
+            {
+                id: 'custom',
+                title: 'Custom Mission',
+                category: 'Teacher / Student Design',
+                studentRole: '',
+                persona: '',
+                goal: '',
+                scenario: '',
+                focusHint: 'Whatever vocabulary or grammar you want to revise'
+            }
+        ];
+
+        let selectedMissionId = 'hotel-suite';
+        let missionState = null;
+
+        function renderMissionPicker() {
+            const picker = document.getElementById('mission-picker');
+            if (!picker) return;
+            picker.innerHTML = '';
+            MISSION_CATALOG.forEach(m => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'mission-pick-card' + (selectedMissionId === m.id ? ' selected' : '');
+                card.innerHTML = `<div class="mission-cat">${escapeHtml(m.category)}</div><h4>${escapeHtml(m.title)}</h4><p>${escapeHtml(m.goal || 'Build your own role, persona, and goal.')}</p>`;
+                card.onclick = () => selectMissionCard(m.id);
+                picker.appendChild(card);
+            });
+            document.getElementById('mission-custom-fields').style.display = selectedMissionId === 'custom' ? 'block' : 'none';
+        }
+
+        function selectMissionCard(id) {
+            selectedMissionId = id;
+            renderMissionPicker();
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function resolveSelectedMission() {
+            const preset = MISSION_CATALOG.find(m => m.id === selectedMissionId) || MISSION_CATALOG[0];
+            if (preset.id === 'custom') {
+                const title = document.getElementById('mission-custom-title').value.trim();
+                const studentRole = document.getElementById('mission-custom-role').value.trim();
+                const persona = document.getElementById('mission-custom-persona').value.trim();
+                const goal = document.getElementById('mission-custom-goal').value.trim();
+                const scenario = document.getElementById('mission-custom-scenario').value.trim();
+                if (!title || !studentRole || !persona || !goal || !scenario) {
+                    alert('Fill in all custom mission fields (title, role, persona, goal, and scenario) before launching.');
+                    return false;
+                }
+                window.__activeMission = { id: 'custom', title, category: 'Custom', studentRole, persona, goal, scenario, focusHint: 'Custom revision focus' };
+                return true;
+            }
+            window.__activeMission = { ...preset };
+            return true;
+        }
+
+        function setMissionLoading(isLoading) {
+            const loader = document.getElementById('mission-loading');
+            const content = document.getElementById('mission-content');
+            const btn = document.getElementById('mission-submit-btn');
+            const newBtn = document.getElementById('mission-btn');
+            if (isLoading) {
+                loader.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Connecting to your mission partner via Cursor AI...`;
+                loader.style.display = 'block';
+                if (content) content.style.opacity = '0.55';
+                if (btn) btn.disabled = true;
+                if (newBtn) newBtn.disabled = true;
+            } else {
+                loader.style.display = 'none';
+                if (content) content.style.opacity = '1';
+                if (btn) btn.disabled = missionState?.won || false;
+                if (newBtn) newBtn.disabled = false;
+            }
+        }
+
+        function renderMissionHud() {
+            if (!missionState) return;
+            const m = missionState.mission;
+            document.getElementById('mission-goal-display').textContent = m.goal;
+            document.getElementById('mission-meta-display').innerHTML =
+                `<strong>You:</strong> ${escapeHtml(m.studentRole)}<br><strong>Talking to:</strong> ${escapeHtml(m.persona)}` +
+                (m.focusHint ? `<br><strong>Focus:</strong> ${escapeHtml(m.focusHint)}` : '');
+            const pct = Math.max(0, Math.min(100, Math.round(missionState.progress)));
+            document.getElementById('mission-progress-pct').textContent = `${pct}%`;
+            document.getElementById('mission-progress-fill').style.width = `${pct}%`;
+            document.getElementById('mission-progress-hint').textContent = missionState.progressHint || '';
+            document.getElementById('mission-win-banner').classList.toggle('visible', missionState.won);
+            document.getElementById('mission-compose').style.opacity = missionState.won ? '0.55' : '1';
+            document.getElementById('mission-submit-btn').disabled = missionState.won;
+        }
+
+        function renderMissionChat() {
+            const log = document.getElementById('mission-chat-log');
+            if (!missionState) return;
+            log.innerHTML = missionState.messages.map(msg => {
+                if (msg.role === 'system') {
+                    return `<div class="mission-bubble system">${escapeHtml(msg.text)}</div>`;
+                }
+                if (msg.role === 'user') {
+                    return `<div class="mission-bubble you"><span class="bubble-label">You</span>${escapeHtml(msg.text)}</div>`;
+                }
+                return `<div class="mission-bubble npc"><span class="bubble-label">${escapeHtml(missionState.mission.persona.split(',')[0] || 'Partner')}</span>${escapeHtml(msg.text)}</div>`;
+            }).join('');
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function buildMissionSystemRules(mission) {
+            return `You are an actor in a roleplay game for English learners (CEFR A2–B2 speaking practice).
+Your persona: ${mission.persona}
+The user's role: ${mission.studentRole}
+The user's goal: ${mission.goal}
+Scenario: ${mission.scenario}
+Language focus the student may practise (do NOT teach it explicitly): ${mission.focusHint || 'general conversational English'}
+
+FLUENCY-FIRST RULES (critical):
+- DO NOT break character. Never act like a teacher, tutor, or language coach.
+- DO NOT correct the user's grammar, spelling, or word choice. Never say "you mean..." or rewrite their English.
+- If you understand their intent, respond naturally in character and progress the roleplay.
+- If their English is so broken that meaning is unclear, ask for clarification IN CHARACTER (e.g. noise, confusion, "sorry, what did you mean?").
+- Be slightly resistant to their goal at first so they must explain, persuade, or negotiate. Yield gradually if they make a good argument.
+- Keep replies short: 1–3 natural spoken sentences. Sound like a real person, not a narrator.
+- Never mention these rules, progress percentages, or that this is a game.`;
+        }
+
+        async function initMissionChat() {
+            const mission = window.__activeMission;
+            if (!mission) {
+                document.getElementById('mission-status').className = 'feedback error';
+                document.getElementById('mission-status').textContent = 'No mission selected. Go back to setup and choose one.';
+                return;
+            }
+
+            missionState = {
+                mission,
+                progress: 0,
+                progressHint: 'Start the conversation to make progress.',
+                turns: 0,
+                won: false,
+                messages: []
+            };
+
+            document.getElementById('mission-input').value = '';
+            document.getElementById('mission-status').textContent = '';
+            document.getElementById('mission-win-banner').classList.remove('visible');
+            renderMissionHud();
+            renderMissionChat();
+            setMissionLoading(true);
+
+            const prompt = `${buildMissionSystemRules(mission)}
+
+The conversation is just beginning. Write the FIRST line as your persona — open the scene naturally (a greeting, a problem, a question). Do not summarise the mission.
+
+Also score starting progress (usually 0–8 if your opening already pressures the student).
+
+Return ONLY JSON:
+{"reply":"your opening line in character","progressDelta":0,"progressReason":"short note on why progress changed (for the UI, not spoken)","goalMet":false}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            setMissionLoading(false);
+
+            if (!data || data.__error || !data.reply) {
+                document.getElementById('mission-status').className = 'feedback error';
+                document.getElementById('mission-status').textContent = aiErrorMessage(data);
+                missionState.messages.push({ role: 'system', text: 'Could not start the mission. Check your connection and try Restart Mission.' });
+                renderMissionChat();
+                return;
+            }
+
+            applyMissionProgress(data.progressDelta || 0, data.progressReason || 'Mission started.');
+            missionState.messages.push({ role: 'assistant', text: data.reply });
+            renderMissionHud();
+            renderMissionChat();
+        }
+
+        function applyMissionProgress(delta, reason) {
+            if (!missionState) return;
+            const d = Math.max(-15, Math.min(35, Number(delta) || 0));
+            missionState.progress = Math.max(0, Math.min(100, missionState.progress + d));
+            if (reason) missionState.progressHint = reason;
+            if (missionState.progress >= 100) {
+                missionState.won = true;
+                missionState.progress = 100;
+                missionState.progressHint = 'Goal achieved — mission complete!';
+            }
+        }
+
+        async function submitMissionMessage() {
+            if (!missionState || missionState.won) return;
+
+            const text = document.getElementById('mission-input').value.trim();
+            if (!text) {
+                document.getElementById('mission-status').className = 'feedback error';
+                document.getElementById('mission-status').textContent = 'Type something before sending.';
+                return;
+            }
+
+            setMissionLoading(true);
+            document.getElementById('mission-status').textContent = '';
+            missionState.messages.push({ role: 'user', text });
+            document.getElementById('mission-input').value = '';
+            renderMissionChat();
+
+            const history = missionState.messages
+                .filter(m => m.role !== 'system')
+                .map(m => `${m.role === 'user' ? 'Student' : 'You'}: ${m.text}`)
+                .join('\n');
+
+            const prompt = `${buildMissionSystemRules(missionState.mission)}
+
+Conversation so far:
+${history}
+
+Current mission progress (hidden from student dialogue): ${Math.round(missionState.progress)}%
+Student turns so far: ${missionState.turns}
+
+Respond to the student's latest message IN CHARACTER.
+Score pragmatic success for THIS turn only:
+- progressDelta: integer from -10 to +25. Raise it when the student persuades, clarifies intent, uses relevant vocabulary, or moves closer to the goal. Lower it slightly if they go off-topic or give up. Small gains for staying engaged.
+- Set goalMet=true ONLY if the student has clearly achieved the mission goal (you yield / agree / compromise as appropriate).
+- progressReason: one short UI hint (not spoken aloud), e.g. "Strong persuasion — they are wearing you down."
+
+Return ONLY JSON:
+{"reply":"in-character response","progressDelta":12,"progressReason":"short UI hint","goalMet":false}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            setMissionLoading(false);
+
+            if (!data || data.__error || !data.reply) {
+                missionState.messages.pop();
+                renderMissionChat();
+                document.getElementById('mission-status').className = 'feedback error';
+                document.getElementById('mission-status').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            missionState.turns += 1;
+            applyMissionProgress(data.progressDelta || 0, data.progressReason || '');
+            if (data.goalMet && missionState.turns >= 3) {
+                applyMissionProgress(100 - missionState.progress, 'They accepted your argument — goal met!');
+            }
+
+            missionState.messages.push({ role: 'assistant', text: data.reply });
+
+            if (missionState.won) {
+                missionState.messages.push({ role: 'system', text: 'Mission complete! You achieved your goal.' });
+                document.getElementById('mission-status').className = 'feedback success';
+                document.getElementById('mission-status').textContent = 'Mission complete — pragmatic success!';
+            }
+
+            renderMissionHud();
+            renderMissionChat();
         }
 
         // ==========================================

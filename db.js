@@ -400,6 +400,7 @@ export const ANALYTICS_PAGE_KEYS = new Set([
     'bloat',
     'vocab',
     'odyssey',
+    'mission',
     'pe-boring',
     'pe-detail',
     'pe-link',
