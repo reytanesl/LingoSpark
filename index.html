@@ -623,7 +623,7 @@
 
                 <h3>Writing Suite</h3>
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 0.8rem 0 0.4rem; font-size: 1.1rem;">Primary English</h4>
-                <div class="guide-item"><strong>Boring to Brilliant</strong><p>Upgrade bland wording into richer choices at A1 / A2 / B1 (or with a custom glossary).</p></div>
+                <div class="guide-item"><strong>Boring to Brilliant</strong><p>Upgrade bland words (adjectives, verbs, adverbs or nouns) into richer choices at A1 / A2 / B1 — keeping the sentence natural and meaningful.</p></div>
                 <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
@@ -747,7 +747,7 @@
                     </div>
                 </div>
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h2>Boring to Brilliant</h2><p>Upgrade bland vocabulary into richer, more interesting word choices.</p><button class="btn btn-outline" onclick="goToPeGame('pe-boring')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h2>Boring to Brilliant</h2><p>Replace bland words with richer vocabulary — adjectives, verbs, adverbs or nouns — while keeping sentences natural.</p><button class="btn btn-outline" onclick="goToPeGame('pe-boring')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><button class="btn btn-outline" onclick="goToPeGame('pe-detail')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><button class="btn btn-outline" onclick="goToPeGame('pe-link')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><button class="btn btn-outline" onclick="goToPeGame('pe-exam')">Play Now</button></div>
@@ -1058,13 +1058,13 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Upgrade the highlighted bland words so the text sounds more interesting. Use richer vocabulary instead of very common words. Type two improved English words below, separated by a comma — or ask for help (e.g. a hint, an explanation, or what to replace).</div>
-                <div class="pe-instr-pl">Ulepsz pogrubione słowa, aby tekst był ciekawszy! Zamiast bardzo pospolitych wyrazów, użyj bogatszego słownictwa. Wpisz po angielsku dwie nowe propozycje poniżej (oddzielone przecinkiem) — albo poproś o pomoc (np. podpowiedź, wyjaśnienie albo co zamienić).</div>
+                <div class="pe-instr-en">Upgrade the highlighted bland words so the text sounds more interesting. They may be adjectives, verbs, adverbs or nouns — not only adjectives. Keep the sentence natural and the same meaning. Type two improved English words below, separated by a comma — or ask for help (e.g. a hint, an explanation, or what to replace).</div>
+                <div class="pe-instr-pl">Ulepsz pogrubione słowa, aby tekst brzmiał ciekawiej. To mogą być przymiotniki, czasowniki, przysłówki lub rzeczowniki — nie tylko przymiotniki. Zdanie ma pozostać naturalne i z tym samym sensem. Wpisz dwie propozycje po angielsku (przecinek) — albo poproś o pomoc.</div>
             </div>
             <div id="pe-boring-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-boring-content">
                 <div class="pe-prompt-box" id="pe-boring-prompt">Loading...</div>
-                <input type="text" class="pe-input" id="pe-boring-input" placeholder="e.g. cute, tiny — or ask: Can you give me a hint?" autocomplete="off">
+                <input type="text" class="pe-input" id="pe-boring-input" placeholder="e.g. delightful, stroll — or ask: Can you give me a hint?" autocomplete="off">
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeBoring()" id="pe-boring-check">Upgrade!</button>
             </div>
             <div id="pe-boring-feedback" class="feedback"></div>
@@ -3249,7 +3249,8 @@ Return ONLY JSON:
             A1: {
                 label: 'A1',
                 vocab: 'Use only very common A1 words and short sentences (I/you/he/she, present simple, basic adjectives like big/small/happy/nice, everyday nouns). Avoid idioms and complex grammar.',
-                upgrades: 'Accepted upgrades must still be simple A1–low A2 words a beginner can learn (e.g. nice→pretty/happy, big→large/huge, small→little/tiny, good→great/fun). Do not require advanced synonyms.',
+                upgrades: 'Accepted upgrades must still be simple A1–low A2 words a beginner can learn (e.g. nice→pretty, like→enjoy, go→walk, fast→quick, good→great). Do not require advanced synonyms.',
+                boring: 'A1 sentence: max ~8–10 words, present simple, everyday topic. TWO bland words (any part of speech — adjective, verb, adverb, or common noun). Sentence MUST sound natural and logical to a native speaker. Avoid odd collocations or nonsense (e.g. "happy hot table"). Upgrades must keep the same meaning and grammar slot.',
                 detail: 'Prompt statement MUST be a very short, simple sentence (max ~6–8 words). Student expands it with easy concrete details. Language of the prompt stays ultra-simple at every CEFR level.',
                 link: 'Allowed linkers ONLY: because, so. Sentences must be very short and clear.',
                 linkers: ['because', 'so'],
@@ -3259,7 +3260,8 @@ Return ONLY JSON:
             A2: {
                 label: 'A2',
                 vocab: 'Use clear A2 English: past simple, going to, comparatives, common collocations, everyday opinions. Avoid rare academic words.',
-                upgrades: 'Accepted upgrades should be richer but still A2-friendly (e.g. nice→lovely/wonderful, small→tiny/miniature, bad→terrible/awful, good→excellent/amazing).',
+                upgrades: 'Accepted upgrades should be richer but still A2-friendly (e.g. nice→lovely, like→adore/prefer, say→explain, quickly→rapidly, bad→terrible).',
+                boring: 'A2 sentence: clear and natural, everyday context. TWO bland words (any part of speech). Must be something a student would actually say or read. Meaning must stay clear; upgrades must fit collocations (e.g. "eat quickly" not "eat rapidly" if unnatural at this level — pick natural A2 options).',
                 detail: 'Prompt statement MUST still be a very short, simple sentence. Student adds 2+ concrete details. Expect clearer expansion than A1, but keep the prompt itself ultra-simple.',
                 link: 'Allowed linkers: because, so, and, but, when, after, before. CRITICAL: Keep BOTH sentences very short and simple (about 4–8 words each). Everyday vocabulary only. Complexity must come from choosing the linker, NOT from difficult sentence content.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before'],
@@ -3269,7 +3271,8 @@ Return ONLY JSON:
             B1: {
                 label: 'B1',
                 vocab: 'Use solid B1 English: wider everyday vocabulary, linking ideas, reasons/opinions, simple conditionals or present perfect if natural. Still learner-friendly — not academic C1.',
-                upgrades: 'Accepted upgrades can be more precise B1 words (e.g. nice→delightful/charming, big→enormous/significant, bad→disappointing/harmful) but still common in school English.',
+                upgrades: 'Accepted upgrades can be more precise B1 words (e.g. nice→delightful, think→believe, very→extremely, problem→challenge) but still common in school English.',
+                boring: 'B1 sentence: natural, coherent, learner-friendly — not academic C1. TWO bland words (any part of speech). Sentence must make real-world sense; upgrades preserve meaning and sound natural when read aloud.',
                 detail: 'Prompt statement MUST still be a very short, simple sentence. Student writes a richer expanded sentence with several details and natural linking — but the prompt itself stays ultra-simple.',
                 link: 'Allowed linkers: because, so, and, but, when, after, before, although, however, while, if, therefore. CRITICAL: Keep BOTH sentences short and clear (about 5–10 words each). No complex clauses inside s1/s2. Everyday school English only. The challenge is choosing the right linker, not decoding hard sentences.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'however', 'while', 'if', 'therefore'],
@@ -3300,6 +3303,7 @@ Return ONLY JSON:
                     label: 'CUSTOM',
                     vocab: 'Custom vocabulary mode is active. CEFR levels do not apply. Language should stay clear and learner-friendly for school students.',
                     upgrades: 'If custom words are required, student must include them exactly (case-insensitive) in their answer.',
+                    boring: 'Custom vocabulary mode. Sentence must still be natural, grammatical, and meaningful. TWO bland words marked for upgrade (any part of speech). Meaning preserved after upgrade.',
                     detail: 'Prompt statement must be a very short simple sentence. Student expands it and must include required custom glossary word(s).',
                     link: 'Student must join ideas with a clear linker (because, so, and, but, when, although, if, etc.) and include required custom glossary word(s).',
                     linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'if'],
@@ -3376,17 +3380,26 @@ Return ONLY JSON:
             const R = peRandomnessBlock('boring');
             const requiredCustomWords = peGetRequiredCustomWords(2);
             const blandPool = pePick([
-                'nice and small', 'good and big', 'bad and cold', 'happy and hot', 'old and new',
-                'funny and quiet', 'busy and tired', 'easy and hard', 'fast and slow', 'clean and dirty'
+                'very good / really like', 'nice place / walk fast', 'bad day / eat quickly',
+                'happy child / want more', 'old book / feel tired', 'big problem / go home',
+                'small room / say sorry', 'easy test / work hard', 'clean kitchen / make food'
             ]);
             const prompt = `You create UNIQUE Primary English vocabulary upgrade tasks. CEFR level: ${L.label}.
 LEVEL RULES: ${L.vocab}
 UPGRADE RULES: ${L.upgrades}
+BORING TASK RULES: ${L.boring || L.vocab}
 RANDOMISE HARD every time — never reuse similar sentences. Unique seed: ${R.seed}.
-Topic focus: ${R.topic}. Story angle: ${R.angle}. Prefer bland pair vibes like "${blandPool}" but invent fresh wording.
+Topic focus: ${R.topic}. Story angle: ${R.angle}. Use everyday situations; inspiration tone (not fixed words): "${blandPool}".
+
+QUALITY GATE (must pass before returning):
+1) Sentence is grammatically correct and sounds natural to a native English speaker.
+2) Sentence meaning is clear and logical — no nonsense combinations.
+3) Exactly TWO bland/overused words marked with **double asterisks** — they may be adjectives, verbs, adverbs, OR common nouns (NOT necessarily adjectives).
+4) Each upgrade must be the SAME part of speech and fit the sentence; overall meaning stays the same.
+5) Read the full sentence with suggested upgrades mentally — if it sounds wrong, create a different sentence.
+
 ${peMode === 'custom' ? `CUSTOM VOCAB (required this round): ${requiredCustomWords.join(', ')}. Ensure accepted upgrades include these exact word(s) so student must apply glossary vocabulary.` : ''}
-Create ONE short English sentence with exactly TWO bland/common adjectives marked with **double asterisks**.
-Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords":["word1","word2"],"acceptedUpgrades":{"word1":["syn1","syn2","syn3","syn4"],"word2":["syn1","syn2","syn3","syn4"]}}`;
+Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords":["word1","word2"],"wordTypes":{"word1":"adjective|verb|adverb|noun","word2":"..."},"acceptedUpgrades":{"word1":["syn1","syn2","syn3","syn4"],"word2":["syn1","syn2","syn3","syn4"]}}`;
             const data = await fetchGenerativeAI(prompt);
             peToggleLoading('pe-boring', false);
             if (!data || data.__error || !data.sentenceHtml) {
@@ -3416,8 +3429,10 @@ Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords"
             const L = peLevelGuide();
 
             const prompt = `CEFR ${L.label} ESL tutor for "Boring to Brilliant" vocabulary upgrade task. ${L.upgrades}
+BORING TASK RULES: ${L.boring || ''}
 Sentence: "${peBoringTask.sentenceHtml}".
 Bland targets: ${JSON.stringify(peBoringTask.blandWords)}.
+Word types: ${JSON.stringify(peBoringTask.wordTypes || {})}.
 Hint list (not exclusive): ${JSON.stringify(peBoringTask.acceptedUpgrades || {})}.
 Student input: "${input}".
 ${peMode === 'custom' ? `CUSTOM GLOSSARY (required when submitting an answer): ${JSON.stringify(peBoringTask.requiredWords || [])}.` : ''}
@@ -3428,9 +3443,13 @@ Decide whether the student is:
 
 If HELP: respond warmly and positively. Provide the requested assistance within task scope only (vocabulary upgrade for the highlighted bland words in this sentence). Do NOT give away the full final answer unless they explicitly ask for a direct hint — then give partial guidance (e.g. first letter, word type, or one masked suggestion). Never discuss unrelated topics.
 
-If ANSWER: validate whether both upgrades are richer, level-adequate English synonyms that fit the sentence.
+If ANSWER: validate BOTH upgrades:
+- richer and level-adequate for ${L.label}
+- same part of speech as the original bland word (check wordTypes)
+- fit the sentence naturally (correct grammar and collocations)
+- preserve the overall meaning of the sentence — reject if meaning changes or sentence becomes unnatural
 ${peMode === 'custom' ? 'MANDATORY for answers: student must include custom glossary word(s) listed above.' : ''}
-If answer is invalid, include 2-4 suitable richer synonym suggestions in "hints" array (single words).
+If answer is invalid, include 2-4 suitable richer synonym suggestions in "hints" array (single words, same part of speech).
 
 Return ONLY JSON:
 - help: {"kind":"help","message":"Short friendly assistance in English."}
