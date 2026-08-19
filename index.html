@@ -1058,13 +1058,13 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Upgrade the highlighted bland words so the text sounds more interesting. Use richer vocabulary instead of very common words. Type two improved English words below, separated by a comma.</div>
-                <div class="pe-instr-pl">Ulepsz pogrubione słowa, aby tekst był ciekawszy! Zamiast bardzo pospolitych wyrazów, użyj bogatszego słownictwa. Wpisz po angielsku dwie nowe propozycje poniżej (oddzielone przecinkiem).</div>
+                <div class="pe-instr-en">Upgrade the highlighted bland words so the text sounds more interesting. Use richer vocabulary instead of very common words. Type two improved English words below, separated by a comma — or ask for help (e.g. a hint, an explanation, or what to replace).</div>
+                <div class="pe-instr-pl">Ulepsz pogrubione słowa, aby tekst był ciekawszy! Zamiast bardzo pospolitych wyrazów, użyj bogatszego słownictwa. Wpisz po angielsku dwie nowe propozycje poniżej (oddzielone przecinkiem) — albo poproś o pomoc (np. podpowiedź, wyjaśnienie albo co zamienić).</div>
             </div>
             <div id="pe-boring-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-boring-content">
                 <div class="pe-prompt-box" id="pe-boring-prompt">Loading...</div>
-                <input type="text" class="pe-input" id="pe-boring-input" placeholder="e.g. cute, tiny" autocomplete="off">
+                <input type="text" class="pe-input" id="pe-boring-input" placeholder="e.g. cute, tiny — or ask: Can you give me a hint?" autocomplete="off">
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeBoring()" id="pe-boring-check">Upgrade!</button>
             </div>
             <div id="pe-boring-feedback" class="feedback"></div>
@@ -3406,29 +3406,46 @@ Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords"
             const input = document.getElementById('pe-boring-input').value.trim();
             if (!input) {
                 document.getElementById('pe-boring-feedback').className = 'feedback error';
-                document.getElementById('pe-boring-feedback').textContent = 'Type two upgraded words separated by a comma.';
+                document.getElementById('pe-boring-feedback').textContent = 'Type two upgraded words separated by a comma, or ask for help with this task.';
                 return;
             }
             const feedback = document.getElementById('pe-boring-feedback');
             feedback.className = 'feedback neutral';
-            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking upgrades...';
+            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
             document.getElementById('pe-boring-check').disabled = true;
             const L = peLevelGuide();
 
-            const prompt = `CEFR ${L.label} ESL check. ${L.upgrades}
+            const prompt = `CEFR ${L.label} ESL tutor for "Boring to Brilliant" vocabulary upgrade task. ${L.upgrades}
 Sentence: "${peBoringTask.sentenceHtml}".
 Bland targets: ${JSON.stringify(peBoringTask.blandWords)}.
 Hint list (not exclusive): ${JSON.stringify(peBoringTask.acceptedUpgrades || {})}.
-Student answer (two words, comma-separated): "${input}".
-Both upgrades must be richer, level-adequate English synonyms that fit the sentence.
-${peMode === 'custom' ? `MANDATORY: Student answer must include custom glossary word(s): ${JSON.stringify(peBoringTask.requiredWords || [])}.` : ''}
+Student input: "${input}".
+${peMode === 'custom' ? `CUSTOM GLOSSARY (required when submitting an answer): ${JSON.stringify(peBoringTask.requiredWords || [])}.` : ''}
+
+Decide whether the student is:
+1) submitting an ANSWER (two upgraded words, comma-separated), or
+2) asking for HELP with this task (question, hint request, explanation, clarification, example, etc.).
+
+If HELP: respond warmly and positively. Provide the requested assistance within task scope only (vocabulary upgrade for the highlighted bland words in this sentence). Do NOT give away the full final answer unless they explicitly ask for a direct hint — then give partial guidance (e.g. first letter, word type, or one masked suggestion). Never discuss unrelated topics.
+
+If ANSWER: validate whether both upgrades are richer, level-adequate English synonyms that fit the sentence.
+${peMode === 'custom' ? 'MANDATORY for answers: student must include custom glossary word(s) listed above.' : ''}
 If answer is invalid, include 2-4 suitable richer synonym suggestions in "hints" array (single words).
-Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feedback in English.","hints":["word1","word2"]}`;
+
+Return ONLY JSON:
+- help: {"kind":"help","message":"Short friendly assistance in English."}
+- valid answer: {"kind":"answer","valid":true,"points":20,"message":"Short friendly feedback in English."}
+- invalid answer: {"kind":"answer","valid":false,"message":"Short friendly feedback in English.","hints":["word1","word2"]}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-boring-check').disabled = false;
             if (!data || data.__error) {
                 feedback.className = 'feedback error';
                 feedback.textContent = aiErrorMessage(data);
+                return;
+            }
+            if (data.kind === 'help') {
+                feedback.className = 'feedback neutral';
+                feedback.textContent = data.message || 'Happy to help — try upgrading the bold words with richer synonyms!';
                 return;
             }
             if (data.valid) {
