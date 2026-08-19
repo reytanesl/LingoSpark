@@ -4007,7 +4007,7 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         }
         function renderFcCard() {
             const cardEl = document.getElementById('fc-card'), controls = document.getElementById('fc-controls'), counter = document.getElementById('fc-counter');
-            cardEl.classList.remove('flipped'); controls.classList.remove('visible');
+            cardEl.classList.remove('flipped'); controls.classList.add('visible');
             if (fcDeck.length === 0) {
                 counter.innerText = "Mastery Achieved!";
                 document.getElementById('fc-front').innerText = "🎉 All words learned!";
