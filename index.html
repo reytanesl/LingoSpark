@@ -3422,7 +3422,8 @@ Hint list (not exclusive): ${JSON.stringify(peBoringTask.acceptedUpgrades || {})
 Student answer (two words, comma-separated): "${input}".
 Both upgrades must be richer, level-adequate English synonyms that fit the sentence.
 ${peMode === 'custom' ? `MANDATORY: Student answer must include custom glossary word(s): ${JSON.stringify(peBoringTask.requiredWords || [])}.` : ''}
-Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feedback in English."}`;
+If answer is invalid, include 2-4 suitable richer synonym suggestions in "hints" array (single words).
+Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feedback in English.","hints":["word1","word2"]}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-boring-check').disabled = false;
             if (!data || data.__error) {
@@ -3438,8 +3439,40 @@ Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feed
                 feedback.textContent = data.message || 'Upgrade successful!';
             } else {
                 feedback.className = 'feedback error';
-                feedback.textContent = data.message || 'Try richer vocabulary.';
+                const hintHtml = buildBoringHintHtml(data.hints);
+                feedback.innerHTML = `${esc(data.message || 'Try richer vocabulary.')}${hintHtml}`;
             }
+        }
+
+        function maskBoringHintWord(word) {
+            const raw = String(word || '').trim();
+            if (!raw) return '';
+            const chars = [...raw];
+            const letterIndexes = [];
+            for (let i = 0; i < chars.length; i++) {
+                if (/[A-Za-z]/.test(chars[i])) letterIndexes.push(i);
+            }
+            if (!letterIndexes.length) return raw;
+            const revealCount = Math.max(1, Math.round(letterIndexes.length * 0.3));
+            const shuffled = [...letterIndexes].sort(() => Math.random() - 0.5);
+            const reveal = new Set(shuffled.slice(0, revealCount));
+            return chars
+                .map((ch, i) => {
+                    if (!/[A-Za-z]/.test(ch)) return ch;
+                    return reveal.has(i) ? ch : '_';
+                })
+                .join('');
+        }
+
+        function buildBoringHintHtml(hints) {
+            if (!Array.isArray(hints) || !hints.length) return '';
+            const masked = hints
+                .slice(0, 4)
+                .map(maskBoringHintWord)
+                .filter(Boolean)
+                .map(esc);
+            if (!masked.length) return '';
+            return `<br><small><strong>Hint:</strong> Try richer words like ${masked.join(', ')}</small>`;
         }
 
         async function initPeDetail() {
