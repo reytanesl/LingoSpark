@@ -27,8 +27,17 @@ import {
     updateAnalyticsDwell,
     endAnalyticsVisit,
     getGamePopularityStats,
+    createWordSet,
+    listWordSets,
+    getWordSet,
+    updateWordSet,
+    deleteWordSet,
+    loadWordSetForGame,
+    recordGameSession,
+    updateWordProgress,
+    getProgressSummary,
 } from './db.js';
-import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess } from './auth.js';
+import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook } from './billing.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -363,6 +372,90 @@ async function start() {
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
+    });
+
+    // ==========================================
+    // WORD SETS API
+    // ==========================================
+
+    app.get('/api/word-sets', requireLogin, async (req, res) => {
+        try {
+            const sets = await listWordSets(req.user.id);
+            res.json({ sets });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.post('/api/word-sets', requireLogin, async (req, res) => {
+        try {
+            const { name, setType, testDirection, items } = req.body;
+            if (!name || !items || !Array.isArray(items) || items.length < 1) {
+                return res.status(400).json({ error: 'Name and at least 1 item required' });
+            }
+            const ws = await createWordSet(req.user.id, { name, setType, testDirection, items });
+            res.json({ set: ws });
+        } catch (err) { res.status(400).json({ error: err.message }); }
+    });
+
+    app.get('/api/word-sets/:id', requireLogin, async (req, res) => {
+        try {
+            const ws = await getWordSet(Number(req.params.id), req.user.id);
+            if (!ws) return res.status(404).json({ error: 'Not found' });
+            res.json({ set: ws });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.put('/api/word-sets/:id', requireLogin, async (req, res) => {
+        try {
+            const { name, testDirection, items } = req.body;
+            const ws = await updateWordSet(Number(req.params.id), req.user.id, { name, testDirection, items });
+            if (!ws) return res.status(404).json({ error: 'Not found' });
+            res.json({ set: ws });
+        } catch (err) { res.status(400).json({ error: err.message }); }
+    });
+
+    app.delete('/api/word-sets/:id', requireLogin, async (req, res) => {
+        try {
+            const ok = await deleteWordSet(Number(req.params.id), req.user.id);
+            if (!ok) return res.status(404).json({ error: 'Not found' });
+            res.json({ deleted: true });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.post('/api/word-sets/:id/load', requireLogin, async (req, res) => {
+        try {
+            const data = await loadWordSetForGame(Number(req.params.id), req.user.id);
+            if (!data) return res.status(404).json({ error: 'Not found' });
+            res.json(data);
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    // ==========================================
+    // PROGRESS API
+    // ==========================================
+
+    app.post('/api/progress/session', requireLogin, async (req, res) => {
+        try {
+            const { gameKey, wordSetId, score, pointsEarned, durationMs, wordsTotal, wordsMastered, result } = req.body;
+            if (!gameKey) return res.status(400).json({ error: 'gameKey required' });
+            await recordGameSession(req.user.id, { gameKey, wordSetId, score, pointsEarned, durationMs, wordsTotal, wordsMastered, result });
+            res.json({ saved: true });
+        } catch (err) { res.status(400).json({ error: err.message }); }
+    });
+
+    app.get('/api/progress/summary', requireLogin, async (req, res) => {
+        try {
+            const summary = await getProgressSummary(req.user.id);
+            res.json(summary);
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.post('/api/progress/words', requireLogin, async (req, res) => {
+        try {
+            const { updates } = req.body;
+            if (!Array.isArray(updates)) return res.status(400).json({ error: 'updates array required' });
+            await updateWordProgress(req.user.id, updates);
+            res.json({ saved: true });
+        } catch (err) { res.status(400).json({ error: err.message }); }
     });
 
     function extractJson(text) {

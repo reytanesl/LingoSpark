@@ -1,0 +1,9 @@
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_promo_writing_suite/frame_00.png'
+duration 3.20
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_promo_writing_suite/frame_01.png'
+duration 4.50
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_promo_writing_suite/frame_02.png'
+duration 4.50
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_promo_writing_suite/frame_03.png'
+duration 4.00
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_promo_writing_suite/frame_03.png'

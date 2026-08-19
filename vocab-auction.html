@@ -573,6 +573,16 @@
         .gameover-icon.victory { color: var(--success-green); background: rgba(0, 130, 59, 0.1); }
         .gameover-icon.bankrupt { color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.1); }
 
+        .ai-reminder-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 90; align-items: center; justify-content: center; padding: 1rem; animation: aiReminderFadeIn 0.3s ease; }
+        .ai-reminder-overlay.open { display: flex; }
+        @keyframes aiReminderFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .ai-reminder-card { background: var(--bright-white); border-radius: 16px; max-width: 420px; width: 100%; padding: 1.8rem 1.6rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); text-align: center; }
+        .ai-reminder-card .ai-r-icon { font-size: 2.2rem; color: var(--royal-blue); margin-bottom: 0.6rem; }
+        .ai-reminder-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.6rem; font-size: 1.15rem; }
+        .ai-reminder-card p { font-size: 0.95rem; color: var(--text-dark); line-height: 1.55; margin: 0 0 1.2rem; }
+        .ai-reminder-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+        .ai-reminder-actions .btn { font-size: 0.85rem; padding: 0.45rem 1.1rem; }
+
         .gameover-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -856,6 +866,19 @@
     </section>
 
 </main>
+
+<!-- AI REMINDER POPUP -->
+<div class="ai-reminder-overlay" id="ai-reminder-overlay" onclick="if(event.target===this)dismissAiReminder()">
+    <div class="ai-reminder-card" role="dialog" aria-labelledby="ai-reminder-title">
+        <div class="ai-r-icon"><i class="fa-solid fa-handshake"></i></div>
+        <h3 id="ai-reminder-title">Remember</h3>
+        <p id="ai-reminder-text">AI is a great study tool, but nothing replaces face-to-face interaction with a real teacher and classmates. Keep practising with people too!</p>
+        <div class="ai-reminder-actions">
+            <button type="button" class="btn btn-grey" id="ai-reminder-lang-btn" onclick="toggleAiReminderLang()">PL</button>
+            <button type="button" class="btn btn-blue" onclick="dismissAiReminder()">Got it</button>
+        </div>
+    </div>
+</div>
 
 <footer>LingoSpark · Vocab Auction</footer>
 
@@ -1915,7 +1938,56 @@ els.btnNext.addEventListener("click", () => {
 /* =========================================================
    11. GAME OVER
    ========================================================= */
+// AI Reminder popup
+let aiReminderLang = 'en';
+function incrementGameCount() {
+    let c = parseInt(sessionStorage.getItem('ls_games_played') || '0', 10) + 1;
+    sessionStorage.setItem('ls_games_played', c);
+    if (c % 5 === 0) showAiReminder();
+}
+function showAiReminder() {
+    aiReminderLang = 'en';
+    document.getElementById('ai-reminder-text').textContent = 'AI is a great study tool, but nothing replaces face-to-face interaction with a real teacher and classmates. Keep practising with people too!';
+    document.getElementById('ai-reminder-title').textContent = 'Remember';
+    document.getElementById('ai-reminder-lang-btn').textContent = 'PL';
+    document.getElementById('ai-reminder-overlay').classList.add('open');
+}
+function dismissAiReminder() {
+    document.getElementById('ai-reminder-overlay').classList.remove('open');
+}
+function toggleAiReminderLang() {
+    const txt = document.getElementById('ai-reminder-text');
+    const title = document.getElementById('ai-reminder-title');
+    const btn = document.getElementById('ai-reminder-lang-btn');
+    if (aiReminderLang === 'en') {
+        aiReminderLang = 'pl';
+        title.textContent = 'Pamiętaj';
+        txt.textContent = 'AI to świetne narzędzie do nauki, ale nic nie zastąpi kontaktu z prawdziwym nauczycielem i kolegami z klasy. Ćwicz także z ludźmi!';
+        btn.textContent = 'EN';
+    } else {
+        aiReminderLang = 'en';
+        title.textContent = 'Remember';
+        txt.textContent = 'AI is a great study tool, but nothing replaces face-to-face interaction with a real teacher and classmates. Keep practising with people too!';
+        btn.textContent = 'PL';
+    }
+}
+
+async function recordAuctionSession(outcome) {
+    try {
+        const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        const auth = await res.json();
+        if (!auth.user) return;
+        await fetch('/api/progress/session', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameKey: 'auction', score: state.bankroll, pointsEarned: state.bankroll, result: { outcome, round: state.round } })
+        });
+    } catch (e) {}
+}
+
 function endGame(outcome) {
+    incrementGameCount();
+    recordAuctionSession(outcome);
     showScreen("gameover");
 
     const icon = els.gameoverIcon;

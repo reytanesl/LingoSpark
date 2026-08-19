@@ -96,6 +96,79 @@ export async function initDb() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_analytics_page_key ON analytics_page_visits (page_key)`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_analytics_started ON analytics_page_visits (started_at DESC)`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_analytics_visitor ON analytics_page_visits (visitor_session_id)`);
+
+    // Word sets & progress tables
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS word_sets (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            set_type TEXT NOT NULL DEFAULT 'vocab',
+            test_direction TEXT NOT NULL DEFAULT 'def',
+            item_count INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_word_sets_user ON word_sets (user_id)`);
+
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS word_set_items (
+            id SERIAL PRIMARY KEY,
+            set_id INTEGER NOT NULL REFERENCES word_sets(id) ON DELETE CASCADE,
+            term TEXT NOT NULL,
+            definition TEXT,
+            position INTEGER NOT NULL DEFAULT 0
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_word_set_items_set ON word_set_items (set_id)`);
+
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS user_word_progress (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            word_set_item_id INTEGER NOT NULL REFERENCES word_set_items(id) ON DELETE CASCADE,
+            status TEXT NOT NULL DEFAULT 'new',
+            correct_count INTEGER NOT NULL DEFAULT 0,
+            wrong_count INTEGER NOT NULL DEFAULT 0,
+            last_seen_at TIMESTAMPTZ,
+            mastered_at TIMESTAMPTZ,
+            UNIQUE(user_id, word_set_item_id)
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_uwp_user ON user_word_progress (user_id)`);
+
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS user_game_sessions (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            game_key TEXT NOT NULL,
+            word_set_id INTEGER REFERENCES word_sets(id) ON DELETE SET NULL,
+            score INTEGER NOT NULL DEFAULT 0,
+            points_earned INTEGER NOT NULL DEFAULT 0,
+            duration_ms INTEGER NOT NULL DEFAULT 0,
+            words_total INTEGER NOT NULL DEFAULT 0,
+            words_mastered INTEGER NOT NULL DEFAULT 0,
+            result JSONB,
+            played_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_ugs_user ON user_game_sessions (user_id)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_ugs_game ON user_game_sessions (user_id, game_key)`);
+
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS user_game_totals (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            game_key TEXT NOT NULL,
+            sessions_count INTEGER NOT NULL DEFAULT 0,
+            total_points INTEGER NOT NULL DEFAULT 0,
+            best_score INTEGER NOT NULL DEFAULT 0,
+            last_played_at TIMESTAMPTZ,
+            UNIQUE(user_id, game_key)
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_ugt_user ON user_game_totals (user_id)`);
 }
 
 /** Clear BMC source when the paid period has ended (keeps access_until for history). */
@@ -476,6 +549,202 @@ export async function endAnalyticsVisit({ visitId, visitorSessionId, durationMs 
         [id, sid, ms]
     );
     return result.rows[0] || null;
+}
+
+// ==========================================
+// WORD SETS CRUD
+// ==========================================
+
+export async function createWordSet(userId, { name, setType = 'vocab', testDirection = 'def', items = [] }) {
+    const db = getPool();
+    const trimName = (name || '').trim().slice(0, 80);
+    if (!trimName) throw new Error('Set name is required');
+    if (items.length > 500) throw new Error('Max 500 items per set');
+
+    const setResult = await db.query(
+        `INSERT INTO word_sets (user_id, name, set_type, test_direction, item_count)
+         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [userId, trimName, setType === 'pe_terms' ? 'pe_terms' : 'vocab', testDirection === 'term' ? 'term' : 'def', items.length]
+    );
+    const ws = setResult.rows[0];
+
+    for (let i = 0; i < items.length; i++) {
+        const term = (items[i].term || '').trim().slice(0, 200);
+        const def = (items[i].definition || items[i].def || '').trim().slice(0, 500) || null;
+        if (!term) continue;
+        await db.query(
+            `INSERT INTO word_set_items (set_id, term, definition, position) VALUES ($1, $2, $3, $4)`,
+            [ws.id, term, def, i]
+        );
+    }
+    return ws;
+}
+
+export async function listWordSets(userId) {
+    const db = getPool();
+    const result = await db.query(
+        `SELECT ws.*,
+            COALESCE(
+                (SELECT COUNT(*) FILTER (WHERE uwp.status = 'mastered')
+                 FROM word_set_items wsi
+                 LEFT JOIN user_word_progress uwp ON uwp.word_set_item_id = wsi.id AND uwp.user_id = ws.user_id
+                 WHERE wsi.set_id = ws.id), 0
+            )::int AS mastered_count
+         FROM word_sets ws
+         WHERE ws.user_id = $1
+         ORDER BY ws.updated_at DESC`,
+        [userId]
+    );
+    return result.rows;
+}
+
+export async function getWordSet(setId, userId) {
+    const db = getPool();
+    const setResult = await db.query('SELECT * FROM word_sets WHERE id = $1 AND user_id = $2', [setId, userId]);
+    const ws = setResult.rows[0];
+    if (!ws) return null;
+
+    const itemsResult = await db.query(
+        `SELECT wsi.*, uwp.status AS progress_status, uwp.correct_count, uwp.wrong_count, uwp.mastered_at
+         FROM word_set_items wsi
+         LEFT JOIN user_word_progress uwp ON uwp.word_set_item_id = wsi.id AND uwp.user_id = $2
+         WHERE wsi.set_id = $1
+         ORDER BY wsi.position`,
+        [setId, userId]
+    );
+    return { ...ws, items: itemsResult.rows };
+}
+
+export async function updateWordSet(setId, userId, { name, testDirection, items }) {
+    const db = getPool();
+    const existing = await db.query('SELECT * FROM word_sets WHERE id = $1 AND user_id = $2', [setId, userId]);
+    if (!existing.rows[0]) return null;
+
+    const updates = [];
+    const vals = [];
+    let idx = 1;
+    if (name !== undefined) { updates.push(`name = $${idx++}`); vals.push((name || '').trim().slice(0, 80)); }
+    if (testDirection !== undefined) { updates.push(`test_direction = $${idx++}`); vals.push(testDirection === 'term' ? 'term' : 'def'); }
+
+    if (items !== undefined) {
+        if (items.length > 500) throw new Error('Max 500 items per set');
+        await db.query('DELETE FROM word_set_items WHERE set_id = $1', [setId]);
+        for (let i = 0; i < items.length; i++) {
+            const term = (items[i].term || '').trim().slice(0, 200);
+            const def = (items[i].definition || items[i].def || '').trim().slice(0, 500) || null;
+            if (!term) continue;
+            await db.query(
+                `INSERT INTO word_set_items (set_id, term, definition, position) VALUES ($1, $2, $3, $4)`,
+                [setId, term, def, i]
+            );
+        }
+        updates.push(`item_count = $${idx++}`);
+        vals.push(items.length);
+    }
+
+    updates.push(`updated_at = NOW()`);
+    vals.push(setId, userId);
+    const result = await db.query(
+        `UPDATE word_sets SET ${updates.join(', ')} WHERE id = $${idx++} AND user_id = $${idx} RETURNING *`,
+        vals
+    );
+    return result.rows[0] || null;
+}
+
+export async function deleteWordSet(setId, userId) {
+    const db = getPool();
+    const result = await db.query('DELETE FROM word_sets WHERE id = $1 AND user_id = $2 RETURNING id', [setId, userId]);
+    return result.rowCount > 0;
+}
+
+export async function loadWordSetForGame(setId, userId) {
+    const db = getPool();
+    const ws = await db.query('SELECT * FROM word_sets WHERE id = $1 AND user_id = $2', [setId, userId]);
+    if (!ws.rows[0]) return null;
+    const items = await db.query(
+        'SELECT term, definition FROM word_set_items WHERE set_id = $1 ORDER BY position', [setId]
+    );
+    return { set: ws.rows[0], items: items.rows };
+}
+
+// ==========================================
+// GAME PROGRESS
+// ==========================================
+
+const VALID_GAME_KEYS = new Set([
+    'flashcards', 'bomb', 'grid', 'odyssey', 'mission', 'auction',
+    'pe_boring', 'pe_detail', 'pe_link', 'pe_exam',
+    'frank', 'trans', 'devil', 'bloat', 'vocab_upgrade',
+]);
+
+export async function recordGameSession(userId, { gameKey, wordSetId, score = 0, pointsEarned = 0, durationMs = 0, wordsTotal = 0, wordsMastered = 0, result = null }) {
+    if (!VALID_GAME_KEYS.has(gameKey)) throw new Error('Invalid game key');
+    const db = getPool();
+
+    await db.query(
+        `INSERT INTO user_game_sessions (user_id, game_key, word_set_id, score, points_earned, duration_ms, words_total, words_mastered, result)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [userId, gameKey, wordSetId || null, score, pointsEarned, Math.min(durationMs, 86400000), wordsTotal, wordsMastered, result ? JSON.stringify(result) : null]
+    );
+
+    await db.query(
+        `INSERT INTO user_game_totals (user_id, game_key, sessions_count, total_points, best_score, last_played_at)
+         VALUES ($1, $2, 1, $3, $4, NOW())
+         ON CONFLICT (user_id, game_key)
+         DO UPDATE SET
+            sessions_count = user_game_totals.sessions_count + 1,
+            total_points = user_game_totals.total_points + EXCLUDED.total_points,
+            best_score = GREATEST(user_game_totals.best_score, EXCLUDED.best_score),
+            last_played_at = NOW()`,
+        [userId, gameKey, pointsEarned, score]
+    );
+}
+
+export async function updateWordProgress(userId, updates) {
+    const db = getPool();
+    for (const u of updates) {
+        const { wordSetItemId, correct } = u;
+        if (!wordSetItemId) continue;
+        const status = correct ? 'mastered' : 'learning';
+        await db.query(
+            `INSERT INTO user_word_progress (user_id, word_set_item_id, status, correct_count, wrong_count, last_seen_at, mastered_at)
+             VALUES ($1, $2, $3, $4, $5, NOW(), $6)
+             ON CONFLICT (user_id, word_set_item_id)
+             DO UPDATE SET
+                status = CASE WHEN $7 THEN 'mastered' ELSE
+                    CASE WHEN user_word_progress.status = 'mastered' THEN 'mastered' ELSE 'learning' END
+                END,
+                correct_count = user_word_progress.correct_count + $4,
+                wrong_count = user_word_progress.wrong_count + $5,
+                last_seen_at = NOW(),
+                mastered_at = CASE WHEN $7 AND user_word_progress.mastered_at IS NULL THEN NOW() ELSE user_word_progress.mastered_at END`,
+            [userId, wordSetItemId, status, correct ? 1 : 0, correct ? 0 : 1, correct ? new Date() : null, correct]
+        );
+    }
+}
+
+export async function getProgressSummary(userId) {
+    const db = getPool();
+    const totals = await db.query(
+        `SELECT game_key, sessions_count, total_points, best_score, last_played_at
+         FROM user_game_totals WHERE user_id = $1 ORDER BY last_played_at DESC`, [userId]
+    );
+    const sets = await db.query(
+        `SELECT ws.id, ws.name, ws.item_count, ws.set_type,
+            COUNT(uwp.id) FILTER (WHERE uwp.status = 'mastered')::int AS mastered,
+            COUNT(uwp.id) FILTER (WHERE uwp.status = 'learning')::int AS learning
+         FROM word_sets ws
+         LEFT JOIN word_set_items wsi ON wsi.set_id = ws.id
+         LEFT JOIN user_word_progress uwp ON uwp.word_set_item_id = wsi.id AND uwp.user_id = $1
+         WHERE ws.user_id = $1
+         GROUP BY ws.id ORDER BY ws.updated_at DESC`, [userId]
+    );
+    const recentSessions = await db.query(
+        `SELECT game_key, score, points_earned, played_at
+         FROM user_game_sessions WHERE user_id = $1
+         ORDER BY played_at DESC LIMIT 20`, [userId]
+    );
+    return { gameTotals: totals.rows, wordSets: sets.rows, recentSessions: recentSessions.rows };
 }
 
 export async function getGamePopularityStats({ days = 30 } = {}) {

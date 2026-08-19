@@ -1,0 +1,168 @@
+================================================================================
+LingoSpark — Promotional Shorts Executive Scripts & Visual Descriptions (EN)
+Video Files: Desktop\LingoSpark\shorts\promo-*.mp4
+Video Format: Vertical 1080x1920 (9:16), ~12 seconds, 30 fps, Silent / Motion Graphics (No VO track)
+================================================================================
+
+SHORT 1: promo-01-lingospark-overview.mp4
+--------------------------------------------------------------------------------
+Video Title: LingoSpark — Learn English Without Boredom!
+Goal: Comprehensive overview of the LingoSpark platform (vocabulary reviews, classroom board challenges, AI Writing Suite).
+
+Visual Description (Scene by Scene):
+- 0.0s – 3.0s (Dynamic Hook):
+  * On a light LingoSpark background (#F4F5F7), a pulsing header appears: "ESL LEARNING REDEFINED".
+  * Main headline slides up dynamically: "Learn English Without Boredom!".
+  * 3 feature badges pop in with bounce animation and rich icons:
+    - ⚡ 100% Free Vocabulary Tools (Blue)
+    - 🎮 Interactive Word & Board Games (Red)
+    - 🤖 AI Writing & Essay Suite (Green)
+- 3.0s – 6.0s (Interactive Hub Section Selection):
+  * Transition to the 3 platform hubs: Vocab Review, Team Challenge, and Writing Suite.
+  * Each hub features a rounded panel with dedicated color (Royal Blue, Red, Green) and a prominent icon circle:
+    - 📘 Vocab Review (Flashcards, Bomb, Grid, Auction)
+    - 👥 Team Challenge (Classroom board games for big screens)
+    - ✍️ Writing Suite (AI essays, structure & primary prep)
+  * Gold glow hover highlight moves across panels with an action pill button: "Open Section ➔".
+- 6.0s – 9.0s (Multi-Game & AI Feature Showcase):
+  * Fast showcase of game tiles with icons and live UI elements:
+    1. 💣 Vocabulary Bomb Defusal: Ticking timer counting down from 60s and explosion of green bonus: "⚡ +5s TIME BONUS!".
+    2. 🧩 Frankenstein Builder: Arranging 5 paragraph structure blocks ("🪝 1. Hook", "🌐 2. Context", "🎯 3. Thesis", "📊 4. Evidence", "💡 5. Analysis").
+    3. ✉️ AI Exam Simulator: Instant AI feedback stamp with green seal: "SCORE: 5/5 ⭐ - All criteria passed!".
+- 9.0s – 12.0s (Final High-Energy CTA & Website Link):
+  * Explosive central card with red/gold sparkles: "START LEARNING TODAY! LingoSpark.study".
+  * Badges with rich icons: "🔑 No Registration Required", "🆓 Try Free Right Now".
+  * Pulsing red call-to-action button: "VISIT LINGOSPARK ➔".
+
+On-Screen Captions (EN):
+1. "Learn English Without Boredom!"
+2. "100% Free Vocab Reviews • Classroom Games • AI Writing Suite"
+3. "Try it for free at LingoSpark.study"
+
+Optional Voiceover Script (EN):
+"Looking for a fast, fun way to master English? Discover LingoSpark! 100% free vocabulary games, big-screen classroom challenges, and AI tools to craft top-score essays and exam emails. Head over to LingoSpark.study and start learning now!"
+
+
+SHORT 2: promo-02-vocab-frenzy.mp4
+--------------------------------------------------------------------------------
+Video Title: Defuse the Vocab Bomb in 60 Seconds — LingoSpark Vocabulary Games
+Goal: High-energy promotion of time-pressured vocabulary games (Bomb Defusal, Vocab Auction, Flashcards, Grid Territory).
+
+Visual Description (Scene by Scene):
+- 0.0s – 3.0s (High Tension Red Alert):
+  * Background pulses with red alert glow (#C8102E).
+  * Giant animated bomb icon 💣 and large ticking timer clock set to 00:60.
+  * Headline: "⚠️ VOCABULARY LIST UNDER TIME PRESSURE! You only have 60 seconds!".
+  * Bottom callout box with icon: "📋 Paste your class vocabulary list & start rapid review!".
+- 3.0s – 6.0s (Live Typing & Defuse Simulation):
+  * Question definition window: "📖 WORD DEFINITION: Extremely large or huge in size".
+  * Word type pill badge with icon: "🏷️ TYPE: ADJECTIVE".
+  * Letter-by-letter typing animation inside input box: M-A-S-S-I-V-E.
+  * Button transforms to vibrant green with a green stamp seal: "CORRECT ANSWER! +5s TIME BONUS".
+- 6.0s – 9.0s (Vocab Auction & Chip Betting):
+  * Transition to Vocab Auction mode with gold border and bankroll display: "💰 BANKROLL: 1,400 CHIPS 🪙".
+  * 4 option cards with rich icons:
+    - A) 🔤 Tiny
+    - B) 🌟 Massive
+    - C) 🤫 Silent
+    - D) ⚡ Swift
+  * Chip bet slider animates to "🎲 CHIP BET: 100 CHIPS 🪙".
+  * Explosive gold stamp pops up: "AUCTION WON! +200 CHIPS REWARD 🪙".
+- 9.0s – 12.0s (Final Call To Action):
+  * Feature summary card listing 4 games with icons:
+    - 🎴 Classic Flashcards
+    - 💣 Bomb Defusal
+    - ♟️ Grid Territory
+    - 🔨 Vocab Auction
+  * Action button pill: "PLAY AT LINGOSPARK.STUDY ➔".
+
+On-Screen Captions (EN):
+1. "Defuse the vocab bomb in 60 seconds!"
+2. "Correct answers add bonus time! Paste your own word lists!"
+3. "Play for free at LingoSpark.study"
+
+Optional Voiceover Script (EN):
+"Think you know your vocabulary? Test your speed in Vocabulary Bomb Defusal! Paste your lesson word list and type correct answers before 60 seconds run out. Every correct word awards +5 bonus seconds! Play free at LingoSpark.study!"
+
+
+SHORT 3: promo-03-ai-writing-suite.mp4
+--------------------------------------------------------------------------------
+Video Title: Master English Essay Structure with AI — LingoSpark Writing Suite
+Goal: Promote AI-assisted tools for essay paragraph structure and language precision (Frankenstein Builder, Bloat Slasher, Vocabulary Upgrade, Exam Simulator).
+
+Visual Description (Scene by Scene):
+- 0.0s – 3.0s (AI Writing Suite Intro):
+  * Clean, modern UI interface with red header: "ARTIFICIAL INTELLIGENCE IN WRITING".
+  * Card displaying 5 structural paragraph blocks with rich icons:
+    - 🪝 1. HOOK (Attention-grabbing opening)
+    - 🌐 2. CONTEXT (Topic background)
+    - 🎯 3. THESIS (Core claim)
+    - 📊 4. EVIDENCE (Research & data)
+    - 💡 5. ANALYSIS (Argument analysis)
+- 3.0s – 6.0s (Scrambled Paragraph Drag & Drop — Frankenstein Builder):
+  * Vertical card sliding animation arranging scrambled essay sentences.
+  * Cards snap into place, turning light green with checkmarks:
+    - "✓ 🪝 1. Hook", "✓ 🌐 2. Context", "✓ 🎯 3. Thesis", "✓ 📊 4. Evidence", "✓ 💡 5. Analysis".
+  * Central AI seal stamp pops in: "ACADEMIC FLOW! 100% CORRECT STRUCTURE".
+- 6.0s – 9.0s (Bloat Slasher & Vocabulary Register Upgrade):
+  * Bloat Slasher showcase: Red strike-through line cuts wordy filler ("It is widely considered to be a well-known fact that..."), leaving a direct, punchy sentence ("✓ Daily reading improves vocabulary").
+  * Callout box: "⚡ Reduced 13 words to 5! Clear & direct."
+  * Vocabulary Upgrade showcase: Everyday phrase ("Everyday word: 'The study showed BIG differences.'") upgrades with a starburst to "🌟 Upgrade: 'SUBSTANTIAL differences.'".
+  * Bottom badge: "✓ Upgraded writing register with AI!".
+- 9.0s – 12.0s (Suite Toolkit Overview & CTA):
+  * Comprehensive tools list:
+    - 🧩 Frankenstein Builder
+    - 🌉 Transition Matcher
+    - ⚖️ The Devil's Advocate
+    - ✂️ Bloat Slasher
+    - 🔤 Vocabulary Upgrade
+    - 🐉 Word-Forged Odyssey
+  * Prominent CTA button: "TRY WRITING SUITE TODAY ➔" at LingoSpark.study.
+
+On-Screen Captions (EN):
+1. "Master English essay writing with ease!"
+2. "Build perfect paragraph structure & elevate vocabulary with AI"
+3. "Try it today at LingoSpark.study"
+
+Optional Voiceover Script (EN):
+"Struggling with writing essays in English? LingoSpark Writing Suite teaches perfect paragraph structure step-by-step, slashes wordy fluff, and upgrades everyday words to formal academic vocabulary. Try AI writing tools for free at LingoSpark.study!"
+
+
+SHORT 4: promo-04-primary-english.mp4
+--------------------------------------------------------------------------------
+Video Title: Primary & Lower Secondary English Exam Prep — Primary English LingoSpark
+Goal: Showcase writing games for younger learners and exam candidates (CEFR A1, A2, B1).
+
+Visual Description (Scene by Scene):
+- 0.0s – 3.0s (CEFR Levels A1, A2, B1 Intro):
+  * Spring-animated level badges with rich icons pop into view:
+    - 🎓 A1 (Beginner — simple words & descriptive phrases)
+    - ⭐ A2 (Elementary — everyday phrases & exam emails)
+    - 🚀 B1 (Intermediate — richer vocabulary & linked ideas)
+  * Headline: "PRIMARY & LOWER SECONDARY PREP — Primary English Prep".
+  * Subtitle: "4 Level-Matched Writing Games".
+- 3.0s – 6.0s (Boring to Brilliant Transformation):
+  * Plain sentence box: "📝 PLAIN SENTENCE: The [ GOOD ] dog played in the [ BIG ] park."
+  * Sparkle burst transformation converting plain words to vivid adjectives:
+    "✨ VOCABULARY ENRICHMENT (AI): The [ PLAYFUL ] dog played in the [ SPACIOUS ] park."
+  * Reward stamp pops in: "✨ BRILLIANT! (+10 PTS) - Vivid adjectives applied!".
+- 6.0s – 9.0s (Exam Email Simulator):
+  * Exam task preview: "✉️ TASK: Write an email inviting a friend to a picnic."
+  * Bullet points for requirements: "• Specify time and place", "• Suggest what food to bring".
+  * Typed email sample with live word counter: "Word count: 58 / 120".
+  * Green AI Examiner score stamp: "EXAMINER SCORE: 5/5 ⭐ - All bullet points & word limit passed!".
+- 9.0s – 12.0s (Game Suite Summary & CTA):
+  * Overview of 4 Primary English games:
+    - ✨ Boring to Brilliant
+    - 🔍 Detail Detective
+    - 🔗 Link Master
+    - ✉️ Exam Simulator
+  * Final CTA button: "PLAY AT LINGOSPARK.STUDY ➔".
+
+On-Screen Captions (EN):
+1. "Get ready for your English exams!"
+2. "Enrich vocabulary & practice emails with instant AI grading"
+3. "Start learning for free at LingoSpark.study"
+
+Optional Voiceover Script (EN):
+"Want to write top-scoring emails for your English exams? With Primary English on LingoSpark, transform plain words into vivid adjectives, connect ideas, and write exam emails with instant grading from an AI examiner. Visit LingoSpark.study today!"

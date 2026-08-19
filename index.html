@@ -433,6 +433,35 @@
         .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
         .paywall-overlay.open { display: flex; }
         .paywall-modal { background: var(--bright-white); border-radius: 12px; max-width: 440px; width: 100%; padding: 2rem; border-top: 6px solid var(--royal-blue); box-shadow: 0 12px 40px rgba(0,0,0,0.2); text-align: center; }
+
+        .ai-reminder-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 90; align-items: center; justify-content: center; padding: 1rem; animation: aiReminderFadeIn 0.3s ease; }
+        .ai-reminder-overlay.open { display: flex; }
+        @keyframes aiReminderFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .ai-reminder-card { background: var(--bright-white); border-radius: 16px; max-width: 420px; width: 100%; padding: 1.8rem 1.6rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); text-align: center; }
+        .ai-reminder-card .ai-r-icon { font-size: 2.2rem; color: var(--royal-blue); margin-bottom: 0.6rem; }
+        .ai-reminder-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.6rem; font-size: 1.15rem; }
+        .ai-reminder-card p { font-size: 0.95rem; color: var(--text-dark); line-height: 1.55; margin: 0 0 1.2rem; }
+        .ai-reminder-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+        .ai-reminder-actions .btn { font-size: 0.85rem; padding: 0.45rem 1.1rem; }
+
+        .ws-card { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; }
+        .ws-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+        .ws-card-header h3 { margin: 0; font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.05rem; }
+        .ws-card-meta { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+        .ws-card-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-bottom: 0.6rem; }
+        .ws-card-bar-fill { height: 100%; background: var(--success-green); border-radius: 3px; transition: width 0.3s; }
+        .ws-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .ws-card-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+        .progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
+        .progress-tile { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px; padding: 1rem; text-align: center; }
+        .progress-tile h4 { margin: 0 0 0.3rem; font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.95rem; }
+        .progress-tile .pt-val { font-size: 1.6rem; font-weight: 700; color: var(--royal-blue); }
+        .progress-tile .pt-label { font-size: 0.78rem; color: var(--text-muted); }
+        .guest-save-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 85; align-items: center; justify-content: center; padding: 1rem; animation: aiReminderFadeIn 0.3s ease; }
+        .guest-save-overlay.open { display: flex; }
+        .guest-save-card { background: var(--bright-white); border-radius: 16px; max-width: 420px; width: 100%; padding: 1.8rem 1.6rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); text-align: center; }
+        .guest-save-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.6rem; font-size: 1.15rem; }
+        .guest-save-card p { font-size: 0.92rem; color: var(--text-dark); line-height: 1.5; margin: 0 0 1.2rem; }
         .paywall-modal h3 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.5rem; margin-bottom: 0.75rem; }
         .paywall-modal p { color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
         .paywall-modal .paywall-actions { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -554,6 +583,8 @@
         <div class="menu-nav" role="tablist" aria-label="Menu sections">
             <button type="button" class="menu-nav-btn active" id="menu-btn-about" role="tab" aria-selected="true" aria-controls="menu-view-about" onclick="showMenuView('about')">About</button>
             <button type="button" class="menu-nav-btn" id="menu-btn-howto" role="tab" aria-selected="false" aria-controls="menu-view-howto" onclick="showMenuView('howto')">How to play</button>
+            <button type="button" class="menu-nav-btn" id="menu-btn-mysets" role="tab" aria-selected="false" aria-controls="menu-view-mysets" onclick="showMenuView('mysets')" style="display:none;">My Sets</button>
+            <button type="button" class="menu-nav-btn" id="menu-btn-progress" role="tab" aria-selected="false" aria-controls="menu-view-progress" onclick="showMenuView('progress')" style="display:none;">My Progress</button>
         </div>
 
         <div id="menu-view-about" class="menu-view active" role="tabpanel" aria-labelledby="menu-btn-about">
@@ -604,6 +635,27 @@
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
+            </div>
+        </div>
+
+        <div id="menu-view-mysets" class="menu-view" role="tabpanel" aria-labelledby="menu-btn-mysets">
+            <h2>My Word Sets</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Save and manage your vocabulary lists. Load any set into a game with one click.</p>
+            <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue);">
+                <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
+                <input type="text" id="mysets-save-name" placeholder="Set name..." maxlength="80" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.5rem;">
+                <button class="btn btn-blue" style="width: 100%;" onclick="saveCurrentGlossary()">Save</button>
+            </div>
+            <div id="mysets-list" style="min-height: 60px;">
+                <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
+            </div>
+        </div>
+
+        <div id="menu-view-progress" class="menu-view" role="tabpanel" aria-labelledby="menu-btn-progress">
+            <h2>My Progress</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Track your learning across all games. Your account and progress are free — no premium required.</p>
+            <div id="progress-content">
+                <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
             </div>
         </div>
     </div>
@@ -1212,11 +1264,260 @@
         </div>
     </div>
 
+    <!-- AI REMINDER POPUP -->
+    <div class="ai-reminder-overlay" id="ai-reminder-overlay" onclick="if(event.target===this)dismissAiReminder()">
+        <div class="ai-reminder-card" role="dialog" aria-labelledby="ai-reminder-title">
+            <div class="ai-r-icon"><i class="fa-solid fa-handshake"></i></div>
+            <h3 id="ai-reminder-title">Remember</h3>
+            <p id="ai-reminder-text">AI is a great study tool, but nothing replaces face-to-face interaction with a real teacher and classmates. Keep practising with people too!</p>
+            <div class="ai-reminder-actions">
+                <button type="button" class="btn btn-grey" id="ai-reminder-lang-btn" onclick="toggleAiReminderLang()">PL</button>
+                <button type="button" class="btn btn-blue" onclick="dismissAiReminder()">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GUEST SAVE PROGRESS PROMPT -->
+    <div class="guest-save-overlay" id="guest-save-overlay" onclick="if(event.target===this)dismissGuestSave()">
+        <div class="guest-save-card" role="dialog">
+            <div style="font-size: 2rem; color: var(--royal-blue); margin-bottom: 0.5rem;"><i class="fa-solid fa-bookmark"></i></div>
+            <h3>Save your progress?</h3>
+            <p>Create a free account to save your word sets and track progress across all games. No credit card needed.</p>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-blue" onclick="dismissGuestSave(); openAuthModal('register')"><i class="fa-solid fa-user-plus"></i> Create account</button>
+                <button class="btn btn-grey" onclick="dismissGuestSave(); openAuthModal('login')"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
+            </div>
+            <button class="btn btn-grey" style="margin-top: 0.8rem; font-size: 0.82rem;" onclick="dismissGuestSave()">Maybe later</button>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // UI CORE & ROUTING
         // ==========================================
         let activeGame = '';
+
+        // AI Reminder popup (every 5 completed games per browser session)
+        let aiReminderLang = 'en';
+        function incrementGameCount() {
+            let c = parseInt(sessionStorage.getItem('ls_games_played') || '0', 10) + 1;
+            sessionStorage.setItem('ls_games_played', c);
+            if (c % 5 === 0) showAiReminder();
+        }
+        function showAiReminder() {
+            aiReminderLang = 'en';
+            document.getElementById('ai-reminder-text').textContent = 'AI is a great study tool, but nothing replaces face-to-face interaction with a real teacher and classmates. Keep practising with people too!';
+            document.getElementById('ai-reminder-title').textContent = 'Remember';
+            document.getElementById('ai-reminder-lang-btn').textContent = 'PL';
+            document.getElementById('ai-reminder-overlay').classList.add('open');
+        }
+        function dismissAiReminder() {
+            document.getElementById('ai-reminder-overlay').classList.remove('open');
+        }
+        function toggleAiReminderLang() {
+            const txt = document.getElementById('ai-reminder-text');
+            const title = document.getElementById('ai-reminder-title');
+            const btn = document.getElementById('ai-reminder-lang-btn');
+            if (aiReminderLang === 'en') {
+                aiReminderLang = 'pl';
+                title.textContent = 'Pamiętaj';
+                txt.textContent = 'AI to świetne narzędzie do nauki, ale nic nie zastąpi kontaktu z prawdziwym nauczycielem i kolegami z klasy. Ćwicz także z ludźmi!';
+                btn.textContent = 'EN';
+            } else {
+                aiReminderLang = 'en';
+                title.textContent = 'Remember';
+                txt.textContent = 'AI is a great study tool, but nothing replaces face-to-face interaction with a real teacher and classmates. Keep practising with people too!';
+                btn.textContent = 'PL';
+            }
+        }
+
+        // ==========================================
+        // WORD SETS & PROGRESS
+        // ==========================================
+        let currentWordSetId = null;
+
+        function isLoggedIn() { return !!(window.authState && window.authState.id); }
+
+        async function recordGameSessionApi(gameKey, payload = {}) {
+            if (!isLoggedIn()) {
+                bufferPendingSession(gameKey, payload);
+                promptGuestSave();
+                return;
+            }
+            try {
+                await fetch('/api/progress/session', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameKey, wordSetId: currentWordSetId, ...payload })
+                });
+            } catch (e) { console.warn('Progress save failed:', e); }
+        }
+
+        function bufferPendingSession(gameKey, payload) {
+            try {
+                const pending = JSON.parse(sessionStorage.getItem('ls_pending_session') || 'null');
+                const entry = { gameKey, wordSetId: currentWordSetId, ...payload, ts: Date.now() };
+                sessionStorage.setItem('ls_pending_session', JSON.stringify(entry));
+            } catch (e) {}
+        }
+
+        async function replayPendingSession() {
+            try {
+                const raw = sessionStorage.getItem('ls_pending_session');
+                if (!raw) return;
+                const entry = JSON.parse(raw);
+                if (!entry || !entry.gameKey) return;
+                sessionStorage.removeItem('ls_pending_session');
+                await fetch('/api/progress/session', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entry)
+                });
+            } catch (e) {}
+        }
+
+        function promptGuestSave() {
+            const count = parseInt(sessionStorage.getItem('ls_guest_prompt_count') || '0', 10);
+            if (count >= 2) return;
+            sessionStorage.setItem('ls_guest_prompt_count', count + 1);
+            document.getElementById('guest-save-overlay').classList.add('open');
+        }
+        function dismissGuestSave() {
+            document.getElementById('guest-save-overlay').classList.remove('open');
+        }
+
+        function updateMenuAuthTabs() {
+            const logged = isLoggedIn();
+            const setsBtn = document.getElementById('menu-btn-mysets');
+            const progBtn = document.getElementById('menu-btn-progress');
+            if (setsBtn) setsBtn.style.display = logged ? '' : 'none';
+            if (progBtn) progBtn.style.display = logged ? '' : 'none';
+        }
+
+        async function loadMySets() {
+            const container = document.getElementById('mysets-list');
+            if (!isLoggedIn()) { container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">Sign in to save word sets.</p>'; return; }
+            try {
+                const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
+                const data = await res.json();
+                if (!data.sets || data.sets.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No saved sets yet. Paste a glossary in Vocab Review and save it here.</p>';
+                    return;
+                }
+                container.innerHTML = data.sets.map(s => {
+                    const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
+                    return `<div class="ws-card">
+                        <div class="ws-card-header"><h3>${esc(s.name)}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
+                        <div class="ws-card-meta">${s.set_type === 'pe_terms' ? 'Primary English' : 'Vocab'} · ${pct}% mastered</div>
+                        <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
+                        <div class="ws-card-actions">
+                            <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
+                            <button class="btn btn-grey" onclick="deleteWordSet(${s.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (e) { container.innerHTML = '<p style="color:var(--pillarbox-red);">Failed to load sets.</p>'; }
+        }
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        async function loadWordSet(id) {
+            try {
+                const res = await fetch(`/api/word-sets/${id}/load`, { method: 'POST', credentials: 'same-origin' });
+                const data = await res.json();
+                if (!data.items) return;
+                currentWordSetId = id;
+                const textarea = document.getElementById('glossary-input');
+                if (textarea) {
+                    textarea.value = data.items.map(i => i.definition ? `${i.term} = ${i.definition}` : i.term).join('\n');
+                }
+                toggleAboutPanel();
+                showScreen('home');
+                openHomeSection('vocab');
+            } catch (e) { alert('Failed to load set.'); }
+        }
+
+        async function deleteWordSet(id) {
+            if (!confirm('Delete this word set? This cannot be undone.')) return;
+            try {
+                await fetch(`/api/word-sets/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+                loadMySets();
+            } catch (e) { alert('Failed to delete.'); }
+        }
+
+        async function saveCurrentGlossary() {
+            const nameInput = document.getElementById('mysets-save-name');
+            const name = (nameInput.value || '').trim();
+            if (!name) { alert('Enter a name for this set.'); return; }
+            const raw = document.getElementById('glossary-input')?.value || '';
+            if (!raw.trim()) { alert('Paste a glossary first in Vocab Review.'); return; }
+            const lines = raw.trim().split(/\n+/);
+            const items = [];
+            for (const line of lines) {
+                const sep = line.match(/^(.+?)\s*[=\-:]\s*(.+)$/);
+                if (sep) items.push({ term: sep[1].trim(), definition: sep[2].trim() });
+                else items.push({ term: line.trim(), definition: '' });
+            }
+            if (items.length < 1) { alert('No valid items found.'); return; }
+            try {
+                const res = await fetch('/api/word-sets', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, setType: 'vocab', testDirection: 'def', items })
+                });
+                if (!res.ok) { const d = await res.json(); alert(d.error || 'Save failed'); return; }
+                nameInput.value = '';
+                loadMySets();
+            } catch (e) { alert('Failed to save set.'); }
+        }
+
+        async function loadProgressDashboard() {
+            const container = document.getElementById('progress-content');
+            if (!isLoggedIn()) { container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">Sign in to track your progress.</p>'; return; }
+            try {
+                const res = await fetch('/api/progress/summary', { credentials: 'same-origin' });
+                const data = await res.json();
+                let html = '';
+
+                if (data.gameTotals && data.gameTotals.length > 0) {
+                    html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin-bottom:0.6rem;">Games Played</h3>';
+                    html += '<div class="progress-grid">';
+                    const gameNames = {
+                        flashcards: 'Flashcards', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator',
+                        frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade'
+                    };
+                    for (const t of data.gameTotals) {
+                        html += `<div class="progress-tile"><h4>${gameNames[t.game_key] || t.game_key}</h4><div class="pt-val">${t.sessions_count}</div><div class="pt-label">sessions · ${t.total_points} pts · best ${t.best_score}</div></div>`;
+                    }
+                    html += '</div>';
+                } else {
+                    html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No games played yet. Start playing to track your progress!</p>';
+                }
+
+                if (data.wordSets && data.wordSets.length > 0) {
+                    html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Word Set Mastery</h3>';
+                    for (const s of data.wordSets) {
+                        const pct = s.item_count > 0 ? Math.round((s.mastered / s.item_count) * 100) : 0;
+                        html += `<div class="ws-card"><div class="ws-card-header"><h3>${esc(s.name)}</h3><span style="font-size:0.8rem;">${s.mastered}/${s.item_count} mastered</span></div><div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div></div>`;
+                    }
+                }
+
+                if (data.recentSessions && data.recentSessions.length > 0) {
+                    html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
+                    html += '<div style="font-size:0.85rem;">';
+                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade' };
+                    for (const s of data.recentSessions) {
+                        const d = new Date(s.played_at);
+                        html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
+                    }
+                    html += '</div>';
+                }
+
+                container.innerHTML = html || '<p style="text-align:center;color:var(--text-muted);">Nothing to show yet.</p>';
+            } catch (e) { container.innerHTML = '<p style="color:var(--pillarbox-red);">Failed to load progress.</p>'; }
+        }
+
         let peCefrLevel = null; // 'A1' | 'A2' | 'B1'
         let peMode = 'cefr'; // 'cefr' | 'custom'
         let peCustomGlossary = [];
@@ -1519,6 +1820,7 @@
         let pendingWritingGame = null;
         let authTab = 'login';
         let authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false, localAuthEnabled: true };
+        window.authState = authState;
 
         async function refreshAuth() {
             try {
@@ -1527,7 +1829,10 @@
             } catch {
                 authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false, localAuthEnabled: true };
             }
+            window.authState = authState;
             renderAuthBar();
+            updateMenuAuthTabs();
+            if (authState.user) replayPendingSession();
             return authState;
         }
 
@@ -1639,18 +1944,20 @@
         }
 
         function showMenuView(view) {
-            const isHowto = view === 'howto';
-            const aboutView = document.getElementById('menu-view-about');
-            const howtoView = document.getElementById('menu-view-howto');
-            const aboutBtn = document.getElementById('menu-btn-about');
-            const howtoBtn = document.getElementById('menu-btn-howto');
-            if (!aboutView || !howtoView || !aboutBtn || !howtoBtn) return;
-            aboutView.classList.toggle('active', !isHowto);
-            howtoView.classList.toggle('active', isHowto);
-            aboutBtn.classList.toggle('active', !isHowto);
-            howtoBtn.classList.toggle('active', isHowto);
-            aboutBtn.setAttribute('aria-selected', !isHowto ? 'true' : 'false');
-            howtoBtn.setAttribute('aria-selected', isHowto ? 'true' : 'false');
+            const views = ['about', 'howto', 'mysets', 'progress'];
+            for (const v of views) {
+                const el = document.getElementById('menu-view-' + v);
+                const btn = document.getElementById('menu-btn-' + v);
+                if (el) el.classList.toggle('active', v === view);
+                if (btn) { btn.classList.toggle('active', v === view); btn.setAttribute('aria-selected', v === view ? 'true' : 'false'); }
+            }
+            if (view === 'mysets') {
+                loadMySets();
+                const glossary = document.getElementById('glossary-input');
+                const saveRow = document.getElementById('mysets-save-row');
+                if (saveRow) saveRow.style.display = (glossary && glossary.value.trim()) ? 'block' : 'none';
+            }
+            if (view === 'progress') loadProgressDashboard();
         }
 
         function toggleAboutPanel() {
@@ -2018,6 +2325,8 @@ Return ONLY a JSON object: {"genre":"${genre.key}","sentences":["s1","s2","s3","
             if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
                 feedback.className = "feedback success";
                 feedback.textContent = `🎉 Perfect structure! ${structureLine}`;
+                incrementGameCount();
+                recordGameSessionApi('frank', { score: 100, pointsEarned: 100 });
             } else {
                 // Fair, specific feedback: first misplaced slot
                 let firstWrong = currentOrder.findIndex((id, i) => id !== i + 1);
@@ -2082,6 +2391,8 @@ Return ONLY JSON: {"s1":"...","s2":"...","correct":"${targetTransition}","option
                     if (opt === data.correct) {
                         feedback.className = "feedback success";
                         feedback.textContent = "✅ Correct logical link established!";
+                        incrementGameCount();
+                        recordGameSessionApi('trans', { score: 100, pointsEarned: 50 });
                         const transBox = document.querySelector('.trans-box');
                         transBox.innerHTML = `<span>${data.s1}</span> <span class="trans-slot solved">${opt}</span> <span>${data.s2}</span>`;
                         setTimeout(initTransitions, 2000);
@@ -2134,6 +2445,8 @@ Return ONLY JSON: {"thesis":"...","cards":[{"text":"...","rebuttal":true},{"text
                         div.classList.add('correct');
                         feedback.className = "feedback success";
                         feedback.textContent = "🎯 Spot on! You identified the true structural counter-argument.";
+                        incrementGameCount();
+                        recordGameSessionApi('devil', { score: 100, pointsEarned: 50 });
                         setTimeout(initDevil, 2500);
                     } else {
                         div.classList.add('incorrect');
@@ -2234,6 +2547,8 @@ Return ONLY JSON: {"sentence":"..."}`;
             if (data.valid) {
                 feedback.className = "feedback success";
                 feedback.textContent = `⚡ ${data.reason}`;
+                incrementGameCount();
+                recordGameSessionApi('bloat', { score: 100, pointsEarned: 50 });
             } else {
                 feedback.className = "feedback error";
                 feedback.textContent = `❌ Logic Error: ${data.reason}`;
@@ -2312,6 +2627,8 @@ Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...",
                 currentVocabToken.upgraded = choice;
                 feedback.className = "feedback success";
                 feedback.textContent = `✨ Excellent precision! Swapped to "${choice}".`;
+                incrementGameCount();
+                recordGameSessionApi('vocab_upgrade', { score: 100, pointsEarned: 30 });
                 renderVocabBox();
                 document.getElementById('vocab-options').innerHTML = '';
                 setTimeout(() => { feedback.textContent = "🎉 Sentence fully upgraded! Click 'Next Sentence'."; }, 1000);
@@ -2591,6 +2908,8 @@ Return ONLY JSON:
                 odysseyState.hp = 0;
                 document.getElementById('odyssey-status').className = 'feedback error';
                 document.getElementById('odyssey-status').textContent = data.gameOverReason || '💀 Game Over. Your adventure ends here.';
+                incrementGameCount();
+                recordGameSessionApi('odyssey', { score: odysseyState.xp, pointsEarned: odysseyState.xp, result: { hp: 0, turns: odysseyState.turn } });
                 document.getElementById('odyssey-submit-btn').disabled = true;
                 document.getElementById('odyssey-action-panel').style.opacity = '0.5';
             } else {
@@ -2901,6 +3220,8 @@ Return ONLY JSON:
                 missionState.messages.push({ role: 'system', text: 'Mission complete! You achieved your goal.' });
                 document.getElementById('mission-status').className = 'feedback success';
                 document.getElementById('mission-status').textContent = 'Mission complete — pragmatic success!';
+                incrementGameCount();
+                recordGameSessionApi('mission', { score: 100, pointsEarned: 50 });
             }
 
             renderMissionHud();
@@ -3111,6 +3432,8 @@ Return ONLY JSON: {"valid":true/false,"points":20,"message":"Short friendly feed
             }
             if (data.valid) {
                 peAddPoints('boring', data.points || 20);
+                incrementGameCount();
+                recordGameSessionApi('pe_boring', { score: data.points || 20, pointsEarned: data.points || 20 });
                 feedback.className = 'feedback success';
                 feedback.textContent = data.message || 'Upgrade successful!';
             } else {
@@ -3184,7 +3507,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             }
             feedback.className = data.valid ? 'feedback success' : 'feedback error';
             feedback.textContent = data.message || (data.valid ? 'Case closed!' : 'Add more detail.');
-            if (data.valid) peAddPoints('detail', data.points || 30);
+            if (data.valid) { peAddPoints('detail', data.points || 30); incrementGameCount(); recordGameSessionApi('pe_detail', { score: data.points || 30, pointsEarned: data.points || 30 }); }
         }
 
         async function initPeLink() {
@@ -3261,7 +3584,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             }
             feedback.className = data.valid ? 'feedback success' : 'feedback error';
             feedback.textContent = data.message || (data.valid ? 'Perfect flow!' : 'Check your linker logic.');
-            if (data.valid) peAddPoints('link', data.points || 30);
+            if (data.valid) { peAddPoints('link', data.points || 30); incrementGameCount(); recordGameSessionApi('pe_link', { score: data.points || 30, pointsEarned: data.points || 30 }); }
         }
 
         async function initPeExam() {
@@ -3370,7 +3693,7 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             }
             feedback.className = data.valid ? 'feedback success' : 'feedback error';
             feedback.innerHTML = data.message || (data.valid ? 'Ready for the exam!' : 'Revise and try again.');
-            if (data.valid) peAddPoints('exam', data.points || 100);
+            if (data.valid) { peAddPoints('exam', data.points || 100); incrementGameCount(); recordGameSessionApi('pe_exam', { score: data.points || 100, pointsEarned: data.points || 100 }); }
         }
 
         // ==========================================
@@ -3481,6 +3804,8 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             document.getElementById('bomb-icon').classList.remove('pulse');
             document.getElementById('bomb-prompt').innerText = "Game Over!";
             document.getElementById('bomb-answer').disabled = true;
+            incrementGameCount();
+            recordGameSessionApi('bomb', { score: bombTime, wordsTotal: vocabulary.length });
         }
 
         // GRID TERRITORY
@@ -3610,6 +3935,8 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                 const label = gridMode === 'bot'
                     ? (playerJustMoved === 'X' ? 'You win!' : 'Bot wins!')
                     : ((playerJustMoved === 'X' ? 'Team 1' : 'Team 2') + ' WINS!');
+                incrementGameCount();
+                recordGameSessionApi('grid', { score: 1, pointsEarned: 10, result: { mode: gridMode, winner: playerJustMoved } });
                 setTimeout(() => alert(label), 80);
                 return true;
             }
@@ -3617,6 +3944,8 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                 gridGameOver = true;
                 updateTurnDisplay();
                 renderGrid();
+                incrementGameCount();
+                recordGameSessionApi('grid', { score: 0, result: { mode: gridMode, winner: 'draw' } });
                 setTimeout(() => alert("It's a draw!"), 80);
                 return true;
             }
@@ -3683,6 +4012,8 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                 counter.innerText = "Mastery Achieved!";
                 document.getElementById('fc-front').innerText = "🎉 All words learned!";
                 document.getElementById('fc-back').innerText = "Great job!";
+                incrementGameCount();
+                recordGameSessionApi('flashcards', { score: vocabulary.length, pointsEarned: vocabulary.length, wordsTotal: vocabulary.length, wordsMastered: vocabulary.length });
                 setTimeout(() => { if(confirm("Play again?")) initFlashcards(); }, 1000); return;
             }
             if (fcIndex >= fcDeck.length) fcIndex = 0;

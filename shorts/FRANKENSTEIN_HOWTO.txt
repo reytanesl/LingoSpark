@@ -1,0 +1,47 @@
+LingoSpark — Frankenstein Builder How-To (instructional simulation)
+Files:
+  frankenstein-howto.mp4      (English VO, 9:16 vertical)
+  frankenstein-howto-pl.mp4   (Polish VO, same visuals)
+  make_frankenstein_howto.py  (regenerate frames + EN VO + stitch)
+
+Format: 1080×1920 · ~40s · UI simulation of the real game flow
+
+==================================================
+VISUAL BEATS
+==================================================
+01 Title — How to play Frankenstein Builder
+02 Structure — Hook → Context → Thesis → Evidence → Analysis
+03 Scrambled board — five AI sentences out of order
+04 Controls — highlight ▲ / ▼ move buttons
+05–08 Reorder steps — cards moving into place
+09 Check Order — tap to mark
+10 Success — roles revealed, green feedback
+11 CTA — Play at lingospark.study
+
+==================================================
+ENGLISH VO (Microsoft Hazel Desktop · en-GB · joyous + light BGM)
+==================================================
+Ready for something fun? Let's play Frankenstein Builder!
+First, you'll love this essay structure: Hook, Context, Thesis, Evidence, Analysis — nice and clear.
+The AI gives you five bright little sentences… but they're playfully scrambled. That's part of the game!
+Use the up and down arrows to move each sentence — you've got this!
+Keep rearranging until the paragraph sings.
+Then tap Check Order — exciting moment!
+When you're correct, that lovely academic flow unlocks. Brilliant!
+Come and try it now at lingospark.study — you'll enjoy it!
+
+BGM: light upbeat original bed (bgm_frankenstein_howto.wav), mixed quietly under VO.
+
+==================================================
+POLISH VO
+==================================================
+Jak grać w Frankenstein Builder.
+Najpierw zapamiętaj strukturę wypracowania: Hook, Context, Thesis, Evidence, Analysis.
+AI daje ci pięć zdań, ale są pomieszane.
+Używaj strzałek w górę i w dół, żeby przesuwać zdania.
+Układaj je, aż akapit ma sens.
+Potem kliknij Check Order.
+Gdy kolejność jest poprawna, odblokowujesz akademicki tok wypowiedzi.
+Spróbuj na lingospark.study.
+
+Hashtags: #ESL #AcademicWriting #FrankensteinBuilder #LingoSpark #Shorts #HowTo

@@ -1,0 +1,11 @@
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_flashcard/frame_00.png'
+duration 3.20
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_flashcard/frame_01.png'
+duration 4.50
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_flashcard/frame_02.png'
+duration 4.50
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_flashcard/frame_03.png'
+duration 4.50
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_flashcard/frame_04.png'
+duration 4.00
+file 'C:/Users/karol/Desktop/LingoSpark/shorts/frames_flashcard/frame_04.png'

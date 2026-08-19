@@ -1,0 +1,131 @@
+================================================================================
+LingoSpark — Skrypty i Opisy Wykonawcze Szortów Reklamowych (PL)
+Pliki wideo: Desktop\LingoSpark\shorts\promo-*.mp4
+Format wideo: Vertical 1080x1920 (9:16), ~12 sekund, 30 fps, bez ścieżki lektorskiej (bez VO)
+================================================================================
+
+SZORT 1: promo-01-lingospark-overview.mp4
+--------------------------------------------------------------------------------
+Tytuł wideo: LingoSpark — Platforma do Nauki Angielskiego Bez Nudy!
+Cel: Ogólna prezentacja platformy LingoSpark (powtórki słówek, wyzwania klasowe, Writing Suite z AI).
+
+Opis Wizualny (Scena po Scenie):
+- 0.0s – 3.0s (Dynamiczny Hook):
+  * Na jasnym tle LingoSpark (#F4F5F7) pojawia się nagłówek z pulsowaniem „ESL LEARNING REDEFINED”.
+  * Z dołu wjeżdża z dużą dynamiką wielki napis: „Nauka Angielskiego Bez Nudy i Stresu!”.
+  * Pojawiają się 3 powiększające się karty z badge'ami:
+    - ⚡ 100% Darmowe Słownictwo (niebieski)
+    - 🎮 Interaktywne Gry Słowne (czerwony)
+    - 🤖 Sztuczna Inteligencja dla Pisarzy (zielony)
+- 3.0s – 6.0s (Wybór Sekcji Hub):
+  * Ekran przełącza się na prezentację 3 modułów serwisu: Vocab Review, Team Challenge oraz Writing Suite.
+  * Każdy moduł posiada zaokrąglony panel z dedykowanym kolorem (Królewski Błękit, Czerwień, Zieleń) i unikalną ikoną.
+  * Na sekcje najeżdża podświetlenie ze złotą poświatą i przyciskiem „Otwórz Sekcję →”.
+- 6.0s – 9.0s (Przegląd Gier i Funkcji AI):
+  * Szybka prezentacja kafelków gier:
+    1. Bomb Defusal: Odliczanie tykającej bomby od 60s w dół i wybuch zielonego bonusu „+5s BONUS CZASU!”.
+    2. Frankenstein Builder: Układanie 5-częściowej struktury akapitu eseju (Hook, Context, Thesis, Evidence, Analysis).
+    3. AI Exam Simulator: Stempel z natychmiastową oceną i zieloną pieczęcią „OCENA: 5/5 ⭐”.
+- 9.0s – 12.0s (Finalne CTA & Strona):
+  * Wybuchający zielono-czerwonymi iskrami panel centralny: „ROZPOCZNIJ NAUKĘ! LingoSpark.study”.
+  * Badge: „✓ Bez rejestracji”, „✓ Wypróbuj za darmo już teraz”.
+  * Pulsujący czerwony przycisk akcji: „WEJDŹ NA STRONĘ ➔”.
+
+Napisy Ekranowe w Wideo (Captions PL):
+1. „Nauka Angielskiego Bez Nudy i Stresu!”
+2. „100% Darmowe Powtórki Słownictwa • Gry Klasowe • AI Writing Suite”
+3. „Przetestuj na LingoSpark.study”
+
+Opcjonalny Skrypt Lektorski (PL):
+„Szukasz sposobu na szybki i ciekawy angielski? Poznaj LingoSpark! Darmowe gry ze słownictwem, wyzwania klasowe na duży ekran oraz inteligencja AI pomagająca pisać wyznaczone eseje i maile egzaminacyjne. Wejdź na lingospark.study i zobacz sam!”
+
+
+SZORT 2: promo-02-vocab-frenzy.mp4
+--------------------------------------------------------------------------------
+Tytuł wideo: Rozbrój Bombę Słowną w 60 Sekund — Powtórka Słownictwa LingoSpark
+Cel: Dynamiczna promocja gier ze słownictwem pod presją czasu (Bomb Defusal, Vocab Auction, Flashcards, Grid Territory).
+
+Opis Wizualny (Scena po Scenie):
+- 0.0s – 3.0s (Czerwony Alert & Presja Czasu):
+  * Ekran pulsuje ostrzegawczym światłem czerwieni (#C8102E).
+  * Wielka animowana ikona bomby 💣 i wielki tykający zegar odliczający 00:60.
+  * Czerwony napis: „⚠️ WYKAZ SŁÓWEK POD PRESJĄ CZASU! Masz tylko 60 sekund!”.
+- 3.0s – 6.0s (Symulacja Pisania & Bonus Czasu):
+  * Pojawia się okno definicji słowa: Extremely large or huge in size (Adjective).
+  * Efekt wpisywania liter litera po literze: M-A-S-S-I-V-E.
+  * Przycisk zniekształca się na zielono i pojawia się zielona pieczęć stempla: „POPRAWNA ODPOWIEDŹ! +5 SEKUND BONUSU!”.
+- 6.0s – 9.0s (Aukcja Słowna i Żetony):
+  * Przejście do trybu Vocab Auction. Na górze złoty stan konta: 1,400 ŻETONÓW 🪙.
+  * Wskaźnik stawki przesuwa się po pasku, gracz wybiera słowo B) Massive.
+  * Pojawia się złota eksplozywna pieczęć: „WYGRANA AUKCJA! +200 ŻETONÓW REWARD”.
+- 9.0s – 12.0s (Końcowe Wezwanie do Akcji):
+  * Karta podsumowania z 4 grami: Classic Flashcards, Bomb Defusal, Grid Territory, Vocab Auction.
+  * Przycisk akcji z obramowaniem: „ZAGRAJ NA LINGOSPARK.STUDY ➔”.
+
+Napisy Ekranowe w Wideo (Captions PL):
+1. „Rozbrój bombę słowną w 60 sekund!”
+2. „Dobre odpowiedzi dodają czas! Wklej własną listę słówek!”
+3. „Zagraj za darmo na lingospark.study”
+
+Opcjonalny Skrypt Lektorski (PL):
+„Myślisz, że znasz swoje słówka? Sprawdź się w Vocabulary Bomb Defusal! Wklej listę słówek z lekcji i pisz odpowiedzi zanim minie 60 sekund. Za każdą dobrą odpowiedź zgarniasz +5 sekund! Zagraj za darmo na lingospark.study!”
+
+
+SZORT 3: promo-03-ai-writing-suite.mp4
+--------------------------------------------------------------------------------
+Tytuł wideo: Sztuczna Inteligencja Pomaga Pisać Wypracowania — LingoSpark Writing Suite
+Cel: Promocja narzędzi AI do budowy struktury esejów i eliminacji błędów (Frankenstein Builder, Bloat Slasher, Vocabulary Upgrade, Exam Simulator).
+
+Opis Wizualny (Scena po Scenie):
+- 0.0s – 3.0s (Wprowadzenie do AI Writing Suite):
+  * Czyste, nowoczesne interfejsowe tło. Czerwony nagłówek „SZTUCZNA INTELIGENCJA W NAUCE PISANIA”.
+  * Karta prezentująca 5-częściowy model eseju: 1. HOOK, 2. CONTEXT, 3. THESIS, 4. EVIDENCE, 5. ANALYSIS.
+- 3.0s – 6.0s (Układanie Akapitów — Frankenstein Builder):
+  * Animacja przesuwania kart ze zdaniami esejów w pionie.
+  * Karty wskakują na swoje miejsca, zmieniając kolor z białego na jasnozielony z ptaszkami ✓.
+  * Na środku wpada zielona pieczęć AI: „AKADEMICKI FLOW! 100% PRAWIDŁOWA STRUKTURA”.
+- 6.0s – 9.0s (Bloat Slasher & Podnoszenie Rejestru Słownictwa):
+  * Pokaz narzędzia Bloat Slasher: Czerwona linia przekreśla rozwlekły wstęp (It is widely considered to be a well-known fact that...), zostawiając zwięzłe zdanie.
+  * Pokaz Vocabulary Upgrade: Podświetlenie zwykłego słowa BIG -> zamiana na precyzyjne słowo akademickie SUBSTANTIAL z rozbłyskiem złotych gwiazdek.
+- 9.0s – 12.0s (Zestawienie Narzędzi & CTA):
+  * Lista narzędzi: Frankenstein Builder, Transition Matcher, The Devil's Advocate, Bloat Slasher, Vocabulary Upgrade, Word-Forged Odyssey.
+  * Duży przycisk CTA: „WYPRÓBUJ WRITING SUITE ➔” na lingospark.study.
+
+Napisy Ekranowe w Wideo (Captions PL):
+1. „Pisanie esejów po angielsku bez tajemnic!”
+2. „Buduj idealną strukturę i podnoś poziom słownictwa z AI”
+3. „Wypróbuj na lingospark.study”
+
+Opcjonalny Skrypt Lektorski (PL):
+„Masz problem z pisaniem wypracowań po angielsku? LingoSpark Writing Suite uczy idealnej struktury akapitów, pomaga usuwać niepotrzebne słowa i podnosi rejestr słownictwa na poziom akademicki. Wypróbuj narzędzia AI na lingospark.study!”
+
+
+SZORT 4: promo-04-primary-english.mp4
+--------------------------------------------------------------------------------
+Tytuł wideo: Angielski dla Szkoły Podstawowej i Egzaminu 8-Klasisty — Primary English LingoSpark
+Cel: Prezentacja gier dla młodszych uczniów i kandydatów do egzaminów (A1, A2, B1).
+
+Opis Wizualny (Scena po Scenie):
+- 0.0s – 3.0s (Poziomy CEFR A1, A2, B1):
+  * Dynamicznie wyskakujące z efektem sprężyny kolorowe badge: A1, A2 oraz B1.
+  * Napis: „SZKOŁY PODSTAWOWE I LICEA — Primary English Prep”.
+  * Opis: 4 dedykowane gry pisemne dostosowane do wymagań programowych.
+- 3.0s – 6.0s (Boring to Brilliant):
+  * Szary panel ze zwykłym zdaniem: The [ GOOD ] dog played in the [ BIG ] park.
+  * Rozbłysk iskier i transformacja słów na bogatsze przymiotniki: The [ PLAYFUL ] dog played in the [ SPACIOUS ] park.
+  * Wpada stempel z punktami: „✨ WSPANIALE! (+10 PKT)”.
+- 7.0s – 9.0s (Symulator E-maila Egzaminacyjnego):
+  * Podgląd zadania egzaminacyjnego (napisz e-mail z zaproszeniem na piknik).
+  * Wpisany tekst z licznikiem słów 58 / 120.
+  * Zielony stempel oceny AI Examiner: „OCENA EXAMINERA: 5/5 ⭐ - Wszystkie podpunkty i limit słów w normie!”.
+- 9.0s – 12.0s (Zakończenie i Zaproszenie):
+  * Przegląd 4 gier: Boring to Brilliant, Detail Detective, Link Master, Exam Simulator.
+  * Przycisk końcowy: „ZAGRAJ NA LINGOSPARK.STUDY ➔”.
+
+Napisy Ekranowe w Wideo (Captions PL):
+1. „Przygotuj się do egzaminów z angielskiego!”
+2. „Wzbogacaj słownictwo i ćwicz e-maile z natychmiastową oceną AI”
+3. „Ucz się za darmo na lingospark.study”
+
+Opcjonalny Skrypt Lektorski (PL):
+„Chcesz pisać lepsze e-maile na egzaminie z angielskiego? Z Primary English na LingoSpark zamieniasz nudne słowa w żywe przymiotniki, łączysz zdania i piszesz teksty z natychmiastową oceną od egzaminatora AI. Wejdź na lingospark.study!”

@@ -1,0 +1,129 @@
+LingoSpark — Writing Suite YouTube Shorts Scripts
+Format: 15–25 seconds | vertical 9:16 | hook in first 2s
+Tone: teacher-friendly, punchy, no jargon overload
+CTA: soft link in caption / pinned comment
+
+==================================================
+SHORT 1 — Frankenstein Builder
+File idea: 05-frankenstein-builder.mp4
+==================================================
+HOOK (0–2s)
+VO: "Your paragraph is alive… but the pieces are all wrong."
+ON SCREEN: "Frankenstein Builder"
+VISUAL: scrambled sentence cards / drag-up-down controls
+
+PROBLEM (2–7s)
+VO: "Five AI sentences. One correct order."
+ON SCREEN: "Hook → Context → Thesis → Evidence → Analysis"
+VISUAL: five cards jumping out of order
+
+ACTION (7–15s)
+VO: "Move them until the structure clicks."
+ON SCREEN: "Fix the flow"
+VISUAL: cards reordering into a clean paragraph
+
+PAYOFF (15–20s)
+VO: "That’s academic writing muscle — without the boredom."
+ON SCREEN: "Writing Suite · LingoSpark"
+CTA VO: "Try Frankenstein Builder."
+CAPTION CTA: Link in bio · Free ESL writing games
+
+Hashtags: #ESL #AcademicWriting #EnglishTeacher #WritingPractice #Shorts
+
+==================================================
+SHORT 2 — Transition Matcher
+File idea: 06-transition-matcher.mp4
+==================================================
+HOOK (0–2s)
+VO: "One word can save — or kill — your paragraph."
+ON SCREEN: "Transition Matcher"
+VISUAL: two academic sentences with a blank slot between them
+
+PROBLEM (2–8s)
+VO: "However? Therefore? Moreover?"
+ON SCREEN: "[ Select Transition ]"
+VISUAL: option buttons flashing: However / Consequently / In addition / Unless
+
+ACTION (8–16s)
+VO: "Pick the discourse marker that actually fits the logic."
+ON SCREEN: "Logic > fancy words"
+VISUAL: correct transition locks in green
+
+PAYOFF (16–22s)
+VO: "Train cohesion the way examiners notice it."
+ON SCREEN: "Writing Suite · LingoSpark"
+CTA VO: "Play Transition Matcher."
+CAPTION CTA: Perfect warm-up before essay writing
+
+Hashtags: #ESLWriting #Cohesion #B2English #TeachersOfYouTube #Shorts
+
+==================================================
+SHORT 3 — Bloat Slasher
+File idea: 07-bloat-slasher.mp4
+==================================================
+HOOK (0–2s)
+VO: "If you can cut a word… cut it."
+ON SCREEN: "Orwell’s Rule"
+VISUAL: long wordy sentence exploding into chips
+
+PROBLEM (2–8s)
+VO: "This sentence is formal, correct… and painfully over-worded."
+ON SCREEN: "Bloat Slasher"
+VISUAL: academic sentence with too many words highlighted
+
+ACTION (8–16s)
+VO: "Tap the fluff. Keep the meaning. Stay academic."
+ON SCREEN: "Clear > literary"
+VISUAL: words getting crossed out; word count dropping to target
+
+PAYOFF (16–22s)
+VO: "Concise writing is power — especially in school essays."
+ON SCREEN: "Writing Suite · LingoSpark"
+CTA VO: "Slash the bloat."
+CAPTION CTA: Great for B2 / high-school ESL
+
+Hashtags: #ConciseWriting #EssayTips #ESL #Orwell #Shorts
+
+==================================================
+SHORT 4 — Vocabulary Upgrade
+File idea: 08-vocabulary-upgrade.mp4
+==================================================
+HOOK (0–2s)
+VO: "Stop writing like you talk in an essay."
+ON SCREEN: "Vocabulary Upgrade"
+VISUAL: informal phrase glowing red inside a formal sentence
+
+PROBLEM (2–8s)
+VO: "look into… deal with… figure out…"
+ON SCREEN: "Phrasal verbs → Academic English"
+VISUAL: target word pulsing; four upgrade options appear
+
+ACTION (8–16s)
+VO: "Swap it for a precise formal equivalent — up to B2+."
+ON SCREEN: "investigate / address / determine"
+VISUAL: correct formal word snaps in green
+
+PAYOFF (16–22s)
+VO: "Same idea. Stronger tone. Instant upgrade."
+ON SCREEN: "Writing Suite · LingoSpark"
+CTA VO: "Upgrade your vocab."
+CAPTION CTA: Teachers — use as a 5-minute starter
+
+Hashtags: #AcademicVocabulary #PhrasalVerbs #ESL #LearnEnglish #Shorts
+
+==================================================
+OPTIONAL 5th (bonus) — Word-Forged Odyssey
+Use if you want a “fun” Writing Suite short next
+==================================================
+HOOK: "Write one full sentence… or the story punishes you."
+BEAT: show HP / morale + target vocab cards
+CTA: "Word-Forged Odyssey — vocab survival mode."
+
+==================================================
+FILMING / EDIT NOTES (all 4)
+==================================================
+1. First frame must be readable muted (big text).
+2. Keep face-cam optional; UI screen demos convert better for teachers.
+3. Add light upbeat royalty-free music under VO.
+4. End card: logo + “Writing Suite” + site/BMC link.
+5. Post order for best variety: 1 Frankenstein → 3 Bloat → 2 Transitions → 4 Vocab Upgrade.
