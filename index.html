@@ -1336,7 +1336,7 @@
         // ==========================================
         let currentWordSetId = null;
 
-        function isLoggedIn() { return !!(window.authState && window.authState.id); }
+        function isLoggedIn() { return !!(window.authState && window.authState.user && window.authState.user.id); }
 
         async function recordGameSessionApi(gameKey, payload = {}) {
             if (!isLoggedIn()) {
