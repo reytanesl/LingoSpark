@@ -583,6 +583,81 @@
         .ai-reminder-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .ai-reminder-actions .btn { font-size: 0.85rem; padding: 0.45rem 1.1rem; }
 
+        /* Two-player mode */
+        .turn-banner {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 1.05rem;
+            background: rgba(1, 33, 105, 0.07);
+            border: 2px solid var(--royal-blue);
+            color: var(--royal-blue);
+        }
+
+        .turn-banner.visible { display: flex; }
+
+        .turn-banner.p2 {
+            background: rgba(200, 16, 46, 0.07);
+            border-color: var(--pillarbox-red);
+            color: var(--pillarbox-red);
+        }
+
+        .turn-banner .turn-sub {
+            font-family: var(--font-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .duo-scores {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .duo-scores.visible { display: grid; }
+
+        .duo-score {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            background: var(--light-grey);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+        }
+
+        .duo-score .nm {
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .duo-score .vl {
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--royal-blue);
+            line-height: 1.2;
+        }
+
+        .duo-score.active { border-color: var(--royal-blue); background: rgba(1, 33, 105, 0.06); }
+        .duo-score.active .nm { color: var(--royal-blue); }
+        .duo-score.active.p2 { border-color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.06); }
+        .duo-score.active.p2 .nm { color: var(--pillarbox-red); }
+        .duo-score.out .vl { color: var(--pillarbox-red); text-decoration: line-through; }
+
+        .hud.single { grid-template-columns: 1fr; }
+
         .gameover-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -611,6 +686,20 @@
             font-weight: 800;
             font-size: 1.75rem;
             color: var(--royal-blue);
+        }
+
+        .stat-box.winner {
+            border: 2px solid var(--success-green);
+            background: rgba(0, 130, 59, 0.08);
+        }
+
+        .stat-box.winner .value { color: var(--success-green); }
+
+        .save-note {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--success-green);
         }
 
         .loading-overlay {
@@ -692,6 +781,16 @@
             margin-bottom: 0.85rem;
         }
 
+        body.embed .turn-banner {
+            margin-bottom: 0.7rem;
+            padding: 0.5rem 0.85rem;
+            font-size: 0.95rem;
+        }
+
+        body.embed .duo-scores {
+            margin-bottom: 0.85rem;
+        }
+
         body.embed .definition-box {
             padding: 0.85rem 1rem;
             margin-bottom: 0.85rem;
@@ -738,11 +837,22 @@
         </div>
 
         <div class="form-group">
+            <label class="group-label"><i class="fa-solid fa-users"></i> Players</label>
+            <div class="option-row">
+                <label><input type="radio" name="players" value="1" checked> 1 Player</label>
+                <label><input type="radio" name="players" value="2"> 2 Players (alternating turns)</label>
+            </div>
+        </div>
+
+        <div class="form-group">
             <label class="group-label"><i class="fa-solid fa-flag-checkered"></i> Game Length</label>
             <div class="option-row">
                 <label><input type="radio" name="length" value="10" checked> 10 Rounds</label>
                 <label><input type="radio" name="length" value="survival"> Survival</label>
             </div>
+            <p id="length-duo-note" class="hint-cost-note hidden" style="text-align: left; margin-top: 0.6rem;">
+                Each player gets their own bankroll and plays the full number of rounds.
+            </p>
         </div>
 
         <div class="form-group">
@@ -768,14 +878,31 @@
         </div>
 
         <div id="round-content" class="hidden">
-            <div class="hud">
+            <div id="turn-banner" class="turn-banner" aria-live="polite">
+                <i class="fa-solid fa-user"></i>
+                <span id="turn-name">Player 1</span>
+                <span class="turn-sub">it's your turn</span>
+            </div>
+
+            <div class="hud" id="hud">
                 <div class="hud-chip">
                     <div class="label">Round</div>
                     <div class="value" id="hud-round">1</div>
                 </div>
-                <div class="hud-chip bankroll">
+                <div class="hud-chip bankroll" id="hud-bankroll-chip">
                     <div class="label">Bankroll</div>
                     <div class="value" id="hud-bankroll">1,000</div>
+                </div>
+            </div>
+
+            <div id="duo-scores" class="duo-scores">
+                <div class="duo-score" id="duo-score-1">
+                    <span class="nm">Player 1</span>
+                    <span class="vl" id="duo-chips-1">1,000</span>
+                </div>
+                <div class="duo-score p2" id="duo-score-2">
+                    <span class="nm">Player 2</span>
+                    <span class="vl" id="duo-chips-2">1,000</span>
                 </div>
             </div>
 
@@ -847,7 +974,7 @@
         <h1 class="screen-title" style="justify-content: center;" id="gameover-title">Game Over</h1>
         <p class="screen-desc" id="gameover-message">—</p>
 
-        <div class="gameover-stats">
+        <div class="gameover-stats" id="go-stats-solo">
             <div class="stat-box">
                 <div class="label">Rounds Played</div>
                 <div class="value" id="go-rounds">0</div>
@@ -857,6 +984,19 @@
                 <div class="value" id="go-chips">0</div>
             </div>
         </div>
+
+        <div class="gameover-stats hidden" id="go-stats-duo">
+            <div class="stat-box" id="go-duo-1">
+                <div class="label" id="go-duo-1-label">Player 1</div>
+                <div class="value" id="go-p1-chips">0</div>
+            </div>
+            <div class="stat-box" id="go-duo-2">
+                <div class="label" id="go-duo-2-label">Player 2</div>
+                <div class="value" id="go-p2-chips">0</div>
+            </div>
+        </div>
+
+        <p id="go-save-note" class="save-note hidden"></p>
 
         <div class="actions">
             <button type="button" class="btn btn-blue btn-lg" id="btn-again">
@@ -1041,8 +1181,13 @@ const state = {
     customWords: [],
     gameLength: "10",        // "10" | "survival"
     inputStyle: "mc",        // "mc" | "mixed"
-    bankroll: STARTING_BANKROLL,
-    round: 0,
+    mode: "solo",            // "solo" | "duo"
+    players: [],             // [{ name, bankroll, rounds, bankrupt }]
+    activePlayer: 0,
+    collectedWords: [],      // { term, definition } pairs seen this game
+    savedWordCount: 0,       // words actually persisted to the saved set
+    bankroll: STARTING_BANKROLL,  // mirrors the active player's chips
+    round: 0,                     // mirrors the active player's round number
     activePool: [],
     currentWord: null,
     definition: null,
@@ -1076,9 +1221,19 @@ const els = {
     },
     customWrap: $("#custom-words-wrap"),
     customWords: $("#custom-words"),
+    lengthDuoNote: $("#length-duo-note"),
     btnStart: $("#btn-start"),
     roundLoading: $("#round-loading"),
     roundContent: $("#round-content"),
+    turnBanner: $("#turn-banner"),
+    turnName: $("#turn-name"),
+    hud: $("#hud"),
+    hudBankrollChip: $("#hud-bankroll-chip"),
+    duoScores: $("#duo-scores"),
+    duoScore1: $("#duo-score-1"),
+    duoScore2: $("#duo-score-2"),
+    duoChips1: $("#duo-chips-1"),
+    duoChips2: $("#duo-chips-2"),
     hudRound: $("#hud-round"),
     hudBankroll: $("#hud-bankroll"),
     definitionText: $("#definition-text"),
@@ -1103,6 +1258,15 @@ const els = {
     gameoverIcon: $("#gameover-icon"),
     gameoverTitle: $("#gameover-title"),
     gameoverMessage: $("#gameover-message"),
+    goStatsSolo: $("#go-stats-solo"),
+    goStatsDuo: $("#go-stats-duo"),
+    goDuo1: $("#go-duo-1"),
+    goDuo2: $("#go-duo-2"),
+    goDuo1Label: $("#go-duo-1-label"),
+    goDuo2Label: $("#go-duo-2-label"),
+    goP1Chips: $("#go-p1-chips"),
+    goP2Chips: $("#go-p2-chips"),
+    goSaveNote: $("#go-save-note"),
     goRounds: $("#go-rounds"),
     goChips: $("#go-chips"),
     btnAgain: $("#btn-again")
@@ -1123,10 +1287,50 @@ function formatChips(n) {
     return Math.max(0, Math.round(n)).toLocaleString("en-GB");
 }
 
+/** The player currently taking a turn. */
+function activePlayer() {
+    return state.players[state.activePlayer] || null;
+}
+
+function otherPlayer() {
+    return state.mode === "duo" ? state.players[1 - state.activePlayer] : null;
+}
+
+/**
+ * state.bankroll is the working copy for the player taking the turn, so every
+ * HUD refresh mirrors it back onto that player's record.
+ */
 function updateHud() {
+    const p = activePlayer();
+    if (p) p.bankroll = state.bankroll;
+
     const maxRounds = state.gameLength === "10" ? " / 10" : "";
     els.hudRound.textContent = state.round + maxRounds;
     els.hudBankroll.textContent = formatChips(state.bankroll);
+
+    if (state.mode !== "duo") return;
+
+    const [p1, p2] = state.players;
+    els.duoChips1.textContent = formatChips(p1.bankroll);
+    els.duoChips2.textContent = formatChips(p2.bankroll);
+    els.duoScore1.classList.toggle("active", state.activePlayer === 0);
+    els.duoScore2.classList.toggle("active", state.activePlayer === 1);
+    els.duoScore1.classList.toggle("out", p1.bankrupt);
+    els.duoScore2.classList.toggle("out", p2.bankrupt);
+}
+
+/** Turn banner, scoreboard and HUD layout for the current mode. */
+function renderTurnChrome() {
+    const duo = state.mode === "duo";
+    els.turnBanner.classList.toggle("visible", duo);
+    els.duoScores.classList.toggle("visible", duo);
+    els.hud.classList.toggle("single", duo);
+    els.hudBankrollChip.classList.toggle("hidden", duo);
+
+    if (!duo) return;
+    const p = activePlayer();
+    els.turnName.textContent = p.name;
+    els.turnBanner.classList.toggle("p2", state.activePlayer === 1);
 }
 
 /* =========================================================
@@ -1142,10 +1346,18 @@ document.querySelectorAll('input[name="level"]').forEach((radio) => {
     });
 });
 
+document.querySelectorAll('input[name="players"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+        const duo = document.querySelector('input[name="players"]:checked').value === "2";
+        els.lengthDuoNote.classList.toggle("hidden", !duo);
+    });
+});
+
 function readMenuSettings() {
     state.level = document.querySelector('input[name="level"]:checked').value;
     state.gameLength = document.querySelector('input[name="length"]:checked').value;
     state.inputStyle = document.querySelector('input[name="inputStyle"]:checked').value;
+    state.mode = document.querySelector('input[name="players"]:checked').value === "2" ? "duo" : "solo";
 
     if (state.level === "custom") {
         const raw = els.customWords.value
@@ -1169,13 +1381,24 @@ els.btnStart.addEventListener("click", () => {
     }
 
     // Reset run variables (localStorage recent history is preserved)
+    state.players = state.mode === "duo"
+        ? [makePlayer("Player 1"), makePlayer("Player 2")]
+        : [makePlayer("Player 1")];
+    state.activePlayer = 0;
+    state.collectedWords = [];
+    state.savedWordCount = 0;
     state.bankroll = STARTING_BANKROLL;
     state.round = 0;
     state.sessionUsed = [];
     state.skippedWords = new Set();
+    els.goSaveNote.classList.add("hidden");
     buildDeck();
     startNextRound();
 });
+
+function makePlayer(name) {
+    return { name, bankroll: STARTING_BANKROLL, rounds: 0, bankrupt: false };
+}
 
 /* =========================================================
    5b. DECK BUILDING — Fisher-Yates shuffle with history bias
@@ -1382,7 +1605,11 @@ function buildChoices(correctWord) {
    7. ROUND SETUP
    ========================================================= */
 async function startNextRound() {
-    state.round += 1;
+    const p = activePlayer();
+    p.rounds += 1;
+    state.round = p.rounds;
+    state.bankroll = p.bankroll;
+
     state.locked = false;
     state.bets = {};
     state.typedBet = 0;
@@ -1392,12 +1619,14 @@ async function startNextRound() {
     state.definition = null;
     state.choices = [];
 
-    // Mixed mode: odd rounds = MC, even rounds = typed
+    // Mixed mode alternates per player's own round count, so both players
+    // get the same split of multiple-choice and typed rounds.
     // Round 1 → MC, Round 2 → Typed, Round 3 → MC, …
     state.isTypedRound =
         state.inputStyle === "mixed" && state.round % 2 === 0;
 
     showScreen("round");
+    renderTurnChrome();
     els.resultArea.classList.add("hidden");
     els.roundContent.classList.add("hidden");
     els.roundLoading.classList.remove("hidden");
@@ -1718,6 +1947,7 @@ function useHint() {
 
     // Hint can bankrupt the player before they lock in
     if (state.bankroll <= 0) {
+        activePlayer().bankrupt = true;
         state.locked = true;
         els.typedAnswer.disabled = true;
         els.typedSlider.disabled = true;
@@ -1913,6 +2143,8 @@ function resolveRound() {
 
     els.correctReveal.innerHTML = `Correct word: <strong>${escapeHtml(correct)}</strong>`;
 
+    collectWord(correct, state.definition);
+
     // After settlement, available chips = current bankroll (no open bets)
     if (!state.isTypedRound) {
         els.chipsAvailable.textContent = formatChips(state.bankroll);
@@ -1920,17 +2152,58 @@ function resolveRound() {
 
     // Hide lock button once resolved
     els.btnLock.classList.add("hidden");
+    updateNextButtonLabel();
+}
+
+/**
+ * Keep every (word, definition) pair played this game, deduplicated by term,
+ * so it can be pushed to the player's saved word set once the game ends.
+ */
+function collectWord(term, definition) {
+    if (!term || !definition) return;
+    const key = term.trim().toLowerCase();
+    if (!key || state.collectedWords.some((w) => w.term.toLowerCase() === key)) return;
+    state.collectedWords.push({ term: term.trim(), definition: definition.trim() });
+
+    // Save in batches so words survive a game abandoned before the last round.
+    if (state.collectedWords.length % 5 === 0) queueWordFlush();
+}
+
+/** True when the current turn is the last one of the game. */
+function gameEndsAfterThisTurn() {
+    if (state.bankroll <= 0) return true;
+    if (state.gameLength !== "10") return false;
+    if (state.mode === "duo") return state.players.every((p) => p.rounds >= 10);
+    return state.round >= 10;
+}
+
+function updateNextButtonLabel() {
+    if (gameEndsAfterThisTurn()) {
+        els.btnNext.innerHTML = '<i class="fa-solid fa-flag-checkered"></i> See Results';
+    } else if (state.mode === "duo") {
+        els.btnNext.innerHTML =
+            `<i class="fa-solid fa-right-left"></i> Pass to ${escapeHtml(otherPlayer().name)}`;
+    } else {
+        els.btnNext.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Next Round';
+    }
 }
 
 els.btnNext.addEventListener("click", () => {
-    // Game-over checks after each resolved round
-    if (state.bankroll <= 0) {
+    const p = activePlayer();
+    if (state.bankroll <= 0) p.bankrupt = true;
+
+    // Game-over checks after each resolved turn
+    if (p.bankrupt) {
         endGame("bankrupt");
         return;
     }
-    if (state.gameLength === "10" && state.round >= 10) {
+    if (state.gameLength === "10" && state.players.every((pl) => pl.rounds >= 10)) {
         endGame("victory");
         return;
+    }
+
+    if (state.mode === "duo") {
+        state.activePlayer = 1 - state.activePlayer;
     }
     startNextRound();
 });
@@ -1972,23 +2245,141 @@ function toggleAiReminderLang() {
     }
 }
 
+/** Name of the word set that Vocab Auction words are appended to. */
+const AUCTION_SET_NAME = "Vocab Auction";
+const AUCTION_SET_LIMIT = 500;
+
 async function recordAuctionSession(outcome) {
+    const scores = state.players.map((p) => ({ name: p.name, chips: p.bankroll, rounds: p.rounds }));
+    await fetch('/api/progress/session', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            gameKey: 'auction',
+            score: state.players[0].bankroll,
+            pointsEarned: state.players[0].bankroll,
+            wordsTotal: state.collectedWords.length,
+            result: { outcome, mode: state.mode, round: state.round, players: scores }
+        })
+    });
+}
+
+/**
+ * Append this game's words and definitions to the player's "Vocab Auction"
+ * set, creating it on first use. Existing entries keep their definition.
+ */
+async function saveWordsToAuctionSet() {
+    if (state.collectedWords.length === 0) return 0;
+
+    const listRes = await fetch('/api/word-sets', { credentials: 'same-origin' });
+    if (!listRes.ok) return 0;
+    const { sets } = await listRes.json();
+    const existing = (sets || []).find(
+        (s) => (s.name || "").trim().toLowerCase() === AUCTION_SET_NAME.toLowerCase()
+    );
+
+    if (!existing) {
+        const items = state.collectedWords.slice(-AUCTION_SET_LIMIT);
+        const res = await fetch('/api/word-sets', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: AUCTION_SET_NAME, setType: 'vocab', testDirection: 'def', items
+            })
+        });
+        return res.ok ? items.length : 0;
+    }
+
+    const detailRes = await fetch(`/api/word-sets/${existing.id}`, { credentials: 'same-origin' });
+    const prior = detailRes.ok ? ((await detailRes.json()).set.items || []) : [];
+
+    const merged = [];
+    const seen = new Set();
+    let added = 0;
+    for (const item of [...prior, ...state.collectedWords]) {
+        const term = (item.term || "").trim();
+        const key = term.toLowerCase();
+        if (!term || seen.has(key)) continue;
+        seen.add(key);
+        merged.push({ term, definition: (item.definition || "").trim() });
+    }
+    added = merged.length - prior.length;
+
+    const res = await fetch(`/api/word-sets/${existing.id}`, {
+        method: 'PUT', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: merged.slice(-AUCTION_SET_LIMIT) })
+    });
+    return res.ok ? Math.max(0, added) : 0;
+}
+
+/** Login state is fixed for the lifetime of this page, so check it once. */
+let loginChecked = false;
+let loggedIn = false;
+
+async function isPlayerLoggedIn() {
+    if (loginChecked) return loggedIn;
     try {
         const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
         const auth = await res.json();
-        if (!auth.user) return;
-        await fetch('/api/progress/session', {
-            method: 'POST', credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameKey: 'auction', score: state.bankroll, pointsEarned: state.bankroll, result: { outcome, round: state.round } })
-        });
+        loggedIn = !!(auth && auth.user);
+    } catch (e) {
+        loggedIn = false;
+    }
+    loginChecked = true;
+    return loggedIn;
+}
+
+/**
+ * Flushes are queued rather than run in parallel: each one reads the stored
+ * set before writing it back, so overlapping saves would drop words.
+ */
+let flushQueue = Promise.resolve();
+
+function queueWordFlush() {
+    flushQueue = flushQueue.then(async () => {
+        if (state.collectedWords.length === 0) return;
+        if (!(await isPlayerLoggedIn())) return;
+        try {
+            state.savedWordCount += await saveWordsToAuctionSet();
+        } catch (e) {}
+    });
+    return flushQueue;
+}
+
+/** Records progress and saves words — both are no-ops for guests. */
+async function finaliseSession(outcome) {
+    if (!(await isPlayerLoggedIn())) return;
+
+    try {
+        await recordAuctionSession(outcome);
     } catch (e) {}
+
+    await queueWordFlush();
+
+    const n = state.savedWordCount;
+    if (n > 0) {
+        els.goSaveNote.innerHTML =
+            `<i class="fa-solid fa-bookmark"></i> ${n} new word${n === 1 ? "" : "s"} saved to your "${AUCTION_SET_NAME}" set.`;
+        els.goSaveNote.classList.remove("hidden");
+    }
 }
 
 function endGame(outcome) {
+    const p = activePlayer();
+    if (p) p.bankroll = state.bankroll;
+
     incrementGameCount();
-    recordAuctionSession(outcome);
+    finaliseSession(outcome);
     showScreen("gameover");
+
+    if (state.mode === "duo") renderDuoGameOver();
+    else renderSoloGameOver(outcome);
+}
+
+function renderSoloGameOver(outcome) {
+    els.goStatsSolo.classList.remove("hidden");
+    els.goStatsDuo.classList.add("hidden");
 
     const icon = els.gameoverIcon;
     icon.classList.remove("victory", "bankrupt");
@@ -2012,7 +2403,50 @@ function endGame(outcome) {
     els.goChips.textContent = formatChips(state.bankroll);
 }
 
+function renderDuoGameOver() {
+    const [p1, p2] = state.players;
+
+    els.goStatsSolo.classList.add("hidden");
+    els.goStatsDuo.classList.remove("hidden");
+    els.goDuo1Label.textContent = `${p1.name} · ${p1.rounds} rounds`;
+    els.goDuo2Label.textContent = `${p2.name} · ${p2.rounds} rounds`;
+    els.goP1Chips.textContent = formatChips(p1.bankroll);
+    els.goP2Chips.textContent = formatChips(p2.bankroll);
+    els.goDuo1.classList.remove("winner");
+    els.goDuo2.classList.remove("winner");
+
+    let winner = null;
+    if (p1.bankrupt !== p2.bankrupt) winner = p1.bankrupt ? p2 : p1;
+    else if (p1.bankroll > p2.bankroll) winner = p1;
+    else if (p2.bankroll > p1.bankroll) winner = p2;
+
+    const icon = els.gameoverIcon;
+    icon.classList.remove("victory", "bankrupt");
+    icon.innerHTML = "";
+
+    if (!winner) {
+        icon.innerHTML = '<i class="fa-solid fa-handshake"></i>';
+        els.gameoverTitle.textContent = "It's a draw!";
+        els.gameoverMessage.textContent =
+            `Both players finished on ${formatChips(p1.bankroll)} chips.`;
+        return;
+    }
+
+    const loser = winner === p1 ? p2 : p1;
+    icon.classList.add("victory");
+    icon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+    (winner === p1 ? els.goDuo1 : els.goDuo2).classList.add("winner");
+    els.gameoverTitle.textContent = `${winner.name} wins!`;
+    els.gameoverMessage.textContent = loser.bankrupt
+        ? `${loser.name} went bankrupt in round ${loser.rounds}.`
+        : `${formatChips(winner.bankroll)} chips against ${formatChips(loser.bankroll)}.`;
+}
+
 function resetToMenu() {
+    state.players = [];
+    state.activePlayer = 0;
+    state.collectedWords = [];
+    state.savedWordCount = 0;
     state.bankroll = STARTING_BANKROLL;
     state.round = 0;
     state.locked = false;
@@ -2028,6 +2462,7 @@ function resetToMenu() {
     state.deckIndex = 0;
     state.skippedWords = new Set();
     state.activePool = [];
+    els.goSaveNote.classList.add("hidden");
     showScreen("menu");
 }
 
