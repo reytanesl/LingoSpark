@@ -1,0 +1,257 @@
+================================================================================
+LingoSpark — Pakiet rolek FB & IG (PL) — WERSJA 3
+Format: 1080x1920 (9:16) | 13 sekund | 30 fps | napisy PL na ekranie | muzyka w pliku
+Generator: python shorts/make_fb_ig_reels_v3.py
+Pliki: shorts/fbig-v3-01-*.mp4 ... fbig-v3-06-*.mp4
+================================================================================
+
+LEGENDA KANALOW FB (priorytet zasiegu)
+--------------------------------------------------------------------------------
+[FB-REELS]     Facebook Reels — GLOWNY silnik zasiegu organicznego, dociera do osob
+               spoza obserwujacych. Zawsze publikuj tutaj jako pierwsze miejsce.
+[FB-FEED]      Post na tablicy strony (Reels mozna udostepnic na feed jednym
+               kliknieciem) — zasieg wsrod obecnych fanow + komentarze.
+[FB-STORIES]   Relacje FB — 24h, najlepsze do naklejki z linkiem (klikalnosc).
+[FB-GROUPS]    Grupy nauczycieli angielskiego / edukacyjne — NAJWYZSZA konwersja
+               organiczna w niszy ESL. Publikuj z krotkim opisem, bez spamu.
+[FB-CROSS-IG]  Automatyczne udostepnianie do Instagram Reels z Meta Business Suite
+               (jeden upload, dwa kanaly).
+[IG-REELS]     Instagram Reels + Explore — zasieg poza obserwujacymi.
+[IG-STORIES]   Relacje IG + zapis do Wyroznionych (Highlights) jako stala wizytowka.
+[FB-ADS]       Opcjonalnie promocja platna (Advantage+ placements: Reels, Feed,
+               Stories). Rekomendowany budzet testowy 20-40 zl/dzien na 1 rolke.
+
+ZASADY OGOLNE
+--------------------------------------------------------------------------------
+- Muzyka jest wbudowana w plik. Na IG mozesz sciszyc oryginal i dodac trending audio
+  (wtedy zasieg czesto rosnie, ale napisy pozostaja czytelne).
+- Wlacz automatyczne napisy Meta jako uzupelnienie — wideo ma juz hasla na ekranie.
+- Link w opisie na FB, na IG link w bio lub naklejka w Stories.
+- Publikuj 1 rolke dziennie, nie wszystkie naraz.
+- Pierwsze 3 sekundy to hook — nie przycinaj poczatku przy uploadzie.
+
+================================================================================
+ROLKA 1 — fbig-v3-01-lekcja-w-30-sekund.mp4
+Temat: brak czasu na przygotowania -> gotowa lekcja w 30 sekund
+================================================================================
+Hasla na ekranie:
+  1. "Nie masz czasu na przygotowania?"
+  2. "30s — tyle wystarczy na start"
+  3. "ZERO DRUKOWANIA"
+  4. "Wklej. Wybierz. Uczniowie graja."
+  5. "LEKCJA GOTOWA — lingospark.study"
+
+Opis FB:
+Przygotowanie lekcji ze slownictwa w 30 sekund. Bez drukowania, bez kart pracy.
+Wklejasz liste slowek z podrecznika, wybierasz gre i uczniowie juz cwicza.
+Gry slownictwa sa darmowe na zawsze.
+lingospark.study
+
+Opis IG:
+Lekcja gotowa w 30 sekund.
+Wklej slowka. Wybierz gre. Uczniowie graja.
+Bez drukowania. Bez oplat.
+Link w bio: lingospark.study
+
+Hashtagi:
+#nauczycielangielskiego #angielski #esl #edtech #lekcjaangielskiego #szkola
+#pomocedydaktyczne #nauczyciel #lingospark
+
+Kanaly FB (zasieg):
+  [FB-REELS] priorytet 1 — hook nauczycielski dziala najlepiej w Reels
+  [FB-GROUPS] priorytet 2 — grupy nauczycieli angielskiego, najwyzsza konwersja
+  [FB-FEED] priorytet 3
+  [FB-CROSS-IG] tak -> [IG-REELS]
+  [FB-ADS] TAK — to najlepszy kandydat na promocje platna (cel: ruch na strone)
+
+================================================================================
+ROLKA 2 — fbig-v3-02-nudne-na-genialne.mp4
+Temat: Boring to Brilliant — transformacja zdania (przed / po)
+================================================================================
+Hasla na ekranie:
+  1. "Z nudnego na genialne"
+  2. "PRZED: nice ... big" (przekreslone)
+  3. "PO: delightful ... vast"
+  4. "Ten sam sens, bogatsze slowa"
+  5. "BRILLIANT +20 PKT — AI sprawdza sens i poziom"
+
+Opis FB:
+Uczen wpisuje dwa lepsze slowa, a AI sprawdza nie tylko synonim, ale tez sens
+i poziom CEFR. Slowa do zamiany to nie tylko przymiotniki — moga byc czasowniki,
+przyslowki i rzeczowniki. Poziomy A1, A2, B1 albo wlasna lista slowek.
+lingospark.study
+
+Opis IG:
+nice -> delightful
+big -> vast
+Ten sam sens. Lepszy angielski.
+AI sprawdza poziom i naturalnosc zdania.
+lingospark.study
+
+Hashtagi:
+#slownictwo #vocabulary #angielskidlaDzieci #primaryenglish #ai #naukaangielskiego
+#cefr #lingospark #writing
+
+Kanaly FB (zasieg):
+  [FB-REELS] priorytet 1 — efekt "przed/po" ma wysoki wskaznik dotrwania
+  [FB-FEED] priorytet 2 — dobre pod komentarze i zapisy
+  [FB-GROUPS] priorytet 3
+  [FB-CROSS-IG] tak -> [IG-REELS]
+  [IG-STORIES] tak — dodaj do Highlights "Writing"
+
+================================================================================
+ROLKA 3 — fbig-v3-03-pojedynek-na-slowka.mp4
+Temat: Grid Territory — rywalizacja dwoch zespolow
+================================================================================
+Hasla na ekranie:
+  1. "Pojedynek na slowka"
+  2. "Zespol 1 / Zespol 2" (licznik pol)
+  3. "Zdobadz pole — odpowiedz poprawnie"
+  4. "POLE ZDOBYTE"
+  5. "Solo z botem albo dwa zespoly"
+
+Opis FB:
+Kolko i krzyzyk, ale zeby zajac pole trzeba poprawnie odpowiedziec na slowko.
+Dziala solo przeciwko botowi i w trybie dwoch zespolow na lekcji.
+Darmowe, bez rejestracji.
+lingospark.study
+
+Opis IG:
+Kolko i krzyzyk na slowka.
+Chcesz pole? Najpierw poprawna odpowiedz.
+Solo albo dwa zespoly.
+lingospark.study
+
+Hashtagi:
+#gryedukacyjne #angielski #rywalizacja #klasa #esl #vocabulary #lekcja
+#lingospark #gamification
+
+Kanaly FB (zasieg):
+  [FB-REELS] priorytet 1 — dynamika gry trzyma uwage
+  [FB-GROUPS] priorytet 2 — grupy o grach na lekcji / aktywizacja uczniow
+  [FB-STORIES] priorytet 3 — z naklejka ankiety "kto by wygral?"
+  [FB-CROSS-IG] tak -> [IG-REELS]
+
+================================================================================
+ROLKA 4 — fbig-v3-04-cala-klasa-gra.mp4
+Temat: Team Challenge na projektorze — cala klasa jednoczesnie
+================================================================================
+Hasla na ekranie:
+  1. "Cala klasa gra naraz"
+  2. Kafelki liter zmieniajace kolor (Wordle)
+  3. "Kolory podpowiadaja, co juz wiesz"
+  4. "Zespol A / B / C" z licznikami punktow
+  5. "Vocab i Team Challenge — FREE FOREVER"
+
+Opis FB:
+Masz projektor lub tablice interaktywna? Wlacz Team Challenge i cala klasa gra
+jednoczesnie: Wordle, Sentence Scramble, Word Chain, Quintagrams.
+Ta sekcja jest darmowa na zawsze.
+lingospark.study
+
+Opis IG:
+Jedna tablica, cala klasa w grze.
+Wordle, Scramble, Word Chain, Quintagrams.
+Free forever.
+lingospark.study
+
+Hashtagi:
+#tablicainteraktywna #klasa #teamchallenge #wordle #angielskiwszkole #nauczyciel
+#edtech #lingospark #freeforever
+
+Kanaly FB (zasieg):
+  [FB-GROUPS] priorytet 1 — tresc czysto nauczycielska, tu ma najlepszy zasieg
+  [FB-REELS] priorytet 2
+  [FB-FEED] priorytet 3
+  [FB-CROSS-IG] tak -> [IG-REELS]
+  [FB-ADS] opcjonalnie — targetowanie: nauczyciele, edukacja, Polska
+
+================================================================================
+ROLKA 5 — fbig-v3-05-zapisz-postep.mp4
+Temat: NOWOSC — konta, zapisane zestawy slowek i sledzenie postepu
+================================================================================
+Hasla na ekranie:
+  1. "Twoje zestawy i postep — zapisane"
+  2. Paski opanowania slowek rosnace do 100%
+  3. "ZAPISANE NA KONCIE — wracasz i kontynuujesz"
+  4. "Moj postep: 128 opanowanych slow, 43 gry, 6 zestawow"
+  5. "KONTO ZA DARMO — lingospark.study"
+
+Opis FB:
+Nowosc w LingoSpark: zapisujesz wlasne zestawy slowek i widzisz swoj postep we
+wszystkich grach. Konto, zestawy i statystyki sa darmowe — bez karty, bez oplat.
+Mozesz tez grac bez logowania, ale wtedy wyniki nie zostaja zapisane.
+lingospark.study
+
+Opis IG:
+Nowosc: konto z zapisanymi zestawami slowek i postepem.
+Widzisz, ile naprawde umiesz.
+Za darmo.
+lingospark.study
+
+Hashtagi:
+#nowosc #naukaangielskiego #postep #slownictwo #motywacja #esl #aplikacja
+#lingospark #darmowe
+
+Kanaly FB (zasieg):
+  [FB-REELS] priorytet 1 — komunikat "nowa funkcja" dobrze sie roznosi
+  [FB-FEED] priorytet 1 — wazne dla obecnych uzytkownikow (ogloszenie)
+  [FB-STORIES] priorytet 2 — naklejka z linkiem prosto do rejestracji
+  [FB-GROUPS] priorytet 3 — tylko tam, gdzie regulamin pozwala na ogloszenia
+  [FB-CROSS-IG] tak -> [IG-REELS] + [IG-STORIES] -> Highlights "Nowosci"
+
+================================================================================
+ROLKA 6 — fbig-v3-06-co-jest-darmowe.mp4
+Temat: jasny podzial darmowe vs AI Writing
+================================================================================
+Hasla na ekranie:
+  1. "Co dostajesz za darmo?"
+  2. "ZA DARMO — 0 zl: gry slownictwa, gry dla klasy, konto i zestawy, postep"
+  3. "AI WRITING — od 10 zl/tydz.: Writing Suite, Primary English, egzamin, feedback AI"
+  4. "Vocab i klasa zostaja FREE FOREVER"
+  5. "Bez rejestracji mozesz zagrac od razu"
+
+Opis FB:
+Zeby bylo jasno: gry slownictwa, gry dla calej klasy, konto, zapisane zestawy
+i sledzenie postepu sa darmowe na zawsze. Placisz tylko za AI do pisania
+(Writing Suite i Primary English) — od 10 zl za tydzien.
+lingospark.study
+
+Opis IG:
+Darmowe: gry slownictwa, gry dla klasy, konto, postep.
+Platne: tylko AI do pisania, od 10 zl/tydz.
+Zero ukrytych oplat.
+lingospark.study
+
+Hashtagi:
+#darmowe #freeforever #cennik #angielski #esl #ai #writing #edtech #lingospark
+
+Kanaly FB (zasieg):
+  [FB-FEED] priorytet 1 — tresc informacyjna, dziala najlepiej na tablicy strony
+  [FB-REELS] priorytet 2
+  [FB-GROUPS] priorytet 3 — jako odpowiedz na czeste pytanie "czy to darmowe?"
+  [FB-CROSS-IG] tak -> [IG-REELS]
+  [IG-STORIES] tak -> Highlights "Cennik"
+
+================================================================================
+HARMONOGRAM 6 DNI (maksymalny zasieg)
+================================================================================
+Dzien 1  ROLKA 1 (lekcja w 30s)     [FB-REELS] + [FB-GROUPS] + [IG-REELS]
+Dzien 2  ROLKA 3 (pojedynek)        [FB-REELS] + [FB-STORIES] + [IG-REELS]
+Dzien 3  ROLKA 2 (nudne->genialne)  [FB-REELS] + [FB-FEED] + [IG-REELS]
+Dzien 4  ROLKA 4 (cala klasa)       [FB-GROUPS] + [FB-REELS] + [IG-REELS]
+Dzien 5  ROLKA 5 (zapisz postep)    [FB-REELS] + [FB-FEED] + [FB-STORIES] + [IG]
+Dzien 6  ROLKA 6 (co darmowe)       [FB-FEED] + [FB-REELS] + [IG-REELS]
+
+Po 7 dniach: najlepsza rolka (najwyzszy czas odtworzenia) -> [FB-ADS], budzet
+testowy 20-40 zl/dzien, cel "Ruch" lub "Konwersje", placement Advantage+.
+
+================================================================================
+TEKSTY NA STORIES (krotka nakladka + naklejka z linkiem)
+================================================================================
+1. "Lekcja gotowa w 30 sekund"
+2. "nice -> delightful"
+3. "Kto zdobedzie wiecej pol?"
+4. "Cala klasa gra naraz"
+5. "Twoj postep zapisany"
+6. "Co jest darmowe? Sprawdz"

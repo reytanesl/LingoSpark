@@ -1,0 +1,148 @@
+================================================================================
+LingoSpark — Pakiet rolek FB & IG (PL)
+Format: 1080×1920 (9:16), 14 s, 30 fps, napisy PL + muzyka (oryginalny upbeat BGM)
+Pliki wideo: shorts/fb-ig-01-*.mp4 … fb-ig-05-*.mp4
+Generator: python shorts/make_fb_ig_reels.py
+================================================================================
+
+OGÓLNE WSKAZÓWKI PUBLIKACJI
+--------------------------------------------------------------------------------
+• FB Reels + IG Reels: ten sam plik wideo, różny opis (poniżej).
+• Dodaj napisy natywne w Meta (auto-captions) jako backup — wideo ma już hasła na ekranie.
+• Muzyka: wbudowana w plik (royalty-free synth). Możesz w IG wyciszyć i dodać trend audio — wtedy ustaw oryginalną ścieżkę cicho.
+• CTA zawsze: lingospark.study
+• Hashtagi: 5–8 na FB, 8–12 na IG (mix PL + EN).
+
+================================================================================
+REEL 1 — fb-ig-01-angielski-bez-nudy.mp4
+================================================================================
+Hasła na ekranie:
+  • Angielski bez nudy!
+  • Gry słownictwa FREE FOREVER · Gry na tablicę · AI Writing Suite
+  • ZACZNIJ DZIŚ — lingospark.study
+
+Opis FB:
+Angielski bez nudy — naprawdę! 🚀
+LingoSpark to darmowe gry słownictwa, wyzwania na tablicę i AI do ćwiczenia pisania.
+Wklej listę słówek z lekcji i graj od razu.
+👉 lingospark.study
+
+Opis IG:
+Angielski bez nudy ✨
+🆓 Vocab FREE FOREVER
+🎮 Team Challenge na lekcję
+🤖 AI Writing Suite
+Link w bio → lingospark.study
+
+Hashtagi:
+#angielski #naukaangielskiego #esl #edtech #nauczycielangielskiego #uczęsięangielskiego #lingospark #gryedukacyjne #freeforever
+
+================================================================================
+REEL 2 — fb-ig-02-wklej-slownictwo.mp4
+================================================================================
+Hasła na ekranie:
+  • Wklej listę słówek → graj!
+  • Gotowe w 10 sekund
+  • Fiszki · Bomba · Grid · Aukcja
+
+Opis FB:
+Zero przygotowań dla Ciebie i ucznia 📋
+Wklej glossary z lekcji → od razu Fiszki, Bomba słownictwa, Grid Territory lub Aukcja.
+Vocab Review = FREE FOREVER.
+👉 lingospark.study
+
+Opis IG:
+Wklej słówka. Graj. 🔥
+10 sekund i lecisz z fiszkami albo bombą słownictwa.
+Za darmo. Na zawsze.
+lingospark.study
+
+Hashtagi:
+#slownictwo #flashcards #vocabulary #angielskizawodowo #szkoła #lekcjaangielskiego #lingospark #gamification
+
+================================================================================
+REEL 3 — fb-ig-03-bomba-slownictwa.mp4
+================================================================================
+Hasła na ekranie:
+  • Rozbroj bombę słownictwa!
+  • Presja czasu · +5s za poprawną odpowiedź
+  • Idealne przed sprawdzianem
+
+Opis FB:
+60 sekund. Presja. Adrenalina. 💣
+Vocabulary Bomb Defusal — uczniowie wpisują słowo do definicji, a timer tyka.
+Świetne przed kartkówką!
+👉 lingospark.study
+
+Opis IG:
+Rozbroj bombę zanim wybuchnie ⏱️💣
+Vocab Bomb Defusal w LingoSpark — szybka powtórka przed testem.
+lingospark.study
+
+Hashtagi:
+#bomba #timergame #vocab #sprawdzian #powtórka #angielski #lingospark #englishteacher
+
+================================================================================
+REEL 4 — fb-ig-04-klasa-tablica.mp4
+================================================================================
+Hasła na ekranie:
+  • Gry na tablicę i projektor
+  • Wordle · Scramble · Word Chain · Quintagrams
+  • Vocab + Team = FREE FOREVER
+
+Opis FB:
+Masz projektor? Masz grę. 👥
+Team Challenge: Wordle, Sentence Scramble, Word Chain i więcej — idealne na lekcję stacjonarną.
+Cała sekcja Vocab + Team = FREE FOREVER.
+👉 lingospark.study
+
+Opis IG:
+Lekcja stacjonarna? Niech tablica żyje 🎯
+Team Challenge w LingoSpark — gry dla całej klasy.
+lingospark.study
+
+Hashtagi:
+#teamchallenge #wordle #classroom #nauczyciel #tablica #interaktywna #lingospark #englishclass
+
+================================================================================
+REEL 5 — fb-ig-05-ai-pisanie.mp4
+================================================================================
+Hasła na ekranie:
+  • Writing Suite + AI — feedback od razu
+  • Boring→Brilliant · Detail Detective · Frankenstein · Exam Simulator
+  • Writing od 10 zł/tydz. · Reszta FREE FOREVER
+
+Opis FB:
+Pisanie po angielsku z AI — bez czekania na sprawdzenie ✍️🤖
+Boring to Brilliant, Detail Detective, Frankenstein Builder, Exam Simulator.
+Writing Suite od 10 zł/tydz. Reszta platformy — za darmo na zawsze.
+👉 lingospark.study
+
+Opis IG:
+AI sprawdza pisanie w sekundę ✉️✨
+Primary English + Writing Suite — ćwicz w domu i na lekcji.
+☕ od 10 zł/tydz. · reszta FREE FOREVER
+lingospark.study
+
+Hashtagi:
+#ai #pisanie #writing #egzamin #esej #primaryenglish #lingospark #edtech #angielski
+
+================================================================================
+HARMONOGRAM SUGEROWANY (5 dni)
+================================================================================
+Dzień 1: Reel 1 (overview) — FB + IG
+Dzień 2: Reel 2 (wklej słówka)
+Dzień 3: Reel 3 (bomba)
+Dzień 4: Reel 4 (klasa)
+Dzień 5: Reel 5 (AI pisanie)
+
+Powtórka najlepszej rolki po 7 dniach na Stories z linkiem.
+
+================================================================================
+STORIES — teksty nakładki (krótkie)
+================================================================================
+1. „Angielski bez nudy → lingospark.study”
+2. „Wklej słówka. Graj. Za darmo.”
+3. „Bomba słownictwa ⏱️”
+4. „Gry na tablicę 👥”
+5. „AI + pisanie ✍️”
