@@ -76,7 +76,7 @@ app.post(
     }
 );
 
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 async function start() {
@@ -496,6 +496,110 @@ async function start() {
         } catch (error) {
             console.error('Generation error:', error);
             res.status(500).json({ error: error.message || 'Failed to generate content' });
+        }
+    });
+
+    /**
+     * Matura Writing Assessment — accepts essay images (and optional typed text)
+     * plus the exam task, then returns structured criteria feedback.
+     */
+    app.post('/api/assess-writing', requireWritingAccess, async (req, res) => {
+        const task = (req.body?.task || '').trim();
+        const essayText = (req.body?.essayText || '').trim();
+        const images = Array.isArray(req.body?.images) ? req.body.images : [];
+
+        if (!task) {
+            return res.status(400).json({ error: 'Writing task is required.' });
+        }
+        if (!essayText && images.length === 0) {
+            return res.status(400).json({ error: 'Upload at least one image/PDF page or paste the essay text.' });
+        }
+
+        const apiKey = process.env.CURSOR_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+        }
+
+        let cleanImages;
+        try {
+            cleanImages = images.slice(0, 5).map((img) => {
+                const mimeType = String(img?.mimeType || 'image/png');
+                if (!/^image\/(png|jpeg|jpg|gif|webp)$/i.test(mimeType)) {
+                    throw new Error('Unsupported image type. Use PNG, JPEG, GIF or WebP (PDF pages are converted client-side).');
+                }
+                let data = String(img?.data || '');
+                const comma = data.indexOf(',');
+                if (data.startsWith('data:') && comma !== -1) data = data.slice(comma + 1);
+                if (!data || data.length > 20_000_000) throw new Error('Image payload too large.');
+                return { data, mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType };
+            });
+        } catch (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        const prompt = `You are an official-style examiner for the Polish Matura z języka angielskiego — poziom ROZSZERZONY (extended), część pisemna (wypowiedź pisemna).
+
+WRITING TASK GIVEN TO THE STUDENT:
+"""
+${task}
+"""
+
+${essayText ? `TRANSCRIBED / TYPED ESSAY TEXT (may be incomplete — also use any attached images of the handwritten or printed essay):\n"""\n${essayText}\n"""` : 'No typed transcript was provided. Read the essay from the attached image(s) of the handwritten or printed work.'}
+
+Assess the essay using the official Matura rozszerzona writing criteria (total 13 points):
+1) Treść / Content (0–5): Are all required content points from the task covered fully, partially, or missing? Are ideas relevant and developed?
+2) Spójność i logika wypowiedzi / Coherence & cohesion (0–2): Logical organisation, paragraphing, linking devices, clarity of argument.
+3) Zakres środków językowych / Range (0–3): Variety and appropriateness of vocabulary and structures for B2+/C1 school-leaving level.
+4) Poprawność środków językowych / Accuracy (0–3): Grammar, spelling, punctuation — weigh errors against communication success.
+
+Rules:
+- Be fair, specific and constructive. Quote short snippets from the essay when commenting.
+- If handwriting is partly illegible, note uncertainty but still assess what is readable.
+- Do NOT invent content that is not in the essay.
+- Scores must be integers within each band's max.
+- Write feedback in clear English (students learn English). You may add a short Polish summary line per criterion if helpful.
+
+Return ONLY valid JSON (no markdown fences):
+{
+  "transcribedEssay": "full best-effort transcription of the essay from images+text",
+  "wordCount": 0,
+  "overallComment": "2–4 sentence holistic summary",
+  "totalScore": 0,
+  "maxScore": 13,
+  "criteria": [
+    { "id": "content", "name": "Content (Treść)", "score": 0, "max": 5, "comment": "detailed comment", "strengths": ["..."], "improvements": ["..."] },
+    { "id": "coherence", "name": "Coherence & cohesion (Spójność i logika)", "score": 0, "max": 2, "comment": "...", "strengths": ["..."], "improvements": ["..."] },
+    { "id": "range", "name": "Range (Zakres środków językowych)", "score": 0, "max": 3, "comment": "...", "strengths": ["..."], "improvements": ["..."] },
+    { "id": "accuracy", "name": "Accuracy (Poprawność środków językowych)", "score": 0, "max": 3, "comment": "...", "strengths": ["..."], "improvements": ["..."] }
+  ],
+  "strengths": ["3–5 overall strengths"],
+  "improvements": ["3–5 prioritised next steps"],
+  "suggestedRewrite": "optional short improved paragraph or opening (or empty string)"
+}`;
+
+        try {
+            await using agent = await Agent.create({
+                apiKey,
+                model: { id: 'composer-2.5' },
+                local: { cwd: __dirname },
+            });
+
+            const run = await agent.send({
+                text: `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation.`,
+                images: cleanImages,
+            });
+            const result = await run.wait();
+
+            if (result.status !== 'finished' || !result.result) {
+                const message = result.error?.message || 'Cursor AI assessment failed';
+                return res.status(500).json({ error: message });
+            }
+
+            const parsed = extractJson(result.result);
+            res.json(parsed);
+        } catch (error) {
+            console.error('Assess-writing error:', error);
+            res.status(500).json({ error: error.message || 'Failed to assess writing' });
         }
     });
 

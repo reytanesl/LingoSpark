@@ -674,7 +674,7 @@ export async function loadWordSetForGame(setId, userId) {
 const VALID_GAME_KEYS = new Set([
     'flashcards', 'bomb', 'grid', 'odyssey', 'mission', 'auction',
     'pe_boring', 'pe_detail', 'pe_link', 'pe_exam',
-    'frank', 'trans', 'devil', 'bloat', 'vocab_upgrade',
+    'frank', 'trans', 'devil', 'bloat', 'vocab_upgrade', 'matura',
 ]);
 
 export async function recordGameSession(userId, { gameKey, wordSetId, score = 0, pointsEarned = 0, durationMs = 0, wordsTotal = 0, wordsMastered = 0, result = null }) {

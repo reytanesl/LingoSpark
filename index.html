@@ -15,6 +15,7 @@
     
     <!-- FontAwesome for sleek icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
     
     <style>
         /* British Style, Bright Theme & Custom Fonts */
@@ -570,6 +571,62 @@
         }
         .mission-win-banner.visible { display: block; }
         .mission-win-banner h3 { font-family: var(--font-primary); color: var(--success-green); margin: 0 0 0.4rem; }
+        .mission-feedback-panel {
+            display: none; margin: 0 0 1.25rem; background: var(--bright-white);
+            border: 2px solid var(--royal-blue); border-radius: 12px; padding: 1.25rem 1.4rem;
+        }
+        .mission-feedback-panel.visible { display: block; }
+        .mission-feedback-panel h3 {
+            font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.75rem; font-size: 1.15rem;
+        }
+        .mission-feedback-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; }
+        @media (max-width: 700px) { .mission-feedback-cols { grid-template-columns: 1fr; } }
+        .mission-feedback-col h4 {
+            font-family: var(--font-primary); font-size: 0.9rem; margin: 0 0 0.5rem;
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }
+        .mission-feedback-col.strengths h4 { color: var(--success-green); }
+        .mission-feedback-col.improve h4 { color: var(--pillarbox-red); }
+        .mission-feedback-col ul { margin: 0; padding-left: 1.15rem; color: var(--text-dark); }
+        .mission-feedback-col li { margin-bottom: 0.4rem; line-height: 1.45; }
+        .mission-feedback-summary { color: var(--text-dark); line-height: 1.55; margin: 0; font-size: 0.95rem; }
+        .mission-action-row { display: flex; flex-wrap: wrap; gap: 0.65rem; justify-content: center; margin: 0.85rem 0 0.25rem; }
+
+        .matura-upload-zone {
+            border: 2px dashed var(--border-light); border-radius: 12px; padding: 1.5rem; text-align: center;
+            background: var(--light-grey); margin-bottom: 1rem; transition: border-color 0.2s, background 0.2s;
+        }
+        .matura-upload-zone.dragover { border-color: var(--royal-blue); background: rgba(1, 33, 105, 0.06); }
+        .matura-preview-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; margin: 1rem 0;
+        }
+        .matura-preview-item {
+            position: relative; border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden;
+            background: #fff; aspect-ratio: 3/4;
+        }
+        .matura-preview-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .matura-preview-item button {
+            position: absolute; top: 4px; right: 4px; border: none; background: rgba(200, 16, 46, 0.9);
+            color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+        }
+        .matura-criteria-card {
+            background: var(--bright-white); border: 1px solid var(--border-light); border-left: 4px solid var(--royal-blue);
+            border-radius: 10px; padding: 1rem 1.15rem; margin-bottom: 0.85rem;
+        }
+        .matura-criteria-card .crit-head {
+            display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; margin-bottom: 0.45rem;
+        }
+        .matura-criteria-card .crit-head strong { font-family: var(--font-primary); color: var(--royal-blue); }
+        .matura-criteria-card .crit-score {
+            font-family: var(--font-primary); font-weight: 800; color: var(--pillarbox-red); white-space: nowrap;
+        }
+        .matura-score-banner {
+            text-align: center; background: rgba(1, 33, 105, 0.06); border: 2px solid var(--royal-blue);
+            border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;
+        }
+        .matura-score-banner .big {
+            font-family: var(--font-primary); font-size: 2rem; font-weight: 800; color: var(--royal-blue);
+        }
     </style>
 </head>
 <body>
@@ -638,6 +695,8 @@
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
+                <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
+                <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments.</p></div>
             </div>
         </div>
 
@@ -726,7 +785,7 @@
                 <div class="category-header">
                     <i class="fa-solid fa-pen-nib cat-icon"></i><h2>Writing Suite</h2>
                 </div>
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills. <strong>Powered entirely by Cursor AI.</strong></p>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills. <strong>Powered by Cursor AI.</strong></p>
 
                 <!-- Primary English -->
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
@@ -760,7 +819,7 @@
                 <button type="button" class="pe-pack-toggle" id="adv-pack-toggle" onclick="toggleAdvancedEnglishPack()">
                     <span>
                         <i class="fa-solid fa-feather-pointed" style="color: var(--pillarbox-red);"></i> Advanced English
-                        <span class="pe-pack-meta">7 AI essay, writing &amp; speaking tools for academic structure, vocabulary, and fluency</span>
+                        <span class="pe-pack-meta">8 AI essay, writing &amp; speaking tools for academic structure, vocabulary, and fluency</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
@@ -771,7 +830,8 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><button class="btn btn-outline" onclick="goToWritingSetup('bloat')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><button class="btn btn-outline" onclick="goToWritingSetup('vocab')">Play Now</button></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><button class="btn btn-outline" onclick="goToWritingSetup('odyssey')">Play Now</button></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — the AI stays in character and never grades your grammar.</p><button class="btn btn-outline" onclick="goToWritingSetup('mission')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — get strengths &amp; improvement feedback, then export a PDF.</p><button class="btn btn-outline" onclick="goToWritingSetup('mission')">Play Now</button></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-file-pen"></i></div><h2>Matura Writing Assessment</h2><p>Upload a photo or PDF of your essay, paste the exam task, and get detailed Matura rozszerzona criteria feedback.</p><button class="btn btn-outline" onclick="goToWritingSetup('matura')">Assess Now</button></div>
                 </div>
             </div>
 
@@ -1009,7 +1069,7 @@
             <div class="game-header">
                 <h2>Mission: Chat <span class="live-badge">Cursor AI</span></h2>
             </div>
-            <p class="game-desc">Stay in character and achieve your goal. Fluency first — the AI never corrects grammar; it only reacts as its persona.</p>
+            <p class="game-desc">Stay in character and achieve your goal. Fluency first during the chat — afterwards you get strengths &amp; improvement feedback, and you can export a PDF.</p>
 
             <div id="mission-loading" class="loading-spinner" style="display:none;"></div>
             <div id="mission-content">
@@ -1029,7 +1089,31 @@
 
                 <div class="mission-win-banner" id="mission-win-banner">
                     <h3><i class="fa-solid fa-flag-checkered"></i> Mission complete!</h3>
-                    <p style="margin:0; color: var(--text-dark);">You steered the conversation to your goal. Restart the mission, or pick a new one from setup.</p>
+                    <p style="margin:0 0 0.75rem; color: var(--text-dark);">You steered the conversation to your goal. Review your feedback below, export a PDF, or restart.</p>
+                </div>
+
+                <div class="mission-action-row" id="mission-action-row" style="display:none;">
+                    <button type="button" class="btn btn-outline" id="mission-feedback-btn" onclick="requestMissionFeedback()">
+                        <i class="fa-solid fa-comments"></i> Get Feedback
+                    </button>
+                    <button type="button" class="btn btn-blue" id="mission-pdf-btn" onclick="exportMissionPdf()" disabled>
+                        <i class="fa-solid fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+
+                <div class="mission-feedback-panel" id="mission-feedback-panel">
+                    <h3><i class="fa-solid fa-clipboard-check"></i> Speaking Feedback</h3>
+                    <p class="mission-feedback-summary" id="mission-feedback-summary"></p>
+                    <div class="mission-feedback-cols">
+                        <div class="mission-feedback-col strengths">
+                            <h4><i class="fa-solid fa-thumbs-up"></i> Strengths</h4>
+                            <ul id="mission-feedback-strengths"></ul>
+                        </div>
+                        <div class="mission-feedback-col improve">
+                            <h4><i class="fa-solid fa-arrow-trend-up"></i> Room for improvement</h4>
+                            <ul id="mission-feedback-improve"></ul>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mission-chat-log" id="mission-chat-log"></div>
@@ -1044,6 +1128,81 @@
                 </div>
             </div>
             <div id="mission-status" class="feedback"></div>
+        </div>
+
+        <!-- WRITING SUITE: MATURA WRITING ASSESSMENT -->
+        <div id="screen-matura" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-outline" onclick="resetMaturaAssessment()" id="matura-btn"><i class="fa-solid fa-rotate"></i> New Assessment</button>
+            </div>
+            <div class="game-header">
+                <h2>Matura Writing Assessment <span class="live-badge">Cursor AI</span></h2>
+            </div>
+            <p class="game-desc">Upload a photo or PDF of a handwritten or printed essay, paste the exam task, and receive detailed Matura rozszerzona criteria feedback.</p>
+
+            <div id="matura-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="matura-content">
+                <div class="form-group">
+                    <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-list-check"></i> Writing task</label>
+                    <textarea id="matura-task" rows="4" placeholder="Paste the full Matura writing task / polecenie (e.g. article, essay, formal letter)…" style="width:100%;padding:0.85rem 1rem;border:2px solid var(--border-light);border-radius:8px;font-family:var(--font-secondary);font-size:1rem;resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-image"></i> Essay photo or PDF</label>
+                    <div class="matura-upload-zone" id="matura-dropzone">
+                        <p style="margin:0 0 0.75rem;color:var(--text-dark);font-weight:600;">Drag &amp; drop images or a PDF here</p>
+                        <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--text-muted);">JPG, PNG, WebP or PDF (up to 5 pages). Handwritten and printed essays both work.</p>
+                        <input type="file" id="matura-file-input" accept="image/*,application/pdf" multiple style="display:none;" onchange="handleMaturaFiles(event)">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('matura-file-input').click()">
+                            <i class="fa-solid fa-upload"></i> Choose files
+                        </button>
+                    </div>
+                    <div class="matura-preview-grid" id="matura-preview-grid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-keyboard"></i> Optional typed transcript</label>
+                    <textarea id="matura-essay-text" rows="5" placeholder="Optional: paste or type the essay text (helps if handwriting is unclear)…" style="width:100%;padding:0.85rem 1rem;border:2px solid var(--border-light);border-radius:8px;font-family:var(--font-secondary);font-size:1rem;resize:vertical;"></textarea>
+                </div>
+
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" id="matura-assess-btn" onclick="runMaturaAssessment()">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Assess with Matura criteria
+                </button>
+
+                <div id="matura-result" style="display:none;margin-top:1.75rem;">
+                    <div class="matura-score-banner">
+                        <div style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);font-weight:700;">Total score</div>
+                        <div class="big" id="matura-total-score">0 / 13</div>
+                        <p id="matura-overall" style="margin:0.5rem 0 0;color:var(--text-dark);"></p>
+                    </div>
+                    <div id="matura-criteria-list"></div>
+                    <div class="mission-feedback-cols" style="margin:1rem 0;">
+                        <div class="mission-feedback-col strengths">
+                            <h4><i class="fa-solid fa-thumbs-up"></i> Strengths</h4>
+                            <ul id="matura-strengths"></ul>
+                        </div>
+                        <div class="mission-feedback-col improve">
+                            <h4><i class="fa-solid fa-arrow-trend-up"></i> Room for improvement</h4>
+                            <ul id="matura-improvements"></ul>
+                        </div>
+                    </div>
+                    <div id="matura-rewrite-wrap" style="display:none;margin-bottom:1rem;">
+                        <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Suggested rewrite (sample)</h4>
+                        <div class="pe-prompt-box" id="matura-rewrite" style="white-space:pre-wrap;"></div>
+                    </div>
+                    <div id="matura-transcript-wrap" style="display:none;margin-bottom:1rem;">
+                        <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Transcript used for assessment</h4>
+                        <div class="pe-prompt-box" id="matura-transcript" style="white-space:pre-wrap;font-size:0.95rem;"></div>
+                    </div>
+                    <div class="mission-action-row">
+                        <button type="button" class="btn btn-blue" onclick="exportMaturaPdf()">
+                            <i class="fa-solid fa-file-pdf"></i> Export PDF report
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="matura-status" class="feedback"></div>
         </div>
 
         <!-- PRIMARY ENGLISH: BORING TO BRILLIANT -->
@@ -1488,7 +1647,7 @@
                     const gameNames = {
                         flashcards: 'Flashcards', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator',
-                        frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade'
+                        frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing'
                     };
                     for (const t of data.gameTotals) {
                         html += `<div class="progress-tile"><h4>${gameNames[t.game_key] || t.game_key}</h4><div class="pt-val">${t.sessions_count}</div><div class="pt-label">sessions · ${t.total_points} pts · best ${t.best_score}</div></div>`;
@@ -1509,7 +1668,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade' };
+                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -2047,7 +2206,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'bomb', 'grid'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -2059,7 +2218,10 @@
             document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
 
             if (gameType === 'mission') renderMissionPicker();
-            
+            if (gameType === 'matura') {
+                document.getElementById('setup-title').innerText = 'Matura Writing Assessment';
+            }
+
             showScreen('setup');
         }
 
@@ -2123,6 +2285,7 @@
             if(activeGame === 'vocab') initVocab();
             if(activeGame === 'odyssey') initOdyssey();
             if(activeGame === 'mission') initMissionChat();
+            if(activeGame === 'matura') initMaturaAssessment();
             if(activeGame === 'pe-boring') initPeBoring();
             if(activeGame === 'pe-detail') initPeDetail();
             if(activeGame === 'pe-link') initPeLink();
@@ -2984,6 +3147,7 @@ Return ONLY JSON:
 
         let selectedMissionId = 'hotel-suite';
         let missionState = null;
+        let missionFeedback = null;
 
         function renderMissionPicker() {
             const picker = document.getElementById('mission-picker');
@@ -3065,6 +3229,13 @@ Return ONLY JSON:
             document.getElementById('mission-win-banner').classList.toggle('visible', missionState.won);
             document.getElementById('mission-compose').style.opacity = missionState.won ? '0.55' : '1';
             document.getElementById('mission-submit-btn').disabled = missionState.won;
+            const actionRow = document.getElementById('mission-action-row');
+            if (actionRow) {
+                const showActions = missionState.turns >= 2 || missionState.won;
+                actionRow.style.display = showActions ? 'flex' : 'none';
+            }
+            const pdfBtn = document.getElementById('mission-pdf-btn');
+            if (pdfBtn) pdfBtn.disabled = !(missionFeedback || missionState.won || missionState.turns >= 2);
         }
 
         function renderMissionChat() {
@@ -3116,10 +3287,14 @@ FLUENCY-FIRST RULES (critical):
                 won: false,
                 messages: []
             };
+            missionFeedback = null;
 
             document.getElementById('mission-input').value = '';
             document.getElementById('mission-status').textContent = '';
             document.getElementById('mission-win-banner').classList.remove('visible');
+            document.getElementById('mission-feedback-panel').classList.remove('visible');
+            document.getElementById('mission-action-row').style.display = 'none';
+            document.getElementById('mission-pdf-btn').disabled = true;
             renderMissionHud();
             renderMissionChat();
             setMissionLoading(true);
@@ -3225,10 +3400,411 @@ Return ONLY JSON:
                 document.getElementById('mission-status').textContent = 'Mission complete — pragmatic success!';
                 incrementGameCount();
                 recordGameSessionApi('mission', { score: 100, pointsEarned: 50 });
+                requestMissionFeedback();
             }
 
             renderMissionHud();
             renderMissionChat();
+        }
+
+        function renderMissionFeedback(fb) {
+            missionFeedback = fb;
+            const panel = document.getElementById('mission-feedback-panel');
+            panel.classList.add('visible');
+            document.getElementById('mission-feedback-summary').textContent = fb.summary || '';
+            document.getElementById('mission-feedback-strengths').innerHTML =
+                (fb.strengths || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>Keep practising!</li>';
+            document.getElementById('mission-feedback-improve').innerHTML =
+                (fb.improvements || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>Try a longer exchange next time.</li>';
+            document.getElementById('mission-pdf-btn').disabled = false;
+            document.getElementById('mission-action-row').style.display = 'flex';
+        }
+
+        async function requestMissionFeedback() {
+            if (!missionState || missionState.turns < 1) {
+                document.getElementById('mission-status').className = 'feedback error';
+                document.getElementById('mission-status').textContent = 'Have a short conversation first, then request feedback.';
+                return;
+            }
+
+            const btn = document.getElementById('mission-feedback-btn');
+            if (btn) btn.disabled = true;
+            setMissionLoading(true);
+            document.getElementById('mission-status').textContent = '';
+
+            const history = missionState.messages
+                .filter(m => m.role !== 'system')
+                .map(m => `${m.role === 'user' ? 'Student' : 'NPC'}: ${m.text}`)
+                .join('\n');
+
+            const prompt = `You are a supportive English speaking coach (CEFR A2–B2). Review this roleplay AFTER the chat.
+Do NOT rewrite the whole dialogue. Give concise, encouraging, practical feedback.
+
+Mission title: ${missionState.mission.title}
+Student role: ${missionState.mission.studentRole}
+Goal: ${missionState.mission.goal}
+Language focus: ${missionState.mission.focusHint || 'general conversational English'}
+Goal achieved: ${missionState.won ? 'yes' : 'not yet'}
+Progress: ${Math.round(missionState.progress)}%
+
+Transcript:
+${history}
+
+Return ONLY JSON:
+{
+  "summary": "2–3 sentences on overall communicative success",
+  "strengths": ["3–5 specific strengths with brief examples from their lines"],
+  "improvements": ["3–5 concrete next steps — soft phrasing tips, useful phrases, politeness, persuasion strategies — NOT a full grammar lecture"]
+}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            setMissionLoading(false);
+            if (btn) btn.disabled = false;
+
+            if (!data || data.__error || !Array.isArray(data.strengths)) {
+                document.getElementById('mission-status').className = 'feedback error';
+                document.getElementById('mission-status').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            renderMissionFeedback(data);
+            document.getElementById('mission-status').className = 'feedback success';
+            document.getElementById('mission-status').textContent = 'Feedback ready — you can also export a PDF.';
+        }
+
+        function exportMissionPdf() {
+            if (!missionState) return;
+            const jspdfNS = window.jspdf;
+            if (!jspdfNS || !jspdfNS.jsPDF) {
+                alert('PDF library is still loading. Try again in a second.');
+                return;
+            }
+            const { jsPDF } = jspdfNS;
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const margin = 48;
+            const pageW = doc.internal.pageSize.getWidth();
+            const maxW = pageW - margin * 2;
+            let y = margin;
+
+            const addLine = (text, opts = {}) => {
+                const size = opts.size || 11;
+                const bold = opts.bold || false;
+                doc.setFont('helvetica', bold ? 'bold' : 'normal');
+                doc.setFontSize(size);
+                const lines = doc.splitTextToSize(String(text || ''), maxW);
+                for (const line of lines) {
+                    if (y > doc.internal.pageSize.getHeight() - margin) {
+                        doc.addPage();
+                        y = margin;
+                    }
+                    doc.text(line, margin, y);
+                    y += size + 4;
+                }
+                if (opts.gap) y += opts.gap;
+            };
+
+            addLine('LingoSpark — Mission: Chat Report', { size: 16, bold: true, gap: 6 });
+            addLine(`Mission: ${missionState.mission.title}`, { bold: true });
+            addLine(`Goal: ${missionState.mission.goal}`);
+            addLine(`You: ${missionState.mission.studentRole}`);
+            addLine(`Partner: ${missionState.mission.persona}`);
+            addLine(`Result: ${missionState.won ? 'Goal achieved' : 'In progress'} (${Math.round(missionState.progress)}%)`, { gap: 10 });
+
+            if (missionFeedback) {
+                addLine('Feedback summary', { size: 13, bold: true, gap: 4 });
+                addLine(missionFeedback.summary || '', { gap: 8 });
+                addLine('Strengths', { size: 12, bold: true, gap: 4 });
+                (missionFeedback.strengths || []).forEach((s, i) => addLine(`${i + 1}. ${s}`));
+                y += 6;
+                addLine('Room for improvement', { size: 12, bold: true, gap: 4 });
+                (missionFeedback.improvements || []).forEach((s, i) => addLine(`${i + 1}. ${s}`));
+                y += 10;
+            } else {
+                addLine('No coach feedback generated yet — open Get Feedback in the app for a full report.', { gap: 10 });
+            }
+
+            addLine('Conversation transcript', { size: 13, bold: true, gap: 4 });
+            missionState.messages.filter(m => m.role !== 'system').forEach(m => {
+                const who = m.role === 'user' ? 'You' : 'Partner';
+                addLine(`${who}: ${m.text}`, { gap: 4 });
+            });
+
+            const safe = (missionState.mission.title || 'mission').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+            doc.save(`lingospark-mission-${safe}.pdf`);
+        }
+
+        // ==========================================
+        // MATURA WRITING ASSESSMENT
+        // ==========================================
+        let maturaImages = []; // { dataUrl, mimeType }
+        let maturaResult = null;
+
+        function initMaturaAssessment() {
+            resetMaturaAssessment();
+            setupMaturaDropzone();
+        }
+
+        function resetMaturaAssessment() {
+            maturaImages = [];
+            maturaResult = null;
+            const task = document.getElementById('matura-task');
+            const essay = document.getElementById('matura-essay-text');
+            const result = document.getElementById('matura-result');
+            const status = document.getElementById('matura-status');
+            if (task) task.value = '';
+            if (essay) essay.value = '';
+            if (result) result.style.display = 'none';
+            if (status) status.textContent = '';
+            renderMaturaPreviews();
+            setMaturaLoading(false);
+        }
+
+        function setMaturaLoading(isLoading) {
+            const loader = document.getElementById('matura-loading');
+            const content = document.getElementById('matura-content');
+            const btn = document.getElementById('matura-assess-btn');
+            const newBtn = document.getElementById('matura-btn');
+            if (isLoading) {
+                loader.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading your essay and applying Matura criteria via Cursor AI...`;
+                loader.style.display = 'block';
+                if (content) content.style.opacity = '0.55';
+                if (btn) btn.disabled = true;
+                if (newBtn) newBtn.disabled = true;
+            } else {
+                loader.style.display = 'none';
+                if (content) content.style.opacity = '1';
+                if (btn) btn.disabled = false;
+                if (newBtn) newBtn.disabled = false;
+            }
+        }
+
+        function setupMaturaDropzone() {
+            const zone = document.getElementById('matura-dropzone');
+            if (!zone || zone.dataset.ready) return;
+            zone.dataset.ready = '1';
+            ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            }));
+            ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+            }));
+            zone.addEventListener('drop', e => {
+                const files = [...(e.dataTransfer?.files || [])];
+                if (files.length) processMaturaFiles(files);
+            });
+        }
+
+        function handleMaturaFiles(event) {
+            const files = [...(event.target.files || [])];
+            event.target.value = '';
+            if (files.length) processMaturaFiles(files);
+        }
+
+        async function processMaturaFiles(files) {
+            document.getElementById('matura-status').textContent = '';
+            for (const file of files) {
+                if (maturaImages.length >= 5) {
+                    document.getElementById('matura-status').className = 'feedback error';
+                    document.getElementById('matura-status').textContent = 'Maximum 5 pages/images per assessment.';
+                    break;
+                }
+                try {
+                    if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+                        const pages = await pdfFileToImages(file, 5 - maturaImages.length);
+                        maturaImages.push(...pages);
+                    } else if (file.type.startsWith('image/')) {
+                        const dataUrl = await readFileAsDataUrl(file);
+                        maturaImages.push({ dataUrl, mimeType: file.type || 'image/jpeg' });
+                    } else {
+                        throw new Error(`Unsupported file: ${file.name}`);
+                    }
+                } catch (err) {
+                    document.getElementById('matura-status').className = 'feedback error';
+                    document.getElementById('matura-status').textContent = err.message || 'Could not read file.';
+                }
+            }
+            renderMaturaPreviews();
+        }
+
+        function readFileAsDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function pdfFileToImages(file, maxPages) {
+            const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.mjs');
+            pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.mjs';
+            const buf = await file.arrayBuffer();
+            const pdf = await pdfjs.getDocument({ data: buf }).promise;
+            const pages = Math.min(pdf.numPages, maxPages);
+            const out = [];
+            for (let i = 1; i <= pages; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 1.5 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                out.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.85), mimeType: 'image/jpeg' });
+            }
+            return out;
+        }
+
+        function renderMaturaPreviews() {
+            const grid = document.getElementById('matura-preview-grid');
+            if (!grid) return;
+            grid.innerHTML = maturaImages.map((img, i) => `
+                <div class="matura-preview-item">
+                    <img src="${img.dataUrl}" alt="Essay page ${i + 1}">
+                    <button type="button" title="Remove" onclick="removeMaturaImage(${i})"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function removeMaturaImage(index) {
+            maturaImages.splice(index, 1);
+            renderMaturaPreviews();
+        }
+
+        async function runMaturaAssessment() {
+            const task = document.getElementById('matura-task').value.trim();
+            const essayText = document.getElementById('matura-essay-text').value.trim();
+            if (!task) {
+                document.getElementById('matura-status').className = 'feedback error';
+                document.getElementById('matura-status').textContent = 'Paste the writing task / polecenie first.';
+                return;
+            }
+            if (!essayText && maturaImages.length === 0) {
+                document.getElementById('matura-status').className = 'feedback error';
+                document.getElementById('matura-status').textContent = 'Upload a photo/PDF of the essay or paste the text.';
+                return;
+            }
+
+            setMaturaLoading(true);
+            document.getElementById('matura-status').textContent = '';
+            document.getElementById('matura-result').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/assess-writing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        task,
+                        essayText,
+                        images: maturaImages.map(img => ({ data: img.dataUrl, mimeType: img.mimeType }))
+                    })
+                });
+                const data = await response.json();
+                setMaturaLoading(false);
+                if (!response.ok) {
+                    document.getElementById('matura-status').className = 'feedback error';
+                    document.getElementById('matura-status').textContent = data.error || 'Assessment failed.';
+                    return;
+                }
+                maturaResult = data;
+                renderMaturaResult(data);
+                incrementGameCount();
+                recordGameSessionApi('matura', {
+                    score: data.totalScore || 0,
+                    pointsEarned: data.totalScore || 0,
+                    result: { maxScore: data.maxScore || 13 }
+                });
+                document.getElementById('matura-status').className = 'feedback success';
+                document.getElementById('matura-status').textContent = 'Assessment complete.';
+            } catch (err) {
+                setMaturaLoading(false);
+                document.getElementById('matura-status').className = 'feedback error';
+                document.getElementById('matura-status').textContent = err.message || 'Could not reach the server.';
+            }
+        }
+
+        function renderMaturaResult(data) {
+            document.getElementById('matura-result').style.display = 'block';
+            document.getElementById('matura-total-score').textContent =
+                `${data.totalScore ?? 0} / ${data.maxScore || 13}`;
+            document.getElementById('matura-overall').textContent = data.overallComment || '';
+
+            const list = document.getElementById('matura-criteria-list');
+            list.innerHTML = (data.criteria || []).map(c => `
+                <div class="matura-criteria-card">
+                    <div class="crit-head">
+                        <strong>${escapeHtml(c.name || c.id)}</strong>
+                        <span class="crit-score">${c.score ?? 0} / ${c.max ?? '?'}</span>
+                    </div>
+                    <p style="margin:0 0 0.5rem;color:var(--text-dark);line-height:1.5;">${escapeHtml(c.comment || '')}</p>
+                    ${(c.strengths && c.strengths.length) ? `<p style="margin:0 0 0.25rem;font-size:0.85rem;color:var(--success-green);"><strong>Strengths:</strong> ${escapeHtml(c.strengths.join('; '))}</p>` : ''}
+                    ${(c.improvements && c.improvements.length) ? `<p style="margin:0;font-size:0.85rem;color:var(--pillarbox-red);"><strong>Improve:</strong> ${escapeHtml(c.improvements.join('; '))}</p>` : ''}
+                </div>
+            `).join('');
+
+            document.getElementById('matura-strengths').innerHTML =
+                (data.strengths || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>';
+            document.getElementById('matura-improvements').innerHTML =
+                (data.improvements || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>';
+
+            const rewrite = (data.suggestedRewrite || '').trim();
+            document.getElementById('matura-rewrite-wrap').style.display = rewrite ? 'block' : 'none';
+            document.getElementById('matura-rewrite').textContent = rewrite;
+
+            const transcript = (data.transcribedEssay || '').trim();
+            document.getElementById('matura-transcript-wrap').style.display = transcript ? 'block' : 'none';
+            document.getElementById('matura-transcript').textContent = transcript;
+
+            document.getElementById('matura-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function exportMaturaPdf() {
+            if (!maturaResult) return;
+            const jspdfNS = window.jspdf;
+            if (!jspdfNS || !jspdfNS.jsPDF) {
+                alert('PDF library is still loading. Try again in a second.');
+                return;
+            }
+            const { jsPDF } = jspdfNS;
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const margin = 48;
+            const maxW = doc.internal.pageSize.getWidth() - margin * 2;
+            let y = margin;
+            const addLine = (text, opts = {}) => {
+                const size = opts.size || 11;
+                doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+                doc.setFontSize(size);
+                const lines = doc.splitTextToSize(String(text || ''), maxW);
+                for (const line of lines) {
+                    if (y > doc.internal.pageSize.getHeight() - margin) { doc.addPage(); y = margin; }
+                    doc.text(line, margin, y);
+                    y += size + 4;
+                }
+                if (opts.gap) y += opts.gap;
+            };
+
+            addLine('LingoSpark — Matura Writing Assessment', { size: 16, bold: true, gap: 6 });
+            addLine(`Score: ${maturaResult.totalScore ?? 0} / ${maturaResult.maxScore || 13}`, { bold: true, gap: 4 });
+            addLine(maturaResult.overallComment || '', { gap: 10 });
+            addLine('Writing task', { size: 12, bold: true, gap: 4 });
+            addLine(document.getElementById('matura-task').value.trim(), { gap: 10 });
+            (maturaResult.criteria || []).forEach(c => {
+                addLine(`${c.name}: ${c.score}/${c.max}`, { bold: true, gap: 2 });
+                addLine(c.comment || '', { gap: 8 });
+            });
+            addLine('Strengths', { size: 12, bold: true, gap: 4 });
+            (maturaResult.strengths || []).forEach((s, i) => addLine(`${i + 1}. ${s}`));
+            y += 6;
+            addLine('Room for improvement', { size: 12, bold: true, gap: 4 });
+            (maturaResult.improvements || []).forEach((s, i) => addLine(`${i + 1}. ${s}`));
+            if (maturaResult.transcribedEssay) {
+                y += 8;
+                addLine('Transcript', { size: 12, bold: true, gap: 4 });
+                addLine(maturaResult.transcribedEssay);
+            }
+            doc.save('lingospark-matura-assessment.pdf');
         }
 
         // ==========================================
