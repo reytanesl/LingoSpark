@@ -537,44 +537,53 @@ async function start() {
             return res.status(400).json({ error: error.message });
         }
 
-        const prompt = `You are an official-style examiner for the Polish Matura z języka angielskiego — poziom ROZSZERZONY (extended), część pisemna (wypowiedź pisemna).
+        const prompt = `You are a supportive Matura examiner giving feedback TO THE STUDENT about their English writing (Polish Matura — poziom ROZSZERZONY, wypowiedź pisemna).
 
-WRITING TASK GIVEN TO THE STUDENT:
+WRITING TASK THE STUDENT RECEIVED:
 """
 ${task}
 """
 
-${essayText ? `TRANSCRIBED / TYPED ESSAY TEXT (may be incomplete — also use any attached images of the handwritten or printed essay):\n"""\n${essayText}\n"""` : 'No typed transcript was provided. Read the essay from the attached image(s) of the handwritten or printed work.'}
+${essayText ? `TYPED / PASTED ESSAY TEXT (may be incomplete — also use any attached images of the handwritten or printed essay):\n"""\n${essayText}\n"""` : 'No typed transcript was provided. Read the essay from the attached image(s) of the handwritten or printed work.'}
 
-Assess the essay using the official Matura rozszerzona writing criteria (total 13 points):
-1) Treść / Content (0–5): Are all required content points from the task covered fully, partially, or missing? Are ideas relevant and developed?
-2) Spójność i logika wypowiedzi / Coherence & cohesion (0–2): Logical organisation, paragraphing, linking devices, clarity of argument.
-3) Zakres środków językowych / Range (0–3): Variety and appropriateness of vocabulary and structures for B2+/C1 school-leaving level.
-4) Poprawność środków językowych / Accuracy (0–3): Grammar, spelling, punctuation — weigh errors against communication success.
+Assess using official Matura rozszerzona writing criteria (total 13 points):
+1) Treść / Content (0–5)
+2) Spójność i logika wypowiedzi / Coherence & cohesion (0–2)
+3) Zakres środków językowych / Range (0–3)
+4) Poprawność środków językowych / Accuracy (0–3)
 
-Rules:
-- Be fair, specific and constructive. Quote short snippets from the essay when commenting.
-- If handwriting is partly illegible, note uncertainty but still assess what is readable.
+VOICE AND FORMAT (critical):
+- Address the student directly in the second person ("you", "your"). Never write about "the student" or "the candidate" in the third person.
+- Put EVERY comment as short bullet points (arrays of strings). No long paragraphs.
+- Be fair, specific and constructive. Point to concrete places in their text.
+- If handwriting is partly illegible, say so briefly but still assess what is readable.
 - Do NOT invent content that is not in the essay.
 - Scores must be integers within each band's max.
-- Write feedback in clear English (students learn English). You may add a short Polish summary line per criterion if helpful.
+- Write in clear English.
+- Do NOT provide a corrected sample essay, model answer, or rewritten paragraph. The student must revise the text themselves after reading your feedback.
+
+TRANSCRIPT WITH MISTAKES MARKED (critical):
+- Return the FULL original essay transcript (best effort from images + typed text). Keep the student's own wording — do not rewrite it into correct English.
+- In markedTranscript, wrap ONLY the incorrect / inaccurate / awkward parts in <<err>>...<<\/err>> tags. Leave correct text unmarked.
+- Mark spelling, grammar, word choice, agreement, and clearly wrong punctuation when it matters. Do not mark everything; mark real mistakes.
+- Do not put corrections inside the tags — only the student's original mistaken text.
 
 Return ONLY valid JSON (no markdown fences):
 {
-  "transcribedEssay": "full best-effort transcription of the essay from images+text",
+  "transcribedEssay": "full plain transcript of the original essay (no tags)",
+  "markedTranscript": "same full transcript with mistakes wrapped as <<err>>mistaken words<<\/err>>",
   "wordCount": 0,
-  "overallComment": "2–4 sentence holistic summary",
+  "overallComment": ["2–4 short bullet points addressed to you / the student"],
   "totalScore": 0,
   "maxScore": 13,
   "criteria": [
-    { "id": "content", "name": "Content (Treść)", "score": 0, "max": 5, "comment": "detailed comment", "strengths": ["..."], "improvements": ["..."] },
-    { "id": "coherence", "name": "Coherence & cohesion (Spójność i logika)", "score": 0, "max": 2, "comment": "...", "strengths": ["..."], "improvements": ["..."] },
-    { "id": "range", "name": "Range (Zakres środków językowych)", "score": 0, "max": 3, "comment": "...", "strengths": ["..."], "improvements": ["..."] },
-    { "id": "accuracy", "name": "Accuracy (Poprawność środków językowych)", "score": 0, "max": 3, "comment": "...", "strengths": ["..."], "improvements": ["..."] }
+    { "id": "content", "name": "Content (Treść)", "score": 0, "max": 5, "comment": ["bullet to the student", "..."], "strengths": ["..."], "improvements": ["..."] },
+    { "id": "coherence", "name": "Coherence & cohesion (Spójność i logika)", "score": 0, "max": 2, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] },
+    { "id": "range", "name": "Range (Zakres środków językowych)", "score": 0, "max": 3, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] },
+    { "id": "accuracy", "name": "Accuracy (Poprawność środków językowych)", "score": 0, "max": 3, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] }
   ],
-  "strengths": ["3–5 overall strengths"],
-  "improvements": ["3–5 prioritised next steps"],
-  "suggestedRewrite": "optional short improved paragraph or opening (or empty string)"
+  "strengths": ["3–5 overall strengths, addressed to you"],
+  "improvements": ["3–5 prioritised next steps for you to fix yourself — tips, not a rewritten essay"]
 }`;
 
         let agent;

@@ -627,6 +627,23 @@
         .matura-score-banner .big {
             font-family: var(--font-primary); font-size: 2rem; font-weight: 800; color: var(--royal-blue);
         }
+        .matura-bullets { margin: 0.5rem 0 0; padding-left: 1.2rem; color: var(--text-dark); text-align: left; }
+        .matura-bullets li { margin-bottom: 0.35rem; line-height: 1.45; }
+        .matura-criteria-card .matura-bullets { margin-top: 0.35rem; font-size: 0.95rem; }
+        .matura-transcript-box {
+            white-space: pre-wrap; font-size: 0.98rem; line-height: 1.65; color: var(--text-dark);
+        }
+        .matura-error {
+            background: rgba(200, 16, 46, 0.12);
+            color: var(--pillarbox-red);
+            border-bottom: 2px solid var(--pillarbox-red);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        .matura-transcript-legend {
+            font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.65rem;
+        }
+        .matura-transcript-legend .matura-error { font-style: normal; }
     </style>
 </head>
 <body>
@@ -1174,7 +1191,7 @@
                     <div class="matura-score-banner">
                         <div style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);font-weight:700;">Total score</div>
                         <div class="big" id="matura-total-score">0 / 13</div>
-                        <p id="matura-overall" style="margin:0.5rem 0 0;color:var(--text-dark);"></p>
+                        <ul class="matura-bullets" id="matura-overall"></ul>
                     </div>
                     <div id="matura-criteria-list"></div>
                     <div class="mission-feedback-cols" style="margin:1rem 0;">
@@ -1187,13 +1204,10 @@
                             <ul id="matura-improvements"></ul>
                         </div>
                     </div>
-                    <div id="matura-rewrite-wrap" style="display:none;margin-bottom:1rem;">
-                        <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Suggested rewrite (sample)</h4>
-                        <div class="pe-prompt-box" id="matura-rewrite" style="white-space:pre-wrap;"></div>
-                    </div>
                     <div id="matura-transcript-wrap" style="display:none;margin-bottom:1rem;">
-                        <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Transcript used for assessment</h4>
-                        <div class="pe-prompt-box" id="matura-transcript" style="white-space:pre-wrap;font-size:0.95rem;"></div>
+                        <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Your essay (mistakes marked)</h4>
+                        <p class="matura-transcript-legend">Highlighted text = mistakes to correct yourself. No model answer is given — rewrite those parts on your own.</p>
+                        <div class="pe-prompt-box matura-transcript-box" id="matura-transcript"></div>
                     </div>
                     <div class="mission-action-row">
                         <button type="button" class="btn btn-blue" onclick="exportMaturaPdf()">
@@ -3725,11 +3739,44 @@ Return ONLY JSON:
             }
         }
 
+        function maturaAsBullets(value) {
+            if (Array.isArray(value)) return value.map(v => String(v || '').trim()).filter(Boolean);
+            if (typeof value === 'string' && value.trim()) {
+                return value.split(/\n+/).map(s => s.replace(/^[-•*]\s*/, '').trim()).filter(Boolean);
+            }
+            return [];
+        }
+
+        function maturaBulletHtml(items) {
+            const list = maturaAsBullets(items);
+            if (!list.length) return '<ul class="matura-bullets"><li>—</li></ul>';
+            return `<ul class="matura-bullets">${list.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>`;
+        }
+
+        /** Convert <<err>>...<<\/err>> markers into highlighted spans; escape everything else. */
+        function formatMaturaMarkedTranscript(marked, plain) {
+            const raw = (marked || plain || '').trim();
+            if (!raw) return '';
+            const parts = [];
+            const re = /<<err>>(.*?)<<\/err>>/gs;
+            let last = 0;
+            let match;
+            while ((match = re.exec(raw)) !== null) {
+                if (match.index > last) parts.push(escapeHtml(raw.slice(last, match.index)));
+                parts.push(`<mark class="matura-error">${escapeHtml(match[1])}</mark>`);
+                last = match.index + match[0].length;
+            }
+            if (last < raw.length) parts.push(escapeHtml(raw.slice(last)));
+            // If AI forgot markers, still show the plain escaped transcript
+            return parts.join('') || escapeHtml(raw);
+        }
+
         function renderMaturaResult(data) {
             document.getElementById('matura-result').style.display = 'block';
             document.getElementById('matura-total-score').textContent =
                 `${data.totalScore ?? 0} / ${data.maxScore || 13}`;
-            document.getElementById('matura-overall').textContent = data.overallComment || '';
+            document.getElementById('matura-overall').outerHTML =
+                `<ul class="matura-bullets" id="matura-overall">${maturaAsBullets(data.overallComment).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>'}</ul>`;
 
             const list = document.getElementById('matura-criteria-list');
             list.innerHTML = (data.criteria || []).map(c => `
@@ -3738,24 +3785,20 @@ Return ONLY JSON:
                         <strong>${escapeHtml(c.name || c.id)}</strong>
                         <span class="crit-score">${c.score ?? 0} / ${c.max ?? '?'}</span>
                     </div>
-                    <p style="margin:0 0 0.5rem;color:var(--text-dark);line-height:1.5;">${escapeHtml(c.comment || '')}</p>
-                    ${(c.strengths && c.strengths.length) ? `<p style="margin:0 0 0.25rem;font-size:0.85rem;color:var(--success-green);"><strong>Strengths:</strong> ${escapeHtml(c.strengths.join('; '))}</p>` : ''}
-                    ${(c.improvements && c.improvements.length) ? `<p style="margin:0;font-size:0.85rem;color:var(--pillarbox-red);"><strong>Improve:</strong> ${escapeHtml(c.improvements.join('; '))}</p>` : ''}
+                    ${maturaBulletHtml(c.comment)}
+                    ${(c.strengths && maturaAsBullets(c.strengths).length) ? `<p style="margin:0.55rem 0 0.15rem;font-size:0.8rem;font-weight:700;color:var(--success-green);">What you did well</p>${maturaBulletHtml(c.strengths)}` : ''}
+                    ${(c.improvements && maturaAsBullets(c.improvements).length) ? `<p style="margin:0.55rem 0 0.15rem;font-size:0.8rem;font-weight:700;color:var(--pillarbox-red);">What you should improve</p>${maturaBulletHtml(c.improvements)}` : ''}
                 </div>
             `).join('');
 
             document.getElementById('matura-strengths').innerHTML =
-                (data.strengths || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>';
+                maturaAsBullets(data.strengths).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>';
             document.getElementById('matura-improvements').innerHTML =
-                (data.improvements || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>';
+                maturaAsBullets(data.improvements).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>';
 
-            const rewrite = (data.suggestedRewrite || '').trim();
-            document.getElementById('matura-rewrite-wrap').style.display = rewrite ? 'block' : 'none';
-            document.getElementById('matura-rewrite').textContent = rewrite;
-
-            const transcript = (data.transcribedEssay || '').trim();
-            document.getElementById('matura-transcript-wrap').style.display = transcript ? 'block' : 'none';
-            document.getElementById('matura-transcript').textContent = transcript;
+            const markedHtml = formatMaturaMarkedTranscript(data.markedTranscript, data.transcribedEssay);
+            document.getElementById('matura-transcript-wrap').style.display = markedHtml ? 'block' : 'none';
+            document.getElementById('matura-transcript').innerHTML = markedHtml;
 
             document.getElementById('matura-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -3784,25 +3827,44 @@ Return ONLY JSON:
                 }
                 if (opts.gap) y += opts.gap;
             };
+            const addBullets = (items) => {
+                maturaAsBullets(items).forEach((s) => addLine(`• ${s}`));
+            };
 
             addLine('LingoSpark — Matura Writing Assessment', { size: 16, bold: true, gap: 6 });
-            addLine(`Score: ${maturaResult.totalScore ?? 0} / ${maturaResult.maxScore || 13}`, { bold: true, gap: 4 });
-            addLine(maturaResult.overallComment || '', { gap: 10 });
+            addLine(`Your score: ${maturaResult.totalScore ?? 0} / ${maturaResult.maxScore || 13}`, { bold: true, gap: 4 });
+            addBullets(maturaResult.overallComment);
+            y += 8;
             addLine('Writing task', { size: 12, bold: true, gap: 4 });
             addLine(document.getElementById('matura-task').value.trim(), { gap: 10 });
             (maturaResult.criteria || []).forEach(c => {
                 addLine(`${c.name}: ${c.score}/${c.max}`, { bold: true, gap: 2 });
-                addLine(c.comment || '', { gap: 8 });
+                addBullets(c.comment);
+                const strengths = maturaAsBullets(c.strengths);
+                const improvements = maturaAsBullets(c.improvements);
+                if (strengths.length) {
+                    addLine('What you did well', { bold: true, gap: 2 });
+                    addBullets(strengths);
+                }
+                if (improvements.length) {
+                    addLine('What you should improve', { bold: true, gap: 2 });
+                    addBullets(improvements);
+                }
+                y += 6;
             });
             addLine('Strengths', { size: 12, bold: true, gap: 4 });
-            (maturaResult.strengths || []).forEach((s, i) => addLine(`${i + 1}. ${s}`));
+            addBullets(maturaResult.strengths);
             y += 6;
             addLine('Room for improvement', { size: 12, bold: true, gap: 4 });
-            (maturaResult.improvements || []).forEach((s, i) => addLine(`${i + 1}. ${s}`));
-            if (maturaResult.transcribedEssay) {
+            addBullets(maturaResult.improvements);
+            const transcript = (maturaResult.markedTranscript || maturaResult.transcribedEssay || '')
+                .replace(/<<err>>/g, '[')
+                .replace(/<<\/err>>/g, ']');
+            if (transcript.trim()) {
                 y += 8;
-                addLine('Transcript', { size: 12, bold: true, gap: 4 });
-                addLine(maturaResult.transcribedEssay);
+                addLine('Your essay (mistakes in [brackets])', { size: 12, bold: true, gap: 4 });
+                addLine('Correct the bracketed parts yourself — no model answer is included.', { gap: 4 });
+                addLine(transcript);
             }
             doc.save('lingospark-matura-assessment.pdf');
         }
