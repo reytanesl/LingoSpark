@@ -577,8 +577,9 @@ Return ONLY valid JSON (no markdown fences):
   "suggestedRewrite": "optional short improved paragraph or opening (or empty string)"
 }`;
 
+        let agent;
         try {
-            await using agent = await Agent.create({
+            agent = await Agent.create({
                 apiKey,
                 model: { id: 'composer-2.5' },
                 local: { cwd: __dirname },
@@ -600,6 +601,10 @@ Return ONLY valid JSON (no markdown fences):
         } catch (error) {
             console.error('Assess-writing error:', error);
             res.status(500).json({ error: error.message || 'Failed to assess writing' });
+        } finally {
+            if (agent && typeof agent[Symbol.asyncDispose] === 'function') {
+                try { await agent[Symbol.asyncDispose](); } catch (_) { /* ignore */ }
+            }
         }
     });
 
