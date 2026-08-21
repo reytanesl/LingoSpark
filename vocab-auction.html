@@ -585,6 +585,19 @@
         .ai-reminder-card p { font-size: 0.95rem; color: var(--text-dark); line-height: 1.55; margin: 0 0 1.2rem; }
         .ai-reminder-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .ai-reminder-actions .btn { font-size: 0.85rem; padding: 0.45rem 1.1rem; }
+        .app-dialog-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 120;
+            align-items: center; justify-content: center; padding: 1rem; animation: aiReminderFadeIn 0.25s ease;
+        }
+        .app-dialog-overlay.open { display: flex; }
+        .app-dialog-card {
+            background: var(--bright-white); border-radius: 16px; max-width: 420px; width: 100%;
+            padding: 1.6rem 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.16); text-align: center;
+            border-top: 4px solid var(--royal-blue);
+        }
+        .app-dialog-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.55rem; font-size: 1.1rem; }
+        .app-dialog-card p { font-size: 0.95rem; color: var(--text-dark); line-height: 1.5; margin: 0 0 1.15rem; white-space: pre-wrap; }
+        .app-dialog-actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
 
         /* Two-player mode */
         .turn-banner {
@@ -1026,11 +1039,39 @@
 
 <footer>Copyright Karol Sęk 2026</footer>
 
+<div class="app-dialog-overlay" id="app-dialog-overlay" onclick="if(event.target===this)closeAppDialog(true)">
+    <div class="app-dialog-card" id="app-dialog-card" role="dialog" aria-modal="true">
+        <h3 id="app-dialog-title">Notice</h3>
+        <p id="app-dialog-message"></p>
+        <div class="app-dialog-actions" id="app-dialog-actions"></div>
+    </div>
+</div>
+
 <script>
 /**
  * Vocab Auction — LingoSpark
  * Single-file gamified vocab practice with chip betting.
  */
+
+let appDialogResolver = null;
+function closeAppDialog(result) {
+    const overlay = document.getElementById("app-dialog-overlay");
+    if (overlay) overlay.classList.remove("open");
+    const resolve = appDialogResolver;
+    appDialogResolver = null;
+    if (resolve) resolve(result);
+}
+function appAlert(message, title = "Notice") {
+    return new Promise((resolve) => {
+        appDialogResolver = resolve;
+        document.getElementById("app-dialog-title").textContent = title;
+        document.getElementById("app-dialog-message").textContent = String(message || "");
+        document.getElementById("app-dialog-actions").innerHTML =
+            `<button type="button" class="btn btn-blue" id="app-dialog-ok">OK</button>`;
+        document.getElementById("app-dialog-overlay").classList.add("open");
+        document.getElementById("app-dialog-ok").onclick = () => closeAppDialog(true);
+    });
+}
 
 /* =========================================================
    1. BUILT-IN WORD POOLS (~80 words each, CEFR-aligned)
@@ -1381,7 +1422,7 @@ els.btnStart.addEventListener("click", () => {
     readMenuSettings();
 
     if (state.activePool.length < 4) {
-        alert("Please provide at least 4 unique words (needed for multiple-choice distractors).");
+        appAlert("Please provide at least 4 unique words (needed for multiple-choice distractors).");
         return;
     }
 
@@ -1584,21 +1625,70 @@ async function resolveWordAndDefinition() {
 }
 
 /**
+ * Similarity score: higher = more confusable with the correct word.
+ */
+function distractorSimilarity(correct, candidate) {
+    const a = String(correct || "").toLowerCase();
+    const b = String(candidate || "").toLowerCase();
+    if (!a || !b) return 0;
+    let score = 0;
+    const lenDiff = Math.abs(a.length - b.length);
+    score += Math.max(0, 6 - lenDiff); // similar length → higher
+    if (a[0] === b[0]) score += 4;
+    if (a.slice(-2) === b.slice(-2)) score += 3;
+    if (a.slice(0, 3) === b.slice(0, 3) && a.length >= 3) score += 5;
+    // crude shared-char density
+    const setA = new Set(a);
+    let shared = 0;
+    for (const ch of b) if (setA.has(ch)) shared++;
+    score += Math.min(5, Math.round((shared / Math.max(a.length, b.length)) * 8));
+    // tiny Levenshtein-lite via length of longest common subsequence approx
+    let i = 0, j = 0, lcs = 0;
+    while (i < a.length && j < b.length) {
+        if (a[i] === b[j]) { lcs++; i++; j++; }
+        else if (a.length - i > b.length - j) i++;
+        else j++;
+    }
+    score += Math.min(6, lcs);
+    return score;
+}
+
+/**
  * Build 4 MC choices: 1 correct + 3 distractors from the same pool, shuffled.
+ * Beginner/easy → easier to eliminate (low similarity).
+ * Hard → more confusable (high similarity). Intermediate → mixed.
  */
 function buildChoices(correctWord) {
-    const distractors = state.activePool
-        .filter((w) => w.toLowerCase() !== correctWord.toLowerCase())
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3);
+    const level = state.level || "intermediate";
+    const candidates = state.activePool.filter(
+        (w) => w.toLowerCase() !== correctWord.toLowerCase()
+    );
+    const scored = candidates.map((w) => ({
+        w,
+        sim: distractorSimilarity(correctWord, w),
+        jitter: Math.random() * 1.5,
+    }));
 
-    // If pool is tiny, pad with placeholders (shouldn't happen after menu check)
-    while (distractors.length < 3) {
-        distractors.push("—");
+    let ordered;
+    if (level === "beginner" || level === "easy") {
+        // Prefer low similarity (easy to rule out)
+        ordered = scored.sort((a, b) => (a.sim + a.jitter) - (b.sim + b.jitter));
+    } else if (level === "hard") {
+        // Prefer high similarity (harder to eliminate)
+        ordered = scored.sort((a, b) => (b.sim + b.jitter) - (a.sim + a.jitter));
+    } else {
+        // Intermediate: mix of mid-range + a little randomness
+        ordered = scored.sort((a, b) => {
+            const midA = Math.abs(a.sim - 10) - a.jitter;
+            const midB = Math.abs(b.sim - 10) - b.jitter;
+            return midA - midB;
+        });
     }
 
+    const distractors = ordered.slice(0, 3).map((x) => x.w);
+    while (distractors.length < 3) distractors.push("—");
+
     const choices = [correctWord, ...distractors];
-    // Fisher–Yates shuffle
     for (let i = choices.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [choices[i], choices[j]] = [choices[j], choices[i]];
@@ -1642,7 +1732,7 @@ async function startNextRound() {
     const resolved = await resolveWordAndDefinition();
 
     if (!resolved) {
-        alert("Could not load definitions from the dictionary API. Please try again or use different words.");
+        appAlert("Could not load definitions from the dictionary API. Please try again or use different words.");
         resetToMenu();
         return;
     }
