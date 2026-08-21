@@ -1255,9 +1255,17 @@
                         <p class="matura-transcript-legend">Highlighted text = mistakes to correct yourself. No model answer is given — rewrite those parts on your own.</p>
                         <div class="pe-prompt-box matura-transcript-box" id="matura-transcript"></div>
                     </div>
-                    <div class="mission-action-row">
-                        <button type="button" class="btn btn-blue" onclick="exportMaturaPdf()">
-                            <i class="fa-solid fa-file-pdf"></i> Export PDF report
+                    <div class="mission-action-row" style="flex-wrap:wrap;align-items:center;gap:0.6rem;">
+                        <label for="matura-export-format" style="font-size:0.9rem;color:var(--text-muted);margin:0;">Export as</label>
+                        <select id="matura-export-format" style="padding:0.45rem 0.7rem;border:2px solid var(--border-light);border-radius:8px;font-size:0.95rem;font-family:var(--font-secondary);">
+                            <option value="html">HTML</option>
+                            <option value="txt">TXT</option>
+                            <option value="doc">Word (.doc)</option>
+                            <option value="rtf">RTF</option>
+                            <option value="pdf">PDF (print)</option>
+                        </select>
+                        <button type="button" class="btn btn-blue" onclick="exportMaturaReport()">
+                            <i class="fa-solid fa-download"></i> Export report
                         </button>
                     </div>
                 </div>
@@ -3996,70 +4004,272 @@ Return ONLY JSON:
             document.getElementById('matura-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function exportMaturaPdf() {
-            if (!maturaResult) return;
-            const jspdfNS = window.jspdf;
-            if (!jspdfNS || !jspdfNS.jsPDF) {
-                alert('PDF library is still loading. Try again in a second.');
-                return;
-            }
-            const { jsPDF } = jspdfNS;
-            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-            const margin = 48;
-            const maxW = doc.internal.pageSize.getWidth() - margin * 2;
-            let y = margin;
-            const addLine = (text, opts = {}) => {
-                const size = opts.size || 11;
-                doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
-                doc.setFontSize(size);
-                const lines = doc.splitTextToSize(String(text || ''), maxW);
-                for (const line of lines) {
-                    if (y > doc.internal.pageSize.getHeight() - margin) { doc.addPage(); y = margin; }
-                    doc.text(line, margin, y);
-                    y += size + 4;
-                }
-                if (opts.gap) y += opts.gap;
-            };
-            const addBullets = (items) => {
-                maturaAsBullets(items).forEach((s) => addLine(`• ${s}`));
-            };
-
-            addLine('LingoSpark — Matura Writing Assessment', { size: 16, bold: true, gap: 6 });
-            addLine(`Your score: ${maturaResult.totalScore ?? 0} / ${maturaResult.maxScore || 13}`, { bold: true, gap: 4 });
-            addBullets(maturaResult.overallComment);
-            y += 8;
-            addLine('Writing task', { size: 12, bold: true, gap: 4 });
-            addLine(document.getElementById('matura-task').value.trim(), { gap: 10 });
-            (maturaResult.criteria || []).forEach(c => {
-                addLine(`${c.name}: ${c.score}/${c.max}`, { bold: true, gap: 2 });
-                addBullets(c.comment);
-                const strengths = maturaAsBullets(c.strengths);
-                const improvements = maturaAsBullets(c.improvements);
-                if (strengths.length) {
-                    addLine('What you did well', { bold: true, gap: 2 });
-                    addBullets(strengths);
-                }
-                if (improvements.length) {
-                    addLine('What you should improve', { bold: true, gap: 2 });
-                    addBullets(improvements);
-                }
-                y += 6;
-            });
-            addLine('Strengths', { size: 12, bold: true, gap: 4 });
-            addBullets(maturaResult.strengths);
-            y += 6;
-            addLine('Room for improvement', { size: 12, bold: true, gap: 4 });
-            addBullets(maturaResult.improvements);
-            const transcript = (maturaResult.markedTranscript || maturaResult.transcribedEssay || '')
+        function buildMaturaReportModel() {
+            if (!maturaResult) return null;
+            const task = (document.getElementById('matura-task')?.value || '').trim();
+            const transcriptRaw = (maturaResult.markedTranscript || maturaResult.transcribedEssay || '').trim();
+            const transcriptPlain = transcriptRaw
                 .replace(/<<err>>/g, '[')
                 .replace(/<<\/err>>/g, ']');
-            if (transcript.trim()) {
-                y += 8;
-                addLine('Your essay (mistakes in [brackets])', { size: 12, bold: true, gap: 4 });
-                addLine('Correct the bracketed parts yourself — no model answer is included.', { gap: 4 });
-                addLine(transcript);
+            const transcriptHtml = formatMaturaMarkedTranscript(
+                maturaResult.markedTranscript,
+                maturaResult.transcribedEssay
+            );
+            return {
+                title: 'LingoSpark — Matura Writing Assessment',
+                score: `${maturaResult.totalScore ?? 0} / ${maturaResult.maxScore || 13}`,
+                overall: maturaAsBullets(maturaResult.overallComment),
+                task,
+                criteria: (maturaResult.criteria || []).map(c => ({
+                    name: c.name || c.id || 'Criterion',
+                    score: `${c.score ?? 0} / ${c.max ?? '?'}`,
+                    comment: maturaAsBullets(c.comment),
+                    strengths: maturaAsBullets(c.strengths),
+                    improvements: maturaAsBullets(c.improvements),
+                })),
+                strengths: maturaAsBullets(maturaResult.strengths),
+                improvements: maturaAsBullets(maturaResult.improvements),
+                transcriptPlain,
+                transcriptHtml,
+            };
+        }
+
+        function maturaReportToPlainText(model) {
+            const lines = [];
+            const push = (s = '') => lines.push(String(s));
+            const bullets = (items) => (items || []).forEach(s => push(`• ${s}`));
+
+            push(model.title);
+            push(`Your score: ${model.score}`);
+            push('');
+            if (model.overall.length) {
+                push('Overall');
+                bullets(model.overall);
+                push('');
             }
-            doc.save('lingospark-matura-assessment.pdf');
+            if (model.task) {
+                push('Writing task');
+                push(model.task);
+                push('');
+            }
+            model.criteria.forEach(c => {
+                push(`${c.name}: ${c.score}`);
+                bullets(c.comment);
+                if (c.strengths.length) {
+                    push('What you did well');
+                    bullets(c.strengths);
+                }
+                if (c.improvements.length) {
+                    push('What you should improve');
+                    bullets(c.improvements);
+                }
+                push('');
+            });
+            push('Strengths');
+            bullets(model.strengths.length ? model.strengths : ['—']);
+            push('');
+            push('Room for improvement');
+            bullets(model.improvements.length ? model.improvements : ['—']);
+            if (model.transcriptPlain) {
+                push('');
+                push('Your essay (mistakes in [brackets])');
+                push('Correct the bracketed parts yourself — no model answer is included.');
+                push(model.transcriptPlain);
+            }
+            push('');
+            push('Copyright Karol Sęk 2026');
+            return lines.join('\n');
+        }
+
+        function maturaReportToHtml(model, { forPrint = false } = {}) {
+            const ul = (items) => {
+                const list = (items && items.length) ? items : ['—'];
+                return `<ul>${list.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>`;
+            };
+            const criteriaHtml = model.criteria.map(c => `
+                <section class="crit">
+                    <h3>${escapeHtml(c.name)} <span class="score">${escapeHtml(c.score)}</span></h3>
+                    ${ul(c.comment)}
+                    ${c.strengths.length ? `<h4>What you did well</h4>${ul(c.strengths)}` : ''}
+                    ${c.improvements.length ? `<h4>What you should improve</h4>${ul(c.improvements)}` : ''}
+                </section>
+            `).join('');
+
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(model.title)}</title>
+<style>
+  body { font-family: Georgia, 'Times New Roman', serif; color: #222; max-width: 760px; margin: 2rem auto; padding: 0 1.25rem; line-height: 1.5; }
+  h1 { font-size: 1.45rem; color: #012169; margin-bottom: 0.35rem; }
+  h2 { font-size: 1.15rem; color: #012169; margin: 1.4rem 0 0.45rem; border-bottom: 1px solid #ddd; padding-bottom: 0.2rem; }
+  h3 { font-size: 1.05rem; margin: 1rem 0 0.35rem; }
+  h4 { font-size: 0.95rem; margin: 0.6rem 0 0.25rem; color: #444; }
+  .banner { background: #eef2ff; border-left: 4px solid #012169; padding: 0.85rem 1rem; margin: 1rem 0; }
+  .banner .big { font-size: 1.35rem; font-weight: 700; color: #012169; }
+  .crit { border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.85rem 1rem; margin: 0.75rem 0; }
+  .score { color: #C8102E; font-weight: 700; }
+  mark.matura-error, .matura-error {
+    background: rgba(200, 16, 46, 0.12); color: #9f1239;
+    border-bottom: 2px solid #C8102E; padding: 0 2px; font-style: normal;
+  }
+  .essay { white-space: pre-wrap; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; }
+  .footer { margin-top: 2rem; font-size: 0.8rem; color: #666; text-align: center; }
+  ${forPrint ? '@media print { body { margin: 0; max-width: none; } }' : ''}
+</style>
+</head>
+<body>
+  <h1>${escapeHtml(model.title)}</h1>
+  <div class="banner">
+    <div class="big">Your score: ${escapeHtml(model.score)}</div>
+    ${ul(model.overall)}
+  </div>
+  ${model.task ? `<h2>Writing task</h2><p>${escapeHtml(model.task).replace(/\n/g, '<br>')}</p>` : ''}
+  <h2>Criteria</h2>
+  ${criteriaHtml || '<p>—</p>'}
+  <h2>Strengths</h2>
+  ${ul(model.strengths)}
+  <h2>Room for improvement</h2>
+  ${ul(model.improvements)}
+  ${model.transcriptHtml ? `
+    <h2>Your essay (mistakes marked)</h2>
+    <p>Highlighted / bracketed text = mistakes to correct yourself. No model answer is included.</p>
+    <div class="essay">${model.transcriptHtml}</div>
+  ` : ''}
+  <p class="footer">Copyright Karol Sęk 2026</p>
+</body>
+</html>`;
+        }
+
+        function maturaEscapeRtf(text) {
+            let out = '';
+            for (const ch of String(text || '')) {
+                const code = ch.codePointAt(0);
+                if (ch === '\\') out += '\\\\';
+                else if (ch === '{') out += '\\{';
+                else if (ch === '}') out += '\\}';
+                else if (ch === '\n') out += '\\par\n';
+                else if (ch === '\r') continue;
+                else if (code < 128) out += ch;
+                else if (code <= 0xffff) out += `\\u${code > 32767 ? code - 65536 : code}?`;
+                else {
+                    // RTF unicode is 16-bit; split surrogate pairs approximately
+                    const h = Math.floor((code - 0x10000) / 0x400) + 0xd800;
+                    const l = ((code - 0x10000) % 0x400) + 0xdc00;
+                    out += `\\u${h - 65536}?\\u${l - 65536}?`;
+                }
+            }
+            return out;
+        }
+
+        function maturaReportToRtf(model) {
+            const parts = [];
+            const para = (text, bold = false) => {
+                parts.push(`{\\pard\\sa120${bold ? '\\b' : ''} ${maturaEscapeRtf(text)}${bold ? '\\b0' : ''}\\par}`);
+            };
+            const bullets = (items) => (items || []).forEach(s => para(`• ${s}`));
+
+            parts.push('{\\rtf1\\ansi\\deff0\\uc1');
+            parts.push('{\\fonttbl{\\f0 Times New Roman;}}');
+            parts.push('\\f0\\fs22');
+            para(model.title, true);
+            para(`Your score: ${model.score}`, true);
+            bullets(model.overall);
+            if (model.task) {
+                para('Writing task', true);
+                para(model.task);
+            }
+            model.criteria.forEach(c => {
+                para(`${c.name}: ${c.score}`, true);
+                bullets(c.comment);
+                if (c.strengths.length) {
+                    para('What you did well', true);
+                    bullets(c.strengths);
+                }
+                if (c.improvements.length) {
+                    para('What you should improve', true);
+                    bullets(c.improvements);
+                }
+            });
+            para('Strengths', true);
+            bullets(model.strengths.length ? model.strengths : ['—']);
+            para('Room for improvement', true);
+            bullets(model.improvements.length ? model.improvements : ['—']);
+            if (model.transcriptPlain) {
+                para('Your essay (mistakes in [brackets])', true);
+                para('Correct the bracketed parts yourself — no model answer is included.');
+                para(model.transcriptPlain);
+            }
+            para('Copyright Karol Sęk 2026');
+            parts.push('}');
+            return parts.join('\n');
+        }
+
+        function downloadMaturaBlob(content, mime, filename) {
+            const blob = content instanceof Blob
+                ? content
+                : new Blob([content], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+        }
+
+        function exportMaturaReport() {
+            const model = buildMaturaReportModel();
+            if (!model) {
+                alert('Run an assessment first.');
+                return;
+            }
+            const format = (document.getElementById('matura-export-format')?.value || 'html').toLowerCase();
+            const base = 'lingospark-matura-assessment';
+
+            if (format === 'txt') {
+                downloadMaturaBlob(maturaReportToPlainText(model), 'text/plain;charset=utf-8', `${base}.txt`);
+                return;
+            }
+            if (format === 'rtf') {
+                downloadMaturaBlob(maturaReportToRtf(model), 'application/rtf;charset=utf-8', `${base}.rtf`);
+                return;
+            }
+            if (format === 'doc') {
+                // HTML packaged as .doc — opens correctly in Word / LibreOffice with full Unicode
+                const html = maturaReportToHtml(model);
+                downloadMaturaBlob('\ufeff' + html, 'application/msword;charset=utf-8', `${base}.doc`);
+                return;
+            }
+            if (format === 'pdf') {
+                // Browser print → Save as PDF preserves Polish characters (jsPDF Helvetica does not)
+                const html = maturaReportToHtml(model, { forPrint: true });
+                const w = window.open('', '_blank');
+                if (!w) {
+                    alert('Allow pop-ups to export PDF, or choose HTML / DOC instead.');
+                    return;
+                }
+                w.document.open();
+                w.document.write(html);
+                w.document.close();
+                w.focus();
+                setTimeout(() => {
+                    try { w.print(); } catch (e) { /* ignore */ }
+                }, 350);
+                return;
+            }
+
+            // html (default)
+            downloadMaturaBlob(maturaReportToHtml(model), 'text/html;charset=utf-8', `${base}.html`);
+        }
+
+        /** @deprecated kept as alias for older UI hooks */
+        function exportMaturaPdf() {
+            const sel = document.getElementById('matura-export-format');
+            if (sel) sel.value = 'pdf';
+            exportMaturaReport();
         }
 
         // ==========================================
