@@ -954,6 +954,7 @@
                 <button type="button" class="btn btn-red btn-lg" id="btn-lock">
                     <i class="fa-solid fa-lock"></i> Lock In Bets
                 </button>
+                <p id="lock-hint" class="hint-cost-note" style="margin:0;max-width:28rem;">Place a bet on at least one answer to lock in.</p>
             </div>
 
             <!-- Result area (shown after lock-in, still within round screen) -->
@@ -1254,6 +1255,7 @@ const els = {
     exampleHint: $("#example-hint"),
     hintCostNote: $("#hint-cost-note"),
     btnLock: $("#btn-lock"),
+    lockHint: $("#lock-hint"),
     resultArea: $("#result-area"),
     resultBanner: $("#result-banner"),
     correctReveal: $("#correct-reveal"),
@@ -1633,8 +1635,9 @@ async function startNextRound() {
     els.resultArea.classList.add("hidden");
     els.roundContent.classList.add("hidden");
     els.roundLoading.classList.remove("hidden");
-    els.btnLock.disabled = false;
+    els.btnLock.disabled = true;
     els.btnLock.classList.remove("hidden");
+    if (els.lockHint) els.lockHint.textContent = "";
 
     const resolved = await resolveWordAndDefinition();
 
@@ -1708,6 +1711,46 @@ function totalBets() {
     return Object.values(state.bets).reduce((s, v) => s + (v || 0), 0);
 }
 
+/**
+ * A round may only be locked when the player has actually wagered.
+ * Typed rounds also require a non-empty answer.
+ * Bankroll 0 is handled by the bankrupt path (hints) — not via Lock In.
+ */
+function canLockIn() {
+    if (state.locked) return false;
+    if (state.bankroll <= 0) return false;
+    if (state.isTypedRound) {
+        const guess = (els.typedAnswer?.value || "").trim();
+        return guess.length > 0 && (state.typedBet || 0) > 0;
+    }
+    return totalBets() > 0;
+}
+
+function lockInHintMessage() {
+    if (state.isTypedRound) {
+        const guess = (els.typedAnswer?.value || "").trim();
+        if (!guess && !(state.typedBet > 0)) {
+            return "Type your answer and place a bet to lock in.";
+        }
+        if (!guess) return "Type your answer before locking in.";
+        if (!(state.typedBet > 0)) return "Place a bet greater than 0 to lock in.";
+        return "";
+    }
+    return "Place a bet on at least one word to lock in.";
+}
+
+function updateLockInUI() {
+    if (!els.btnLock || state.locked || els.btnLock.classList.contains("hidden")) {
+        if (els.lockHint) els.lockHint.textContent = "";
+        return;
+    }
+    const ok = canLockIn();
+    els.btnLock.disabled = !ok;
+    if (els.lockHint) {
+        els.lockHint.textContent = ok ? "" : lockInHintMessage();
+    }
+}
+
 function updateAvailableChipsDisplay() {
     const available = Math.max(0, state.bankroll - totalBets());
     els.chipsAvailable.textContent = formatChips(available);
@@ -1737,6 +1780,7 @@ function syncCardInputs(word, value) {
     });
 
     updateAvailableChipsDisplay();
+    updateLockInUI();
 }
 
 function renderMcUI() {
@@ -1783,6 +1827,7 @@ function renderMcUI() {
     });
 
     updateAvailableChipsDisplay();
+    updateLockInUI();
 }
 
 /* =========================================================
@@ -2019,6 +2064,7 @@ function renderTypedUI() {
     els.exampleHint.innerHTML = "";
     els.exampleHint.classList.remove("visible");
     updateHintButtonUI();
+    updateLockInUI();
 }
 
 els.btnHint.addEventListener("click", useHint);
@@ -2029,6 +2075,7 @@ els.typedSlider.addEventListener("input", () => {
     let v = Math.max(0, Math.min(state.bankroll, Number(els.typedSlider.value) || 0));
     state.typedBet = v;
     els.typedAmount.value = v;
+    updateLockInUI();
 });
 
 els.typedAmount.addEventListener("input", () => {
@@ -2037,6 +2084,12 @@ els.typedAmount.addEventListener("input", () => {
     state.typedBet = v;
     els.typedSlider.value = v;
     els.typedAmount.value = v;
+    updateLockInUI();
+});
+
+els.typedAnswer.addEventListener("input", () => {
+    if (state.locked) return;
+    updateLockInUI();
 });
 
 /* =========================================================
@@ -2051,6 +2104,10 @@ els.typedAmount.addEventListener("input", () => {
    ========================================================= */
 els.btnLock.addEventListener("click", () => {
     if (state.locked) return;
+    if (!canLockIn()) {
+        updateLockInUI();
+        return;
+    }
     resolveRound();
 });
 
@@ -2060,6 +2117,7 @@ function resolveRound() {
 
     // Disable inputs
     els.btnLock.disabled = true;
+    if (els.lockHint) els.lockHint.textContent = "";
     document.querySelectorAll(".bet-slider, .bet-number").forEach((el) => {
         el.disabled = true;
     });
