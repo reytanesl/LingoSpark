@@ -16,6 +16,7 @@
     <!-- FontAwesome for sleek icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
+    <script src="demo-sets.js"></script>
     
     <style>
         /* British Style, Bright Theme & Custom Fonts */
@@ -34,8 +35,25 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { font-size: 90%; }
-        body { font-family: var(--font-secondary); background-color: var(--light-grey); color: var(--text-dark); line-height: 1.6; }
+        body { font-family: var(--font-secondary); background-color: var(--light-grey); color: var(--text-dark); line-height: 1.6; padding-bottom: 2.25rem; }
         h1, h2, h3, h4, h5, h6 { font-family: var(--font-primary); }
+
+        .site-copyright {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 90;
+            text-align: center;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.94);
+            border-top: 1px solid var(--border-light);
+            backdrop-filter: blur(6px);
+            pointer-events: none;
+        }
         
         /* HEADER & LOGO */
         header { 
@@ -456,6 +474,29 @@
         .ws-card-bar-fill { height: 100%; background: var(--success-green); border-radius: 3px; transition: width 0.3s; }
         .ws-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
         .ws-card-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+        .ws-demo-badge {
+            display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.4px;
+            text-transform: uppercase; background: rgba(1, 33, 105, 0.08); color: var(--royal-blue);
+            border: 1px solid rgba(1, 33, 105, 0.25); border-radius: 999px; padding: 2px 8px; margin-left: 0.4rem;
+        }
+        .demo-set-row { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 0.55rem; }
+        .demo-set-btn {
+            font-family: var(--font-primary); font-weight: 600; font-size: 0.9rem;
+            background: var(--bright-white); color: var(--royal-blue); border: 2px solid var(--royal-blue);
+            border-radius: 999px; padding: 0.45rem 0.95rem; cursor: pointer; transition: 0.2s;
+        }
+        .demo-set-btn:hover { background: var(--royal-blue); color: #fff; }
+        .demo-set-btn.active { background: var(--royal-blue); color: #fff; }
+        .guest-login-toast {
+            display: none; position: fixed; left: 50%; bottom: 2.75rem; transform: translateX(-50%);
+            z-index: 88; max-width: min(440px, calc(100vw - 1.5rem)); width: 100%;
+            background: var(--bright-white); border: 2px solid var(--royal-blue); border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.14); padding: 0.95rem 1.1rem; animation: aiReminderFadeIn 0.25s ease;
+        }
+        .guest-login-toast.open { display: block; }
+        .guest-login-toast p { margin: 0 0 0.75rem; color: var(--text-dark); font-size: 0.92rem; line-height: 1.45; }
+        .guest-login-toast .toast-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: flex-end; }
+        .guest-login-toast .toast-actions .btn { font-size: 0.8rem; padding: 0.35rem 0.8rem; }
         .progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
         .progress-tile { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px; padding: 1rem; text-align: center; }
         .progress-tile h4 { margin: 0 0 0.3rem; font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.95rem; }
@@ -660,7 +701,7 @@
         <div class="menu-nav" role="tablist" aria-label="Menu sections">
             <button type="button" class="menu-nav-btn active" id="menu-btn-about" role="tab" aria-selected="true" aria-controls="menu-view-about" onclick="showMenuView('about')">About</button>
             <button type="button" class="menu-nav-btn" id="menu-btn-howto" role="tab" aria-selected="false" aria-controls="menu-view-howto" onclick="showMenuView('howto')">How to play</button>
-            <button type="button" class="menu-nav-btn" id="menu-btn-mysets" role="tab" aria-selected="false" aria-controls="menu-view-mysets" onclick="showMenuView('mysets')" style="display:none;">My Sets</button>
+            <button type="button" class="menu-nav-btn" id="menu-btn-mysets" role="tab" aria-selected="false" aria-controls="menu-view-mysets" onclick="showMenuView('mysets')">Word Sets</button>
             <button type="button" class="menu-nav-btn" id="menu-btn-progress" role="tab" aria-selected="false" aria-controls="menu-view-progress" onclick="showMenuView('progress')" style="display:none;">My Progress</button>
         </div>
 
@@ -718,8 +759,8 @@
         </div>
 
         <div id="menu-view-mysets" class="menu-view" role="tabpanel" aria-labelledby="menu-btn-mysets">
-            <h2>My Word Sets</h2>
-            <p style="color: var(--text-muted); margin-bottom: 1rem;">Save and manage your vocabulary lists. Load any set into a game with one click.</p>
+            <h2>Word Sets</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Demo sets are free for everyone. Sign in to save your own lists and track mastery.</p>
             <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue);">
                 <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
                 <input type="text" id="mysets-save-name" placeholder="Set name..." maxlength="80" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.5rem;">
@@ -864,6 +905,11 @@
             
             <!-- Vocab Tools Setup -->
             <div id="vocab-setup-section" style="display: none;">
+                <div class="form-group" id="demo-sets-setup" style="background: rgba(1, 33, 105, 0.04); border-left-color: var(--royal-blue);">
+                    <label><i class="fa-solid fa-star"></i> Demo word sets</label>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.35rem;">Available to everyone — no account needed. Load a ready-made list, or paste your own below.</p>
+                    <div class="demo-set-row" id="demo-set-buttons"></div>
+                </div>
                 <p style="margin-bottom: 0.5rem; color: var(--text-dark);"><strong>Paste your vocabulary list below.</strong></p>
                 <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
                     Supported formats: <code>Term = Definition</code> | <code>Term - Definition</code> | <code>Term : Definition</code><br>
@@ -1467,6 +1513,16 @@
         </div>
     </div>
 
+    <!-- LIGHTWEIGHT IN-GAME LOGIN REMINDER FOR GUESTS -->
+    <div class="guest-login-toast" id="guest-login-toast" role="status" aria-live="polite">
+        <p><i class="fa-solid fa-circle-info" style="color:var(--royal-blue);"></i> Sign in to save your progress and word sets. You can keep playing as a guest.</p>
+        <div class="toast-actions">
+            <button type="button" class="btn btn-grey" onclick="dismissGuestLoginToast()">Not now</button>
+            <button type="button" class="btn btn-outline" onclick="dismissGuestLoginToast(); openAuthModal('login')">Sign in</button>
+            <button type="button" class="btn btn-blue" onclick="dismissGuestLoginToast(); openAuthModal('register')">Create account</button>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // UI CORE & ROUTING
@@ -1562,37 +1618,165 @@
             document.getElementById('guest-save-overlay').classList.remove('open');
         }
 
+        // Periodic in-game reminder for guests (sign in to save progress)
+        let guestLoginReminderTimer = null;
+        let guestLoginReminderFirstTimeout = null;
+        const GUEST_LOGIN_REMINDER_MS = 90000; // every ~90s while playing
+        const GUEST_LOGIN_REMINDER_MAX = 4;
+
+        function guestReminderCount() {
+            return parseInt(sessionStorage.getItem('ls_guest_ingame_remind') || '0', 10) || 0;
+        }
+        function bumpGuestReminderCount() {
+            const n = guestReminderCount() + 1;
+            sessionStorage.setItem('ls_guest_ingame_remind', String(n));
+            return n;
+        }
+
+        function dismissGuestLoginToast() {
+            const el = document.getElementById('guest-login-toast');
+            if (el) el.classList.remove('open');
+        }
+
+        function showGuestLoginToast() {
+            if (isLoggedIn()) { stopGuestLoginReminders(); return; }
+            if (guestReminderCount() >= GUEST_LOGIN_REMINDER_MAX) { stopGuestLoginReminders(); return; }
+            const el = document.getElementById('guest-login-toast');
+            if (!el || el.classList.contains('open')) return;
+            bumpGuestReminderCount();
+            el.classList.add('open');
+        }
+
+        function startGuestLoginReminders() {
+            stopGuestLoginReminders(false);
+            if (isLoggedIn()) return;
+            if (guestReminderCount() >= GUEST_LOGIN_REMINDER_MAX) return;
+            guestLoginReminderTimer = setInterval(showGuestLoginToast, GUEST_LOGIN_REMINDER_MS);
+            // First nudge after a short play session, not immediately on launch
+            guestLoginReminderFirstTimeout = setTimeout(() => {
+                guestLoginReminderFirstTimeout = null;
+                if (!guestLoginReminderTimer) return;
+                showGuestLoginToast();
+            }, Math.min(45000, GUEST_LOGIN_REMINDER_MS));
+        }
+
+        function stopGuestLoginReminders(hideToast = true) {
+            if (guestLoginReminderTimer) {
+                clearInterval(guestLoginReminderTimer);
+                guestLoginReminderTimer = null;
+            }
+            if (guestLoginReminderFirstTimeout) {
+                clearTimeout(guestLoginReminderFirstTimeout);
+                guestLoginReminderFirstTimeout = null;
+            }
+            if (hideToast) dismissGuestLoginToast();
+        }
+
         function updateMenuAuthTabs() {
             const logged = isLoggedIn();
             const setsBtn = document.getElementById('menu-btn-mysets');
             const progBtn = document.getElementById('menu-btn-progress');
-            if (setsBtn) setsBtn.style.display = logged ? '' : 'none';
+            // Word Sets stays visible for everyone (demo sets); Progress is account-only.
+            if (setsBtn) setsBtn.style.display = '';
             if (progBtn) progBtn.style.display = logged ? '' : 'none';
+        }
+
+        function getDemoSets() {
+            return Array.isArray(window.LINGOSPARK_DEMO_SETS) ? window.LINGOSPARK_DEMO_SETS : [];
+        }
+
+        function demoSetById(id) {
+            return getDemoSets().find(s => s.id === id) || null;
+        }
+
+        function glossaryTextFromItems(items) {
+            return (items || []).map(i => {
+                const term = (i.term || '').trim();
+                const def = (i.definition || i.def || '').trim();
+                return def ? `${term} = ${def}` : term;
+            }).filter(Boolean).join('\n');
+        }
+
+        function applyDemoWordSet(id, opts = {}) {
+            const set = demoSetById(id);
+            if (!set) return false;
+            const textarea = document.getElementById('glossary-input');
+            if (!textarea) return false;
+            textarea.value = glossaryTextFromItems(set.items);
+            currentWordSetId = null; // demo sets are not DB-backed progress sets
+            document.querySelectorAll('.demo-set-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.demoId === id);
+            });
+            if (opts.closeMenu) {
+                const panel = document.getElementById('about-panel');
+                if (panel && panel.classList.contains('open')) toggleAboutPanel();
+                showScreen('home');
+                openHomeSection('vocab');
+            }
+            return true;
+        }
+
+        function renderDemoSetButtons() {
+            const row = document.getElementById('demo-set-buttons');
+            if (!row) return;
+            row.innerHTML = getDemoSets().map(s =>
+                `<button type="button" class="demo-set-btn" data-demo-id="${esc(s.id)}" onclick="applyDemoWordSet('${esc(s.id)}')">
+                    ${esc(s.name)} <span style="opacity:0.75;font-weight:500;">(${s.items.length})</span>
+                </button>`
+            ).join('');
+        }
+
+        function renderDemoSetCardsHtml() {
+            return getDemoSets().map(s => `
+                <div class="ws-card">
+                    <div class="ws-card-header">
+                        <h3>${esc(s.name)} <span class="ws-demo-badge">Demo</span></h3>
+                        <span style="font-size:0.8rem;color:var(--text-muted);">${s.items.length} words</span>
+                    </div>
+                    <div class="ws-card-meta">${esc(s.description || 'Ready-made set for every player')}</div>
+                    <div class="ws-card-actions">
+                        <button class="btn btn-blue" onclick="applyDemoWordSet('${esc(s.id)}', { closeMenu: true })"><i class="fa-solid fa-play"></i> Load</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         async function loadMySets() {
             const container = document.getElementById('mysets-list');
-            if (!isLoggedIn()) { container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">Sign in to save word sets.</p>'; return; }
+            let html = '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.6rem;font-size:1rem;">Demo sets</h3>';
+            html += renderDemoSetCardsHtml() || '<p style="color:var(--text-muted);">No demo sets available.</p>';
+
+            if (!isLoggedIn()) {
+                html += '<p style="text-align:center;color:var(--text-muted);padding:1.2rem 0.5rem;">Sign in to save your own word sets and track mastery.</p>';
+                container.innerHTML = html;
+                return;
+            }
+
+            html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;font-size:1rem;">Your saved sets</h3>';
             try {
                 const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
                 const data = await res.json();
                 if (!data.sets || data.sets.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No saved sets yet. Paste a glossary in Vocab Review and save it here.</p>';
-                    return;
+                    html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No saved sets yet. Paste a glossary in Vocab Review and save it here.</p>';
+                } else {
+                    html += data.sets.map(s => {
+                        const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
+                        return `<div class="ws-card">
+                            <div class="ws-card-header"><h3>${esc(s.name)}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
+                            <div class="ws-card-meta">${s.set_type === 'pe_terms' ? 'Primary English' : 'Vocab'} · ${pct}% mastered</div>
+                            <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
+                            <div class="ws-card-actions">
+                                <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
+                                <button class="btn btn-grey" onclick="deleteWordSet(${s.id})"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>`;
+                    }).join('');
                 }
-                container.innerHTML = data.sets.map(s => {
-                    const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
-                    return `<div class="ws-card">
-                        <div class="ws-card-header"><h3>${esc(s.name)}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
-                        <div class="ws-card-meta">${s.set_type === 'pe_terms' ? 'Primary English' : 'Vocab'} · ${pct}% mastered</div>
-                        <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
-                        <div class="ws-card-actions">
-                            <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
-                            <button class="btn btn-grey" onclick="deleteWordSet(${s.id})"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (e) { container.innerHTML = '<p style="color:var(--pillarbox-red);">Failed to load sets.</p>'; }
+                container.innerHTML = html;
+            } catch (e) {
+                html += '<p style="color:var(--pillarbox-red);">Failed to load your saved sets.</p>';
+                container.innerHTML = html;
+            }
         }
 
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -1872,6 +2056,9 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
             if (screenId === 'home') closeHomeSection();
+            const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction'];
+            if (playScreens.includes(screenId) && !isLoggedIn()) startGuestLoginReminders();
+            else if (!playScreens.includes(screenId)) stopGuestLoginReminders();
             let pageKey = screenId;
             if (screenId === 'setup' && activeGame) pageKey = 'setup:' + activeGame;
             trackPageView(pageKey);
@@ -2008,7 +2195,10 @@
             window.authState = authState;
             renderAuthBar();
             updateMenuAuthTabs();
-            if (authState.user) replayPendingSession();
+            if (authState.user) {
+                stopGuestLoginReminders();
+                replayPendingSession();
+            }
             return authState;
         }
 
@@ -2234,6 +2424,9 @@
             if (gameType === 'mission') renderMissionPicker();
             if (gameType === 'matura') {
                 document.getElementById('setup-title').innerText = 'Matura Writing Assessment';
+            }
+            if (vocabGames.includes(gameType) || hybridGames.includes(gameType)) {
+                renderDemoSetButtons();
             }
 
             showScreen('setup');
@@ -4744,5 +4937,6 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         }
     </script>
     <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="lingospark" data-description="Support me on Buy me a coffee!" data-message="Play all the vocabulary games for free but, being honest, a coffee would make my day" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+    <div class="site-copyright">Copyright Karol Sęk 2026</div>
 </body>
 </html>
