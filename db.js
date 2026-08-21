@@ -169,6 +169,21 @@ export async function initDb() {
         );
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_ugt_user ON user_game_totals (user_id)`);
+
+    // Matura essay reviews — text + AI feedback only (never store uploaded images/PDFs)
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS matura_essay_reviews (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            task_text TEXT NOT NULL DEFAULT '',
+            essay_text TEXT NOT NULL DEFAULT '',
+            total_score INTEGER NOT NULL DEFAULT 0,
+            max_score INTEGER NOT NULL DEFAULT 13,
+            review JSONB NOT NULL DEFAULT '{}'::jsonb,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_matura_reviews_user ON matura_essay_reviews (user_id, created_at DESC)`);
 }
 
 /** Clear BMC source when the paid period has ended (keeps access_until for history). */
@@ -744,7 +759,126 @@ export async function getProgressSummary(userId) {
          FROM user_game_sessions WHERE user_id = $1
          ORDER BY played_at DESC LIMIT 20`, [userId]
     );
-    return { gameTotals: totals.rows, wordSets: sets.rows, recentSessions: recentSessions.rows };
+    const maturaProgress = await getMaturaProgressSummary(userId);
+    return {
+        gameTotals: totals.rows,
+        wordSets: sets.rows,
+        recentSessions: recentSessions.rows,
+        maturaProgress,
+    };
+}
+
+/** Strip anything that looks like file/binary payload before persisting a Matura review. */
+export function sanitizeMaturaReviewPayload(raw = {}) {
+    const review = raw.review && typeof raw.review === 'object' ? raw.review : raw;
+    const clean = {
+        totalScore: Number(review.totalScore ?? raw.totalScore ?? 0) || 0,
+        maxScore: Number(review.maxScore ?? raw.maxScore ?? 13) || 13,
+        overallComment: review.overallComment ?? null,
+        criteria: Array.isArray(review.criteria) ? review.criteria : [],
+        strengths: review.strengths ?? [],
+        improvements: review.improvements ?? [],
+        markedTranscript: typeof review.markedTranscript === 'string' ? review.markedTranscript : '',
+        transcribedEssay: typeof review.transcribedEssay === 'string'
+            ? review.transcribedEssay
+            : (typeof raw.essayText === 'string' ? raw.essayText : ''),
+    };
+    // Hard reject any accidental image/data-url fields
+    delete clean.images;
+    delete clean.image;
+    delete clean.pdf;
+    delete clean.files;
+    delete clean.dataUrl;
+    return clean;
+}
+
+export async function saveMaturaEssayReview(userId, { taskText = '', essayText = '', totalScore = 0, maxScore = 13, review }) {
+    const db = getPool();
+    const cleanReview = sanitizeMaturaReviewPayload({ ...review, totalScore, maxScore, essayText });
+    const score = Number(cleanReview.totalScore) || 0;
+    const max = Number(cleanReview.maxScore) || 13;
+    const task = String(taskText || '').slice(0, 20000);
+    const essay = String(essayText || cleanReview.transcribedEssay || '').slice(0, 100000);
+
+    const result = await db.query(
+        `INSERT INTO matura_essay_reviews (user_id, task_text, essay_text, total_score, max_score, review)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+         RETURNING id, total_score, max_score, created_at`,
+        [userId, task, essay, score, max, JSON.stringify(cleanReview)]
+    );
+    return result.rows[0];
+}
+
+export async function listMaturaEssayReviews(userId, { limit = 50 } = {}) {
+    const db = getPool();
+    const lim = Math.max(1, Math.min(Number(limit) || 50, 100));
+    const result = await db.query(
+        `SELECT id, total_score, max_score, created_at,
+                LEFT(task_text, 160) AS task_preview,
+                LEFT(essay_text, 120) AS essay_preview
+         FROM matura_essay_reviews
+         WHERE user_id = $1
+         ORDER BY created_at DESC
+         LIMIT $2`,
+        [userId, lim]
+    );
+    return result.rows;
+}
+
+export async function getMaturaEssayReview(userId, reviewId) {
+    const db = getPool();
+    const result = await db.query(
+        `SELECT id, task_text, essay_text, total_score, max_score, review, created_at
+         FROM matura_essay_reviews
+         WHERE user_id = $1 AND id = $2`,
+        [userId, reviewId]
+    );
+    return result.rows[0] || null;
+}
+
+export async function deleteMaturaEssayReview(userId, reviewId) {
+    const db = getPool();
+    const result = await db.query(
+        `DELETE FROM matura_essay_reviews WHERE user_id = $1 AND id = $2 RETURNING id`,
+        [userId, reviewId]
+    );
+    return result.rows[0] || null;
+}
+
+export async function getMaturaProgressSummary(userId) {
+    const db = getPool();
+    const series = await db.query(
+        `SELECT id, total_score, max_score, created_at
+         FROM matura_essay_reviews
+         WHERE user_id = $1
+         ORDER BY created_at ASC
+         LIMIT 100`,
+        [userId]
+    );
+    const rows = series.rows;
+    if (!rows.length) {
+        return { count: 0, bestScore: 0, averageScore: 0, latestScore: null, previousScore: null, delta: null, series: [] };
+    }
+    const scores = rows.map(r => Number(r.total_score) || 0);
+    const bestScore = Math.max(...scores);
+    const averageScore = Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10;
+    const latestScore = scores[scores.length - 1];
+    const previousScore = scores.length > 1 ? scores[scores.length - 2] : null;
+    const delta = previousScore == null ? null : latestScore - previousScore;
+    return {
+        count: rows.length,
+        bestScore,
+        averageScore,
+        latestScore,
+        previousScore,
+        delta,
+        series: rows.map(r => ({
+            id: r.id,
+            score: Number(r.total_score) || 0,
+            maxScore: Number(r.max_score) || 13,
+            createdAt: r.created_at,
+        })),
+    };
 }
 
 export async function getGamePopularityStats({ days = 30 } = {}) {

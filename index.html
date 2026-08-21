@@ -685,6 +685,56 @@
             font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.65rem;
         }
         .matura-transcript-legend .matura-error { font-style: normal; }
+        .matura-history-panel {
+            margin-top: 1.75rem; padding: 1.15rem 1.2rem; background: var(--bright-white);
+            border: 2px solid var(--border-light); border-radius: 12px; text-align: left;
+        }
+        .matura-history-panel h3 {
+            font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.35rem; font-size: 1.1rem;
+        }
+        .matura-progress-stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.55rem; margin: 0.85rem 0 1rem;
+        }
+        .matura-progress-stat {
+            background: var(--light-grey); border-radius: 10px; padding: 0.7rem 0.75rem; border-left: 4px solid var(--royal-blue);
+        }
+        .matura-progress-stat .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+        .matura-progress-stat .val { font-family: var(--font-primary); font-size: 1.2rem; font-weight: 700; color: var(--royal-blue); }
+        .matura-progress-stat .val.up { color: var(--success-green); }
+        .matura-progress-stat .val.down { color: var(--pillarbox-red); }
+        .matura-sparkline {
+            display: flex; align-items: flex-end; gap: 4px; height: 72px; margin: 0.4rem 0 1rem;
+            padding: 0.5rem 0.35rem 0; border-bottom: 1px solid var(--border-light);
+        }
+        .matura-sparkline .bar-wrap {
+            flex: 1; min-width: 10px; max-width: 36px; height: 100%; display: flex; flex-direction: column;
+            justify-content: flex-end; align-items: center; gap: 2px;
+        }
+        .matura-sparkline .bar {
+            width: 100%; border-radius: 4px 4px 0 0; background: var(--royal-blue); min-height: 4px; cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .matura-sparkline .bar:hover, .matura-sparkline .bar.active { opacity: 0.85; background: var(--pillarbox-red); }
+        .matura-sparkline .bar-label { font-size: 0.65rem; color: var(--text-muted); line-height: 1; }
+        .matura-history-list { display: flex; flex-direction: column; gap: 0.55rem; }
+        .matura-history-item {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap;
+            padding: 0.75rem 0.85rem; border: 1px solid var(--border-light); border-radius: 10px; background: var(--light-grey);
+        }
+        .matura-history-item .meta { flex: 1; min-width: 180px; }
+        .matura-history-item .meta strong { display: block; color: var(--royal-blue); font-family: var(--font-primary); }
+        .matura-history-item .meta span { font-size: 0.82rem; color: var(--text-muted); }
+        .matura-history-item .score-pill {
+            font-family: var(--font-primary); font-weight: 700; color: var(--pillarbox-red);
+            background: rgba(200, 16, 46, 0.08); border-radius: 999px; padding: 0.25rem 0.7rem; white-space: nowrap;
+        }
+        .matura-history-item .actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+        .matura-history-item .actions .btn { font-size: 0.78rem; padding: 0.3rem 0.65rem; }
+        .matura-viewing-banner {
+            display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 10px;
+            background: rgba(1, 33, 105, 0.07); border-left: 4px solid var(--royal-blue); text-align: left;
+        }
+        .matura-viewing-banner.open { display: block; }
     </style>
 </head>
 <body>
@@ -1206,6 +1256,15 @@
 
             <div id="matura-loading" class="loading-spinner" style="display:none;"></div>
             <div id="matura-content">
+                <div id="matura-viewing-banner" class="matura-viewing-banner">
+                    <strong>Viewing a saved review</strong>
+                    <span id="matura-viewing-meta" style="display:block;font-size:0.88rem;color:var(--text-muted);margin-top:0.2rem;"></span>
+                    <button type="button" class="btn btn-outline" style="margin-top:0.55rem;font-size:0.82rem;" onclick="resetMaturaAssessment()">
+                        <i class="fa-solid fa-pen"></i> Start new assessment
+                    </button>
+                </div>
+
+                <div id="matura-input-section">
                 <div class="form-group">
                     <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-list-check"></i> Writing task</label>
                     <textarea id="matura-task" rows="4" placeholder="Paste the full Matura writing task / polecenie (e.g. article, essay, formal letter)…" style="width:100%;padding:0.85rem 1rem;border:2px solid var(--border-light);border-radius:8px;font-family:var(--font-secondary);font-size:1rem;resize:vertical;"></textarea>
@@ -1213,6 +1272,7 @@
 
                 <div class="form-group">
                     <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-image"></i> Essay photo or PDF</label>
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.65rem;">Photos and PDFs are used only for this assessment — they are <strong>not</strong> saved after you leave. Only the written review is stored to track progress.</p>
                     <div class="matura-upload-zone" id="matura-dropzone">
                         <p style="margin:0 0 0.75rem;color:var(--text-dark);font-weight:600;">Drag &amp; drop images or a PDF here</p>
                         <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--text-muted);">JPG, PNG, WebP or PDF (up to 5 pages). Handwritten and printed essays both work.</p>
@@ -1232,6 +1292,7 @@
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" id="matura-assess-btn" onclick="runMaturaAssessment()">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Assess with Matura criteria
                 </button>
+                </div>
 
                 <div id="matura-result" style="display:none;margin-top:1.75rem;">
                     <div class="matura-score-banner">
@@ -1268,6 +1329,16 @@
                             <i class="fa-solid fa-download"></i> Export report
                         </button>
                     </div>
+                </div>
+
+                <div class="matura-history-panel" id="matura-history-panel">
+                    <h3><i class="fa-solid fa-chart-line"></i> Your essay progress</h3>
+                    <p style="margin:0 0 0.5rem;font-size:0.88rem;color:var(--text-muted);" id="matura-history-intro">
+                        Saved reviews only (no photos or PDFs). Sign in to keep a history and compare scores over time.
+                    </p>
+                    <div id="matura-progress-stats" class="matura-progress-stats" style="display:none;"></div>
+                    <div id="matura-sparkline" class="matura-sparkline" style="display:none;"></div>
+                    <div id="matura-history-list" class="matura-history-list"></div>
                 </div>
             </div>
             <div id="matura-status" class="feedback"></div>
@@ -1863,6 +1934,19 @@
                     html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No games played yet. Start playing to track your progress!</p>';
                 }
 
+                if (data.maturaProgress && data.maturaProgress.count > 0) {
+                    const mp = data.maturaProgress;
+                    const delta = mp.delta;
+                    const deltaTxt = delta == null ? '—' : ((delta > 0 ? '+' : '') + delta);
+                    html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Matura Writing Progress</h3>';
+                    html += '<div class="progress-grid">';
+                    html += `<div class="progress-tile"><h4>Essays reviewed</h4><div class="pt-val">${mp.count}</div><div class="pt-label">saved text reviews only</div></div>`;
+                    html += `<div class="progress-tile"><h4>Latest score</h4><div class="pt-val">${mp.latestScore ?? '—'}</div><div class="pt-label">/ 13 · vs previous ${deltaTxt}</div></div>`;
+                    html += `<div class="progress-tile"><h4>Average</h4><div class="pt-val">${mp.averageScore ?? '—'}</div><div class="pt-label">best ${mp.bestScore ?? '—'}</div></div>`;
+                    html += '</div>';
+                    html += '<p style="font-size:0.85rem;color:var(--text-muted);margin:0.4rem 0 0;">Open <strong>Matura Writing Assessment</strong> to re-read past reviews.</p>';
+                }
+
                 if (data.wordSets && data.wordSets.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Word Set Mastery</h3>';
                     for (const s of data.wordSets) {
@@ -2061,6 +2145,10 @@
         }
 
         function showScreen(screenId) {
+            // Discard Matura uploads when leaving the assessment screen
+            if (screenId !== 'matura' && typeof clearMaturaUploads === 'function') {
+                clearMaturaUploads();
+            }
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
             if (screenId === 'home') closeHomeSection();
@@ -2206,6 +2294,7 @@
             if (authState.user) {
                 stopGuestLoginReminders();
                 replayPendingSession();
+                flushPendingMaturaReview();
             }
             return authState;
         }
@@ -3751,26 +3840,41 @@ Return ONLY JSON:
         // ==========================================
         // MATURA WRITING ASSESSMENT
         // ==========================================
-        let maturaImages = []; // { dataUrl, mimeType }
+        let maturaImages = []; // session-only { dataUrl, mimeType } — NEVER persisted
         let maturaResult = null;
+        let maturaHistory = [];
+        let maturaProgress = null;
+        let maturaViewingId = null;
+
+        function clearMaturaUploads() {
+            maturaImages = [];
+            const input = document.getElementById('matura-file-input');
+            if (input) input.value = '';
+            renderMaturaPreviews();
+        }
 
         function initMaturaAssessment() {
             resetMaturaAssessment();
             setupMaturaDropzone();
+            loadMaturaHistory();
         }
 
         function resetMaturaAssessment() {
-            maturaImages = [];
+            clearMaturaUploads();
             maturaResult = null;
+            maturaViewingId = null;
             const task = document.getElementById('matura-task');
             const essay = document.getElementById('matura-essay-text');
             const result = document.getElementById('matura-result');
             const status = document.getElementById('matura-status');
-            if (task) task.value = '';
-            if (essay) essay.value = '';
+            const inputSec = document.getElementById('matura-input-section');
+            const banner = document.getElementById('matura-viewing-banner');
+            if (task) { task.value = ''; task.readOnly = false; }
+            if (essay) { essay.value = ''; essay.readOnly = false; }
             if (result) result.style.display = 'none';
             if (status) status.textContent = '';
-            renderMaturaPreviews();
+            if (inputSec) inputSec.style.display = '';
+            if (banner) banner.classList.remove('open');
             setMaturaLoading(false);
         }
 
@@ -3925,18 +4029,242 @@ Return ONLY JSON:
                 }
                 maturaResult = data;
                 renderMaturaResult(data);
+                // Drop uploads immediately after assessment — only the text review is kept
+                clearMaturaUploads();
                 incrementGameCount();
                 recordGameSessionApi('matura', {
                     score: data.totalScore || 0,
                     pointsEarned: data.totalScore || 0,
                     result: { maxScore: data.maxScore || 13 }
                 });
+                await saveMaturaReviewToAccount(data, task, essayText);
                 document.getElementById('matura-status').className = 'feedback success';
-                document.getElementById('matura-status').textContent = 'Assessment complete.';
+                document.getElementById('matura-status').textContent = isLoggedIn()
+                    ? 'Assessment complete. Review saved (photos/PDFs were not stored).'
+                    : 'Assessment complete. Sign in to save this review and track progress.';
             } catch (err) {
                 setMaturaLoading(false);
                 document.getElementById('matura-status').className = 'feedback error';
                 document.getElementById('matura-status').textContent = err.message || 'Could not reach the server.';
+            }
+        }
+
+        function buildMaturaReviewPayload(data, task, essayText) {
+            return {
+                taskText: task || '',
+                essayText: essayText || data.transcribedEssay || '',
+                totalScore: data.totalScore || 0,
+                maxScore: data.maxScore || 13,
+                review: {
+                    totalScore: data.totalScore || 0,
+                    maxScore: data.maxScore || 13,
+                    overallComment: data.overallComment,
+                    criteria: data.criteria || [],
+                    strengths: data.strengths || [],
+                    improvements: data.improvements || [],
+                    markedTranscript: data.markedTranscript || '',
+                    transcribedEssay: data.transcribedEssay || essayText || '',
+                },
+            };
+        }
+
+        async function saveMaturaReviewToAccount(data, task, essayText) {
+            const payload = buildMaturaReviewPayload(data, task, essayText);
+            if (!isLoggedIn()) {
+                try {
+                    sessionStorage.setItem('ls_pending_matura_review', JSON.stringify(payload));
+                } catch (e) { /* ignore quota */ }
+                promptGuestSave();
+                return null;
+            }
+            try {
+                const res = await fetch('/api/matura/reviews', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const body = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(body.error || 'Could not save review');
+                maturaViewingId = body.id || null;
+                if (body.progress) maturaProgress = body.progress;
+                await loadMaturaHistory();
+                return body.id;
+            } catch (e) {
+                console.warn('Matura review save failed:', e);
+                return null;
+            }
+        }
+
+        async function flushPendingMaturaReview() {
+            if (!isLoggedIn()) return;
+            let raw;
+            try { raw = sessionStorage.getItem('ls_pending_matura_review'); } catch (e) { return; }
+            if (!raw) return;
+            try {
+                const payload = JSON.parse(raw);
+                sessionStorage.removeItem('ls_pending_matura_review');
+                if (!payload?.review) return;
+                await fetch('/api/matura/reviews', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                await loadMaturaHistory();
+            } catch (e) { /* ignore */ }
+        }
+
+        async function loadMaturaHistory() {
+            const listEl = document.getElementById('matura-history-list');
+            const intro = document.getElementById('matura-history-intro');
+            const statsEl = document.getElementById('matura-progress-stats');
+            const sparkEl = document.getElementById('matura-sparkline');
+            if (!listEl) return;
+
+            if (!isLoggedIn()) {
+                maturaHistory = [];
+                maturaProgress = null;
+                if (intro) intro.textContent = 'Sign in to save essay reviews and monitor your score progress. Photos and PDFs are never stored.';
+                if (statsEl) statsEl.style.display = 'none';
+                if (sparkEl) sparkEl.style.display = 'none';
+                listEl.innerHTML = '<p style="color:var(--text-muted);margin:0;font-size:0.9rem;">No saved reviews yet — create an account to keep them.</p>';
+                return;
+            }
+
+            if (intro) intro.textContent = 'Only the written review is saved. Uploaded photos and PDFs are discarded after each assessment.';
+            try {
+                const res = await fetch('/api/matura/reviews', { credentials: 'same-origin' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to load');
+                maturaHistory = data.reviews || [];
+                maturaProgress = data.progress || null;
+                renderMaturaProgressUi(maturaProgress);
+                renderMaturaHistoryList(maturaHistory);
+            } catch (e) {
+                listEl.innerHTML = '<p style="color:var(--pillarbox-red);margin:0;">Could not load essay history.</p>';
+            }
+        }
+
+        function renderMaturaProgressUi(progress) {
+            const statsEl = document.getElementById('matura-progress-stats');
+            const sparkEl = document.getElementById('matura-sparkline');
+            if (!statsEl || !sparkEl) return;
+            if (!progress || !progress.count) {
+                statsEl.style.display = 'none';
+                sparkEl.style.display = 'none';
+                return;
+            }
+            const delta = progress.delta;
+            let deltaHtml = '—';
+            let deltaClass = '';
+            if (delta != null) {
+                deltaClass = delta > 0 ? 'up' : (delta < 0 ? 'down' : '');
+                deltaHtml = (delta > 0 ? '+' : '') + delta;
+            }
+            statsEl.style.display = 'grid';
+            statsEl.innerHTML = `
+                <div class="matura-progress-stat"><div class="label">Essays</div><div class="val">${progress.count}</div></div>
+                <div class="matura-progress-stat"><div class="label">Latest</div><div class="val">${progress.latestScore ?? '—'} / 13</div></div>
+                <div class="matura-progress-stat"><div class="label">Average</div><div class="val">${progress.averageScore ?? '—'}</div></div>
+                <div class="matura-progress-stat"><div class="label">Best</div><div class="val">${progress.bestScore ?? '—'}</div></div>
+                <div class="matura-progress-stat"><div class="label">vs previous</div><div class="val ${deltaClass}">${deltaHtml}</div></div>
+            `;
+
+            const series = progress.series || [];
+            if (series.length < 2) {
+                sparkEl.style.display = 'none';
+                return;
+            }
+            const maxScore = Math.max(13, ...series.map(s => s.maxScore || 13));
+            const recent = series.slice(-12);
+            sparkEl.style.display = 'flex';
+            sparkEl.innerHTML = recent.map(s => {
+                const pct = Math.max(6, Math.round((s.score / maxScore) * 100));
+                const active = maturaViewingId === s.id ? ' active' : '';
+                return `<div class="bar-wrap" title="${s.score}/${s.maxScore}">
+                    <div class="bar${active}" style="height:${pct}%" onclick="openMaturaReview(${s.id})"></div>
+                    <span class="bar-label">${s.score}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function renderMaturaHistoryList(reviews) {
+            const listEl = document.getElementById('matura-history-list');
+            if (!listEl) return;
+            if (!reviews.length) {
+                listEl.innerHTML = '<p style="color:var(--text-muted);margin:0;font-size:0.9rem;">No saved reviews yet. Complete an assessment to start tracking progress.</p>';
+                return;
+            }
+            listEl.innerHTML = reviews.map(r => {
+                const d = new Date(r.created_at);
+                const when = Number.isNaN(d.getTime()) ? '' : d.toLocaleString();
+                const preview = (r.task_preview || 'Essay review').trim();
+                return `<div class="matura-history-item">
+                    <div class="meta">
+                        <strong>${escapeHtml(preview)}${preview.length >= 160 ? '…' : ''}</strong>
+                        <span>${escapeHtml(when)}</span>
+                    </div>
+                    <span class="score-pill">${r.total_score} / ${r.max_score || 13}</span>
+                    <div class="actions">
+                        <button type="button" class="btn btn-blue" onclick="openMaturaReview(${r.id})"><i class="fa-solid fa-eye"></i> Review</button>
+                        <button type="button" class="btn btn-grey" onclick="deleteMaturaReview(${r.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function openMaturaReview(id) {
+            if (!isLoggedIn()) return;
+            try {
+                const res = await fetch(`/api/matura/reviews/${id}`, { credentials: 'same-origin' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Could not open review');
+                clearMaturaUploads();
+                maturaViewingId = data.id;
+                const review = data.review || {};
+                maturaResult = {
+                    totalScore: data.totalScore ?? review.totalScore,
+                    maxScore: data.maxScore ?? review.maxScore ?? 13,
+                    overallComment: review.overallComment,
+                    criteria: review.criteria || [],
+                    strengths: review.strengths || [],
+                    improvements: review.improvements || [],
+                    markedTranscript: review.markedTranscript || '',
+                    transcribedEssay: review.transcribedEssay || data.essayText || '',
+                };
+                const task = document.getElementById('matura-task');
+                const essay = document.getElementById('matura-essay-text');
+                const inputSec = document.getElementById('matura-input-section');
+                const banner = document.getElementById('matura-viewing-banner');
+                const meta = document.getElementById('matura-viewing-meta');
+                if (task) { task.value = data.taskText || ''; task.readOnly = true; }
+                if (essay) { essay.value = data.essayText || review.transcribedEssay || ''; essay.readOnly = true; }
+                if (inputSec) inputSec.style.display = 'none';
+                if (banner) {
+                    banner.classList.add('open');
+                    const d = new Date(data.createdAt);
+                    if (meta) meta.textContent = `Saved ${Number.isNaN(d.getTime()) ? '' : d.toLocaleString()} · score ${data.totalScore} / ${data.maxScore || 13}`;
+                }
+                renderMaturaResult(maturaResult);
+                renderMaturaProgressUi(maturaProgress);
+                document.getElementById('matura-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (e) {
+                alert(e.message || 'Could not open review.');
+            }
+        }
+
+        async function deleteMaturaReview(id) {
+            if (!confirm('Delete this saved review?')) return;
+            try {
+                const res = await fetch(`/api/matura/reviews/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Delete failed');
+                if (maturaViewingId === id) resetMaturaAssessment();
+                if (data.progress) maturaProgress = data.progress;
+                await loadMaturaHistory();
+            } catch (e) {
+                alert(e.message || 'Could not delete review.');
             }
         }
 

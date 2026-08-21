@@ -36,6 +36,11 @@ import {
     recordGameSession,
     updateWordProgress,
     getProgressSummary,
+    saveMaturaEssayReview,
+    listMaturaEssayReviews,
+    getMaturaEssayReview,
+    deleteMaturaEssayReview,
+    getMaturaProgressSummary,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook } from './billing.js';
@@ -456,6 +461,75 @@ async function start() {
             await updateWordProgress(req.user.id, updates);
             res.json({ saved: true });
         } catch (err) { res.status(400).json({ error: err.message }); }
+    });
+
+    // ==========================================
+    // MATURA ESSAY REVIEW HISTORY (text only — no images/PDFs)
+    // ==========================================
+
+    app.get('/api/matura/reviews', requireLogin, async (req, res) => {
+        try {
+            const [reviews, progress] = await Promise.all([
+                listMaturaEssayReviews(req.user.id),
+                getMaturaProgressSummary(req.user.id),
+            ]);
+            res.json({ reviews, progress });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    app.get('/api/matura/reviews/:id', requireLogin, async (req, res) => {
+        try {
+            const row = await getMaturaEssayReview(req.user.id, Number(req.params.id));
+            if (!row) return res.status(404).json({ error: 'Review not found' });
+            res.json({
+                id: row.id,
+                taskText: row.task_text,
+                essayText: row.essay_text,
+                totalScore: row.total_score,
+                maxScore: row.max_score,
+                review: row.review,
+                createdAt: row.created_at,
+            });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    app.post('/api/matura/reviews', requireLogin, async (req, res) => {
+        try {
+            const { taskText, essayText, totalScore, maxScore, review } = req.body || {};
+            if (!review || typeof review !== 'object') {
+                return res.status(400).json({ error: 'review object required' });
+            }
+            // Reject any attempt to store binary uploads
+            if (req.body?.images || review.images || review.dataUrl) {
+                return res.status(400).json({ error: 'Images and PDF files are not stored. Save the text review only.' });
+            }
+            const saved = await saveMaturaEssayReview(req.user.id, {
+                taskText,
+                essayText,
+                totalScore,
+                maxScore,
+                review,
+            });
+            const progress = await getMaturaProgressSummary(req.user.id);
+            res.json({ saved: true, id: saved.id, createdAt: saved.created_at, progress });
+        } catch (err) {
+            res.status(400).json({ error: err.message });
+        }
+    });
+
+    app.delete('/api/matura/reviews/:id', requireLogin, async (req, res) => {
+        try {
+            const deleted = await deleteMaturaEssayReview(req.user.id, Number(req.params.id));
+            if (!deleted) return res.status(404).json({ error: 'Review not found' });
+            const progress = await getMaturaProgressSummary(req.user.id);
+            res.json({ deleted: true, progress });
+        } catch (err) {
+            res.status(400).json({ error: err.message });
+        }
     });
 
     function extractJson(text) {
