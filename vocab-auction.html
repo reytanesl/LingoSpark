@@ -1490,9 +1490,10 @@ function buildDeck() {
 
 /* =========================================================
    6. API — Free Dictionary API
-   Scans all meanings/definitions and rejects any that leak the
-   answer (whole-word match, derived suffixes, or stem ≥ 4 chars).
-   Returns null on 404, API failure, or if every definition leaks.
+   Collects every safe definition, then picks the most
+   straightforward gloss (short, everyday English). Level
+   does not change this: Hard still uses a simple definition.
+   Rejects any gloss that leaks the answer.
    ========================================================= */
 
 /**
@@ -1537,6 +1538,95 @@ function definitionLeaksAnswer(definition, word) {
     return false;
 }
 
+/**
+ * Rewrite dictionary-ese into short, everyday English.
+ * Level must not change this — Hard words still get a plain gloss.
+ */
+function plainifyDefinition(text) {
+    let t = String(text || "").trim();
+    if (!t) return "";
+
+    t = t.replace(/\s*\([^)]*\)\s*/g, " ");
+    t = t.replace(/^of or relating to\s+/i, "about ");
+    t = t.replace(/^relating to\s+/i, "about ");
+    t = t.replace(/^pertaining to\s+/i, "about ");
+    t = t.replace(/^characterized by\s+/i, "that has ");
+    t = t.replace(/^the quality or state of being\s+/i, "being ");
+    t = t.replace(/^the quality of being\s+/i, "being ");
+    t = t.replace(/^the state of being\s+/i, "being ");
+    t = t.replace(/^the act or process of\s+/i, "");
+    t = t.replace(/^the act of\s+/i, "");
+    t = t.replace(/^the process of\s+/i, "");
+    t = t.replace(/^the fact of\s+/i, "");
+    t = t.replace(/^used to (refer to|describe|indicate|show)\s+/i, "");
+    t = t.replace(/^a form of\s+/i, "");
+    t = t.replace(/\bespecially:\s*/gi, "");
+    t = t.replace(/\stypically:\s*/gi, " ");
+    t = t.replace(/\s+/g, " ").trim();
+
+    if (t.includes(";")) {
+        const first = t.split(";")[0].trim();
+        if (first.split(/\s+/).length >= 4) t = first;
+    }
+    const dot = t.search(/[.!?](?:\s|$)/);
+    if (dot >= 12) {
+        const first = t.slice(0, dot + 1).trim();
+        if (first.split(/\s+/).length >= 4) t = first;
+    }
+
+    if (t) t = t.charAt(0).toUpperCase() + t.slice(1);
+    if (t && !/[.?!]$/.test(t)) t += ".";
+    return t;
+}
+
+/**
+ * Higher = easier to read. Prefers short, everyday glosses over academic ones.
+ */
+function definitionStraightforwardScore(text) {
+    const t = String(text || "").trim();
+    const words = t.split(/\s+/).filter(Boolean).length;
+    let score = 40;
+    if (words >= 5 && words <= 16) score += 24;
+    else if (words >= 4 && words <= 22) score += 12;
+    else if (words > 28) score -= 18;
+    else if (words < 4) score -= 6;
+
+    const low = t.toLowerCase();
+    [
+        "of or relating to", "relating to", "characterized by", "pertaining to",
+        "the quality or state", "the act of", "the process of", "denoting",
+        "in which", "whereby", "thereof", "used to refer", "used as a",
+        "that which", "a form of", "especially", "typically"
+    ].forEach((j) => { if (low.indexOf(j) !== -1) score -= 14; });
+
+    if (/[;:]/.test(t)) score -= 6;
+    if ((t.match(/,/g) || []).length > 2) score -= 6;
+    if (t.length > 140) score -= 10;
+    if (/^(a |an |the |to |someone |something |when |how |very |not )/i.test(t)) score += 8;
+    return score;
+}
+
+function pickStraightforwardDefinition(data, word) {
+    const raw = [];
+    for (const entry of data || []) {
+        for (const meaning of entry.meanings || []) {
+            for (const defObj of meaning.definitions || []) {
+                const text = (defObj.definition || "").trim();
+                if (text && !definitionLeaksAnswer(text, word)) raw.push(text);
+            }
+        }
+    }
+    if (!raw.length) return null;
+
+    const scored = raw.map((text) => {
+        const plain = plainifyDefinition(text);
+        const use = (plain && !definitionLeaksAnswer(plain, word)) ? plain : text;
+        return { text: use, score: definitionStraightforwardScore(use) };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0].text;
+}
+
 async function fetchDefinition(word) {
     const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
 
@@ -1551,21 +1641,7 @@ async function fetchDefinition(word) {
         }
 
         const data = await res.json();
-
-        // Scan ALL meanings and definitions across every entry
-        for (const entry of data) {
-            for (const meaning of entry.meanings || []) {
-                for (const defObj of meaning.definitions || []) {
-                    const text = defObj.definition;
-                    if (text && !definitionLeaksAnswer(text, word)) {
-                        return text;
-                    }
-                }
-            }
-        }
-
-        // Every definition leaked the answer (or none found)
-        return null;
+        return pickStraightforwardDefinition(data, word);
     } catch (err) {
         console.warn("Dictionary API error:", err);
         return null;
