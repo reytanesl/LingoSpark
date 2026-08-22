@@ -1924,7 +1924,7 @@ function renderMcUI() {
    9. TYPED INPUT UI + HINTS (Mixed Mode)
    Hint 1: reveal ~30–50% of letters (costs chips).
    Hint 2: free example sentence with the word blanked out
-           (unlocked only after Hint 1).
+           (independent of Hint 1).
    ========================================================= */
 
 function getHintCost() {
@@ -2040,13 +2040,16 @@ function updateHintButtonUI() {
     const canAfford = cost > 0 && state.bankroll >= cost;
 
     // Status note under the buttons
-    if (state.hint2Used) {
+    if (state.hint2Used && state.hintUsed) {
         els.hintCostNote.textContent = "Both hints used this round";
+    } else if (state.hint2Used) {
+        els.hintCostNote.textContent =
+            `Example used · letter hint costs ${formatChips(cost)} chips`;
     } else if (state.hintUsed) {
         els.hintCostNote.textContent = "Free example sentence available (no chip cost)";
     } else {
         els.hintCostNote.textContent =
-            `Reveal ~30–50% of letters · costs ${formatChips(cost)} chips`;
+            `Reveal ~30–50% of letters · costs ${formatChips(cost)} chips · example is free`;
     }
 
     els.btnHint.disabled = state.locked || state.hintUsed || !canAfford;
@@ -2055,8 +2058,7 @@ function updateHintButtonUI() {
         : `<i class="fa-solid fa-lightbulb"></i> Hint (−${formatChips(cost)})`;
 
     if (els.btnHint2) {
-        // Unlocked only after the paid letter hint
-        els.btnHint2.disabled = state.locked || !state.hintUsed || state.hint2Used;
+        els.btnHint2.disabled = state.locked || state.hint2Used;
         els.btnHint2.innerHTML = state.hint2Used
             ? '<i class="fa-solid fa-quote-left"></i> Example used'
             : '<i class="fa-solid fa-quote-left"></i> Example (free)';
@@ -2100,7 +2102,6 @@ function useHint() {
 async function useExampleHint() {
     if (
         state.locked ||
-        !state.hintUsed ||
         state.hint2Used ||
         !state.isTypedRound ||
         !state.currentWord

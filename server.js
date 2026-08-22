@@ -532,43 +532,43 @@ async function start() {
         }
     });
 
-    function extractJson(text) {
-        if (!text) throw new Error('Empty response from Cursor AI');
+function extractJson(text) {
+    if (!text) throw new Error('Empty response from Cursor AI');
         const trimmed = text.trim();
         const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
         const candidate = fenced ? fenced[1].trim() : trimmed;
-        return JSON.parse(candidate);
-    }
+    return JSON.parse(candidate);
+}
 
     app.post('/api/generate', requireWritingAccess, async (req, res) => {
-        const prompt = req.body?.prompt;
-        if (!prompt || typeof prompt !== 'string') {
-            return res.status(400).json({ error: 'Missing prompt' });
-        }
+    const prompt = req.body?.prompt;
+    if (!prompt || typeof prompt !== 'string') {
+        return res.status(400).json({ error: 'Missing prompt' });
+    }
 
-        const apiKey = process.env.CURSOR_API_KEY;
-        if (!apiKey) {
+    const apiKey = process.env.CURSOR_API_KEY;
+    if (!apiKey) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
-        }
+    }
 
         const fullPrompt = `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation, no tool use.`;
 
-        try {
-            const result = await Agent.prompt(fullPrompt, {
-                apiKey,
-                model: { id: 'composer-2.5' },
-                local: { cwd: __dirname },
-            });
+    try {
+        const result = await Agent.prompt(fullPrompt, {
+            apiKey,
+            model: { id: 'composer-2.5' },
+            local: { cwd: __dirname },
+        });
 
-            if (result.status !== 'finished' || !result.result) {
-                const message = result.error?.message || 'Cursor AI generation failed';
+        if (result.status !== 'finished' || !result.result) {
+            const message = result.error?.message || 'Cursor AI generation failed';
                 return res.status(500).json({ error: message });
-            }
+        }
 
-            const parsed = extractJson(result.result);
-            res.json(parsed);
-        } catch (error) {
-            console.error('Generation error:', error);
+        const parsed = extractJson(result.result);
+        res.json(parsed);
+    } catch (error) {
+        console.error('Generation error:', error);
             res.status(500).json({ error: error.message || 'Failed to generate content' });
         }
     });
@@ -688,10 +688,10 @@ Return ONLY valid JSON (no markdown fences):
             if (agent && typeof agent[Symbol.asyncDispose] === 'function') {
                 try { await agent[Symbol.asyncDispose](); } catch (_) { /* ignore */ }
             }
-        }
-    });
+    }
+});
 
-    app.get('/api/health', (_req, res) => {
+app.get('/api/health', (_req, res) => {
         res.json({
             ok: true,
             cursorConfigured: Boolean(process.env.CURSOR_API_KEY),
@@ -706,7 +706,7 @@ Return ONLY valid JSON (no markdown fences):
 
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`LingoSpark running on ${APP_BASE_URL} (port ${PORT})`);
-        if (!process.env.CURSOR_API_KEY) {
+    if (!process.env.CURSOR_API_KEY) {
             console.warn('Warning: CURSOR_API_KEY is not set.');
         }
         if (!googleReady) {

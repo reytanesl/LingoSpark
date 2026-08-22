@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
     <script src="demo-sets.js"></script>
+    <script src="pe-dictation-banks.js"></script>
     
     <style>
         /* British Style, Bright Theme & Custom Fonts */
@@ -188,7 +189,13 @@
         }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 1rem;}
-        .card { background-color: var(--bright-white); border-radius: 12px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease; border-top: 4px solid transparent; display: flex; flex-direction: column; }
+        .card { background-color: var(--bright-white); border-radius: 12px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease; border-top: 4px solid transparent; display: flex; flex-direction: column; position: relative; }
+        .card-corner-badge {
+            position: absolute; top: 0.65rem; right: 0.65rem;
+            font-family: var(--font-primary); font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 0.03em; text-transform: uppercase;
+            background: var(--royal-blue); color: #fff; padding: 0.22rem 0.55rem; border-radius: 999px;
+        }
         .card:hover { transform: translateY(-5px); border-top-color: var(--pillarbox-red); box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1); }
         .icon-container { height: 70px; width: 70px; margin: 0 auto 1rem auto; background-color: rgba(1, 33, 105, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--royal-blue); font-size: 2rem; }
         .card h2 { font-size: 1.4rem; color: var(--royal-blue); margin-bottom: 1rem; }
@@ -288,6 +295,21 @@
         
         .flashcard-controls { display: flex; justify-content: center; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .flashcard-controls.visible { opacity: 1; pointer-events: auto; }
+        .fc-stats-overlay { display: none; background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; z-index: 11; padding: 1rem; box-sizing: border-box; }
+        .fc-stats-overlay.open { display: flex; }
+        .fc-stats-box { background: white; padding: 1.5rem; border-radius: 12px; width: 100%; max-width: 640px; max-height: 85vh; overflow: auto; border-top: 6px solid var(--royal-blue); text-align: left; }
+        .fc-stats-box h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.75rem; text-align: center; }
+        .fc-stats-summary { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5; }
+        .fc-stats-table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+        .fc-stats-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .fc-stats-table th, .fc-stats-table td { padding: 0.45rem 0.55rem; border-bottom: 1px solid var(--border-light); text-align: left; }
+        .fc-stats-table th { color: var(--royal-blue); font-family: var(--font-primary); font-size: 0.8rem; }
+        .fc-stat-mastered { color: var(--success-green); font-weight: 600; }
+        .fc-stat-learning { color: var(--pillarbox-red); font-weight: 600; }
+        .fc-stat-new { color: var(--text-muted); }
+        .fc-setup-summary { font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.75rem; line-height: 1.45; }
+        #fc-revision-choice { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-light); }
+        #fc-revision-choice > p { font-size: 0.88rem; color: var(--text-muted); margin: 0 0 0.65rem; }
 
         /* Vocab Auction embed — full-viewport, no nested iframe scrollbar */
         body.auction-active > header,
@@ -341,10 +363,20 @@
 
         /* Auth bar + paywall modal */
         .auth-bar {
-            display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1200px;
+            display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: 1200px;
             margin: 0 auto; padding: 0.75rem 1.5rem; flex-wrap: wrap; background: var(--pillarbox-red);
             border-radius: 0 0 10px 10px;
         }
+        .auth-bar-left, .auth-bar-right {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .auth-bar-right { margin-left: auto; }
+        .auth-nav-btn {
+            padding: 0.4rem 0.85rem; font-size: 0.85rem; border: 2px solid #fff;
+            background: transparent; color: #fff; border-radius: 8px; cursor: pointer;
+            font-family: var(--font-primary); font-weight: 600; transition: 0.2s;
+        }
+        .auth-nav-btn:hover, .auth-nav-btn.active { background: rgba(255,255,255,0.18); }
         .auth-bar .auth-user { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 0.9rem; }
         .auth-bar .auth-user img { width: 28px; height: 28px; border-radius: 50%; }
         .menu-btn {
@@ -453,6 +485,30 @@
         .pe-input { width: 100%; padding: 1rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem; font-family: inherit; margin-bottom: 1rem; }
         .pe-input:focus { outline: none; border-color: var(--royal-blue); }
         textarea.pe-input { min-height: 160px; resize: vertical; }
+
+        /* Dictation */
+        .dictation-progress { text-align: center; font-family: var(--font-primary); color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem; }
+        .dictation-play-row { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .dictation-speaker-btn {
+            font-family: var(--font-primary); font-weight: 700; font-size: 1.05rem; padding: 0.85rem 1.6rem;
+            border-radius: 999px; border: 2px solid var(--royal-blue); background: var(--royal-blue); color: white; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 0.55rem; transition: 0.2s;
+        }
+        .dictation-speaker-btn:hover { background: #001a52; border-color: #001a52; }
+        .dictation-speaker-btn.outline { background: white; color: var(--royal-blue); }
+        .dictation-speaker-btn.outline:hover { background: rgba(1,33,105,0.06); }
+        .dictation-model-box { background: rgba(0, 130, 59, 0.08); border: 2px solid var(--success-green); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; font-size: 1.15rem; line-height: 1.65; display: none; }
+        .dictation-model-box.open { display: block; }
+        .dictation-gap-line { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px; padding: 1.25rem; font-size: 1.12rem; line-height: 2.2; margin-bottom: 1rem; }
+        .dictation-gap-input {
+            display: inline-block; min-width: 5.5rem; max-width: 12rem; padding: 0.35rem 0.5rem; margin: 0 0.15rem;
+            border: none; border-bottom: 2px solid var(--royal-blue); background: rgba(1,33,105,0.06); font-size: 1.05rem;
+            font-family: inherit; text-align: center; border-radius: 4px 4px 0 0;
+        }
+        .dictation-gap-input:focus { outline: none; border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.06); }
+        .dictation-gap-input.dictation-gap-correct { border-bottom-color: var(--success-green); background: rgba(0,130,59,0.1); }
+        .dictation-gap-input.dictation-gap-wrong { border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.1); }
+        .dictation-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
 
         .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
         .paywall-overlay.open { display: flex; }
@@ -762,14 +818,18 @@
         </div>
     </header>
 
-    <div class="auth-bar" id="auth-bar"></div>
+    <div class="auth-bar" id="auth-bar">
+        <div class="auth-bar-left" id="auth-bar-left">
+            <button type="button" class="auth-nav-btn" id="auth-nav-mysets" onclick="openWordSets()" style="display:none;"><i class="fa-solid fa-book"></i> Word Sets</button>
+            <button type="button" class="auth-nav-btn" id="auth-nav-progress" onclick="openMyProgress()" style="display:none;"><i class="fa-solid fa-chart-line"></i> My Progress</button>
+        </div>
+        <div class="auth-bar-right" id="auth-bar-right"></div>
+    </div>
 
     <div class="about-panel" id="about-panel" aria-hidden="true">
         <div class="menu-nav" role="tablist" aria-label="Menu sections">
             <button type="button" class="menu-nav-btn active" id="menu-btn-about" role="tab" aria-selected="true" aria-controls="menu-view-about" onclick="showMenuView('about')">About</button>
             <button type="button" class="menu-nav-btn" id="menu-btn-howto" role="tab" aria-selected="false" aria-controls="menu-view-howto" onclick="showMenuView('howto')">How to play</button>
-            <button type="button" class="menu-nav-btn" id="menu-btn-mysets" role="tab" aria-selected="false" aria-controls="menu-view-mysets" onclick="showMenuView('mysets')">Word Sets</button>
-            <button type="button" class="menu-nav-btn" id="menu-btn-progress" role="tab" aria-selected="false" aria-controls="menu-view-progress" onclick="showMenuView('progress')" style="display:none;">My Progress</button>
         </div>
 
         <div id="menu-view-about" class="menu-view active" role="tabpanel" aria-labelledby="menu-btn-about">
@@ -811,6 +871,8 @@
                 <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
+                <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
+                <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
                 <div class="guide-item"><strong>Frankenstein Builder</strong><p>Drag sentence blocks into the right essay order (hook → context → thesis → evidence → analysis).</p></div>
@@ -823,31 +885,10 @@
                 <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments.</p></div>
             </div>
         </div>
-
-        <div id="menu-view-mysets" class="menu-view" role="tabpanel" aria-labelledby="menu-btn-mysets">
-            <h2>Word Sets</h2>
-            <p style="color: var(--text-muted); margin-bottom: 1rem;">Demo sets are free for everyone. Sign in to save your own lists and track mastery.</p>
-            <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue);">
-                <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
-                <input type="text" id="mysets-save-name" placeholder="Set name..." maxlength="80" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.5rem;">
-                <button class="btn btn-blue" style="width: 100%;" onclick="saveCurrentGlossary()">Save</button>
-            </div>
-            <div id="mysets-list" style="min-height: 60px;">
-                <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
-            </div>
-        </div>
-
-        <div id="menu-view-progress" class="menu-view" role="tabpanel" aria-labelledby="menu-btn-progress">
-            <h2>My Progress</h2>
-            <p style="color: var(--text-muted); margin-bottom: 1rem;">Track your learning across all games. Your account and progress are free — no premium required.</p>
-            <div id="progress-content">
-                <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
-            </div>
-        </div>
     </div>
 
     <div class="container">
-        
+
         <!-- HOME SCREEN -->
         <div id="screen-home" class="screen active">
 
@@ -869,6 +910,37 @@
                 </a>
             </div>
 
+        <div id="section-mysets" class="home-section">
+            <div class="section-back-row">
+                <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+            </div>
+            <div class="category-header">
+                <i class="fa-solid fa-book cat-icon"></i><h2>Word Sets</h2>
+            </div>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists and track mastery.</p>
+            <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue); max-width: 640px; margin-left: auto; margin-right: auto;">
+                <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
+                <input type="text" id="mysets-save-name" placeholder="Set name..." maxlength="80" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.5rem;">
+                <button class="btn btn-blue" style="width: 100%;" onclick="saveCurrentGlossary()">Save</button>
+            </div>
+            <div id="mysets-list" style="min-height: 60px;">
+                <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
+            </div>
+        </div>
+
+        <div id="section-progress" class="home-section">
+            <div class="section-back-row">
+                <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+            </div>
+            <div class="category-header">
+                <i class="fa-solid fa-chart-line cat-icon"></i><h2>My Progress</h2>
+            </div>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Track your learning across all games. Your account and progress are free — no premium required.</p>
+            <div id="progress-content">
+                <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
+            </div>
+        </div>
+
             <div id="section-vocab" class="home-section">
                 <div class="section-back-row">
                     <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
@@ -878,7 +950,7 @@
                 </div>
                 <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Paste your own vocabulary lists to play — or jump into Vocab Auction with built-in word pools.</p>
                 <div class="grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Interactive flippable cards. "Don't know" cards stay in the deck until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Humans claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own word list.</p><a href="#/auction" class="btn btn-outline">Play Now</a></div>
@@ -915,17 +987,16 @@
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">3 AI writing games — choose CEFR level A1, A2 or B1</span>
+                        <span class="pe-pack-meta">Dictation from A1 + 3 AI writing games — choose A2 or B1 for AI games</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
                 <div class="pe-level-row" id="pe-level-row">
-                    <span>CEFR level:</span>
-                    <button type="button" class="pe-level-btn" data-level="A1" onclick="selectPeLevel('A1')">A1</button>
+                    <span>CEFR level (AI games):</span>
                     <button type="button" class="pe-level-btn" data-level="A2" onclick="selectPeLevel('A2')">A2</button>
                     <button type="button" class="pe-level-btn" data-level="B1" onclick="selectPeLevel('B1')">B1</button>
                     <button type="button" class="pe-level-btn" id="pe-custom-toggle-btn" onclick="togglePeCustomMode()">Custom Vocab</button>
-                    <div class="pe-level-hint" id="pe-level-hint">Select CEFR level or Custom Vocab first. AI language, vocabulary and task difficulty will match your mode.</div>
+                    <div class="pe-level-hint" id="pe-level-hint">Select A2 or B1 for AI games, or Custom Vocab. For Beginner / A1 listening practice, use Dictation.</div>
                     <div class="pe-custom-panel" id="pe-custom-panel">
                         <textarea id="pe-custom-glossary-input" placeholder="Paste custom glossary words/phrases (one per line, or use Term = Meaning format)"></textarea>
                         <button type="button" class="btn btn-outline" onclick="applyPeCustomGlossary()">Apply Custom Glossary</button>
@@ -933,6 +1004,7 @@
                     </div>
                 </div>
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
+                    <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
@@ -1012,6 +1084,20 @@
                         <label><input type="radio" name="grid-mode" value="pvp"> Two players — both teams answer to claim squares</label>
                     </div>
                 </div>
+
+                <div class="form-group" id="flashcard-settings" style="display: none;">
+                    <label><i class="fa-solid fa-chart-bar"></i> Flashcard progress</label>
+                    <div id="fc-setup-summary" class="fc-setup-summary">Study stats are saved in this browser for each word list.</div>
+                    <div id="fc-revision-choice" style="display: none;">
+                        <p>You have studied this list before. Choose how to revise:</p>
+                        <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
+                            <label><input type="radio" name="fc-revision-mode" value="original" checked> Original list order</label>
+                            <label><input type="radio" name="fc-revision-mode" value="weakest"> Least familiar words first</label>
+                            <label><input type="radio" name="fc-revision-mode" value="fresh"> Start fresh (clear saved progress)</label>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline" style="margin-top: 0.75rem;" onclick="openFcStatsFromSetup()"><i class="fa-solid fa-chart-bar"></i> View word stats</button>
+                </div>
             </div>
 
             <div class="form-group" id="mission-settings" style="display: none;">
@@ -1030,6 +1116,25 @@
                     <textarea id="mission-custom-scenario" rows="3" placeholder="Set the scene in a few sentences..." style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; font-size:1rem; font-family:var(--font-secondary);"></textarea>
                 </div>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">Fluency first: the AI never corrects grammar. Progress rises when you persuade, clarify, and use relevant language.</p>
+            </div>
+
+            <div id="dictation-setup-note" class="form-group" style="display:none; background: rgba(0,130,59,0.08); border-left-color: var(--success-green);">
+                <label style="color: var(--success-green);"><i class="fa-solid fa-headphones"></i> Dictation</label>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Built-in sentence banks — no word list needed. Uses your browser's text-to-speech (en-GB).</p>
+            </div>
+
+            <div class="form-group" id="pe-dictation-settings" style="display: none;">
+                <label><i class="fa-solid fa-layer-group"></i> Dictation level:</label>
+                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
+                    <label><input type="radio" name="dictation-level" value="beginner" checked> Beginner (Klasy 1–3) — 100 sentences</label>
+                    <label><input type="radio" name="dictation-level" value="a1"> A1 (Klasy 4–5) — 200 sentences</label>
+                    <label><input type="radio" name="dictation-level" value="a2"> A2 — 500 sentences</label>
+                </div>
+                <label style="margin-top: 1rem;"><i class="fa-solid fa-sliders"></i> Practice mode:</label>
+                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
+                    <label><input type="radio" name="dictation-mode" value="listen" checked> Listen &amp; repeat</label>
+                    <label><input type="radio" name="dictation-mode" value="gap"> Gap fill (verbs, adjectives, nouns, adverbs)</label>
+                </div>
             </div>
 
             <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
@@ -1366,7 +1471,7 @@
                 <span class="pe-points">Points: <span id="pe-points-boring">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Boring to Brilliant <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
+                <h2>Boring to Brilliant <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
                 <button class="btn btn-outline" onclick="initPeBoring()" id="pe-boring-btn">New Prompt <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -1393,7 +1498,7 @@
                 <span class="pe-points">Points: <span id="pe-points-detail">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Detail Detective <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
+                <h2>Detail Detective <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
                 <button class="btn btn-outline" onclick="initPeDetail()" id="pe-detail-btn">New Case <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -1425,7 +1530,7 @@
                 <span class="pe-points">Points: <span id="pe-points-link">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Link Master <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
+                <h2>Link Master <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
                 <button class="btn btn-outline" onclick="initPeLink()" id="pe-link-btn">New Pair <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -1452,7 +1557,7 @@
                 <span class="pe-points">Points: <span id="pe-points-exam">0</span></span>
             </div>
             <div class="game-header">
-                <h2>Exam Simulator <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A1</span></h2>
+                <h2>Exam Simulator <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
                 <button class="btn btn-outline" onclick="initPeExam()" id="pe-exam-btn">New Task <i class="fa-solid fa-rotate"></i></button>
             </div>
             <div class="pe-instr">
@@ -1472,6 +1577,61 @@
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeExam()" id="pe-exam-check">Submit to Friendly Examiner</button>
             </div>
             <div id="pe-exam-feedback" class="feedback"></div>
+        </div>
+
+        <!-- PRIMARY ENGLISH: DICTATION -->
+        <div id="screen-pe-dictation" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-dictation">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Dictation <span class="pe-level-badge" id="dictation-level-badge">Beginner</span></h2>
+                <button class="btn btn-outline" onclick="dictationNextSentence()" id="pe-dictation-btn">New sentence <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr" id="dictation-instr-listen">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Press the speaker to hear the sentence. Repeat it aloud clearly, then click I've repeated it to see the model sentence.</div>
+                <div class="pe-instr-pl">Naciśnij głośnik, aby usłyszeć zdanie. Powtórz je wyraźnie na głos, a potem kliknij «Powtarzałem/am», aby zobaczyć wzorcowe zdanie.</div>
+            </div>
+            <div class="pe-instr" id="dictation-instr-gap" style="display:none;">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Listen to the sentence, then type the missing words. Spelling must match exactly — capital letters do not matter. Gaps hide verbs, adjectives, nouns or adverbs.</div>
+                <div class="pe-instr-pl">Posłuchaj zdania i wpisz brakujące słowa. Pisownia musi być identyczna — wielkość liter nie ma znaczenia. Luki zakrywają czasowniki, przymiotniki, rzeczowniki lub przysłówki.</div>
+            </div>
+            <div class="dictation-progress" id="dictation-progress">Sentence 1</div>
+            <div class="dictation-play-row">
+                <button type="button" class="dictation-speaker-btn" onclick="playDictationSentence()" id="dictation-play-btn">
+                    <i class="fa-solid fa-volume-high"></i> Listen
+                </button>
+                <button type="button" class="dictation-speaker-btn outline" onclick="playDictationSentence()" id="dictation-replay-btn">
+                    <i class="fa-solid fa-rotate-right"></i> Replay
+                </button>
+            </div>
+            <div id="dictation-listen-panel">
+                <div class="dictation-actions">
+                    <button type="button" class="btn btn-blue" onclick="dictationRevealListen()" id="dictation-repeated-btn">I've repeated it</button>
+                    <button type="button" class="btn btn-outline" onclick="dictationNextSentence()" id="dictation-listen-next" style="display:none;">Next sentence</button>
+                </div>
+                <div class="dictation-model-box" id="dictation-model-box">
+                    <strong style="color:var(--success-green);font-family:var(--font-primary);">Model sentence:</strong>
+                    <div id="dictation-model-text" style="margin-top:0.5rem;"></div>
+                </div>
+            </div>
+            <div id="dictation-gap-panel" style="display:none;">
+                <div class="dictation-gap-line" id="dictation-gap-line"></div>
+                <div class="dictation-actions">
+                    <button type="button" class="btn btn-blue" onclick="checkDictationGaps()" id="dictation-check-btn">Check</button>
+                    <button type="button" class="btn btn-outline" onclick="dictationNextSentence()" id="dictation-gap-next" style="display:none;">Next sentence</button>
+                </div>
+            </div>
+            <div id="pe-dictation-feedback" class="feedback"></div>
         </div>
 
         <!-- CORE VOCAB: BOMB DEFUSAL -->
@@ -1503,9 +1663,10 @@
         <div id="screen-flashcard" class="screen engine-container">
             <div class="top-bar">
                 <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Exit</a>
-                <p style="color: var(--text-muted); font-weight: bold;">Tap card to flip either way</p>
+                <button type="button" class="btn btn-outline" onclick="showFcStatsModal()"><i class="fa-solid fa-chart-bar"></i> Stats</button>
             </div>
             <div class="fc-counter" id="fc-counter">Cards left in deck: 0</div>
+            <p style="text-align:center; color: var(--text-muted); font-size: 0.9rem; margin: -1rem 0 1rem;">Tap card to flip either way</p>
             <div class="flip-card" id="fc-card" onclick="flipCard()">
                 <div class="flip-card-inner">
                     <div class="flip-card-front" id="fc-front">Prompt</div>
@@ -1529,6 +1690,23 @@
             <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank" scrolling="no"></iframe>
         </div>
 
+    </div>
+
+    <!-- FLASHCARD STATS -->
+    <div id="fc-stats-overlay" class="fc-stats-overlay" onclick="if(event.target===this)closeFcStatsModal()">
+        <div class="fc-stats-box" role="dialog" aria-labelledby="fc-stats-title">
+            <h3 id="fc-stats-title"><i class="fa-solid fa-chart-bar"></i> Flashcard stats</h3>
+            <div id="fc-stats-summary" class="fc-stats-summary"></div>
+            <div class="fc-stats-table-wrap">
+                <table class="fc-stats-table">
+                    <thead>
+                        <tr><th>Word</th><th>Know</th><th>Don't know</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="fc-stats-body"></tbody>
+                </table>
+            </div>
+            <div style="text-align:center;"><button type="button" class="btn btn-grey" onclick="closeFcStatsModal()">Close</button></div>
+        </div>
     </div>
 
     <!-- MODAL DO GRID TERRITORY -->
@@ -1685,7 +1863,7 @@
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation']);
         const VOCAB_GAMES = new Set(['flashcard', 'bomb', 'grid']);
 
         function routePath(hash) {
@@ -1720,7 +1898,7 @@
                 if (root === 'home') {
                     showScreen('home');
                     closeHomeSection();
-                } else if (root === 'vocab' || root === 'team' || root === 'writing') {
+                } else if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'mysets' || root === 'progress') {
                     showScreen('home');
                     openHomeSection(root);
                 } else if (root === 'auction') {
@@ -1746,7 +1924,7 @@
                         showScreen(arg);
                         if (arg === 'bomb') initBombDefusal();
                         if (arg === 'grid') initGridTerritory();
-                        if (arg === 'flashcard') initFlashcards();
+                        if (arg === 'flashcard') initFlashcards(fcGetLaunchRevisionMode());
                         if (arg === 'odyssey') initOdyssey();
                     } else {
                         activeGame = arg;
@@ -1761,6 +1939,7 @@
                         if (arg === 'pe-detail') initPeDetail();
                         if (arg === 'pe-link') initPeLink();
                         if (arg === 'pe-exam') initPeExam();
+                        if (arg === 'pe-dictation') initPeDictation();
                     }
                 } else {
                     showScreen('home');
@@ -1917,13 +2096,43 @@
             if (hideToast) dismissGuestLoginToast();
         }
 
-        function updateMenuAuthTabs() {
+        function updateAuthBarNav() {
             const logged = isLoggedIn();
-            const setsBtn = document.getElementById('menu-btn-mysets');
-            const progBtn = document.getElementById('menu-btn-progress');
-            // Word Sets stays visible for everyone (demo sets); Progress is account-only.
-            if (setsBtn) setsBtn.style.display = '';
+            const setsBtn = document.getElementById('auth-nav-mysets');
+            const progBtn = document.getElementById('auth-nav-progress');
+            if (setsBtn) setsBtn.style.display = logged ? '' : 'none';
             if (progBtn) progBtn.style.display = logged ? '' : 'none';
+            syncAuthBarNavActive();
+        }
+
+        function syncAuthBarNavActive() {
+            const mysetsActive = document.getElementById('section-mysets')?.classList.contains('active');
+            const progressActive = document.getElementById('section-progress')?.classList.contains('active');
+            document.getElementById('auth-nav-mysets')?.classList.toggle('active', !!mysetsActive);
+            document.getElementById('auth-nav-progress')?.classList.toggle('active', !!progressActive);
+        }
+
+        function openWordSets() {
+            if (!isLoggedIn()) { openAuthModal('login'); return; }
+            const panel = document.getElementById('about-panel');
+            if (panel?.classList.contains('open')) toggleAboutPanel();
+            showScreen('home');
+            openHomeSection('mysets');
+        }
+
+        function openMyProgress() {
+            if (!isLoggedIn()) { openAuthModal('login'); return; }
+            const panel = document.getElementById('about-panel');
+            if (panel?.classList.contains('open')) toggleAboutPanel();
+            showScreen('home');
+            openHomeSection('progress');
+        }
+
+        function refreshMySetsView() {
+            loadMySets();
+            const glossary = document.getElementById('glossary-input');
+            const saveRow = document.getElementById('mysets-save-row');
+            if (saveRow) saveRow.style.display = (glossary && glossary.value.trim() && isLoggedIn()) ? 'block' : 'none';
         }
 
         function getDemoSets() {
@@ -1958,6 +2167,7 @@
                 showScreen('home');
                 openHomeSection('vocab');
             }
+            if (activeGame === 'flashcard') updateFlashcardSetupUI();
             return true;
         }
 
@@ -2036,7 +2246,6 @@
                 if (textarea) {
                     textarea.value = data.items.map(i => i.definition ? `${i.term} = ${i.definition}` : i.term).join('\n');
                 }
-                toggleAboutPanel();
                 showScreen('home');
                 openHomeSection('vocab');
             } catch (e) { appAlert('Failed to load set.'); }
@@ -2089,7 +2298,7 @@
                     html += '<div class="progress-grid">';
                     const gameNames = {
                         flashcards: 'Flashcards', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
-                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing'
                     };
                     for (const t of data.gameTotals) {
@@ -2124,7 +2333,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -2136,7 +2345,7 @@
             } catch (e) { container.innerHTML = '<p style="color:var(--pillarbox-red);">Failed to load progress.</p>'; }
         }
 
-        let peCefrLevel = null; // 'A1' | 'A2' | 'B1'
+        let peCefrLevel = null; // 'A2' | 'B1'
         let peMode = 'cefr'; // 'cefr' | 'custom'
         let peCustomGlossary = [];
         let peCustomDeck = [];
@@ -2144,22 +2353,27 @@
 
         function openHomeSection(sectionId) {
             const hub = document.getElementById('home-hub');
-            const map = { vocab: 'section-vocab', team: 'section-team', writing: 'section-writing' };
+            const map = { vocab: 'section-vocab', team: 'section-team', writing: 'section-writing', mysets: 'section-mysets', progress: 'section-progress' };
             const targetId = map[sectionId];
             if (!targetId) return;
             document.querySelectorAll('.home-section').forEach((el) => el.classList.remove('active'));
             if (hub) hub.classList.remove('active');
             const section = document.getElementById(targetId);
             if (section) section.classList.add('active');
-            trackSectionOpen('section:cat-' + (sectionId === 'writing' ? 'writing' : sectionId === 'team' ? 'team' : 'vocab'));
+            if (sectionId === 'mysets') refreshMySetsView();
+            if (sectionId === 'progress') loadProgressDashboard();
+            syncAuthBarNavActive();
+            const trackKey = sectionId === 'writing' ? 'writing' : sectionId === 'team' ? 'team' : sectionId === 'mysets' ? 'mysets' : sectionId === 'progress' ? 'progress' : 'vocab';
+            trackSectionOpen('section:cat-' + trackKey);
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (!applyingRoute) setAppHash(sectionId);
+            if (!applyingRoute) setAppHash(sectionId === 'mysets' || sectionId === 'progress' ? sectionId : sectionId);
         }
 
         function closeHomeSection() {
             document.querySelectorAll('.home-section').forEach((el) => el.classList.remove('active'));
             const hub = document.getElementById('home-hub');
             if (hub) hub.classList.add('active');
+            syncAuthBarNavActive();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (!applyingRoute) setAppHash('home');
         }
@@ -2194,9 +2408,8 @@
             const customBtn = document.getElementById('pe-custom-toggle-btn');
             if (customBtn) customBtn.classList.remove('custom-active');
             const hints = {
-                A1: 'A1 (gentle) — very simple everyday words; short creative sentences. Comfortably below strict exam A1.',
-                A2: 'A2 (gentle) — familiar school/home topics; clear ideas without rare vocabulary.',
-                B1: 'B1 (gentle) — linked ideas and short emails; prefer accessible wording over advanced jargon.'
+                A2: 'A2 — Polish school A2 (Klasa 6–8): familiar topics, past simple, short linked sentences.',
+                B1: 'B1 — A2+ stretch: richer linkers, exam-style emails, opinions with accessible vocabulary.'
             };
             document.getElementById('pe-level-hint').textContent = hints[level] || '';
             document.getElementById('pe-custom-panel').classList.remove('open');
@@ -2297,7 +2510,7 @@
                 return;
             }
             if (peMode !== 'custom' && !peCefrLevel) {
-                appAlert('Please select CEFR level A1, A2 or B1, or switch to Custom Vocab.');
+                appAlert('Please select CEFR level A2 or B1, or switch to Custom Vocab.');
                 const row = document.getElementById('pe-level-row');
                 if (row && !row.classList.contains('open')) togglePrimaryEnglishPack();
                 return;
@@ -2459,7 +2672,7 @@
             }
             window.authState = authState;
             renderAuthBar();
-            updateMenuAuthTabs();
+            updateAuthBarNav();
             if (authState.user) {
                 stopGuestLoginReminders();
                 replayPendingSession();
@@ -2477,15 +2690,15 @@
         }
 
         function renderAuthBar() {
-            const bar = document.getElementById('auth-bar');
-            if (!bar) return;
+            const right = document.getElementById('auth-bar-right');
+            if (!right) return;
             const menuBtn = `
                 <button type="button" class="menu-btn" id="about-menu-btn" aria-label="About menu" aria-expanded="false" onclick="toggleAboutPanel()">
                     <span></span><span></span><span></span>
                 </button>
             `;
             if (authState.user) {
-                bar.innerHTML = `
+                right.innerHTML = `
                     <div class="auth-user">
                         ${authState.user.picture ? `<img src="${authState.user.picture}" alt="">` : '<i class="fa-solid fa-user"></i>'}
                         <span>${authState.user.name || authState.user.email}</span>
@@ -2496,13 +2709,14 @@
                     ${menuBtn}
                 `;
             } else {
-                bar.innerHTML = `
+                right.innerHTML = `
                     <button class="btn btn-red" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="openAuthModal('login')">
                         <i class="fa-solid fa-right-to-bracket"></i> Sign in
                     </button>
                     ${menuBtn}
                 `;
             }
+            updateAuthBarNav();
             syncAboutMenuBtn();
         }
 
@@ -2576,20 +2790,13 @@
         }
 
         function showMenuView(view) {
-            const views = ['about', 'howto', 'mysets', 'progress'];
+            const views = ['about', 'howto'];
             for (const v of views) {
                 const el = document.getElementById('menu-view-' + v);
                 const btn = document.getElementById('menu-btn-' + v);
                 if (el) el.classList.toggle('active', v === view);
                 if (btn) { btn.classList.toggle('active', v === view); btn.setAttribute('aria-selected', v === view ? 'true' : 'false'); }
             }
-            if (view === 'mysets') {
-                loadMySets();
-                const glossary = document.getElementById('glossary-input');
-                const saveRow = document.getElementById('mysets-save-row');
-                if (saveRow) saveRow.style.display = (glossary && glossary.value.trim()) ? 'block' : 'none';
-            }
-            if (view === 'progress') loadProgressDashboard();
         }
 
         function toggleAboutPanel() {
@@ -2681,24 +2888,31 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'bomb', 'grid'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
             document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
             document.getElementById('grid-settings').style.display = (gameType === 'grid') ? 'block' : 'none';
+            document.getElementById('flashcard-settings').style.display = (gameType === 'flashcard') ? 'block' : 'none';
             document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
             document.getElementById('mission-settings').style.display = (gameType === 'mission') ? 'block' : 'none';
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
-            document.getElementById('writing-setup-note').style.display = writingGames.includes(gameType) ? 'block' : 'none';
+            document.getElementById('pe-dictation-settings').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
+            document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
+            document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && gameType !== 'pe-dictation') ? 'block' : 'none';
 
             if (gameType === 'mission') renderMissionPicker();
             if (gameType === 'matura') {
                 document.getElementById('setup-title').innerText = 'Matura Writing Assessment';
             }
+            if (gameType === 'pe-dictation') {
+                document.getElementById('setup-title').innerText = 'Dictation Setup';
+            }
             if (vocabGames.includes(gameType) || hybridGames.includes(gameType)) {
                 renderDemoSetButtons();
             }
+            if (gameType === 'flashcard') updateFlashcardSetupUI();
 
             showScreen('setup');
         }
@@ -2756,7 +2970,7 @@
             
             if(activeGame === 'bomb') initBombDefusal();
             if(activeGame === 'grid') initGridTerritory();
-            if(activeGame === 'flashcard') initFlashcards();
+            if(activeGame === 'flashcard') initFlashcards(fcGetLaunchRevisionMode());
             
             if(activeGame === 'frank') initFrankenstein();
             if(activeGame === 'trans') initTransitions();
@@ -2770,6 +2984,7 @@
             if(activeGame === 'pe-detail') initPeDetail();
             if(activeGame === 'pe-link') initPeLink();
             if(activeGame === 'pe-exam') initPeExam();
+            if(activeGame === 'pe-dictation') initPeDictation();
         }
 
         function toggleLoading(prefix, isLoading) {
@@ -4779,7 +4994,7 @@ Return ONLY JSON:
         // ==========================================
         // PRIMARY ENGLISH PACK (AI)
         // ==========================================
-        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0 };
+        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0 };
         let peBoringTask = null;
         let peDetailTask = null;
         let peLinkTask = null;
@@ -4793,38 +5008,31 @@ Return ONLY JSON:
             'routines and free time', 'jobs and future plans', 'books and stories', 'transport and getting around', 'environment and recycling'
         ];
 
+        const PE_TYPEIN_RULE = 'GRADING: Completely IGNORE capitalisation in the student\'s typed answer — upper/lowercase never affects correctness. Judge spelling, vocabulary, grammar and meaning only.';
+
         const PE_CEFR = {
-            A1: {
-                label: 'A1',
-                vocab: 'Keep language comfortably BELOW strict exam A1: only the most common everyday words and very short sentences. Prefer creativity with simple words over rare vocabulary. Avoid idioms and complex grammar.',
-                upgrades: 'Accepted upgrades must still be ultra-simple school words (e.g. nice→pretty, like→enjoy, go→walk). Prefer simpler than typical A1 textbooks. Do not require advanced synonyms.',
-                boring: 'A1 sentence: max ~8–10 words, present simple, everyday topic. TWO bland words. Natural and logical. Upgrades stay easy and motivating.',
-                detail: 'Prompt statement MUST be a very short, simple sentence (max ~6–8 words). Student expands with easy concrete details using accessible words — slightly easier than classic A1 expectations.',
-                link: 'Allowed linkers ONLY: because, so. Sentences must be very short and clear.',
-                linkers: ['because', 'so'],
-                exam: 'Email task for gentle A1: 40–70 words, 3 simple bullet points about everyday life. Simple language only; do not demand hard words.',
-                examWords: { min: 40, max: 70 }
-            },
             A2: {
                 label: 'A2',
-                vocab: 'Keep language comfortably BELOW strict exam A2: familiar school/home topics, past simple / going to when natural, common collocations. Prefer accessible wording; avoid rare or academic words.',
-                upgrades: 'Accepted upgrades should be richer but still easy A2-friendly school English. Prefer motivating, creative options over difficult synonyms.',
-                boring: 'A2 sentence: clear and natural, everyday context. TWO bland words. Upgrades must fit natural collocations at a gentle A2 level.',
-                detail: 'Prompt statement MUST still be a very short, simple sentence. Student adds 2+ concrete details with vocabulary a little easier than typical A2 exam lists.',
+                schoolLevel: 'Polish school A2 (Klasa 6–8 / ósmoklasista): topics like daily routine, school, hobbies, town, weather, family events — past simple, going to, comparatives, there is/are.',
+                vocab: 'Keep language at gentle school A2: familiar school/home/town topics, past simple and going to when natural, common collocations. Prefer accessible wording; avoid rare or academic words. Match complexity to Polish primary A2 curriculum, not strict Cambridge A2 exam lists.',
+                upgrades: 'Accepted upgrades should be richer but still A2-friendly school English (e.g. nice→lovely, go→travel, big→huge). Prefer motivating, creative options over difficult synonyms.',
+                boring: 'A2 sentence: clear and natural, everyday school/home context. TWO bland words. Max ~10–12 words. Upgrades must fit natural collocations at gentle A2.',
+                detail: 'Prompt statement MUST be a very short simple sentence (about 5–8 words). Student adds 2+ concrete details with gentle A2 vocabulary — routines, places, feelings, simple past where natural.',
                 link: 'Allowed linkers: because, so, and, but, when, after, before. CRITICAL: Keep BOTH sentences very short and simple (about 4–8 words each). Everyday vocabulary only.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before'],
-                exam: 'Email task for gentle A2 / primary exam style: 50–120 words, 3 bullet points. Do not require advanced vocabulary.',
+                exam: 'Email task for Polish school A2 / E8-style: 50–120 words, 3 bullet points about everyday life (school, friends, plans). Do not require advanced vocabulary.',
                 examWords: { min: 50, max: 120 }
             },
             B1: {
                 label: 'B1',
-                vocab: 'Keep language comfortably BELOW strict exam B1: solid everyday school English, linking ideas and opinions. Prefer accessible words; avoid academic C1 jargon so students stay creative and confident.',
+                schoolLevel: 'Polish school A2+ / gentle B1 stretch (Klasa 7–8+): richer opinions, future plans, experiences, polite requests — still learner-friendly, not academic C1.',
+                vocab: 'Keep language at gentle B1 for Polish lower-secondary: linked ideas, opinions, experiences, polite email tone. Prefer accessible school words; avoid academic C1 jargon so students stay creative and confident.',
                 upgrades: 'Accepted upgrades can be clearer B1 school words, but still common and motivating — not rare advanced vocabulary.',
-                boring: 'B1 sentence: natural, coherent, learner-friendly. TWO bland words. Upgrades preserve meaning and sound natural aloud.',
-                detail: 'Prompt statement MUST still be a very short, simple sentence. Student writes a richer expanded sentence with several details — using accessible B1-friendly wording, not advanced academic language.',
+                boring: 'B1 sentence: natural, coherent, learner-friendly school context. TWO bland words. Upgrades preserve meaning and sound natural aloud.',
+                detail: 'Prompt statement MUST still be a very short simple sentence (about 5–8 words). Student writes a richer expanded sentence with several details — accessible B1-friendly wording (opinions, reasons, experiences), not advanced academic language.',
                 link: 'Allowed linkers: because, so, and, but, when, after, before, although, however, while, if, therefore. Keep BOTH sentences short and clear (about 5–10 words each). Everyday school English only.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'however', 'while', 'if', 'therefore'],
-                exam: 'Email or short message for gentle B1: 50–120 words, 3–4 content points. Prefer clear accessible vocabulary over advanced wording.',
+                exam: 'Email or short message for gentle B1 / E8+ style: 50–120 words, 3–4 content points. Prefer clear accessible vocabulary over advanced wording.',
                 examWords: { min: 50, max: 120 }
             }
         };
@@ -4850,7 +5058,7 @@ Return ONLY JSON:
                 return {
                     label: 'CUSTOM',
                     vocab: 'Custom vocabulary mode is active. CEFR levels do not apply. Language should stay clear and learner-friendly for school students.',
-                    upgrades: 'If custom words are required, student must include them exactly (case-insensitive) in their answer.',
+                    upgrades: 'If custom words are required, student must include them (case-insensitive match) in their answer.',
                     boring: 'Custom vocabulary mode. Sentence must still be natural, grammatical, and meaningful. TWO bland words marked for upgrade (any part of speech). Meaning preserved after upgrade.',
                     detail: 'Prompt statement must be a very short simple sentence. Student expands it and must include required custom glossary word(s).',
                     link: 'Student must join ideas with a clear linker (because, so, and, but, when, although, if, etc.) and include required custom glossary word(s).',
@@ -4933,6 +5141,7 @@ Return ONLY JSON:
                 'small room / say sorry', 'easy test / work hard', 'clean kitchen / make food'
             ]);
             const prompt = `You create UNIQUE Primary English vocabulary upgrade tasks. CEFR level: ${L.label}.
+SCHOOL CONTEXT: ${L.schoolLevel || L.vocab}
 LEVEL RULES: ${L.vocab}
 UPGRADE RULES: ${L.upgrades}
 BORING TASK RULES: ${L.boring || L.vocab}
@@ -4977,6 +5186,7 @@ Return ONLY JSON: {"sentenceHtml":"... **word1** ... **word2** ...","blandWords"
             const L = peLevelGuide();
 
             const prompt = `CEFR ${L.label} ESL tutor for "Boring to Brilliant" vocabulary upgrade task. ${L.upgrades}
+${PE_TYPEIN_RULE}
 BORING TASK RULES: ${L.boring || ''}
 Sentence: "${peBoringTask.sentenceHtml}".
 Bland targets: ${JSON.stringify(peBoringTask.blandWords)}.
@@ -5068,6 +5278,7 @@ Return ONLY JSON:
             const R = peRandomnessBlock('detail');
             const requiredCustomWords = peGetRequiredCustomWords(2);
             const prompt = `Create a UNIQUE under-detailed English statement for Primary English Detail Detective.
+SCHOOL CONTEXT: ${L.schoolLevel || ''}
 CRITICAL: The statement itself must ALWAYS be a VERY SIMPLE short sentence (about 5–8 words), regardless of CEFR level ${L.label}. Example style: "I bought a phone." / "We went to the park."
 Do NOT make the prompt sentence complex even for B1.
 DETAIL EXPECTATION for the STUDENT answer: ${L.detail}
@@ -5109,6 +5320,7 @@ Return ONLY JSON: {"statement":"very short simple sentence","topic":"short topic
             document.getElementById('pe-detail-check').disabled = true;
             const L = peLevelGuide();
             const prompt = `CEFR ${L.label} ESL check for Detail Detective.
+${PE_TYPEIN_RULE}
 Original simple statement: "${peDetailTask.statement}".
 Student must develop/expand/explain: "${peDetailTask.developFocus || ''}"
 Useful detail types: ${JSON.stringify(peDetailTask.hintDetails || [])}.
@@ -5175,13 +5387,14 @@ Return ONLY JSON:
             const preferred = pePick(allowed);
             const requiredCustomWords = peGetRequiredCustomWords(2);
             const prompt = `Create TWO unique short related English sentences for CEFR ${L.label} that can be joined with a linker.
+SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
 LINKER RULES: ${L.link}
 ALLOWED LINKERS for this level: ${allowed.join(', ')}.
 Preferred linker for this round: "${preferred}" — design the pair so this linker fits best (but accept other allowed linkers if logic still works).
-SENTENCE SIMPLICITY (CRITICAL for A2/B1):
+SENTENCE SIMPLICITY (CRITICAL):
 - s1 and s2 must each be SHORT, CLEAR, everyday sentences.
-- A1/A2: about 4–8 words each. B1: about 5–10 words each.
+- A2: about 4–8 words each. B1: about 5–10 words each.
 - No long relative clauses, no dense academic wording, no multi-part sentences.
 - The USER's job is to link them correctly — do NOT make the sentences hard to understand.
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
@@ -5220,6 +5433,7 @@ Return ONLY JSON: {"s1":"...","s2":"...","preferredLinker":"${preferred}","allow
             const L = peLevelGuide();
             const allowed = peLinkTask.allowedLinkers || peAllowedLinkers();
             const prompt = `CEFR ${L.label} ESL check. ${L.link}
+${PE_TYPEIN_RULE}
 1) ${peLinkTask.s1}
 2) ${peLinkTask.s2}
 Preferred linker hint: ${peLinkTask.preferredLinker || 'because/so'}
@@ -5256,6 +5470,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                 'restaurant recommendation for a visitor', 'pet-sitting for a neighbour', 'museum trip with class'
             ]);
             const prompt = `Create a UNIQUE Polish primary/lower-secondary style English writing exam task (email) for CEFR ${L.label}.
+SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
 EXAM RULES: ${L.exam}
 Word range: ${L.examWords.min}-${L.examWords.max}. Sign as XYZ.
@@ -5266,7 +5481,7 @@ CRITICAL EXAM GUIDELINE CONSISTENCY:
 - taskEn must clearly include the exact word count range (${L.examWords.min}-${L.examWords.max})
 - taskEn must include bullet points matching bulletsEn exactly
 - taskPl must be a faithful Polish translation of taskEn (same bullets and word count)
-- Use 3 bullet points (A1/A2/custom) or 4 at B1 if natural; bulletsEn array must match the instruction text
+- Use 3 bullet points (A2/custom) or 4 at B1 if natural; bulletsEn array must match the instruction text
 - recipientName must be the exact first name used in the task (e.g. "Tom")
 Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Full English task with bullet points and word-count line.","taskPl":"Accurate Polish translation of the same task.","bulletsEn":["point1","point2","point3"],"minWords":${L.examWords.min},"maxWords":${L.examWords.max}}`;
             const data = await fetchGenerativeAI(prompt);
@@ -5328,14 +5543,16 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
             document.getElementById('pe-exam-check').disabled = true;
             const L = peLevelGuide();
             const prompt = `You are a friendly English examiner for CEFR ${L.label} / Polish school writing.
+${PE_TYPEIN_RULE}
+SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
 Task: ${peExamTask.taskEn}
 Required points: ${JSON.stringify(peExamTask.bulletsEn || [])}
 Word limit: ${peExamTask.minWords || L.examWords.min}-${peExamTask.maxWords || L.examWords.max}
 Student email:
 """${input}"""
-Evaluate length, bullet coverage, cohesion, and language adequacy for ${L.label} (do not demand higher-level vocabulary).
-${peMode === 'custom' ? `MANDATORY: student must correctly use the required custom glossary words: ${JSON.stringify(peExamTask.requiredWords || [])}.` : ''}
+Evaluate length, bullet coverage, cohesion, and language adequacy for ${L.label} (do not demand higher-level vocabulary). Do not penalise capitalisation choices in the student's email.
+${peMode === 'custom' ? `MANDATORY: student must correctly use the required custom glossary words (case-insensitive): ${JSON.stringify(peExamTask.requiredWords || [])}.` : ''}
 Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered":0,"bulletsTotal":3,"message":"HTML-safe multi-line feedback in English with short section labels for Length, Content, Cohesion, Summary."}`;
             const data = await fetchGenerativeAI(prompt);
             document.getElementById('pe-exam-check').disabled = false;
@@ -5347,6 +5564,254 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             feedback.className = data.valid ? 'feedback success' : 'feedback error';
             feedback.innerHTML = data.message || (data.valid ? 'Ready for the exam!' : 'Revise and try again.');
             if (data.valid) { peAddPoints('exam', data.points || 100); incrementGameCount(); recordGameSessionApi('pe_exam', { score: data.points || 100, pointsEarned: data.points || 100 }); }
+        }
+
+        // ==========================================
+        // PRIMARY ENGLISH: DICTATION
+        // ==========================================
+        const PE_DICTATION_LEVELS = {
+            beginner: { label: 'Beginner (Klasy 1–3)', badge: 'Beginner', rate: 0.82 },
+            a1: { label: 'A1 (Klasy 4–5)', badge: 'A1', rate: 0.88 },
+            a2: { label: 'A2', badge: 'A2', rate: 0.95 }
+        };
+
+        const DICTATION_STOPWORDS = new Set([
+            'a', 'an', 'the', 'and', 'or', 'but', 'so', 'because', 'as', 'if', 'when', 'while', 'until', 'although', 'though',
+            'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their',
+            'this', 'that', 'these', 'those', 'what', 'which', 'who', 'whom', 'where', 'why', 'how', 'all', 'both', 'each', 'every',
+            'some', 'any', 'no', 'not', 'yes', 'please', 'very', 'too', 'also', 'just', 'then', 'there', 'here', 'now', 'today',
+            'is', 'am', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+            'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'to', 'of', 'in', 'on', 'at', 'by', 'for', 'with', 'from',
+            'up', 'about', 'into', 'over', 'after', 'before', 'under', 'again', 'once', 'out', 'off', 'down', 'than', 'via'
+        ]);
+
+        let dictationState = {
+            level: 'beginner',
+            mode: 'listen',
+            queue: [],
+            index: 0,
+            sentence: '',
+            gaps: [],
+            sentenceCount: 0,
+            listenRevealed: false,
+            gapChecked: false
+        };
+
+        function dictationGetSetupLevel() {
+            const el = document.querySelector('input[name="dictation-level"]:checked');
+            return (el && el.value) || 'beginner';
+        }
+
+        function dictationGetSetupMode() {
+            const el = document.querySelector('input[name="dictation-mode"]:checked');
+            return (el && el.value) || 'listen';
+        }
+
+        function dictationShuffle(arr) {
+            return [...arr].sort(() => Math.random() - 0.5);
+        }
+
+        function dictationNormalizeWord(text) {
+            return String(text || '').trim().toLowerCase();
+        }
+
+        function dictationTokenize(sentence) {
+            const tokens = [];
+            const re = /\b([A-Za-z']+)\b/g;
+            let m;
+            while ((m = re.exec(sentence)) !== null) {
+                tokens.push({ word: m[1], index: m.index, lower: m[1].toLowerCase() });
+            }
+            return tokens;
+        }
+
+        function dictationEligibleWords(sentence) {
+            return dictationTokenize(sentence).filter(t =>
+                t.word.length >= 2 &&
+                !DICTATION_STOPWORDS.has(t.lower) &&
+                /[a-zA-Z]/.test(t.word)
+            );
+        }
+
+        function buildDictationGaps(sentence) {
+            const eligible = dictationEligibleWords(sentence);
+            if (!eligible.length) return [];
+            const maxGaps = Math.min(3, eligible.length);
+            const gapCount = 1 + Math.floor(Math.random() * maxGaps);
+            return dictationShuffle(eligible).slice(0, gapCount).sort((a, b) => a.index - b.index);
+        }
+
+        function renderDictationGapLine(sentence, gaps) {
+            let html = '';
+            let last = 0;
+            gaps.forEach((g, i) => {
+                html += escapeHtml(sentence.slice(last, g.index));
+                html += `<input type="text" class="dictation-gap-input" data-gap-idx="${i}" autocomplete="off" aria-label="Gap ${i + 1}">`;
+                last = g.index + g.word.length;
+            });
+            html += escapeHtml(sentence.slice(last));
+            return html;
+        }
+
+        function initDictationQueue() {
+            const bank = (window.PE_DICTATION_BANKS || {})[dictationState.level] || [];
+            dictationState.queue = dictationShuffle(bank);
+            dictationState.index = 0;
+        }
+
+        function nextDictationSentenceFromQueue() {
+            const bank = (window.PE_DICTATION_BANKS || {})[dictationState.level] || [];
+            if (!bank.length) return '';
+            if (dictationState.index >= dictationState.queue.length) {
+                const last = dictationState.queue[dictationState.queue.length - 1];
+                dictationState.queue = dictationShuffle(bank);
+                if (dictationState.queue.length > 1 && dictationState.queue[0] === last) {
+                    [dictationState.queue[0], dictationState.queue[1]] = [dictationState.queue[1], dictationState.queue[0]];
+                }
+                dictationState.index = 0;
+            }
+            return dictationState.queue[dictationState.index++];
+        }
+
+        function updateDictationProgress() {
+            const cfg = PE_DICTATION_LEVELS[dictationState.level] || PE_DICTATION_LEVELS.beginner;
+            const el = document.getElementById('dictation-progress');
+            if (el) el.textContent = `${cfg.label} · Sentence ${dictationState.sentenceCount + 1} · ${dictationState.mode === 'listen' ? 'Listen & repeat' : 'Gap fill'}`;
+            const badge = document.getElementById('dictation-level-badge');
+            if (badge) badge.textContent = cfg.badge;
+        }
+
+        function playDictationSentence() {
+            if (!dictationState.sentence) return;
+            if (!window.speechSynthesis) {
+                appAlert('Text-to-speech is not supported in this browser.');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const cfg = PE_DICTATION_LEVELS[dictationState.level] || PE_DICTATION_LEVELS.beginner;
+            const utter = new SpeechSynthesisUtterance(dictationState.sentence);
+            utter.lang = 'en-GB';
+            utter.rate = cfg.rate;
+            window.speechSynthesis.speak(utter);
+        }
+
+        function dictationResetRoundUi() {
+            dictationState.listenRevealed = false;
+            dictationState.gapChecked = false;
+            const fb = document.getElementById('pe-dictation-feedback');
+            if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
+            const modelBox = document.getElementById('dictation-model-box');
+            if (modelBox) modelBox.classList.remove('open');
+            const modelText = document.getElementById('dictation-model-text');
+            if (modelText) modelText.textContent = '';
+            document.getElementById('dictation-repeated-btn').style.display = '';
+            document.getElementById('dictation-listen-next').style.display = 'none';
+            document.getElementById('dictation-check-btn').style.display = '';
+            document.getElementById('dictation-gap-next').style.display = 'none';
+        }
+
+        function dictationLoadSentence() {
+            dictationResetRoundUi();
+            dictationState.sentence = nextDictationSentenceFromQueue();
+            dictationState.gaps = dictationState.mode === 'gap' ? buildDictationGaps(dictationState.sentence) : [];
+            updateDictationProgress();
+
+            const listenPanel = document.getElementById('dictation-listen-panel');
+            const gapPanel = document.getElementById('dictation-gap-panel');
+            const instrListen = document.getElementById('dictation-instr-listen');
+            const instrGap = document.getElementById('dictation-instr-gap');
+            if (dictationState.mode === 'gap') {
+                if (listenPanel) listenPanel.style.display = 'none';
+                if (gapPanel) gapPanel.style.display = 'block';
+                if (instrListen) instrListen.style.display = 'none';
+                if (instrGap) instrGap.style.display = 'block';
+                const gapLine = document.getElementById('dictation-gap-line');
+                if (gapLine) {
+                    gapLine.innerHTML = renderDictationGapLine(dictationState.sentence, dictationState.gaps);
+                    gapLine.querySelectorAll('.dictation-gap-input').forEach(inp => {
+                        inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkDictationGaps(); });
+                    });
+                }
+            } else {
+                if (listenPanel) listenPanel.style.display = 'block';
+                if (gapPanel) gapPanel.style.display = 'none';
+                if (instrListen) instrListen.style.display = 'block';
+                if (instrGap) instrGap.style.display = 'none';
+            }
+
+            setTimeout(() => playDictationSentence(), 350);
+        }
+
+        function initPeDictation() {
+            dictationState.level = dictationGetSetupLevel();
+            dictationState.mode = dictationGetSetupMode();
+            if (!(window.PE_DICTATION_BANKS || {})[dictationState.level]) {
+                appAlert('Sentence bank not loaded. Please refresh the page.');
+                return;
+            }
+            initDictationQueue();
+            dictationState.sentenceCount = 0;
+            dictationLoadSentence();
+        }
+
+        function dictationRevealListen() {
+            if (dictationState.listenRevealed) return;
+            dictationState.listenRevealed = true;
+            const modelBox = document.getElementById('dictation-model-box');
+            const modelText = document.getElementById('dictation-model-text');
+            if (modelText) modelText.textContent = dictationState.sentence;
+            if (modelBox) modelBox.classList.add('open');
+            document.getElementById('dictation-repeated-btn').style.display = 'none';
+            document.getElementById('dictation-listen-next').style.display = '';
+            const fb = document.getElementById('pe-dictation-feedback');
+            if (fb) {
+                fb.className = 'feedback success';
+                fb.textContent = 'Well done! Compare your pronunciation with the model sentence.';
+            }
+            peAddPoints('dictation', 10);
+            incrementGameCount();
+            recordGameSessionApi('pe_dictation', { score: 10, pointsEarned: 10, result: { mode: 'listen', level: dictationState.level } });
+        }
+
+        function checkDictationGaps() {
+            if (dictationState.gapChecked || !dictationState.gaps.length) return;
+            const inputs = document.querySelectorAll('.dictation-gap-input');
+            let correctCount = 0;
+            const wrongParts = [];
+            inputs.forEach((inp, i) => {
+                const expected = dictationState.gaps[i].word;
+                const ok = dictationNormalizeWord(inp.value) === dictationNormalizeWord(expected);
+                inp.classList.toggle('dictation-gap-correct', ok);
+                inp.classList.toggle('dictation-gap-wrong', !ok);
+                inp.disabled = true;
+                if (ok) correctCount++;
+                else wrongParts.push(`"${expected}"`);
+            });
+            dictationState.gapChecked = true;
+            document.getElementById('dictation-check-btn').style.display = 'none';
+            document.getElementById('dictation-gap-next').style.display = '';
+            const fb = document.getElementById('pe-dictation-feedback');
+            const allCorrect = correctCount === dictationState.gaps.length;
+            if (fb) {
+                fb.className = allCorrect ? 'feedback success' : 'feedback error';
+                fb.textContent = allCorrect
+                    ? 'Perfect! All gaps correct.'
+                    : `Not quite — correct word(s): ${wrongParts.join(', ')}. Spelling must match exactly (capital letters do not matter).`;
+            }
+            if (allCorrect) {
+                peAddPoints('dictation', 20);
+                incrementGameCount();
+                recordGameSessionApi('pe_dictation', { score: 20, pointsEarned: 20, result: { mode: 'gap', level: dictationState.level, gaps: dictationState.gaps.length } });
+            }
+        }
+
+        function dictationNextSentence() {
+            if (!dictationState.queue.length) {
+                initPeDictation();
+                return;
+            }
+            dictationState.sentenceCount++;
+            dictationLoadSentence();
         }
 
         // ==========================================
@@ -5397,6 +5862,21 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
 
         function getRandomWord() { return vocabulary[Math.floor(Math.random() * vocabulary.length)]; }
 
+        /** Accept any comma- or slash-separated synonym in an expected answer. */
+        function vocabSynonymParts(text) {
+            return String(text || '')
+                .split(/\s*[,/]\s*|\s+\/\s+/)
+                .map(s => s.trim().toLowerCase())
+                .filter(Boolean);
+        }
+        function vocabMatchesAnswer(input, expected) {
+            const guess = String(input || '').trim().toLowerCase();
+            if (!guess) return false;
+            const parts = vocabSynonymParts(expected);
+            if (!parts.length) return guess === String(expected || '').trim().toLowerCase();
+            return parts.includes(guess);
+        }
+
         // BOMB DEFUSAL
         let bombTime = 60, bombTimerInterval, currentBombWord;
         function initBombDefusal() {
@@ -5433,7 +5913,7 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         function handleBombInput(e) { if(e.key === 'Enter') checkBombAnswer(); }
         function checkBombAnswer() {
             const input = document.getElementById('bomb-answer').value.trim().toLowerCase();
-            if(input === currentBombWord.answer) {
+            if (vocabMatchesAnswer(input, currentBombWord.answer)) {
                 bombTime += 5;
                 document.getElementById('timer-display').style.color = "var(--success-green)";
                 pulseTimer('timer-pulse-green');
@@ -5653,64 +6133,385 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             return GRID_WINS.some((c) => c.every((idx) => gridState[idx] === player));
         }
 
-        // CLASSIC FLASHCARDS
+        // CLASSIC FLASHCARDS — 12-item batches with spaced review + saved stats
+        const FC_BATCH_SIZE = 12;
+        const FC_STORAGE_KEY = 'ls_fc_progress';
         let fcDeck = [], fcIndex = 0, fcHistory = [];
-        function initFlashcards() {
-            fcDeck = [...vocabulary].sort(() => 0.5 - Math.random());
-            fcIndex = 0;
+        let fcStats = {}, fcIntroduced = new Set(), fcUnseen = [];
+        let fcBatchNum = 0, fcBatchInitialSize = 0, fcBatchReviewed = 0;
+        let fcRevisionMode = 'auto';
+        let fcSessionCounted = false;
+
+        function fcHashString(str) {
+            let h = 5381;
+            for (let i = 0; i < str.length; i++) h = ((h << 5) + h) + str.charCodeAt(i);
+            return 'fc_' + (h >>> 0).toString(36);
+        }
+        function fcCurrentSetId() {
+            const raw = document.getElementById('glossary-input')?.value || '';
+            const dir = document.querySelector('input[name="test-dir"]:checked')?.value || 'def';
+            return fcHashString(raw.trim().toLowerCase() + '|' + dir);
+        }
+        function fcTermKey(c) { return (c.rawTerm || c.prompt || '').toLowerCase(); }
+        function fcCardKey(c) { return `${c.prompt}|||${c.answer}`; }
+        function fcReadAllProgress() {
+            try { return JSON.parse(localStorage.getItem(FC_STORAGE_KEY) || '{}'); } catch { return {}; }
+        }
+        function fcWriteAllProgress(all) { localStorage.setItem(FC_STORAGE_KEY, JSON.stringify(all)); }
+        function fcLoadSetProgress(setId) { return fcReadAllProgress()[setId] || null; }
+        function fcDeleteSetProgress(setId) {
+            const all = fcReadAllProgress();
+            delete all[setId];
+            fcWriteAllProgress(all);
+        }
+        function fcSetHasProgress(persisted) {
+            if (!persisted?.words) return false;
+            return Object.values(persisted.words).some(w => (w.totalKnows || 0) + (w.totalMisses || 0) > 0 || w.mastered);
+        }
+        function fcSummarizePersisted(persisted) {
+            const words = Object.values(persisted?.words || {});
+            const studied = words.filter(w => (w.totalKnows || 0) + (w.totalMisses || 0) > 0).length;
+            const mastered = words.filter(w => w.mastered).length;
+            const total = persisted?.wordCount || words.length;
+            return { studied, mastered, total, sessions: persisted?.sessions || 0, lastStudied: persisted?.lastStudied || null };
+        }
+        function fcFormatLastStudied(ts) {
+            if (!ts) return 'never';
+            const days = Math.floor((Date.now() - ts) / 86400000);
+            if (days <= 0) return 'today';
+            if (days === 1) return 'yesterday';
+            return `${days} days ago`;
+        }
+        function fcHydrateStats(persisted) {
+            const stats = {};
+            if (!persisted?.words) return stats;
+            vocabulary.forEach(c => {
+                const pw = persisted.words[fcTermKey(c)];
+                if (!pw) return;
+                stats[fcCardKey(c)] = {
+                    misses: pw.pendingMisses || 0,
+                    mastered: !!pw.mastered,
+                    totalMisses: pw.totalMisses || 0,
+                    totalKnows: pw.totalKnows || 0
+                };
+            });
+            return stats;
+        }
+        function fcPersistStats() {
+            if (!vocabulary.length) return;
+            const setId = fcCurrentSetId();
+            const all = fcReadAllProgress();
+            const prev = all[setId] || {};
+            const words = {};
+            vocabulary.forEach(c => {
+                const tk = fcTermKey(c);
+                const s = fcStats[fcCardKey(c)] || { misses: 0, mastered: false, totalMisses: 0, totalKnows: 0 };
+                if ((s.totalKnows || 0) + (s.totalMisses || 0) === 0 && !s.mastered) return;
+                words[tk] = {
+                    totalMisses: s.totalMisses || 0,
+                    totalKnows: s.totalKnows || 0,
+                    pendingMisses: s.misses || 0,
+                    mastered: !!s.mastered,
+                    lastSeen: Date.now(),
+                    term: c.rawTerm || c.prompt
+                };
+            });
+            if (!fcSessionCounted) {
+                prev.sessions = (prev.sessions || 0) + 1;
+                fcSessionCounted = true;
+            }
+            all[setId] = {
+                words,
+                sessions: prev.sessions || 0,
+                lastStudied: Date.now(),
+                wordCount: vocabulary.length
+            };
+            fcWriteAllProgress(all);
+        }
+        function fcEnsureStat(c) {
+            const k = fcCardKey(c);
+            if (!fcStats[k]) fcStats[k] = { misses: 0, mastered: false, totalMisses: 0, totalKnows: 0 };
+            return fcStats[k];
+        }
+        function fcFamiliarity(c) {
+            const s = fcStats[fcCardKey(c)] || {};
+            if (s.mastered) return 10000;
+            return (s.totalKnows || 0) - (s.totalMisses || 0) * 2 - (s.misses || 0) * 5;
+        }
+        function fcStatStatus(c) {
+            const s = fcEnsureStat(c);
+            if (s.mastered) return { label: 'Mastered', cls: 'fc-stat-mastered' };
+            if ((s.totalKnows || 0) + (s.totalMisses || 0) > 0) return { label: 'Learning', cls: 'fc-stat-learning' };
+            return { label: 'New', cls: 'fc-stat-new' };
+        }
+        function fcAllMastered() {
+            return vocabulary.length > 0 && vocabulary.every(c => fcStats[fcCardKey(c)]?.mastered);
+        }
+        function fcMasteredCount() {
+            return vocabulary.filter(c => fcStats[fcCardKey(c)]?.mastered).length;
+        }
+        function fcTakeUnseen() {
+            if (fcRevisionMode === 'auto') return fcUnseen.pop();
+            return fcUnseen.shift();
+        }
+        function fcBuildInitialQueue(mode) {
+            const pool = fcAllMastered() ? [...vocabulary] : vocabulary.filter(c => !fcStats[fcCardKey(c)]?.mastered);
+            if (mode === 'original') return pool;
+            if (mode === 'weakest') return [...pool].sort((a, b) => fcFamiliarity(a) - fcFamiliarity(b));
+            return [...pool].sort(() => Math.random() - 0.5);
+        }
+        function fcGetLaunchRevisionMode() {
+            const persisted = fcLoadSetProgress(fcCurrentSetId());
+            if (!fcSetHasProgress(persisted)) return 'auto';
+            const sel = document.querySelector('input[name="fc-revision-mode"]:checked');
+            return sel ? sel.value : 'weakest';
+        }
+        function updateFlashcardSetupUI() {
+            const summaryEl = document.getElementById('fc-setup-summary');
+            const choiceEl = document.getElementById('fc-revision-choice');
+            if (!summaryEl || !choiceEl) return;
+            const persisted = fcLoadSetProgress(fcCurrentSetId());
+            if (!fcSetHasProgress(persisted)) {
+                summaryEl.textContent = 'Study stats are saved in this browser for each word list. No saved progress for this list yet.';
+                choiceEl.style.display = 'none';
+                return;
+            }
+            const s = fcSummarizePersisted(persisted);
+            summaryEl.innerHTML = `<strong>${s.mastered}/${s.total}</strong> words mastered · <strong>${s.studied}</strong> studied · ${s.sessions} session${s.sessions === 1 ? '' : 's'} · last studied ${fcFormatLastStudied(s.lastStudied)}`;
+            choiceEl.style.display = 'block';
+        }
+        function fcRenderStatsContent() {
+            const summaryEl = document.getElementById('fc-stats-summary');
+            const bodyEl = document.getElementById('fc-stats-body');
+            if (!summaryEl || !bodyEl || !vocabulary.length) return;
+            const mastered = fcMasteredCount();
+            const studied = vocabulary.filter(c => {
+                const s = fcEnsureStat(c);
+                return (s.totalKnows || 0) + (s.totalMisses || 0) > 0;
+            }).length;
+            const totalMisses = vocabulary.reduce((n, c) => n + (fcEnsureStat(c).totalMisses || 0), 0);
+            const totalKnows = vocabulary.reduce((n, c) => n + (fcEnsureStat(c).totalKnows || 0), 0);
+            summaryEl.innerHTML = `<strong>${mastered}/${vocabulary.length}</strong> mastered · <strong>${studied}</strong> studied · ${totalKnows} know · ${totalMisses} don't know`;
+            const rows = [...vocabulary].sort((a, b) => fcFamiliarity(a) - fcFamiliarity(b));
+            bodyEl.innerHTML = rows.map(c => {
+                const s = fcEnsureStat(c);
+                const st = fcStatStatus(c);
+                return `<tr>
+                    <td>${esc(c.rawTerm || c.prompt)}</td>
+                    <td>${s.totalKnows || 0}</td>
+                    <td>${s.totalMisses || 0}</td>
+                    <td class="${st.cls}">${st.label}</td>
+                </tr>`;
+            }).join('');
+        }
+        function showFcStatsModal() {
+            fcRenderStatsContent();
+            document.getElementById('fc-stats-overlay')?.classList.add('open');
+        }
+        function closeFcStatsModal() {
+            document.getElementById('fc-stats-overlay')?.classList.remove('open');
+        }
+        function openFcStatsFromSetup() {
+            if (!parseGlossary()) return;
+            fcStats = fcHydrateStats(fcLoadSetProgress(fcCurrentSetId()));
+            vocabulary.forEach(c => fcEnsureStat(c));
+            showFcStatsModal();
+        }
+
+        function initFlashcards(revisionMode) {
+            fcSessionCounted = false;
+            let mode = revisionMode || 'auto';
+            const setId = fcCurrentSetId();
+            if (mode === 'fresh') {
+                fcDeleteSetProgress(setId);
+                mode = 'auto';
+            }
+            const persisted = fcLoadSetProgress(setId);
+            const hasPrior = fcSetHasProgress(persisted);
+            fcStats = fcHydrateStats(persisted);
+            vocabulary.forEach(c => fcEnsureStat(c));
+            fcIntroduced = new Set();
+            vocabulary.forEach(c => {
+                const s = fcStats[fcCardKey(c)];
+                if ((s.totalKnows || 0) + (s.totalMisses || 0) > 0 || s.mastered) fcIntroduced.add(fcCardKey(c));
+            });
+            fcRevisionMode = hasPrior && (mode === 'original' || mode === 'weakest') ? mode : 'auto';
+            fcUnseen = fcBuildInitialQueue(fcRevisionMode === 'auto' ? 'auto' : fcRevisionMode);
+            fcBatchNum = 0;
             fcHistory = [];
+            startFcBatch();
+        }
+
+        function buildFcBatch() {
+            const batch = [];
+            const inBatch = new Set();
+            const add = (c) => {
+                const k = fcCardKey(c);
+                if (inBatch.has(k)) return;
+                inBatch.add(k);
+                batch.push(c);
+            };
+
+            let needsReview;
+            if (fcRevisionMode === 'original') {
+                needsReview = vocabulary.filter(c => fcIntroduced.has(fcCardKey(c)) && !fcStats[fcCardKey(c)].mastered);
+            } else {
+                needsReview = vocabulary
+                    .filter(c => fcIntroduced.has(fcCardKey(c)) && !fcStats[fcCardKey(c)].mastered)
+                    .sort((a, b) => fcStats[fcCardKey(b)].misses - fcStats[fcCardKey(a)].misses || Math.random() - 0.5);
+            }
+            for (const c of needsReview) {
+                if (batch.length >= FC_BATCH_SIZE) break;
+                add(c);
+            }
+
+            while (batch.length < FC_BATCH_SIZE && fcUnseen.length) {
+                const c = fcTakeUnseen();
+                fcIntroduced.add(fcCardKey(c));
+                fcEnsureStat(c);
+                add(c);
+            }
+
+            if (batch.length < FC_BATCH_SIZE) {
+                const pool = fcRevisionMode === 'original'
+                    ? vocabulary.filter(c => fcIntroduced.has(fcCardKey(c)) && !inBatch.has(fcCardKey(c)))
+                    : vocabulary.filter(c => fcIntroduced.has(fcCardKey(c)) && !inBatch.has(fcCardKey(c))).sort(() => Math.random() - 0.5);
+                for (const c of pool) {
+                    if (batch.length >= FC_BATCH_SIZE) break;
+                    add(c);
+                }
+            }
+
+            if (fcRevisionMode === 'original') return batch;
+            const hard = batch.filter(c => fcStats[fcCardKey(c)].misses > 0)
+                .sort((a, b) => fcStats[fcCardKey(b)].misses - fcStats[fcCardKey(a)].misses);
+            const rest = batch.filter(c => fcStats[fcCardKey(c)].misses === 0)
+                .sort(() => Math.random() - 0.5);
+            return [...hard, ...rest];
+        }
+
+        function startFcBatch() {
+            if (fcAllMastered()) {
+                fcDeck = [];
+                renderFcCard();
+                return;
+            }
+            fcBatchNum++;
+            fcDeck = buildFcBatch();
+            fcBatchInitialSize = fcDeck.length;
+            fcBatchReviewed = 0;
+            fcIndex = 0;
             renderFcCard();
         }
+
         function updateFcPrevBtn() {
             const btn = document.getElementById('fc-prev-btn');
             if (btn) btn.disabled = fcHistory.length === 0 || fcDeck.length === 0;
         }
+
         function renderFcCard() {
             const cardEl = document.getElementById('fc-card'), controls = document.getElementById('fc-controls'), counter = document.getElementById('fc-counter');
             cardEl.classList.remove('flipped'); controls.classList.add('visible');
             updateFcPrevBtn();
-            if (fcDeck.length === 0) {
+            if (fcAllMastered() || (fcDeck.length === 0 && vocabulary.length > 0)) {
+                fcPersistStats();
                 counter.innerText = "Mastery Achieved!";
                 document.getElementById('fc-front').innerText = "All words learned!";
                 document.getElementById('fc-back').innerText = "Great job!";
                 incrementGameCount();
                 recordGameSessionApi('flashcards', { score: vocabulary.length, pointsEarned: vocabulary.length, wordsTotal: vocabulary.length, wordsMastered: vocabulary.length });
-                setTimeout(async () => { if (await appConfirm('Play again?')) initFlashcards(); }, 1000); return;
+                setTimeout(async () => {
+                    if (await appConfirm('Play again?')) initFlashcards(fcSetHasProgress(fcLoadSetProgress(fcCurrentSetId())) ? 'weakest' : 'auto');
+                }, 1000);
+                return;
             }
             if (fcIndex >= fcDeck.length) fcIndex = 0;
-            counter.innerText = `Cards left in deck: ${fcDeck.length}`;
+            const mastered = fcMasteredCount();
+            const batchLabel = fcBatchInitialSize < FC_BATCH_SIZE ? `${fcBatchInitialSize}-card batch` : '12-card batch';
+            counter.innerText = `Batch ${fcBatchNum} · ${batchLabel} · ${fcDeck.length} left · ${mastered}/${vocabulary.length} mastered`;
             setTimeout(() => {
                 document.getElementById('fc-front').innerText = fcDeck[fcIndex].prompt;
                 document.getElementById('fc-back').innerText = fcDeck[fcIndex].answer;
             }, 150);
         }
+
         function flipCard() {
             if (fcDeck.length === 0) return;
             document.getElementById('fc-card').classList.toggle('flipped');
             document.getElementById('fc-controls').classList.add('visible');
         }
+
         function previousFc() {
-            if (!fcHistory.length || !fcDeck.length) return;
-            const card = fcHistory.pop();
-            const idx = fcDeck.indexOf(card);
-            fcIndex = idx >= 0 ? idx : 0;
-            if (idx < 0) fcDeck.unshift(card);
+            if (!fcHistory.length) return;
+            const entry = fcHistory.pop();
+            const { card, index, missesBefore, masteredBefore, totalMissesBefore, totalKnowsBefore } = entry;
+            const stat = fcEnsureStat(card);
+            stat.misses = missesBefore;
+            stat.mastered = masteredBefore;
+            stat.totalMisses = totalMissesBefore;
+            stat.totalKnows = totalKnowsBefore;
+            const curIdx = fcDeck.indexOf(card);
+            if (curIdx >= 0) fcDeck.splice(curIdx, 1);
+            fcDeck.splice(index, 0, card);
+            fcIndex = index;
+            if (fcBatchReviewed > 0) fcBatchReviewed--;
+            fcPersistStats();
             renderFcCard();
         }
+
         function markFc(knowIt) {
             if (!fcDeck.length) return;
             const current = fcDeck[fcIndex];
+            const stat = fcEnsureStat(current);
+            fcHistory.push({
+                card: current, index: fcIndex,
+                missesBefore: stat.misses, masteredBefore: stat.mastered,
+                totalMissesBefore: stat.totalMisses || 0, totalKnowsBefore: stat.totalKnows || 0
+            });
+            if (fcHistory.length > 40) fcHistory.shift();
+
             if (knowIt) {
-                fcDeck.splice(fcIndex, 1);
-                fcHistory = fcHistory.filter(c => c !== current);
-                if (fcIndex >= fcDeck.length) fcIndex = 0;
+                stat.totalKnows = (stat.totalKnows || 0) + 1;
+                if (stat.misses > 0) {
+                    stat.misses--;
+                    fcDeck.splice(fcIndex, 1);
+                    fcDeck.push(current);
+                    if (fcIndex >= fcDeck.length) fcIndex = 0;
+                } else {
+                    stat.mastered = true;
+                    fcDeck.splice(fcIndex, 1);
+                    if (fcIndex >= fcDeck.length) fcIndex = 0;
+                }
             } else {
-                fcHistory.push(current);
-                if (fcHistory.length > 40) fcHistory.shift();
-                fcIndex = (fcIndex + 1) % fcDeck.length;
+                stat.totalMisses = (stat.totalMisses || 0) + 1;
+                stat.misses++;
+                fcDeck.splice(fcIndex, 1);
+                fcDeck.push(current);
+                if (fcIndex >= fcDeck.length) fcIndex = 0;
             }
+
+            fcPersistStats();
+
+            if (fcAllMastered()) {
+                renderFcCard();
+                return;
+            }
+            if (fcDeck.length === 0) {
+                startFcBatch();
+                return;
+            }
+            fcBatchReviewed++;
             renderFcCard();
         }
+
+        document.getElementById('glossary-input')?.addEventListener('input', () => {
+            if (activeGame === 'flashcard') updateFlashcardSetupUI();
+        });
+        document.querySelectorAll('input[name="test-dir"]').forEach(el => {
+            el.addEventListener('change', () => {
+                if (activeGame === 'flashcard') updateFlashcardSetupUI();
+            });
+        });
     </script>
     <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="lingospark" data-description="Support me on Buy me a coffee!" data-message="Play all the vocabulary games for free but, being honest, a coffee would make my day" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
     <div class="site-copyright">Copyright Karol Sęk 2026</div>
