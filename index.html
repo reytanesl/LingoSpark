@@ -1517,7 +1517,14 @@
                     <button type="button" class="btn btn-outline" style="flex:1;min-width:10rem;" onclick="hintPeDetailWording()" id="pe-detail-hint-btn">
                         <i class="fa-solid fa-lightbulb"></i> Hint: best wording
                     </button>
+                    <button type="button" class="btn btn-outline" style="flex:1;min-width:10rem;" onclick="showPeDetailModelAnswer()" id="pe-detail-model-btn">
+                        <i class="fa-solid fa-eye"></i> Show model answer
+                    </button>
                     <button class="btn btn-blue" style="flex:1;min-width:10rem;padding:1rem;" onclick="checkPeDetail()" id="pe-detail-check">Submit Evidence</button>
+                </div>
+                <div class="dictation-model-box" id="pe-detail-model-box">
+                    <strong style="color:var(--success-green);font-family:var(--font-primary);" id="pe-detail-model-label">Model answer:</strong>
+                    <div id="pe-detail-model-text" style="margin-top:0.5rem;"></div>
                 </div>
             </div>
             <div id="pe-detail-feedback" class="feedback"></div>
@@ -5271,6 +5278,10 @@ Return ONLY JSON:
         async function initPeDetail() {
             document.getElementById('pe-detail-feedback').textContent = '';
             document.getElementById('pe-detail-input').value = '';
+            const modelBox = document.getElementById('pe-detail-model-box');
+            if (modelBox) modelBox.classList.remove('open');
+            const modelText = document.getElementById('pe-detail-model-text');
+            if (modelText) modelText.textContent = '';
             syncPeLevelBadges();
             peToggleLoading('pe-detail', true);
             const L = peLevelGuide();
@@ -5370,8 +5381,47 @@ Return ONLY JSON:
             const list = data.words.map(w => String(w || '').trim()).filter(Boolean).slice(0, 3);
             feedback.className = 'feedback neutral';
             feedback.innerHTML = `<strong>Best wording ideas (${L.label}, gentle):</strong> ${list.map(escapeHtml).join(' · ')}`
-                + (data.tip ? `<br>${escapeHtml(data.tip)}` : '')
-                + `<br><small>Use these ideas in your own sentence — no full model answer.</small>`;
+                + (data.tip ? `<br>${escapeHtml(data.tip)}` : '');
+        }
+
+        async function showPeDetailModelAnswer() {
+            if (!peDetailTask) {
+                appAlert('Start a case first (New Case).');
+                return;
+            }
+            const box = document.getElementById('pe-detail-model-box');
+            const text = document.getElementById('pe-detail-model-text');
+            const label = document.getElementById('pe-detail-model-label');
+            const btn = document.getElementById('pe-detail-model-btn');
+            const L = peLevelGuide();
+
+            if (peDetailTask.modelAnswer) {
+                if (label) label.textContent = `Model answer (${L.label}):`;
+                if (text) text.textContent = peDetailTask.modelAnswer;
+                if (box) box.classList.add('open');
+                return;
+            }
+
+            if (btn) btn.disabled = true;
+            const prompt = `Primary English Detail Detective — MODEL ANSWER for CEFR ${L.label}.
+SCHOOL CONTEXT: ${L.schoolLevel || ''}
+DETAIL EXPECTATION: ${L.detail}
+Original short statement: "${peDetailTask.statement}"
+Student should develop: "${peDetailTask.developFocus || ''}"
+Useful detail types: ${JSON.stringify(peDetailTask.hintDetails || [])}
+${peMode === 'custom' ? `Must include custom glossary words: ${JSON.stringify(peDetailTask.requiredWords || [])}.` : ''}
+Write ONE complete expanded English sentence suitable as a model for a ${L.label} student. Vocabulary must match gentle ${L.label} level — clear, natural, not advanced academic English.
+Return ONLY JSON: {"modelAnswer":"One full sentence here."}`;
+            const data = await fetchGenerativeAI(prompt);
+            if (btn) btn.disabled = false;
+            if (!data || data.__error || !data.modelAnswer) {
+                appAlert(aiErrorMessage(data) || 'Could not generate a model answer.');
+                return;
+            }
+            peDetailTask.modelAnswer = String(data.modelAnswer).trim();
+            if (label) label.textContent = `Model answer (${L.label}):`;
+            if (text) text.textContent = peDetailTask.modelAnswer;
+            if (box) box.classList.add('open');
         }
 
         async function initPeLink() {
