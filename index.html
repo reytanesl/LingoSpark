@@ -1126,9 +1126,9 @@
             <div class="form-group" id="pe-dictation-settings" style="display: none;">
                 <label><i class="fa-solid fa-layer-group"></i> Dictation level:</label>
                 <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
-                    <label><input type="radio" name="dictation-level" value="beginner" checked> Beginner (Klasy 1–3) — 100 sentences</label>
-                    <label><input type="radio" name="dictation-level" value="a1"> A1 (Klasy 4–5) — 200 sentences</label>
-                    <label><input type="radio" name="dictation-level" value="a2"> A2 — 500 sentences</label>
+                    <label><input type="radio" name="dictation-level" value="beginner" checked> Beginner (Klasy 1–3)</label>
+                    <label><input type="radio" name="dictation-level" value="a1"> A1 (Klasy 4–5)</label>
+                    <label><input type="radio" name="dictation-level" value="a2"> A2</label>
                 </div>
                 <label style="margin-top: 1rem;"><i class="fa-solid fa-sliders"></i> Practice mode:</label>
                 <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
@@ -1594,8 +1594,8 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Press the speaker to hear the sentence. Repeat it aloud clearly, then click I've repeated it to see the model sentence.</div>
-                <div class="pe-instr-pl">Naciśnij głośnik, aby usłyszeć zdanie. Powtórz je wyraźnie na głos, a potem kliknij «Powtarzałem/am», aby zobaczyć wzorcowe zdanie.</div>
+                <div class="pe-instr-en">Press the speaker to hear the sentence. Repeat it aloud, then click Show sentence to check the text.</div>
+                <div class="pe-instr-pl">Naciśnij głośnik, aby usłyszeć zdanie. Powtórz je na głos, a potem kliknij Show sentence, aby zobaczyć tekst.</div>
             </div>
             <div class="pe-instr" id="dictation-instr-gap" style="display:none;">
                 <div class="pe-instr-head">
@@ -1616,11 +1616,10 @@
             </div>
             <div id="dictation-listen-panel">
                 <div class="dictation-actions">
-                    <button type="button" class="btn btn-blue" onclick="dictationRevealListen()" id="dictation-repeated-btn">I've repeated it</button>
-                    <button type="button" class="btn btn-outline" onclick="dictationNextSentence()" id="dictation-listen-next" style="display:none;">Next sentence</button>
+                    <button type="button" class="btn btn-blue" onclick="dictationListenAction()" id="dictation-listen-action-btn">Show sentence</button>
                 </div>
                 <div class="dictation-model-box" id="dictation-model-box">
-                    <strong style="color:var(--success-green);font-family:var(--font-primary);">Model sentence:</strong>
+                    <strong style="color:var(--success-green);font-family:var(--font-primary);">Sentence:</strong>
                     <div id="dictation-model-text" style="margin-top:0.5rem;"></div>
                 </div>
             </div>
@@ -5695,6 +5694,14 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             window.speechSynthesis.speak(utter);
         }
 
+        function dictationResetListenButton() {
+            const btn = document.getElementById('dictation-listen-action-btn');
+            if (btn) {
+                btn.textContent = 'Show sentence';
+                btn.className = 'btn btn-blue';
+            }
+        }
+
         function dictationResetRoundUi() {
             dictationState.listenRevealed = false;
             dictationState.gapChecked = false;
@@ -5704,10 +5711,14 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             if (modelBox) modelBox.classList.remove('open');
             const modelText = document.getElementById('dictation-model-text');
             if (modelText) modelText.textContent = '';
-            document.getElementById('dictation-repeated-btn').style.display = '';
-            document.getElementById('dictation-listen-next').style.display = 'none';
+            dictationResetListenButton();
             document.getElementById('dictation-check-btn').style.display = '';
             document.getElementById('dictation-gap-next').style.display = 'none';
+        }
+
+        function dictationListenAction() {
+            if (dictationState.listenRevealed) dictationNextSentence();
+            else dictationRevealListen();
         }
 
         function dictationLoadSentence() {
@@ -5761,12 +5772,15 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             const modelText = document.getElementById('dictation-model-text');
             if (modelText) modelText.textContent = dictationState.sentence;
             if (modelBox) modelBox.classList.add('open');
-            document.getElementById('dictation-repeated-btn').style.display = 'none';
-            document.getElementById('dictation-listen-next').style.display = '';
+            const btn = document.getElementById('dictation-listen-action-btn');
+            if (btn) {
+                btn.textContent = 'Next sentence';
+                btn.className = 'btn btn-outline';
+            }
             const fb = document.getElementById('pe-dictation-feedback');
             if (fb) {
                 fb.className = 'feedback success';
-                fb.textContent = 'Well done! Compare your pronunciation with the model sentence.';
+                fb.textContent = 'Compare your pronunciation with the sentence above.';
             }
             peAddPoints('dictation', 10);
             incrementGameCount();
