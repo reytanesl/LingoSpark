@@ -540,7 +540,9 @@
     font-family: var(--font-primary); font-weight: 700; font-size: 0.62rem;
     color: #0f766e; background: #ccfbf1; border-radius: 999px; padding: 0.05rem 0.4rem; margin-top: 0.05rem;
 }
-.cb-card.in-chain { cursor: pointer; }
+.cb-card.in-chain { cursor: grab; touch-action: none; }
+.cb-card.in-chain.dragging { opacity: 0.45; cursor: grabbing; transform: scale(1.05); z-index: 2; }
+.cb-chain.sorting { border-color: var(--royal-blue); background: #eff6ff; }
 .cb-nounpick-back {
     position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 80;
     display: flex; align-items: center; justify-content: center; padding: 1rem;
@@ -590,6 +592,7 @@
 `;
 
     let S = null;
+    let chainSkipClick = false;
 
     function byId(id) { return TILES.find((t) => t.id === id); }
 
@@ -1149,9 +1152,13 @@
                 return pl ? 'Co chcesz powiedzieć? Wybierz cel, potem układaj kafelki od lewej.' : 'What do you want to say? Pick a goal, then line the tiles up from the left.';
             }
             if (S.buildPrompt && S.ageBand === 'young') {
-                return pl ? 'Spójrz na obrazek. Każde słowo to osobny kafel — a i an też. Klikaj w kolejności.' : 'Look at the picture. Each word is its own tile — a and an too. Tap them in order.';
+                return pl
+                    ? 'Spójrz na obrazek. Każde słowo to osobny kafel — a i an też. Klikaj w kolejności. Możesz przeciągnąć kafel w pasku, jeśli kolejność jest zła.'
+                    : 'Look at the picture. Each word is its own tile — a and an too. Tap them in order. Drag a tile in the strip if the order is wrong.';
             }
-            return pl ? 'Klikaj kafelki, żeby złożyć zdanie. Kliknij kafel w pasku, aby go zdjąć.' : 'Tap tiles to build the sentence. Tap a tile in the strip to take it out.';
+            return pl
+                ? 'Klikaj kafelki, żeby złożyć zdanie. Przeciągnij kafel w pasku, aby zmienić kolejność. Kliknij, aby go zdjąć.'
+                : 'Tap tiles to build the sentence. Drag a tile in the strip to move it. Tap it to take it out.';
         }
         if (S.textKind === 'reorder') {
             return pl ? 'Ułóż wyrazy. Możesz odsłuchać zdanie, jeśli potrzebujesz pomocy.' : 'Put the words in order. You can hear the sentence if you need help.';
@@ -1227,7 +1234,10 @@
         const tiles = chainTiles(ids);
         const cls = tiles.length ? '' : ' empty';
         let html = '<div class="cb-chain' + cls + '" data-empty="' + esc(emptyMsg) + '">';
-        tiles.forEach((t, i) => { html += cardHtml(t, ' in-chain', action) .replace('data-id="' + t.id + '"', 'data-id="' + i + '"'); });
+        tiles.forEach((t, i) => {
+            html += cardHtml(t, ' in-chain', action)
+                .replace('data-id="' + t.id + '"', 'data-id="' + i + '" data-tid="' + esc(t.id) + '"');
+        });
         html += '</div>';
         return html;
     }
@@ -1380,6 +1390,10 @@
 
     function bind(root) {
         root.onclick = (e) => {
+            if (chainSkipClick) {
+                chainSkipClick = false;
+                return;
+            }
             const t = e.target.closest('[data-cb]');
             if (!t) return;
             const a = t.dataset.cb;
@@ -1453,6 +1467,101 @@
                 speak(S.reorder.words.join(' ') + (S.reorder.extra || ''));
             }
         };
+        bindChainSort(root);
+    }
+
+    function applyChainOrder(ids) {
+        const same = ids.length === S.chain.length && ids.every((id, i) => id === S.chain[i]);
+        if (same) return;
+        S.chain = ids;
+        S.buildFbEn = '';
+        S.buildFbPl = '';
+        S.buildOk = false;
+        S.buildSpoken = '';
+        clearAskWhy();
+        render();
+    }
+
+    function bindChainSort(root) {
+        const chain = root.querySelector('.cb-chain');
+        if (!chain || S.tab !== 'build') return;
+        let card = null;
+        let pointerId = null;
+        let startX = 0;
+        let startY = 0;
+        let moved = false;
+
+        function insertAtPoint(x, y) {
+            const others = Array.prototype.slice.call(chain.querySelectorAll('.cb-card.in-chain'))
+                .filter((el) => el !== card);
+            if (!others.length) return;
+            let best = others[0];
+            let bestD = Infinity;
+            others.forEach((el) => {
+                const r = el.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height / 2;
+                const d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+                if (d < bestD) {
+                    bestD = d;
+                    best = el;
+                }
+            });
+            const r = best.getBoundingClientRect();
+            if (x < r.left + r.width / 2) chain.insertBefore(card, best);
+            else chain.insertBefore(card, best.nextSibling);
+        }
+
+        function finish() {
+            if (!card) return;
+            const el = card;
+            const didMove = moved;
+            el.classList.remove('dragging');
+            chain.classList.remove('sorting');
+            card = null;
+            pointerId = null;
+            moved = false;
+            if (!didMove) return;
+            const ids = Array.prototype.slice.call(chain.querySelectorAll('.cb-card.in-chain'))
+                .map((c) => c.getAttribute('data-tid'))
+                .filter(Boolean);
+            chainSkipClick = true;
+            setTimeout(function () { chainSkipClick = false; }, 400);
+            applyChainOrder(ids);
+        }
+
+        chain.addEventListener('pointerdown', (e) => {
+            const el = e.target.closest('.cb-card.in-chain');
+            if (!el || e.button) return;
+            card = el;
+            pointerId = e.pointerId;
+            startX = e.clientX;
+            startY = e.clientY;
+            moved = false;
+            try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        chain.addEventListener('pointermove', (e) => {
+            if (!card || e.pointerId !== pointerId) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            if (!moved && (dx * dx + dy * dy) < 64) return;
+            if (!moved) {
+                moved = true;
+                card.classList.add('dragging');
+                chain.classList.add('sorting');
+            }
+            e.preventDefault();
+            insertAtPoint(e.clientX, e.clientY);
+        });
+        chain.addEventListener('pointerup', (e) => {
+            if (e.pointerId !== pointerId) return;
+            finish();
+        });
+        chain.addEventListener('pointercancel', (e) => {
+            if (e.pointerId !== pointerId) return;
+            moved = false;
+            finish();
+        });
     }
 
     function whyHtml(show) {
