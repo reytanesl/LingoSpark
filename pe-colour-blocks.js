@@ -10,7 +10,7 @@
     const COL = {
         is:   { bg: '#1d4ed8', light: '#dbeafe', ink: '#1e3a8a', fa: 'fa-circle', label: 'There is · 1', labelPl: 'There is · 1' },
         are:  { bg: '#15803d', light: '#dcfce7', ink: '#14532d', fa: 'fa-ellipsis', label: 'There are · many', labelPl: 'There are · wiele' },
-        have: { bg: '#7c3aed', light: '#ede9fe', ink: '#5b21b6', fa: 'fa-key', label: 'have got', labelPl: 'have got' },
+        have: { bg: '#7c3aed', light: '#ede9fe', ink: '#5b21b6', fa: 'fa-hand-holding', label: 'have got', labelPl: 'have got' },
         can:  { bg: '#b45309', light: '#ffedd5', ink: '#9a3412', fa: 'fa-hand-fist', label: 'can / can\'t', labelPl: 'can / can\'t' },
         like: { bg: '#be123c', light: '#ffe4e6', ink: '#9f1239', fa: 'fa-heart', label: 'like', labelPl: 'like' },
         must: { bg: '#b91c1c', light: '#fee2e2', ink: '#7f1d1d', fa: 'fa-exclamation', label: 'must / have to', labelPl: 'must / have to' },
@@ -37,6 +37,7 @@
             wordPl: '',
             fa: COL[family] ? COL[family].fa : 'fa-cube',
             icon: '',
+            pic: '',
             vowel: false,
             number: '',
             guess: false
@@ -56,7 +57,7 @@
         tile('he', 'He', 'subj', 'subj', { fa: 'fa-child', gloss: 'a boy', glossPl: 'on', icon: '👦', guess: true, goals: ['have', 'can', 'like', 'must', 'haveto'] }),
         tile('she', 'She', 'subj', 'subj', { fa: 'fa-child-dress', gloss: 'a girl', glossPl: 'ona', icon: '👧', guess: true, goals: ['have', 'can', 'like', 'must', 'haveto'] }),
         tile('we', 'We', 'subj', 'subj', { fa: 'fa-users', gloss: 'we', glossPl: 'my', icon: '👥', guess: true, goals: ['have', 'can', 'like', 'must', 'haveto'] }),
-        tile('they', 'They', 'subj', 'subj', { fa: 'fa-people-group', gloss: 'they', glossPl: 'oni / one', icon: '👫', guess: true, goals: ['have', 'can', 'like', 'must', 'haveto'] }),
+        tile('they', 'They', 'subj', 'subj', { fa: 'fa-people-group', gloss: 'they', glossPl: 'oni / one', icon: '🧑‍🤝‍🧑', guess: true, goals: ['have', 'can', 'like', 'must', 'haveto'] }),
 
         tile('a', 'a', 'art', 'art', { fa: 'fa-font', icon: 'a', gloss: 'before b, c, d…', glossPl: 'przed spółgłoską', goals: ['is', 'have', 'like'] }),
         tile('an', 'an', 'art', 'art', { fa: 'fa-font', icon: 'an', gloss: 'before a, e, i, o, u', glossPl: 'przed samogłoską', goals: ['is', 'have', 'like'] }),
@@ -68,10 +69,10 @@
         tile('two', 'two', 'num', 'num', { fa: 'fa-hashtag', icon: '2', gloss: '2', goals: ['are'] }),
         tile('three', 'three', 'num', 'num', { fa: 'fa-hashtag', icon: '3', gloss: '3', goals: ['are'], ages: ['older'] }),
 
-        tile('have-got', 'have got', 'verbp', 'have', { fa: 'fa-key', gloss: 'I / You / We / They', glossPl: 'ja / ty / my / oni', goals: ['have'] }),
-        tile('has-got', 'has got', 'verbp', 'have', { fa: 'fa-key', gloss: 'He / She', glossPl: 'on / ona', goals: ['have'] }),
-        tile('havent-got', "haven't got", 'verbp', 'have', { fa: 'fa-key', gloss: 'I / You / We / They · no', glossPl: 'ja / ty / my / oni · nie', goals: ['have'] }),
-        tile('hasnt-got', "hasn't got", 'verbp', 'have', { fa: 'fa-key', gloss: 'He / She · no', glossPl: 'on / ona · nie', goals: ['have'] }),
+        tile('have-got', 'have got', 'verbp', 'have', { fa: 'fa-hand-holding', gloss: 'I / You / We / They', glossPl: 'ja / ty / my / oni', goals: ['have'] }),
+        tile('has-got', 'has got', 'verbp', 'have', { fa: 'fa-hand-holding', gloss: 'He / She', glossPl: 'on / ona', goals: ['have'] }),
+        tile('havent-got', "haven't got", 'verbp', 'have', { fa: 'fa-hand-holding', gloss: 'I / You / We / They · no', glossPl: 'ja / ty / my / oni · nie', goals: ['have'] }),
+        tile('hasnt-got', "hasn't got", 'verbp', 'have', { fa: 'fa-hand-holding', gloss: 'He / She · no', glossPl: 'on / ona · nie', goals: ['have'] }),
 
         tile('can', 'can', 'modal', 'can', { fa: 'fa-hand-fist', gloss: 'able to', glossPl: 'potrafię', icon: '💪', guess: true, goals: ['can'] }),
         tile('cant', "can't", 'modal', 'can', { fa: 'fa-hand-fist', gloss: 'not able', glossPl: 'nie potrafię', icon: '🚫', guess: true, goals: ['can'] }),
@@ -81,42 +82,42 @@
         tile('must', 'must', 'modal', 'must', { fa: 'fa-exclamation', gloss: 'necessary', glossPl: 'muszę', icon: '❗', guess: true, goals: ['must'], ages: ['older'] }),
         tile('have-to', 'have to', 'modal', 'must', { fa: 'fa-clipboard-list', gloss: 'it is necessary', glossPl: 'muszę / musimy', icon: '📋', guess: true, goals: ['haveto'], ages: ['older'] }),
 
-        tile('in', 'in', 'prep', 'prep', { fa: 'fa-box', gloss: 'inside', glossPl: 'w środku', icon: '📦', guess: true, goals: ['is', 'are'] }),
-        tile('on', 'on', 'prep', 'prep', { fa: 'fa-arrow-up', gloss: 'touching the top', glossPl: 'na (dotyka)', icon: '⬆️', guess: true, goals: ['is', 'are'] }),
-        tile('under', 'under', 'prep', 'prep', { fa: 'fa-arrow-down', gloss: 'below', glossPl: 'pod', icon: '⬇️', guess: true, goals: ['is', 'are'] }),
+        tile('in', 'in', 'prep', 'prep', { fa: 'fa-box', gloss: 'inside', glossPl: 'w środku', icon: '📥', guess: true, goals: ['is', 'are'] }),
+        tile('on', 'on', 'prep', 'prep', { fa: 'fa-arrow-up', gloss: 'touching the top', glossPl: 'na (dotyka)', pic: 'on', guess: true, goals: ['is', 'are'] }),
+        tile('under', 'under', 'prep', 'prep', { fa: 'fa-arrow-down', gloss: 'below', glossPl: 'pod', pic: 'under', guess: true, goals: ['is', 'are'] }),
         tile('above', 'above', 'prep', 'prep', { fa: 'fa-cloud', gloss: 'over, not touching', glossPl: 'nad (nie dotyka)', icon: '☁️', guess: true, goals: ['is', 'are'] }),
         tile('next-to', 'next to', 'prep', 'prep', { fa: 'fa-arrows-left-right', gloss: 'beside', glossPl: 'obok', icon: '↔️', guess: true, goals: ['is', 'are'] }),
-        tile('between', 'between', 'prep', 'prep', { fa: 'fa-grip', gloss: 'in the middle', glossPl: 'pomiędzy', icon: '🔀', guess: true, goals: ['is', 'are'], ages: ['older'] }),
-        tile('behind', 'behind', 'prep', 'prep', { fa: 'fa-user-secret', gloss: 'at the back', glossPl: 'za', icon: '🙈', guess: true, goals: ['is', 'are'] }),
+        tile('between', 'between', 'prep', 'prep', { fa: 'fa-grip', gloss: 'in the middle', glossPl: 'pomiędzy', pic: 'between', guess: true, goals: ['is', 'are'], ages: ['older'] }),
+        tile('behind', 'behind', 'prep', 'prep', { fa: 'fa-user-secret', gloss: 'at the back', glossPl: 'za', icon: '🫣', guess: true, goals: ['is', 'are'] }),
         tile('in-front-of', 'in front of', 'prep', 'prep', { fa: 'fa-eye', gloss: 'at the front', glossPl: 'przed', icon: '👀', guess: true, goals: ['is', 'are'] }),
         tile('near', 'near', 'prep', 'prep', { fa: 'fa-location-dot', gloss: 'close', glossPl: 'blisko', icon: '📍', guess: true, goals: ['is', 'are'] }),
-        tile('upstairs', 'upstairs', 'prep', 'prep', { fa: 'fa-stairs', gloss: 'up', glossPl: 'na górze', icon: '⬆️', adverb: true, guess: true, goals: ['is', 'are'], ages: ['older'] }),
+        tile('upstairs', 'upstairs', 'prep', 'prep', { fa: 'fa-stairs', gloss: 'up', glossPl: 'na górze', icon: '🪜', adverb: true, guess: true, goals: ['is', 'are'], ages: ['older'] }),
         tile('downstairs', 'downstairs', 'prep', 'prep', { fa: 'fa-stairs', gloss: 'down', glossPl: 'na dole', icon: '⬇️', adverb: true, guess: true, goals: ['is', 'are'], ages: ['older'] }),
-        tile('outside', 'outside', 'prep', 'prep', { fa: 'fa-tree', gloss: 'not in the house', glossPl: 'na dworze', icon: '🌳', adverb: true, guess: true, goals: ['is', 'are'] }),
+        tile('outside', 'outside', 'prep', 'prep', { fa: 'fa-tree', gloss: 'not in the house', glossPl: 'na dworze', icon: '🌤️', adverb: true, guess: true, goals: ['is', 'are'] }),
         tile('and', 'and', 'link', 'art', { fa: 'fa-plus', gloss: 'plus', glossPl: 'i', goals: ['is', 'are'], ages: ['older'] }),
 
         noun('chair', 'chair', 'chairs', '🪑', false, true, { wordPl: 'krzesło' }),
-        noun('desk', 'desk', 'desks', '🖥️', false, true, { wordPl: 'biurko' }),
+        noun('desk', 'desk', 'desks', '', false, true, { pic: 'desk', wordPl: 'biurko' }),
         noun('lamp', 'lamp', 'lamps', '💡', false, false, { wordPl: 'lampa' }),
         noun('bin', 'bin', 'bins', '🗑️', false, true, { wordPl: 'kosz' }),
-        noun('table', 'table', 'tables', '🪵', false, true, { wordPl: 'stół' }),
+        noun('table', 'table', 'tables', '', false, true, { pic: 'table', wordPl: 'stół' }),
         noun('sofa', 'sofa', 'sofas', '🛋️', false, true, { wordPl: 'sofa' }),
-        noun('cushion', 'cushion', 'cushions', '🟧', false, false, { wordPl: 'poduszka' }),
+        noun('cushion', 'cushion', 'cushions', '', false, false, { pic: 'cushion', wordPl: 'poduszka' }),
         noun('shelf', 'shelf', 'shelves', '📚', false, true, { wordPl: 'półka' }),
         noun('mirror', 'mirror', 'mirrors', '🪞', false, false, { wordPl: 'lustro' }),
-        noun('poster', 'poster', 'posters', '🖼️', false, false, { wordPl: 'plakat' }),
-        noun('picture', 'picture', 'pictures', '🌄', false, false, { wordPl: 'obrazek' }),
-        noun('noticeboard', 'noticeboard', 'noticeboards', '📋', false, true, { ages: ['older'], wordPl: 'tablica' }),
+        noun('poster', 'poster', 'posters', '🪧', false, false, { wordPl: 'plakat' }),
+        noun('picture', 'picture', 'pictures', '🖼️', false, false, { wordPl: 'obrazek' }),
+        noun('noticeboard', 'noticeboard', 'noticeboards', '📌', false, true, { ages: ['older'], wordPl: 'tablica' }),
         noun('bed', 'bed', 'beds', '🛏️', false, true, { wordPl: 'łóżko' }),
-        noun('wardrobe', 'wardrobe', 'wardrobes', '👔', false, true, { ages: ['older'], wordPl: 'szafa' }),
+        noun('wardrobe', 'wardrobe', 'wardrobes', '', false, true, { pic: 'wardrobe', ages: ['older'], wordPl: 'szafa' }),
         noun('door', 'door', 'doors', '🚪', false, true, { wordPl: 'drzwi' }),
         noun('window', 'window', 'windows', '🪟', false, true, { wordPl: 'okno' }),
-        noun('key', 'key', 'keys', '🗝️', false, false, { wordPl: 'klucz' }),
+        noun('key', 'key', 'keys', '🔑', false, false, { wordPl: 'klucz' }),
         noun('laptop', 'laptop', 'laptops', '💻', false, false, { wordPl: 'laptop' }),
         noun('tv', 'TV', 'TVs', '📺', false, true, { wordPl: 'telewizor' }),
         noun('box', 'box', 'boxes', '📦', false, true, { wordPl: 'pudełko' }),
-        noun('mat', 'mat', 'mats', '🟩', false, true, { wordPl: 'mata' }),
-        noun('floor', 'floor', 'floors', '🟫', false, true, { wordPl: 'podłoga' }),
+        noun('mat', 'mat', 'mats', '', false, true, { pic: 'mat', wordPl: 'mata' }),
+        noun('floor', 'floor', 'floors', '', false, true, { pic: 'floor', wordPl: 'podłoga' }),
         noun('mobile', 'mobile', 'mobiles', '📱', false, false, { wordPl: 'telefon' }),
         noun('car', 'car', 'cars', '🚗', false, false, { wordPl: 'samochód' }),
         noun('book', 'book', 'books', '📖', false, false, { wordPl: 'książka' }),
@@ -124,18 +125,18 @@
         noun('bag', 'bag', 'bags', '🎒', false, false, { wordPl: 'torba' }),
         noun('pen', 'pen', 'pens', '🖊️', false, false, { wordPl: 'długopis' }),
         noun('pencil', 'pencil', 'pencils', '✏️', false, false, { wordPl: 'ołówek' }),
-        noun('rubber', 'rubber', 'rubbers', '⬜', false, false, { wordPl: 'gumka' }),
+        noun('rubber', 'rubber', 'rubbers', '', false, false, { pic: 'eraser', wordPl: 'gumka' }),
         noun('ruler', 'ruler', 'rulers', '📏', false, false, { wordPl: 'linijka' }),
         noun('notebook', 'notebook', 'notebooks', '📓', false, false, { wordPl: 'zeszyt' }),
-        noun('pencil-case', 'pencil case', 'pencil cases', '🖍️', false, false, { wordPl: 'piórnik' }),
+        noun('pencil-case', 'pencil case', 'pencil cases', '👝', false, false, { wordPl: 'piórnik' }),
         noun('crayon', 'crayon', 'crayons', '🖍️', false, false, { wordPl: 'kredka' }),
         noun('plant', 'plant', 'plants', '🪴', false, true, { wordPl: 'roślina' }),
         noun('cup', 'cup', 'cups', '☕', false, false, { wordPl: 'kubek' }),
         noun('plate', 'plate', 'plates', '🍽️', false, false, { wordPl: 'talerz' }),
-        noun('bottle', 'bottle', 'bottles', '🍼', false, false, { wordPl: 'butelka' }),
-        noun('hat', 'hat', 'hats', '🎩', false, false, { wordPl: 'czapka' }),
+        noun('bottle', 'bottle', 'bottles', '🧴', false, false, { wordPl: 'butelka' }),
+        noun('hat', 'hat', 'hats', '🧢', false, false, { wordPl: 'czapka' }),
         noun('coat', 'coat', 'coats', '🧥', false, false, { wordPl: 'płaszcz' }),
-        noun('shoe', 'shoe', 'shoes', '👟', false, false, { wordPl: 'but' }),
+        noun('shoe', 'shoe', 'shoes', '👞', false, false, { wordPl: 'but' }),
         noun('apple', 'apple', 'apples', '🍎', true, false, { wordPl: 'jabłko' }),
         noun('orange', 'orange', 'oranges', '🍊', true, false, { wordPl: 'pomarańcza' }),
         noun('banana', 'banana', 'bananas', '🍌', false, false, { goals: ['like', 'have', 'is', 'are'], wordPl: 'banan' }),
@@ -147,7 +148,7 @@
         noun('dog', 'dog', 'dogs', '🐶', false, false, { wordPl: 'pies' }),
         noun('bird', 'bird', 'birds', '🐦', false, false, { wordPl: 'ptak' }),
         noun('fish', 'fish', 'fish', '🐟', false, false, { wordPl: 'ryba' }),
-        noun('ball', 'ball', 'balls', '⚽', false, false, { wordPl: 'piłka' }),
+        noun('ball', 'ball', 'balls', '🏀', false, false, { wordPl: 'piłka' }),
         noun('bike', 'bike', 'bikes', '🚲', false, false, { wordPl: 'rower' }),
         noun('teddy', 'teddy', 'teddies', '🧸', false, false, { wordPl: 'miś' }),
         noun('doll', 'doll', 'dolls', '🪆', false, false, { wordPl: 'lalka' }),
@@ -158,20 +159,20 @@
         noun('music', 'music', 'music', '🎵', false, false, { number: 'unc', goals: ['like'], wordPl: 'muzyka' }),
         noun('school', 'school', 'schools', '🏫', false, false, { goals: ['like', 'must', 'haveto', 'is', 'are'], wordPl: 'szkoła' }),
         noun('message', 'message', 'messages', '✉️', false, false, { wordPl: 'wiadomość' }),
-        noun('friend', 'friend', 'friends', '😊', false, false, { goals: ['like', 'have', 'is', 'are'], wordPl: 'przyjaciel' }),
-        noun('garden', 'garden', 'gardens', '🌳', false, true, { ages: ['older'], wordPl: 'ogród' }),
-        noun('kitchen', 'kitchen', 'kitchens', '🍳', false, true, { ages: ['older'], wordPl: 'kuchnia' }),
-        noun('bedroom', 'bedroom', 'bedrooms', '🛏️', false, true, { ages: ['older'], wordPl: 'sypialnia' }),
-        noun('bathroom', 'bathroom', 'bathrooms', '🚿', false, true, { ages: ['older'], wordPl: 'łazienka' }),
-        noun('living-room', 'living room', 'living rooms', '🛋️', false, true, { ages: ['older'], wordPl: 'salon' }),
-        noun('balcony', 'balcony', 'balconies', '🌅', false, true, { ages: ['older'], wordPl: 'balkon' }),
-        noun('fridge', 'fridge', 'fridges', '🧊', false, true, { ages: ['older'], wordPl: 'lodówka' }),
-        noun('cooker', 'cooker', 'cookers', '🔥', false, true, { ages: ['older'], wordPl: 'kuchenka' }),
+        noun('friend', 'friend', 'friends', '🫂', false, false, { goals: ['like', 'have', 'is', 'are'], wordPl: 'przyjaciel' }),
+        noun('garden', 'garden', 'gardens', '🏡', false, true, { ages: ['older'], wordPl: 'ogród' }),
+        noun('kitchen', 'kitchen', 'kitchens', '🍴', false, true, { ages: ['older'], wordPl: 'kuchnia' }),
+        noun('bedroom', 'bedroom', 'bedrooms', '🌙', false, true, { ages: ['older'], wordPl: 'sypialnia' }),
+        noun('bathroom', 'bathroom', 'bathrooms', '🛁', false, true, { ages: ['older'], wordPl: 'łazienka' }),
+        noun('living-room', 'living room', 'living rooms', '', false, true, { pic: 'living', ages: ['older'], wordPl: 'salon' }),
+        noun('balcony', 'balcony', 'balconies', '', false, true, { pic: 'balcony', ages: ['older'], wordPl: 'balkon' }),
+        noun('fridge', 'fridge', 'fridges', '', false, true, { pic: 'fridge', ages: ['older'], wordPl: 'lodówka' }),
+        noun('cooker', 'cooker', 'cookers', '', false, true, { pic: 'cooker', ages: ['older'], wordPl: 'kuchenka' }),
         noun('sink', 'sink', 'sinks', '🚰', false, true, { ages: ['older'], wordPl: 'zlew' }),
-        noun('towel', 'towel', 'towels', '🧺', false, false, { ages: ['older'], wordPl: 'ręcznik' }),
+        noun('towel', 'towel', 'towels', '', false, false, { pic: 'towel', ages: ['older'], wordPl: 'ręcznik' }),
         noun('photo', 'photo', 'photos', '📷', false, false, { ages: ['older'], wordPl: 'zdjęcie' }),
         noun('ticket', 'ticket', 'tickets', '🎫', false, false, { ages: ['older'], wordPl: 'bilet' }),
-        noun('tablet', 'tablet', 'tablets', '📱', false, false, { ages: ['older'], wordPl: 'tablet' }),
+        noun('tablet', 'tablet', 'tablets', '📲', false, false, { ages: ['older'], wordPl: 'tablet' }),
         noun('headphone', 'headphone', 'headphones', '🎧', false, false, { ages: ['older'], wordPl: 'słuchawka' }),
         noun('charger', 'charger', 'chargers', '🔌', false, false, { ages: ['older'], wordPl: 'ładowarka' }),
         noun('umbrella', 'umbrella', 'umbrellas', '☂️', true, false, { ages: ['older'], wordPl: 'parasol' }),
@@ -181,7 +182,7 @@
         noun('dictionary', 'dictionary', 'dictionaries', '📘', false, false, { ages: ['older'], wordPl: 'słownik' }),
         noun('map', 'map', 'maps', '🗺️', false, false, { ages: ['older'], wordPl: 'mapa' }),
         noun('uniform', 'uniform', 'uniforms', '👔', false, false, { ages: ['older'], wordPl: 'mundurek' }),
-        noun('jumper', 'jumper', 'jumpers', '🧶', false, false, { ages: ['older'], wordPl: 'sweter' }),
+        noun('jumper', 'jumper', 'jumpers', '', false, false, { pic: 'jumper', ages: ['older'], wordPl: 'sweter' }),
         noun('trainer', 'trainer', 'trainers', '👟', false, false, { ages: ['older'], wordPl: 'but sportowy' }),
         noun('homework', 'homework', 'homework', '📝', false, false, { number: 'unc', goals: ['must', 'haveto'], ages: ['older'], wordPl: 'zadanie' }),
 
@@ -214,7 +215,7 @@
         verb('make', 'make', '🛠️', ['can', 'must', 'like'], ['older'], 'robić'),
         verb('buy', 'buy', '🛒', ['can', 'must', 'haveto'], ['older'], 'kupować'),
         verb('open', 'open', '📂', ['can', 'must'], ['older'], 'otwierać'),
-        verb('close', 'close', '🚪', ['can', 'must'], ['older'], 'zamykać'),
+        verb('close', 'close', '🔒', ['can', 'must'], ['older'], 'zamykać'),
         verb('sleep', 'sleep', '😴', ['can', 'must', 'like'], ['older'], 'spać'),
         verb('sit', 'sit', '💺', ['can', 'must'], ['older'], 'siedzieć'),
         verb('stand', 'stand', '🧍', ['can', 'must'], ['older'], 'stać'),
@@ -281,6 +282,7 @@
                 wordPl: t.wordPlPl || t.wordPl,
                 fa: t.fa,
                 icon: t.icon,
+                pic: t.pic || '',
                 vowel: false,
                 number: 'pl',
                 place: t.place,
@@ -454,6 +456,20 @@
 }
 .cb-chain.empty::after { content: attr(data-empty); color: var(--text-muted); font-size: 0.9rem; padding: 0.4rem; }
 .cb-sheet { margin-bottom: 0.85rem; }
+.cb-sheet-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.7rem; }
+.cb-sheet-bar .btn { padding: 0.28rem 0.7rem; font-size: 0.82rem; }
+.cb-sheet-head {
+    display: flex; align-items: center; gap: 0.45rem; width: 100%;
+    border: none; background: transparent; padding: 0.35rem 0.1rem;
+    border-bottom: 1px solid var(--border-light); cursor: pointer;
+    font-family: var(--font-primary); font-size: 0.95rem; font-weight: 700;
+    color: var(--royal-blue); text-align: left;
+}
+.cb-sheet-head:hover { opacity: 0.85; }
+.cb-sheet-head .cb-chev { width: 0.9rem; font-size: 0.7rem; color: var(--text-muted); }
+.cb-sheet-head .cb-sheet-n { margin-left: auto; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); }
+.cb-sheet.closed { margin-bottom: 0.2rem; }
+.cb-sheet.closed .cb-cards { display: none; }
 .cb-sheet h3 { font-family: var(--font-primary); font-size: 0.95rem; color: var(--royal-blue); margin: 0 0 0.45rem; }
 .cb-cards { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .cb-card {
@@ -463,6 +479,104 @@
     color: var(--text-dark); line-height: 1.15;
 }
 .cb-card .ico { font-size: 1.35rem; line-height: 1; min-height: 1.4rem; }
+.cb-card .cb-pic { font-size: 1.35rem; }
+.cb-pic {
+    display: inline-block; width: 1.4em; height: 1.2em; position: relative;
+    vertical-align: middle; flex-shrink: 0; color: currentColor;
+}
+.cb-pic-table {
+    background:
+        linear-gradient(currentColor, currentColor) center 30% / 88% 0.22em no-repeat,
+        linear-gradient(currentColor, currentColor) 20% 100% / 0.16em 0.65em no-repeat,
+        linear-gradient(currentColor, currentColor) 80% 100% / 0.16em 0.65em no-repeat;
+}
+.cb-pic-desk {
+    background:
+        linear-gradient(currentColor, currentColor) 50% 6% / 0.5em 0.36em no-repeat,
+        linear-gradient(currentColor, currentColor) center 44% / 92% 0.18em no-repeat,
+        linear-gradient(currentColor, currentColor) 18% 100% / 0.14em 0.5em no-repeat,
+        linear-gradient(currentColor, currentColor) 82% 100% / 0.14em 0.5em no-repeat;
+}
+.cb-pic-cushion {
+    width: 1.25em; height: 0.82em; margin-top: 0.18em;
+    background: currentColor; border-radius: 0.38em;
+}
+.cb-pic-mat {
+    width: 1.35em; height: 0.38em; margin-top: 0.42em;
+    background: currentColor; border-radius: 0.1em;
+    box-shadow: 0 0 0 0.07em currentColor;
+}
+.cb-pic-floor {
+    background:
+        linear-gradient(currentColor, currentColor) 0 0 / 45% 45% no-repeat,
+        linear-gradient(currentColor, currentColor) 100% 0 / 45% 45% no-repeat,
+        linear-gradient(currentColor, currentColor) 0 100% / 45% 45% no-repeat,
+        linear-gradient(currentColor, currentColor) 100% 100% / 45% 45% no-repeat;
+}
+.cb-pic-fridge {
+    width: 0.78em; height: 1.18em; margin: 0 auto;
+    background: currentColor; border-radius: 0.1em;
+    box-shadow: inset -0.16em 0.22em 0 -0.06em #fff;
+}
+.cb-pic-cooker {
+    background: currentColor; border-radius: 0.12em;
+    box-shadow:
+        inset 0.26em 0.26em 0 -0.12em #fff,
+        inset -0.26em 0.26em 0 -0.12em #fff,
+        inset 0.26em -0.2em 0 -0.12em #fff,
+        inset -0.26em -0.2em 0 -0.12em #fff;
+}
+.cb-pic-wardrobe {
+    width: 1em; height: 1.18em; margin: 0 auto;
+    background: currentColor; border-radius: 0.08em 0.08em 0.05em 0.05em;
+    box-shadow: inset 0.48em 0 0 -0.38em #fff;
+}
+.cb-pic-towel {
+    width: 0.9em; height: 1.12em; margin: 0 auto;
+    background: currentColor;
+    clip-path: polygon(8% 0, 92% 0, 100% 18%, 88% 100%, 50% 78%, 12% 100%, 0 18%);
+}
+.cb-pic-jumper {
+    background:
+        linear-gradient(currentColor, currentColor) 50% 100% / 0.68em 0.82em no-repeat,
+        linear-gradient(currentColor, currentColor) 0 42% / 0.36em 0.26em no-repeat,
+        linear-gradient(currentColor, currentColor) 100% 42% / 0.36em 0.26em no-repeat;
+}
+.cb-pic-balcony {
+    background:
+        linear-gradient(currentColor, currentColor) 18% 8% / 0.55em 0.48em no-repeat,
+        linear-gradient(currentColor, currentColor) 0 68% / 100% 0.12em no-repeat,
+        linear-gradient(currentColor, currentColor) 10% 68% / 0.1em 0.38em no-repeat,
+        linear-gradient(currentColor, currentColor) 36% 68% / 0.1em 0.38em no-repeat,
+        linear-gradient(currentColor, currentColor) 62% 68% / 0.1em 0.38em no-repeat,
+        linear-gradient(currentColor, currentColor) 88% 68% / 0.1em 0.38em no-repeat;
+}
+.cb-pic-living {
+    background:
+        linear-gradient(currentColor, currentColor) 0 100% / 100% 0.14em no-repeat,
+        linear-gradient(currentColor, currentColor) 14% 58% / 0.72em 0.36em no-repeat,
+        linear-gradient(currentColor, currentColor) 72% 18% / 0.28em 0.36em no-repeat;
+}
+.cb-pic-between {
+    background:
+        linear-gradient(currentColor, currentColor) 10% 50% / 0.2em 0.62em no-repeat,
+        linear-gradient(currentColor, currentColor) 50% 50% / 0.32em 0.92em no-repeat,
+        linear-gradient(currentColor, currentColor) 90% 50% / 0.2em 0.62em no-repeat;
+}
+.cb-pic-on {
+    background:
+        linear-gradient(currentColor, currentColor) 50% 16% / 0.52em 0.36em no-repeat,
+        linear-gradient(currentColor, currentColor) 50% 82% / 100% 0.16em no-repeat;
+}
+.cb-pic-under {
+    background:
+        linear-gradient(currentColor, currentColor) 50% 12% / 100% 0.16em no-repeat,
+        linear-gradient(currentColor, currentColor) 50% 78% / 0.52em 0.36em no-repeat;
+}
+.cb-pic-eraser {
+    width: 1.15em; height: 0.5em; margin-top: 0.35em;
+    background: currentColor; border-radius: 0.1em 0.28em 0.28em 0.1em;
+}
 .cb-card .gloss { font-family: var(--font-secondary); font-weight: 400; font-size: 0.68rem; color: var(--text-muted); text-align: center; }
 .cb-card .gloss.plhint { color: #0f766e; font-weight: 700; }
 .cb-card .cb-1plus {
@@ -507,7 +621,17 @@
 .cb-hintbox { background: #fffbeb; border-left: 4px solid #ca8a04; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.6rem; }
 .cb-why { text-align: center; margin-top: 0.55rem; }
 .cb-why .btn { margin-top: 0.15rem; }
-.cb-whybox { text-align: left; font-weight: 500; line-height: 1.5; white-space: pre-wrap; }
+.cb-whybox {
+    text-align: left; font-weight: 500; font-size: 1.05rem; line-height: 1.7;
+    color: var(--text-dark);
+}
+.cb-whybox strong {
+    font-weight: 800; color: var(--royal-blue);
+    background: #dbeafe; padding: 0.05em 0.28em; border-radius: 5px;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+.cb-guess-icon .cb-pic { color: #0f766e; }
+.cb-picture .cb-pic { color: #0f766e; font-size: 1em; }
 .cb-icon-bank { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
 .cb-guess-icon {
     width: 4.4rem; height: 4.4rem; border: 3px solid var(--border-light); border-radius: 12px; background: #fff;
@@ -531,13 +655,40 @@
         return (S && S.polish) ? (pl || en || '') : (en || '');
     }
 
+    function tilePic(t) {
+        if (!t) return '';
+        if (t.pic) return 'pic:' + t.pic;
+        return t.icon || '';
+    }
+
+    function icoHtml(t) {
+        if (!t) return '';
+        if (t.pic) return '<span class="cb-pic cb-pic-' + t.pic + '" aria-hidden="true"></span>';
+        if (t.icon) return '<span class="ico" aria-hidden="true">' + t.icon + '</span>';
+        return '<span class="ico" aria-hidden="true"><i class="fa-solid ' + (t.fa || 'fa-cube') + '"></i></span>';
+    }
+
+    function pictureMark(p) {
+        if (!p) return '';
+        if (typeof p === 'object') return icoHtml(p);
+        const s = String(p);
+        if (s.indexOf('pic:') === 0) {
+            return '<span class="cb-pic cb-pic-' + s.slice(4) + '" aria-hidden="true"></span>';
+        }
+        return '<span class="ico" aria-hidden="true">' + s + '</span>';
+    }
+
+    function richWhy(text) {
+        return esc(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+    }
+
     const PERSONS = [
         { id: 'i', icon: '👤' },
         { id: 'you', icon: '👉' },
         { id: 'he', icon: '👦' },
         { id: 'she', icon: '👧' },
         { id: 'we', icon: '👥' },
-        { id: 'they', icon: '👫' }
+        { id: 'they', icon: '🧑‍🤝‍🧑' }
     ];
 
     function pickPerson() { return pick(PERSONS); }
@@ -579,6 +730,205 @@
             if (!/[?]$/.test(out)) out += '?';
         } else if (!/[.]$/.test(out)) out += '.';
         return out;
+    }
+
+    const CB_SET_NAME = 'Colour Blocks';
+    let colourSaveQueue = Promise.resolve();
+
+    const PERSON_PL = { i: 'Ja', you: 'Ty', he: 'On', she: 'Ona', we: 'My', they: 'Oni' };
+    const HAVE_PL = { i: 'mam', you: 'masz', he: 'ma', she: 'ma', we: 'mamy', they: 'mają' };
+    const HAVE_NEG_PL = { i: 'nie mam', you: 'nie masz', he: 'nie ma', she: 'nie ma', we: 'nie mamy', they: 'nie mają' };
+    const CAN_PL = { i: 'potrafię', you: 'potrafisz', he: 'potrafi', she: 'potrafi', we: 'potrafimy', they: 'potrafią' };
+    const CAN_NEG_PL = { i: 'nie potrafię', you: 'nie potrafisz', he: 'nie potrafi', she: 'nie potrafi', we: 'nie potrafimy', they: 'nie potrafią' };
+    const LIKE_PL = { i: 'lubię', you: 'lubisz', he: 'lubi', she: 'lubi', we: 'lubimy', they: 'lubią' };
+    const LIKE_NEG_PL = { i: 'nie lubię', you: 'nie lubisz', he: 'nie lubi', she: 'nie lubi', we: 'nie lubimy', they: 'nie lubią' };
+    const MUST_PL = { i: 'muszę', you: 'musisz', he: 'musi', she: 'musi', we: 'musimy', they: 'muszą' };
+    const MUST_NEG_PL = { i: 'nie muszę', you: 'nie musisz', he: 'nie musi', she: 'nie musi', we: 'nie musimy', they: 'nie muszą' };
+    const PREP_PL = {
+        in: 'w', on: 'na', under: 'pod', above: 'nad', 'next-to': 'obok', between: 'między',
+        behind: 'za', 'in-front-of': 'przed', near: 'blisko', upstairs: 'na górze', downstairs: 'na dole', outside: 'na dworze', and: 'i'
+    };
+    const PLACE_NA = {
+        chair: 'krześle', desk: 'biurku', table: 'stole', sofa: 'sofie', bin: 'koszu', shelf: 'półce',
+        bed: 'łóżku', wardrobe: 'szafie', door: 'drzwiach', window: 'oknie', box: 'pudełku', mat: 'macie',
+        floor: 'podłodze', garden: 'ogrodzie', kitchen: 'kuchni', bedroom: 'sypialni', bathroom: 'łazience',
+        'living-room': 'salonie', balcony: 'balkonie', fridge: 'lodówce', cooker: 'kuchence', sink: 'zlewie',
+        school: 'szkole', bag: 'torbie', car: 'samochodzie'
+    };
+    const PLACE_POD = {
+        chair: 'krzesłem', desk: 'biurkiem', table: 'stołem', sofa: 'sofą', bin: 'koszem', shelf: 'półką',
+        bed: 'łóżkiem', box: 'pudełkiem', mat: 'matą', window: 'oknem'
+    };
+    const NUM_PL = { one: 'jeden', two: 'dwa', three: 'trzy', some: 'kilka', any: 'jakieś' };
+
+    function nounPlWord(t) {
+        if (!t) return '';
+        if (t.kind === 'noun' && t.number === 'pl') return t.wordPl || t.wordPlPl || t.text;
+        return (t.wordPl || t.text || '').trim();
+    }
+
+    function nounKey(t) {
+        if (!t) return '';
+        return t.sgId || t.id;
+    }
+
+    function placePolish(prepId, noun) {
+        const key = nounKey(noun);
+        if (prepId === 'under') return PLACE_POD[key] || nounPlWord(noun);
+        if (prepId === 'upstairs' || prepId === 'downstairs' || prepId === 'outside') return PREP_PL[prepId];
+        return PLACE_NA[key] || nounPlWord(noun);
+    }
+
+    function capPl(s, question) {
+        let out = String(s || '').replace(/\s+/g, ' ').trim();
+        if (!out) return '';
+        out = out.charAt(0).toUpperCase() + out.slice(1);
+        if (question) {
+            if (!/[?]$/.test(out)) out += '?';
+        } else if (!/[.?!]$/.test(out)) out += '.';
+        return out;
+    }
+
+    function polishFromTiles(tiles) {
+        if (!tiles || !tiles.length) return '';
+        const ids = tiles.map((t) => t.id);
+        const has = (id) => ids.indexOf(id) !== -1;
+        const first = tiles[0];
+        const subj = tiles.find((t) => t.kind === 'subj');
+        const nouns = tiles.filter((t) => t.kind === 'noun');
+        const verb = tiles.find((t) => t.kind === 'verb');
+        const prep = tiles.find((t) => t.kind === 'prep' && !t.adverb);
+        const adv = tiles.find((t) => t.kind === 'prep' && t.adverb);
+        const num = tiles.find((t) => t.kind === 'num' || t.id === 'some' || t.id === 'any');
+        const question = first.id === 'is-there' || first.id === 'are-there';
+
+        if (first.kind === 'struct') {
+            const thing = nouns[0];
+            const place = nouns[1] || nouns.find((n) => n.place && n !== thing);
+            let head = 'Jest';
+            if (first.family === 'are' && first.id !== 'there-arent') head = 'Są';
+            if (first.id === 'there-isnt' || first.id === 'there-arent') head = 'Nie ma';
+            if (question) head = first.family === 'are' ? 'Czy są' : 'Czy jest';
+            const bits = [head];
+            if (num && NUM_PL[num.id] && first.id !== 'there-isnt') bits.push(NUM_PL[num.id]);
+            if (thing) bits.push(nounPlWord(thing));
+            if (adv) bits.push(PREP_PL[adv.id] || adv.wordPl || adv.text);
+            else if (prep && place) {
+                bits.push(PREP_PL[prep.id] || prep.text);
+                if (prep.id === 'between') {
+                    const second = nouns[2] || nouns[1];
+                    bits.push(nounPlWord(place), 'i', nounPlWord(second));
+                } else {
+                    bits.push(placePolish(prep.id, place));
+                }
+            }
+            return capPl(bits.filter(Boolean).join(' '), question);
+        }
+
+        if (subj) {
+            const pid = subj.id;
+            const who = PERSON_PL[pid] || subj.wordPl || subj.text;
+            const action = verb ? (verb.wordPl || verb.text) : '';
+            const thing = nouns[0];
+            const thingW = thing ? nounPlWord(thing) : '';
+            if (has('have-got') || has('has-got') || has('havent-got') || has('hasnt-got')) {
+                const neg = has('havent-got') || has('hasnt-got');
+                const v = (neg ? HAVE_NEG_PL : HAVE_PL)[pid];
+                return capPl([who, v, thingW].filter(Boolean).join(' '));
+            }
+            if (has('can') || has('cant')) {
+                const v = (has('cant') ? CAN_NEG_PL : CAN_PL)[pid];
+                return capPl([who, v, action].filter(Boolean).join(' '));
+            }
+            if (has('like') || (has('dont') && has('like'))) {
+                const v = (has('dont') ? LIKE_NEG_PL : LIKE_PL)[pid];
+                return capPl([who, v, thingW || action].filter(Boolean).join(' '));
+            }
+            if (has('must') || has('have-to') || (has('dont') && has('have-to'))) {
+                const v = (has('dont') ? MUST_NEG_PL : MUST_PL)[pid];
+                return capPl([who, v, action].filter(Boolean).join(' '));
+            }
+        }
+        return tiles.map((t) => t.wordPl || t.glossPl || t.text).filter(Boolean).join(' ');
+    }
+
+    function tilesFromEnglish(en) {
+        let rest = tidyColourEn(en).replace(/[?.!]+$/g, '').trim();
+        const pool = TILES.slice().sort((a, b) => String(b.text).length - String(a.text).length);
+        const out = [];
+        while (rest) {
+            let hit = null;
+            const low = rest.toLowerCase();
+            for (let i = 0; i < pool.length; i++) {
+                const w = String(pool[i].text).replace(/[’‘]/g, "'");
+                const wl = w.toLowerCase();
+                if (low === wl || low.indexOf(wl + ' ') === 0) {
+                    hit = pool[i];
+                    rest = rest.slice(w.length).trim();
+                    break;
+                }
+            }
+            if (!hit) {
+                const sp = rest.indexOf(' ');
+                if (sp < 0) break;
+                rest = rest.slice(sp + 1).trim();
+            } else out.push(hit);
+        }
+        return out;
+    }
+
+    function polishSentence(en, tiles) {
+        const fromTiles = polishFromTiles(tiles && tiles.length ? tiles : tilesFromEnglish(en));
+        return String(fromTiles || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function tidyColourEn(en) {
+        return String(en || '')
+            .replace(/[’‘]/g, "'")
+            .replace(/\s*\(10–12\)\s*/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function looksLikeSentence(s) {
+        return /^(There |Is there|Are there|I |You |He |She |We |They )/i.test(String(s || '').trim());
+    }
+
+    function rememberColourSentence(en, pl, tiles) {
+        let term = tidyColourEn(en).slice(0, 198);
+        if (!term) return;
+        if (/^(Is there|Are there)/i.test(term)) {
+            if (!/[?]$/.test(term)) term += '?';
+        } else if (!/[.?!]$/.test(term)) term += '.';
+        let definition = String(pl || '').replace(/\s+/g, ' ').trim();
+        if (!definition) definition = polishSentence(term, tiles);
+        definition = definition.slice(0, 500);
+        if (!definition || !looksLikeSentence(term)) return;
+        colourSaveQueue = colourSaveQueue.then(() => saveColourSentence(term, definition)).catch(() => null);
+    }
+
+    function colourLoggedIn() {
+        if (typeof global.isLoggedIn === 'function') return !!global.isLoggedIn();
+        return !!(global.authState && global.authState.user && global.authState.user.id);
+    }
+
+    async function saveColourSentence(term, definition) {
+        if (!colourLoggedIn()) return;
+        try {
+            await fetch('/api/word-sets/append', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: CB_SET_NAME,
+                    setType: 'vocab',
+                    testDirection: 'def',
+                    items: [{ term: term, definition: definition }]
+                })
+            });
+        } catch (e) {
+            console.warn('Colour Blocks set save failed:', e);
+        }
     }
 
     function validateChain(tiles) {
@@ -699,47 +1049,47 @@
             const prep = pick(visibleTiles().filter((t) => t.kind === 'prep' && !t.adverb));
             const place = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.place && t.number === 'sg' && t.id !== (n && n.id)));
             if (!n || !prep || !place) return { ids: ['there-is', 'a', 'lamp'], picture: ['💡'] };
-            return { ids: ['there-is', art, n.id, prep.id, 'the', place.id], picture: [n.icon, prep.icon || prep.text, place.icon] };
+            return { ids: ['there-is', art, n.id, prep.id, 'the', place.id], picture: [tilePic(n), tilePic(prep) || prep.text, tilePic(place)] };
         }
         if (g === 'are') {
             const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number === 'pl'));
             const prep = pick(visibleTiles().filter((t) => t.kind === 'prep'));
             if (!n) return { ids: ['there-are', 'two', 'chair-pl'], picture: ['🪑🪑'] };
-            if (prep && prep.adverb) return { ids: ['there-are', n.id, prep.id], picture: [n.icon, prep.icon] };
+            if (prep && prep.adverb) return { ids: ['there-are', n.id, prep.id], picture: [tilePic(n), tilePic(prep)] };
             const place = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.place && t.number === 'sg'));
-            return { ids: ['there-are', n.id, (prep && prep.id) || 'on', 'the', (place && place.id) || 'sofa'], picture: [n.icon, prep && prep.icon, place && place.icon] };
+            return { ids: ['there-are', n.id, (prep && prep.id) || 'on', 'the', (place && place.id) || 'sofa'], picture: [tilePic(n), prep && tilePic(prep), place && tilePic(place)] };
         }
         if (g === 'have') {
             const p = pickPerson();
             const got = gotTile(p.id);
             const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number === 'sg' && t.goals && t.goals.indexOf('have') !== -1));
             const art = n && n.vowel ? 'an' : 'a';
-            return { ids: [p.id, got, art, n ? n.id : 'key'], picture: [p.icon, '🔑', n && n.icon] };
+            return { ids: [p.id, got, art, n ? n.id : 'key'], picture: [p.icon, '👜', n && tilePic(n)] };
         }
         if (g === 'can') {
             const p = pickPerson();
             const modal = pick(['can', 'cant']);
             const v = pick(visibleTiles().filter((t) => t.kind === 'verb' && t.goals.indexOf('can') !== -1));
-            return { ids: [p.id, modal, v ? v.id : 'swim'], picture: [p.icon, modal === 'can' ? '💪' : '🚫', v && v.icon] };
+            return { ids: [p.id, modal, v ? v.id : 'swim'], picture: [p.icon, modal === 'can' ? '💪' : '🚫', v && tilePic(v)] };
         }
         if (g === 'like') {
             const p = pickPerson();
             const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number !== 'pl' && t.goals && t.goals.indexOf('like') !== -1));
             const neg = Math.random() < 0.4;
             const ids = neg ? [p.id, 'dont', 'like', n ? n.id : 'pizza'] : [p.id, 'like', n ? n.id : 'pizza'];
-            return { ids: ids, picture: [p.icon, neg ? '🚫' : '❤️', n && n.icon] };
+            return { ids: ids, picture: [p.icon, neg ? '🚫' : '❤️', n && tilePic(n)] };
         }
         if (g === 'must') {
             const p = pickPerson();
             const v = pick(visibleTiles().filter((t) => t.kind === 'verb' && t.goals.indexOf('must') !== -1));
-            return { ids: [p.id, 'must', v ? v.id : 'listen'], picture: [p.icon, '❗', v && v.icon] };
+            return { ids: [p.id, 'must', v ? v.id : 'listen'], picture: [p.icon, '❗', v && tilePic(v)] };
         }
         if (g === 'haveto') {
             const p = pickPerson();
             const v = pick(visibleTiles().filter((t) => t.kind === 'verb' && t.goals.indexOf('haveto') !== -1));
             const neg = Math.random() < 0.4;
             const ids = neg ? [p.id, 'dont', 'have-to', v ? v.id : 'run'] : [p.id, 'have-to', v ? v.id : 'tidy'];
-            return { ids: ids, picture: [p.icon, neg ? '🚫' : '📋', v && v.icon] };
+            return { ids: ids, picture: [p.icon, neg ? '🚫' : '📋', v && tilePic(v)] };
         }
         return { ids: ['there-is', 'a', 'lamp'], picture: ['💡'] };
     }
@@ -751,6 +1101,13 @@
         u.lang = 'en-GB';
         u.rate = 0.92;
         global.speechSynthesis.speak(u);
+    }
+
+    function speakTile(t) {
+        if (!t) return;
+        let src = t;
+        if (t.kind === 'noun' && t.number === 'pl' && t.sgId) src = byId(t.sgId) || t;
+        speak(String(src.speak || src.text || '').replace(/\s+/g, ' ').trim());
     }
 
     function award(n, result) {
@@ -772,9 +1129,7 @@
     }
 
     function cardHtml(t, extraClass, action) {
-        const ico = t.icon
-            ? '<span class="ico" aria-hidden="true">' + t.icon + '</span>'
-            : '<span class="ico" aria-hidden="true"><i class="fa-solid ' + t.fa + '"></i></span>';
+        const ico = icoHtml(t);
         const gloss = (S && S.tilePl) ? (t.wordPl || t.glossPl) : t.gloss;
         const glossCls = (S && S.tilePl && gloss) ? 'gloss plhint' : 'gloss';
         const inBank = action === 'add' && (!extraClass || extraClass.indexOf('in-chain') === -1);
@@ -793,7 +1148,7 @@
         const opt = (tile, labelEn, labelPl) => {
             const gloss = S.tilePl ? (tile.wordPl || '') : '';
             return '<button type="button" class="cb-card" data-cb="noun-pick" data-id="' + tile.id + '" style="' + colorStyle('noun') + '">' +
-                (tile.icon ? '<span class="ico" aria-hidden="true">' + tile.icon + '</span>' : '') +
+                icoHtml(tile) +
                 esc(tile.text) +
                 (gloss ? '<span class="gloss plhint">' + esc(gloss) + '</span>' : '') +
                 '<span class="cb-1plus">' + esc(L(labelEn, labelPl)) + '</span></button>';
@@ -941,26 +1296,70 @@
 
     function pictureHtml(prompt) {
         if (!prompt || !prompt.picture) return '';
-        return '<div class="cb-picture" aria-label="' + esc(L('Look first', 'Najpierw popatrz')) + '">' + prompt.picture.filter(Boolean).map((p) => '<span>' + p + '</span>').join('<span style="color:#94a3b8">→</span>') + '</div>';
+        return '<div class="cb-picture" aria-label="' + esc(L('Look first', 'Najpierw popatrz')) + '">' + prompt.picture.filter(Boolean).map((p) => '<span>' + pictureMark(p) + '</span>').join('<span style="color:#94a3b8">→</span>') + '</div>';
+    }
+
+    function sheetGroups() {
+        return [
+            { id: 'who', title: 'Who', titlePl: 'Kto', kinds: ['subj'] },
+            { id: 'struct', title: 'Sentence starters', titlePl: 'Początek zdania', kinds: ['struct'] },
+            { id: 'art', title: 'a · an · the · some · any', titlePl: 'a · an · the · some · any', kinds: ['art'] },
+            { id: 'num', title: 'Numbers', titlePl: 'Liczby', kinds: ['num'] },
+            { id: 'grammar', title: 'Grammar', titlePl: 'Gramatyka', kinds: ['verbp', 'modal', 'neg'] },
+            { id: 'prep', title: 'Place words', titlePl: 'Przyimki miejsca', kinds: ['prep', 'link'] },
+            { id: 'noun', title: 'Things', titlePl: 'Rzeczy', kinds: ['noun'] },
+            { id: 'verb', title: 'Actions', titlePl: 'Czynności', kinds: ['verb'] }
+        ];
+    }
+
+    function defaultSheetsOpen() {
+        const open = {};
+        sheetGroups().forEach((g) => { open[g.id] = false; });
+        if (S.tab === 'guess') {
+            open.who = true;
+            open.grammar = true;
+            open.prep = true;
+            open.noun = true;
+            open.verb = true;
+            return open;
+        }
+        const g = S.goal;
+        if (g === 'have') {
+            open.who = true; open.grammar = true; open.art = true; open.noun = true;
+        } else if (g === 'can' || g === 'must' || g === 'haveto') {
+            open.who = true; open.grammar = true; open.verb = true;
+        } else if (g === 'like') {
+            open.who = true; open.grammar = true; open.noun = true;
+        } else {
+            open.struct = true; open.art = true; open.prep = true; open.noun = true;
+        }
+        return open;
+    }
+
+    function ensureSheetsOpen() {
+        if (!S.sheetsOpen) S.sheetsOpen = defaultSheetsOpen();
+        return S.sheetsOpen;
     }
 
     function sheetsHtml() {
-        const groups = [
-            { title: 'Who', titlePl: 'Kto', kinds: ['subj'] },
-            { title: 'Sentence starters', titlePl: 'Początek zdania', kinds: ['struct'] },
-            { title: 'a · an · the · some · any', titlePl: 'a · an · the · some · any', kinds: ['art'] },
-            { title: 'Numbers', titlePl: 'Liczby', kinds: ['num'] },
-            { title: 'Grammar', titlePl: 'Gramatyka', kinds: ['verbp', 'modal', 'neg'] },
-            { title: 'Place words', titlePl: 'Przyimki miejsca', kinds: ['prep', 'link'] },
-            { title: 'Things', titlePl: 'Rzeczy', kinds: ['noun'] },
-            { title: 'Actions', titlePl: 'Czynności', kinds: ['verb'] }
-        ];
+        const groups = sheetGroups();
+        const open = ensureSheetsOpen();
         const list = visibleTiles();
-        let html = '';
+        let html = '<div class="cb-sheet-bar">' +
+            '<button type="button" class="btn btn-outline" data-cb="sheets" data-id="open">' + esc(L('Expand all', 'Rozwiń wszystkie')) + '</button>' +
+            '<button type="button" class="btn btn-outline" data-cb="sheets" data-id="close">' + esc(L('Collapse all', 'Zwiń wszystkie')) + '</button>' +
+            '</div>';
         groups.forEach((g) => {
             const tiles = list.filter((t) => g.kinds.indexOf(t.kind) !== -1 && t.number !== 'pl');
             if (!tiles.length) return;
-            html += '<div class="cb-sheet"><h3>' + esc(L(g.title, g.titlePl)) + '</h3><div class="cb-cards">';
+            const isOpen = open[g.id] !== false;
+            const chev = isOpen ? 'fa-chevron-down' : 'fa-chevron-right';
+            html += '<div class="cb-sheet' + (isOpen ? '' : ' closed') + '">' +
+                '<button type="button" class="cb-sheet-head" data-cb="sheet" data-id="' + g.id + '" aria-expanded="' + (isOpen ? 'true' : 'false') + '">' +
+                '<i class="fa-solid ' + chev + ' cb-chev" aria-hidden="true"></i>' +
+                esc(L(g.title, g.titlePl)) +
+                '<span class="cb-sheet-n">' + tiles.length + '</span>' +
+                '</button><div class="cb-cards">';
             tiles.forEach((t) => { html += cardHtml(t, '', 'add'); });
             html += '</div></div>';
         });
@@ -998,14 +1397,14 @@
             html += '<div class="cb-icon-bank">';
             guessIconTiles().forEach((t) => {
                 html += '<button type="button" class="cb-guess-icon" data-cb="guess-add" data-id="' + t.id + '" title="' + esc(t.text) + '">' +
-                    (t.icon || '<i class="fa-solid ' + t.fa + '"></i>') + '<small>' + esc(t.text) + '</small></button>';
+                    icoHtml(t) + '<small>' + esc(t.text) + '</small></button>';
             });
             html += '</div>';
             html += '<div class="cb-actions"><button type="button" class="btn btn-blue" data-cb="guess-lock">' + esc(L('These icons — now make a sentence', 'Te ikony — teraz złóż zdanie')) + '</button>' +
                 '<button type="button" class="btn btn-outline" data-cb="guess-clear-icons">' + esc(L('Clear icons', 'Wyczyść ikony')) + '</button></div>';
         } else {
             html += '<p style="font-weight:700;font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.4rem;">' + esc(L('Your icons', 'Twoje ikony')) + '</p>';
-            html += '<div class="cb-picture">' + chainTiles(S.guessIcons).map((t) => '<span title="' + esc(t.text) + '">' + (t.icon || '') + '</span>').join('<span style="color:#94a3b8">→</span>') + '</div>';
+            html += '<div class="cb-picture">' + chainTiles(S.guessIcons).map((t) => '<span title="' + esc(t.text) + '">' + icoHtml(t) + '</span>').join('<span style="color:#94a3b8">→</span>') + '</div>';
             html += chainHtml(S.guessChain, 'guess-chain-pop', L('Build the sentence with tiles.', 'Złóż zdanie kafelkami.'));
             const keepGoal = S.goal;
             S.goal = null;
@@ -1027,7 +1426,7 @@
     }
 
     function guessIconTiles() {
-        return TILES.filter((t) => t.guess && t.ages.indexOf(S.ageBand) !== -1 && t.icon && t.number !== 'pl');
+        return TILES.filter((t) => t.guess && t.ages.indexOf(S.ageBand) !== -1 && (t.icon || t.pic) && t.number !== 'pl');
     }
 
     function textHtml() {
@@ -1097,6 +1496,7 @@
             const a = t.dataset.cb;
             const id = t.dataset.id;
             if (a === 'tab') {
+                const changed = S.tab !== id;
                 S.tab = id;
                 S.nounPick = null;
                 clearAskWhy();
@@ -1104,6 +1504,7 @@
                 S.guessFbEn = ''; S.guessFbPl = '';
                 S.guessHintEn = ''; S.guessHintPl = '';
                 S.textFbEn = ''; S.textFbPl = '';
+                if (changed && (id === 'build' || id === 'guess')) S.sheetsOpen = defaultSheetsOpen();
                 render(); return;
             }
             if (a === 'lang') { S.polish = id === 'pl'; render(); return; }
@@ -1113,11 +1514,25 @@
                 S.goal = id; S.chain = [];
                 S.buildPrompt = S.ageBand === 'young' ? makeBuildPrompt(id) : null;
                 S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
+                S.sheetsOpen = defaultSheetsOpen();
                 clearAskWhy();
+                render(); return;
+            }
+            if (a === 'sheet') {
+                ensureSheetsOpen();
+                S.sheetsOpen[id] = S.sheetsOpen[id] === false;
+                render(); return;
+            }
+            if (a === 'sheets') {
+                const groups = sheetGroups();
+                const on = id === 'open';
+                S.sheetsOpen = {};
+                groups.forEach((g) => { S.sheetsOpen[g.id] = on; });
                 render(); return;
             }
             if (a === 'add') {
                 const tile = byId(id);
+                speakTile(tile);
                 if (tile && tile.kind === 'noun' && tile.number === 'sg' && tile.plId) {
                     S.nounPick = id;
                     render();
@@ -1128,16 +1543,19 @@
             }
             if (a === 'noun-pick-box') return;
             if (a === 'noun-pick-cancel') { S.nounPick = null; render(); return; }
-            if (a === 'noun-pick') { addToChain(id); return; }
-            if (a === 'pop') { S.chain.splice(Number(id), 1); S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; clearAskWhy(); render(); return; }
+            if (a === 'noun-pick') { speakTile(byId(id)); addToChain(id); return; }
+            if (a === 'pop') {
+                speakTile(chainTiles(S.chain)[Number(id)]);
+                S.chain.splice(Number(id), 1); S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; clearAskWhy(); render(); return;
+            }
             if (a === 'check-build') { checkBuild(); return; }
             if (a === 'ask-why') { askWhy(); return; }
             if (a === 'speak-build') { speak(S.buildSpoken || joinSpeak(chainTiles(S.chain))); return; }
             if (a === 'clear-build') { S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
             if (a === 'new-prompt') { S.buildPrompt = makeBuildPrompt(S.goal); S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
             if (a === 'new-goal') { S.goal = null; S.chain = []; S.buildPrompt = null; clearAskWhy(); render(); return; }
-            if (a === 'guess-add') { S.guessIcons.push(id); render(); return; }
-            if (a === 'guess-pop') { S.guessIcons.splice(Number(id), 1); render(); return; }
+            if (a === 'guess-add') { speakTile(byId(id)); S.guessIcons.push(id); render(); return; }
+            if (a === 'guess-pop') { speakTile(chainTiles(S.guessIcons)[Number(id)]); S.guessIcons.splice(Number(id), 1); render(); return; }
             if (a === 'guess-clear-icons') { S.guessIcons = []; render(); return; }
             if (a === 'guess-lock') {
                 if (S.guessIcons.length < 2) {
@@ -1152,7 +1570,10 @@
                 clearAskWhy();
                 render(); return;
             }
-            if (a === 'guess-chain-pop') { S.guessChain.splice(Number(id), 1); clearAskWhy(); render(); return; }
+            if (a === 'guess-chain-pop') {
+                speakTile(chainTiles(S.guessChain)[Number(id)]);
+                S.guessChain.splice(Number(id), 1); clearAskWhy(); render(); return;
+            }
             if (a === 'guess-back') {
                 S.guessPhase = 'icons';
                 S.guessFbEn = ''; S.guessFbPl = '';
@@ -1187,7 +1608,7 @@
         return '<div class="cb-why">' +
             '<button type="button" class="btn btn-outline" data-cb="ask-why"' + (S.askWhyBusy ? ' disabled' : '') + '>' +
             '<i class="fa-solid fa-robot"></i> ' + esc(label) + '</button>' +
-            (expl ? '<div class="cb-hintbox cb-whybox">' + esc(expl) + '</div>' : '') +
+            (expl ? '<div class="cb-hintbox cb-whybox">' + richWhy(expl) + '</div>' : '') +
             '</div>';
     }
 
@@ -1268,16 +1689,32 @@
         const grammar = S.ageBand === 'older'
             ? "there is/are, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any"
             : "there is/are, have got, can/can't, like, don't like, a/an, prepositions";
-        const prompt = `You help a child who got a Colour Blocks English task wrong. Be kind. Do not scold.
+        const prompt = `You help a Polish child who got a Colour Blocks English task wrong. Be kind. Do not scold.
 Age: ${age}. ${ageWhyVoice()}
 Allowed grammar for this age: ${grammar}.
 Task: ${ctx.task}
 What the child did: ${ctx.attempt}
 Extra context: ${ctx.extra}
-Explain the doubt in a simple way: what is wrong and what to try next.
-You may give ONE short example sentence.
+
+Write a SIMPLE, easy-to-read explanation. A child of this age must understand it in one look.
+
+LAYOUT
+- 2 to 4 very short lines. One idea per line.
+- Put a blank line between: (1) what is wrong, (2) the rule, (3) one example.
+- No long paragraph. No lists with dashes or stars at the start of a line.
+
+BOLD ENGLISH WORDS
+- Wrap every English word or phrase the child should notice in double asterisks, like **has got** or **She**.
+- Always bold: the tiles they used, the tiles they should use, and the example sentence.
+- In explainPl write simple Polish, but keep those English words in English and bold them.
+  Example: Po **She** użyj **has got**, nie **have got**.
+- Do not bold Polish words. Only English words, phrases, and the example.
+
+EXAMPLE
+- Give ONE short correct sentence, fully bold: **She has got a key.**
+
 Do not invent extra grammar beyond this age.
-Return JSON only: { "explainEn": "2-4 short sentences", "explainPl": "the same idea in simple Polish" }`;
+Return JSON only: { "explainEn": "short readable text with **bold** English", "explainPl": "the same idea in simple Polish with **bold** English words" }`;
         if (typeof global.fetchGenerativeAI !== 'function') {
             if (S.askWhyGen !== gen) return;
             S.askWhyBusy = false;
@@ -1328,7 +1765,11 @@ Return JSON only: { "explainEn": "2-4 short sentences", "explainPl": "the same i
         S.buildSpoken = v.sentence;
         S.buildFbEn = 'Yes! Say the sentence aloud.';
         S.buildFbPl = 'Tak! Powiedz zdanie na głos.';
-        if (!S.buildAwarded) { S.buildAwarded = true; award(10, { tab: 'build', sentence: v.sentence }); }
+        if (!S.buildAwarded) {
+            S.buildAwarded = true;
+            award(10, { tab: 'build', sentence: v.sentence });
+            rememberColourSentence(v.sentence, polishFromTiles(tiles), tiles);
+        }
         speak(v.sentence);
         render();
     }
@@ -1380,7 +1821,12 @@ Return JSON only: { "explainEn": "2-4 short sentences", "explainPl": "the same i
             S.guessHintEn = '';
             S.guessHintPl = '';
             S.guessModel = v.ok ? v.sentence : joinSpeak(chainTiles(S.guessChain));
-            if (!S.guessAwarded) { S.guessAwarded = true; award(15, { tab: 'guess', by: 'teacher' }); }
+            if (!S.guessAwarded) {
+                S.guessAwarded = true;
+                award(15, { tab: 'guess', by: 'teacher' });
+                const gt = chainTiles(S.guessChain);
+                rememberColourSentence(S.guessModel, polishFromTiles(gt), gt);
+            }
         } else {
             const h = teacherHintFromIcons();
             S.guessOk = false;
@@ -1409,7 +1855,12 @@ Return JSON only: { "explainEn": "2-4 short sentences", "explainPl": "the same i
                 S.guessHintPl = 'Spróbuj zmienić jeden kafel i sprawdź znowu.';
             }
             S.guessModel = local.ok ? local.sentence : '';
-            if (local.ok && !S.guessAwarded) { S.guessAwarded = true; award(15, { tab: 'guess' }); }
+            if (local.ok && !S.guessAwarded) {
+                S.guessAwarded = true;
+                award(15, { tab: 'guess' });
+                const gt = chainTiles(S.guessChain);
+                rememberColourSentence(local.sentence, polishFromTiles(gt), gt);
+            }
             if (local.ok) speak(local.sentence);
             render();
             return;
@@ -1454,7 +1905,12 @@ Return JSON: { "valid": boolean, "hintEn": "one short hint if invalid, else empt
         S.guessHintEn = data.hintEn || '';
         S.guessHintPl = data.hintPl || data.hintEn || '';
         S.guessModel = data.model || '';
-        if (valid && !S.guessAwarded) { S.guessAwarded = true; award(15, { tab: 'guess', by: 'ai' }); }
+        if (valid && !S.guessAwarded) {
+            S.guessAwarded = true;
+            award(15, { tab: 'guess', by: 'ai' });
+            const gt = chainTiles(S.guessChain);
+            rememberColourSentence(sentence || data.model, polishFromTiles(gt), gt);
+        }
         if (valid && data.model) speak(data.model);
         render();
     }
@@ -1524,8 +1980,25 @@ Return JSON: { "valid": boolean, "hintEn": "one short hint if invalid, else empt
         S.textOk = ok;
         S.textFbEn = en;
         S.textFbPl = pl;
-        if (ok && !S.textAwarded) { S.textAwarded = true; award(10, { tab: 'text', kind: S.textKind }); }
+        if (ok && !S.textAwarded) {
+            S.textAwarded = true;
+            award(10, { tab: 'text', kind: S.textKind });
+            rememberColourText();
+        }
         render();
+    }
+
+    function rememberColourText() {
+        let en = '';
+        if (S.textKind === 'gap' && S.gap) {
+            en = (S.gap.parts || []).map((p) => typeof p === 'string' ? p : (S.gap.answer || S.gapPick || '')).join('');
+        } else if (S.textKind === 'mcq' && S.mcq && Array.isArray(S.mcq.options)) {
+            en = S.mcq.options[S.mcq.answer] || '';
+        } else if (S.textKind === 'reorder' && S.reorder) {
+            en = (S.reorder.words || []).join(' ') + (S.reorder.extra || '');
+        }
+        en = tidyColourEn(en);
+        rememberColourSentence(en, polishSentence(en), tilesFromEnglish(en));
     }
 
     function defaultState(ageBand) {
@@ -1534,6 +2007,7 @@ Return JSON: { "valid": boolean, "hintEn": "one short hint if invalid, else empt
             tab: 'build',
             polish: false,
             tilePl: false,
+            sheetsOpen: null,
             nounPick: null,
             goal: null,
             chain: [],
@@ -1577,9 +2051,11 @@ Return JSON: { "valid": boolean, "hintEn": "one short hint if invalid, else empt
         const age = (document.querySelector('input[name="colour-age"]:checked') || {}).value || 'young';
         const keepPolish = !!(S && S.polish);
         const keepTilePl = !!(S && S.tilePl);
+        const keepSheets = S && S.sheetsOpen ? S.sheetsOpen : null;
         S = defaultState(age);
         S.polish = keepPolish;
         S.tilePl = keepTilePl;
+        S.sheetsOpen = keepSheets;
         const badge = document.getElementById('colour-age-badge');
         if (badge) badge.textContent = S.ageBand === 'older' ? '10–12' : '8–9';
         loadTextTask();
