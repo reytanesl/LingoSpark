@@ -881,7 +881,7 @@
                 <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
                 <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
-                <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives.</p></div>
+                <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives. Signed-in players collect each informal → formal pair in a Vocab Upgrade set.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
                 <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
                 <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments.</p></div>
@@ -919,7 +919,7 @@
             <div class="category-header">
                 <i class="fa-solid fa-book cat-icon"></i><h2>Word Sets</h2>
             </div>
-            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists and track mastery.</p>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — including informal → formal pairs from Vocabulary Upgrade — and track mastery.</p>
             <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue); max-width: 640px; margin-left: auto; margin-right: auto;">
                 <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
                 <input type="text" id="mysets-save-name" placeholder="Set name..." maxlength="80" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.5rem;">
@@ -1026,7 +1026,7 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap versatile, everyday words with precise academic terminology.</p><a href="#/setup/vocab" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap everyday words with precise academic terms. Each correct pair is saved to your Vocab Upgrade set.</p><a href="#/setup/vocab" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><a href="#/setup/odyssey" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — get strengths &amp; improvement feedback, then export a PDF.</p><a href="#/setup/mission" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-file-pen"></i></div><h2>Matura Writing Assessment</h2><p>Upload a photo or PDF of your essay, paste the exam task, and get detailed Matura rozszerzona criteria feedback.</p><a href="#/setup/matura" class="btn btn-outline">Assess Now</a></div>
@@ -1255,7 +1255,7 @@
                 <h2 id="vocab-title">Vocabulary Upgrade <span class="live-badge">Cursor AI</span></h2>
                 <button class="btn btn-outline" onclick="initVocab()" id="vocab-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
             </div>
-            <p class="game-desc">Click the highlighted basic word to swap it with precise academic terminology.</p>
+            <p class="game-desc">Click the highlighted basic word to swap it with precise academic terminology. Signed-in players save each informal → formal pair to a <strong>Vocab Upgrade</strong> set in My Sets.</p>
             
             <div id="vocab-loading" class="loading-spinner" style="display:none;"></div>
             <div id="vocab-content">
@@ -1671,8 +1671,8 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Each word is its own tile (a and an are separate; have to is one tile; don’t have to is don’t + have to). Persons: I, You, We, They, He, She. Same colours everywhere. Build a sentence, try text tasks — Read sentence plays the audio in Rearrange — or invent icons and write the sentence for a teacher or AI to mark. Use EN | PL for help text, and PL tiles on/off to show Polish words on the tiles.</div>
-                <div class="pe-instr-pl">Każde słowo to osobny kafel (a i an osobno; have to to jeden kafel; don’t have to to don’t + have to). Osoby: I, You, We, They, He, She. Kolory są zawsze te same. Składaj zdania, rób ćwiczenia tekstowe — Read sentence odtwarza nagranie w Rearrange — albo ułóż ikony i napisz zdanie do oceny nauczyciela lub AI. EN | PL zmienia pomoc, a PL na kafelkach pokazuje polskie słowa.</div>
+                <div class="pe-instr-en">Each word is its own tile (a and an are separate; have to is one tile; don’t have to is don’t + have to). Persons: I, You, We, They, He, She. Same colours everywhere. Build a sentence, try text tasks — Read sentence plays the audio in Rearrange — or invent icons and write the sentence for a teacher or AI to mark. After a wrong Check, Ask why / Dopytaj AI explains in simple language for this age. Use EN | PL for help text, and PL tiles on/off to show Polish words on the tiles.</div>
+                <div class="pe-instr-pl">Każde słowo to osobny kafel (a i an osobno; have to to jeden kafel; don’t have to to don’t + have to). Osoby: I, You, We, They, He, She. Kolory są zawsze te same. Składaj zdania, rób ćwiczenia tekstowe — Read sentence odtwarza nagranie w Rearrange — albo ułóż ikony i napisz zdanie do oceny nauczyciela lub AI. Po błędnym Sprawdź przycisk Dopytaj AI tłumaczy prosto, na poziomie tej grupy wiekowej. EN | PL zmienia pomoc, a PL na kafelkach pokazuje polskie słowa.</div>
             </div>
             <div id="colour-blocks-root"></div>
         </div>
@@ -2256,7 +2256,7 @@
                 const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
                 const data = await res.json();
                 if (!data.sets || data.sets.length === 0) {
-                    html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No saved sets yet. Paste a glossary in Vocab Review and save it here.</p>';
+                    html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No saved sets yet. Play Vocabulary Upgrade to collect informal/formal pairs, or paste a glossary in Vocab Review and save it here.</p>';
                 } else {
                     html += data.sets.map(s => {
                         const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
@@ -3468,6 +3468,9 @@ Return ONLY JSON: {"sentence":"..."}`;
 
         // 5. VOCAB UPGRADE 
         let currentVocabToken = null;
+        const VOCAB_UPGRADE_SET_NAME = 'Vocab Upgrade';
+        let vocabUpgradeSaveQueue = Promise.resolve();
+
         async function initVocab() {
             document.getElementById('vocab-feedback').textContent = '';
             toggleLoading('vocab', true);
@@ -3535,6 +3538,8 @@ Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...",
         function checkVocabChoice(choice) {
             let feedback = document.getElementById('vocab-feedback');
             if (choice === currentVocabToken.correct) {
+                const informal = currentVocabToken.target;
+                const formal = choice;
                 currentVocabToken.upgraded = choice;
                 feedback.className = "feedback success";
                 feedback.textContent = `✨ Excellent precision! Swapped to "${choice}".`;
@@ -3542,10 +3547,55 @@ Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...",
                 recordGameSessionApi('vocab_upgrade', { score: 100, pointsEarned: 30 });
                 renderVocabBox();
                 document.getElementById('vocab-options').innerHTML = '';
-                setTimeout(() => { feedback.textContent = "🎉 Sentence fully upgraded! Click 'Next Sentence'."; }, 1000);
+                queueVocabUpgradePair(informal, formal).then((info) => {
+                    let follow = "🎉 Sentence fully upgraded! Click 'Next Sentence'.";
+                    if (info && info.itemCount) {
+                        follow = info.added
+                            ? `Saved “${informal}” → “${formal}” to your Vocab Upgrade set (${info.itemCount} pairs). Click Next Sentence.`
+                            : `Already in your Vocab Upgrade set (${info.itemCount} pairs). Click Next Sentence.`;
+                    } else if (!isLoggedIn()) {
+                        follow = "🎉 Sentence fully upgraded! Sign in to save informal/formal pairs. Click Next Sentence.";
+                    }
+                    feedback.textContent = follow;
+                });
             } else {
                 feedback.className = "feedback error";
                 feedback.textContent = "❌ Incorrect collocation or tone for this specific context.";
+            }
+        }
+
+        function queueVocabUpgradePair(informal, formal) {
+            const run = vocabUpgradeSaveQueue.then(() => saveVocabUpgradePair(informal, formal));
+            vocabUpgradeSaveQueue = run.catch(() => null);
+            return run;
+        }
+
+        async function saveVocabUpgradePair(informal, formal) {
+            if (!isLoggedIn()) return null;
+            const term = String(informal || '').trim();
+            const definition = String(formal || '').trim();
+            if (!term || !definition) return null;
+            try {
+                const res = await fetch('/api/word-sets/append', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: VOCAB_UPGRADE_SET_NAME,
+                        setType: 'vocab',
+                        testDirection: 'def',
+                        items: [{ term, definition }]
+                    })
+                });
+                if (!res.ok) return null;
+                const data = await res.json();
+                return {
+                    added: Number(data.added) || 0,
+                    itemCount: Number(data.itemCount || (data.set && data.set.item_count) || 0)
+                };
+            } catch (e) {
+                console.warn('Vocab Upgrade set save failed:', e);
+                return null;
             }
         }
 

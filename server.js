@@ -32,6 +32,7 @@ import {
     getWordSet,
     updateWordSet,
     deleteWordSet,
+    appendWordSetItems,
     loadWordSetForGame,
     recordGameSession,
     updateWordProgress,
@@ -398,6 +399,17 @@ async function start() {
             }
             const ws = await createWordSet(req.user.id, { name, setType, testDirection, items });
             res.json({ set: ws });
+        } catch (err) { res.status(400).json({ error: err.message }); }
+    });
+
+    app.post('/api/word-sets/append', requireLogin, async (req, res) => {
+        try {
+            const { name, setType, testDirection, items } = req.body;
+            if (!name || !items || !Array.isArray(items) || items.length < 1) {
+                return res.status(400).json({ error: 'Name and at least 1 item required' });
+            }
+            const result = await appendWordSetItems(req.user.id, { name, setType, testDirection, items });
+            res.json(result);
         } catch (err) { res.status(400).json({ error: err.message }); }
     });
 

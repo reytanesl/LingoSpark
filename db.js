@@ -674,6 +674,98 @@ export async function deleteWordSet(setId, userId) {
     return result.rowCount > 0;
 }
 
+const WORD_SET_ITEM_CAP = 500;
+
+/**
+ * Find or create a named set for this user, then add items that are not
+ * already in it (matched on term, case-insensitive). Existing terms keep
+ * their row so flashcard progress is not wiped. New formal equivalents are
+ * appended to the definition with " / ".
+ */
+export async function appendWordSetItems(userId, { name, items = [], setType = 'vocab', testDirection = 'def' }) {
+    const db = getPool();
+    const trimName = (name || '').trim().slice(0, 80);
+    if (!trimName) throw new Error('Set name is required');
+    if (!Array.isArray(items) || items.length < 1) throw new Error('At least 1 item required');
+    if (items.length > WORD_SET_ITEM_CAP) throw new Error('Max 500 items per set');
+
+    const incoming = [];
+    const seenIn = new Set();
+    for (const item of items) {
+        const term = (item.term || '').trim().slice(0, 200);
+        const definition = (item.definition || item.def || '').trim().slice(0, 500);
+        if (!term) continue;
+        const key = term.toLowerCase();
+        if (seenIn.has(key)) continue;
+        seenIn.add(key);
+        incoming.push({ term, definition });
+    }
+    if (!incoming.length) throw new Error('At least 1 item required');
+
+    let ws = (await db.query(
+        'SELECT * FROM word_sets WHERE user_id = $1 AND LOWER(name) = LOWER($2)',
+        [userId, trimName]
+    )).rows[0];
+
+    if (!ws) {
+        const created = await createWordSet(userId, {
+            name: trimName,
+            setType,
+            testDirection,
+            items: incoming
+        });
+        return { set: created, added: incoming.length, itemCount: incoming.length };
+    }
+
+    const existing = await db.query(
+        'SELECT id, term, definition, position FROM word_set_items WHERE set_id = $1 ORDER BY position',
+        [ws.id]
+    );
+    const byTerm = new Map();
+    let maxPos = -1;
+    for (const row of existing.rows) {
+        byTerm.set(String(row.term || '').toLowerCase(), row);
+        if (row.position > maxPos) maxPos = row.position;
+    }
+
+    let added = 0;
+    let count = existing.rows.length;
+
+    for (const item of incoming) {
+        const key = item.term.toLowerCase();
+        const prev = byTerm.get(key);
+        if (prev) {
+            const oldDef = (prev.definition || '').trim();
+            const neu = item.definition;
+            if (neu && oldDef && !oldDef.toLowerCase().includes(neu.toLowerCase())) {
+                const merged = (oldDef + ' / ' + neu).slice(0, 500);
+                await db.query('UPDATE word_set_items SET definition = $1 WHERE id = $2', [merged, prev.id]);
+                prev.definition = merged;
+            } else if (neu && !oldDef) {
+                await db.query('UPDATE word_set_items SET definition = $1 WHERE id = $2', [neu, prev.id]);
+                prev.definition = neu;
+            }
+            continue;
+        }
+        if (count >= WORD_SET_ITEM_CAP) continue;
+        maxPos += 1;
+        count += 1;
+        added += 1;
+        const ins = await db.query(
+            `INSERT INTO word_set_items (set_id, term, definition, position)
+             VALUES ($1, $2, $3, $4) RETURNING id, term, definition, position`,
+            [ws.id, item.term, item.definition || null, maxPos]
+        );
+        byTerm.set(key, ins.rows[0]);
+    }
+
+    const updated = await db.query(
+        `UPDATE word_sets SET item_count = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+        [count, ws.id]
+    );
+    return { set: updated.rows[0], added, itemCount: count };
+}
+
 export async function loadWordSetForGame(setId, userId) {
     const db = getPool();
     const ws = await db.query('SELECT * FROM word_sets WHERE id = $1 AND user_id = $2', [setId, userId]);

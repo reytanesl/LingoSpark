@@ -505,6 +505,9 @@
 .cb-word.used { opacity: 0.35; }
 .cb-build-row { min-height: 3.2rem; border: 2px dashed var(--border-light); border-radius: 10px; padding: 0.4rem; margin-bottom: 0.7rem; }
 .cb-hintbox { background: #fffbeb; border-left: 4px solid #ca8a04; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.6rem; }
+.cb-why { text-align: center; margin-top: 0.55rem; }
+.cb-why .btn { margin-top: 0.15rem; }
+.cb-whybox { text-align: left; font-weight: 500; line-height: 1.5; white-space: pre-wrap; }
 .cb-icon-bank { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
 .cb-guess-icon {
     width: 4.4rem; height: 4.4rem; border: 3px solid var(--border-light); border-radius: 12px; background: #fff;
@@ -810,6 +813,7 @@
 
     function addToChain(id) {
         S.nounPick = null;
+        clearAskWhy();
         if (S.tab === 'guess' && S.guessPhase === 'sentence') {
             S.guessChain.push(id);
             S.guessFbEn = ''; S.guessFbPl = ''; S.guessOk = false;
@@ -981,6 +985,7 @@
             html += '<div class="cb-sentence">' + chainTiles(S.chain).map((t) => tokHtml(t.family, t.text)).join(' ') + '</div>';
         }
         html += '<div class="cb-fb' + (S.buildOk ? ' ok' : (fb ? ' bad' : '')) + '">' + esc(fb) + '</div>';
+        html += whyHtml(!S.buildOk && !!fb);
         return html;
     }
 
@@ -1017,6 +1022,7 @@
         html += '<div class="cb-fb' + (S.guessOk ? ' ok' : (fb ? ' bad' : '')) + '">' + esc(fb) + '</div>';
         if (hint) html += '<div class="cb-hintbox">' + esc(hint) + '</div>';
         if (S.guessModel) html += '<div class="cb-sentence">' + esc(S.guessModel) + '</div>';
+        html += whyHtml(S.guessPhase === 'sentence' && !S.guessOk && !!fb && !/checking|sprawdza/i.test(fb));
         return html;
     }
 
@@ -1041,6 +1047,7 @@
         if (S.textKind === 'reorder') html += reorderHtml();
         html += '<div class="cb-actions"><button type="button" class="btn btn-blue" data-cb="text-check">' + esc(L('Check', 'Sprawdź')) + '</button></div>';
         html += '<div class="cb-fb' + (S.textOk ? ' ok' : (fb ? ' bad' : '')) + '">' + esc(fb) + '</div>';
+        html += whyHtml(!S.textOk && !!fb);
         return html;
     }
 
@@ -1092,6 +1099,7 @@
             if (a === 'tab') {
                 S.tab = id;
                 S.nounPick = null;
+                clearAskWhy();
                 S.buildFbEn = ''; S.buildFbPl = '';
                 S.guessFbEn = ''; S.guessFbPl = '';
                 S.guessHintEn = ''; S.guessHintPl = '';
@@ -1105,6 +1113,7 @@
                 S.goal = id; S.chain = [];
                 S.buildPrompt = S.ageBand === 'young' ? makeBuildPrompt(id) : null;
                 S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
+                clearAskWhy();
                 render(); return;
             }
             if (a === 'add') {
@@ -1120,12 +1129,13 @@
             if (a === 'noun-pick-box') return;
             if (a === 'noun-pick-cancel') { S.nounPick = null; render(); return; }
             if (a === 'noun-pick') { addToChain(id); return; }
-            if (a === 'pop') { S.chain.splice(Number(id), 1); S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; render(); return; }
+            if (a === 'pop') { S.chain.splice(Number(id), 1); S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; clearAskWhy(); render(); return; }
             if (a === 'check-build') { checkBuild(); return; }
+            if (a === 'ask-why') { askWhy(); return; }
             if (a === 'speak-build') { speak(S.buildSpoken || joinSpeak(chainTiles(S.chain))); return; }
-            if (a === 'clear-build') { S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; render(); return; }
-            if (a === 'new-prompt') { S.buildPrompt = makeBuildPrompt(S.goal); S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; render(); return; }
-            if (a === 'new-goal') { S.goal = null; S.chain = []; S.buildPrompt = null; render(); return; }
+            if (a === 'clear-build') { S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
+            if (a === 'new-prompt') { S.buildPrompt = makeBuildPrompt(S.goal); S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
+            if (a === 'new-goal') { S.goal = null; S.chain = []; S.buildPrompt = null; clearAskWhy(); render(); return; }
             if (a === 'guess-add') { S.guessIcons.push(id); render(); return; }
             if (a === 'guess-pop') { S.guessIcons.splice(Number(id), 1); render(); return; }
             if (a === 'guess-clear-icons') { S.guessIcons = []; render(); return; }
@@ -1139,13 +1149,15 @@
                 S.guessFbEn = ''; S.guessFbPl = '';
                 S.guessHintEn = ''; S.guessHintPl = '';
                 S.guessModel = ''; S.guessOk = false; S.guessAwarded = false;
+                clearAskWhy();
                 render(); return;
             }
-            if (a === 'guess-chain-pop') { S.guessChain.splice(Number(id), 1); render(); return; }
+            if (a === 'guess-chain-pop') { S.guessChain.splice(Number(id), 1); clearAskWhy(); render(); return; }
             if (a === 'guess-back') {
                 S.guessPhase = 'icons';
                 S.guessFbEn = ''; S.guessFbPl = '';
                 S.guessHintEn = ''; S.guessHintPl = '';
+                clearAskWhy();
                 render(); return;
             }
             if (a === 'guess-check') { checkGuess(false); return; }
@@ -1155,8 +1167,8 @@
             if (a === 'text-kind') { S.textKind = id; loadTextTask(); render(); return; }
             if (a === 'text-next') { loadTextTask(); render(); return; }
             if (a === 'text-check') { checkText(); return; }
-            if (a === 'gap-pick') { S.gapPick = id; S.textFbEn = ''; S.textFbPl = ''; render(); return; }
-            if (a === 'mcq-pick') { S.mcqPick = Number(id); S.textFbEn = ''; S.textFbPl = ''; render(); return; }
+            if (a === 'gap-pick') { S.gapPick = id; S.textFbEn = ''; S.textFbPl = ''; clearAskWhy(); render(); return; }
+            if (a === 'mcq-pick') { S.mcqPick = Number(id); S.textFbEn = ''; S.textFbPl = ''; clearAskWhy(); render(); return; }
             if (a === 'reorder-push') { pushReorder(Number(id)); return; }
             if (a === 'reorder-pop') { popReorder(Number(id)); return; }
             if (a === 'reorder-listen') {
@@ -1166,7 +1178,134 @@
         };
     }
 
+    function whyHtml(show) {
+        if (!show) return '';
+        const expl = L(S.askWhyEn, S.askWhyPl);
+        const label = S.askWhyBusy
+            ? L('AI is thinking…', 'AI myśli…')
+            : L('Ask why', 'Dopytaj AI');
+        return '<div class="cb-why">' +
+            '<button type="button" class="btn btn-outline" data-cb="ask-why"' + (S.askWhyBusy ? ' disabled' : '') + '>' +
+            '<i class="fa-solid fa-robot"></i> ' + esc(label) + '</button>' +
+            (expl ? '<div class="cb-hintbox cb-whybox">' + esc(expl) + '</div>' : '') +
+            '</div>';
+    }
+
+    function clearAskWhy() {
+        S.askWhyEn = '';
+        S.askWhyPl = '';
+        S.askWhyBusy = false;
+        S.askWhyGen = (S.askWhyGen || 0) + 1;
+    }
+
+    function ageWhyVoice() {
+        if (S.ageBand === 'older') {
+            return 'Speak like a kind teacher to a 10–12 year old. Short, clear sentences. You may name must, have to, some, any, a/an if needed.';
+        }
+        return 'Speak like a kind teacher to an 8–9 year old. Very short sentences. Easy words. One idea at a time. Do not use must or have to.';
+    }
+
+    function askWhyContext() {
+        if (S.tab === 'build') {
+            const tiles = chainTiles(S.chain);
+            const attempt = joinSpeak(tiles) || tiles.map((t) => t.text).join(' ');
+            const picture = S.buildPrompt && S.buildPrompt.ids
+                ? S.buildPrompt.ids.map((id) => (byId(id) || {}).text || id).join(' ')
+                : '';
+            return {
+                task: 'Build a sentence with colour tiles.',
+                attempt: attempt,
+                extra: (picture ? 'The picture wanted this order: ' + picture + '. ' : '') +
+                    'Goal: ' + (S.goal || 'any') + '. Short checker note (EN): ' + (S.buildFbEn || '') +
+                    ' / (PL): ' + (S.buildFbPl || '')
+            };
+        }
+        if (S.tab === 'guess') {
+            const icons = chainTiles(S.guessIcons).map((t) => t.text).join(' → ');
+            const attempt = joinSpeak(chainTiles(S.guessChain)) || chainTiles(S.guessChain).map((t) => t.text).join(' ');
+            return {
+                task: 'Icon guess: make a sentence about the icon line.',
+                attempt: attempt,
+                extra: 'Icons in order: ' + icons + '. Checker note (EN): ' + (S.guessFbEn || '') +
+                    ' / (PL): ' + (S.guessFbPl || '') + '. Hint: ' + (S.guessHintEn || '')
+            };
+        }
+        if (S.textKind === 'gap') {
+            const g = S.gap || {};
+            const line = (g.parts || []).map((p) => typeof p === 'string' ? p : (S.gapPick || '___')).join('');
+            return {
+                task: 'Gap fill.',
+                attempt: 'They chose "' + (S.gapPick || '') + '" in: ' + line,
+                extra: 'Checker note (EN): ' + (S.textFbEn || '') + ' / (PL): ' + (S.textFbPl || '')
+            };
+        }
+        if (S.textKind === 'mcq') {
+            const m = S.mcq || {};
+            const chosen = (m.options && m.options[S.mcqPick]) || '';
+            return {
+                task: 'Multiple choice: ' + (m.q || 'Choose the correct sentence.'),
+                attempt: 'They chose: ' + chosen,
+                extra: 'Checker note (EN): ' + (S.textFbEn || '') + ' / (PL): ' + (S.textFbPl || '')
+            };
+        }
+        const r = S.reorder || {};
+        return {
+            task: 'Rearrange the words into a sentence.',
+            attempt: (S.reorderBuilt || []).join(' '),
+            extra: 'Checker note (EN): ' + (S.textFbEn || '') + ' / (PL): ' + (S.textFbPl || '')
+        };
+    }
+
+    async function askWhy() {
+        if (S.askWhyBusy) return;
+        S.askWhyBusy = true;
+        S.askWhyEn = 'One moment…';
+        S.askWhyPl = 'Chwileczkę…';
+        const gen = (S.askWhyGen || 0);
+        render();
+        const age = S.ageBand === 'older' ? '10–12' : '8–9';
+        const ctx = askWhyContext();
+        const grammar = S.ageBand === 'older'
+            ? "there is/are, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any"
+            : "there is/are, have got, can/can't, like, don't like, a/an, prepositions";
+        const prompt = `You help a child who got a Colour Blocks English task wrong. Be kind. Do not scold.
+Age: ${age}. ${ageWhyVoice()}
+Allowed grammar for this age: ${grammar}.
+Task: ${ctx.task}
+What the child did: ${ctx.attempt}
+Extra context: ${ctx.extra}
+Explain the doubt in a simple way: what is wrong and what to try next.
+You may give ONE short example sentence.
+Do not invent extra grammar beyond this age.
+Return JSON only: { "explainEn": "2-4 short sentences", "explainPl": "the same idea in simple Polish" }`;
+        if (typeof global.fetchGenerativeAI !== 'function') {
+            if (S.askWhyGen !== gen) return;
+            S.askWhyBusy = false;
+            S.askWhyEn = 'AI is not available right now. Read the red message and try one change.';
+            S.askWhyPl = 'AI jest teraz niedostępne. Przeczytaj czerwony komunikat i zmień jeden kafel.';
+            render();
+            return;
+        }
+        const data = await global.fetchGenerativeAI(prompt);
+        if (S.askWhyGen !== gen) return;
+        S.askWhyBusy = false;
+        if (data && data.__error) {
+            S.askWhyEn = data.__error;
+            S.askWhyPl = data.__error;
+            render();
+            return;
+        }
+        S.askWhyEn = data.explainEn || data.hintEn || '';
+        S.askWhyPl = data.explainPl || data.hintPl || S.askWhyEn;
+        if (!S.askWhyEn && !S.askWhyPl) {
+            S.askWhyEn = 'Look at the red message. Change one tile, then Check again.';
+            S.askWhyPl = 'Spójrz na czerwony komunikat. Zmień jeden kafel i sprawdź ponownie.';
+        }
+        render();
+    }
+
     function checkBuild() {
+        clearAskWhy();
         const tiles = chainTiles(S.chain);
         const v = validateChain(tiles);
         if (!v.ok) {
@@ -1254,6 +1393,7 @@
     }
 
     async function checkGuess(useAi) {
+        clearAskWhy();
         const local = localGuessCheck();
         if (!useAi) {
             S.guessOk = local.ok;
@@ -1324,6 +1464,7 @@ Return JSON: { "valid": boolean, "hintEn": "one short hint if invalid, else empt
         S.textFbPl = '';
         S.textOk = false;
         S.textAwarded = false;
+        clearAskWhy();
         S.gapPick = '';
         S.mcqPick = -1;
         S.reorderBuilt = [];
@@ -1350,16 +1491,19 @@ Return JSON: { "valid": boolean, "hintEn": "one short hint if invalid, else empt
         S.reorderBuilt.push(S.reorder.shuffled[i]);
         S.textFbEn = '';
         S.textFbPl = '';
+        clearAskWhy();
         render();
     }
     function popReorder(i) {
         const w = S.reorderBuilt.splice(i, 1)[0];
         const idx = S.reorder.shuffled.findIndex((x, n) => x === w && S.reorderUsed[n]);
         if (idx >= 0) S.reorderUsed[idx] = false;
+        clearAskWhy();
         render();
     }
 
     function checkText() {
+        clearAskWhy();
         let ok = false;
         let en = '';
         let pl = '';
@@ -1420,7 +1564,11 @@ Return JSON: { "valid": boolean, "hintEn": "one short hint if invalid, else empt
             textFbEn: '',
             textFbPl: '',
             textOk: false,
-            textAwarded: false
+            textAwarded: false,
+            askWhyEn: '',
+            askWhyPl: '',
+            askWhyBusy: false,
+            askWhyGen: 0
         };
     }
 
