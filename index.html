@@ -18,6 +18,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
     <script src="demo-sets.js"></script>
     <script src="pe-dictation-banks.js"></script>
+    <script src="pe-colour-blocks.js"></script>
     
     <style>
         /* British Style, Bright Theme & Custom Fonts */
@@ -872,6 +873,7 @@
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
                 <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
+                <div class="guide-item"><strong>Colour Blocks</strong><p>Build room sentences with colour-coded blocks: blue There is, green There are, purple have got, plus place prepositions. Place furniture on a room map, or fill gaps, choose, rearrange and match. Ages 8–12.</p></div>
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
@@ -987,7 +989,7 @@
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">Dictation from A1 + 3 AI writing games — choose A2 or B1 for AI games</span>
+                        <span class="pe-pack-meta">Dictation from A1 + Colour Blocks + 3 AI writing games — choose A2 or B1 for AI games</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
@@ -996,7 +998,7 @@
                     <button type="button" class="pe-level-btn" data-level="A2" onclick="selectPeLevel('A2')">A2</button>
                     <button type="button" class="pe-level-btn" data-level="B1" onclick="selectPeLevel('B1')">B1</button>
                     <button type="button" class="pe-level-btn" id="pe-custom-toggle-btn" onclick="togglePeCustomMode()">Custom Vocab</button>
-                    <div class="pe-level-hint" id="pe-level-hint">Select A2 or B1 for AI games, or Custom Vocab. For Beginner / A1 listening practice, use Dictation.</div>
+                    <div class="pe-level-hint" id="pe-level-hint">Select A2 or B1 for AI games, or Custom Vocab. Dictation and Colour Blocks have their own setup and do not need this level.</div>
                     <div class="pe-custom-panel" id="pe-custom-panel">
                         <textarea id="pe-custom-glossary-input" placeholder="Paste custom glossary words/phrases (one per line, or use Term = Meaning format)"></textarea>
                         <button type="button" class="btn btn-outline" onclick="applyPeCustomGlossary()">Apply Custom Glossary</button>
@@ -1005,6 +1007,7 @@
                 </div>
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
                     <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><span class="card-corner-badge">from 8 yrs</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build There is / There are / have got sentences with colour blocks, a room map, and short text tasks.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
@@ -1134,6 +1137,19 @@
                 <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
                     <label><input type="radio" name="dictation-mode" value="listen" checked> Listen &amp; repeat</label>
                     <label><input type="radio" name="dictation-mode" value="gap"> Gap fill (verbs, adjectives, nouns, adverbs)</label>
+                </div>
+            </div>
+
+            <div id="colour-setup-note" class="form-group" style="display:none; background: rgba(124,58,237,0.08); border-left-color: #7c3aed;">
+                <label style="color: #7c3aed;"><i class="fa-solid fa-cubes"></i> Colour Blocks</label>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Built-in colour cards for There is / There are / have got and place prepositions. No word list needed. Blue = one thing, green = many, purple = possession.</p>
+            </div>
+
+            <div class="form-group" id="pe-colour-settings" style="display: none;">
+                <label><i class="fa-solid fa-child"></i> Age band:</label>
+                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
+                    <label><input type="radio" name="colour-age" value="young" checked> 8–9 years — one step at a time, with a picture prompt</label>
+                    <label><input type="radio" name="colour-age" value="older"> 10–12 years — choose a goal, then build and check</label>
                 </div>
             </div>
 
@@ -1640,6 +1656,27 @@
             <div id="pe-dictation-feedback" class="feedback"></div>
         </div>
 
+        <!-- PRIMARY ENGLISH: COLOUR BLOCKS -->
+        <div id="screen-pe-colour" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-colour">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Colour Blocks <span class="pe-level-badge" id="colour-age-badge">8–9</span></h2>
+                <button class="btn btn-outline" onclick="initColourBlocks()" id="pe-colour-btn">New round <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Look at the colours: blue There is (one), green There are (many), purple have got. Pick a goal, then put the right blocks in the slots. On the room map, place things where the sentence says. Colours stay the same on every tab.</div>
+                <div class="pe-instr-pl">Patrz na kolory: niebieski There is (jedna rzecz), zielony There are (wiele), fioletowy have got. Wybierz cel, potem wstaw właściwe bloki w pola. Na mapie pokoju ustaw przedmioty tak, jak mówi zdanie. Kolory są takie same w każdej zakładce.</div>
+            </div>
+            <div id="colour-blocks-root"></div>
+        </div>
+
         <!-- CORE VOCAB: BOMB DEFUSAL -->
         <div id="screen-bomb" class="screen engine-container">
             <div class="top-bar">
@@ -1869,7 +1906,7 @@
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
         const VOCAB_GAMES = new Set(['flashcard', 'bomb', 'grid']);
 
         function routePath(hash) {
@@ -1946,6 +1983,7 @@
                         if (arg === 'pe-link') initPeLink();
                         if (arg === 'pe-exam') initPeExam();
                         if (arg === 'pe-dictation') initPeDictation();
+                        if (arg === 'pe-colour') initColourBlocks();
                     }
                 } else {
                     showScreen('home');
@@ -2304,7 +2342,7 @@
                     html += '<div class="progress-grid">';
                     const gameNames = {
                         flashcards: 'Flashcards', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
-                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing'
                     };
                     for (const t of data.gameTotals) {
@@ -2339,7 +2377,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -2894,7 +2932,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'bomb', 'grid'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -2906,7 +2944,9 @@
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('pe-dictation-settings').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
-            document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && gameType !== 'pe-dictation') ? 'block' : 'none';
+            document.getElementById('pe-colour-settings').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
+            document.getElementById('colour-setup-note').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
+            document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && gameType !== 'pe-dictation' && gameType !== 'pe-colour') ? 'block' : 'none';
 
             if (gameType === 'mission') renderMissionPicker();
             if (gameType === 'matura') {
@@ -2914,6 +2954,9 @@
             }
             if (gameType === 'pe-dictation') {
                 document.getElementById('setup-title').innerText = 'Dictation Setup';
+            }
+            if (gameType === 'pe-colour') {
+                document.getElementById('setup-title').innerText = 'Colour Blocks Setup';
             }
             if (vocabGames.includes(gameType) || hybridGames.includes(gameType)) {
                 renderDemoSetButtons();
@@ -2991,6 +3034,7 @@
             if(activeGame === 'pe-link') initPeLink();
             if(activeGame === 'pe-exam') initPeExam();
             if(activeGame === 'pe-dictation') initPeDictation();
+            if(activeGame === 'pe-colour') initColourBlocks();
         }
 
         function toggleLoading(prefix, isLoading) {
@@ -5000,7 +5044,7 @@ Return ONLY JSON:
         // ==========================================
         // PRIMARY ENGLISH PACK (AI)
         // ==========================================
-        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0 };
+        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0, colour: 0 };
         let peBoringTask = null;
         let peDetailTask = null;
         let peLinkTask = null;

@@ -28,6 +28,7 @@ See **[DEPLOY.md](DEPLOY.md)** for Render + Google + Buy Me a Coffee setup.
 | `admin.html` | Approve / revoke Writing Suite access |
 | `server.js` | Express: static, auth, BMC webhook, Cursor AI |
 | `db.js` | Postgres users + access helpers |
+| `pe-colour-blocks.js` | Colour Blocks: colour cards, room map, text tasks |
 | `auth.js` | Google OAuth (Passport) |
 | `billing.js` | Buy Me a Coffee webhook handling |
 | `Projekt bez nazwy.png` | Header logo |
