@@ -1,0 +1,402 @@
+[
+  [
+    "saucepan",
+    "A deep metal cooking pot with a long handle used for boiling liquids on a stove.",
+    "He filled the saucepan with water to cook the pasta."
+  ],
+  [
+    "pavement",
+    "A concrete walkway at the side of a street for pedestrians to navigate safely.",
+    "Always walk on the pavement when you are near busy roads."
+  ],
+  [
+    "roundabout",
+    "A circular junction where road vehicles travel in one direction around a central island.",
+    "The driver turned left at the roundabout to reach the motorway."
+  ],
+  [
+    "lorry",
+    "A large heavy motor vehicle used for transporting goods by road.",
+    "A big lorry delivered new furniture to the school today."
+  ],
+  [
+    "motorbike",
+    "A two-wheeled vehicle propelled by an internal combustion engine.",
+    "My uncle rides his motorbike to work every morning."
+  ],
+  [
+    "rucksack",
+    "A bag carried on the back with two shoulder straps.",
+    "Put your lunch and water bottle inside your rucksack."
+  ],
+  [
+    "felt-tip",
+    "A marker pen with a writing point made of soft squeezed fibres.",
+    "She drew a bright rainbow using a blue felt-tip."
+  ],
+  [
+    "packed lunch",
+    "Food prepared at home and carried to school or work to eat at midday.",
+    "I brought a healthy packed lunch with a sandwich and an apple."
+  ],
+  [
+    "upstairs",
+    "On or towards a higher level or floor of a building.",
+    "The children ran upstairs to brush their teeth before bed."
+  ],
+  [
+    "downstairs",
+    "On or towards a lower floor or ground level of a building.",
+    "We ate breakfast downstairs in the kitchen this morning."
+  ],
+  [
+    "next door",
+    "In or at the neighbouring house, apartment, or room.",
+    "Our friendly neighbours live next door to us."
+  ],
+  [
+    "the day after tomorrow",
+    "In forty-eight hours time from this present moment.",
+    "Our school trip will take place the day after tomorrow."
+  ],
+  [
+    "the day before yesterday",
+    "At a time forty-eight hours prior to this current date.",
+    "I saw my cousin in town the day before yesterday."
+  ],
+  [
+    "once a week",
+    "Occurring or performed one time during every seven-day period.",
+    "We visit the local library once a week on Wednesdays."
+  ],
+  [
+    "twice a day",
+    "Occurring or done two times within twenty-four hours.",
+    "You should clean your teeth twice a day."
+  ],
+  [
+    "how much",
+    "Used to ask about the total cost or quantity of non-countable items.",
+    "Excuse me, how much does this red shirt cost?"
+  ],
+  [
+    "how many",
+    "Used when asking about the total count of individual countable items.",
+    "Do you know how many pupils are in your class?"
+  ],
+  [
+    "a lot of",
+    "Large quantities, numbers, or amounts of people or items.",
+    "There were a lot of tourists visiting the castle today."
+  ],
+  [
+    "a few",
+    "Small numbers consisting of several individual count items.",
+    "She bought a few apples from the market."
+  ],
+  [
+    "a little",
+    "Small amounts or modest quantities of non-countable things.",
+    "Please add a little milk to my morning tea."
+  ],
+  [
+    "turn left",
+    "Change direction towards the western side when facing north.",
+    "At the end of the road, turn left to find the park."
+  ],
+  [
+    "turn right",
+    "Change direction towards the eastern side when facing north.",
+    "You need to turn right after the post office."
+  ],
+  [
+    "go straight on",
+    "Continue moving forward directly without making any turns.",
+    "Follow this path and go straight on until you see the bank."
+  ],
+  [
+    "get lost",
+    "Fail to find one's way or become unable to locate destinations.",
+    "Take a map so you do not get lost in the city."
+  ],
+  [
+    "ask the way",
+    "Request directions from people to reach specific locations.",
+    "If we cannot find the museum, we can ask the way."
+  ],
+  [
+    "newsagent",
+    "A shopkeeper or store selling newspapers, magazines, sweets, and stationery.",
+    "I bought a magazine at the newsagent near the station."
+  ],
+  [
+    "cash machine",
+    "An automated bank apparatus dispensing physical banknotes to cardholders.",
+    "I need to stop at a cash machine to get some notes."
+  ],
+  [
+    "credit note",
+    "A paper voucher given by stores to customers returning purchased items.",
+    "The shop gave me a credit note when I returned the coat."
+  ],
+  [
+    "petrol station",
+    "A retail facility selling fuel and motor oil for vehicles.",
+    "My dad stopped at the petrol station to fill up the car."
+  ],
+  [
+    "swimming costume",
+    "A garment worn for bathing or aquatic sport activities.",
+    "Do not forget to put your swimming costume in your bag."
+  ],
+  [
+    "pencil case",
+    "A small container used for holding writing instruments and drawing tools.",
+    "Keep your pens and rubber tidy inside your pencil case."
+  ],
+  [
+    "pencil sharpener",
+    "A small device used for shaving wooden writing tools to points.",
+    "Can I borrow your pencil sharpener to fix my coloured pencil?"
+  ],
+  [
+    "paper clip",
+    "A small piece of bent wire used to hold document sheets together.",
+    "Attach these two pages together using a paper clip."
+  ],
+  [
+    "noticeboard",
+    "A board pinned on walls for displaying public announcements and messages.",
+    "Check the noticeboard in the hall for sports results."
+  ],
+  [
+    "textbook",
+    "A publication used as a standard source of information for study.",
+    "Open your English textbook at page twenty."
+  ],
+  [
+    "tin opener",
+    "A handheld kitchen tool designed for unsealing metal food containers.",
+    "Use the tin opener to open the can of baked beans."
+  ],
+  [
+    "tea towel",
+    "A cloth used for drying wet dishes and cutlery after washing.",
+    "Dry the clean plates with a fresh tea towel."
+  ],
+  [
+    "coat hanger",
+    "A curved piece of wood or plastic used for hanging clothing inside wardrobes.",
+    "Hang your jacket neatly on a coat hanger."
+  ],
+  [
+    "bookshelf",
+    "A flat horizontal board mounted on walls for storing printed publications.",
+    "He picked a story from the top bookshelf."
+  ],
+  [
+    "armchair",
+    "A comfortable upholstered seat with support for elbows on both sides.",
+    "Grandfather fell asleep in his favourite armchair."
+  ],
+  [
+    "doormat",
+    "A small rectangular mat placed at entrances for cleaning shoes.",
+    "Please wipe your muddy shoes on the doormat before entering."
+  ],
+  [
+    "bookcase",
+    "A wooden furniture unit with shelves for holding reading materials.",
+    "Our classroom has a big bookcase full of comic stories."
+  ],
+  [
+    "bedside table",
+    "A small piece of furniture placed next to sleeping frames.",
+    "She put her glass of water on the bedside table."
+  ],
+  [
+    "chest of drawers",
+    "A piece of furniture with multiple sliding storage boxes for clothes.",
+    "Fold your socks and put them in the chest of drawers."
+  ],
+  [
+    "alarm clock",
+    "A device designed to wake someone up at a chosen time.",
+    "My alarm clock rang at seven o'clock this morning."
+  ],
+  [
+    "coffee table",
+    "A low furniture surface set in front of sofas in sitting rooms.",
+    "We left the magazines resting on the coffee table."
+  ],
+  [
+    "frying pan",
+    "A flat metal cooking container with handles used for heating foods.",
+    "Heat some oil in the frying pan before cooking the eggs."
+  ],
+  [
+    "baking tray",
+    "A flat sheet of metal used for cooking items inside ovens.",
+    "Place the biscuits on the baking tray before putting them into the oven."
+  ],
+  [
+    "wooden spoon",
+    "A kitchen utensil crafted from timber used for stirring ingredients.",
+    "Stir the soup with a wooden spoon so it does not burn."
+  ],
+  [
+    "chopping board",
+    "A flat wooden or plastic surface used for cutting food ingredients.",
+    "Slice the onions carefully on the wooden chopping board."
+  ],
+  [
+    "kitchen roll",
+    "Absorbent paper sheets on cylinders used for wiping household spills.",
+    "Use a piece of kitchen roll to wipe up the spilt juice."
+  ],
+  [
+    "dustbin",
+    "A large container used for holding unwanted waste and refuse.",
+    "Throw the empty wrapper into the dustbin outside."
+  ],
+  [
+    "zebra crossing",
+    "Striped road markings where walking pedestrians have immediate right of way.",
+    "Wait at the zebra crossing until the traffic stops."
+  ],
+  [
+    "traffic lights",
+    "Automated coloured signals controlling the movement of road vehicles.",
+    "The car stopped because the traffic lights turned red."
+  ],
+  [
+    "bus stop",
+    "A designated roadside location where passenger vehicles halt for passengers.",
+    "We waited at the bus stop for fifteen minutes."
+  ],
+  [
+    "car park",
+    "An outdoor or covered area dedicated for leaving motor vehicles.",
+    "We left our vehicle in the car park behind the supermarket."
+  ],
+  [
+    "fire engine",
+    "A large red emergency vehicle equipped with hoses for putting out blazes.",
+    "The red fire engine rushed past with its siren sounding."
+  ],
+  [
+    "sports ground",
+    "An outdoor field prepared for athletic activities and team matches.",
+    "The children played match games on the local sports ground."
+  ],
+  [
+    "primary school",
+    "An educational establishment for young children between five and eleven.",
+    "My younger brother attends the village primary school."
+  ],
+  [
+    "secondary school",
+    "An educational establishment for teenagers who have completed earlier studies.",
+    "She will start attending secondary school next September."
+  ],
+  [
+    "head teacher",
+    "The senior instructor in overall charge of an educational institution.",
+    "The head teacher spoke to all pupils during morning assembly."
+  ],
+  [
+    "school bag",
+    "A sack or pouch used by pupils for carrying books.",
+    "Pack your pencils and notebook into your school bag."
+  ],
+  [
+    "school trip",
+    "An educational journey made by pupils outside their normal classrooms.",
+    "Our class went to the science museum on a school trip."
+  ],
+  [
+    "lunch break",
+    "A midday pause during work or study for eating meals.",
+    "We played football on the field during our lunch break."
+  ],
+  [
+    "play area",
+    "A section of ground designated for children to enjoy games.",
+    "The park has a wonderful play area with swings and slides."
+  ],
+  [
+    "board game",
+    "A tabletop activity involving counters moved on a marked surface.",
+    "We played a fun board game together on rainy afternoons."
+  ],
+  [
+    "video game",
+    "An electronic entertainment activity played on screens using controllers.",
+    "He likes playing a video game on his console after doing homework."
+  ],
+  [
+    "pop music",
+    "Modern commercial audio tunes widely enjoyed by public audiences.",
+    "My sister loves dancing to pop music in her room."
+  ],
+  [
+    "comic book",
+    "A magazine featuring stories told through sequential drawn picture panels.",
+    "He bought an exciting superhero comic book at the shop."
+  ],
+  [
+    "fairy tale",
+    "A traditional story for children featuring magical elements and imaginary characters.",
+    "The grandmother told her grandchildren a famous fairy tale."
+  ],
+  [
+    "table tennis",
+    "An indoor sport played with light paddles and small balls over nets.",
+    "We played table tennis at the community youth club."
+  ],
+  [
+    "horse riding",
+    "The leisure activity of sitting on and guiding equines.",
+    "She goes horse riding every Saturday morning at the stables."
+  ],
+  [
+    "skate park",
+    "A venue designed with ramps for performing tricks on wheeled boards.",
+    "Many teenagers practice tricks at the local skate park."
+  ],
+  [
+    "shopping centre",
+    "A complex of retail stores, cafes, and indoor businesses under one roof.",
+    "We went to the shopping centre to buy new clothes."
+  ],
+  [
+    "department store",
+    "A large retail business selling diverse goods across separate indoor sections.",
+    "They purchased new curtains from the department store downtown."
+  ],
+  [
+    "corner shop",
+    "A small neighborhood retail business selling essential daily items and groceries.",
+    "I popped into the corner shop to buy a pint of milk."
+  ],
+  [
+    "shoe shop",
+    "A retail business specializing in selling various types of footwear.",
+    "She tried on three pairs of boots at the shoe shop."
+  ],
+  [
+    "bookshop",
+    "A retail business selling printed literature and bound reading publications.",
+    "I bought a novel from the quiet bookshop yesterday."
+  ],
+  [
+    "sweet shop",
+    "A retail store selling sugary confectioneries, chocolates, and treats.",
+    "The children spent their pocket money at the sweet shop."
+  ],
+  [
+    "ice cream van",
+    "A motor vehicle travelling around streets selling frozen sweet treats.",
+    "The children heard the tune of the ice cream van outside."
+  ]
+]

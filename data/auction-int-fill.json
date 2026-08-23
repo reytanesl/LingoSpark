@@ -1,0 +1,1602 @@
+[
+  [
+    "unemployment",
+    "The state of being without a paid job despite actively looking for employment opportunities in the market.",
+    "High unemployment rates in the region prompted local government leaders to launch new job training schemes."
+  ],
+  [
+    "inflation",
+    "A general and progressive increase in prices for goods and services leading to reduced purchasing power.",
+    "Rising inflation made basic groceries significantly more expensive for local working families throughout the year."
+  ],
+  [
+    "budget",
+    "An estimate of income and expenditure for a set period of time to manage personal or organizational finances.",
+    "The school board met yesterday afternoon to approve the annual budget for new classroom technology equipment."
+  ],
+  [
+    "mortgage",
+    "A legal agreement by which a bank lends money to buy property in exchange for taking ownership security.",
+    "They took out a thirty year mortgage to buy their first family house in a suburban town."
+  ],
+  [
+    "tenant",
+    "A person who pays rent to live in a building or occupy land belonging to someone else.",
+    "The landlord reminded every tenant in the building that monthly rental payments were due on Friday."
+  ],
+  [
+    "landlord",
+    "A person or company that owns property and rents it out to tenants for monthly payments.",
+    "The landlord promised to repair the broken heating system in the apartment before winter arrived."
+  ],
+  [
+    "commute",
+    "To travel a distance regularly between one's place of residence and place of work or study.",
+    "Many office workers commute into central London every morning by train to avoid heavy road traffic."
+  ],
+  [
+    "freelance",
+    "Working for several different organizations at different times rather than being permanently employed by one company.",
+    "She decided to freelance as a graphic designer after spending five years at an advertising agency."
+  ],
+  [
+    "shift work",
+    "A system of employment where different groups of workers perform duties during set rotating time periods.",
+    "Doing shift work at the hospital often meant working overnight hours and sleeping during the daytime."
+  ],
+  [
+    "internship",
+    "A period of work experience offered by an organization for a limited time to students or graduates.",
+    "She secured a competitive summer internship at a leading financial firm to gain practical office experience."
+  ],
+  [
+    "tuition",
+    "Teaching or instruction provided by a university, college or tutor, or the fee charged for it.",
+    "Higher education tuition fees have increased steadily across many European countries over the past decade."
+  ],
+  [
+    "campus",
+    "The grounds and buildings of a university, college or school where students live and study.",
+    "The university campus features modern lecture halls, extensive sports facilities and several student accommodation blocks."
+  ],
+  [
+    "plagiarism",
+    "The practice of taking someone else's work or ideas and passing them off as one's own.",
+    "The professor warned the class that plagiarism in academic research papers would result in immediate failure."
+  ],
+  [
+    "curriculum",
+    "The subjects comprising a course of study in a school, college or educational institution.",
+    "The national secondary curriculum was updated to place greater educational emphasis on digital skills and science."
+  ],
+  [
+    "literacy",
+    "The ability to read and write proficiently in a language at a functional everyday standard.",
+    "Local charity programs aim to improve adult literacy skills across rural communities in the eastern district."
+  ],
+  [
+    "numeracy",
+    "The ability to understand and work with numbers in practical everyday mathematical calculations and situations.",
+    "Primary school teachers focus on building strong basic numeracy skills through practical counting games and puzzles."
+  ],
+  [
+    "bankruptcy",
+    "A legal state of being unable to pay outstanding debts owed to creditors or financial institutions.",
+    "The retail company filed for bankruptcy after facing three consecutive years of severe financial losses."
+  ],
+  [
+    "redundancy",
+    "The loss of a job because an employer no longer needs that specific role or position.",
+    "Following the factory closure, fifty manufacturing workers were forced to accept voluntary redundancy packages."
+  ],
+  [
+    "workforce",
+    "The total number of people employed or available for work within a nation or industry.",
+    "The technological company announced plans to expand its skilled digital workforce by twenty percent next year."
+  ],
+  [
+    "entrepreneur",
+    "A person who sets up a business, taking on financial risks in the hope of profit.",
+    "The young entrepreneur launched a successful technology startup that created thirty new local employment jobs."
+  ],
+  [
+    "occupation",
+    "A person's principal work or business, especially as a means of earning a livelihood.",
+    "Teaching is a rewarding occupation that requires patience, communication skills and continuous professional development."
+  ],
+  [
+    "recruiter",
+    "A person or agency whose job is to enlist new employees for an organization or business.",
+    "The corporate recruiter conducted video interviews with ten potential job candidates for the software engineering position."
+  ],
+  [
+    "vacancy",
+    "An unoccupied position or job role that is available for someone to apply for immediately.",
+    "The department manager posted a job vacancy online to replace the assistant who recently resigned."
+  ],
+  [
+    "pension",
+    "A regular payment made by the state or a company to an individual following their retirement.",
+    "Many senior citizens rely heavily on their state pension to cover living expenses during retirement."
+  ],
+  [
+    "dividend",
+    "A sum of money paid regularly by a company to its shareholders out of its profits.",
+    "Shareholders received a quarterly dividend payment after the company reported exceptionally strong annual financial results."
+  ],
+  [
+    "shareholder",
+    "An owner of shares in a business company who holds rights to financial profits.",
+    "Every shareholder was invited to attend the annual general meeting to vote on key corporate policies."
+  ],
+  [
+    "stakeholder",
+    "A person or group with an interest or concern in something, especially a business project.",
+    "The project director consulted every key stakeholder before finalizing plans for the new community center."
+  ],
+  [
+    "overheads",
+    "The ongoing administrative and operational costs of running a business not linked to production.",
+    "Reducing energy consumption in office buildings helped the company lower its monthly business overheads significantly."
+  ],
+  [
+    "productivity",
+    "The effectiveness of productive effort, especially when measured in terms of output per unit input.",
+    "Introducing flexible working hours boosted overall office productivity and improved staff morale across all departments."
+  ],
+  [
+    "turnover",
+    "The amount of money taken in by a business over a particular period of time.",
+    "The local restaurant reported an annual turnover of over one million pounds despite rising food costs."
+  ],
+  [
+    "workshop",
+    "A meeting at which a group of people engage in intensive discussion and practical activity.",
+    "Teachers attended an interactive training workshop to learn new techniques for managing online classroom discussions."
+  ],
+  [
+    "apprenticeship",
+    "A system of training a new generation of practitioners of a trade or profession with on-the-job experience.",
+    "He completed a three year engineering apprenticeship at a local manufacturing plant before qualifying fully."
+  ],
+  [
+    "portfolio",
+    "A collection of financial assets or a set of work samples demonstrating professional capability.",
+    "The freelance artist showed her impressive design portfolio to potential clients during the interview meeting."
+  ],
+  [
+    "demotion",
+    "A reduction in rank, status or salary position within an organization or workplace structure.",
+    "His persistent lateness resulted in a formal demotion from team leader to junior administrative clerk."
+  ],
+  [
+    "resignation",
+    "An act of retiring or giving up a position or job by formal notification.",
+    "The senior manager submitted her official letter of resignation after accepting an executive role elsewhere."
+  ],
+  [
+    "retirement",
+    "The action or fact of leaving one's job and ceasing to work after reaching a certain age.",
+    "After forty years of dedicated service, he celebrated his retirement with colleagues at a special dinner."
+  ],
+  [
+    "headhunter",
+    "A recruiter who attempts to find suitable candidates for senior executive or specialized positions.",
+    "The executive headhunter contacted top technology leaders across the industry to fill the chief officer vacancy."
+  ],
+  [
+    "supervisor",
+    "A person who oversees and directs the work, activities or performance of employees or students.",
+    "She asked her workplace supervisor for feedback on her monthly sales report before submitting it officially."
+  ],
+  [
+    "subsidy",
+    "A sum of money granted by the state to help an industry keep prices low.",
+    "Government subsidy programs helped lower the cost of installing solar energy panels on residential properties."
+  ],
+  [
+    "monopoly",
+    "The exclusive possession or control of the supply of or trade in a commodity or service.",
+    "The regulatory authority investigated whether the major technology firm held an illegal market monopoly."
+  ],
+  [
+    "franchise",
+    "An authorization granted to an individual or group enabling them to carry out specified commercial activities.",
+    "He purchased a fast food franchise and opened two popular modern takeaway restaurants in the city center."
+  ],
+  [
+    "collateral",
+    "Property or other assets that a borrower offers a lender to secure a financial loan.",
+    "She pledged her commercial property as collateral when applying for a small business loan from the bank."
+  ],
+  [
+    "deficit",
+    "The amount by which something, especially a sum of money, is too small or lacking.",
+    "The national government pledged to reduce its budget deficit by cutting unnecessary administrative expenditure items."
+  ],
+  [
+    "surplus",
+    "An amount of something left over when requirements have been met, an excess quantity.",
+    "Farmers produced a surplus of organic wheat following an exceptionally warm and sunny harvest season."
+  ],
+  [
+    "auditor",
+    "An official inspector who conducts an independent examination of financial accounts and business records.",
+    "An external auditor inspected the company books to ensure full compliance with financial reporting regulations."
+  ],
+  [
+    "accountant",
+    "A person whose job is to keep, inspect and analyze financial records for businesses or individuals.",
+    "She hired a qualified accountant to prepare her small company tax returns accurately before the deadline."
+  ],
+  [
+    "bookkeeper",
+    "A person whose job is to record the financial transactions and accounts of a business.",
+    "The small retail store employed a part-time bookkeeper to record daily sales and manage supplier invoices."
+  ],
+  [
+    "syllabus",
+    "An outline of the subjects in a course of study or teaching program for students.",
+    "The history teacher distributed the printed course syllabus during the introductory lesson of the term."
+  ],
+  [
+    "undergraduate",
+    "A university student who has not yet received a first university degree in their field.",
+    "The undergraduate student attended morning chemistry lectures and conducted afternoon laboratory experiments on campus."
+  ],
+  [
+    "postgraduate",
+    "A student who continues higher education studies after obtaining a first university degree qualification.",
+    "Postgraduate researchers delivered presentations about their independent master degree projects at the university conference."
+  ],
+  [
+    "dissertation",
+    "A long essay on a particular subject written as part of a university degree.",
+    "She spent six months conducting field research and reading academic journals to complete her master dissertation."
+  ],
+  [
+    "auditorium",
+    "A large building or hall used for public gatherings, performances or university academic lectures.",
+    "Students filled the university auditorium to listen to a guest lecture on international environmental policies."
+  ],
+  [
+    "prospectus",
+    "A printed booklet advertising a school, college or university and detailing its academic courses.",
+    "Prospective students downloaded the university prospectus to compare various degree options and campus accommodation."
+  ],
+  [
+    "faculty",
+    "The teaching staff of a university or college, or a group of university departments.",
+    "The university faculty voted to introduce new digital learning modules across all science degree subjects."
+  ],
+  [
+    "academy",
+    "A place of study or training in a special field, or a secondary school.",
+    "The sports academy provided specialist coaching for promising young athletes alongside their standard academic studies."
+  ],
+  [
+    "headteacher",
+    "The teacher who is in charge of a school, responsible for its overall management.",
+    "The headteacher welcomed new pupils and their parents during the assembly on the first day of school."
+  ],
+  [
+    "governor",
+    "An official who forms part of the governing body responsible for overseeing a school.",
+    "School governor members met with staff to discuss safety improvements and approve building repair proposals."
+  ],
+  [
+    "vocational",
+    "Relating to an occupation or employment, providing practical skills for a specific trade.",
+    "The college offers vocational training courses in carpentry, plumbing and electrical installation for young adults."
+  ],
+  [
+    "enrolment",
+    "The action of enrolling or being enrolled in a school, course or official university register.",
+    "Student enrolment figures increased significantly following the opening of the new state-of-the-art campus science laboratory."
+  ],
+  [
+    "diploma",
+    "A certificate awarded by an educational establishment to show successful completion of a course.",
+    "He earned a diploma in business management after completing a two year vocational course at college."
+  ],
+  [
+    "coursework",
+    "Work done by students during a course of study and assessed towards their final grade.",
+    "Her final grade depended partly on end-of-year examinations and partly on continuous project coursework assessment."
+  ],
+  [
+    "biodiversity",
+    "The variety of plant and animal life in the world or in a particular habitat.",
+    "Protecting rainforest regions is essential for preserving global biodiversity and preventing rare species extinction."
+  ],
+  [
+    "contamination",
+    "The action of making something impure or unsuitable by contact with dangerous or toxic substances.",
+    "Industrial chemical waste caused severe water contamination in the local river, harming aquatic wildlife."
+  ],
+  [
+    "pollutant",
+    "A substance that contaminates something, especially water or the atmosphere, making it dangerous.",
+    "Exhaust emissions from old motor vehicles release dangerous air pollutant chemicals into busy urban streets."
+  ],
+  [
+    "sustainability",
+    "The ability to maintain natural resources and environmental ecological balance over a long time.",
+    "The city council prioritized environmental sustainability by promoting public transport and investing in recycling facilities."
+  ],
+  [
+    "reservoir",
+    "A large natural or artificial lake used as a source of water supply for towns.",
+    "Heavy rainfall over winter filled the local water reservoir to maximum capacity before summer arrived."
+  ],
+  [
+    "ozone layer",
+    "A region of Earth's stratosphere that absorbs most of the Sun's ultraviolet radiation.",
+    "International environmental agreements helped repair damage to the protective ozone layer above polar regions."
+  ],
+  [
+    "landfill",
+    "A site for the disposal of waste materials by burial under soil layers.",
+    "Local recycling initiatives aimed to reduce the volume of household rubbish sent directly to the landfill."
+  ],
+  [
+    "compost",
+    "Decayed organic material used as a fertilizer for growing plants and improving soil quality.",
+    "Gardeners added rich organic compost to the vegetable patches to encourage healthy crop growth."
+  ],
+  [
+    "acid rain",
+    "Rainfall made acidic by atmospheric pollution that causes environmental harm to forests and lakes.",
+    "Air pollution from coal power plants created destructive acid rain that damaged pine forests across Northern Europe."
+  ],
+  [
+    "citizenship",
+    "The position or status of being a citizen of a particular country with legal rights.",
+    "Applicants must pass an official history and language exam to obtain British citizenship status."
+  ],
+  [
+    "constitution",
+    "A body of fundamental principles according to which a state or organization is governed.",
+    "Lawyers debated whether the proposed security law complied with fundamental principles outlined in the national constitution."
+  ],
+  [
+    "democracy",
+    "A system of government by the whole population, typically through elected political representatives.",
+    "Voting in free and fair parliamentary elections is a core responsibility of citizens living in a democracy."
+  ],
+  [
+    "judiciary",
+    "The judicial authorities of a country judged collectively, including judges and courts of law.",
+    "An independent judiciary ensures that laws are interpreted fairly and applied without political government interference."
+  ],
+  [
+    "penalty",
+    "A punishment imposed for breaking a law, rule or contract agreement in society.",
+    "The driver received a heavy financial penalty and penalty points for exceeding the city speed limit."
+  ],
+  [
+    "prosecution",
+    "The institution and conducting of legal proceedings against someone in respect of a criminal charge.",
+    "The prosecution presented compelling fingerprint evidence to convince the jury of the suspect's guilt."
+  ],
+  [
+    "verdict",
+    "A decision on an issue of fact in a civil or criminal case by a jury.",
+    "After three hours of careful deliberation, the court jury delivered a unanimous guilty verdict."
+  ],
+  [
+    "offender",
+    "A person who commits an illegal act or breaks a law or regulation.",
+    "First-time young offender individuals were assigned community service hours rather than serving a prison sentence."
+  ],
+  [
+    "crime rate",
+    "The ratio of crimes in an area to the population of that area over time.",
+    "Police patrols and community watch programs helped lower the local neighborhood crime rate significantly."
+  ],
+  [
+    "witness",
+    "A person who sees an event, typically a crime or accident, take place in person.",
+    "An eyewitness gave police a detailed description of the suspect following the bank robbery yesterday."
+  ],
+  [
+    "testimony",
+    "A formal written or spoken statement, especially one given in a court of law.",
+    "Her clear courtroom testimony proved crucial in helping the judge reach a fair decision."
+  ],
+  [
+    "magistrate",
+    "A civil officer who lays down the law and conducts court hearings for minor offenses.",
+    "The local magistrate dealt with minor traffic violations and public order offenses during morning court sessions."
+  ],
+  [
+    "referendum",
+    "A general vote by the electorate on a single political question referred for direct decision.",
+    "Citizens voted in a national referendum to decide whether the country should change its electoral system."
+  ],
+  [
+    "electorate",
+    "All the people in a country or area who are entitled to vote in elections.",
+    "Political candidates campaigned across the region to win support from undecided members of the local electorate."
+  ],
+  [
+    "policymaker",
+    "A person responsible for making policy, especially in government or political leadership roles.",
+    "Environmental policymaker officials met to discuss new legislation aimed at reducing carbon emissions nationwide."
+  ],
+  [
+    "courtroom",
+    "The place or room in which a court of law meets to hold legal trials.",
+    "Silence fell across the crowded courtroom as the trial judge prepared to read the final judgment."
+  ],
+  [
+    "defendant",
+    "An individual or company sued or accused of an offense in a court of law.",
+    "The criminal defendant stood before the judge while his defence lawyer outlined the case details."
+  ],
+  [
+    "juror",
+    "A member of a jury impaneled to deliver a verdict in a court of law.",
+    "Each selected juror was sworn in before hearing evidence presented during the two week trial."
+  ],
+  [
+    "sanction",
+    "A threatened penalty for disobeying a law or rule, or official approval for an action.",
+    "International trade sanction measures were imposed on the nation following violations of international peace treaties."
+  ],
+  [
+    "nutrition",
+    "The process of providing or obtaining the food necessary for health and growth.",
+    "Proper child nutrition is vital during early development years to support healthy physical and mental growth."
+  ],
+  [
+    "sanitation",
+    "Conditions relating to public health, especially the provision of clean drinking water and sewage disposal.",
+    "Improving public sanitation infrastructure prevented the spread of waterborne infectious diseases across the developing region."
+  ],
+  [
+    "epidemic",
+    "A widespread occurrence of an infectious disease in a community at a particular time.",
+    "Health officials worked tirelessly to contain the viral epidemic before it spread to neighbouring districts."
+  ],
+  [
+    "therapy",
+    "Treatment intended to relieve or heal a disorder, physical injury or mental illness.",
+    "Regular physical therapy sessions helped the injured athlete recover movement in his damaged knee joint."
+  ],
+  [
+    "rehabilitation",
+    "The action of restoring someone to health or normal life through training and therapy after illness.",
+    "The patient spent three months in a specialist rehabilitation center learning to walk again after surgery."
+  ],
+  [
+    "exhaustion",
+    "A state of extreme physical or mental tiredness and lack of energy.",
+    "Working seventy hours per week without adequate rest led to severe physical exhaustion and mental illness."
+  ],
+  [
+    "sedentary",
+    "Tending to spend much time seated, characterized by little or no physical exercise.",
+    "Leading a sedentary lifestyle behind an office desk increases the long term risk of cardiovascular disease."
+  ],
+  [
+    "hygiene",
+    "Conditions or practices conducive to maintaining health and preventing disease, especially through cleanliness.",
+    "Maintaining good personal hygiene, such as washing hands regularly, helps prevent the transmission of common viruses."
+  ],
+  [
+    "vaccination",
+    "Treatment with a vaccine to produce immunity against a particular infectious disease or pathogen.",
+    "Health clinics offered free flu vaccination services to elderly residents during the autumn and winter months."
+  ],
+  [
+    "allergy",
+    "A damaging immune response by the body to a substance to which it has become hypersensitive.",
+    "He suffered from a severe peanut allergy that required him to carry an emergency medical injector."
+  ],
+  [
+    "outbreak",
+    "A sudden or violent start of something unwelcome, such as a disease or war.",
+    "Medical teams rushed to the region to control a sudden outbreak of infectious measles among school children."
+  ],
+  [
+    "quarantine",
+    "A state or period of isolation in which people or animals that arrived from elsewhere are placed.",
+    "Travellers arriving from infected areas were required to undergo a fourteen day home quarantine period."
+  ],
+  [
+    "itinerary",
+    "A detailed plan or route of a journey including dates, times and stop locations.",
+    "The travel agent provided a comprehensive holiday itinerary detailing flight times, hotel bookings and daily excursions."
+  ],
+  [
+    "commuter",
+    "A person who travels a distance to work on a regular daily basis.",
+    "Daily commuter passengers waited patiently on the railway platform for the delayed morning train to arrive."
+  ],
+  [
+    "hospitality",
+    "The friendly and generous reception and entertainment of guests, visitors or strangers.",
+    "The local villagers welcomed international tourists with warm hospitality and delicious traditional cooked meals."
+  ],
+  [
+    "urbanisation",
+    "The process of making an area more urban, with population shifting from rural to city areas.",
+    "Rapid urbanisation created higher demand for affordable city housing, public transport and modern waste infrastructure."
+  ],
+  [
+    "migration",
+    "Movement of people to a new area or country in order to find work or better living conditions.",
+    "Economic migration from agricultural regions to industrial cities increased significantly during the twentieth century."
+  ],
+  [
+    "heritage",
+    "Valued objects, qualities and traditions such as historic buildings passed down through generations.",
+    "The historic castle is protected as a national heritage site to preserve ancient architectural history."
+  ],
+  [
+    "landmark",
+    "An object or feature of a landscape or town that is easily recognized from a distance.",
+    "The ancient clock tower is a famous city landmark visited by thousands of international tourists every year."
+  ],
+  [
+    "tourism",
+    "The commercial organization and operation of holidays and visits to places of interest.",
+    "Coastal towns rely heavily on summer tourism revenue to support local shops, hotels and family restaurants."
+  ],
+  [
+    "sightseeing",
+    "The activity of visiting places of interest in a particular location as a tourist.",
+    "They spent two full days sightseeing around Rome, visiting ancient monuments and historic art museums."
+  ],
+  [
+    "jet lag",
+    "Extreme tiredness felt by a person after a long flight across different time zones.",
+    "It took her three days to recover from jet lag after flying across nine time zones."
+  ],
+  [
+    "reluctance",
+    "Unwillingness or hesitation to do something due to feelings of doubt, uncertainty or fear.",
+    "Her initial reluctance to speak in public disappeared after she practiced her presentation several times."
+  ],
+  [
+    "dilemma",
+    "A situation in which a difficult choice has to be made between two undesirable alternatives.",
+    "He faced an ethical dilemma when deciding whether to report his friend's mistake to the manager."
+  ],
+  [
+    "friction",
+    "Conflict or animosity caused by clash of wills, or resistance between sliding surfaces.",
+    "Tension between the two department heads created unnecessary workplace friction during project planning meetings."
+  ],
+  [
+    "consensus",
+    "A general agreement or shared opinion reached among all members of a group or community.",
+    "After lengthy negotiations, committee members finally reached a consensus regarding the new environmental policy."
+  ],
+  [
+    "paradox",
+    "A seemingly absurd or contradictory statement that when investigated may prove to be true.",
+    "It is a curious paradox that exercising regularly actually gives a person more daily energy."
+  ],
+  [
+    "setback",
+    "A reversal or check in progress that causes a delay or difficulty.",
+    "Losing key funding was a temporary setback, but the research team remained determined to finish."
+  ],
+  [
+    "breakthrough",
+    "A sudden, dramatic and important discovery or development in science or technology.",
+    "Scientists announced a major medical breakthrough in the treatment of chronic skin conditions earlier today."
+  ],
+  [
+    "threshold",
+    "A strip of wood or stone at a doorway, or a point of entry or beginning.",
+    "Passing the entrance exam marked the threshold of her new academic career at the university."
+  ],
+  [
+    "discrepancy",
+    "An illogical or unexpected difference between two facts or sets of figures.",
+    "The accountant noticed an unexplained financial discrepancy between the company bank balance and sales receipts."
+  ],
+  [
+    "negotiation",
+    "Discussion aimed at reaching an agreement between parties with differing interests or positions.",
+    "Contract negotiation talks continued late into the night as both companies attempted to reach agreement."
+  ],
+  [
+    "counterpart",
+    "A person or thing holding a position corresponding to that of another in a different place.",
+    "The British foreign minister met with her French counterpart in Paris to discuss cross-border security."
+  ],
+  [
+    "inclination",
+    "A person's natural tendency or urge to act or feel in a particular way.",
+    "He showed a natural inclination towards creative writing and storytelling from a very early age."
+  ],
+  [
+    "prejudice",
+    "Preconceived opinion that is not based on reason or actual personal experience.",
+    "Community programs work to eliminate racial prejudice and promote mutual respect among diverse neighborhood groups."
+  ],
+  [
+    "stereotype",
+    "A widely held but fixed and oversimplified image or idea of a particular type of person.",
+    "Films should avoid relying on lazy cultural stereotype characters when depicting people from different backgrounds."
+  ],
+  [
+    "vulnerability",
+    "The quality or state of being exposed to the possibility of being attacked or harmed.",
+    "Older buildings in the city showed structural vulnerability during the recent heavy storm and flooding."
+  ],
+  [
+    "resilience",
+    "The capacity to recover quickly from difficulties, tough challenges or unexpected setbacks.",
+    "The local community displayed remarkable economic resilience following the severe flooding that damaged high street shops."
+  ],
+  [
+    "ambiguity",
+    "The quality of being open to more than one interpretation, or inexactness.",
+    "The clear wording of the official contract eliminated any potential ambiguity regarding payment responsibilities."
+  ],
+  [
+    "controversy",
+    "Disagreement, typically when prolonged, public and heated, over a sensitive subject matter.",
+    "The proposed construction of a highway through the forest caused intense public controversy among residents."
+  ],
+  [
+    "disruption",
+    "A disturbance or unexpected problem that interrupts an event, activity, process or planned system.",
+    "Severe winter snowstorms caused major transport disruption across railway lines and suburban road networks."
+  ],
+  [
+    "zone out",
+    "To stop paying attention to your surroundings and drift into a state of distraction.",
+    "During the long afternoon lecture, several students began to zone out and stare out the window."
+  ],
+  [
+    "opt out",
+    "To choose not to participate in something or decide to withdraw from a scheme.",
+    "Employees can choose to opt out of the company pension scheme by completing an online form."
+  ],
+  [
+    "chip in",
+    "To contribute money, help or effort towards a joint expense or collective task.",
+    "If everyone agrees to chip in five pounds, we can buy a lovely retirement present."
+  ],
+  [
+    "clog up",
+    "To become blocked or cause something to become blocked with dirt or waste material.",
+    "Leaves and garden rubbish can clog up street drains during heavy autumn rainstorms."
+  ],
+  [
+    "crop up",
+    "To appear or happen suddenly and unexpectedly, creating a temporary distraction or urgent issue.",
+    "Unexpected problems often crop up during the first week of managing a complex construction project."
+  ],
+  [
+    "fizzle out",
+    "To gradually end or fail in a weak or disappointing way after a strong start.",
+    "Their initial excitement about launching a neighborhood club began to fizzle out after a few weeks."
+  ],
+  [
+    "iron out",
+    "To resolve or settle minor problems, details or disagreements through careful discussion.",
+    "Lawyers met yesterday afternoon to iron out final contract details before the business partners signed."
+  ],
+  [
+    "knuckle down",
+    "To start working hard and focusing seriously on a task or study assignment.",
+    "With final examinations approaching next month, students must knuckle down and revise every single evening."
+  ],
+  [
+    "leaf through",
+    "To turn pages of a book or magazine quickly without reading everything thoroughly.",
+    "She sat in the dentist waiting room to leaf through a travel magazine before her appointment."
+  ],
+  [
+    "map out",
+    "To plan or arrange something in detail, such as a strategy or journey route.",
+    "The project manager met with the team to map out key deadlines for the upcoming year."
+  ],
+  [
+    "muddle through",
+    "To cope or manage to achieve something despite lacking clear planning or organization.",
+    "Despite not having a printed map, the tourists managed to muddle through and find their hotel."
+  ],
+  [
+    "nod off",
+    "To fall asleep unintentionally, especially while sitting upright or during a quiet activity.",
+    "He began to nod off in his armchair while watching a late night television documentary."
+  ],
+  [
+    "peter out",
+    "To gradually decrease in amount, strength or enthusiasm until coming to a total stop.",
+    "The heavy rainstorm began to peter out by late evening, leaving clear skies overnight."
+  ],
+  [
+    "press ahead",
+    "To continue determinedly with a plan or task despite difficulties or opposition.",
+    "Despite strong public criticism, the council decided to press ahead with plans for a new bypass."
+  ],
+  [
+    "scale back",
+    "To reduce the size, scope, cost or extent of an operation or project.",
+    "Due to budget cuts, the department had to scale back its planned summer research activities."
+  ],
+  [
+    "sleep in",
+    "To sleep longer than usual in the morning, especially during weekend non-working days.",
+    "On Sunday mornings, she loves to sleep in until nine o'clock and enjoy a quiet breakfast."
+  ],
+  [
+    "slip up",
+    "To make a careless mistake or minor error in judgment during a task.",
+    "If you rush through your calculations, it is very easy to slip up and get the wrong answer."
+  ],
+  [
+    "spell out",
+    "To explain something in extreme detail so that there is no possibility of misunderstanding.",
+    "The instructor had to spell out safety procedures clearly before students operated laboratory machinery."
+  ],
+  [
+    "stem from",
+    "To originate or develop as the direct result of a specific cause or event.",
+    "Many health problems stem from a combination of poor diet, lack of exercise and continuous stress."
+  ],
+  [
+    "stock up",
+    "To buy or gather a large quantity of something for future use or emergency.",
+    "Local residents rushed to the supermarket to stock up on food before the severe blizzard arrived."
+  ],
+  [
+    "sum up",
+    "To express the main points of something in a concise and summarized manner.",
+    "At the end of her presentation, she took two minutes to sum up her main recommendations."
+  ],
+  [
+    "taper off",
+    "To diminish, weaken or reduce gradually in intensity, volume, speed or regular frequency over time.",
+    "Sales of cold drinks began to taper off as autumn arrived and temperatures dropped across the region."
+  ],
+  [
+    "wear down",
+    "To weaken or exhaust someone or something through persistent pressure or continuous use.",
+    "Years of walking on hard mountain trails will wear down the soles of heavy leather boots."
+  ],
+  [
+    "weigh up",
+    "To consider and compare the advantages and disadvantages of something carefully before deciding.",
+    "You should weigh up the financial risks before deciding to invest your savings in a new business."
+  ],
+  [
+    "wind down",
+    "To relax gradually after a period of hard work, or bring an operation to a close.",
+    "He likes to read a peaceful book in the evening to wind down after a busy office day."
+  ],
+  [
+    "work through",
+    "To deal with or overcome a difficult problem or emotional challenge step by step.",
+    "Therapy helped the patient work through her anxiety issues and regain confidence in social situations."
+  ],
+  [
+    "bail out",
+    "To rescue someone or an organization from a difficult situation, especially financial distress.",
+    "The central bank had to bail out several struggling financial institutions during the economic crisis."
+  ],
+  [
+    "branch out",
+    "To start doing a new activity or expanding into a different area of business.",
+    "The local bakery decided to branch out by offering catering services for weddings and corporate events."
+  ],
+  [
+    "breeze through",
+    "To complete a task, examination or process easily and without experiencing any difficulty.",
+    "Having revised thoroughly for weeks, she managed to breeze through the final written examination."
+  ],
+  [
+    "brush up on",
+    "To improve or refresh one's existing knowledge or skill in a particular subject.",
+    "He decided to brush up on his conversational French before traveling to Paris for a summer holiday."
+  ],
+  [
+    "butt in",
+    "To interrupt a conversation or activity rudely without being invited to join.",
+    "It is considered impolite to butt in while two colleagues are discussing an urgent work matter."
+  ],
+  [
+    "cave in",
+    "To yield or surrender to pressure, demands or argument after resisting initially.",
+    "Under intense pressure from local residents, the council finally had to cave in and cancel the project."
+  ],
+  [
+    "drift apart",
+    "To gradually become less close or friendly with someone over a period of time.",
+    "After graduating from university, the two former flatmates began to drift apart due to distance."
+  ],
+  [
+    "dwell on",
+    "To think or speak about a painful or negative event for too long.",
+    "There is no point continuing to dwell on past mistakes when you could focus on future progress."
+  ],
+  [
+    "freshen up",
+    "To wash oneself, adjust clothing or tidy one's appearance to feel clean and refreshed.",
+    "After a long train journey across the country, she went straight to the hotel room to freshen up."
+  ],
+  [
+    "hack into",
+    "To gain unauthorized access to a computer system or network data illegally.",
+    "Cyber criminals attempted to hack into the bank database to steal private customer information."
+  ],
+  [
+    "key in",
+    "To enter information or data into a computer or digital device using a keyboard.",
+    "The receptionist asked her to key in her personal details on the electronic touchscreen terminal."
+  ],
+  [
+    "kick off",
+    "To start or begin an event, activity, match or formal meeting process.",
+    "The festival organizers planned to kick off the weekend celebrations with a live outdoor musical concert."
+  ],
+  [
+    "lash out",
+    "To attack someone physically or verbally in a sudden, angry and unexpected outburst.",
+    "When criticized during the meeting, the frustrated manager began to lash out at his team members."
+  ],
+  [
+    "leap at",
+    "To accept an opportunity, offer or suggestion eagerly and without any hesitation.",
+    "She did not hesitate to leap at the chance to study abroad at a prestigious university in Tokyo."
+  ],
+  [
+    "phase in",
+    "To introduce something gradually in stages over a scheduled period of time.",
+    "The transport authority will phase in new electric buses across city routes over the next three years."
+  ],
+  [
+    "pitch in",
+    "To join in and help with a task or contribute towards a shared goal.",
+    "If every student agrees to pitch in, we can clean up the school garden in one afternoon."
+  ],
+  [
+    "pull through",
+    "To survive a dangerous illness, serious injury or extremely difficult situation successfully.",
+    "Doctors were confident that the patient would pull through following successful emergency heart surgery."
+  ],
+  [
+    "run down",
+    "To criticize someone unfairly, or lose power or condition gradually over time.",
+    "The old battery will run down quickly if you leave the flashlight switched on overnight."
+  ],
+  [
+    "set back",
+    "To delay the progress of something or cost a specific large sum of money.",
+    "Unforeseen supply delays threatened to set back the completion of the new community hospital building."
+  ],
+  [
+    "stand in for",
+    "To take someone's place temporarily and perform their duties while they are absent.",
+    "The deputy headteacher had to stand in for the principal during the morning assembly today."
+  ],
+  [
+    "stick up for",
+    "To support or defend a person, idea or principle when they are criticized.",
+    "Good friends will always stick up for each other when unfair accusations are made against them."
+  ],
+  [
+    "trade in",
+    "To exchange an old item as part of the payment for a new one.",
+    "He decided to trade in his old vehicle to get a discount on a new electric car."
+  ],
+  [
+    "vouch for",
+    "To confirm from personal experience that someone or something is reliable or truthful.",
+    "My former employer wrote a letter to vouch for my honesty, reliability and strong work ethic."
+  ],
+  [
+    "yield to",
+    "To give way to pressure, force, temptation or a superior argument after resisting.",
+    "The driver had to yield to oncoming traffic before turning right at the busy road junction."
+  ],
+  [
+    "pressing issue",
+    "A urgent problem or matter that requires immediate attention, action or public discussion.",
+    "Housing affordability has become the most pressing issue facing young families living in urban areas."
+  ],
+  [
+    "vital role",
+    "A function or position of extreme importance that is necessary for success.",
+    "Clean drinking water plays a vital role in maintaining good health and preventing disease in communities."
+  ],
+  [
+    "steep learning curve",
+    "A situation where someone has to learn a vast amount of complex information very quickly.",
+    "Starting her first management job involved a steep learning curve, but she mastered the skills rapidly."
+  ],
+  [
+    "competitive edge",
+    "An advantage that makes a business or person more successful than their rivals.",
+    "Investing in modern technology gave the small manufacturing company a distinct competitive edge over its rivals."
+  ],
+  [
+    "joint venture",
+    "A commercial enterprise undertaken jointly by two or more businesses sharing risks and profits.",
+    "The two automobile companies formed a joint venture to develop affordable electric vehicle battery technology."
+  ],
+  [
+    "pressing concern",
+    "An urgent worry or trouble that demands immediate focus and resolution from leaders.",
+    "Rising energy costs represented a pressing concern for local shop owners preparing for the winter season."
+  ],
+  [
+    "mutual benefit",
+    "An advantage or positive outcome shared equally between all parties involved in an agreement.",
+    "Trade partnerships should operate on principles of mutual benefit to ensure long-term commercial cooperation."
+  ],
+  [
+    "prime candidate",
+    "The most suitable or likely person or option for a specific position or situation.",
+    "With her extensive management background, she was the prime candidate for the head director role."
+  ],
+  [
+    "golden rule",
+    "A basic principle or rule of conduct that should always be followed for success.",
+    "The golden rule of customer service is to listen politely and address concerns promptly and effectively."
+  ],
+  [
+    "food chain",
+    "A series of organisms each dependent on the next as a source of food energy.",
+    "Disrupting one species can have unexpected consequences for every other creature in the marine food chain."
+  ],
+  [
+    "vicious circle",
+    "A sequence of reciprocal cause and effect in which two or more elements intensify each other.",
+    "Poverty and lack of education often form a vicious circle that is difficult to break without intervention."
+  ],
+  [
+    "common ground",
+    "Opinions or interests shared by two or more parties who disagree on other matters.",
+    "Despite their political differences, the two leaders managed to find common ground on environmental protection issues."
+  ],
+  [
+    "mixed blessing",
+    "Something that has both advantages and disadvantages, bringing both good and bad results.",
+    "Working from home proved to be a mixed blessing, offering flexibility but increasing feelings of isolation."
+  ],
+  [
+    "silver lining",
+    "A comforting or hopeful aspect of an otherwise difficult, sad or unfortunate situation.",
+    "The silver lining of losing her job was that it gave her time to pursue her dream."
+  ],
+  [
+    "last resort",
+    "An action or course of choice taken only because all other options have failed completely.",
+    "Taking legal action should always be treated as a last resort after all peaceful negotiations fail."
+  ],
+  [
+    "stumbling block",
+    "An obstacle that prevents progress or agreement during a process or negotiation.",
+    "Disagreement over salary structure remained the main stumbling block in reaching a final employment contract."
+  ],
+  [
+    "turning point",
+    "A time at which a decisive change in a situation occurs, especially one with good results.",
+    "Winning the prestigious young national award marked a major turning point in her artistic career."
+  ],
+  [
+    "wake-up call",
+    "An event that acts as a warning, making people aware of a dangerous or bad situation.",
+    "The severe winter storm served as a wake-up call for the council to improve emergency flood defenses."
+  ],
+  [
+    "breathtaking view",
+    "An extremely beautiful, impressive or dramatic scene that fills a viewer with wonder.",
+    "Hikers reached the mountain summit and enjoyed a breathtaking view of the green valley below."
+  ],
+  [
+    "broad spectrum",
+    "A wide range of subjects, ideas, opinions, options or related scientific phenomena.",
+    "The research project covered a broad spectrum of environmental topics ranging from forestry to ocean conservation."
+  ],
+  [
+    "calculated risk",
+    "A chance taken after careful estimation of the possible outcomes, dangers and benefits.",
+    "Expanding into international markets was a calculated risk that ultimately doubled company sales within two years."
+  ],
+  [
+    "cautious optimism",
+    "A feeling of general hopefulness tempered by awareness of potential difficulties or risks.",
+    "Economic analysts expressed cautious optimism about market recovery following positive employment reports released this morning."
+  ],
+  [
+    "clear distinction",
+    "A sharp, noticeable and obvious difference between two similar things, ideas, concepts or categories.",
+    "There is a clear distinction between short term temporary relief measures and long term sustainable solutions."
+  ],
+  [
+    "cultural heritage",
+    "The legacy of physical artifacts and intangible attributes of a group inherited from past generations.",
+    "Preserving traditional folk music and craft techniques protects the cultural heritage of the island population."
+  ],
+  [
+    "dire consequences",
+    "Extremely serious, dangerous or terrible results that occur following a specific action or event.",
+    "Ignoring safety regulations when operating heavy factory machinery can lead to dire consequences for workers."
+  ],
+  [
+    "driving force",
+    "A power or influence that provides motive, momentum or guidance to a project or movement.",
+    "Her passion for social equality was the primary driving force behind her career in public policy."
+  ],
+  [
+    "foster growth",
+    "To encourage the development or growth of something positive, such as an economy or idea.",
+    "Government tax incentives were designed to foster growth in renewable energy industries across the country."
+  ],
+  [
+    "frequent flyer",
+    "A passenger who travels regularly on commercial aircraft, often earning loyalty rewards.",
+    "As a frequent flyer, he accumulated enough loyalty points to upgrade to business class on international flights."
+  ],
+  [
+    "long-term goal",
+    "A target or objective that requires planning and sustained effort over an extended period.",
+    "Her main long-term goal is to establish her own independent architectural design firm within ten years."
+  ],
+  [
+    "major breakthrough",
+    "An important discovery or progress that helps solve a notable problem or advance knowledge.",
+    "Developing an effective vaccine represented a major breakthrough in combating the infectious tropical virus worldwide."
+  ],
+  [
+    "necessary evil",
+    "Something that is undesirable or unpleasant but must be accepted to achieve a essential result.",
+    "Paying taxes is often viewed as a necessary evil to fund essential public services like healthcare."
+  ],
+  [
+    "peace of mind",
+    "A state of mental tranquility, security and freedom from worry, anxiety or fear.",
+    "Taking out comprehensive travel insurance gives holidaymakers complete peace of mind while exploring foreign countries."
+  ],
+  [
+    "root cause",
+    "The fundamental or primary reason why a specific problem or issue occurs.",
+    "Investigating the root cause of the engine failure prevented similar mechanical issues from happening again."
+  ],
+  [
+    "rough draft",
+    "A preliminary or unrefined version of a piece of writing, document or design project.",
+    "She wrote a quick rough draft of her essay before editing grammar, spelling and sentence structure."
+  ],
+  [
+    "safe haven",
+    "A place of safety, refuge or security from danger, harm, persecution or difficulty.",
+    "The peaceful nature reserve provided a safe haven for endangered bird species fleeing habitat destruction."
+  ],
+  [
+    "social distance",
+    "The physical space maintained between individuals to prevent infection or maintain personal boundaries.",
+    "Maintaining adequate social distance in crowded public places helps reduce the risk of spreading airborne illnesses."
+  ],
+  [
+    "sustainable development",
+    "Economic development conducted carefully without depletion of natural resources for future human generations.",
+    "The urban plan prioritized sustainable development by building energy-efficient houses and expanding green park areas."
+  ],
+  [
+    "unintended consequence",
+    "An outcome or result that was not foreseen or intended by an initial action or decision.",
+    "Traffic congestion on local residential streets was an unintended consequence of closing the main city bridge."
+  ],
+  [
+    "urban sprawl",
+    "The uncontrolled expansion of urban areas into surrounding rural or countryside territory.",
+    "Rapid urban sprawl swallowed up agricultural land and put pressure on countryside wildlife habitats around the city."
+  ],
+  [
+    "valuable insight",
+    "Deep, helpful and accurate understanding gained about a complex topic or human behavior.",
+    "The customer survey provided valuable insight into how young people preferred to shop for clothes online."
+  ],
+  [
+    "vast majority",
+    "An overwhelming or very large percentage of a total group of people or things.",
+    "The vast majority of local residents supported plans to create a new pedestrian area in town."
+  ],
+  [
+    "work-life balance",
+    "The equilibrium between time and effort devoted to work and personal personal lifestyle activities.",
+    "Achieving a healthy work-life balance helps employees reduce stress and spend quality time with their families."
+  ],
+  [
+    "backseat driver",
+    "A passenger in a vehicle who offers unwanted advice or criticism to the driver.",
+    "Her father was a terrible backseat driver, constantly warning her about road signs and speed limits."
+  ],
+  [
+    "busy bee",
+    "An energetic, active person who is always busily occupied with various tasks.",
+    "She was a real busy bee, spending her Saturday morning baking cakes and tidying the whole house."
+  ],
+  [
+    "couch potato",
+    "A person who takes little exercise and spends much time watching television sitting down.",
+    "Instead of remaining a couch potato on weekends, he decided to join a local running club."
+  ],
+  [
+    "dark horse",
+    "A person who keeps their talents or interests secret but surprises others with success.",
+    "He proved to be a dark horse by winning the chess tournament despite never entering competitions before."
+  ],
+  [
+    "eager beaver",
+    "An enthusiastic person who is extremely hard-working and keen to perform tasks.",
+    "The new intern was an eager beaver, arriving early every morning and offering to help everyone."
+  ],
+  [
+    "early bird",
+    "A person who habitually gets up or arrives early in the morning.",
+    "Being an early bird, she enjoyed going for a peaceful walk before the city woke up."
+  ],
+  [
+    "fair-weather friend",
+    "A person who is only a friend when circumstances are pleasant and easy.",
+    "He realized she was a fair-weather friend when she disappeared as soon as he needed support."
+  ],
+  [
+    "food for thought",
+    "Something that provides serious material for reflection, deep intellectual analysis or careful mental consideration.",
+    "The documentary about marine conservation provided plenty of food for thought for students studying environmental science."
+  ],
+  [
+    "fresh start",
+    "An opportunity to begin again in a new way, free from past mistakes or problems.",
+    "Moving to a new coastal town offered her a fresh start after leaving her old corporate job."
+  ],
+  [
+    "golden handshake",
+    "A large payment given to a senior executive upon leaving a company or retiring.",
+    "The retiring chief officer received a substantial golden handshake when he stepped down from his position."
+  ],
+  [
+    "night owl",
+    "A person who prefers to stay up late at night and works best during evening hours.",
+    "As a night owl, he found it easiest to write his university essays past midnight."
+  ],
+  [
+    "off the cuff",
+    "Spoken, performed or done spontaneously without prior preparation, formal planning or written notes.",
+    "He delivered an entertaining speech off the cuff after being asked to speak at short notice."
+  ],
+  [
+    "rainy day",
+    "A possible future period of unexpected financial need, emergency, personal hardship or difficulty.",
+    "It is wise to save a portion of your monthly income for a rainy day in future."
+  ],
+  [
+    "sweet tooth",
+    "A strong liking or craving for sweet foods, such as chocolates and desserts.",
+    "Her strong sweet tooth meant she could never resist ordering chocolate cake after a restaurant meal."
+  ],
+  [
+    "time is money",
+    "A proverb emphasizing that time is a valuable resource and should not be wasted.",
+    "In fast-paced business environments, managers often remind employees that time is money during project execution."
+  ],
+  [
+    "apprentice",
+    "A person who is learning a trade from a skilled employer for an agreed period.",
+    "The young apprentice learned bricklaying skills while working alongside an experienced builder on site."
+  ],
+  [
+    "biodegradable",
+    "Capable of being decomposed by bacteria or other living organisms without polluting the environment.",
+    "The supermarket switched to using biodegradable packaging made from plant materials to reduce plastic waste."
+  ],
+  [
+    "bureaucracy",
+    "Excessively complicated administrative procedures, official rules and paper requirements in large organizations.",
+    "Excessive government bureaucracy delayed the approval of small business loans for several months."
+  ],
+  [
+    "cartel",
+    "An association of manufacturers or suppliers with the purpose of maintaining high market prices.",
+    "The international oil cartel agreed to reduce crude oil production to keep global fuel prices stable."
+  ],
+  [
+    "chancellor",
+    "A senior state or university official, especially the head of government in some countries.",
+    "The Chancellor of the Exchequer announced new economic measures during his speech to parliament today."
+  ],
+  [
+    "collaborate",
+    "To work jointly with others on an activity or project to achieve a shared goal.",
+    "Scientists from three European universities agreed to collaborate on a groundbreaking solar power research project."
+  ],
+  [
+    "commercialism",
+    "An emphasis on maximizing profit, commercial success or buying and selling goods in society.",
+    "Critics complained that the excessive commercialism of festive holidays damaged the traditional spirit of community celebrations."
+  ],
+  [
+    "concession",
+    "A thing that is granted or yielded in response to demands during negotiations.",
+    "The management offered a salary concession to prevent factory workers from taking formal strike action."
+  ],
+  [
+    "conglomerate",
+    "A large corporation formed by merging diverse companies operating in entirely different industries.",
+    "The international media conglomerate owned newspaper publications, television channels and digital streaming platforms."
+  ],
+  [
+    "creditor",
+    "A person, bank or company to whom money is owed by a debtor.",
+    "The failing business owed several thousand pounds to its primary creditor after missing loan repayments."
+  ],
+  [
+    "debtor",
+    "A person, organization or country that owes a sum of money to a creditor.",
+    "The court ordered the debtor to establish a monthly repayment plan to clear outstanding financial obligations."
+  ],
+  [
+    "delegation",
+    "A body of delegates representing a country or organization at an official conference.",
+    "The diplomatic delegation arrived in Geneva to attend international trade talks with foreign government leaders."
+  ],
+  [
+    "demographics",
+    "Statistical data relating to the population and particular groups within it, such as age.",
+    "Changing city demographics showed a significant increase in young working professionals moving to urban centers."
+  ],
+  [
+    "disinvestment",
+    "The reduction of non-current assets or selling off capital investments by a company.",
+    "The board decided on disinvestment from fossil fuel projects to reallocate capital into renewable energy technologies."
+  ],
+  [
+    "downsizing",
+    "The reduction of the size of a company or workforce to cut operating costs.",
+    "Corporate downsizing resulted in the closure of two regional offices and lost jobs for fifty employees."
+  ],
+  [
+    "embargo",
+    "An official ban on trade or other commercial activity with a particular foreign country.",
+    "The international community imposed a strict trade embargo on weapons sales to the warring country."
+  ],
+  [
+    "endorser",
+    "A person who publicly approves or supports a product, brand, candidate or policy.",
+    "The famous athlete signed a lucrative contract to become the main brand endorser for sportswear."
+  ],
+  [
+    "equity",
+    "The value of shares issued by a company or ownership value in property.",
+    "She built up substantial equity in her home after making regular mortgage payments for fifteen years."
+  ],
+  [
+    "ethnicity",
+    "Statistical data or personal background relating to racial, national or cultural social groups.",
+    "The survey asked respondents to state their country of birth, language and ethnicity."
+  ],
+  [
+    "expatriate",
+    "A person who lives outside their native country, often for professional employment reasons.",
+    "Many expatriate workers living in Dubai enjoy the warm climate and vibrant international community environment."
+  ],
+  [
+    "expenditure",
+    "An amount of money spent by a government, organization or individual during a period.",
+    "The council promised to cut unnecessary public expenditure to avoid increasing local property taxes."
+  ],
+  [
+    "feasibility",
+    "The state or degree of being easily or conveniently done or practically achieved.",
+    "Engineers conducted a detailed feasibility study before recommending the construction of a new bridge."
+  ],
+  [
+    "fluctuation",
+    "An irregular rising and falling in number, amount or level of something over time.",
+    "Unpredictable currency fluctuation made it difficult for import businesses to forecast their quarterly operating profits."
+  ],
+  [
+    "foreclosure",
+    "The action of taking possession of a mortgaged property when payments are missed.",
+    "The bank initiated foreclosure proceedings after the homeowner failed to pay mortgage installments for six months."
+  ],
+  [
+    "forensics",
+    "Scientific tests or techniques used in connection with the detection of crime evidence.",
+    "Police forensics experts examined digital computer files to gather evidence for the financial fraud investigation."
+  ],
+  [
+    "grievance",
+    "A real or imagined cause for complaint, especially unfair treatment at work.",
+    "The trade union filed a formal employee grievance regarding unsafe working conditions inside the warehouse."
+  ],
+  [
+    "guarantor",
+    "A person or organization that gives a guarantee to pay a debt if required.",
+    "Her parents agreed to act as a financial guarantor so she could rent her first London apartment."
+  ],
+  [
+    "headquarters",
+    "The main administrative center or central office of an organization or business corporation.",
+    "The multinational technology firm moved its European headquarters to a modern office complex in Dublin."
+  ],
+  [
+    "hierarchy",
+    "A system in which members of an organization are ranked according to status.",
+    "The corporate organizational hierarchy placed senior executive directors above department managers and administrative operational staff."
+  ],
+  [
+    "incentivise",
+    "To motivate or encourage someone to do something by offering rewards or benefits.",
+    "The government introduced tax credits to incentivise small businesses to invest in green energy technologies."
+  ],
+  [
+    "indemnity",
+    "Security or protection against a loss or other financial liability under an insurance contract.",
+    "The insurance policy provided full indemnity against accidental property damage caused by flooding or fire."
+  ],
+  [
+    "infrastructure",
+    "The basic physical and organizational structures needed for the operation of a society.",
+    "Investing in public transport infrastructure reduced urban traffic congestion and improved travel times across the region."
+  ],
+  [
+    "insolvency",
+    "The state of being unable to pay debts owed, leading to legal financial proceedings.",
+    "Poor sales and mounting unpaid bills forced the small manufacturing business into immediate formal insolvency."
+  ],
+  [
+    "intermediary",
+    "A person who acts as a link between people in order to bring about agreement.",
+    "An independent intermediary helped negotiate a settlement between the union representatives and management board members."
+  ],
+  [
+    "inventory",
+    "A complete list of items such as property, goods in stock or contents of a building.",
+    "The warehouse manager conducted a monthly inventory check to ensure stock levels matched digital sales records."
+  ],
+  [
+    "jurisdiction",
+    "The official power to make legal decisions and judgments over an area or domain.",
+    "The local court did not hold legal jurisdiction over offenses committed outside national territorial borders."
+  ],
+  [
+    "liability",
+    "The state of being legally responsible for something, or an outstanding financial debt obligation.",
+    "The company accepted full financial liability for the accidental chemical spill and agreed to clean the river."
+  ],
+  [
+    "liquidation",
+    "The process of closing a business and converting its assets into cash to pay debts.",
+    "When the retail chain collapsed, its remaining store stock was sold off during a final liquidation sale."
+  ],
+  [
+    "litigation",
+    "The process of taking legal action through a court of law to settle disputes.",
+    "Protracted corporate litigation between the two software companies lasted three years before a settlement was reached."
+  ],
+  [
+    "lucrative",
+    "Producing a great deal of profit or financial gain for an individual or business.",
+    "Selling hand-crafted furniture online proved to be a highly lucrative business venture for the creative artisan."
+  ],
+  [
+    "macroeconomics",
+    "The branch of economics concerned with large-scale or general economic factors of a nation.",
+    "Students taking macroeconomics analyzed how interest rates and inflation affect national employment and consumer spending."
+  ],
+  [
+    "malpractice",
+    "Improper, illegal or negligent professional activity or treatment by a doctor or lawyer.",
+    "The surgeon faced serious allegations of medical malpractice following a series of botched surgical operations."
+  ],
+  [
+    "microeconomics",
+    "The part of economics concerned with single factors and the effects of individual decisions.",
+    "In microeconomics, students study how supply and demand influence prices for individual consumer goods."
+  ],
+  [
+    "milestone",
+    "An action or event marking a significant stage or development in a project.",
+    "Reaching one million active users was a major milestone for the young social media startup."
+  ],
+  [
+    "misconduct",
+    "Unacceptable or improper behavior, especially by a professional or person in authority.",
+    "The police officer was suspended following allegations of serious professional misconduct during the investigation."
+  ],
+  [
+    "mitigation",
+    "The action of reducing the severity, seriousness or painfulness of something undesirable.",
+    "Installing emergency flood barriers was a key mitigation strategy to protect coastal homes from rising sea levels."
+  ],
+  [
+    "mortgagee",
+    "The lender in a mortgage agreement, typically a bank or financial building society.",
+    "The mortgagee held legal rights to the property until the home loan was paid off completely."
+  ],
+  [
+    "mortgagor",
+    "A borrower who puts up property as security for a loan under a mortgage.",
+    "The mortgagor made regular monthly payments to the building society to clear her home loan debt."
+  ],
+  [
+    "nepotism",
+    "The practice among those with power of favoring relatives or friends, especially by giving jobs.",
+    "Employees complained of nepotism when the director appointed his unqualified son to senior manager."
+  ],
+  [
+    "net worth",
+    "The total value of all assets owned by an individual or business minus all liabilities.",
+    "Her estimated net worth increased after she invested in commercial real estate properties in the city."
+  ],
+  [
+    "outsourcing",
+    "Obtaining goods or services from an outside or foreign supplier, especially in place of internal resources.",
+    "Outsourcing customer service call centers to foreign countries helped the telecom company cut operational overheads."
+  ],
+  [
+    "overdraft",
+    "A deficit in a bank account caused by drawing more money than the account holds.",
+    "She used an agreed bank overdraft to cover unexpected car repair expenses until her next payday."
+  ],
+  [
+    "patent",
+    "A government authority conferring a right or title for a set period to exclude others from making an invention.",
+    "The inventor secured a patent for his innovative solar water purification system to protect his design."
+  ],
+  [
+    "philanthropy",
+    "The desire to promote the welfare of others, expressed especially by the generous donation of money.",
+    "Through personal philanthropy, the wealthy industrialist funded the construction of three public university libraries."
+  ],
+  [
+    "precedent",
+    "An earlier event or action that is regarded as an example or guide in similar circumstances.",
+    "The court ruling set a historic precedent for future legal cases involving digital copyright infringement."
+  ],
+  [
+    "privatisation",
+    "The transfer of a business, industry or service from public to private ownership and control.",
+    "The privatisation of national railway services led to debates about ticket prices and service reliability."
+  ],
+  [
+    "propaganda",
+    "Information, especially of a biased or misleading nature, used to promote a political cause or point of view.",
+    "State television broadcast political propaganda to influence public opinion during the national parliamentary election campaign."
+  ],
+  [
+    "protectionism",
+    "The theory or practice of shielding a country's domestic industries from foreign competition by taxing imports.",
+    "Government protectionism policies involved placing high import tariffs on foreign steel to support local factories."
+  ],
+  [
+    "protocol",
+    "The official system of rules and acceptable behavior that governs procedures in official situations.",
+    "Diplomats followed strict official protocol when welcoming the visiting head of state at the airport."
+  ],
+  [
+    "ransomware",
+    "A type of malicious software designed to block access to a computer system until money is paid.",
+    "A severe ransomware attack locked hospital computer systems, forcing staff to use paper patient records."
+  ],
+  [
+    "ratification",
+    "The official way to confirm something, usually by vote, making an agreement formally valid.",
+    "Parliamentary ratification of the international peace treaty was required before diplomatic relations could resume officially."
+  ],
+  [
+    "rationing",
+    "The controlled distribution of scarce resources, goods or food supplies during an emergency or war.",
+    "Fuel rationing was introduced across the country during the severe winter oil supply shortage."
+  ],
+  [
+    "recession",
+    "A period of temporary economic decline during which trade and industrial activity are reduced.",
+    "During the economic recession, consumer spending dropped significantly and many small retail businesses closed."
+  ],
+  [
+    "reconciliation",
+    "The restoration of friendly relations or the action of making financial accounts consistent.",
+    "The council promoted peace and reconciliation between the two conflicting ethnic communities after years of tension."
+  ],
+  [
+    "regulator",
+    "A person or body that supervises a particular industry or business activity to enforce rules.",
+    "The independent financial regulator fined the bank for failing to protect customer data from fraud."
+  ],
+  [
+    "reimbursement",
+    "Repayment of money spent by an employee or individual on business expenses or official duties.",
+    "She submitted her travel receipts to the finance department to receive full financial reimbursement for her trip."
+  ],
+  [
+    "remittance",
+    "A sum of money sent, especially by mail or digital transfer, in payment for goods or services.",
+    "Overseas workers sent monthly monetary remittance payments back home to support their families living in rural villages."
+  ],
+  [
+    "renovation",
+    "The action of renovating a building or structure to restore it to good condition.",
+    "The old Victorian theatre underwent extensive interior renovation to modernize seating and stage lighting systems."
+  ],
+  [
+    "restructuring",
+    "Reorganizing the operational or financial structure of a company to make it more efficient.",
+    "Corporate restructuring led to the merging of two administrative departments and reduced monthly business overheads."
+  ],
+  [
+    "retailer",
+    "A person or business that sells goods to the public in relatively small quantities for immediate consumption.",
+    "Major clothing retailer stores launched end-of-season sales discounts to clear remaining stock before autumn."
+  ],
+  [
+    "retrenchment",
+    "The reduction of costs or spending in response to economic difficulty or business losses.",
+    "The university announced a period of financial retrenchment, cutting research grants and freezing staff recruitment."
+  ],
+  [
+    "revocation",
+    "The official cancellation or withdrawal of a decree, decision, licence or legal personal privilege.",
+    "The driver faced immediate revocation of his driving licence following repeated dangerous speeding offenses."
+  ],
+  [
+    "scarcity",
+    "The state of being scarce or in short supply, a shortage of essential resources.",
+    "Water scarcity during the prolonged summer drought forced local authorities to restrict lawn watering."
+  ],
+  [
+    "scrutiny",
+    "Critical observation, close inspection or careful examination of details, actions, records or public statements.",
+    "The politician's business dealings came under intense public scrutiny following allegations of financial corruption."
+  ],
+  [
+    "shareholding",
+    "A quantity of shares held by a shareholder in a business corporation.",
+    "She sold her majority shareholding in the publishing firm after deciding to retire from business."
+  ],
+  [
+    "slump",
+    "A sudden severe or prolonged fall in the price, value or amount of something.",
+    "A sudden slump in global oil prices harmed economic growth in oil-exporting nations."
+  ],
+  [
+    "solvency",
+    "The possession of assets exceeding liabilities, the ability to pay one's debts.",
+    "The auditor confirmed the financial solvency of the insurance company after reviewing its annual accounting books."
+  ],
+  [
+    "speculation",
+    "Forming a theory without firm evidence, or financial investment in hope of gain but risk of loss.",
+    "Wild financial speculation in the property market created an unsustainable housing price bubble in the city."
+  ],
+  [
+    "spokesperson",
+    "A person nominated to speak on behalf of another person, group or organization.",
+    "A government spokesperson delivered an official statement regarding the new public health guidelines on television."
+  ],
+  [
+    "stagnation",
+    "Lack of activity, growth, development or progress in an economy or business.",
+    "Economic stagnation over three years caused rising unemployment and reduced consumer confidence across the country."
+  ],
+  [
+    "tariff",
+    "A tax or duty to be paid on a particular class of imports or exports.",
+    "The government introduced a high protective tariff on imported agricultural goods to support local farmers."
+  ],
+  [
+    "tender",
+    "A formal offer to execute work or supply goods at a fixed stated price.",
+    "Construction firms submitted competitive written tender proposals to build the new city library complex."
+  ],
+  [
+    "testament",
+    "Something that serves as a sign or evidence of a specified fact, event or quality.",
+    "The school's excellent exam results are a clear testament to the hard work of teachers and students."
+  ]
+]

@@ -1,0 +1,2502 @@
+[
+  [
+    "break the ice",
+    "To say or do something to make people feel more comfortable and relaxed in a social situation.",
+    "A quick game helped to break the ice among the new students."
+  ],
+  [
+    "once in a blue moon",
+    "Very rarely or on extremely seldom occasions rather than on a regular basis.",
+    "She only visits her hometown once in a blue moon nowadays."
+  ],
+  [
+    "under the weather",
+    "Feeling slightly unwell, tired, or suffering from a mild illness like a cold.",
+    "I am feeling a bit under the weather so I will stay home."
+  ],
+  [
+    "cost an arm and a leg",
+    "To be extremely expensive and require a very large amount of money to buy.",
+    "Buying a modern house near the centre will cost an arm and a leg."
+  ],
+  [
+    "hit the books",
+    "To begin studying hard and with great focus, especially before an important exam.",
+    "He needs to hit the books tonight if he wants to pass."
+  ],
+  [
+    "on the same page",
+    "In agreement about a plan, idea, or understanding of a particular situation.",
+    "We must make sure everyone is on the same page before starting."
+  ],
+  [
+    "a blessing in disguise",
+    "An unfortunate event or setback that eventually leads to a positive or useful outcome.",
+    "Missing that train was a blessing in disguise as I met an old friend."
+  ],
+  [
+    "bite the bullet",
+    "To face a difficult or unpleasant situation with courage and get it over with.",
+    "You just need to bite the bullet and talk to your manager."
+  ],
+  [
+    "the ball is in your court",
+    "It is now your turn or responsibility to take action or make a decision.",
+    "I have made my offer, so the ball is in your court now."
+  ],
+  [
+    "spill the beans",
+    "To reveal secret information or a secret plan, often by accident or mistake.",
+    "Please do not spill the beans about the surprise party on Saturday."
+  ],
+  [
+    "call it a day",
+    "To stop working on an activity or job for the rest of the day.",
+    "We have accomplished a lot today, so let us call it a day."
+  ],
+  [
+    "get cold feet",
+    "To suddenly feel nervous or hesitant about carrying out a planned action or decision.",
+    "He was going to give a speech but started to get cold feet."
+  ],
+  [
+    "add insult to injury",
+    "To make a bad situation even worse by doing or saying something additional.",
+    "Losing the match was bad, but getting injured served to add insult to injury."
+  ],
+  [
+    "back to the drawing board",
+    "To start planning a project or idea again from the beginning because it failed.",
+    "The proposal was rejected, so we must go back to the drawing board."
+  ],
+  [
+    "beat around the bush",
+    "To avoid talking about the main topic directly, often because it is uncomfortable.",
+    "Stop attempting to beat around the bush and tell me what happened."
+  ],
+  [
+    "best of both worlds",
+    "A situation where one can enjoy the advantages of two different opportunities simultaneously.",
+    "Living in the countryside while working in the city offers the best of both worlds."
+  ],
+  [
+    "burn the midnight oil",
+    "To work or study late into the night, usually to meet a deadline.",
+    "She had to burn the midnight oil to finish her essay on time."
+  ],
+  [
+    "cut corners",
+    "To do something in the easiest, quickest, or cheapest way, often reducing quality.",
+    "Never cut corners when building a structure, as safety is vital."
+  ],
+  [
+    "hit the nail on the head",
+    "To state or describe something precisely and correctly without any ambiguity or error.",
+    "Your description of the problem really managed to hit the nail on the head."
+  ],
+  [
+    "let the cat out of the bag",
+    "To accidentally reveal a secret or confidential piece of information to someone.",
+    "He let the cat out of the bag before we could surprise her."
+  ],
+  [
+    "piece of cake",
+    "Something that is very easy, simple, and straightforward to accomplish or achieve.",
+    "The test turned out to be a piece of cake for everyone."
+  ],
+  [
+    "pull someone's leg",
+    "To tease or fool someone in a friendly way by telling them something false.",
+    "Do not worry, I was only trying to pull someone's leg earlier."
+  ],
+  [
+    "see eye to eye",
+    "To share the exact same opinion or agree completely with another person on something.",
+    "My parents and I rarely see eye to eye on music choices."
+  ],
+  [
+    "speak of the devil",
+    "Said when a person appears just as people were mentioning or talking about them.",
+    "Well, speak of the devil, here comes Sarah into the room now."
+  ],
+  [
+    "take with a pinch of salt",
+    "To doubt or not completely believe something because it might be exaggerated.",
+    "You should take with a pinch of salt everything he claims."
+  ],
+  [
+    "taste of your own medicine",
+    "Unpleasant treatment similar to the bad treatment one has previously given to others.",
+    "He finally got a taste of your own medicine after being rude."
+  ],
+  [
+    "actions speak louder than words",
+    "What people actually do carries more weight and meaning than what they say.",
+    "Remember that actions speak louder than words when promising to help."
+  ],
+  [
+    "barking up the wrong tree",
+    "Following a mistaken line of thought or accusing the wrong person entirely.",
+    "If you think I took your keys, you are barking up the wrong tree."
+  ],
+  [
+    "bite off more than you can chew",
+    "To take on a task or responsibility that is far too difficult for you.",
+    "Do not bite off more than you can chew with three jobs."
+  ],
+  [
+    "break a leg",
+    "A phrase used to wish performers or speakers good luck before a show.",
+    "The director told the main actor to break a leg before going onstage."
+  ],
+  [
+    "burn bridges",
+    "To permanently destroy relationships or connections, making it impossible to return in a clear and straightforward manner for everyone involved.",
+    "It is foolish to burn bridges when leaving your current job."
+  ],
+  [
+    "by the skin of your teeth",
+    "To succeed in doing something or escape danger by a very narrow margin.",
+    "We caught the last evening train by the skin of your teeth."
+  ],
+  [
+    "cry over spilt milk",
+    "To waste time worrying about past mistakes that cannot be undone or fixed.",
+    "There is no point to cry over spilt milk after the event."
+  ],
+  [
+    "curiosity killed the cat",
+    "A warning that asking too many questions or being overly inquisitive can be dangerous.",
+    "Remember that curiosity killed the cat when searching through private papers."
+  ],
+  [
+    "don't count your chickens before they hatch",
+    "Do not assume success or rely on plans before they are fully realized.",
+    "Wait for the official confirmation and don't count your chickens before they hatch."
+  ],
+  [
+    "don't put all your eggs in one basket",
+    "Do not risk everything on a single venture or effort without backups.",
+    "Spread your investments so you don't put all your eggs in one basket."
+  ],
+  [
+    "drive someone up the wall",
+    "To irritate, annoy, or frustrate a person to an extreme degree over time.",
+    "Loud drilling work downstairs will drive someone up the wall eventually."
+  ],
+  [
+    "feather in your cap",
+    "An achievement or honour that you can be proud of in your career.",
+    "Winning the prestigious national design award is a real feather in your cap."
+  ],
+  [
+    "fit as a fiddle",
+    "In exceptionally good physical health, shape, and overall energetic condition in a clear and straightforward manner for everyone involved.",
+    "Grandfather is eighty years old but remains as fit as a fiddle."
+  ],
+  [
+    "get out of hand",
+    "To become wild, uncontrollable, or impossible to manage properly any longer in a clear and straightforward manner for everyone involved.",
+    "The party began to get out of hand when uninvited guests arrived."
+  ],
+  [
+    "give someone the benefit of the doubt",
+    "To believe someone is telling the truth when you are not entirely sure.",
+    "Let us give someone the benefit of the doubt until we check facts."
+  ],
+  [
+    "go back to square one",
+    "To return to the very start of a process after failing previously.",
+    "If this experiment fails, we must go back to square one."
+  ],
+  [
+    "go the extra mile",
+    "To make a special effort that goes beyond what is expected or required.",
+    "She is always willing to go the extra mile for her clients."
+  ],
+  [
+    "hear through the grapevine",
+    "To learn about news or rumours informally through unverified conversation in a clear and straightforward manner for everyone involved.",
+    "I managed to hear through the grapevine that a change is coming."
+  ],
+  [
+    "in the heat of the moment",
+    "Saying or doing something impulsively while experiencing strong emotion or anger in a clear and straightforward manner for everyone involved.",
+    "He apologized for shouting, explaining it happened in the heat of the moment."
+  ],
+  [
+    "keep your chin up",
+    "To remain positive, confident, and hopeful during difficult or challenging circumstances in a clear and straightforward manner for everyone involved.",
+    "Try to keep your chin up even when things seem difficult."
+  ],
+  [
+    "kill two birds with one stone",
+    "To accomplish two different useful goals at the same time with one action.",
+    "Cycling to work lets you save money and kill two birds with one stone."
+  ],
+  [
+    "last straw",
+    "The final minor problem in a series of troubles that makes someone angry.",
+    "His tardiness was unacceptable, but lying was definitely the last straw."
+  ],
+  [
+    "look before you leap",
+    "Think carefully about potential risks and consequences before taking a major step.",
+    "Always look before you leap when signing a major financial contract."
+  ],
+  [
+    "make a long story short",
+    "To summarise a detailed narrative quickly by leaving out unimportant details in a clear and straightforward manner for everyone involved.",
+    "To make a long story short, we eventually arrived safely home."
+  ],
+  [
+    "miss the boat",
+    "To lose an opportunity by being too slow to take action or decide.",
+    "If you delay applying, you will certainly miss the boat."
+  ],
+  [
+    "off the top of my head",
+    "Giving information immediately from memory without checking facts or preparing in advance.",
+    "I cannot state the exact figure off the top of my head."
+  ],
+  [
+    "on cloud nine",
+    "Extremely happy, delighted, and euphoric about good news or an event in a clear and straightforward manner for everyone involved.",
+    "She was on cloud nine after receiving her exam results."
+  ],
+  [
+    "out of the blue",
+    "Happening completely unexpectedly, suddenly, and without any prior warning or notice in a clear and straightforward manner for everyone involved.",
+    "An old school friend phoned me completely out of the blue."
+  ],
+  [
+    "play devil's advocate",
+    "To argue against an idea simply to test its strength or provoke debate.",
+    "I will play devil's advocate to help test our new plan."
+  ],
+  [
+    "rain on someone's parade",
+    "To spoil someone's enjoyment, enthusiasm, or celebration by creating unwanted difficulties in a clear and straightforward manner for everyone involved.",
+    "I hate to rain on someone's parade, but the event is cancelled."
+  ],
+  [
+    "ring a bell",
+    "To sound vaguely familiar or remind someone of something they heard before.",
+    "That name does not ring a bell, though I might know her."
+  ],
+  [
+    "rock the boat",
+    "To cause trouble or disrupt a stable situation by bringing up problems.",
+    "It is best not to rock the boat during these negotiations."
+  ],
+  [
+    "save for a rainy day",
+    "To reserve money or resources for unexpected future emergencies or needs in a clear and straightforward manner for everyone involved.",
+    "You should put aside some earnings to save for a rainy day."
+  ],
+  [
+    "sit on the fence",
+    "To remain neutral and avoid choosing between two opposing sides or options.",
+    "You cannot sit on the fence forever; you must choose now."
+  ],
+  [
+    "sleep on it",
+    "To delay making a major decision until the following morning to think.",
+    "Do not decide now; sleep on it and tell me tomorrow."
+  ],
+  [
+    "steal someone's thunder",
+    "To take credit for someone else's achievement or reduce their special moment.",
+    "She felt he tried to steal someone's thunder by announcing his news."
+  ],
+  [
+    "throw in the towel",
+    "To give up or admit defeat in a difficult task or competition.",
+    "After hours of trying, they decided to throw in the towel."
+  ],
+  [
+    "touch wood",
+    "Said to avoid bad luck after boasting about something positive or fortunate.",
+    "We have had no technical issues so far, touch wood."
+  ],
+  [
+    "turn a blind eye",
+    "To deliberately ignore something wrong or illegal happening right in front of you.",
+    "The guard chose to turn a blind eye to the minor offence."
+  ],
+  [
+    "up in the air",
+    "Unsettled, undecided, or uncertain, with no final resolution or plan made in a clear and straightforward manner for everyone involved.",
+    "Our holiday plans remain up in the air due to work."
+  ],
+  [
+    "weather the storm",
+    "To survive or endure a difficult period of hardship without giving up.",
+    "The small business managed to weather the storm during the recession."
+  ],
+  [
+    "wrap your head around",
+    "To succeed in understanding or comprehending a complex, difficult, or surprising idea.",
+    "I cannot wrap your head around these complicated new rules."
+  ],
+  [
+    "all ears",
+    "Fully attentive, eager, and waiting to hear what someone has to say.",
+    "Tell me your secret; I am completely all ears right now."
+  ],
+  [
+    "at the drop of a hat",
+    "Done immediately, instantly, and without any hesitation or prior notice in a clear and straightforward manner for everyone involved.",
+    "He is ready to travel at the drop of a hat."
+  ],
+  [
+    "back to square one",
+    "Returned to the beginning stage after previous efforts proved completely unsuccessful in a clear and straightforward manner for everyone involved.",
+    "Our project failed, forcing us back to square one again."
+  ],
+  [
+    "behind the scenes",
+    "Happening privately away from public view, publicity, or the main stage in a clear and straightforward manner for everyone involved.",
+    "A huge amount of work happens behind the scenes before shows."
+  ],
+  [
+    "bend over backwards",
+    "To try extremely hard and make great efforts to help or satisfy someone.",
+    "The staff will bend over backwards to ensure guest comfort."
+  ],
+  [
+    "bite your tongue",
+    "To stop yourself from saying something that might offend or annoy others.",
+    "I had to bite your tongue during the intense workplace meeting."
+  ],
+  [
+    "blow off steam",
+    "To release built-up energy, anger, or stress through physical activity or talk.",
+    "Going for a run helps him blow off steam after work."
+  ],
+  [
+    "break the bank",
+    "To cost more money than one can afford or use up all funds.",
+    "Buying a simple computer should not break the bank nowadays."
+  ],
+  [
+    "burn the candle at both ends",
+    "To work excessively without taking enough rest, staying up late and rising early.",
+    "Working two jobs means you burn the candle at both ends."
+  ],
+  [
+    "call the shots",
+    "To be in control of a situation and make the important decisions.",
+    "The director is the person who gets to call the shots."
+  ],
+  [
+    "change of heart",
+    "A alteration in one's opinion, attitude, or feelings regarding a matter in a clear and straightforward manner for everyone involved.",
+    "She had a change of heart and agreed to join us."
+  ],
+  [
+    "clear the air",
+    "To talk openly about a disagreement to remove tension and misunderstandings in a clear and straightforward manner for everyone involved.",
+    "We sat down over coffee to clear the air between us."
+  ],
+  [
+    "come clean",
+    "To confess or admit the truth about something one previously kept hidden.",
+    "It is always better to come clean and state what happened."
+  ],
+  [
+    "cross your fingers",
+    "To hope for good fortune or a successful outcome in a situation.",
+    "We will cross your fingers and hope the weather stays clear."
+  ],
+  [
+    "cut to the chase",
+    "To skip unnecessary details and get directly to the main point in a clear and straightforward manner for everyone involved.",
+    "Let us cut to the chase and discuss the budget immediately."
+  ],
+  [
+    "down to earth",
+    "Practical, realistic, sensible, and unpretentious in character and behaviour in a clear and straightforward manner for everyone involved.",
+    "Despite her immense wealth, she remains remarkably down to earth."
+  ],
+  [
+    "draw the line",
+    "To set a definite boundary or limit on what one will accept.",
+    "I help my colleagues, but I draw the line at lying."
+  ],
+  [
+    "face the music",
+    "To accept the unpleasant consequences or criticism for one's past actions in a clear and straightforward manner for everyone involved.",
+    "After breaking the rule, he had to face the music."
+  ],
+  [
+    "fall on deaf ears",
+    "To be ignored or unheeded by the people who hear it in a clear and straightforward manner for everyone involved.",
+    "My warnings about safety seemed to fall on deaf ears."
+  ],
+  [
+    "fish out of water",
+    "Feeling uncomfortable, awkward, or out of place in unfamiliar surrounding circumstances in a clear and straightforward manner for everyone involved.",
+    "At the formal dinner, I felt like a fish out of water."
+  ],
+  [
+    "fly off the handle",
+    "To suddenly become extremely angry or lose one's temper without warning in a clear and straightforward manner for everyone involved.",
+    "He tends to fly off the handle over very minor errors."
+  ],
+  [
+    "foot in the door",
+    "A small initial entry or opportunity that leads to bigger success in a clear and straightforward manner for everyone involved.",
+    "An internship can give you a foot in the door."
+  ],
+  [
+    "get your act together",
+    "To organise your thoughts, time, and work properly to be effective in a clear and straightforward manner for everyone involved.",
+    "You need to get your act together if you want promotion."
+  ],
+  [
+    "give a cold shoulder",
+    "To intentionally ignore, snub, or treat someone in an unfriendly manner in a clear and straightforward manner for everyone involved.",
+    "She chose to give a cold shoulder to her rival."
+  ],
+  [
+    "go with the flow",
+    "To accept events as they happen and adapt easily without resisting in a clear and straightforward manner for everyone involved.",
+    "Instead of stressing, I decided to go with the flow."
+  ],
+  [
+    "green light",
+    "Official permission or approval to proceed with a project or action in a clear and straightforward manner for everyone involved.",
+    "The board finally gave the green light for our plan."
+  ],
+  [
+    "hands down",
+    "Without any doubt or question; easily and decisively superior to others in a clear and straightforward manner for everyone involved.",
+    "That was hands down the best meal I have eaten."
+  ],
+  [
+    "hard nut to crack",
+    "A person or problem that is difficult to understand, solve, or deal with.",
+    "Resolving this math problem proved a hard nut to crack."
+  ],
+  [
+    "head in the clouds",
+    "Being unaware of reality or impractical due to daydreaming or fantasy in a clear and straightforward manner for everyone involved.",
+    "He cannot focus because his head in the clouds today."
+  ],
+  [
+    "hit the hay",
+    "To go to bed and sleep, usually when feeling very tired in a clear and straightforward manner for everyone involved.",
+    "It is late, so I am going to hit the hay."
+  ],
+  [
+    "in deep water",
+    "In serious trouble, difficulty, or a very complicated, stressful situation in a clear and straightforward manner for everyone involved.",
+    "Failing to pay taxes puts a company in deep water."
+  ],
+  [
+    "in hot water",
+    "Facing disapproval, punishment, or trouble as a consequence of wrong actions in a clear and straightforward manner for everyone involved.",
+    "He found himself in hot water after missing the deadline."
+  ],
+  [
+    "in the same boat",
+    "Experiencing the identical difficult or challenging situation as others in a group.",
+    "We all lost our jobs, so we are in the same boat."
+  ],
+  [
+    "keep an eye on",
+    "To watch, monitor, or pay close attention to someone or something carefully.",
+    "Please keep an eye on my bag while I buy coffee."
+  ],
+  [
+    "keep your cool",
+    "To remain calm, patient, and composed under pressure or during arguments in a clear and straightforward manner for everyone involved.",
+    "It is essential to keep your cool during intense negotiations."
+  ],
+  [
+    "know the ropes",
+    "To understand the details, procedures, and practical methods of a particular job.",
+    "Ask Sarah for guidance because she really knows the ropes. Remember to know the ropes when appropriate."
+  ],
+  [
+    "learn by heart",
+    "To memorize something so thoroughly that you can recall it completely in a clear and straightforward manner for everyone involved.",
+    "Students must learn by heart all these core grammatical rules."
+  ],
+  [
+    "leave no stone unturned",
+    "To search thoroughly and try every possible method to achieve a goal.",
+    "Investigators will leave no stone unturned to find the truth."
+  ],
+  [
+    "let sleeping dogs lie",
+    "To avoid interfering in a situation that could cause fresh trouble in a clear and straightforward manner for everyone involved.",
+    "It is wiser to let sleeping dogs lie regarding old disputes."
+  ],
+  [
+    "light at the end of the tunnel",
+    "A sign of hope that a long difficult period will soon end.",
+    "After months of struggle, we see light at the end of the tunnel."
+  ],
+  [
+    "live and learn",
+    "Said when one learns a valuable lesson from a mistake or experience.",
+    "I made a foolish error, but we live and learn."
+  ],
+  [
+    "lose your cool",
+    "To become angry, agitated, or lose self-control in a tense situation in a clear and straightforward manner for everyone involved.",
+    "Try not to lose your cool when dealing with customers."
+  ],
+  [
+    "lose your temper",
+    "To become suddenly enraged or fail to control one's angry feelings in a clear and straightforward manner for everyone involved.",
+    "He is quick to lose your temper during heated debates."
+  ],
+  [
+    "make ends meet",
+    "To earn just enough money to pay for basic living expenses in a clear and straightforward manner for everyone involved.",
+    "Many families struggle to make ends meet during difficult economic times."
+  ],
+  [
+    "make up your mind",
+    "To make a final decision about something after considering options in a clear and straightforward manner for everyone involved.",
+    "Take your time, but eventually you must make up your mind."
+  ],
+  [
+    "needle in a haystack",
+    "Something that is virtually impossible to find because of vast surroundings in a clear and straightforward manner for everyone involved.",
+    "Finding my ring on the beach was like searching for a needle in a haystack."
+  ],
+  [
+    "off the hook",
+    "Freed from an obligation, blame, responsibility, or awkward situation in a clear and straightforward manner for everyone involved.",
+    "He answered the query, so I was off the hook."
+  ],
+  [
+    "on the fence",
+    "Undecided or unable to make a choice between two alternatives in a clear and straightforward manner for everyone involved.",
+    "She remains on the fence about which university to attend."
+  ],
+  [
+    "on the house",
+    "Provided free of charge by a restaurant, bar, or business venue in a clear and straightforward manner for everyone involved.",
+    "The restaurant manager said our dessert was on the house."
+  ],
+  [
+    "on thin ice",
+    "In a precarious or risky situation where further mistakes cause trouble in a clear and straightforward manner for everyone involved.",
+    "You are on thin ice with the boss after being late."
+  ],
+  [
+    "out of hand",
+    "Out of control, unmanageable, or unable to be restricted any further in a clear and straightforward manner for everyone involved.",
+    "Tensions grew until the argument got completely out of hand."
+  ],
+  [
+    "out of order",
+    "Not functioning correctly or broken; or unacceptable and improper behaviour in a clear and straightforward manner for everyone involved.",
+    "The lift is currently out of order for repair work."
+  ],
+  [
+    "out of the question",
+    "Completely impossible, unacceptable, or not allowed under any circumstances in a clear and straightforward manner for everyone involved.",
+    "Taking extra leave this week is out of the question."
+  ],
+  [
+    "pay through the nose",
+    "To pay an excessively high or exorbitant price for something in a clear and straightforward manner for everyone involved.",
+    "You will pay through the nose for tickets at the door."
+  ],
+  [
+    "play it by ear",
+    "To deal with a situation spontaneously as it develops rather than planning.",
+    "We have no fixed schedule, so let us play it by ear."
+  ],
+  [
+    "pull yourself together",
+    "To regain self-control, calm down, and compose yourself after emotional distress in a clear and straightforward manner for everyone involved.",
+    "Stop panicking, take a deep breath, and pull yourself together."
+  ],
+  [
+    "put yourself in someone's shoes",
+    "To imagine how another person feels or views a situation in a clear and straightforward manner for everyone involved.",
+    "Before judging him, try to put yourself in someone's shoes."
+  ],
+  [
+    "raise the bar",
+    "To raise standards, expectations, or quality levels in a field in a clear and straightforward manner for everyone involved.",
+    "Her outstanding performance served to raise the bar for everyone."
+  ],
+  [
+    "read between the lines",
+    "To understand hidden meaning or implicit feelings not expressed directly in a clear and straightforward manner for everyone involved.",
+    "If you read between the lines, he wants to resign."
+  ],
+  [
+    "red tape",
+    "Excessive official rules, paperwork, and bureaucratic delays that hinder progress in a clear and straightforward manner for everyone involved.",
+    "Acquiring the permit took months due to endless red tape."
+  ],
+  [
+    "run out of steam",
+    "To lose energy, enthusiasm, or momentum before completing a task in a clear and straightforward manner for everyone involved.",
+    "Towards the end of the marathon, he began to run out of steam."
+  ],
+  [
+    "safe and sound",
+    "Completely uninjured, secure, and unharmed after a dangerous journey in a clear and straightforward manner for everyone involved.",
+    "The lost dog was returned home safe and sound yesterday."
+  ],
+  [
+    "second to none",
+    "As good as or better than any other; of supreme quality in a clear and straightforward manner for everyone involved.",
+    "The hotel service in this country is second to none."
+  ],
+  [
+    "shed light on",
+    "To clarify or provide new information that makes a topic clearer in a clear and straightforward manner for everyone involved.",
+    "The news report helped shed light on the recent events."
+  ],
+  [
+    "shot in the dark",
+    "A complete guess without any factual evidence or certainty in a clear and straightforward manner for everyone involved.",
+    "My answer was a total shot in the dark, but correct."
+  ],
+  [
+    "slip of the tongue",
+    "A minor spoken mistake where one says something unintended accidentally in a clear and straightforward manner for everyone involved.",
+    "I called him by his brother's name by a slip of the tongue."
+  ],
+  [
+    "smell a rat",
+    "To suspect that something dishonest, wrong, or tricky is occurring in a clear and straightforward manner for everyone involved.",
+    "When he offered cash without a receipt, I began to smell a rat."
+  ],
+  [
+    "smooth sailing",
+    "Easy, comfortable progress without any difficulties, obstacles, or problems in a clear and straightforward manner for everyone involved.",
+    "Once we passed the border, the rest was smooth sailing."
+  ],
+  [
+    "speak your mind",
+    "To express your genuine opinions and thoughts directly and honestly in a clear and straightforward manner for everyone involved.",
+    "Do not hesitate to speak your mind during our team discussions."
+  ],
+  [
+    "stand your ground",
+    "To maintain your position, opinion, or stance despite strong opposition in a clear and straightforward manner for everyone involved.",
+    "You must stand your ground when negotiating your salary level."
+  ],
+  [
+    "step up your game",
+    "To improve your performance, effort, or skills to meet higher standards in a clear and straightforward manner for everyone involved.",
+    "If you want to win, you need to step up your game."
+  ],
+  [
+    "stick to your guns",
+    "To refuse to change your beliefs or decision despite pressure in a clear and straightforward manner for everyone involved.",
+    "Even when criticized, she decided to stick to your guns."
+  ],
+  [
+    "take a rain check",
+    "To politely decline an offer now with the promise to accept later.",
+    "I cannot join dinner tonight, but I will take a rain check."
+  ],
+  [
+    "take for granted",
+    "To fail to appreciate something because you assume it will always exist.",
+    "We should never take for granted our good health."
+  ],
+  [
+    "take it easy",
+    "To relax, rest, and avoid stress, overexertion, or hard work in a clear and straightforward manner for everyone involved.",
+    "Doctor advised him to take it easy for two weeks."
+  ],
+  [
+    "tall order",
+    "A task or request that is very difficult or demanding to fulfill.",
+    "Completing this project by tomorrow morning is a tall order."
+  ],
+  [
+    "the tip of the iceberg",
+    "A small visible part of a much larger, hidden problem in a clear and straightforward manner for everyone involved.",
+    "These minor errors are just the tip of the iceberg."
+  ],
+  [
+    "think outside the box",
+    "To think creatively and unconventionally to solve a complex problem in a clear and straightforward manner for everyone involved.",
+    "Engineers must think outside the box to find modern solutions."
+  ],
+  [
+    "through thick and thin",
+    "Under all circumstances, supporting someone through good and bad times in a clear and straightforward manner for everyone involved.",
+    "True friends remain loyal to you through thick and thin."
+  ],
+  [
+    "tie the knot",
+    "To get married to someone in a formal wedding ceremony in a clear and straightforward manner for everyone involved.",
+    "They plan to tie the knot next summer in Scotland."
+  ],
+  [
+    "time will tell",
+    "The truth or final outcome will become known in the future in a clear and straightforward manner for everyone involved.",
+    "Whether this policy works or fails, only time will tell."
+  ],
+  [
+    "tooth and nail",
+    "With great energy, determination, and effort using every available means in a clear and straightforward manner for everyone involved.",
+    "They fought tooth and nail to defend their rights."
+  ],
+  [
+    "walking on eggshells",
+    "Being extremely careful in behaviour to avoid upsetting a sensitive person in a clear and straightforward manner for everyone involved.",
+    "Everyone in the office is walking on eggshells around him."
+  ],
+  [
+    "water under the bridge",
+    "Past events or disputes that are forgotten, forgiven, and no longer matter.",
+    "Our old argument is now just water under the bridge."
+  ],
+  [
+    "wild goose chase",
+    "A hopeless, foolish search for something unobtainable or nonexistent in a clear and straightforward manner for everyone involved.",
+    "Searching for the lost document turned into a wild goose chase."
+  ],
+  [
+    "win-win situation",
+    "A result or arrangement that benefits all parties involved equally well in a clear and straightforward manner for everyone involved.",
+    "Flexible work hours create a win-win situation for staff and employers."
+  ],
+  [
+    "word of mouth",
+    "Communication passed orally from person to person rather than through advertising in a clear and straightforward manner for everyone involved.",
+    "The small restaurant expanded purely through word of mouth."
+  ],
+  [
+    "zero tolerance",
+    "A strict policy that allows no exceptions for illegal or undesirable behaviour.",
+    "The school has zero tolerance for any form of bullying."
+  ],
+  [
+    "ahead of the curve",
+    "To be more advanced, innovative, or knowledgeable than competitors or peers in a clear and straightforward manner for everyone involved.",
+    "The technology company stays ahead of the curve through research."
+  ],
+  [
+    "at loggerheads",
+    "In strong, bitter disagreement or conflict with someone over an issue in a clear and straightforward manner for everyone involved.",
+    "The council and residents are at loggerheads over building plans."
+  ],
+  [
+    "at the end of the day",
+    "Ultimately, when all factors have been considered and evaluated thoroughly in a clear and straightforward manner for everyone involved.",
+    "at the end of the day, safety must remain our priority."
+  ],
+  [
+    "be in two minds",
+    "To be undecided, hesitant, or uncertain about making a choice in a clear and straightforward manner for everyone involved.",
+    "I am in two minds about accepting the new job offer. Remember to be in two minds when appropriate."
+  ],
+  [
+    "behind closed doors",
+    "Taking place secretly or privately without the public or media knowing in a clear and straightforward manner for everyone involved.",
+    "Important political negotiations were conducted behind closed doors yesterday."
+  ],
+  [
+    "bite the dust",
+    "To fail, break down, or cease to function or exist in a clear and straightforward manner for everyone involved.",
+    "My old laptop finally bit the dust after seven years. Remember to bite the dust when appropriate."
+  ],
+  [
+    "blow your own trumpet",
+    "To boast or talk proudly about one's own achievements and talents in a clear and straightforward manner for everyone involved.",
+    "He likes to blow your own trumpet whenever he wins."
+  ],
+  [
+    "break the mould",
+    "To do something completely innovative that departs from traditional methods in a clear and straightforward manner for everyone involved.",
+    "Her novel approach helped break the mould of standard education."
+  ],
+  [
+    "bring to light",
+    "To make unknown facts public or discover something hidden previously in a clear and straightforward manner for everyone involved.",
+    "An investigation helped bring to light serious financial errors."
+  ],
+  [
+    "bury the hatchet",
+    "To make peace and end a longstanding conflict or personal quarrel in a clear and straightforward manner for everyone involved.",
+    "The former rivals decided to bury the hatchet and cooperate."
+  ],
+  [
+    "by word of mouth",
+    "Passed along through spoken conversation rather than written advertisements or media in a clear and straightforward manner for everyone involved.",
+    "News of the concert spread quickly by word of mouth."
+  ],
+  [
+    "call a spade a spade",
+    "To speak frankly, directly, and plainly about something without softening words in a clear and straightforward manner for everyone involved.",
+    "Let us call a spade a spade and admit the mistake."
+  ],
+  [
+    "catch red-handed",
+    "To discover someone in the middle of committing an illegal or improper act.",
+    "The thief was caught red-handed trying to open the safe. Remember to catch red-handed when appropriate."
+  ],
+  [
+    "cloud on the horizon",
+    "A potential problem, threat, or trouble that may arise in future in a clear and straightforward manner for everyone involved.",
+    "Rising energy costs are a cloud on the horizon for business."
+  ],
+  [
+    "come to light",
+    "To become known or publicly revealed after remaining secret or hidden in a clear and straightforward manner for everyone involved.",
+    "New evidence has come to light regarding the case."
+  ],
+  [
+    "cost a fortune",
+    "To be exceptionally expensive and require a very large financial outlay in a clear and straightforward manner for everyone involved.",
+    "Renovating an old mansion will cost a fortune to complete."
+  ],
+  [
+    "cross that bridge when you come to it",
+    "To deal with a potential future problem only when it actually occurs.",
+    "Do not worry now; we will cross that bridge when you come to it."
+  ],
+  [
+    "cut a long story short",
+    "To summarise details briefly and present only the primary facts in a clear and straightforward manner for everyone involved.",
+    "To cut a long story short, we won the competition."
+  ],
+  [
+    "down the line",
+    "At a future point in time or further along in a process.",
+    "This decision could cause serious difficulties down the line."
+  ],
+  [
+    "drag one's feet",
+    "To act slowly or delay deliberately when completing a necessary task in a clear and straightforward manner for everyone involved.",
+    "The committee continues to drag one's feet on reform."
+  ],
+  [
+    "draw a blank",
+    "To fail to get an answer, memory, result, or response to something.",
+    "I tried to recall his name but drew a blank. Remember to draw a blank when appropriate."
+  ],
+  [
+    "drive someone mad",
+    "To annoy, irritate, or frustrate someone to an extreme degree in a clear and straightforward manner for everyone involved.",
+    "Constant traffic noise outside can drive someone mad very quickly."
+  ],
+  [
+    "drop a bombshell",
+    "To make a sudden, shocking, and unexpected announcement to everyone in a clear and straightforward manner for everyone involved.",
+    "She decided to drop a bombshell by announcing her departure."
+  ],
+  [
+    "face value",
+    "Accepting something based purely on initial appearance without further investigation in a clear and straightforward manner for everyone involved.",
+    "You should not take advertising claims at face value."
+  ],
+  [
+    "feather one's nest",
+    "To enrich oneself improperly by taking advantage of one's position in a clear and straightforward manner for everyone involved.",
+    "The corrupt official tried to feather one's nest illegally."
+  ],
+  [
+    "fly the coop",
+    "To leave home, escape, or depart from a restricted place suddenly in a clear and straightforward manner for everyone involved.",
+    "The birds decided to fly the coop when winter arrived."
+  ],
+  [
+    "gain ground",
+    "To make progress, become more popular, or advance towards a goal in a clear and straightforward manner for everyone involved.",
+    "Our campaign is starting to gain ground in polls."
+  ],
+  [
+    "get a grip",
+    "To regain self-control, composure, and emotional stability in a crisis in a clear and straightforward manner for everyone involved.",
+    "You need to get a grip and focus on the task."
+  ],
+  [
+    "get the green light",
+    "To receive official permission or authorization to start an undertaking in a clear and straightforward manner for everyone involved.",
+    "We hope to get the green light for construction tomorrow."
+  ],
+  [
+    "give a hand",
+    "To help or assist someone with a physical task or work in a clear and straightforward manner for everyone involved.",
+    "Could you please give a hand with these heavy boxes?"
+  ],
+  [
+    "go down in flames",
+    "To fail spectacularly, completely, and disastrously in a venture in a clear and straightforward manner for everyone involved.",
+    "His business strategy went down in flames due to poor research. Remember to go down in flames when appropriate."
+  ],
+  [
+    "go against the grain",
+    "To oppose normal customs, natural inclinations, or established public standards in a clear and straightforward manner for everyone involved.",
+    "Voting against the proposal would go against the grain for her."
+  ],
+  [
+    "have a change of heart",
+    "To alter one's mind, attitude, or decision about a topic in a clear and straightforward manner for everyone involved.",
+    "He used to dislike pets but had a change of heart. Remember to have a change of heart when appropriate."
+  ],
+  [
+    "have cold feet",
+    "To feel sudden hesitation, anxiety, or reluctance before a big commitment in a clear and straightforward manner for everyone involved.",
+    "Many brides have cold feet before their wedding day."
+  ],
+  [
+    "hit the roof",
+    "To become extremely angry, furious, and lose self-control rapidly in a clear and straightforward manner for everyone involved.",
+    "My manager will hit the roof when she sees this report."
+  ],
+  [
+    "in a nutshell",
+    "Expressed in a very concise, direct, and brief manner in a clear and straightforward manner for everyone involved.",
+    "in a nutshell, the meeting was a complete success."
+  ],
+  [
+    "in the dark",
+    "Unaware of or uninformed about facts, developments, or secret details in a clear and straightforward manner for everyone involved.",
+    "Employees were kept in the dark about the company merger."
+  ],
+  [
+    "keep at bay",
+    "To prevent something dangerous or unpleasant from approaching or harming you in a clear and straightforward manner for everyone involved.",
+    "Regular exercise helps keep at bay many health problems."
+  ],
+  [
+    "keep open mind",
+    "To remain willing to consider new ideas, opinions, and suggestions fair-mindedly in a clear and straightforward manner for everyone involved.",
+    "Try to keep open mind until you hear all facts."
+  ],
+  [
+    "know inside out",
+    "To understand or know a subject, system, or place thoroughly and completely.",
+    "Our lead developer knows the system inside out completely. Remember to know inside out when appropriate."
+  ],
+  [
+    "lay off",
+    "To discharge or dismiss an employee due to lack of work or funds.",
+    "The factory had to lay off fifty workers last month."
+  ],
+  [
+    "leave in the lurch",
+    "To abandon someone in a difficult situation without assistance or support in a clear and straightforward manner for everyone involved.",
+    "He quit unexpectedly and left us in the lurch. Remember to leave in the lurch when appropriate."
+  ],
+  [
+    "make a scene",
+    "To behave in a noisy, angry, and public manner that attracts unwanted attention.",
+    "Please do not make a scene in front of guests."
+  ],
+  [
+    "off the beaten track",
+    "Located in an isolated, quiet, or unusual place far from main routes.",
+    "They stayed in a cottage off the beaten track."
+  ],
+  [
+    "on the tip of my tongue",
+    "Almost remembered or spoken, but temporarily impossible to recall completely in a clear and straightforward manner for everyone involved.",
+    "His surname is on the tip of my tongue right now."
+  ],
+  [
+    "play with fire",
+    "To engage in risky, dangerous, or reckless behaviour that invites trouble in a clear and straightforward manner for everyone involved.",
+    "Investing without research is like choosing to play with fire."
+  ],
+  [
+    "pull strings",
+    "To use secret influence or powerful connections to gain an unfair advantage.",
+    "He managed to pull strings to secure the job position."
+  ],
+  [
+    "rain on my parade",
+    "To spoil or ruin someone's plans, excitement, or happiness in a clear and straightforward manner for everyone involved.",
+    "I do not want to rain on my parade today."
+  ],
+  [
+    "read between lines",
+    "To deduce implicit meaning or hidden truth from text or speeches in a clear and straightforward manner for everyone involved.",
+    "If you read between lines, she plans to leave soon."
+  ],
+  [
+    "save face",
+    "To avoid embarrassment or preserve one's dignity and social reputation in a clear and straightforward manner for everyone involved.",
+    "He resigned quietly to save face after the error."
+  ],
+  [
+    "take a back seat",
+    "To adopt a less active, central, or powerful role in an activity.",
+    "She decided to take a back seat in project management."
+  ],
+  [
+    "take it for granted",
+    "To assume something is permanent without showing proper appreciation or care in a clear and straightforward manner for everyone involved.",
+    "Do not take it for granted that help is available."
+  ],
+  [
+    "think twice",
+    "To consider something very carefully before acting to avoid mistakes in a clear and straightforward manner for everyone involved.",
+    "You should think twice before making such a major investment."
+  ],
+  [
+    "turn over a new leaf",
+    "To reform one's behaviour, start fresh, and make positive changes in a clear and straightforward manner for everyone involved.",
+    "He promised to turn over a new leaf and study hard."
+  ],
+  [
+    "a stone's throw",
+    "A very short distance away from a location, making it extremely easy and quick to reach on foot.",
+    "The hotel is located just a stone's throw from the beach."
+  ],
+  [
+    "add fuel to the fire",
+    "To say or do something that makes an already tense, difficult, or angry situation much worse.",
+    "Shouting at him will only add fuel to the fire right now."
+  ],
+  [
+    "as quiet as a mouse",
+    "Extremely quiet, silent, and making virtually no noise whatsoever while moving or staying in a room.",
+    "The children stayed as quiet as a mouse while their baby sister slept."
+  ],
+  [
+    "at a loss for words",
+    "So surprised, shocked, or confused that one suddenly does not know what to say in response.",
+    "She was completely at a loss for words when she won the award."
+  ],
+  [
+    "beat the clock",
+    "To finish a task, test, or activity successfully before a specified deadline or time limit expires.",
+    "We had to work rapidly in order to beat the clock today."
+  ],
+  [
+    "bite one's lip",
+    "To stop oneself from expressing anger, emotion, or an opinion in a difficult or tense situation.",
+    "He had to bite one's lip to avoid arguing with his boss."
+  ],
+  [
+    "call it quits",
+    "To agree to stop doing an activity, job, or working relationship permanently after trying hard.",
+    "After hours of fruitless searching, they decided to call it quits."
+  ],
+  [
+    "come to a standstill",
+    "To stop completely and cease all movement, activity, progress, or operation entirely for a period.",
+    "Traffic came to a standstill following the heavy snowfall on the highway. Remember to come to a standstill when appropriate."
+  ],
+  [
+    "cut both ways",
+    "To have both good and bad effects or consequences simultaneously for the people involved in it.",
+    "This new policy could cut both ways for small local businesses."
+  ],
+  [
+    "drive a hard bargain",
+    "To negotiate fiercely and insist on getting the best possible terms or price in a transaction.",
+    "The vendor managed to drive a hard bargain during the deal."
+  ],
+  [
+    "reluctant",
+    "Unwilling and hesitant to do something, often showing doubt or slowness to act.",
+    "She felt reluctant to leave her comfortable home for the new position."
+  ],
+  [
+    "negotiate",
+    "To discuss something formally with someone in order to reach an agreement together.",
+    "The union leaders met to negotiate better working conditions for staff."
+  ],
+  [
+    "appreciate",
+    "To recognize the full worth, importance, or good qualities of something or someone.",
+    "I really appreciate your kind help during this difficult transition period."
+  ],
+  [
+    "sophisticated",
+    "Having or showing a high degree of complexity, refinement, experience, or intelligence.",
+    "The laboratory installed a sophisticated security system to protect sensitive research."
+  ],
+  [
+    "widespread",
+    "Existing or happening over a large area or among many people or places.",
+    "There is widespread public concern regarding the recent rise in living costs."
+  ],
+  [
+    "considerable",
+    "Great in amount, size, importance, or extent; noticeably large or significant in a clear and straightforward manner for everyone involved.",
+    "He spent a considerable amount of time preparing his final presentation."
+  ],
+  [
+    "gradual",
+    "Taking place or progressing slowly by degrees over a prolonged period of time.",
+    "The patient made a gradual recovery after undergoing the complex surgery."
+  ],
+  [
+    "inevitable",
+    "Certain to happen and completely impossible to avoid, prevent, or stop happening.",
+    "With so much heavy traffic, minor delays on the road are inevitable."
+  ],
+  [
+    "substantial",
+    "Of considerable importance, size, value, or worth; large and solid in structure.",
+    "The company made a substantial profit following the launch of their product."
+  ],
+  [
+    "thorough",
+    "Complete with regard to every detail; performed with great care and accuracy.",
+    "The police conducted a thorough investigation into the circumstances of the incident."
+  ],
+  [
+    "outstanding",
+    "Exceptionally good, distinguished, or clearly superior compared to standard expectations in a clear and straightforward manner for everyone involved.",
+    "Her outstanding academic achievement earned her a full scholarship to university."
+  ],
+  [
+    "hesitate",
+    "To pause before saying or doing something because of uncertainty or doubt.",
+    "Do not hesitate to ask questions if you require further clarification."
+  ],
+  [
+    "acknowledge",
+    "To accept or admit the existence, truth, or reality of a particular fact.",
+    "He failed to acknowledge his mistake during the team project review."
+  ],
+  [
+    "occupy",
+    "To reside in, fill, or take up a particular space, area, or position.",
+    "The new offices will occupy the top two floors of the building."
+  ],
+  [
+    "abandon",
+    "To leave a place, thing, or person permanently, often without returning in a clear and straightforward manner for everyone involved.",
+    "They had to abandon their car when the flood waters began rising."
+  ],
+  [
+    "absorb",
+    "To take in or soak up energy, liquid, or other substances gradually.",
+    "Sponges absorb water quickly when you place them in a sink."
+  ],
+  [
+    "accomplish",
+    "To succeed in doing or completing something successfully through hard work in a clear and straightforward manner for everyone involved.",
+    "She managed to accomplish all her goals before the end of term."
+  ],
+  [
+    "acquire",
+    "To buy, obtain, or gain possession of something through personal effort in a clear and straightforward manner for everyone involved.",
+    "The university hopes to acquire new computer equipment for student laboratories."
+  ],
+  [
+    "adapt",
+    "To modify or adjust behaviour or characteristics to suit new conditions in a clear and straightforward manner for everyone involved.",
+    "It took time for the international students to adapt to winter weather."
+  ],
+  [
+    "adjust",
+    "To alter or move something slightly to achieve a desired result or fit.",
+    "You can adjust the height of the chair to feel more comfortable."
+  ],
+  [
+    "advocate",
+    "To publicly support, recommend, or speak in favour of a policy or cause.",
+    "Many experts advocate regular physical exercise to maintain healthy heart function."
+  ],
+  [
+    "alter",
+    "To change or modify something slightly without transforming it entirely into another.",
+    "She decided to alter the dress so that it fitted her properly."
+  ],
+  [
+    "anticipate",
+    "To regard as probable, expect, or prepare for a future event in advance.",
+    "Economists anticipate a steady rise in employment over the coming months."
+  ],
+  [
+    "clarify",
+    "To make a statement or situation less confused and more understandable to people.",
+    "Could you please clarify your point regarding the proposed project deadline?"
+  ],
+  [
+    "coincide",
+    "To occur at the exact same time or occupy the same spatial position.",
+    "My holiday plans coincide with the national festival celebrations in July."
+  ],
+  [
+    "collapse",
+    "To fall down or give way suddenly due to structural weakness or pressure.",
+    "The old wooden bridge began to collapse under the heavy vehicle weight."
+  ],
+  [
+    "combine",
+    "To join, unite, or merge two or more things to form a single entity.",
+    "You can combine ingredients in a large bowl before baking the cake."
+  ],
+  [
+    "compensate",
+    "To pay or give something to make up for loss, damage, or suffering.",
+    "The airline agreed to compensate passengers for the extended flight delay."
+  ],
+  [
+    "compile",
+    "To produce a list, report, or book by collecting information from sources.",
+    "Researchers plan to compile data from several recent studies on public health."
+  ],
+  [
+    "comply",
+    "To act in accordance with a wish, request, demand, or formal rule.",
+    "All visitors must comply with the safety regulations posted at entry."
+  ],
+  [
+    "conclude",
+    "To bring an activity, debate, or argument to an end or form a decision.",
+    "The chairperson will conclude the conference with a brief summary speech."
+  ],
+  [
+    "confirm",
+    "To establish the truth, correctness, or validity of something previously believed in a clear and straightforward manner for everyone involved.",
+    "Please check your inbox to confirm your hotel reservation details online."
+  ],
+  [
+    "confront",
+    "To face, meet, or deal with a difficult situation, problem, or person directly.",
+    "We must confront these financial challenges before they become far worse."
+  ],
+  [
+    "contribute",
+    "To give or provide something, such as money or assistance, towards a common purpose.",
+    "Many local citizens chose to contribute food to the charity drive."
+  ],
+  [
+    "convince",
+    "To cause someone to believe firmly in the truth or validity of something.",
+    "She managed to convince the panel that her design was practical."
+  ],
+  [
+    "demonstrate",
+    "To clearly show, explain, or prove the truth or existence of something.",
+    "The science experiment served to demonstrate how chemical reactions produce heat."
+  ],
+  [
+    "depict",
+    "To represent or show someone or something in a picture, drawing, or story.",
+    "The artist chose to depict rural scenes from nineteenth century life."
+  ],
+  [
+    "derive",
+    "To obtain, extract, or develop something from a specified origin or source.",
+    "Many modern pharmaceutical drugs derive their active ingredients from tropical plants."
+  ],
+  [
+    "designate",
+    "To officially give a specified status, name, or role to someone or something.",
+    "The committee decided to designate this forest area as a protected park."
+  ],
+  [
+    "deteriorate",
+    "To become progressively worse in quality, condition, value, or health over time.",
+    "Without proper maintenance, historical stone buildings will deteriorate rapidly in winter."
+  ],
+  [
+    "diminish",
+    "To make or become less, smaller, or reduced in size, degree, or importance.",
+    "Resting after exercise will help diminish muscle soreness and general fatigue."
+  ],
+  [
+    "distinguish",
+    "To recognize, point out, or understand the differences between two or more things.",
+    "It can be difficult to distinguish between the two identical twins."
+  ],
+  [
+    "dominate",
+    "To have or exert commanding power, control, or primary influence over others.",
+    "One large company continues to dominate the telecommunications market in Europe."
+  ],
+  [
+    "eliminate",
+    "To completely remove, get rid of, or terminate an unwanted element or option.",
+    "New policies aim to eliminate unnecessary plastic packaging from supermarket shelves."
+  ],
+  [
+    "emphasise",
+    "To give special importance, value, or prominence to something in speaking or writing.",
+    "Teachers always emphasise the importance of reading books regularly at home."
+  ],
+  [
+    "encounter",
+    "To unexpectedly experience or come across something difficult, unexpected, or challenging in a clear and straightforward manner for everyone involved.",
+    "Travellers may encounter unexpected flight delays during severe winter storms."
+  ],
+  [
+    "enhance",
+    "To intensify, increase, or further improve the quality, value, or extent of something.",
+    "Adding fresh herbs can greatly enhance the overall flavour of the dish."
+  ],
+  [
+    "establish",
+    "To set up, institute, or found an organisation, system, or set of rules permanently.",
+    "The government plans to establish new medical centres across rural regions."
+  ],
+  [
+    "evaluate",
+    "To assess, judge, or calculate the quality, importance, amount, or value of something.",
+    "Examiners will evaluate student performance based on written coursework and tests."
+  ],
+  [
+    "exceed",
+    "To be greater in number, size, degree, or quantity than a specified limit.",
+    "Drivers should never exceed the posted speed limit on residential roads."
+  ],
+  [
+    "expand",
+    "To become or make larger, wider, or more extensive in area or scope.",
+    "The company hopes to expand its business operations into foreign markets."
+  ],
+  [
+    "expose",
+    "To make something visible, vulnerable, or revealed by uncovering or removing shelter.",
+    "Do not expose sensitive digital photographic paper to direct bright sunlight."
+  ],
+  [
+    "facilitate",
+    "To make an action, process, or task easier, smoother, or less difficult.",
+    "The new software tool will facilitate communication between remote office teams."
+  ],
+  [
+    "generate",
+    "To produce, create, or bring about energy, power, ideas, or financial revenue.",
+    "Solar panels placed on roofs can generate clean electricity for household use."
+  ],
+  [
+    "guarantee",
+    "To provide a formal assurance or promise that certain conditions will be fulfilled.",
+    "The manufacturer offers a two year guarantee on all electronic appliances."
+  ],
+  [
+    "highlight",
+    "To draw special attention to a particular piece of information or feature.",
+    "The speaker used slides to highlight key statistical figures in her talk."
+  ],
+  [
+    "illustrate",
+    "To explain, clarify, or make something clear using examples, pictures, or diagrams.",
+    "The teacher drew a diagram to illustrate how rainfall forms clouds."
+  ],
+  [
+    "implement",
+    "To put a decision, plan, policy, or agreement officially into practical effect.",
+    "Schools will implement new computer technology guidelines starting next academic term."
+  ],
+  [
+    "imply",
+    "To suggest or express an idea indirectly rather than stating it explicitly.",
+    "Her words seemed to imply that the project was behind schedule."
+  ],
+  [
+    "impose",
+    "To establish or force a rule, tax, punishment, or restriction upon people.",
+    "Authorities decided to impose strict limits on water usage this summer."
+  ],
+  [
+    "indicate",
+    "To point out, show, state, or express the presence or truth of something.",
+    "Research figures indicate a steady decline in traditional newspaper sales overall."
+  ],
+  [
+    "infer",
+    "To deduce or conclude information from evidence and reasoning rather than explicit statements.",
+    "Readers can infer the character's feelings from his quiet actions."
+  ],
+  [
+    "influence",
+    "To have an effect or impact on the character, development, or behaviour of someone.",
+    "Parents significantly influence the habits and values of their growing children."
+  ],
+  [
+    "initiate",
+    "To cause a process, action, or event to begin or start formally.",
+    "Management decided to initiate an immediate review of all safety procedures."
+  ],
+  [
+    "inspect",
+    "To look at something closely, carefully, and officially to examine its condition.",
+    "Engineers must inspect the railway tracks regularly to ensure passenger safety."
+  ],
+  [
+    "integrate",
+    "To combine or merge one thing with another so they become a whole.",
+    "The curriculum aims to integrate practical work with theoretical learning experiences."
+  ],
+  [
+    "intend",
+    "To have a specific plan, purpose, or design in mind for the future.",
+    "We intend to complete the renovation project before the end of summer."
+  ],
+  [
+    "interpret",
+    "To explain or understand the meaning of information, words, or actions in context.",
+    "Scholars often interpret ancient historical texts in several quite different ways."
+  ],
+  [
+    "intervene",
+    "To take action in a situation to prevent or alter a result or conflict.",
+    "Teachers had to intervene when an argument started in the playground."
+  ],
+  [
+    "justify",
+    "To show, prove, or demonstrate that an action or decision is reasonable or right.",
+    "He tried to justify his late arrival by explaining the train delay."
+  ],
+  [
+    "maintain",
+    "To cause something to continue or preserve a condition without changing or deteriorating.",
+    "Drivers must maintain their vehicles regularly to prevent unexpected mechanical breakdowns."
+  ],
+  [
+    "manage",
+    "To succeed in doing or dealing with something difficult, or control an organisation.",
+    "She learned how to manage her time effectively during exam revision."
+  ],
+  [
+    "manipulate",
+    "To control, handle, or influence something or someone in a clever or dishonest way.",
+    "Advertisers sometimes try to manipulate consumer choices through persuasive messaging."
+  ],
+  [
+    "monitor",
+    "To observe, check, or track the progress or quality of something over time.",
+    "Doctors continuously monitor the heart rate of patients during surgical procedures."
+  ],
+  [
+    "motivate",
+    "To provide someone with a strong reason, desire, or enthusiasm to do something.",
+    "Inspirational teachers know how to motivate students to achieve their best."
+  ],
+  [
+    "obtain",
+    "To get, acquire, or secure something through effort, request, or formal purchase.",
+    "Applicants must obtain an official permit before commencing any construction work."
+  ],
+  [
+    "overcome",
+    "To succeed in dealing with or controlling a problem, difficulty, or personal fear.",
+    "She worked diligently to overcome her fear of public speaking in public."
+  ],
+  [
+    "participate",
+    "To take part in or become involved in an activity or event alongside others.",
+    "Students are encouraged to participate actively in classroom discussions and debates."
+  ],
+  [
+    "perceive",
+    "To become aware of, notice, or interpret something using one of the senses.",
+    "People often perceive changes in temperature more acutely in early autumn."
+  ],
+  [
+    "persuade",
+    "To cause someone to do or believe something through reasoning, arguments, or pleading.",
+    "He managed to persuade his brother to join him on the trip."
+  ],
+  [
+    "predict",
+    "To state, guess, or estimate that a specific event will happen in future.",
+    "Meteorologists predict heavy rainfall across western districts over the coming weekend."
+  ],
+  [
+    "preserve",
+    "To maintain something in its original, safe, or existing state without damage.",
+    "Measures were taken to preserve historical monuments against environmental weathering damage."
+  ],
+  [
+    "promote",
+    "To support, encourage, or advance the progress, growth, or popularity of something.",
+    "The charity works to promote health education in developing rural areas."
+  ],
+  [
+    "propose",
+    "To put forward an idea, plan, or suggestion for consideration by others.",
+    "Architects plan to propose a modern layout for the new community centre."
+  ],
+  [
+    "pursue",
+    "To follow, chase, or strive to achieve a goal, career, or interest actively.",
+    "She decided to pursue a professional career in international environmental law."
+  ],
+  [
+    "react",
+    "To act, behave, or respond in a particular way in response to something.",
+    "Investors tended to react nervously to unexpected fluctuations in stock values."
+  ],
+  [
+    "reinforce",
+    "To strengthen, support, or make something stronger by adding extra material or evidence.",
+    "Engineers will reinforce the steel framework to withstand heavy wind forces."
+  ],
+  [
+    "reject",
+    "To refuse to accept, consider, use, or agree to a proposal or idea.",
+    "The committee decided to reject the application due to missing documents."
+  ],
+  [
+    "release",
+    "To allow or enable something or someone to move, escape, or be set free.",
+    "The hospital decided to release the patient after a full recovery."
+  ],
+  [
+    "remain",
+    "To stay in the same place, condition, or state without changing or leaving.",
+    "Participants should remain seated until the presentation has officially concluded."
+  ],
+  [
+    "require",
+    "To need or demand something for a particular purpose or under official rules.",
+    "Certain professional roles require specialized academic qualifications and practical experience."
+  ],
+  [
+    "resolve",
+    "To find a solution, answer, or resolution to a problem, dispute, or issue.",
+    "Mediators met to resolve the dispute between management and factory employees."
+  ],
+  [
+    "respond",
+    "To reply, answer, or react to something that has been said or done.",
+    "Please respond promptly to the invitation so we can finalize numbers."
+  ],
+  [
+    "restrict",
+    "To place limits or control on the size, amount, or freedom of something.",
+    "New traffic laws restrict heavy lorries from driving through residential streets."
+  ],
+  [
+    "retain",
+    "To continue to possess, hold, or keep something rather than losing or giving it.",
+    "The old house manages to retain many of its original architectural features."
+  ],
+  [
+    "reveal",
+    "To make known, uncover, or disclose something that was previously hidden or secret.",
+    "Investigators hope to reveal crucial facts during the press conference today."
+  ],
+  [
+    "simulate",
+    "To imitate, replicate, or reproduce the appearance, conditions, or character of something.",
+    "Flight trainers use computers to simulate flying through severe weather conditions."
+  ],
+  [
+    "specify",
+    "To state, identify, or name explicitly and clearly in exact detail in a clear and straightforward manner for everyone involved.",
+    "Contracts must clearly specify the exact delivery dates for all items."
+  ],
+  [
+    "stimulate",
+    "To encourage, excite, or provoke greater activity, interest, or development in something.",
+    "The new tax policy aims to stimulate economic growth across manufacturing sectors."
+  ],
+  [
+    "submit",
+    "To present or hand in a document, proposal, or form for official consideration.",
+    "Candidates must submit their completed application forms before the Friday deadline."
+  ],
+  [
+    "substitute",
+    "To use, put, or place something or someone in place of another.",
+    "You can substitute olive oil for butter in many traditional Mediterranean recipes."
+  ],
+  [
+    "succeed",
+    "To achieve a desired aim, goal, or result after effort and perseverance.",
+    "With careful planning and dedication, she managed to succeed in business."
+  ],
+  [
+    "suggest",
+    "To put forward an idea, plan, or possibility for consideration by others.",
+    "I suggest we take a short break before continuing our afternoon meeting."
+  ],
+  [
+    "summarise",
+    "To give a brief, concise statement of the main points of something longer.",
+    "At the end of the chapter, students should summarise key findings."
+  ],
+  [
+    "transform",
+    "To make a thorough, marked, or dramatic change in form, appearance, or character.",
+    "Renovation work will transform the old warehouse into bright modern apartments."
+  ],
+  [
+    "trigger",
+    "To cause or initiate an event, reaction, or process to happen suddenly.",
+    "Certain airborne pollen particles can trigger severe allergic reactions in spring."
+  ],
+  [
+    "undergo",
+    "To experience, pass through, or endure a change, test, or process in a clear and straightforward manner for everyone involved.",
+    "Patients must undergo thorough medical examinations prior to undergoing major surgery."
+  ],
+  [
+    "undertake",
+    "To commit oneself to or take on a task, responsibility, or project formally.",
+    "The team agreed to undertake a comprehensive review of current safety procedures."
+  ],
+  [
+    "utilise",
+    "To make practical and effective use of a resource, facility, or skill.",
+    "Solar panels allow homeowners to utilise clean renewable energy for heating."
+  ],
+  [
+    "validate",
+    "To prove, confirm, or officially declare that something is correct or valid.",
+    "Independent research studies helped to validate the safety of the new vaccine."
+  ],
+  [
+    "vary",
+    "To differ in size, amount, degree, or nature from one another or change.",
+    "Prices for fresh produce tend to vary depending on the season."
+  ],
+  [
+    "abundance",
+    "A very large quantity or plentiful supply of something useful or valuable.",
+    "The tropical island boasts an abundance of exotic plant and animal species."
+  ],
+  [
+    "accommodation",
+    "A room, group of rooms, or building in which someone may stay or live.",
+    "The university provides modern student accommodation near the main campus library."
+  ],
+  [
+    "accuracy",
+    "The quality or state of being correct, precise, or free from error.",
+    "Scientists checked their measurements carefully to ensure complete experimental accuracy."
+  ],
+  [
+    "achievement",
+    "Something accomplished successfully, especially through effort, skill, courage, or hard work in a clear and straightforward manner for everyone involved.",
+    "Graduating top of her class was a remarkable personal achievement for her."
+  ],
+  [
+    "acquisition",
+    "The act of obtaining, purchasing, or buying an asset, company, or property.",
+    "The firm announced its latest acquisition of a leading software technology developer."
+  ],
+  [
+    "administration",
+    "The management, organisation, and running of a business, institution, or government system.",
+    "She works in hospital administration handling scheduling and official patient records."
+  ],
+  [
+    "advantage",
+    "A condition, factor, or circumstance that puts one in a favourable position.",
+    "Having fluent language skills gives job applicants a clear competitive advantage."
+  ],
+  [
+    "affection",
+    "A gentle feeling of fondness, warmth, caring, or liking towards another person.",
+    "She looked at her young puppy with deep affection and happiness."
+  ],
+  [
+    "agenda",
+    "A list of items, topics, or tasks to be discussed at a meeting.",
+    "The board members reviewed the printed meeting agenda before beginning discussions."
+  ],
+  [
+    "ambition",
+    "A strong desire, determination, or goal to achieve something great in life.",
+    "His primary ambition is to become a leading surgeon in orthopedic medicine."
+  ],
+  [
+    "analysis",
+    "A detailed examination or study of the elements or structure of something complex.",
+    "The report includes a detailed statistical analysis of recent market trends."
+  ],
+  [
+    "ancestor",
+    "A person from whom one is descended, typically more remote than a grandparent.",
+    "Her distant ancestor arrived in Britain during the early nineteenth century."
+  ],
+  [
+    "anniversary",
+    "The date on which an event took place in a previous year celebrated annually.",
+    "The couple celebrated their golden wedding anniversary with family at dinner."
+  ],
+  [
+    "anxiety",
+    "A feeling of worry, nervousness, or unease about something with an uncertain outcome.",
+    "Yoga and meditation can help reduce personal stress and chronic anxiety levels."
+  ],
+  [
+    "apology",
+    "A regretful acknowledgment of an offence, mistake, or failure to perform an action.",
+    "He sent a written letter of apology to express regret for missing the meeting."
+  ],
+  [
+    "applicant",
+    "A person who formally applies for something, such as a job or university place.",
+    "Each job applicant must submit a detailed CV along with references."
+  ],
+  [
+    "application",
+    "A formal request to an authority for something, like a job or permit.",
+    "Her application for a research grant was approved by the university council."
+  ],
+  [
+    "appreciation",
+    "Recognition and enjoyment of the good qualities, value, or significance of something.",
+    "The artist expressed deep appreciation for the warm reception of her work."
+  ],
+  [
+    "approach",
+    "A way of dealing with or considering a situation, problem, or task.",
+    "We need a completely new strategic approach to solve this complex issue."
+  ],
+  [
+    "approval",
+    "The belief that someone or something is good, or official agreement given.",
+    "The architectural building plans require official council approval before construction starts."
+  ],
+  [
+    "architecture",
+    "The art, science, or style of designing and constructing buildings and physical structures.",
+    "Students of architecture visit historic cities to study diverse building styles."
+  ],
+  [
+    "aspect",
+    "A particular part, feature, side, or phase of a complex matter or subject.",
+    "We must consider every single financial aspect before making our decision."
+  ],
+  [
+    "assessment",
+    "The evaluation or estimation of the nature, quality, value, or ability of something.",
+    "Continuous classroom assessment helps teachers monitor student learning progress throughout the term."
+  ],
+  [
+    "asset",
+    "A useful or valuable quality, skill, person, or piece of physical property.",
+    "Her fluent command of Spanish proved a great asset during trade talks."
+  ],
+  [
+    "assignment",
+    "A piece of work or task allocated to someone as part of job or study.",
+    "Students were given a writing assignment on environmental conservation due next week."
+  ],
+  [
+    "assistance",
+    "Help, support, or aid given to someone to complete a task or activity.",
+    "The elderly resident required medical assistance to walk up the steep stairs."
+  ],
+  [
+    "association",
+    "An official group of people organised for a joint, shared, or common purpose.",
+    "She is an active member of the local sports association in her town."
+  ],
+  [
+    "assumption",
+    "A thing that is accepted as true or certain to happen, without proof.",
+    "His argument rested on the false assumption that prices would remain stable."
+  ],
+  [
+    "atmosphere",
+    "The general mood, feeling, or tone pervading a place, situation, or work of art.",
+    "The candlelit restaurant had a warm, welcoming, and relaxed romantic atmosphere."
+  ],
+  [
+    "attitude",
+    "A settled way of thinking or feeling about something, reflected in behaviour.",
+    "Maintaining a positive attitude can help you overcome challenging personal obstacles."
+  ],
+  [
+    "attraction",
+    "A feature, quality, or place that draws, interests, or pleases visitors and people.",
+    "The ancient castle remains the main tourist attraction in the regional city."
+  ],
+  [
+    "audience",
+    "The assembled spectators or listeners at a public event such as a play or talk.",
+    "The speaker addressed a large audience of medical professionals at the conference."
+  ],
+  [
+    "authority",
+    "The power, right, or official capacity to give orders, make decisions, and enforce obedience.",
+    "Local police have the authority to close roads during emergency weather situations."
+  ],
+  [
+    "capacity",
+    "The maximum amount or number that something can contain, produce, or hold.",
+    "The newly built stadium has a seating capacity of fifty thousand spectators."
+  ],
+  [
+    "category",
+    "A class or division of people or things regarded as having shared characteristics.",
+    "Books in the library are organised neatly into each distinct genre category."
+  ],
+  [
+    "challenge",
+    "A call to prove or test one's ability, strength, or skill in a task.",
+    "Navigating the steep mountain trail presented a difficult physical challenge for hikers."
+  ],
+  [
+    "characteristic",
+    "A typical feature, quality, or trait that helps identify or distinguish something.",
+    "Patience is an essential personal characteristic for anyone working with young children."
+  ],
+  [
+    "charity",
+    "An organisation set up to provide help and raise money for those in need.",
+    "The local charity collected warm winter coats for homeless people in town."
+  ],
+  [
+    "citizen",
+    "A legally recognized subject or national of a state or commonwealth with rights.",
+    "Every citizen over eighteen has the legal right to vote in national elections."
+  ],
+  [
+    "coalition",
+    "A temporary alliance of political parties or groups forming a joint government or effort.",
+    "Several smaller parties formed a coalition to secure a parliamentary majority."
+  ],
+  [
+    "colleague",
+    "A person with whom one works in a profession, business, or office environment.",
+    "She discussed the project with a trusted colleague from her accounting department."
+  ],
+  [
+    "combination",
+    "A joining or merging of different qualities, ideas, elements, or physical objects.",
+    "The dish offers a delicious combination of sweet and savoury seasonal flavours."
+  ],
+  [
+    "commitment",
+    "A dedication or promise to a cause, activity, relationship, or long term duty.",
+    "Demonstrating genuine commitment to your studies leads to academic success over time."
+  ],
+  [
+    "community",
+    "A group of people living in the same place or having a particular characteristic in common.",
+    "The local community organised a cleanup event to improve the neighbourhood park."
+  ],
+  [
+    "comparison",
+    "The act or instance of examining similarities and differences between two or more things.",
+    "A careful comparison of the two products revealed several key functional differences."
+  ],
+  [
+    "compensation",
+    "Money awarded to someone as a recompense for loss, injury, or suffering experienced.",
+    "The company provided financial compensation to customers affected by the service outage."
+  ],
+  [
+    "competition",
+    "An event, contest, or rivalry in which people compete against each other to win.",
+    "Hundreds of talented athletes entered the national swimming competition this year."
+  ],
+  [
+    "complaint",
+    "A statement that something is unsatisfactory or unacceptable regarding a product or service.",
+    "The customer submitted a formal written complaint regarding the delayed delivery."
+  ],
+  [
+    "component",
+    "A constituent part or element of a larger whole, system, or mechanical device.",
+    "Engineers checked every electrical component of the engine before conducting flight tests."
+  ],
+  [
+    "compromise",
+    "An agreement or settlement of a dispute reached by each side making concessions.",
+    "After lengthy discussions, both sides agreed to a fair and sensible compromise."
+  ],
+  [
+    "concept",
+    "An abstract idea, principle, or mental understanding of a general category of things.",
+    "The teacher introduced the basic concept of gravity during the science lesson."
+  ],
+  [
+    "concern",
+    "Anxiety, worry, or interest regarding a matter that affects a person or society.",
+    "Rising noise levels in the city centre caused growing concern among residents."
+  ],
+  [
+    "conclusion",
+    "The end or finish of an event, process, text, or logical reasoning chain.",
+    "In conclusion, the report recommends immediate investment in public transport infrastructure."
+  ],
+  [
+    "condition",
+    "The state of something with regard to its appearance, quality, or working order.",
+    "The old wooden furniture was restored to pristine original condition by experts."
+  ],
+  [
+    "conduct",
+    "The manner in which a person behaves, or the organisation and management of an activity.",
+    "His professional conduct during the crisis earned high praise from senior management."
+  ],
+  [
+    "confidence",
+    "A feeling of self-assurance arising from an appreciation of one's abilities or qualities.",
+    "Public speaking practice helped boost her personal confidence when presenting to groups."
+  ],
+  [
+    "conflict",
+    "A serious disagreement, argument, or battle between opposing principles, ideas, or groups.",
+    "Diplomats worked tirelessly to prevent military conflict between the neighboring nations."
+  ],
+  [
+    "consequence",
+    "A result or effect of an action, condition, or decision occurring beforehand.",
+    "Failing to wear safety gear can lead to a severe physical consequence."
+  ],
+  [
+    "conservation",
+    "The protection and preservation of natural environments, wildlife, or historical artifacts in a clear and straightforward manner for everyone involved.",
+    "The organisation is dedicated to wildlife conservation across tropical forest habitats."
+  ],
+  [
+    "consideration",
+    "Careful thought, deliberation, or attention given to something over a period of time.",
+    "Your proposal is currently under active consideration by the executive committee members."
+  ],
+  [
+    "constraint",
+    "A limitation or restriction that limits or controls what one can do.",
+    "Budgetary constraint prevented the team from hiring additional full time research staff."
+  ],
+  [
+    "construction",
+    "The action or process of building or erecting large structures, roads, or buildings.",
+    "Heavy machinery was brought onto the site as construction of the bridge began."
+  ],
+  [
+    "consumer",
+    "A person who purchases goods and services for personal use rather than resale.",
+    "Modern consumer rights laws protect shoppers against faulty or mislabelled electronic products."
+  ],
+  [
+    "content",
+    "The information, material, ideas, or subject matter contained in a document or medium.",
+    "The website features rich educational content designed specifically for primary school pupils."
+  ],
+  [
+    "context",
+    "The circumstances that form the setting for an event, statement, or idea.",
+    "To understand the quote properly, you must examine its surrounding historical context."
+  ],
+  [
+    "contract",
+    "A written or spoken agreement that is intended to be enforceable by law.",
+    "Both parties signed a binding legal contract before starting the joint venture."
+  ],
+  [
+    "contribution",
+    "A gift, payment, or effort made to help achieve a shared goal or purpose.",
+    "Her research paper made a valuable contribution to climate change scientific literature."
+  ],
+  [
+    "convention",
+    "A way in which something is usually done, or a formal meeting of delegates.",
+    "It is standard literary convention to begin fairy tales with traditional introductory phrases."
+  ],
+  [
+    "cooperation",
+    "The process of working together to the same end or achieving shared goals.",
+    "International cooperation is vital when tackling environmental problems affecting multiple countries."
+  ],
+  [
+    "criterion",
+    "A principle or standard by which something may be judged or decided upon.",
+    "Academic excellence was the primary criterion used when awarding competitive research fellowships."
+  ],
+  [
+    "culture",
+    "The arts, customs, lifestyle, and social institutions of a nation or group of people.",
+    "Visiting museums offers visitors a wonderful chance to experience local historical culture."
+  ],
+  [
+    "currency",
+    "A system of money in general use in a particular country or economy.",
+    "Travellers exchanged their pounds sterling for local currency upon arriving at airport."
+  ],
+  [
+    "debate",
+    "A formal discussion on a particular topic in a public meeting or legislative assembly.",
+    "Parliament held a lengthy public debate regarding proposed changes to taxation law."
+  ],
+  [
+    "decade",
+    "A period of ten consecutive years, often counted as part of a century.",
+    "Technology has advanced at an astonishing rate over the past single decade."
+  ],
+  [
+    "decision",
+    "A conclusion or resolution reached after consideration and deliberation of available options.",
+    "Making a major career decision requires careful thought and weighing of options."
+  ],
+  [
+    "decline",
+    "A gradual and continuous loss of strength, numbers, quality, or economic value.",
+    "The small town experienced a sharp decline in population after factory closures."
+  ],
+  [
+    "definition",
+    "A statement of the exact meaning of a word, phrase, or technical concept.",
+    "Consult a reliable dictionary if you require a precise definition of a term."
+  ],
+  [
+    "degree",
+    "The amount, level, or extent to which something happens or exists in scale.",
+    "To a large degree, success depends on continuous personal effort and determination."
+  ],
+  [
+    "demand",
+    "An insistent and peremptory requirement or the consumer desire for a commodity.",
+    "High consumer demand led to a shortage of fresh organic produce in markets."
+  ],
+  [
+    "demonstration",
+    "An act of showing or explaining how something works, or a public protest.",
+    "The chef gave a live demonstration showing how to prepare fresh hand made pasta."
+  ],
+  [
+    "department",
+    "A specialized division of a large organisation such as a university or company.",
+    "She works in the marketing department handling international social media advertising campaigns."
+  ],
+  [
+    "deposit",
+    "A sum payable as a first payment on the purchase of something, or money in bank.",
+    "You must pay a security deposit before renting the apartment for the year."
+  ],
+  [
+    "description",
+    "A spoken or written representation or account of a person, object, or event.",
+    "The witness provided a clear physical description of the suspect to police officers."
+  ],
+  [
+    "desire",
+    "A strong feeling of wanting to have something or wishing for something to happen.",
+    "She felt a strong desire to travel and explore distant countries around the world."
+  ],
+  [
+    "destination",
+    "The place to which someone or something is going or being sent ultimately.",
+    "After a long journey, the tour coach finally reached its coastal holiday destination."
+  ],
+  [
+    "detail",
+    "An individual feature, fact, or item forming part of a larger whole or report.",
+    "Pay attention to every small detail when preparing official financial audit documents."
+  ],
+  [
+    "determination",
+    "Firmness of purpose, resoluteness, and unwillingness to give up despite obstacles in a clear and straightforward manner for everyone involved.",
+    "Her determination enabled her to complete the marathon despite painful leg cramps."
+  ],
+  [
+    "development",
+    "The process of developing, growing, expanding, or creating new ideas, structures, or products.",
+    "Economic development has brought improved healthcare and education facilities to remote rural districts."
+  ],
+  [
+    "device",
+    "A piece of mechanical or electronic equipment made or adapted for a particular purpose.",
+    "This smart portable electronic device measures air quality and pollution levels indoors."
+  ],
+  [
+    "dialogue",
+    "A conversation between two or more people as a feature of a book or play.",
+    "The play features crisp, witty dialogue between the main leading dramatic actors."
+  ],
+  [
+    "difficulty",
+    "A thing that is hard to accomplish, deal with, or understand; a problem.",
+    "He experienced considerable difficulty in translating the complex technical instructions into plain language."
+  ],
+  [
+    "dimension",
+    "A measurable extent of some kind, such as length, breadth, depth, or height.",
+    "Engineers measured every dimension of the room before ordering custom made wooden furniture."
+  ],
+  [
+    "direction",
+    "A course along which someone or something moves, or instructions for doing something.",
+    "The tour guide pointed in the direction of the historic town hall building."
+  ],
+  [
+    "disaster",
+    "A sudden event, such as an accident or natural catastrophe, causing great damage.",
+    "Prompt emergency response prevented the severe flooding from turning into a total disaster."
+  ],
+  [
+    "discipline",
+    "The practice of training people to obey rules, or a branch of academic knowledge.",
+    "Self discipline is essential if you wish to master a complex musical instrument."
+  ],
+  [
+    "discount",
+    "A deduction from the usual cost of something, typically given to attract buyers.",
+    "Students receive a ten percent discount when purchasing books at the university store."
+  ],
+  [
+    "discovery",
+    "The act of finding or learning something for the first time through research.",
+    "The discovery of ancient gold coins attracted archaeologists from across the nation."
+  ],
+  [
+    "discussion",
+    "The action or process of talking about something in order to reach a decision.",
+    "We had a fruitful discussion about ways to improve workplace health and safety."
+  ],
+  [
+    "distinction",
+    "A difference or contrast between similar things or people, or excellence in a clear and straightforward manner for everyone involved.",
+    "It is important to make a clear distinction between facts and personal opinions."
+  ],
+  [
+    "distribution",
+    "The action of sharing something out among a number of recipients or area.",
+    "The charity oversees the fair distribution of food supplies to disaster affected areas."
+  ],
+  [
+    "diversity",
+    "A range of different things or the state of being diverse and varied.",
+    "The city prides itself on its rich cultural diversity and welcoming inclusive atmosphere."
+  ],
+  [
+    "document",
+    "A piece of written, printed, or electronic matter that provides information or evidence.",
+    "Please sign the legal document at the bottom of the final printed page."
+  ],
+  [
+    "domain",
+    "A specified sphere of activity or knowledge, or territory owned by a ruler.",
+    "Cyber security has become an increasingly critical domain in modern national defence strategy."
+  ],
+  [
+    "draft",
+    "A preliminary version of a piece of writing, scheme, or official document.",
+    "She wrote a quick rough draft of her essay before starting final edits."
+  ],
+  [
+    "duty",
+    "A moral or legal obligation, or a task required by one's job role.",
+    "It is the duty of every citizen to follow environmental recycling guidelines."
+  ],
+  [
+    "economy",
+    "The state of a country or region in terms of production and consumption of goods.",
+    "Tourism plays a vital role in boosting the national economy during summer months."
+  ],
+  [
+    "edition",
+    "A particular form or version in which a book, newspaper, or software is published.",
+    "The publisher released a revised second edition of the popular English grammar textbook."
+  ],
+  [
+    "education",
+    "The process of receiving or giving systematic instruction, especially at a school.",
+    "Quality primary education provides children with essential reading, writing, and arithmetic skills."
+  ],
+  [
+    "effect",
+    "A change which is a result or consequence of an action or other cause.",
+    "The medicine had an immediate positive effect on reducing his fever temperature."
+  ],
+  [
+    "efficiency",
+    "The state or quality of being efficient and achieving maximum productivity with minimal effort.",
+    "The installation of new machinery greatly improved overall factory operational efficiency."
+  ],
+  [
+    "effort",
+    "A vigorous or determined attempt to accomplish or achieve something demanding in a clear and straightforward manner for everyone involved.",
+    "She made a conscious effort to improve her handwriting by practicing every evening."
+  ],
+  [
+    "element",
+    "An essential or characteristic part of something abstract or physical structure in a clear and straightforward manner for everyone involved.",
+    "Trust is a fundamental element in building strong and lasting personal relationships."
+  ],
+  [
+    "emphasis",
+    "Special importance, value, or prominence given to something in speech or action.",
+    "The course places heavy emphasis on developing practical spoken language skills effectively."
+  ],
+  [
+    "employee",
+    "A person employed for wages or salary, especially at non-executive level in a clear and straightforward manner for everyone involved.",
+    "Every full time employee is entitled to four weeks of paid annual leave."
+  ],
+  [
+    "employer",
+    "A person or organisation that employs people for wages or salary compensation.",
+    "The company is a major employer in the region, providing over two thousand jobs."
+  ],
+  [
+    "employment",
+    "The state of having paid work or the act of employing someone.",
+    "The government introduced new initiatives aimed at boosting youth employment across the nation."
+  ],
+  [
+    "energy",
+    "The strength and vitality required for sustained physical or mental activity or power.",
+    "Eating a balanced breakfast provides you with steady energy throughout the morning."
+  ],
+  [
+    "engagement",
+    "An arrangement to do something or go somewhere at a fixed time, or involvement.",
+    "She had a prior formal engagement and unfortunately could not attend the evening dinner."
+  ],
+  [
+    "enterprise",
+    "A project or undertaking, especially one that is bold or requires effort, or business.",
+    "Launching a new technology start-up is a risky but potentially rewarding commercial enterprise."
+  ],
+  [
+    "enthusiasm",
+    "Intense and eager enjoyment, interest, or approval regarding an activity or topic.",
+    "The young students showed great enthusiasm for learning how to code simple games."
+  ],
+  [
+    "entity",
+    "A thing with distinct and independent existence in business, law, or reality.",
+    "The merger combined two smaller firms into a single large corporate entity."
+  ],
+  [
+    "environment",
+    "The surroundings or conditions in which a person, animal, or plant lives or operates.",
+    "We must take immediate action to protect our natural environment from pollution."
+  ],
+  [
+    "equipment",
+    "The necessary items, tools, or apparatus for a particular purpose or activity.",
+    "The gym installed state-of-the-art exercise equipment for all its active members."
+  ],
+  [
+    "error",
+    "A mistake, inaccuracy, or miscalculation in action, judgment, writing, or calculation in a clear and straightforward manner for everyone involved.",
+    "Checking your calculations carefully will help you avoid making a careless mathematical error."
+  ],
+  [
+    "establishment",
+    "An organisation, business, or institution, or the act of establishing something permanently.",
+    "The hotel is a long standing commercial establishment located near the sea front."
+  ],
+  [
+    "estate",
+    "An extensive area of land in the country, usually with a large house.",
+    "The wealthy family owns a vast country estate surrounded by ancient oak forests."
+  ],
+  [
+    "estimate",
+    "An approximate calculation or judgment of the value, number, quantity, or extent of something.",
+    "The builder provided an official written estimate for the cost of house repairs."
+  ],
+  [
+    "evaluation",
+    "The making of a judgment about the amount, number, or value of something.",
+    "At the end of term, teachers complete a comprehensive student academic performance evaluation."
+  ],
+  [
+    "evidence",
+    "The available body of facts or information indicating whether a belief or proposition is true.",
+    "Scientists collected compelling physical evidence supporting the theory of climate warming trends."
+  ],
+  [
+    "evolution",
+    "The gradual development of something, especially from a simple to a more complex form.",
+    "The book traces the historical evolution of computer technology over the past century."
+  ],
+  [
+    "exception",
+    "A person or thing that is excluded from a general statement or does not follow a rule.",
+    "All students must take the test without exception unless holding a doctor certificate."
+  ],
+  [
+    "exchange",
+    "An act of giving one thing and receiving another in return simultaneously.",
+    "The two schools organised a student cultural exchange program during the spring term."
+  ],
+  [
+    "executive",
+    "A person with senior managerial responsibility in a business organisation or government.",
+    "The chief executive announced plans to open three new international branches next year."
+  ],
+  [
+    "exercise",
+    "Activity requiring physical effort, carried out to sustain or improve health and fitness.",
+    "Regular aerobic exercise helps maintain cardiovascular health and manage personal stress levels effectively."
+  ],
+  [
+    "exhibition",
+    "A public display of works of art or items of interest held in museum.",
+    "The art gallery hosted an impressive exhibition featuring contemporary British sculpture works."
+  ],
+  [
+    "existence",
+    "The fact or state of living or having objective reality in time and space.",
+    "Scientists continue to search for signs of life existence on distant outer planets."
+  ],
+  [
+    "expansion",
+    "The action of becoming larger or more extensive in size, volume, or scope.",
+    "Rapid business expansion required the company to recruit fifty new full time staff members."
+  ],
+  [
+    "expectation",
+    "A strong belief that something will happen or be the case in future.",
+    "The team worked hard to meet customer expectation for rapid delivery service times."
+  ],
+  [
+    "expense",
+    "The cost incurred in or required for something; money spent on goods or services.",
+    "Travelling by taxi every day represents a significant unnecessary personal monthly expense."
+  ],
+  [
+    "experience",
+    "Practical contact with and observation of facts or events over a period of time.",
+    "She has over ten years of practical experience working in primary school education."
+  ],
+  [
+    "experiment",
+    "A scientific procedure undertaken to make a discovery, test a hypothesis, or demonstrate a fact.",
+    "Students conducted a chemistry experiment to measure temperature changes during chemical reactions."
+  ],
+  [
+    "expert",
+    "A person who has a comprehensive and authoritative knowledge of or skill in a field.",
+    "The university invited a leading cybersecurity expert to deliver a guest lecture today."
+  ],
+  [
+    "explanation",
+    "A statement or account that makes something clear and easy to comprehend fully.",
+    "The manual provides a clear step-by-step explanation of how to operate the machine."
+  ],
+  [
+    "exposure",
+    "The state of being exposed to contact with something, such as cold or publicity.",
+    "Prolonged skin exposure to direct sunlight without protection can cause severe sunburn damage."
+  ],
+  [
+    "extension",
+    "A part that is added to something to enlarge or prolong it in time or space.",
+    "They submitted building plans to construct a rear ground floor extension on their house."
+  ],
+  [
+    "extent",
+    "The area, length, degree, or scope covered by something physical or abstract.",
+    "The full extent of the storm damage became visible only after flood waters receded."
+  ],
+  [
+    "facility",
+    "A place, amenity, or piece of equipment provided for a particular purpose or activity.",
+    "The new sports facility includes an Olympic sized swimming pool and indoor tennis courts."
+  ],
+  [
+    "factor",
+    "A circumstance, fact, or influence that contributes to a result or outcome.",
+    "Dietary habits play an important factor in maintaining long term personal physical health."
+  ],
+  [
+    "failure",
+    "Lack of success in achieving a goal, or the omission of expected action.",
+    "Engine failure caused the flight to make an emergency landing at the nearest airport."
+  ],
+  [
+    "feature",
+    "A distinctive attribute, aspect, quality, or prominent aspect of something in a clear and straightforward manner for everyone involved.",
+    "The smartphone's most popular feature is its high resolution digital camera system."
+  ],
+  [
+    "feedback",
+    "Information about reactions to a product, a person's performance, used as a basis for improvement.",
+    "Constructive customer feedback helped the development team refine the application interface significantly."
+  ],
+  [
+    "figure",
+    "A number, statistical digit, or the official shape or form of a person or object.",
+    "Sales figures for the fourth quarter exceeded company financial projections by ten percent."
+  ],
+  [
+    "finance",
+    "The management of large amounts of money, especially by governments or large companies.",
+    "He decided to study international economics and corporate finance at university in London."
+  ],
+  [
+    "finding",
+    "A conclusion reached as a result of an official inquiry, investigation, or scientific research.",
+    "The primary research finding indicated that sleep deprivation negatively impacts cognitive focus."
+  ],
+  [
+    "foundation",
+    "The lowest load-bearing part of a building, or an underlying basis or principle.",
+    "Concrete workers poured the deep building foundation before erecting steel structural beams."
+  ],
+  [
+    "framework",
+    "An essential supporting structure of a building, vehicle, or logical system of rules.",
+    "The agreement provides a clear policy framework for future international environmental trade negotiations."
+  ],
+  [
+    "frequency",
+    "The rate at which something occurs or is repeated over a particular period.",
+    "The bus company increased service frequency during peak morning and evening travel hours."
+  ],
+  [
+    "function",
+    "An activity or purpose natural to or intended for a person or thing.",
+    "The main function of the heart is to pump blood throughout the human body."
+  ],
+  [
+    "fund",
+    "A sum of money saved or made available for a particular purpose or project.",
+    "The local council established a special fund to support community art projects."
+  ],
+  [
+    "guidance",
+    "Advice or information aimed at resolving a problem or difficulty, given by someone authoritative.",
+    "Careers advisors offer helpful professional guidance to students choosing university degree subjects."
+  ],
+  [
+    "horizon",
+    "The line at which the earth's surface and the sky appear to meet.",
+    "The sun sank slowly below the ocean horizon as evening fell across the coastal bay."
+  ],
+  [
+    "incentive",
+    "A thing that motivates or encourages someone to do something or work harder.",
+    "The company offered a generous financial incentive to staff who met annual sales targets."
+  ],
+  [
+    "incident",
+    "An event or occurrence, especially one that is unusual, important, or violent.",
+    "Police officers arrived quickly on the scene to investigate the traffic incident on the highway."
+  ],
+  [
+    "initiative",
+    "The ability to assess and initiate things independently, or a new fresh strategy.",
+    "She took the personal initiative to organise a charity fundraising event at her school."
+  ],
+  [
+    "institution",
+    "An organisation founded for a religious, educational, professional, or social purpose in a clear and straightforward manner for everyone involved.",
+    "The museum is a prestigious cultural institution dedicated to preserving national historical treasures."
+  ],
+  [
+    "instruction",
+    "Detailed information telling how something should be done, operated, or performed correctly.",
+    "Follow each printed safety instruction carefully before attempting to assemble the self assembly furniture."
+  ],
+  [
+    "insurance",
+    "An arrangement by which a company provides a guarantee of compensation for specified loss.",
+    "It is essential to arrange comprehensive travel insurance before embarking on trips overseas."
+  ],
+  [
+    "interaction",
+    "Reciprocal action, effect, or communication between two or more people or things.",
+    "Social interaction with peers plays a vital role in childhood personal development."
+  ],
+  [
+    "investment",
+    "The action or process of investing money for profit or material result.",
+    "Buying property in growing cities is often regarded as a safe long term financial investment."
+  ]
+]

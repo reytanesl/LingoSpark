@@ -1,0 +1,2502 @@
+[
+  [
+    "ephemeral",
+    "Lasting for a very short period of time and fading quickly from existence, experience, or memory.",
+    "The beauty of a sunset is ephemeral, lasting only a few moments before night falls."
+  ],
+  [
+    "ubiquitous",
+    "Present, appearing, or found everywhere at the same time across a given social or physical environment.",
+    "Mobile phones have become ubiquitous in modern society, with almost everyone owning one."
+  ],
+  [
+    "pragmatic",
+    "Solving problems in a sensible, realistic, and practical way rather than following strict theoretical rules.",
+    "She took a pragmatic approach to the budget crisis, cutting unnecessary expenses immediately."
+  ],
+  [
+    "eloquent",
+    "Expressing ideas clearly, gracefully, persuasively, and forcefully in speech or formal written work within formal, academic, or professional contexts.",
+    "The speaker gave an eloquent presentation that inspired everyone in the auditorium."
+  ],
+  [
+    "meticulous",
+    "Showing great attention to detail and ensuring that every single aspect is thoroughly correct.",
+    "The scientist kept meticulous records of every experiment conducted in the laboratory."
+  ],
+  [
+    "ambiguous",
+    "Having more than one possible meaning, thereby causing uncertainty, hesitation, or confusion for the reader.",
+    "The instructions were ambiguous, leaving the students confused about what to do next."
+  ],
+  [
+    "resilient",
+    "Able to withstand or recover quickly from difficult conditions, unexpected setbacks, or severe hardship.",
+    "The local community proved resilient after the severe storm damaged several homes."
+  ],
+  [
+    "unprecedented",
+    "Never done, experienced, or known before, thereby setting a completely new standard or historical record.",
+    "The company experienced unprecedented growth over the past year, doubling its profits."
+  ],
+  [
+    "scrutinise",
+    "To examine, study, or inspect something very closely and thoroughly in order to detect any flaws.",
+    "Auditors will scrutinise the financial reports before approving the annual statement."
+  ],
+  [
+    "alleviate",
+    "To make pain, suffering, distress, or a difficult situation significantly less severe or more manageable.",
+    "Taking medicine can help alleviate the painful symptoms of a cold."
+  ],
+  [
+    "juxtapose",
+    "To place two contrasting things close together in order to highlight their similarities or differences.",
+    "The gallery choice was to juxtapose modern abstract art with classical oil paintings."
+  ],
+  [
+    "perpetuate",
+    "To cause an attitude, belief, myth, or situation to continue indefinitely over a long period.",
+    "Spreading false rumors will only perpetuate misunderstandings between the two groups."
+  ],
+  [
+    "idiosyncratic",
+    "Relating to a personal characteristic, distinctive habit, or mannerism that is peculiar to an individual.",
+    "His idiosyncratic style of writing made his essays instantly recognisable to his teacher."
+  ],
+  [
+    "magnanimous",
+    "Generous, noble, and forgiving, especially towards a defeated rival or less powerful person within formal, academic, or professional contexts.",
+    "The championship winner was magnanimous in victory, praising his opponent's hard work."
+  ],
+  [
+    "lucid",
+    "Expressed clearly and easy to understand, showing rational thinking, coherence, and intellectual clarity within formal, academic, or professional contexts.",
+    "The textbook offered a lucid explanation of complex economic principles."
+  ],
+  [
+    "tenacious",
+    "Holding tightly to a goal, opinion, or position with immense determination, persistence, and firmness.",
+    "She was a tenacious investigator who refused to give up until she found the truth."
+  ],
+  [
+    "volatile",
+    "Liable to change rapidly, unexpectedly, and dramatically, especially for the worse or in violent ways.",
+    "Stock prices remained volatile throughout the week due to international market uncertainty."
+  ],
+  [
+    "aesthetic",
+    "Connected with beauty, art, visual harmony, and the formal appreciation of artistic taste or appearance.",
+    "The architect focused on both functional utility and aesthetic appeal when designing the building."
+  ],
+  [
+    "fastidious",
+    "Very attentive to accuracy, cleanliness, and minor details, often difficult to satisfy completely within formal, academic, or professional contexts.",
+    "He was fastidious about cleanliness, spending hours scrubbing the kitchen every evening."
+  ],
+  [
+    "esoteric",
+    "Intended for or understood by only a small, specialized group of people with specialized knowledge.",
+    "The professor delivered an esoteric lecture on ancient philosophy that bewildered undergraduates."
+  ],
+  [
+    "ostentatious",
+    "Characterised by pretentious, vulgar, or showy display designed to impress others or attract public attention.",
+    "She wore an ostentatious diamond necklace to the casual family dinner."
+  ],
+  [
+    "gregarious",
+    "Fond of company, highly sociable, and naturally enjoying being surrounded by other people within formal, academic, or professional contexts.",
+    "His gregarious nature made him popular at social gatherings and school events."
+  ],
+  [
+    "taciturn",
+    "Reserved, quiet, or uncommunicative in speech, saying very little in social situations or gatherings.",
+    "The quiet old man was taciturn, preferring to listen rather than speak during discussions."
+  ],
+  [
+    "dogmatic",
+    "Asserting opinions or principles as undeniably true without considering alternative perspectives, evidence, or reasoning.",
+    "He held dogmatic views on political matters, refusing to engage in open debate."
+  ],
+  [
+    "benign",
+    "Gentle and kindly in disposition, or not causing harm, damage, or disease in medical contexts.",
+    "The doctor reassured the patient that the small growth was entirely benign."
+  ],
+  [
+    "malevolent",
+    "Having, showing, or arising from a intense desire to cause harm, ill will, or evil.",
+    "The villain in the story harboured malevolent intentions against the peaceful kingdom."
+  ],
+  [
+    "benevolent",
+    "Kind, helpful, and generous, driven by a genuine desire to do good for other people.",
+    "A benevolent donor provided funding for the new children's library in town."
+  ],
+  [
+    "succinct",
+    "Expressed in a brief, direct, and clear manner, without employing unnecessary or redundant words.",
+    "The manager gave a succinct summary of the project goals in five minutes."
+  ],
+  [
+    "candid",
+    "Truthful, frank, and straightforward, expressing thoughts openly without concealment, hesitation, or deception within formal, academic, or professional contexts.",
+    "During the interview, the author gave a candid account of her early struggles."
+  ],
+  [
+    "arbitrary",
+    "Based on random choice, chance, or personal whim, rather than any logic, reason, or system.",
+    "The decision to end the meeting early felt completely arbitrary to the team."
+  ],
+  [
+    "pervasive",
+    "Spreading widely throughout an area, society, or group of people, affecting nearly everything present.",
+    "The pervasive influence of technology has changed how people communicate daily."
+  ],
+  [
+    "insidious",
+    "Proceeding in a gradual, subtle, or covert way, but developing very harmful or dangerous effects.",
+    "High blood pressure can be an insidious condition because symptoms often go unnoticed."
+  ],
+  [
+    "transient",
+    "Lasting only for a short time, fleeting, temporary, or impermanent in physical or mental nature.",
+    "The warm weather was transient, as cold rain returned the following morning."
+  ],
+  [
+    "redundant",
+    "Not or no longer needed, useful, or necessary, being superfluous or repetitive within context.",
+    "Removing redundant phrases from your writing makes sentences clearer and stronger."
+  ],
+  [
+    "feasible",
+    "Possible and practical to do easily or conveniently, achievable within given physical or financial constraints.",
+    "The engineers confirmed that building the new bridge was technically feasible."
+  ],
+  [
+    "plausible",
+    "Seeming reasonable, probable, or worthy of belief based on available logic, facts, or evidence.",
+    "The detective listened carefully to her plausible explanation for being late."
+  ],
+  [
+    "precarious",
+    "Not securely held or positioned, dangerously likely to fall, collapse, or suffer harm within formal, academic, or professional contexts.",
+    "The vase sat in a precarious position near the edge of the wooden table."
+  ],
+  [
+    "formidable",
+    "Inspiring fear, awe, or respect through being impressively large, powerful, intense, or capable within formal, academic, or professional contexts.",
+    "The chess player faced a formidable opponent who had won three world titles."
+  ],
+  [
+    "rudimentary",
+    "Involving or limited to basic principles, underdeveloped, or remaining in early developmental stages within formal, academic, or professional contexts.",
+    "He possessed only a rudimentary knowledge of German before moving to Berlin."
+  ],
+  [
+    "extraneous",
+    "Irrelevant, unrelated, or disconnected to the specific subject or topic being dealt with within formal, academic, or professional contexts.",
+    "Please eliminate extraneous details from your report to keep it focused."
+  ],
+  [
+    "superfluous",
+    "Unnecessary and unwanted, especially through being more than enough or redundant within context within formal, academic, or professional contexts.",
+    "Adding extra adjectives to the sentence was superfluous and slowed down the narrative."
+  ],
+  [
+    "contingent",
+    "Subject to chance, or dependent on uncertain conditional events occurring in the future within formal, academic, or professional contexts.",
+    "Our outdoor picnic plans are contingent on the weather remaining clear tomorrow."
+  ],
+  [
+    "quintessential",
+    "Representing the most perfect, central, or typical example of a particular quality, style, or class.",
+    "The historic village with thatched cottages is the quintessential British countryside location."
+  ],
+  [
+    "auspicious",
+    "Conducive to success, showing or suggesting that future success or good fortune is likely.",
+    "Winning the first game of the season was an auspicious start for the young team."
+  ],
+  [
+    "detrimental",
+    "Tending to cause harm, damage, injury, or disadvantage to someone or something over time.",
+    "Lack of adequate sleep can have a detrimental effect on academic performance."
+  ],
+  [
+    "scrupulous",
+    "Extremely attentive to details, or showing strict regard for moral, ethical, or professional standards.",
+    "The journalist was scrupulous about checking every fact before publishing the article."
+  ],
+  [
+    "intricate",
+    "Very complicated, detailed, or delicate, consisting of many complex interconnected elements or parts within formal, academic, or professional contexts.",
+    "The rug featured an intricate pattern of flowers and geometric shapes."
+  ],
+  [
+    "comprehensive",
+    "Including or dealing with all or nearly all elements, aspects, or details of something thoroughly.",
+    "The guide provides a comprehensive overview of European history from 1900 onward."
+  ],
+  [
+    "coherent",
+    "Logical, articulate, and consistent, forming a clear, unified, and easily understandable overall whole within formal, academic, or professional contexts.",
+    "She presented a coherent argument that convinced the board to approve the proposal."
+  ],
+  [
+    "lucrative",
+    "Producing a great deal of financial profit, substantial wealth, or valuable commercial gain within formal, academic, or professional contexts.",
+    "The tech startup proved to be a lucrative investment for early shareholders."
+  ],
+  [
+    "subtle",
+    "So delicate, understated, or precise as to be difficult to analyse, detect, or describe directly.",
+    "There was a subtle difference in flavour between the two varieties of tea."
+  ],
+  [
+    "ambivalent",
+    "Having mixed feelings or contradictory ideas simultaneously about a particular person, object, or topic.",
+    "He felt ambivalent about moving to a new city for work, torn between excitement and fear."
+  ],
+  [
+    "rigorous",
+    "Extremely thorough, exhaustive, strict, or demanding in action, judgment, testing, or procedure within formal, academic, or professional contexts.",
+    "The academic journal subjects all submitted articles to a rigorous peer review process."
+  ],
+  [
+    "empirical",
+    "Based on, concerned with, or verifiable by direct observation or experiment rather than theory alone.",
+    "The researchers gathered empirical evidence to test their hypothesis about climate change."
+  ],
+  [
+    "erratic",
+    "Not even, regular, or consistent in pattern or movement, highly unpredictable in behavior within formal, academic, or professional contexts.",
+    "The driver's erratic movements on the motorway attracted the attention of police officers."
+  ],
+  [
+    "stringent",
+    "Strict, precise, exacting, and demanding regarding regulations, legal requirements, or financial constraints within formal, academic, or professional contexts.",
+    "The school enforced stringent rules regarding attendance and submission deadlines."
+  ],
+  [
+    "tangible",
+    "Perceptible by touch, or clearly real, definite, concrete, and measurable in practical experience within formal, academic, or professional contexts.",
+    "The new marketing campaign produced tangible improvements in sales performance."
+  ],
+  [
+    "intangible",
+    "Unable to be physically touched or grasped, having no physical presence or material substance.",
+    "Company culture is an intangible asset that significantly influences staff morale."
+  ],
+  [
+    "standardise",
+    "To cause different things to conform to a single uniform model, guideline, or rule.",
+    "The board decided to standardise testing across all secondary schools in the district."
+  ],
+  [
+    "prioritise",
+    "To treat something as more important than other matters when allocating time or resources.",
+    "You must learn to prioritise urgent tasks to manage your workload effectively."
+  ],
+  [
+    "synthesise",
+    "To combine a range of different ideas, facts, styles, or substances into a single entity.",
+    "Students were asked to synthesise information from three separate articles into one essay."
+  ],
+  [
+    "analyse",
+    "To examine methodically and in detail the structure, constitution, or data of something within formal, academic, or professional contexts.",
+    "Data analysts will analyse consumer spending habits to identify emerging trends."
+  ],
+  [
+    "emphasise",
+    "To give special importance, value, stress, or prominence to something in speech or writing.",
+    "The headteacher wished to emphasise the importance of punctuality and discipline."
+  ],
+  [
+    "minimise",
+    "To reduce something, especially something unwanted or harmful, to the smallest possible amount within formal, academic, or professional contexts.",
+    "Wearing a seatbelt helps to minimise the risk of severe injury during a car crash."
+  ],
+  [
+    "maximise",
+    "To make the best use of or increase something to the highest degree or capacity.",
+    "The company revised its business model to maximise efficiency and quarterly profits."
+  ],
+  [
+    "recognise",
+    "To identify someone or something from previous encounter, study, or prior personal knowledge within formal, academic, or professional contexts.",
+    "She was able to recognise her former primary teacher despite many years passing."
+  ],
+  [
+    "summarise",
+    "To give a brief, clear statement of the main points or conclusions of something longer.",
+    "At the end of the meeting, the chairperson will summarise the key decisions made."
+  ],
+  [
+    "realise",
+    "To become fully aware of something as a fact, or to fulfill an ambition.",
+    "It took several minutes for him to realise that he had left his keys behind."
+  ],
+  [
+    "capitalise",
+    "To take full advantage of an opportunity or situation to gain a personal benefit.",
+    "The young entrepreneur decided to capitalise on the rising demand for organic products."
+  ],
+  [
+    "characterise",
+    "To describe or represent the distinctive nature, features, or qualities of someone or something.",
+    "Historians characterise the Victorian era as a period of rapid industrial growth."
+  ],
+  [
+    "categorise",
+    "To place something into a particular class, order, or group based on shared characteristics.",
+    "Librarians categorise books by genre and author to help visitors find them easily."
+  ],
+  [
+    "revitalise",
+    "To imbue something with new life, vitality, energy, or economic strength after decline within formal, academic, or professional contexts.",
+    "The council launched an initiative to revitalise the run-down town centre."
+  ],
+  [
+    "endeavour",
+    "To try hard to do, achieve, or accomplish something through sustained, dedicated effort within formal, academic, or professional contexts.",
+    "The team will endeavour to complete the construction work before winter begins."
+  ],
+  [
+    "harbour",
+    "To keep a thought, feeling, doubt, or secret intention secretly in one's mind over time.",
+    "He did not harbour any resentment towards his colleagues after losing the election."
+  ],
+  [
+    "behaviour",
+    "The way in which one acts or conducts oneself towards others within social environments.",
+    "Good behaviour in the classroom is essential for creating a productive learning environment."
+  ],
+  [
+    "rigour",
+    "The quality of being extremely thorough, strict, demanding, or intellectually precise in work within formal, academic, or professional contexts.",
+    "Scientific research demands intellectual rigour to ensure that conclusions are valid."
+  ],
+  [
+    "vigour",
+    "Physical strength, robust health, vital energy, or enthusiasm in performing an activity or duty.",
+    "The old man pursued his gardening hobbies with youthful vigour and dedication."
+  ],
+  [
+    "candour",
+    "The quality of being open, honest, sincere, and straightforward in personal expression or speech.",
+    "The manager appreciated her candour when discussing the flaws in the project plan."
+  ],
+  [
+    "favour",
+    "An act of kindness beyond what is due or expected, or approval and support.",
+    "She asked her neighbour for a small favour while she was away on holiday."
+  ],
+  [
+    "splendour",
+    "Magnificent, grand, and impressive appearance, beauty, dignity, or richness of visual detail within formal, academic, or professional contexts.",
+    "Tourists marveled at the architectural splendour of the ancient royal palace."
+  ],
+  [
+    "demeanour",
+    "Outward behaviour, bearing, attitude, or conduct toward other people in social situations within formal, academic, or professional contexts.",
+    "Her calm demeanour reassured the passengers during the turbulent airplane flight."
+  ],
+  [
+    "fervour",
+    "Passionate intensity of feeling, zeal, enthusiasm, or devotion toward a particular cause within formal, academic, or professional contexts.",
+    "The fans cheered with great fervour when their team scored the winning goal."
+  ],
+  [
+    "anomaly",
+    "Something that deviates noticeably from what is standard, normal, expected, or typical in context.",
+    "The sudden spike in temperature was an anomaly compared to seasonal averages."
+  ],
+  [
+    "catalyst",
+    "A person, event, or thing that precipitates a change without being consumed itself within formal, academic, or professional contexts.",
+    "The new law acted as a catalyst for economic reform across the entire region."
+  ],
+  [
+    "paradox",
+    "A seemingly absurd or self-contradictory statement that on investigation may prove logically well founded.",
+    "It is a curious paradox that resting can sometimes make a person feel more exhausted."
+  ],
+  [
+    "dichotomy",
+    "A sharp division or contrast between two things that are represented as completely opposed.",
+    "The book explores the dichotomy between nature and nurture in human development."
+  ],
+  [
+    "paradigm",
+    "A typical pattern, overarching model, or accepted conceptual framework within a specific discipline within formal, academic, or professional contexts.",
+    "The discovery of electricity caused a paradigm shift in industrial production methods."
+  ],
+  [
+    "discrepancy",
+    "An illogical, unexpected, or confusing variance between two facts, figures, or official accounts within formal, academic, or professional contexts.",
+    "The accountant noticed a significant discrepancy between the receipts and total bank balance."
+  ],
+  [
+    "hierarchy",
+    "A system in which members of an organisation are ranked according to authority within formal, academic, or professional contexts.",
+    "Promotions within the corporate hierarchy were based on merit and performance."
+  ],
+  [
+    "nuance",
+    "A subtle difference in or shade of meaning, expression, tone, feeling, or color within formal, academic, or professional contexts.",
+    "A skilled translator understands every delicate nuance of language in literature."
+  ],
+  [
+    "precedence",
+    "The condition of being considered more important or urgent than someone or something else.",
+    "Safety concerns must take precedence over speed when designing passenger aircraft."
+  ],
+  [
+    "consensus",
+    "A general agreement reached by all members of a group through open debate within formal, academic, or professional contexts.",
+    "After hours of debate, the committee finally reached a consensus on the new policy."
+  ],
+  [
+    "rationale",
+    "A fundamental set of reasons or a logical basis for a course of action.",
+    "The director explained the rationale behind restructuring the company's regional offices."
+  ],
+  [
+    "prerequisite",
+    "A thing that is required as a prior condition before something else can happen.",
+    "Passing the basic mathematics course is a prerequisite for enrolling in advanced physics."
+  ],
+  [
+    "manifestation",
+    "An event, action, or physical object that clearly shows or embodies an abstract idea.",
+    "The festival was a vibrant manifestation of the city's rich cultural heritage."
+  ],
+  [
+    "synthesis",
+    "The combination of diverse components or elements to form a connected, unified whole within formal, academic, or professional contexts.",
+    "Her final essay was a brilliant synthesis of history, literature, and sociology."
+  ],
+  [
+    "hypothesis",
+    "A proposed explanation made on the basis of limited evidence as a starting point.",
+    "The biologist conducted experiments to test her hypothesis about plant growth rates."
+  ],
+  [
+    "premise",
+    "A previous statement or proposition from which another logic is inferred as a conclusion.",
+    "The debate rested on the premise that all citizens deserve equal educational access."
+  ],
+  [
+    "implication",
+    "A likely consequence, outcome, or indirect suggestion arising from a decision or event within formal, academic, or professional contexts.",
+    "The new regulations have a serious implication for small businesses operating locally."
+  ],
+  [
+    "repercussion",
+    "An unintended, indirect consequence occurring some time after a specific event or action within formal, academic, or professional contexts.",
+    "The decision to close the factory had a severe economic repercussion on the town."
+  ],
+  [
+    "impediment",
+    "A hindrance, obstruction, or difficulty in doing something or making steady progress within formal, academic, or professional contexts.",
+    "Lack of funding proved to be a major impediment to completing the research project."
+  ],
+  [
+    "inclination",
+    "A person's natural tendency, mood, or urge to act or feel in a particular way.",
+    "He resisted his initial inclination to argue and listened calmly instead."
+  ],
+  [
+    "propensity",
+    "An inclination or natural tendency to behave in a particular or predictable way within formal, academic, or professional contexts.",
+    "She showed a propensity for music at a very young age, learning piano quickly."
+  ],
+  [
+    "vulnerability",
+    "The state or condition of being exposed to the possibility of harm or attack.",
+    "The software update patched a critical security vulnerability in the system."
+  ],
+  [
+    "deficit",
+    "The amount by which something, especially a sum of money, is far too small.",
+    "The nation worked hard to reduce its trade deficit over the following decade."
+  ],
+  [
+    "surplus",
+    "An amount of something left over when requirements have been fully satisfied in context.",
+    "Farmers enjoyed a surplus of wheat following an unusually warm and sunny summer."
+  ],
+  [
+    "equilibrium",
+    "A state in which opposing forces, influences, or emotional factors are perfectly balanced within formal, academic, or professional contexts.",
+    "Yoga helps practitioners maintain mental and physical equilibrium during stressful periods."
+  ],
+  [
+    "fluctuation",
+    "An irregular rise and fall in number, amount, level, position, or financial value within formal, academic, or professional contexts.",
+    "The seasonal fluctuation in temperature makes dressing appropriately in autumn challenging."
+  ],
+  [
+    "magnitude",
+    "The great size, extent, spatial importance, or quantitative degree of something observable within formal, academic, or professional contexts.",
+    "It took time for the team to grasp the full magnitude of their scientific discovery."
+  ],
+  [
+    "proportion",
+    "A part, share, or number considered in comparative relation to a larger whole within formal, academic, or professional contexts.",
+    "A large proportion of the student body participated in the annual charity run."
+  ],
+  [
+    "threshold",
+    "A point of entry, or the limit at which something begins to happen within formal, academic, or professional contexts.",
+    "Crossing the threshold into adulthood brings both new freedoms and significant responsibilities."
+  ],
+  [
+    "trajectory",
+    "The path followed by a moving object or a person's development over time within formal, academic, or professional contexts.",
+    "The career trajectory of the young scientist ascended rapidly after her breakthrough paper."
+  ],
+  [
+    "variance",
+    "The fact, state, or quality of being different, divergent, or inconsistent in form within formal, academic, or professional contexts.",
+    "There was significant variance in exam scores across different schools in the county."
+  ],
+  [
+    "advocate",
+    "To publicly recommend, support, or speak in favour of a policy, right, or cause.",
+    "Doctors strongly advocate eating a balanced diet and exercising regularly for good health."
+  ],
+  [
+    "articulate",
+    "To express an idea, feeling, or thought fluently, clearly, and coherently in words within formal, academic, or professional contexts.",
+    "She was able to articulate her vision for the company during the board presentation."
+  ],
+  [
+    "consolidate",
+    "To make something physically stronger or more solid, or combine different resources into one.",
+    "The merger allowed the two firms to consolidate their market position across Europe."
+  ],
+  [
+    "corroborate",
+    "To confirm or give additional support to a statement, theory, or finding with evidence.",
+    "Witness statements helped to corroborate the suspect's account of events on that night."
+  ],
+  [
+    "delineate",
+    "To describe, portray, or outline something precisely, or mark out a physical boundary within formal, academic, or professional contexts.",
+    "The contract clearly delineate duties and responsibilities for each project member."
+  ],
+  [
+    "depict",
+    "To represent, show, or portray something in a picture, drawing, painting, or story within formal, academic, or professional contexts.",
+    "The mural chosen was to depict scenes from local history along the town hall wall."
+  ],
+  [
+    "substantiate",
+    "To provide solid evidence or facts to prove or support the truth of a claim.",
+    "The researcher brought forward additional data to substantiate her bold scientific claim."
+  ],
+  [
+    "vindicate",
+    "To clear someone of blame or suspicion, or prove that a decision was right.",
+    "New evidence surfaced that served to vindicate the wrongly accused man completely."
+  ],
+  [
+    "contemplate",
+    "To look thoughtfully at something or think deeply about a future decision or plan.",
+    "She sat by the window to contemplate her future options after finishing university."
+  ],
+  [
+    "elucidate",
+    "To make something clear or easy to understand by explaining it in thorough detail.",
+    "The professor offered to elucidate the complex mathematical formula during office hours."
+  ],
+  [
+    "expound",
+    "To present and explain a theory, idea, or belief systematically and in detail within formal, academic, or professional contexts.",
+    "The philosopher spent years traveling to expound his views on human ethics."
+  ],
+  [
+    "reiterate",
+    "To say something again or a number of times, typically for clarity or emphasis.",
+    "The teacher took a moment to reiterate the safety guidelines before the experiment began."
+  ],
+  [
+    "formulate",
+    "To create, prepare, or devise something methodically, such as a plan, law, or strategy.",
+    "Scientists worked endlessly to formulate an effective vaccine against the new virus strain."
+  ],
+  [
+    "initiate",
+    "To cause a process, action, or project to begin, or admit someone into a group.",
+    "The government decided to initiate a national campaign promoting renewable energy sources."
+  ],
+  [
+    "originate",
+    "To have a specified beginning, creation, or origin in a specific place or time.",
+    "Many modern festive customs originate from ancient traditional harvest celebrations across Europe."
+  ],
+  [
+    "cultivate",
+    "To try to acquire, develop, foster, or nurture a quality, skill, or social relationship.",
+    "The school encourages students to cultivate a lifelong love of reading and inquiry."
+  ],
+  [
+    "foster",
+    "To encourage the development or growth of something desirable like a supportive environment within formal, academic, or professional contexts.",
+    "Teachers strive to foster creativity and critical thinking within their classroom discussions."
+  ],
+  [
+    "nurture",
+    "To care for and encourage the growth or development of someone or something over time.",
+    "Parents work hard to nurture their children's talents and self-confidence over time."
+  ],
+  [
+    "facilitate",
+    "To make an action, process, or task easier, smoother, or more efficient to accomplish.",
+    "Modern digital tools help facilitate smooth communication between remote team members."
+  ],
+  [
+    "expedite",
+    "To make an action or process happen much more quickly or efficiently than usual.",
+    "Paying extra for express delivery will expedite the arrival of your order."
+  ],
+  [
+    "hamper",
+    "To hinder, delay, or impede the movement, progress, or action of something or someone.",
+    "Heavy snowfall threatens to hamper rescue efforts following the mountain avalanche yesterday."
+  ],
+  [
+    "impede",
+    "To delay, obstruct, or prevent someone or something by creating physical or situational difficulty.",
+    "Fallen trees on the tracks continue to impede train services throughout the county."
+  ],
+  [
+    "constrain",
+    "To severely restrict, limit, or control the scope, extent, or activity of something within formal, academic, or professional contexts.",
+    "Budget limitations constrain our ability to hire additional staff for the new branch."
+  ],
+  [
+    "curtail",
+    "To reduce in extent, duration, or quantity, or impose a strict restriction on something.",
+    "Bad weather forced the organizers to curtail the outdoor music festival by two hours."
+  ],
+  [
+    "undermine",
+    "To lessen the effectiveness, power, authority, or stability of someone or something gradually within formal, academic, or professional contexts.",
+    "Constant public criticism served to undermine confidence in the government's economic plan."
+  ],
+  [
+    "exacerbate",
+    "To make a problem, bad situation, or negative feeling worse, harsher, or more intense.",
+    "Spreading rumors will only exacerbate the existing tension between the two rival teams."
+  ],
+  [
+    "mitigate",
+    "To make something bad, severe, or painful less harsh, damaging, or severe within formal, academic, or professional contexts.",
+    "Planting trees along riverbanks helps mitigate the devastating impact of seasonal flooding."
+  ],
+  [
+    "rectify",
+    "To put something right, correct a mistake, or remedy an undesirable situation promptly within formal, academic, or professional contexts.",
+    "The customer service representative promised to rectify the billing error promptly."
+  ],
+  [
+    "resolve",
+    "To settle or find a solution to a problem, dispute, or contentious matter definitively.",
+    "Mediation helped the two neighbours resolve their dispute over property boundary lines."
+  ],
+  [
+    "reconcile",
+    "To restore friendly relations between people or make two coexisting ideas compatible together within formal, academic, or professional contexts.",
+    "It was difficult to reconcile her career ambitions with her personal family commitments."
+  ],
+  [
+    "harmonise",
+    "To bring two or more things into agreement, order, consistency, or pleasing combination within formal, academic, or professional contexts.",
+    "The new regulations aim to harmonise employment standards across all member states."
+  ],
+  [
+    "accommodate",
+    "To provide sufficient space or housing for someone, or adjust to fit their needs.",
+    "The hotel expanded its facilities to accommodate larger conferences and business gatherings."
+  ],
+  [
+    "adapt",
+    "To make suitable for a new use or purpose, or adjust to new conditions.",
+    "Animals must adapt to changing environmental conditions to survive over long periods."
+  ],
+  [
+    "modify",
+    "To make partial, minor, or structural changes to something to improve its functionality within formal, academic, or professional contexts.",
+    "The architect agreed to modify the blueprints to allow more natural light inside."
+  ],
+  [
+    "alter",
+    "To change or cause to change in character, position, or appearance slightly within formal, academic, or professional contexts.",
+    "The tailor agreed to alter the suit jacket so that it fitted perfectly."
+  ],
+  [
+    "transform",
+    "To make a thorough or dramatic change in the form, appearance, or character within formal, academic, or professional contexts.",
+    "Renovations promise to transform the old warehouse into a modern community art centre."
+  ],
+  [
+    "pioneer",
+    "To be among the first to explore, develop, or apply a new method within formal, academic, or professional contexts.",
+    "Dr Smith helped pioneer surgical techniques that saved thousands of lives worldwide."
+  ],
+  [
+    "spearhead",
+    "To lead an attack, initiative, campaign, or movement with great energy and direction within formal, academic, or professional contexts.",
+    "She was chosen to spearhead the charity drive to raise funds for the hospital."
+  ],
+  [
+    "navigate",
+    "To direct, steer, or manage one's course through a complex or difficult situation within formal, academic, or professional contexts.",
+    "Diplomats must navigate delicate political negotiations with skill, patience, and discretion."
+  ],
+  [
+    "orchestrate",
+    "To plan and direct complex events carefully to achieve a desired combined effect within formal, academic, or professional contexts.",
+    "The project manager worked tirelessly to orchestrate the launch of the new product."
+  ],
+  [
+    "execute",
+    "To carry out, perform, or put into effect a plan, order, or task within formal, academic, or professional contexts.",
+    "The soldiers were instructed to execute the maneuver according to precise timing guidelines."
+  ],
+  [
+    "implement",
+    "To put a decision, plan, policy, or agreement into official effect or execution within formal, academic, or professional contexts.",
+    "The school plans to implement a new anti-bullying policy starting next term."
+  ],
+  [
+    "deploy",
+    "To bring resources, troops, or equipment into effective action or strategic positions within formal, academic, or professional contexts.",
+    "Emergency services were quick to deploy staff to the flood-affected coastal areas."
+  ],
+  [
+    "utilise",
+    "To make practical, effective, and beneficial use of a resource, skill, or tool within formal, academic, or professional contexts.",
+    "Solar panels allow households to utilise renewable energy to power their electrical appliances."
+  ],
+  [
+    "harness",
+    "To control and make use of natural energy or resources to produce power within formal, academic, or professional contexts.",
+    "Engineers designed turbines to harness wind power along the breezy coastline efficiently."
+  ],
+  [
+    "exploit",
+    "To make full use of and derive benefit or profit from a resource within formal, academic, or professional contexts.",
+    "The company sought to exploit new commercial opportunities created by expanding global markets."
+  ],
+  [
+    "leverage",
+    "To use something to maximum advantage, especially existing strategic assets or social influence within formal, academic, or professional contexts.",
+    "The firm decided to leverage its strong brand reputation to enter overseas markets."
+  ],
+  [
+    "optimise",
+    "To make the best or most effective use of a situation, system, or resource.",
+    "Software developers work constantly to optimise application performance and speed for users."
+  ],
+  [
+    "augment",
+    "To make something greater by adding to it, increasing its overall size or value.",
+    "She took evening courses to augment her existing professional skills and qualifications."
+  ],
+  [
+    "amplify",
+    "To increase the volume, strength, effect, or intensity of something observable or audible within formal, academic, or professional contexts.",
+    "Using social media can amplify the reach of important public health awareness messages."
+  ],
+  [
+    "escalate",
+    "To increase rapidly in intensity, scale, scope, or severity over a short time within formal, academic, or professional contexts.",
+    "Without immediate intervention, the minor argument could escalate into a serious conflict."
+  ],
+  [
+    "proliferate",
+    "To increase rapidly in numbers, multiply, or spread extensively across a given area within formal, academic, or professional contexts.",
+    "Small cafes began to proliferate along the high street following urban regeneration efforts."
+  ],
+  [
+    "diminish",
+    "To make or become less, smaller, weaker, or reduced in size or importance within formal, academic, or professional contexts.",
+    "Nothing could diminish her enthusiasm for learning new foreign languages at university."
+  ],
+  [
+    "deteriorate",
+    "To become progressively worse in quality, condition, health, or overall value over time within formal, academic, or professional contexts.",
+    "If left untreated, timber structures can deteriorate rapidly when exposed to damp weather."
+  ],
+  [
+    "stagnate",
+    "To cease developing, progressing, or flowing, becoming dull, inactive, or completely motionless within formal, academic, or professional contexts.",
+    "Without continuous innovation, an economy can stagnate and fall behind international competitors."
+  ],
+  [
+    "diverge",
+    "To separate and go in different directions from a common starting point within formal, academic, or professional contexts.",
+    "After finishing school, the paths of the two close friends began to diverge."
+  ],
+  [
+    "converge",
+    "To come together from different directions and meet at a single shared point within formal, academic, or professional contexts.",
+    "Thousands of peaceful protesters gathered to converge upon the city's central square."
+  ],
+  [
+    "coincide",
+    "To occur at the same time or occupy the exact same position in space.",
+    "Our arrival in London was planned to coincide with the opening of the exhibition."
+  ],
+  [
+    "correlate",
+    "To have a mutual relationship or connection in which one thing directly affects another.",
+    "Studies show that regular physical exercise directly correlate with improved mental wellbeing."
+  ],
+  [
+    "deviate",
+    "To depart from an established course, standard, accepted norm, or expected operational path within formal, academic, or professional contexts.",
+    "Drivers were warned not to deviate from the designated detour route through town."
+  ],
+  [
+    "transcend",
+    "To go beyond or rise above the limits of a particular state or condition.",
+    "Great works of art transcend cultural and linguistic boundaries to touch people globally."
+  ],
+  [
+    "surpass",
+    "To exceed, go beyond, or prove superior to an expectation, record, or standard within formal, academic, or professional contexts.",
+    "Sales results for the second quarter managed to surpass all previous company records."
+  ],
+  [
+    "eclipse",
+    "To obscure, surpass, or reduce the importance or visibility of something else by comparison.",
+    "Her stunning athletic performance managed to eclipse all previous achievements in that event."
+  ],
+  [
+    "overshadow",
+    "To appear much more prominent or important than something else by comparison or contrast.",
+    "News of the political scandal threatened to overshadow the genuine achievements of the conference."
+  ],
+  [
+    "dominate",
+    "To have commanding influence, power, or total control over a situation or area within formal, academic, or professional contexts.",
+    "The football team continued to dominate the domestic league for three consecutive seasons."
+  ],
+  [
+    "prevail",
+    "To prove superior in strength, power, or influence, or prove victorious ultimately within formal, academic, or professional contexts.",
+    "Despite immense challenges, justice and truth will ultimately prevail in a fair trial."
+  ],
+  [
+    "yield",
+    "To produce or provide a natural, agricultural, or financial result, or give way within formal, academic, or professional contexts.",
+    "Investing in sustainable technology can yield significant long-term savings for modern businesses."
+  ],
+  [
+    "relinquish",
+    "To voluntarily cease to keep or claim something, or surrender control over assets within formal, academic, or professional contexts.",
+    "The monarch decided to relinquish the throne to her eldest son due to age."
+  ],
+  [
+    "concede",
+    "To admit that something is true or valid after first denying or resisting it.",
+    "After reviewing the evidence, the politician was forced to concede that mistakes occurred."
+  ],
+  [
+    "compromise",
+    "To settle a dispute by mutual concession, or weaken one's standards or principles within formal, academic, or professional contexts.",
+    "Both parties were willing to compromise to reach a fair agreement on wages."
+  ],
+  [
+    "negotiate",
+    "To discuss something formally in order to reach an agreement or settle a contract.",
+    "Diplomats met behind closed doors to negotiate a peaceful resolution to the conflict."
+  ],
+  [
+    "mediate",
+    "To intervene between people in a dispute in order to bring about agreement within formal, academic, or professional contexts.",
+    "An independent third party was appointed to mediate between union leaders and management."
+  ],
+  [
+    "collaborate",
+    "To work jointly with others on an activity or project towards shared goals within formal, academic, or professional contexts.",
+    "Researchers from different universities decided to collaborate on the international space project."
+  ],
+  [
+    "coalesce",
+    "To come together to form one mass, whole, or unified political movement within formal, academic, or professional contexts.",
+    "Divergent local groups began to coalesce into a powerful national environmental campaign coalition."
+  ],
+  [
+    "integrate",
+    "To combine two or more things so that they become a unified whole within formal, academic, or professional contexts.",
+    "The new software was designed to integrate smoothly with existing office computer systems."
+  ],
+  [
+    "incorporate",
+    "To include something as part of a whole, system, structure, or larger plan within formal, academic, or professional contexts.",
+    "We plan to incorporate your valuable suggestions into the final edition of the report."
+  ],
+  [
+    "assimilate",
+    "To take in and fully understand information, or absorb people into a culture within formal, academic, or professional contexts.",
+    "It takes time for new residents to assimilate into the social life of a town."
+  ],
+  [
+    "segregate",
+    "To set apart from the rest or isolate people based on differences within formal, academic, or professional contexts.",
+    "It is unlawful to segregate individuals based on their background, ethnicity, or beliefs."
+  ],
+  [
+    "isolate",
+    "To cause a person, place, or thing to be alone or separate within formal, academic, or professional contexts.",
+    "Doctors had to isolate the patient to prevent the spread of a contagious infection."
+  ],
+  [
+    "alienate",
+    "To cause someone to feel isolated, estranged, or hostile toward a group or cause.",
+    "Unreasonable policies can alienate employees and lower overall morale within an organisation."
+  ],
+  [
+    "marginalise",
+    "To treat a person, group, or concept as insignificant, peripheral, or unimportant within formal, academic, or professional contexts.",
+    "Society must ensure that it does not marginalise vulnerable individuals when reforming public services."
+  ],
+  [
+    "polarise",
+    "To cause division into two sharply contrasting, hostile groups, opinions, or beliefs within formal, academic, or professional contexts.",
+    "The controversial legislative proposal served to polarise public opinion across the entire nation."
+  ],
+  [
+    "generate",
+    "To produce, create, or bring into physical existence energy, ideas, or revenue within formal, academic, or professional contexts.",
+    "The new wind farm will generate enough electricity to supply thousands of homes locally."
+  ],
+  [
+    "induce",
+    "To succeed in persuading or leading someone to do something specific within formal, academic, or professional contexts.",
+    "Nothing could induce her to break her solemn promise to her best friend."
+  ],
+  [
+    "provoke",
+    "To stimulate or give rise to a reaction or emotion, typically strong ones within formal, academic, or professional contexts.",
+    "The speaker's controversial remarks were intended to provoke thoughtful debate among the audience."
+  ],
+  [
+    "instigate",
+    "To bring about or initiate an action, event, or official process deliberately within formal, academic, or professional contexts.",
+    "The police chose to instigate a full investigation into the mysterious disappearance of funds."
+  ],
+  [
+    "elicit",
+    "To evoke or draw out a response, answer, or fact from someone within formal, academic, or professional contexts.",
+    "The teacher asked open questions to elicit thoughtful answers from the quiet students."
+  ],
+  [
+    "evoke",
+    "To bring or recall a feeling, memory, or vivid mental image to mind within formal, academic, or professional contexts.",
+    "Old photographs can evoke fond memories of childhood holidays spent near the seaside."
+  ],
+  [
+    "conjure",
+    "To call upon or bring to mind as if by magic or imagination within formal, academic, or professional contexts.",
+    "The author's vivid descriptions manage to conjure images of a bygone historical era."
+  ],
+  [
+    "manifest",
+    "To display or show a quality, feeling, or state by one's acts within formal, academic, or professional contexts.",
+    "Stress can manifest itself through physical symptoms such as headaches and fatigue."
+  ],
+  [
+    "embody",
+    "To give a tangible, visible, or practical form to an abstract concept within formal, academic, or professional contexts.",
+    "The leader came to embody the hopes and aspirations of the entire community."
+  ],
+  [
+    "exemplify",
+    "To be a typical or representative example of something mentioned or discussed within formal, academic, or professional contexts.",
+    "Her tireless dedication to charity work serves to exemplify the values of the organisation."
+  ],
+  [
+    "personify",
+    "To represent a quality, emotion, or abstract concept in human form or character within formal, academic, or professional contexts.",
+    "In ancient mythology, figures were invented to personify natural elements like wind and storm."
+  ],
+  [
+    "epitomise",
+    "To be a perfect, typical, or definitive example of a quality or state within formal, academic, or professional contexts.",
+    "The elegant building seems to epitomise the best of classic twentieth-century British architecture."
+  ],
+  [
+    "symbolise",
+    "To represent, stand for, or typify something else, especially an abstract idea within formal, academic, or professional contexts.",
+    "The white dove is universally recognized to symbolise peace and freedom among nations."
+  ],
+  [
+    "signify",
+    "To be an indication of, or mean something specific in a context within formal, academic, or professional contexts.",
+    "A ringing bell was used to signify the end of the school day."
+  ],
+  [
+    "connote",
+    "To imply or suggest an idea or feeling in addition to literal meaning within formal, academic, or professional contexts.",
+    "The word home can connote feelings of warmth, safety, comfort, and belonging."
+  ],
+  [
+    "denote",
+    "To be a sign, symbol, or explicit literal indication of something specific within formal, academic, or professional contexts.",
+    "Red signs on the highway denote danger or an imperative requirement to stop."
+  ],
+  [
+    "imply",
+    "To indicate or suggest something indirectly without stating it directly or explicitly within formal, academic, or professional contexts.",
+    "Her tone of voice seemed to imply that she was dissatisfied with the result."
+  ],
+  [
+    "infer",
+    "To deduce or conclude information from evidence and reasoning rather than explicit statements within formal, academic, or professional contexts.",
+    "From the silence in the room, one could infer that everyone was deeply moved."
+  ],
+  [
+    "deduce",
+    "To arrive at a fact or a conclusion by reasoning logically from evidence within formal, academic, or professional contexts.",
+    "Detectives were able to deduce how the break-in occurred by studying footprint patterns."
+  ],
+  [
+    "extrapolate",
+    "To estimate or conclude something by assuming that existing trends will continue within formal, academic, or professional contexts.",
+    "It is risky to extrapolate future economic growth based on only two months of data."
+  ],
+  [
+    "speculate",
+    "To form a theory or conjecture about a subject without firm evidence within formal, academic, or professional contexts.",
+    "Journalists began to speculate about who would be appointed as the next foreign minister."
+  ],
+  [
+    "hypothesise",
+    "To put forward an explanation or assumption as a basis for reasoning within formal, academic, or professional contexts.",
+    "Scientists hypothesise that changes in ocean temperature affect migratory patterns of marine life."
+  ],
+  [
+    "surmise",
+    "To suppose that something is true without having solid evidence to confirm it within formal, academic, or professional contexts.",
+    "From his gloomy expression, she could surmise that the meeting had gone poorly."
+  ],
+  [
+    "conjecture",
+    "An opinion or conclusion formed on the basis of incomplete or inconclusive information within formal, academic, or professional contexts.",
+    "Without official facts, public discussion regarding the incident remains pure conjecture."
+  ],
+  [
+    "ascertain",
+    "To find out something for certain, or make sure of a fact within formal, academic, or professional contexts.",
+    "Investigators arrived to ascertain the cause of the sudden power outage in town."
+  ],
+  [
+    "discern",
+    "To perceive, recognize, or distinguish something with difficulty or careful observation within formal, academic, or professional contexts.",
+    "It was hard to discern the outlines of distant hills through the heavy fog."
+  ],
+  [
+    "perceive",
+    "To become aware or conscious of something through the senses, or interpret within formal, academic, or professional contexts.",
+    "Many people perceive changes in climate as one of the greatest global challenges."
+  ],
+  [
+    "apprehend",
+    "To understand or perceive something, or arrest someone for a crime within formal, academic, or professional contexts.",
+    "The suspect was easy to apprehend after officers surrounded the building."
+  ],
+  [
+    "comprehend",
+    "To grasp mentally, understand fully, or perceive the nature of something within formal, academic, or professional contexts.",
+    "It was difficult to comprehend how such a mistake could pass unnoticed for months."
+  ],
+  [
+    "fathom",
+    "To understand a difficult concept or reason after thinking about it deeply within formal, academic, or professional contexts.",
+    "I cannot fathom why anyone would choose to abandon such a wonderful opportunity."
+  ],
+  [
+    "dispute",
+    "A disagreement, argument, or debate between two or more parties over something within formal, academic, or professional contexts.",
+    "Lawyers worked to settle the boundary dispute between the neighbouring property owners."
+  ],
+  [
+    "refute",
+    "To prove a statement, theory, or accusation to be wrong or false within formal, academic, or professional contexts.",
+    "The scientist published clear evidence to refute the claims made by critics."
+  ],
+  [
+    "deliberate",
+    "Done consciously and intentionally, or to engage in long and careful consideration within formal, academic, or professional contexts.",
+    "The jury needed time to deliberate before returning a final verdict in court."
+  ],
+  [
+    "accentuate",
+    "To make something more noticeable, prominent, or emphasised in appearance or effect within formal, academic, or professional contexts.",
+    "Lighting was positioned to accentuate the beautiful architectural details of the ancient cathedral."
+  ],
+  [
+    "acquire",
+    "To buy, obtain, or gain possession of an asset, skill, or habit within formal, academic, or professional contexts.",
+    "Students work hard to acquire new skills that will benefit their future careers."
+  ],
+  [
+    "adhere",
+    "To stick firmly to a surface, or follow rules or beliefs strictly within formal, academic, or professional contexts.",
+    "All employees must adhere strictly to safety regulations while working on site."
+  ],
+  [
+    "administer",
+    "To manage, direct, or oversee the execution or application of something within formal, academic, or professional contexts.",
+    "A team was appointed to administer the distribution of emergency relief supplies locally."
+  ],
+  [
+    "agitate",
+    "To make someone troubled, nervous, or anxious, or stir a liquid briskly within formal, academic, or professional contexts.",
+    "News of upcoming restructuring began to agitate staff members across all departments."
+  ],
+  [
+    "allocate",
+    "To distribute resources or duties for a particular purpose according to plan within formal, academic, or professional contexts.",
+    "The council voted to allocate additional funds toward repairing damaged local roads."
+  ],
+  [
+    "amend",
+    "To make minor changes to a text, law, or document to improve it within formal, academic, or professional contexts.",
+    "Parliament voted to amend the law to provide better protection for consumers online."
+  ],
+  [
+    "anticipate",
+    "To foresee, expect, or look forward to an event occurring in future within formal, academic, or professional contexts.",
+    "Economists anticipate a gradual recovery in consumer spending over the coming fiscal year."
+  ],
+  [
+    "appraise",
+    "To assess the value, quality, or performance of someone or something officially within formal, academic, or professional contexts.",
+    "An expert was hired to appraise the rare painting before it went to auction."
+  ],
+  [
+    "audit",
+    "An official inspection of an individual's or organisation's accounts or procedures within formal, academic, or professional contexts.",
+    "The company undergoes an annual financial audit conducted by an independent accounting firm."
+  ],
+  [
+    "authorise",
+    "To give official permission for or approval to an undertaking or action within formal, academic, or professional contexts.",
+    "Only the director can authorise expenditure exceeding ten thousand pounds for equipment."
+  ],
+  [
+    "banish",
+    "To send someone away from a country or place as official punishment within formal, academic, or professional contexts.",
+    "In ancient times, rulers would banish political rivals to distant islands far away."
+  ],
+  [
+    "bestow",
+    "To confer or present an honour, right, or gift upon a person within formal, academic, or professional contexts.",
+    "The university chose to bestow an honorary doctorate upon the distinguished local author."
+  ],
+  [
+    "capitulate",
+    "To cease resisting an opponent or demand, and surrender under agreed conditions within formal, academic, or professional contexts.",
+    "The besieged garrison had no choice but to capitulate after running out of water."
+  ],
+  [
+    "champion",
+    "To vigorously support, defend, or advocate for a cause, right, or belief within formal, academic, or professional contexts.",
+    "She continued to champion environmental protection throughout her long career in parliament."
+  ],
+  [
+    "clarify",
+    "To make a statement or situation less confused and more comprehensible within formal, academic, or professional contexts.",
+    "The teacher took time to clarify the instructions before pupils started the examination."
+  ],
+  [
+    "combat",
+    "To take action to reduce, destroy, or prevent something undesirable or harmful within formal, academic, or professional contexts.",
+    "New measures were introduced to combat plastic pollution along coastline beaches."
+  ],
+  [
+    "command",
+    "To give an authoritative order, or exercise control and authority over others within formal, academic, or professional contexts.",
+    "The general was respected for his ability to command troops with calm authority."
+  ],
+  [
+    "compel",
+    "To force or oblige someone to do something through authority or circumstance within formal, academic, or professional contexts.",
+    "Severe weather conditions may compel us to cancel outdoor sporting activities today."
+  ],
+  [
+    "compensate",
+    "To give someone something, typically money, in recognition of loss or injury within formal, academic, or professional contexts.",
+    "The airline agreed to compensate passengers for flight delays lasting over four hours."
+  ],
+  [
+    "compile",
+    "To produce a list, report, or book by assembling information from sources within formal, academic, or professional contexts.",
+    "Researchers spent months to compile data from hundreds of survey responses nationwide."
+  ],
+  [
+    "comply",
+    "To act in accordance with a wish, command, rule, or regulation within formal, academic, or professional contexts.",
+    "All businesses must comply with national health and safety standards without exception."
+  ],
+  [
+    "conceal",
+    "To keep something secret or prevent it from being seen or noticed within formal, academic, or professional contexts.",
+    "He tried to conceal his disappointment behind a cheerful smile during the ceremony."
+  ],
+  [
+    "condemn",
+    "To express complete disapproval of something, typically in public or officially within formal, academic, or professional contexts.",
+    "World leaders united to condemn the violent attack on innocent civilian populations."
+  ],
+  [
+    "condone",
+    "To accept, overlook, or allow behaviour that is considered morally wrong within formal, academic, or professional contexts.",
+    "The school policy makes it clear that staff will not condone bullying under any circumstances."
+  ],
+  [
+    "conduct",
+    "To organise and carry out a particular activity, task, or research within formal, academic, or professional contexts.",
+    "Scientists plan to conduct a series of trials to evaluate the new medicine."
+  ],
+  [
+    "confirm",
+    "To establish the truth or correctness of something previously suspected or believed within formal, academic, or professional contexts.",
+    "Lab results served to confirm that the water supply was free from harmful bacteria."
+  ],
+  [
+    "confound",
+    "To cause surprise or confusion in someone, especially by acting against expectations within formal, academic, or professional contexts.",
+    "The unexpected market shift managed to confound economic experts across the industry."
+  ],
+  [
+    "confront",
+    "To face, meet, or deal directly with a difficult situation, problem, or person within formal, academic, or professional contexts.",
+    "We must confront environmental challenges with courage and innovative technological solutions."
+  ],
+  [
+    "consecrate",
+    "To make or declare something sacred or dedicated to a specific solemn purpose within formal, academic, or professional contexts.",
+    "Bishops gathered in the city to consecrate the newly built cathedral before the congregation."
+  ],
+  [
+    "conserve",
+    "To protect something from harm, decay, waste, or loss over time within formal, academic, or professional contexts.",
+    "Efforts are underway to conserve energy and water across all municipal council buildings."
+  ],
+  [
+    "constitute",
+    "To be a part of a whole, or combine to form something within formal, academic, or professional contexts.",
+    "Small and medium enterprises constitute a significant portion of the total national workforce."
+  ],
+  [
+    "contaminate",
+    "To make something impure or unsuitable by contact or mixture with poisonous substances within formal, academic, or professional contexts.",
+    "Chemical runoff from factories can contaminate local rivers and harm aquatic ecosystems."
+  ],
+  [
+    "contend",
+    "To struggle to surmount a difficulty, or assert something forcefully in debate within formal, academic, or professional contexts.",
+    "Scientists contend that immediate action is necessary to address rising sea levels global."
+  ],
+  [
+    "contradict",
+    "To deny the truth of a statement by asserting the opposite directly within formal, academic, or professional contexts.",
+    "New experimental findings seem to contradict theories that had been accepted for decades."
+  ],
+  [
+    "convene",
+    "To call people together or assemble for a formal meeting or conference within formal, academic, or professional contexts.",
+    "The committee will convene next Monday to discuss proposed changes to local traffic regulations."
+  ],
+  [
+    "convey",
+    "To transport, carry, or communicate a message, thought, or feeling to others within formal, academic, or professional contexts.",
+    "Her words managed to convey deep sympathy to the family during their difficult period."
+  ],
+  [
+    "convict",
+    "To declare someone guilty of a criminal offence by the verdict of a court.",
+    "The judge had sufficient evidence to convict the defendant after a three-week trial."
+  ],
+  [
+    "covet",
+    "To desire eagerly or long for something belonging to another person within formal, academic, or professional contexts.",
+    "Collectors from around the world covet rare ancient coins produced during the Roman Empire."
+  ],
+  [
+    "deceive",
+    "To cause someone to believe something that is not true in order to gain.",
+    "Advertisers must not attempt to deceive consumers with misleading statements about products."
+  ],
+  [
+    "decipher",
+    "To succeed in understanding, reading, or interpreting something complicated or coded within formal, academic, or professional contexts.",
+    "Linguists worked for years to decipher the ancient inscriptions carved into stone tablets."
+  ],
+  [
+    "declare",
+    "To state something solemnly, explicitly, or officially in public or formal contexts within formal, academic, or professional contexts.",
+    "The government decided to declare a state of emergency following severe flooding across regions."
+  ],
+  [
+    "decline",
+    "To become smaller, fewer, or weaker, or politely refuse an invitation or offer within formal, academic, or professional contexts.",
+    "She had to decline the job offer because it required relocating far away from home."
+  ],
+  [
+    "defer",
+    "To put off an action or event to a later time, or yield to another's judgment.",
+    "The board agreed to defer the final decision until additional financial details were provided."
+  ],
+  [
+    "defy",
+    "To openly resist, refuse to obey, or challenge authority, rules, or expectations within formal, academic, or professional contexts.",
+    "Brave citizens chose to defy unjust regulations and demanded reform through peaceful assembly."
+  ],
+  [
+    "degenerate",
+    "To decline or deteriorate physically, mentally, or morally over time within formal, academic, or professional contexts.",
+    "Without ongoing maintenance, old buildings can degenerate into unsafe and unsightly ruins."
+  ],
+  [
+    "delegate",
+    "To entrust a task or responsibility to another person, typically a subordinate within formal, academic, or professional contexts.",
+    "A good manager knows how to delegate tasks effectively among team members."
+  ],
+  [
+    "demolish",
+    "To pull down, destroy, or completely ruin a building or structure within formal, academic, or professional contexts.",
+    "Construction crews prepared to demolish the unsafe old factory to make room for houses."
+  ],
+  [
+    "denounce",
+    "To publicly declare something or someone to be wrong, evil, or unacceptable within formal, academic, or professional contexts.",
+    "Human rights organisations united to denounce the unfair treatment of political prisoners."
+  ],
+  [
+    "deplete",
+    "To use up the supply or resources of something until little remains within formal, academic, or professional contexts.",
+    "Overfishing threatens to deplete fish stocks in coastal waters unless strict limits apply."
+  ],
+  [
+    "deplore",
+    "To feel or express strong disapproval or regret regarding an action or event within formal, academic, or professional contexts.",
+    "Community leaders gather to deplore the recent increase in vandalism across local parks."
+  ],
+  [
+    "deprecate",
+    "To express disapproval of, or advise against the use of something within formal, academic, or professional contexts.",
+    "Software engineers deprecate outdated programming practices in favour of modern standards."
+  ],
+  [
+    "depreciate",
+    "To diminish in value over a period of time, especially monetary value within formal, academic, or professional contexts.",
+    "New vehicles tend to depreciate rapidly during their first three years of use."
+  ],
+  [
+    "deprive",
+    "To prevent someone from having or using something essential or desirable within formal, academic, or professional contexts.",
+    "Shift work can deprive people of regular sleep patterns and affect health."
+  ],
+  [
+    "derive",
+    "To obtain or gain something from a specified source or origin within formal, academic, or professional contexts.",
+    "Many modern medical treatments derive their active ingredients from naturally occurring plants."
+  ],
+  [
+    "designate",
+    "To officially assign a specified status, name, or role to someone or something within formal, academic, or professional contexts.",
+    "The council plans to designate this historic park as a protected natural area."
+  ],
+  [
+    "despise",
+    "To feel intense dislike, contempt, or disgust for someone or something within formal, academic, or professional contexts.",
+    "Honest people despise dishonesty and deceit in both personal and professional relationships."
+  ],
+  [
+    "detach",
+    "To disengage or remove something from a larger structure or connection within formal, academic, or professional contexts.",
+    "Please detach the bottom portion of the form and return it to the office."
+  ],
+  [
+    "deter",
+    "To discourage or prevent someone from taking action through fear or doubt within formal, academic, or professional contexts.",
+    "Installing visible security cameras can deter potential thieves from entering property."
+  ],
+  [
+    "detest",
+    "To dislike someone or something intensely, holding them in deep hatred within formal, academic, or professional contexts.",
+    "I detest cruelty to animals and support organisations working to protect them."
+  ],
+  [
+    "devastate",
+    "To destroy or ruin completely, causing severe shock, damage, or grief within formal, academic, or professional contexts.",
+    "A sudden tropical cyclone managed to devastate coastal towns and destroy local crops."
+  ],
+  [
+    "devise",
+    "To plan or invent a complex procedure, system, or mechanism by careful thought within formal, academic, or professional contexts.",
+    "Engineers worked together to devise a clever solution to the recurring water leak."
+  ],
+  [
+    "digest",
+    "To break down food in the stomach, or absorb and understand information fully within formal, academic, or professional contexts.",
+    "It takes time to digest complex philosophical concepts when studying them for examinations."
+  ],
+  [
+    "disclose",
+    "To make secret or new information known publicly or to relevant parties within formal, academic, or professional contexts.",
+    "Companies are required by law to disclose financial details to potential investors."
+  ],
+  [
+    "discount",
+    "To regard a possibility or fact as unworthy of consideration or untrue within formal, academic, or professional contexts.",
+    "Scientists chose not to discount the unusual laboratory result without further investigation."
+  ],
+  [
+    "discredit",
+    "To harm the good reputation of someone, or cause an idea to be distrusted.",
+    "Opponents tried to discredit her research by pointing out minor statistical oversights."
+  ],
+  [
+    "discriminate",
+    "To recognize a distinction between things, or treat people unfairly based on category within formal, academic, or professional contexts.",
+    "Laws exist to ensure that employers do not discriminate against candidates during hiring."
+  ],
+  [
+    "disdain",
+    "The feeling that someone or something is unworthy of one's consideration or respect within formal, academic, or professional contexts.",
+    "He treated dishonest tactics with disdain, preferring fair competition in all matters."
+  ],
+  [
+    "dislodge",
+    "To remove or force something out of its established position or place within formal, academic, or professional contexts.",
+    "Heavy rainfall helped to dislodge loose boulders from the steep cliff above the road."
+  ],
+  [
+    "dismantle",
+    "To take a machine, structure, or system to pieces systematically within formal, academic, or professional contexts.",
+    "Workers were instructed to dismantle the temporary stage after the concert concluded."
+  ],
+  [
+    "dismiss",
+    "To decide that something is not important, or allow someone to leave within formal, academic, or professional contexts.",
+    "The judge decided to dismiss the case due to a total lack of clear evidence."
+  ],
+  [
+    "disparage",
+    "To speak of or represent someone or something as being of little worth within formal, academic, or professional contexts.",
+    "It is wrong to disparage the hard work of others simply because you disagree."
+  ],
+  [
+    "displace",
+    "To force something or someone from their home, position, or usual place within formal, academic, or professional contexts.",
+    "Rising floodwaters threaten to displace thousands of residents living near the riverbank."
+  ],
+  [
+    "dispose",
+    "To get rid of something, or arrange things in a particular order within formal, academic, or professional contexts.",
+    "Factories must safely dispose of chemical waste according to strict environmental guidelines."
+  ],
+  [
+    "disprove",
+    "To show or prove that a statement or theory is false or wrong within formal, academic, or professional contexts.",
+    "New archaeological evidence surfaced to disprove previous assumptions about the ancient trade route."
+  ],
+  [
+    "disrupt",
+    "To interrupt an event, activity, or process by causing disturbance or problems within formal, academic, or professional contexts.",
+    "Protests threaten to disrupt public transport across the city during peak morning hours."
+  ],
+  [
+    "disseminate",
+    "To spread or disperse information, news, or knowledge widely among people within formal, academic, or professional contexts.",
+    "Health agencies work hard to disseminate accurate information regarding disease prevention strategies."
+  ],
+  [
+    "dissent",
+    "The expression or holding of opinions at variance with official or commonly held views.",
+    "Members of the council voiced strong dissent against proposed increases in council tax."
+  ],
+  [
+    "dissipate",
+    "To cause to disappear, scatter, or vanish, especially energy, fog, or doubts within formal, academic, or professional contexts.",
+    "The morning sun helped to dissipate the thick fog covering the valley floor."
+  ],
+  [
+    "dissolve",
+    "To incorporate a solid into a liquid, or officially end an assembly or contract.",
+    "The prime minister decided to dissolve parliament ahead of the upcoming general election."
+  ],
+  [
+    "distinguish",
+    "To recognize or point out the difference between two or more things within formal, academic, or professional contexts.",
+    "It can be difficult to distinguish genuine antique furniture from well-made modern copies."
+  ],
+  [
+    "distort",
+    "To pull or twist out of shape, or give a misleading account of facts.",
+    "Sensational media headlines can distort the truth and mislead the general public."
+  ],
+  [
+    "distract",
+    "To prevent someone from giving full attention to something through noise or movement within formal, academic, or professional contexts.",
+    "Loud construction noise outside threatened to distract students during their final examination."
+  ],
+  [
+    "divert",
+    "To cause someone or something to change direction or turn aside within formal, academic, or professional contexts.",
+    "Police had to divert traffic away from the main road following a minor collision."
+  ],
+  [
+    "divest",
+    "To deprive someone of power, rights, or possessions, or sell off business assets within formal, academic, or professional contexts.",
+    "The university chose to divest from fossil fuel companies to support green initiatives."
+  ],
+  [
+    "draft",
+    "To prepare a preliminary version of a document, essay, or plan within formal, academic, or professional contexts.",
+    "The legal team met early to draft the initial terms of the contract agreement."
+  ],
+  [
+    "duplicate",
+    "To make an exact copy of something like a document, key, or test within formal, academic, or professional contexts.",
+    "Please do not duplicate confidential files without receiving prior authorization from management."
+  ],
+  [
+    "elevate",
+    "To raise or lift something to a higher position, rank, or intellectual level within formal, academic, or professional contexts.",
+    "Her promotion served to elevate her status within the firm's international management team."
+  ],
+  [
+    "eliminate",
+    "To completely remove or get rid of something unwanted or unnecessary within formal, academic, or professional contexts.",
+    "Proper hygiene practices help to eliminate bacteria and reduce the spread of illness."
+  ],
+  [
+    "elude",
+    "To escape from or avoid someone or something, typically in a skilful way within formal, academic, or professional contexts.",
+    "The cunning fox managed to elude the search dogs by crossing a running stream."
+  ],
+  [
+    "emancipate",
+    "To set free from legal, social, or political restrictions or slavery within formal, academic, or professional contexts.",
+    "New legislation was introduced to emancipate workers from unfair and oppressive contract terms."
+  ],
+  [
+    "embark",
+    "To go on board a ship or aircraft, or begin a new journey or venture.",
+    "After graduation, she prepared to embark on an exciting career in international journalism."
+  ],
+  [
+    "embellish",
+    "To make something more attractive by adding decorative details or extra fictional details within formal, academic, or professional contexts.",
+    "Storytellers often embellish historical accounts to make their narratives more entertaining to listeners."
+  ],
+  [
+    "embrace",
+    "To accept or support an idea, belief, or change willingly and enthusiastically within formal, academic, or professional contexts.",
+    "Schools are eager to embrace new digital technologies to enhance learning experiences."
+  ],
+  [
+    "emerge",
+    "To move out of or away from something and become visible or prominent within formal, academic, or professional contexts.",
+    "Interesting details began to emerge during the second week of the court trial."
+  ],
+  [
+    "emulate",
+    "To match or surpass a person or achievement, typically by imitation within formal, academic, or professional contexts.",
+    "Young athletes often strive to emulate the discipline and success of world champions."
+  ],
+  [
+    "enact",
+    "To pass a law, or perform a role or play on stage within formal, academic, or professional contexts.",
+    "Parliament met to enact new legislation aimed at improving public healthcare facilities nationwide."
+  ],
+  [
+    "encompass",
+    "To include comprehensive range of ideas, subjects, or physical areas within boundaries within formal, academic, or professional contexts.",
+    "The training course is designed to encompass all aspects of modern project management."
+  ],
+  [
+    "encounter",
+    "To unexpectedly experience or come upon something, especially difficulty or obstacle within formal, academic, or professional contexts.",
+    "Travelers may encounter unexpected delays when passing through busy border security checkpoints."
+  ],
+  [
+    "encourage",
+    "To give support, confidence, or hope to someone to do something within formal, academic, or professional contexts.",
+    "Parents should encourage children to explore their interests and pursue creative hobbies."
+  ],
+  [
+    "encroach",
+    "To intrude gradually on a person's territory, rights, or personal boundary within formal, academic, or professional contexts.",
+    "Urban development continues to encroach upon surrounding woodland areas vital for wildlife."
+  ],
+  [
+    "endorse",
+    "To declare one's public approval or support of a person, policy, or product within formal, academic, or professional contexts.",
+    "Famous celebrities were hired to endorse the brand's new line of athletic shoes."
+  ],
+  [
+    "endure",
+    "To suffer something painful or difficult patiently, or remain in existence over time within formal, academic, or professional contexts.",
+    "Historic stone monuments endure through centuries despite exposure to harsh weather conditions."
+  ],
+  [
+    "enforce",
+    "To compel compliance with a law, rule, regulation, or obligation firmly within formal, academic, or professional contexts.",
+    "Local police officers work constantly to enforce speed limits near primary school zones."
+  ],
+  [
+    "engage",
+    "To occupy, attract, or involve someone's interest or attention actively within formal, academic, or professional contexts.",
+    "Interactive activities help engage students in complex topics like science and history."
+  ],
+  [
+    "enhance",
+    "To intensify, increase, or further improve the quality, value, or extent of something within formal, academic, or professional contexts.",
+    "Adding fresh herbs can enhance the flavour of a simple vegetable soup significantly."
+  ],
+  [
+    "enjoin",
+    "To instruct or urge someone to do something, or prohibit an action legally within formal, academic, or professional contexts.",
+    "The court issued an order to enjoin the company from releasing untreated waste."
+  ],
+  [
+    "enlighten",
+    "To give someone greater knowledge and understanding about a subject or situation within formal, academic, or professional contexts.",
+    "The documentary served to enlighten viewers about the severe impact of deforestation globally."
+  ],
+  [
+    "enrich",
+    "To improve or enhance the quality, value, or nutritional content of something within formal, academic, or professional contexts.",
+    "Reading widely across different genres will enrich your vocabulary and writing style over time."
+  ],
+  [
+    "enrol",
+    "To officially register as a member, student, or participant in a course or organisation.",
+    "Many adults choose to enrol in evening classes to learn new language skills."
+  ],
+  [
+    "ensue",
+    "To happen or occur afterwards as a direct result or consequence within formal, academic, or professional contexts.",
+    "When the whistle blew to end the match, chaotic celebrations began to ensue."
+  ],
+  [
+    "entail",
+    "To involve or require something as a necessary or inevitable part or consequence within formal, academic, or professional contexts.",
+    "Taking on a managerial role will entail greater responsibility and longer working hours."
+  ],
+  [
+    "enter",
+    "To come or go into a place, building, competition, or official register within formal, academic, or professional contexts.",
+    "Participants must enter their personal details online before attending the workshop event."
+  ],
+  [
+    "entertain",
+    "To provide someone with amusement or enjoyment, or consider an idea or opinion within formal, academic, or professional contexts.",
+    "The host took care to entertain guests with live music and delicious food."
+  ],
+  [
+    "entreat",
+    "To ask someone earnestly or anxiously to do something, pleading sincerely within formal, academic, or professional contexts.",
+    "Villagers gathered to entreat the mayor for immediate help after the river flooded."
+  ],
+  [
+    "enumerate",
+    "To mention or list a number of things one by one systematically within formal, academic, or professional contexts.",
+    "The report took time to enumerate every risk associated with launching the product overseas."
+  ],
+  [
+    "envision",
+    "To imagine as a future possibility, visualize, or mentally picture an outcome within formal, academic, or professional contexts.",
+    "Architects envision a green city where electric vehicles and solar buildings dominate landscapes."
+  ],
+  [
+    "equate",
+    "To consider or declare one thing to be identical or equivalent to another within formal, academic, or professional contexts.",
+    "It is wrong to equate wealth with personal happiness or moral integrity."
+  ],
+  [
+    "eradicate",
+    "To destroy completely, put an end to, or eliminate something harmful entirely within formal, academic, or professional contexts.",
+    "Global health initiatives aim to eradicate infectious diseases through widespread vaccination programs."
+  ],
+  [
+    "erode",
+    "To gradually wear away or destroy rock, soil, or confidence over time within formal, academic, or professional contexts.",
+    "Strong ocean waves continue to erode coastal cliffs along the southern shoreline."
+  ],
+  [
+    "eschew",
+    "To deliberately avoid using, abstaining from, or keeping away from something within formal, academic, or professional contexts.",
+    "He chose to eschew social media entirely to focus on his book research."
+  ],
+  [
+    "establish",
+    "To set up an organisation, system, or set of rules on a firm basis.",
+    "The council plans to establish a new community centre for local young people."
+  ],
+  [
+    "estimate",
+    "To roughly calculate or judge the value, number, quantity, or extent of something within formal, academic, or professional contexts.",
+    "Engineers estimate that repair work on the railway line will take three weeks."
+  ],
+  [
+    "estrange",
+    "To cause someone to be no longer close or affectionate to a friend or relative.",
+    "Harsh arguments over inheritance served to estrange the two brothers for several years."
+  ],
+  [
+    "evaluate",
+    "To form an idea of the amount, number, value, or quality of something carefully.",
+    "Teachers evaluate student progress through regular coursework, presentations, and written tests."
+  ],
+  [
+    "evade",
+    "To escape or avoid someone or something, especially by cleverness or deceit within formal, academic, or professional contexts.",
+    "The driver attempted to evade police by turning down narrow side streets quickly."
+  ],
+  [
+    "exalt",
+    "To think or speak very highly of someone, or elevate in rank or status.",
+    "Poets often write verses that exalt the natural beauty of the countryside."
+  ],
+  [
+    "exceed",
+    "To be greater in number, size, or degree than a specified amount or limit.",
+    "Drivers must ensure that their vehicle speed does not exceed the legal limit."
+  ],
+  [
+    "excel",
+    "To be exceptionally good at or proficient in an activity or subject within formal, academic, or professional contexts.",
+    "She worked hard to excel in mathematics, winning top honours in national competitions."
+  ],
+  [
+    "exchange",
+    "An act of giving one thing and receiving another in return, or trade within formal, academic, or professional contexts.",
+    "The two students agreed to exchange notes after attending different university lectures."
+  ],
+  [
+    "excise",
+    "To cut out or remove surgically, or impose a tax on goods within formal, academic, or professional contexts.",
+    "Editors had to excise several unnecessary paragraphs to fit the article onto one page."
+  ],
+  [
+    "exclude",
+    "To deny someone access to a place, group, privilege, or keep out within formal, academic, or professional contexts.",
+    "It is unfair to exclude qualified candidates based on arbitrary criteria or prejudice."
+  ],
+  [
+    "exculpate",
+    "To show or declare that someone is not guilty of wrongdoing or fault within formal, academic, or professional contexts.",
+    "Surveillance footage helped to exculpate the security guard from any involvement in theft."
+  ],
+  [
+    "excuse",
+    "To forgive or overlook a fault, or provide a justification for a reason within formal, academic, or professional contexts.",
+    "Nothing can excuse rude behaviour toward service staff working in restaurants and hotels."
+  ],
+  [
+    "exempt",
+    "Free from an obligation, rule, duty, or liability imposed on others within formal, academic, or professional contexts.",
+    "Charitable organisations are often exempt from paying certain local business taxes."
+  ],
+  [
+    "exert",
+    "To apply or bring to bear a force, influence, pressure, or quality within formal, academic, or professional contexts.",
+    "Athletes must exert physical effort during training to build stamina and endurance."
+  ],
+  [
+    "exhaust",
+    "To drain someone completely of energy, or use up resources entirely within formal, academic, or professional contexts.",
+    "Running a marathon will exhaust even the most fit and prepared athletes."
+  ],
+  [
+    "exhibit",
+    "To manifest or display a quality, feeling, symptom, or work of art publicly within formal, academic, or professional contexts.",
+    "The museum will exhibit rare artifacts recovered from ancient shipwreck sites near Greece."
+  ],
+  [
+    "exhilarate",
+    "To make someone feel extremely happy, animated, or elated with excitement within formal, academic, or professional contexts.",
+    "Reaching the mountain summit after a tough climb served to exhilarate the hiking team."
+  ],
+  [
+    "exhort",
+    "To strongly encourage, urge, or persuade someone to do something worthwhile within formal, academic, or professional contexts.",
+    "Leaders gathered to exhort citizens to conserve electricity during the winter heat crisis."
+  ],
+  [
+    "exile",
+    "The state of being barred from one's native country for political reasons within formal, academic, or professional contexts.",
+    "The former leader lived in exile for twenty years before returning home safely."
+  ],
+  [
+    "expand",
+    "To become or make larger or more extensive in size, scope, or volume within formal, academic, or professional contexts.",
+    "The company plans to expand its operations across several new European territories next year."
+  ],
+  [
+    "expatriate",
+    "A person who lives outside their native country, often for business purposes within formal, academic, or professional contexts.",
+    "She enjoyed her lifestyle as an expatriate working for an architectural firm in Dubai."
+  ],
+  [
+    "expel",
+    "To officially compel someone to leave an organisation, school, or country within formal, academic, or professional contexts.",
+    "The headteacher was forced to expel the student after repeated serious disciplinary breaches."
+  ],
+  [
+    "expend",
+    "To spend or use up money, time, energy, or resources on something within formal, academic, or professional contexts.",
+    "Athletes expend enormous amounts of energy during competitive international sporting tournaments."
+  ],
+  [
+    "expire",
+    "To come to an end, terminate, or cease to be valid after time within formal, academic, or professional contexts.",
+    "Your passport will expire in six months, so you should renew it promptly."
+  ],
+  [
+    "explore",
+    "To travel through an unfamiliar area to learn about it, or investigate topics within formal, academic, or professional contexts.",
+    "Researchers continue to explore new methods for storing renewable energy efficiently over time."
+  ],
+  [
+    "expropriate",
+    "To take away property from its owner for public use or benefit legally within formal, academic, or professional contexts.",
+    "The city council voted to expropriate land along the river to build railway infrastructure."
+  ],
+  [
+    "expunge",
+    "To erase or remove completely something unwanted, unpleasant, or an official record within formal, academic, or professional contexts.",
+    "The court ordered authorities to expunge the minor offense from his permanent criminal record."
+  ],
+  [
+    "extend",
+    "To cause to cover a larger area, duration, or distance, or stretch out within formal, academic, or professional contexts.",
+    "The library agreed to extend borrowing periods for students working on final dissertations."
+  ],
+  [
+    "extenuate",
+    "To cause an offense to seem less serious or more forgivable through explanations within formal, academic, or professional contexts.",
+    "Nothing could extenuate his disgraceful conduct during the official school board assembly."
+  ],
+  [
+    "extinguish",
+    "To put an end to or smother a fire, light, hope, or feeling completely.",
+    "Firefighters worked through the night to extinguish the blaze at the old warehouse."
+  ],
+  [
+    "extort",
+    "To obtain something by force, threats, or other unfair intimidation methods within formal, academic, or professional contexts.",
+    "Criminals tried to extort money from the local shopkeeper through aggressive threatening demands."
+  ],
+  [
+    "extract",
+    "To remove or take out something by effort, force, or chemical process within formal, academic, or professional contexts.",
+    "Chemists use specialized methods to extract essential oils from flowers and aromatic plants."
+  ],
+  [
+    "extricate",
+    "To free someone or something from a constraint, difficulty, or entanglement skilfully within formal, academic, or professional contexts.",
+    "Rescuers managed to extricate the trapped driver from the vehicle without causing injury."
+  ],
+  [
+    "exult",
+    "To feel or show triumphant joy or jubilation after achieving a victory within formal, academic, or professional contexts.",
+    "Fans gathered in the streets to exult after their national team won the trophy."
+  ],
+  [
+    "fabricate",
+    "To invent or construct something, typically with deceitful intent, or manufacture within formal, academic, or professional contexts.",
+    "It is illegal to fabricate evidence or present false documentation in a court proceeding."
+  ],
+  [
+    "falter",
+    "To lose strength, momentum, or purpose, or hesitate in speech or movement within formal, academic, or professional contexts.",
+    "Her voice began to falter as she spoke about the loss of her dear mentor."
+  ],
+  [
+    "fascinate",
+    "To attract and hold the interest and attention of someone completely within formal, academic, or professional contexts.",
+    "Ancient Egyptian mysteries continue to fascinate historians and tourists from around the world."
+  ],
+  [
+    "feature",
+    "A distinctive attribute, aspect, or characteristic of something observable within formal, academic, or professional contexts.",
+    "The main feature of the new library building is its spacious glass reading room."
+  ],
+  [
+    "feign",
+    "To pretend to be affected by a feeling, state, or injury convincingly within formal, academic, or professional contexts.",
+    "He chose to feign illness so he could stay home and avoid taking exams."
+  ],
+  [
+    "ferment",
+    "To undergo a chemical change involving yeast, or stir up social agitation within formal, academic, or professional contexts.",
+    "Fruit juices naturally ferment over time when exposed to yeast in warm environments."
+  ],
+  [
+    "fertilise",
+    "To add substances to soil to make it more fertile and productive within formal, academic, or professional contexts.",
+    "Gardeners fertilise the soil every spring to encourage healthy growth in flowering plants."
+  ],
+  [
+    "fetch",
+    "To go for and bring back someone or something from a location within formal, academic, or professional contexts.",
+    "Could you please go to the office and fetch my notebook from the desk?"
+  ],
+  [
+    "filter",
+    "To pass a liquid or gas through a device to remove impurities within formal, academic, or professional contexts.",
+    "Special appliances filter water to ensure it is clean and safe for drinking daily."
+  ],
+  [
+    "finance",
+    "To provide funding or capital for a project, enterprise, or purchase officially within formal, academic, or professional contexts.",
+    "The bank agreed to finance the construction of the new community sports complex."
+  ],
+  [
+    "flag",
+    "To become tired, weaker, or less enthusiastic, or draw attention to something within formal, academic, or professional contexts.",
+    "Toward the end of the long hike, their energy began to flag significantly."
+  ],
+  [
+    "flatter",
+    "To praise someone excessively or insincerely, often to gain a favour within formal, academic, or professional contexts.",
+    "It is unwise to flatter your boss simply to secure a promotion at work."
+  ],
+  [
+    "flaunt",
+    "To display something ostentatiously in order to provoke envy or admiration within formal, academic, or professional contexts.",
+    "He liked to flaunt his expensive sports car by driving slowly past busy cafes."
+  ],
+  [
+    "flee",
+    "To run away from a place or situation of danger or threat within formal, academic, or professional contexts.",
+    "Thousands were forced to flee their homes as the wildfire spread across the valley."
+  ],
+  [
+    "flourish",
+    "To grow or develop in a healthy or vigorous way, especially as result within formal, academic, or professional contexts.",
+    "Small businesses can flourish when given access to affordable credit and mentorship support."
+  ],
+  [
+    "foil",
+    "To prevent something considered wrong or undesirable from succeeding or succeeding fully within formal, academic, or professional contexts.",
+    "Alert security guards managed to foil the robbery attempt before any cash was taken."
+  ],
+  [
+    "foment",
+    "To instigate or stir up an undesirable or violent sentiment or course of action.",
+    "Agitators tried to foment trouble among the striking factory workers by spreading false rumours."
+  ],
+  [
+    "forbid",
+    "To order someone not to do something, or prohibit an action legally within formal, academic, or professional contexts.",
+    "School rules strictly forbid pupils from using mobile phones during examination periods."
+  ],
+  [
+    "forecast",
+    "To predict or estimate a future event or trend based on analysis within formal, academic, or professional contexts.",
+    "Meteorologists forecast heavy rain and strong winds across northern regions over the weekend."
+  ],
+  [
+    "forestall",
+    "To prevent or obstruct an event or action by taking advance action within formal, academic, or professional contexts.",
+    "The company took defensive measures to forestall a hostile takeover attempt by rivals."
+  ],
+  [
+    "forge",
+    "To create or form something through hard effort, or produce fraudulent copies within formal, academic, or professional contexts.",
+    "The two nations worked hard to forge a strong diplomatic alliance based on trust."
+  ],
+  [
+    "forsake",
+    "To abandon or renounce someone or something that one has duty to within formal, academic, or professional contexts.",
+    "He swore never to forsake his core principles, regardless of personal or financial temptation."
+  ],
+  [
+    "founder",
+    "To fail completely, collapse, or sink beneath the water, as a ship within formal, academic, or professional contexts.",
+    "Negotiations threaten to founder unless both sides show greater willingness to compromise on terms."
+  ],
+  [
+    "fracture",
+    "The cracking or breaking of a hard object, bone, or social unity within formal, academic, or professional contexts.",
+    "X-rays revealed a minor fracture in her left wrist following the bicycle fall yesterday."
+  ],
+  [
+    "frame",
+    "To construct or formulate a plan, concept, or document systematically and carefully within formal, academic, or professional contexts.",
+    "Policy makers met to frame rules governing the ethical use of artificial intelligence tools."
+  ],
+  [
+    "frequent",
+    "To visit a place often or habitually over a period of time within formal, academic, or professional contexts.",
+    "Students like to frequent the cozy coffee shop near the university campus during breaks."
+  ],
+  [
+    "frustrate",
+    "To prevent plans from being fulfilled, or cause feelings of annoyance within formal, academic, or professional contexts.",
+    "Repeated software delays continue to frustrate team members trying to meet the final launch deadline."
+  ],
+  [
+    "fulfil",
+    "To achieve or realize something desired, promised, or required successfully and completely within formal, academic, or professional contexts.",
+    "The charity strives to fulfil its pledge of providing clean water to rural villages."
+  ],
+  [
+    "furnish",
+    "To provide a house or room with furniture, or supply necessary details within formal, academic, or professional contexts.",
+    "They plan to furnish their new apartment with simple, functional wooden chairs and tables."
+  ],
+  [
+    "fuse",
+    "To join or blend different elements together into a single whole within formal, academic, or professional contexts.",
+    "The restaurant aims to fuse traditional Italian recipes with modern Asian cooking techniques."
+  ],
+  [
+    "gainsay",
+    "To deny or contradict a fact, statement, or claim made by someone within formal, academic, or professional contexts.",
+    "No one could gainsay the truth of her testimony after viewing the video evidence."
+  ],
+  [
+    "galvanise",
+    "To shock or excite someone into taking rapid and decisive practical action within formal, academic, or professional contexts.",
+    "The urgent report managed to galvanise public support for immediate environmental protection measures."
+  ],
+  [
+    "govern",
+    "To conduct the policy, actions, and affairs of a state, organisation, or people within formal, academic, or professional contexts.",
+    "Elected officials must govern with integrity and respect for democratic institutions at all times."
+  ],
+  [
+    "grant",
+    "To agree to give or allow something requested, or bestow a privilege within formal, academic, or professional contexts.",
+    "The council decided to grant planning permission for the new community sports complex."
+  ],
+  [
+    "grapple",
+    "To engage in a close fight, or struggle to deal with a problem within formal, academic, or professional contexts.",
+    "School board members continue to grapple with budget cuts while maintaining educational standards."
+  ],
+  [
+    "gratify",
+    "To give pleasure, satisfaction, or delight to someone through actions or news within formal, academic, or professional contexts.",
+    "It will gratify the teacher to see her former pupils succeeding in their chosen careers."
+  ],
+  [
+    "gravitate",
+    "To move or be drawn toward a place, person, or interest naturally within formal, academic, or professional contexts.",
+    "Young children naturally gravitate toward colorful picture books and interactive toys in the library."
+  ],
+  [
+    "guarantee",
+    "A formal assurance that certain conditions will be fulfilled, or promise outcome within formal, academic, or professional contexts.",
+    "The manufacturer offers a five-year guarantee covering all parts and repair labour costs."
+  ],
+  [
+    "guard",
+    "To protect a person, place, or object from harm, damage, or escape within formal, academic, or professional contexts.",
+    "Security officers stand near the vault to guard priceless historic treasures kept inside."
+  ],
+  [
+    "guide",
+    "To show the way to others, or direct a process or decision within formal, academic, or professional contexts.",
+    "Experienced mentors guide junior employees through their initial months at the engineering firm."
+  ],
+  [
+    "harm",
+    "Physical injury, material damage, or moral hurt caused to someone or something within formal, academic, or professional contexts.",
+    "The safety regulations aim to protect factory workers from accidental injury and harm."
+  ],
+  [
+    "hasten",
+    "To cause something to happen more quickly, or move with speed within formal, academic, or professional contexts.",
+    "Taking immediate medical action can hasten recovery from a serious physical illness or injury."
+  ],
+  [
+    "hazard",
+    "A danger, risk, or potential source of harm to people or property within formal, academic, or professional contexts.",
+    "Icy roads create a severe hazard for drivers traveling along steep mountain passes overnight."
+  ],
+  [
+    "heed",
+    "To pay close attention to, take notice of, or act upon advice within formal, academic, or professional contexts.",
+    "Drivers should heed official weather warnings and avoid travel during heavy blizzard storms."
+  ],
+  [
+    "heighten",
+    "To make or become more intense, stronger, higher, or more pronounced within formal, academic, or professional contexts.",
+    "Tensions began to heighten between rival political candidates as election day drew near."
+  ],
+  [
+    "herald",
+    "To be a sign that something is about to happen, or announce within formal, academic, or professional contexts.",
+    "Warm sunny days herald the arrival of spring across the green countryside hills."
+  ],
+  [
+    "hinder",
+    "To make it difficult for someone to do something or progress within formal, academic, or professional contexts.",
+    "Lack of adequate sleep will hinder your concentration during long afternoon university lectures."
+  ],
+  [
+    "hoist",
+    "To raise or lift something heavy, especially by means of ropes within formal, academic, or professional contexts.",
+    "Workers prepared to hoist the heavy steel beam onto the roof of the building."
+  ],
+  [
+    "honour",
+    "High respect, great esteem, or moral integrity maintained in conduct and speech within formal, academic, or professional contexts.",
+    "It was a great honour for the young scientist to receive the prestigious medal."
+  ],
+  [
+    "illuminate",
+    "To light up, or make something clear and easy to understand within formal, academic, or professional contexts.",
+    "Street lamps illuminate the dark pedestrian pathways winding through the quiet city park."
+  ],
+  [
+    "illustrate",
+    "To explain or make something clear using examples, diagrams, or pictures within formal, academic, or professional contexts.",
+    "The professor used diagrams to illustrate how water circulates through ecosystems globally."
+  ],
+  [
+    "imbue",
+    "To inspire or permeate with a feeling, quality, or perspective thoroughly within formal, academic, or professional contexts.",
+    "The coach managed to imbue the young players with confidence ahead of the match."
+  ],
+  [
+    "imitate",
+    "To copy or simulate the actions, appearance, or speech of someone else within formal, academic, or professional contexts.",
+    "Young parrots learn to imitate human speech sounds after listening to their owners daily."
+  ],
+  [
+    "impair",
+    "To weaken, damage, or reduce the quality, strength, or functionality of something within formal, academic, or professional contexts.",
+    "Driving while exhausted can seriously impair your reaction times and judgment on roads."
+  ],
+  [
+    "impart",
+    "To make information known, or bestow a quality upon something or someone within formal, academic, or professional contexts.",
+    "Teachers strive to impart knowledge and critical thinking skills to their young students."
+  ],
+  [
+    "impeach",
+    "To formally charge a public official with misconduct, or question validity within formal, academic, or professional contexts.",
+    "Parliament held power to impeach high officials suspected of serious corruption or treason."
+  ],
+  [
+    "impel",
+    "To drive, force, or urge someone to do something through inner feeling within formal, academic, or professional contexts.",
+    "A strong sense of duty did impel the firefighter to enter the burning structure."
+  ],
+  [
+    "imperil",
+    "To put at risk of being harmed, injured, destroyed, or lost within formal, academic, or professional contexts.",
+    "Releasing toxic waste into rivers will imperil aquatic life and local drinking water."
+  ],
+  [
+    "impinge",
+    "To have an effect or impact, especially a negative or intrusive one within formal, academic, or professional contexts.",
+    "Strict new regulations threaten to impinge upon the independence of small local businesses."
+  ],
+  [
+    "implicate",
+    "To show or suggest that someone is involved in a crime or fault within formal, academic, or professional contexts.",
+    "New physical evidence found at the crime scene served to implicate the second suspect."
+  ],
+  [
+    "import",
+    "To bring goods or services into a country from abroad for sale within formal, academic, or professional contexts.",
+    "Britain continues to import tea and spices from various trading partner nations globally."
+  ],
+  [
+    "impose",
+    "To force something unwelcome or unfamiliar to be accepted or put in place within formal, academic, or professional contexts.",
+    "The council decided to impose a ban on heavy lorries using residential streets."
+  ],
+  [
+    "impoverish",
+    "To make a person, group, or region poor, or exhaust soil quality within formal, academic, or professional contexts.",
+    "Prolonged drought threatens to impoverish local farming communities reliant on seasonal crop harvests."
+  ],
+  [
+    "impress",
+    "To make someone feel admiration and respect through skill or quality within formal, academic, or professional contexts.",
+    "Her fluent presentation managed to impress the international panel of academic examiners."
+  ],
+  [
+    "improve",
+    "To make or become better in quality, condition, value, or performance within formal, academic, or professional contexts.",
+    "Regular practice will help improve your fluency and pronunciation in conversational English."
+  ],
+  [
+    "improvise",
+    "To produce or create something spontaneously without previous preparation or rehearsal within formal, academic, or professional contexts.",
+    "When the projector failed, the speaker had to improvise her presentation using a whiteboard."
+  ],
+  [
+    "impugn",
+    "To truth, validity, or honesty of a statement or motives of someone within formal, academic, or professional contexts.",
+    "It is unfair to impugn her motives when she acted out of genuine kindness."
+  ],
+  [
+    "incite",
+    "To encourage or stir up violent or unlawful behaviour in people within formal, academic, or professional contexts.",
+    "It is a criminal offence to incite violence or hatred against any group."
+  ],
+  [
+    "incline",
+    "To feel willing or favourably disposed toward an action or opinion within formal, academic, or professional contexts.",
+    "I incline to agree with your analysis of the historical causes of conflict."
+  ],
+  [
+    "include",
+    "To contain as part of a whole, or place in a group within formal, academic, or professional contexts.",
+    "The comprehensive tour package will include accommodation, breakfast, and daily transport tickets."
+  ],
+  [
+    "increase",
+    "To become or make greater in size, amount, degree, or severity within formal, academic, or professional contexts.",
+    "The company hopes to increase production capacity by opening a second automated factory."
+  ],
+  [
+    "incriminate",
+    "To make someone appear guilty of a crime or wrong action within formal, academic, or professional contexts.",
+    "The suspect refused to answer questions that might incriminate him during police interrogation."
+  ],
+  [
+    "incur",
+    "To bring upon oneself something unwelcome, like debt, expenses, or penalties within formal, academic, or professional contexts.",
+    "Failing to pay your taxes on time will cause you to incur severe financial penalties."
+  ],
+  [
+    "indicate",
+    "To point out, show, or state briefly the presence or existence of within formal, academic, or professional contexts.",
+    "Recent survey results indicate a growing public interest in renewable energy technologies nationwide."
+  ],
+  [
+    "indict",
+    "To formally accuse or charge someone with a serious crime in court within formal, academic, or professional contexts.",
+    "A grand jury met to indict the official on charges of fraud and embezzlement."
+  ],
+  [
+    "indulge",
+    "To allow oneself to enjoy the pleasure of something, or pamper someone within formal, academic, or professional contexts.",
+    "On weekends, she likes to indulge in reading historical novels while drinking hot tea."
+  ],
+  [
+    "inflict",
+    "To cause something unpleasant or painful to be suffered by someone or something within formal, academic, or professional contexts.",
+    "The harsh storm threatens to inflict severe damage on coastal sea defences overnight."
+  ],
+  [
+    "influence",
+    "The capacity to have an effect on the character, development, or behaviour within formal, academic, or professional contexts.",
+    "Parents exert a profound influence on the moral development of their growing children."
+  ],
+  [
+    "inform",
+    "To give someone facts or information, or tell them about a matter within formal, academic, or professional contexts.",
+    "Please inform the receptionist when you arrive for your scheduled appointment at noon."
+  ],
+  [
+    "infringe",
+    "To actively break or violate the terms of a law, agreement, or right within formal, academic, or professional contexts.",
+    "Copying text directly without permission will infringe upon copyright laws protecting authors."
+  ],
+  [
+    "infuse",
+    "To fill or pervade someone or something with a quality or feeling within formal, academic, or professional contexts.",
+    "The new director hopes to infuse energy and enthusiasm into the research team."
+  ],
+  [
+    "inhibit",
+    "To hinder, restrain, or prevent an action, process, or growth of something within formal, academic, or professional contexts.",
+    "Cold temperatures can inhibit the growth of bacteria in fresh perishable food products."
+  ],
+  [
+    "injure",
+    "To cause physical harm or damage to a person, animal, or reputation within formal, academic, or professional contexts.",
+    "Wearing protective gear reduces the likelihood that athletes will injure themselves during training."
+  ],
+  [
+    "innovate",
+    "To make changes in something established, especially by introducing new methods within formal, academic, or professional contexts.",
+    "Tech companies must continuously innovate to remain competitive in fast-changing global markets."
+  ],
+  [
+    "inspect",
+    "To look at someone or something closely in order to assess condition within formal, academic, or professional contexts.",
+    "Engineers arrive annually to inspect the bridge structure for signs of wear or damage."
+  ],
+  [
+    "inspire",
+    "To fill someone with the urge or ability to do or feel something within formal, academic, or professional contexts.",
+    "The teacher's passionate enthusiasm for poetry helped inspire many students to write creatively."
+  ],
+  [
+    "institute",
+    "To introduce, establish, or initiate a system, policy, rule, or scheme within formal, academic, or professional contexts.",
+    "The university plans to institute new guidelines regarding academic honesty and plagiarism prevention."
+  ],
+  [
+    "instruct",
+    "To give direction, orders, or detailed information to someone about a task within formal, academic, or professional contexts.",
+    "Tutors instruct students on proper lab safety procedures before commencing chemistry experiments."
+  ],
+  [
+    "insulate",
+    "To protect something from cold, heat, noise, or electrical shock with materials within formal, academic, or professional contexts.",
+    "Adding double glazing helps insulate homes against cold outdoor winter temperatures effectively."
+  ],
+  [
+    "insult",
+    "To speak to or treat someone with disrespect or offensive abuse intentionally within formal, academic, or professional contexts.",
+    "It is impolite to insult others during a debate simply because you disagree."
+  ],
+  [
+    "intend",
+    "To have a course of action as one's purpose or objective, plan within formal, academic, or professional contexts.",
+    "We intend to finish the renovation work on the house before summer arrives."
+  ],
+  [
+    "intensify",
+    "To become or make greater, more serious, or more extreme in degree within formal, academic, or professional contexts.",
+    "Efforts to locate the missing hiker began to intensify as night fell fast."
+  ],
+  [
+    "interact",
+    "To act in such a way as to have an effect on another within formal, academic, or professional contexts.",
+    "Students are encouraged to interact during group activities to build teamwork and confidence."
+  ],
+  [
+    "intercede",
+    "To intervene on behalf of another, especially to reconcile differences or plead within formal, academic, or professional contexts.",
+    "A respected community leader stepped forward to intercede in the escalating local dispute."
+  ],
+  [
+    "intercept",
+    "To obstruct someone or something so as to prevent them reaching destination within formal, academic, or professional contexts.",
+    "Naval vessels were deployed to intercept illegal smuggling boats operating in international waters."
+  ],
+  [
+    "interchange",
+    "An act of exchanging things, ideas, or positions between two or more parties within formal, academic, or professional contexts.",
+    "The conference provided a valuable forum for the interchange of scientific research findings."
+  ],
+  [
+    "interject",
+    "To say something abruptly as an interruption during a conversation or speech within formal, academic, or professional contexts.",
+    "He raised his hand to interject a quick question during the lecture presentation."
+  ],
+  [
+    "interlink",
+    "To connect or be connected with each other, forming a chain within formal, academic, or professional contexts.",
+    "Economic factors often interlink with environmental issues to shape national policy decisions globally."
+  ],
+  [
+    "interpolate",
+    "To insert something between fixed points, or estimate values in data within formal, academic, or professional contexts.",
+    "Mathematicians can interpolate missing values in a sequence by studying existing data patterns."
+  ],
+  [
+    "interpret",
+    "To explain the meaning of information, words, actions, or translate spoken language within formal, academic, or professional contexts.",
+    "An experienced guide was present to interpret foreign texts for visiting museum guests."
+  ],
+  [
+    "interrogate",
+    "To ask questions of someone closely, aggressively, or formally, especially suspect within formal, academic, or professional contexts.",
+    "Detectives took three hours to interrogate the suspect regarding his whereabouts on Friday."
+  ],
+  [
+    "interrupt",
+    "To stop the continuous progress of an activity or speaker temporarily within formal, academic, or professional contexts.",
+    "Please do not interrupt the speaker while she is delivering her main presentation."
+  ],
+  [
+    "intervene",
+    "To take action intentionally to prevent or alter a result or course within formal, academic, or professional contexts.",
+    "The referee had to intervene when tempers flared between players during the match."
+  ],
+  [
+    "intimidate",
+    "To frighten or overawe someone, especially in order to make them comply within formal, academic, or professional contexts.",
+    "Bullying tactics are designed to intimidate others and undermine their confidence completely."
+  ],
+  [
+    "intoxicate",
+    "To cause someone to lose control of faculties, or excite greatly within formal, academic, or professional contexts.",
+    "The sudden smell of blooming jasmine served to intoxicate the senses of garden visitors."
+  ],
+  [
+    "intrigue",
+    "To arouse the curiosity or interest of someone fascinatingly and deeply within formal, academic, or professional contexts.",
+    "Ancient ruins deep within the jungle continue to intrigue archaeologists and adventure travel enthusiasts."
+  ],
+  [
+    "introduce",
+    "To bring something into use or operation for the first time, or present within formal, academic, or professional contexts.",
+    "The government plans to introduce new environmental legislation early in the coming year."
+  ],
+  [
+    "intrude",
+    "To put oneself into a place or situation where one is uninvited within formal, academic, or professional contexts.",
+    "Reporters were warned not to intrude upon the private lives of grieving family members."
+  ],
+  [
+    "inundate",
+    "To overwhelm someone with things or people to deal with, or flood within formal, academic, or professional contexts.",
+    "Call centres expect to inundate with inquiries after the new promotional discount launches."
+  ],
+  [
+    "inure",
+    "To accustom someone to something, especially something unpleasant or tough, over time within formal, academic, or professional contexts.",
+    "Years of harsh weather helped to inure mountain residents against cold winter blizzards."
+  ],
+  [
+    "invade",
+    "To enter a country or region with armed forces to occupy it within formal, academic, or professional contexts.",
+    "Hostile forces attempted to invade the neighbouring territory during the early morning hours."
+  ],
+  [
+    "invalidate",
+    "To make an argument, contract, or theory official, legal, or logically null within formal, academic, or professional contexts.",
+    "Failing to sign the document properly will invalidate the entire insurance contract completely."
+  ],
+  [
+    "invent",
+    "To create or design something that has not existed before, or originate within formal, academic, or professional contexts.",
+    "Engineers worked for years to invent a low-cost filter for producing drinking water."
+  ],
+  [
+    "boisterous",
+    "Noisy, energetic, rowdy, and wild or stormy in spirit, behavior, or climate conditions within formal, academic, or professional contexts.",
+    "The boisterous crowd cheered loudly when the local team scored the winning goal."
+  ],
+  [
+    "clandestine",
+    "Done in secret, kept hidden, or conducted illicitly away from public knowledge or scrutiny.",
+    "They held a clandestine meeting late at night to discuss sensitive company plans."
+  ],
+  [
+    "serendipity",
+    "The occurrence and development of events by chance in a happy, beneficial, or beneficial way.",
+    "Finding her dream job while visiting a friend felt like pure serendipity."
+  ]
+]
