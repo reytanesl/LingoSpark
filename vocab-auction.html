@@ -1236,6 +1236,7 @@ const state = {
     activePool: [],
     currentWord: null,
     definition: null,
+    definitionExample: "",
     choices: [],             // MC options (shuffled)
     isTypedRound: false,
     bets: {},                // word -> bet amount (MC)
@@ -1489,11 +1490,12 @@ function buildDeck() {
 }
 
 /* =========================================================
-   6. API — Free Dictionary API
-   Collects every safe definition, then picks the most
-   straightforward gloss (short, everyday English). Level
-   does not change this: Hard still uses a simple definition.
-   Rejects any gloss that leaks the answer.
+   6. API — learner dictionary (beginner / easy) +
+   Free Dictionary API (intermediate / hard)
+   Beginner and easy use Simple English Wiktionary so glosses
+   match classroom English (shoe = something on your feet,
+   not putting horseshoes on a horse). Other levels keep the
+   most common general-dictionary sense, still in plain English.
    ========================================================= */
 
 /**
@@ -1580,54 +1582,240 @@ function plainifyDefinition(text) {
 }
 
 /**
- * Higher = easier to read. Prefers short, everyday glosses over academic ones.
+ * Inflected forms of a headword (shoes, running, happier…).
  */
-function definitionStraightforwardScore(text) {
+function headwordForms(word) {
+    const w = String(word || "").toLowerCase().replace(/[^a-z'-]/g, "");
+    if (!w) return [];
+    const out = new Set([w]);
+    const add = (f) => { if (f && f.length > 1) out.add(f); };
+    add(w + "s");
+    add(w + "es");
+    add(w + "ed");
+    add(w + "ing");
+    add(w + "er");
+    add(w + "est");
+    add(w + "ly");
+    add(w + "ness");
+    if (w.endsWith("e")) {
+        add(w.slice(0, -1) + "ing");
+        add(w + "d");
+    }
+    if (w.endsWith("y") && w.length > 2 && !/[aeiou]y$/.test(w)) {
+        add(w.slice(0, -1) + "ies");
+        add(w.slice(0, -1) + "ied");
+        add(w.slice(0, -1) + "ier");
+        add(w.slice(0, -1) + "iest");
+        add(w.slice(0, -1) + "ily");
+    }
+    if (/[aeiou][bcdfghjklmnpqrstvwxyz]$/.test(w)) {
+        add(w + w.slice(-1) + "ing");
+        add(w + w.slice(-1) + "ed");
+    }
+    return [...out].sort((a, b) => b.length - a.length);
+}
+
+function stripHeadword(text, word) {
+    let t = " " + String(text || "") + " ";
+    headwordForms(word).forEach((form) => {
+        const esc = form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        t = t.replace(new RegExp("\\b" + esc + "\\b", "gi"), " ");
+    });
+    return t.replace(/\s+/g, " ").trim();
+}
+
+function tidyLearnerGloss(text) {
+    let t = String(text || "").trim();
+    t = t.replace(/^if you do something\s*,\s*/i, "");
+    t = t.replace(/^if you , you\s+/i, "To ");
+    t = t.replace(/^if you ,\s*/i, "To ");
+    t = t.replace(/^when you feel ,\s*/i, "");
+    t = t.replace(/^if someone is , they\s+/i, "Someone who ");
+    t = t.replace(/^if someone is ,\s*/i, "");
+    t = t.replace(/^(a|an|the) is (a|an|the)\s+/i, "$2 ");
+    t = t.replace(/^(a|an|the) is\s+/i, "");
+    t = t.replace(/^two are two\s+/i, "");
+    t = t.replace(/^\d+ are\s+/i, "");
+    t = t.replace(/^,\s*/, "");
+    t = t.replace(/\s+/g, " ").trim();
+    return t;
+}
+
+function isSpecialistLearnerSense(text) {
+    return /\b(horse|horseshoe|baseball|cricket|heraldry|nautical|anatomy|pathology|poker|blackjack|brake shoe|computing|mathematics|in law|nisi prius|heraldic)\b/i.test(String(text || ""));
+}
+
+function cleanWikitext(s) {
+    let t = String(s || "");
+    t = t.replace(/\{\{[^}]*\}\}/g, " ");
+    t = t.replace(/\[\[[^|\]]+\|([^\]]+)\]\]/g, "$1");
+    t = t.replace(/\[\[([^\]]+)\]\]/g, "$1");
+    t = t.replace(/'{2,}/g, "");
+    t = t.replace(/<[^>]+>/g, " ");
+    t = t.replace(/&nbsp;/g, " ");
+    t = t.replace(/\s+/g, " ").trim();
+    return t;
+}
+
+function prepareLearnerGloss(raw, word) {
+    const cleaned = cleanWikitext(raw);
+    const stripped = stripHeadword(cleaned, word);
+    const tidied = tidyLearnerGloss(stripped);
+    const plain = plainifyDefinition(tidied || stripped || cleaned);
+    if (!plain || definitionLeaksAnswer(stripHeadword(plain, word), word)) return "";
+    if (isSpecialistLearnerSense(cleaned)) return "";
+    return plain;
+}
+
+function parseSimpleWiktionarySenses(wikitext) {
+    const senses = [];
+    let pos = "";
+    String(wikitext || "").split(/\n/).forEach((line) => {
+        const heading = line.match(/^==+\s*(Noun|Verb|Adjective|Adverb|Preposition|Determiner|Pronoun|Conjunction|Interjection)\s*==+\s*$/i);
+        if (heading) {
+            pos = heading[1].toLowerCase();
+            return;
+        }
+        if (!pos) return;
+        if (/^#[^:*]/.test(line)) {
+            senses.push({ pos: pos, raw: line.replace(/^#\s*/, ""), example: "" });
+            return;
+        }
+        if (/^#:\s*/.test(line) && senses.length && senses[senses.length - 1].pos === pos && !senses[senses.length - 1].example) {
+            senses[senses.length - 1].example = line.replace(/^#:\s*/, "");
+        }
+    });
+    return senses;
+}
+
+const simpleWikiCache = new Map();
+
+async function fetchSimpleWiktionaryDefinition(word) {
+    const key = String(word || "").toLowerCase();
+    if (simpleWikiCache.has(key)) return simpleWikiCache.get(key);
+
+    const url = "https://simple.wiktionary.org/w/api.php?action=parse&page=" +
+        encodeURIComponent(key) +
+        "&prop=wikitext&format=json&formatversion=2&redirects=1&origin=*";
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) {
+            simpleWikiCache.set(key, null);
+            return null;
+        }
+        const data = await res.json();
+        const wikitext = data && data.parse && data.parse.wikitext;
+        if (!wikitext || data.error) {
+            simpleWikiCache.set(key, null);
+            return null;
+        }
+        const senses = parseSimpleWiktionarySenses(wikitext);
+        for (const sense of senses) {
+            const text = prepareLearnerGloss(sense.raw, word);
+            if (!text) continue;
+            const example = cleanWikitext(sense.example || "");
+            const picked = { text: text, example: example };
+            simpleWikiCache.set(key, picked);
+            return picked;
+        }
+        simpleWikiCache.set(key, null);
+        return null;
+    } catch (err) {
+        console.warn("Simple Wiktionary error:", err);
+        simpleWikiCache.set(key, null);
+        return null;
+    }
+}
+
+/**
+ * Wiktionary dumps often insert sense-group labels that are not real glosses.
+ */
+function looksLikeSenseHeader(text) {
     const t = String(text || "").trim();
+    const words = t.split(/\s+/).filter(Boolean);
+    if (words.length > 6) return false;
+    if (/[.!?]$/.test(t)) return false;
+    if (/^(a |an |the |to |someone |something |when |how )/i.test(t)) return false;
+    if (/^(in |of |various )/i.test(t) && words.length <= 5) return true;
+    if (words.length <= 4 && !/\b(is|are|person|thing|place|act|used|move|make)\b/i.test(t)) return true;
+    return false;
+}
+
+/**
+ * Higher = more likely the everyday, high-frequency sense.
+ * Dictionary order is the main signal; wording is only a tie-break.
+ */
+function definitionCommonScore(item) {
+    let score = 400;
+    score -= item.entryI * 90;
+    score -= item.meaningI * 45;
+    score -= item.defI * 28;
+
+    const pos = item.pos;
+    if (pos === "noun" || pos === "verb") score += 10;
+    else if (pos === "adjective" || pos === "adverb") score += 6;
+    else score -= 8;
+
+    const low = String(item.raw || item.text || "").toLowerCase();
+    if (/\b(archaic|obsolete|rare|dialect|heraldry|nautical|anatomy|pathology|chiefly|historical)\b/.test(low)) {
+        score -= 100;
+    }
+    if (/\b(in certain games|nisi prius|rectum|genitalia|copulation|heraldic|computing|mathematics|in law)\b/.test(low)) {
+        score -= 50;
+    }
+
+    const t = String(item.text || "").trim();
     const words = t.split(/\s+/).filter(Boolean).length;
-    let score = 40;
-    if (words >= 5 && words <= 16) score += 24;
-    else if (words >= 4 && words <= 22) score += 12;
-    else if (words > 28) score -= 18;
-    else if (words < 4) score -= 6;
-
-    const low = t.toLowerCase();
-    [
-        "of or relating to", "relating to", "characterized by", "pertaining to",
-        "the quality or state", "the act of", "the process of", "denoting",
-        "in which", "whereby", "thereof", "used to refer", "used as a",
-        "that which", "a form of", "especially", "typically"
-    ].forEach((j) => { if (low.indexOf(j) !== -1) score -= 14; });
-
-    if (/[;:]/.test(t)) score -= 6;
-    if ((t.match(/,/g) || []).length > 2) score -= 6;
-    if (t.length > 140) score -= 10;
-    if (/^(a |an |the |to |someone |something |when |how |very |not )/i.test(t)) score += 8;
+    if (words >= 5 && words <= 18) score += 8;
+    else if (words > 28) score -= 6;
+    else if (words < 4) score -= 4;
+    if (/^(a |an |the |to |someone |something )/i.test(t)) score += 3;
     return score;
 }
 
-function pickStraightforwardDefinition(data, word) {
-    const raw = [];
-    for (const entry of data || []) {
-        for (const meaning of entry.meanings || []) {
-            for (const defObj of meaning.definitions || []) {
-                const text = (defObj.definition || "").trim();
-                if (text && !definitionLeaksAnswer(text, word)) raw.push(text);
-            }
-        }
-    }
-    if (!raw.length) return null;
-
-    const scored = raw.map((text) => {
-        const plain = plainifyDefinition(text);
-        const use = (plain && !definitionLeaksAnswer(plain, word)) ? plain : text;
-        return { text: use, score: definitionStraightforwardScore(use) };
+/**
+ * Choose the most common safe sense, then keep a short everyday wording.
+ */
+function pickCommonDefinition(data, word) {
+    const candidates = [];
+    (data || []).forEach((entry, entryI) => {
+        (entry.meanings || []).forEach((meaning, meaningI) => {
+            const pos = String(meaning.partOfSpeech || "").toLowerCase();
+            (meaning.definitions || []).forEach((defObj, defI) => {
+                const raw = String(defObj.definition || "").trim();
+                if (!raw || looksLikeSenseHeader(raw)) return;
+                if ((state.level === "beginner" || state.level === "easy") && isSpecialistLearnerSense(raw)) return;
+                const plain = plainifyDefinition(stripHeadword(raw, word)) || plainifyDefinition(raw);
+                const use = (plain && !definitionLeaksAnswer(stripHeadword(plain, word), word)) ? plain : "";
+                if (!use) return;
+                candidates.push({
+                    text: use,
+                    raw: raw,
+                    example: String(defObj.example || "").trim(),
+                    entryI: entryI,
+                    meaningI: meaningI,
+                    defI: defI,
+                    pos: pos
+                });
+            });
+        });
     });
-    scored.sort((a, b) => b.score - a.score);
-    return scored[0].text;
+    if (!candidates.length) return null;
+
+    candidates.forEach((c) => { c.score = definitionCommonScore(c); });
+    candidates.sort((a, b) => b.score - a.score);
+    const best = candidates[0];
+    if (!best.example) {
+        const sameSense = candidates.find((c) =>
+            c.entryI === best.entryI && c.meaningI === best.meaningI && c.example
+        );
+        if (sameSense) best.example = sameSense.example;
+    }
+    return { text: best.text, example: best.example || "" };
 }
 
-async function fetchDefinition(word) {
+async function fetchFreeDictionary(word) {
     const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
 
     try {
@@ -1640,12 +1828,23 @@ async function fetchDefinition(word) {
             return null;
         }
 
-        const data = await res.json();
-        return pickStraightforwardDefinition(data, word);
+        return await res.json();
     } catch (err) {
         console.warn("Dictionary API error:", err);
         return null;
     }
+}
+
+async function fetchDefinition(word) {
+    const level = state.level;
+    if (level === "beginner" || level === "easy") {
+        const learner = await fetchSimpleWiktionaryDefinition(word);
+        if (learner && learner.text) return learner;
+    }
+
+    const data = await fetchFreeDictionary(word);
+    if (!data) return null;
+    return pickCommonDefinition(data, word);
 }
 
 /**
@@ -1685,11 +1884,11 @@ async function resolveWordAndDefinition() {
     for (let i = 0; i < maxAttempts; i++) {
         const word = pickTargetWord();
 
-        const definition = await fetchDefinition(word);
-        if (definition) {
+        const picked = await fetchDefinition(word);
+        if (picked && picked.text) {
             state.sessionUsed.push(word);
             saveRecentWord(state.level, word);
-            return { word, definition };
+            return { word, definition: picked.text, example: picked.example || "" };
         }
 
         // Leaking definition or API miss — skip without penalising
@@ -1788,6 +1987,7 @@ async function startNextRound() {
     state.hint2Used = false;
     state.currentWord = null;
     state.definition = null;
+    state.definitionExample = "";
     state.choices = [];
 
     // Mixed mode alternates per player's own round count, so both players
@@ -1815,6 +2015,7 @@ async function startNextRound() {
 
     state.currentWord = resolved.word;
     state.definition = resolved.definition;
+    state.definitionExample = resolved.example || "";
     state.choices = buildChoices(state.currentWord);
 
     // Initialise bets to 0 for each choice
@@ -2061,10 +2262,18 @@ function blankWordInSentence(sentence, word) {
 }
 
 /**
- * Fetch an example sentence from the Free Dictionary API and blank the word.
- * Returns the blanked sentence string, or null if none found.
+ * Example sentence for the same common sense as the round definition.
+ * Prefers the example stored with that sense; otherwise the earliest
+ * dictionary example that contains the word.
  */
 async function fetchBlankedExample(word) {
+    const fromSense = String(state.definitionExample || "").trim();
+    if (fromSense) {
+        const blanked = blankWordInSentence(fromSense, word);
+        if (blanked && blanked !== fromSense) return blanked;
+        if (blanked) return blanked;
+    }
+
     const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
 
     try {
@@ -2072,28 +2281,22 @@ async function fetchBlankedExample(word) {
         if (!res.ok) return null;
 
         const data = await res.json();
-        const examples = [];
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const containsWord = new RegExp("\\b" + escaped, "i");
+        let fallback = "";
 
-        for (const entry of data) {
+        for (const entry of data || []) {
             for (const meaning of entry.meanings || []) {
                 for (const defObj of meaning.definitions || []) {
-                    if (defObj.example && typeof defObj.example === "string") {
-                        examples.push(defObj.example.trim());
-                    }
+                    const ex = String(defObj.example || "").trim();
+                    if (!ex) continue;
+                    if (containsWord.test(ex)) return blankWordInSentence(ex, word);
+                    if (!fallback) fallback = ex;
                 }
             }
         }
 
-        if (examples.length === 0) return null;
-
-        // Prefer an example that actually contains the target word
-        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const containsWord = new RegExp("\\b" + escaped, "i");
-        const preferred = examples.filter((ex) => containsWord.test(ex));
-        const pool = preferred.length > 0 ? preferred : examples;
-        const chosen = pool[Math.floor(Math.random() * pool.length)];
-
-        return blankWordInSentence(chosen, word);
+        return fallback ? blankWordInSentence(fallback, word) : null;
     } catch (err) {
         console.warn("Example sentence fetch failed:", err);
         return null;
@@ -2684,6 +2887,7 @@ function resetToMenu() {
     state.hint2Used = false;
     state.currentWord = null;
     state.definition = null;
+    state.definitionExample = "";
     state.choices = [];
     state.sessionUsed = [];
     state.deck = [];
