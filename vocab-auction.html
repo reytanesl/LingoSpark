@@ -265,6 +265,19 @@
             font-weight: 600;
         }
 
+        .definition-box .term-length-note {
+            margin-top: 0.55rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .bank-count {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
         .mode-badge {
             display: inline-block;
             font-size: 0.7rem;
@@ -442,7 +455,6 @@
             font-family: var(--font-primary);
             font-weight: 800;
             font-size: 1.55rem;
-            letter-spacing: 0.35em;
             color: var(--royal-blue);
             background: rgba(1, 33, 105, 0.05);
             border: 2px dashed var(--border-light);
@@ -450,9 +462,19 @@
             padding: 0.75rem 1.25rem;
             text-align: center;
             word-break: break-word;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.35rem 1.35rem;
         }
 
-        .hint-display.visible { display: block; }
+        .hint-display.visible { display: flex; }
+
+        .hint-word {
+            display: inline-block;
+            letter-spacing: 0.38em;
+            margin-right: -0.38em;
+        }
 
         .example-hint {
             display: none;
@@ -841,12 +863,15 @@
         <div class="form-group">
             <label class="group-label"><i class="fa-solid fa-layer-group"></i> Level</label>
             <div class="option-row" id="level-options">
-                <label><input type="radio" name="level" value="beginner" checked> Beginner</label>
-                <label><input type="radio" name="level" value="easy"> Easy</label>
-                <label><input type="radio" name="level" value="intermediate"> Intermediate</label>
-                <label><input type="radio" name="level" value="advanced"> Advanced</label>
+                <label><input type="radio" name="level" value="beginner" checked> Beginner <span class="bank-count" data-bank="beginner"></span></label>
+                <label><input type="radio" name="level" value="easy"> Easy <span class="bank-count" data-bank="easy"></span></label>
+                <label><input type="radio" name="level" value="intermediate"> Intermediate <span class="bank-count" data-bank="intermediate"></span></label>
+                <label><input type="radio" name="level" value="advanced"> Advanced <span class="bank-count" data-bank="advanced"></span></label>
                 <label><input type="radio" name="level" value="custom"> Custom</label>
             </div>
+            <p class="hint-cost-note" id="bank-size-note" style="text-align: left; margin-top: 0.65rem;">
+                Local banks of words, phrases and idioms — no dictionary lookup.
+            </p>
             <div id="custom-words-wrap">
                 <textarea id="custom-words" placeholder="Words from the built-in banks, or term = definition (one per line). Example: apple = A round fruit…"></textarea>
             </div>
@@ -925,6 +950,7 @@
             <div class="definition-box">
                 <div class="eyebrow">Definition</div>
                 <p id="definition-text">—</p>
+                <p id="term-length-note" class="term-length-note"></p>
             </div>
 
             <div id="mode-badge" class="mode-badge">Multiple Choice</div>
@@ -950,7 +976,7 @@
                     <div id="hint-display" class="hint-display" aria-live="polite"></div>
                     <div id="example-hint" class="example-hint" aria-live="polite"></div>
                 </div>
-                <input type="text" id="typed-answer" placeholder="Type the word…" autocomplete="off" spellcheck="false">
+                <input type="text" id="typed-answer" placeholder="Type the word or phrase…" autocomplete="off" spellcheck="false">
                 <div class="typed-bet">
                     <div class="word">Your Bet</div>
                     <div class="bet-controls">
@@ -1285,6 +1311,7 @@ const els = {
     hudRound: $("#hud-round"),
     hudBankroll: $("#hud-bankroll"),
     definitionText: $("#definition-text"),
+    termLengthNote: $("#term-length-note"),
     modeBadge: $("#mode-badge"),
     mcUi: $("#mc-ui"),
     typedUi: $("#typed-ui"),
@@ -1675,6 +1702,9 @@ function renderRound() {
 
     updateHud();
     els.definitionText.textContent = state.definition;
+    if (els.termLengthNote) {
+        els.termLengthNote.textContent = formatTermLength(state.currentWord);
+    }
 
     if (state.isTypedRound) {
         els.modeBadge.textContent = "Typed Input";
@@ -1860,50 +1890,102 @@ function getHintCost() {
  * Non-letter characters (rare) stay visible. At least one letter is
  * revealed for words of length ≥ 2; never reveal the entire word.
  */
-function buildHintPattern(word) {
-    const chars = word.split("");
+function splitTermWords(term) {
+    return String(term || "").trim().split(/\s+/).filter(Boolean);
+}
+
+function formatTermLength(term) {
+    const n = splitTermWords(term).length;
+    if (n <= 1) return "1 word";
+    return n + " words · phrase";
+}
+
+function escapeRegex(s) {
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function inflectionPattern(word) {
+    return escapeRegex(word) + "(?:s|es|ies|ed|ing|er|ers|est|ly|'s)?";
+}
+
+/**
+ * Partial letter reveal (30–50%). Each word of a phrase is its own
+ * group, with a wider gap between words.
+ */
+function buildHintHtml(term) {
+    const chars = Array.from(String(term || ""));
     const letterIndexes = [];
     chars.forEach((ch, i) => {
         if (/[a-zA-Z]/.test(ch)) letterIndexes.push(i);
     });
 
     const n = letterIndexes.length;
-    if (n === 0) return word;
-
-    // Target reveal ratio: random in [0.30, 0.50]
-    let revealCount = Math.round(n * (0.3 + Math.random() * 0.2));
-    revealCount = Math.max(1, Math.min(revealCount, n - 1)); // never full word if n > 1
-    if (n === 1) revealCount = 1;
-
-    // Shuffle letter indexes and pick the first revealCount
-    const shuffled = letterIndexes.slice();
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    const revealSet = new Set();
+    if (n > 0) {
+        let revealCount = Math.round(n * (0.3 + Math.random() * 0.2));
+        revealCount = Math.max(1, Math.min(revealCount, n - 1));
+        if (n === 1) revealCount = 1;
+        const shuffled = letterIndexes.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        shuffled.slice(0, revealCount).forEach((idx) => revealSet.add(idx));
     }
-    const revealSet = new Set(shuffled.slice(0, revealCount));
 
-    return chars
-        .map((ch, i) => {
-            if (!/[a-zA-Z]/.test(ch)) return ch;
-            return revealSet.has(i) ? ch : "_";
-        })
-        .join(" ");
+    const words = [];
+    let current = "";
+    const flush = () => {
+        if (current) {
+            words.push(current);
+            current = "";
+        }
+    };
+    chars.forEach((ch, i) => {
+        if (/\s/.test(ch)) {
+            flush();
+            return;
+        }
+        if (!/[a-zA-Z]/.test(ch)) {
+            current += escapeHtml(ch);
+            return;
+        }
+        current += revealSet.has(i) ? escapeHtml(ch) : "_";
+    });
+    flush();
+    return words.map((w) => '<span class="hint-word">' + w + "</span>").join("");
 }
 
 /**
- * Blank the target word (and common inflections) in an example sentence.
+ * Cover the target term in an example sentence.
+ * Phrases are blanked as a whole (one _____ per word).
  */
 function blankWordInSentence(sentence, word) {
-    const w = word.replace(/[^a-zA-Z'-]/g, "");
-    if (!w) return sentence;
-    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    // Match the lemma plus light inflectional endings so e.g. "running" blanks for "run"
-    const re = new RegExp(
-        "\\b(" + escaped + "(?:s|es|ed|ing|er|ers|est|ly|ness|ity|ities)?)\\b",
-        "gi"
-    );
-    return sentence.replace(re, "_____");
+    const words = splitTermWords(word);
+    if (!words.length) return sentence;
+    let out = String(sentence || "");
+    const blank = words.map(() => "_____").join(" ");
+    const exact = (w) => escapeRegex(w);
+    const mid = words.slice(1, -1).map(exact).join("\\s+");
+    const midPart = words.length === 2 ? "\\s+" : (mid ? "\\s+" + mid + "\\s+" : "\\s+");
+    const patterns = [];
+    if (words.length === 1) {
+        patterns.push("\\b" + inflectionPattern(words[0]) + "\\b");
+    } else {
+        patterns.push("\\b" + words.map(exact).join("\\s+") + "\\b");
+        patterns.push("\\b" + inflectionPattern(words[0]) + midPart + exact(words[words.length - 1]) + "\\b");
+        patterns.push("\\b" + exact(words[0]) + midPart + inflectionPattern(words[words.length - 1]) + "\\b");
+        patterns.push("\\b" + inflectionPattern(words[0]) + midPart + inflectionPattern(words[words.length - 1]) + "\\b");
+    }
+    for (const p of patterns) {
+        const next = out.replace(new RegExp(p, "gi"), blank);
+        if (next !== out) return next;
+    }
+    words.forEach((w) => {
+        if (w.replace(/[^a-zA-Z]/g, "").length < 3) return;
+        out = out.replace(new RegExp("\\b" + inflectionPattern(w) + "\\b", "gi"), "_____");
+    });
+    return out;
 }
 
 /**
@@ -1916,7 +1998,7 @@ async function fetchBlankedExample(word) {
     if (!fromSense) return null;
     const blanked = blankWordInSentence(fromSense, word);
     if (blanked && blanked !== fromSense) return blanked;
-    return blanked || null;
+    return null;
 }
 
 function syncTypedBetLimits() {
@@ -1972,8 +2054,7 @@ function useHint() {
     state.bankroll -= cost;
     state.hintUsed = true;
 
-    const pattern = buildHintPattern(state.currentWord);
-    els.hintDisplay.textContent = pattern;
+    els.hintDisplay.innerHTML = buildHintHtml(state.currentWord);
     els.hintDisplay.classList.add("visible");
 
     updateHud();
@@ -2043,7 +2124,7 @@ function renderTypedUI() {
     els.typedSlider.disabled = false;
     els.typedAmount.disabled = false;
 
-    els.hintDisplay.textContent = "";
+    els.hintDisplay.innerHTML = "";
     els.hintDisplay.classList.remove("visible");
     els.exampleHint.innerHTML = "";
     els.exampleHint.classList.remove("visible");
@@ -2534,6 +2615,24 @@ if (new URLSearchParams(location.search).get("embed") === "1") {
     document.documentElement.classList.add("embed-root");
     document.body.classList.add("embed");
 }
+
+function fillBankCounts() {
+    const bank = getAuctionBank();
+    const labels = { beginner: "Beginner", easy: "Easy", intermediate: "Intermediate", advanced: "Advanced" };
+    const parts = [];
+    ["beginner", "easy", "intermediate", "advanced"].forEach((level) => {
+        const n = (bank[level] || []).length;
+        document.querySelectorAll('[data-bank="' + level + '"]').forEach((el) => {
+            el.textContent = "(" + n.toLocaleString("en-GB") + ")";
+        });
+        parts.push(labels[level] + " " + n.toLocaleString("en-GB"));
+    });
+    const note = document.getElementById("bank-size-note");
+    if (note) {
+        note.textContent = parts.join(" · ") + " terms (words, phrases and idioms).";
+    }
+}
+fillBankCounts();
 </script>
 </body>
 </html>
