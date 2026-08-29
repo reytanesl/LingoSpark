@@ -534,6 +534,26 @@
         .ws-card-bar-fill { height: 100%; background: var(--success-green); border-radius: 3px; transition: width 0.3s; }
         .ws-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
         .ws-card-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+        .ws-editor { max-width: 720px; margin: 0 auto 1.5rem; }
+        .ws-editor-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
+        .ws-editor-head h3 { margin: 0; font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.15rem; }
+        .ws-editor label { display: block; font-weight: 600; font-size: 0.88rem; margin: 0 0 0.35rem; }
+        .ws-editor-name { width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.9rem; font-size: 1rem; }
+        .ws-edit-note { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.8rem; }
+        .ws-edit-cols { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.4rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 0.3rem; padding: 0 0.1rem; }
+        .ws-edit-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.4rem; align-items: start; margin-bottom: 0.45rem; }
+        .ws-edit-row input, .ws-edit-row textarea {
+            width: 100%; padding: 0.45rem 0.5rem; border: 2px solid var(--border-light); border-radius: 6px;
+            font-family: var(--font-secondary); font-size: 0.92rem; line-height: 1.35;
+        }
+        .ws-edit-row textarea { min-height: 2.5rem; resize: vertical; }
+        .ws-edit-row .ws-edit-del { padding: 0.4rem 0.55rem; min-width: 0; }
+        .ws-editor-actions { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.9rem; }
+        @media (max-width: 640px) {
+            .ws-edit-cols { display: none; }
+            .ws-edit-row { grid-template-columns: 1fr auto; }
+            .ws-edit-row textarea { grid-column: 1 / -1; }
+        }
         .ws-demo-badge {
             display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.4px;
             text-transform: uppercase; background: rgba(1, 33, 105, 0.08); color: var(--royal-blue);
@@ -874,8 +894,7 @@
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, then get AI examiner feedback.</p></div>
                 <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
-                <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Persons: I, You, We, They, He, She. Ages 8–9 add can and like; 10–12 add must and have to. Things are grouped (food, furniture, school…). Open or close a category to keep the bank clear; click a tile to hear it (nouns in the singular). Switch EN | PL for help. Signed-in players collect each correct sentence, with a Polish translation, in a Colour Blocks set.</p></div>
-                <div class="guide-item"><strong>Line Up</strong><p>Look at the picture clues, then drag the scrambled word tiles onto the numbered boxes to rebuild the sentence. Tap a tile then a box if dragging is awkward. Ages 8–9 use There is/are, have got, can and like; 10–12 add must, have to and questions. Switch EN | PL for help. Signed-in players save each correct sentence to a Line Up set.</p></div>
+                <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Persons: I, You, We, They, He, She. Ages 8–9 add can and like; 10–12 add must and have to. Things are grouped (food, furniture, school…). Open or close a category to keep the bank clear; click a tile to hear it (nouns in the singular). The Line Up tab is pictured scramble: drag tiles onto numbered boxes (or tap a tile, then a box). Switch EN | PL for help. Signed-in players collect each correct sentence, with a Polish translation, in a Colour Blocks set.</p></div>
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
@@ -921,7 +940,9 @@
             <div class="category-header">
                 <i class="fa-solid fa-book cat-icon"></i><h2>Word Sets</h2>
             </div>
-            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — including informal → formal pairs from Vocabulary Upgrade — and track mastery.</p>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — including informal → formal pairs from Vocabulary Upgrade — and track mastery. Open <strong>Edit</strong> on any list to rename it and change each word or phrase.</p>
+            <div id="ws-editor" class="ws-editor" hidden></div>
+            <div id="mysets-browse">
             <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue); max-width: 640px; margin-left: auto; margin-right: auto;">
                 <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
                 <input type="text" id="mysets-save-name" placeholder="Set name..." maxlength="80" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.5rem;">
@@ -929,6 +950,7 @@
             </div>
             <div id="mysets-list" style="min-height: 60px;">
                 <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
+            </div>
             </div>
         </div>
 
@@ -991,7 +1013,7 @@
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">Dictation from A1 + Colour Blocks + Line Up + 3 AI writing games — choose A2 or B1 for AI games</span>
+                        <span class="pe-pack-meta">Dictation from A1 + Colour Blocks + 3 AI writing games — choose A2 or B1 for AI games</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
@@ -1000,7 +1022,7 @@
                     <button type="button" class="pe-level-btn" data-level="A2" onclick="selectPeLevel('A2')">A2</button>
                     <button type="button" class="pe-level-btn" data-level="B1" onclick="selectPeLevel('B1')">B1</button>
                     <button type="button" class="pe-level-btn" id="pe-custom-toggle-btn" onclick="togglePeCustomMode()">Custom Vocab</button>
-                    <div class="pe-level-hint" id="pe-level-hint">Select A2 or B1 for AI games, or Custom Vocab. Dictation, Colour Blocks and Line Up have their own setup and do not need this level.</div>
+                    <div class="pe-level-hint" id="pe-level-hint">Select A2 or B1 for AI games, or Custom Vocab. Dictation and Colour Blocks have their own setup and do not need this level.</div>
                     <div class="pe-custom-panel" id="pe-custom-panel">
                         <textarea id="pe-custom-glossary-input" placeholder="Paste custom glossary words/phrases (one per line, or use Term = Meaning format)"></textarea>
                         <button type="button" class="btn btn-outline" onclick="applyPeCustomGlossary()">Apply Custom Glossary</button>
@@ -1009,8 +1031,7 @@
                 </div>
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
                     <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><span class="card-corner-badge">from 8 yrs</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, hear rearrange tasks, and practise gaps, multiple choice and word order. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><span class="card-corner-badge">from 8 yrs</span><div class="icon-container"><i class="fa-solid fa-table-cells"></i></div><h2>Line Up</h2><p>Drag pictured word tiles onto numbered boxes to rebuild a scrambled sentence. Look at the pictures, then put every tile in the right place.</p><a href="#/setup/pe-line" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><span class="card-corner-badge">from 8 yrs</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
@@ -1145,7 +1166,7 @@
 
             <div id="colour-setup-note" class="form-group" style="display:none; background: rgba(124,58,237,0.08); border-left-color: #7c3aed;">
                 <label style="color: #7c3aed;"><i class="fa-solid fa-cubes"></i> Colour Blocks</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Colour tiles: blue There is, green There are, purple have got, yellow a/an/the. Ages 8–9 also get can and like; 10–12 get must and have to (don’t + have to are two tiles). Things are grouped (food, furniture, school…).</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Colour tiles: blue There is, green There are, purple have got, yellow a/an/the. Ages 8–9 also get can and like; 10–12 get must and have to (don’t + have to are two tiles). Things are grouped (food, furniture, school…). The Line Up tab is pictured scramble: drag tiles onto numbered boxes.</p>
             </div>
 
             <div class="form-group" id="pe-colour-settings" style="display: none;">
@@ -1153,19 +1174,6 @@
                 <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
                     <label><input type="radio" name="colour-age" value="young" checked> 8–9 years — There is/are, have got, can, like, a/an; one picture at a time</label>
                     <label><input type="radio" name="colour-age" value="older"> 10–12 years — plus must, have to, don’t have to; choose a goal then check</label>
-                </div>
-            </div>
-
-            <div id="line-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
-                <label style="color: #0e7490;"><i class="fa-solid fa-table-cells"></i> Line Up</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Scrambled pictured tiles. Drag each word onto the numbered boxes to rebuild the sentence. Picture clues show the meaning. Ages 8–9: There is/are, have got, can, like. 10–12 also get must, have to and questions.</p>
-            </div>
-
-            <div class="form-group" id="pe-line-settings" style="display: none;">
-                <label><i class="fa-solid fa-child"></i> Age band:</label>
-                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
-                    <label><input type="radio" name="line-age" value="young" checked> 8–9 years — There is/are, have got, can, like, a/an</label>
-                    <label><input type="radio" name="line-age" value="older"> 10–12 years — plus must, have to, questions and negatives</label>
                 </div>
             </div>
 
@@ -1687,31 +1695,10 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Each word is its own tile (a and an are separate; have to is one tile; don’t have to is don’t + have to). Persons: I, You, We, They, He, She. Same colours everywhere. Things are grouped — food, furniture, school, clothes… Open or close a category. Build a sentence or try text tasks. After a wrong Check, Ask why / Dopytaj AI explains in simple language for this age. Use EN | PL for help text, and PL tiles on/off to show Polish words on the tiles. Signed-in players save each correct sentence (with a Polish translation) to a Colour Blocks set in My Sets.</div>
-                <div class="pe-instr-pl">Każde słowo to osobny kafel (a i an osobno; have to to jeden kafel; don’t have to to don’t + have to). Osoby: I, You, We, They, He, She. Kolory są zawsze te same. Rzeczy są w kategoriach — jedzenie, meble, szkoła, ubrania… Otwórz lub zamknij kategorię. Składaj zdania albo rób ćwiczenia tekstowe. Po błędnym Sprawdź przycisk Dopytaj AI tłumaczy prosto, na poziomie tej grupy wiekowej. EN | PL zmienia pomoc, a PL na kafelkach pokazuje polskie słowa. Po zalogowaniu każde poprawne zdanie (z polskim tłumaczeniem) trafia do zestawu Colour Blocks w My Sets.</div>
+                <div class="pe-instr-en">Each word is its own tile (a and an are separate; have to is one tile; don’t have to is don’t + have to). Persons: I, You, We, They, He, She. Same colours everywhere. Things are grouped — food, furniture, school, clothes… Open or close a category. Build a sentence, try text tasks, or open the Line Up tab and drag pictured tiles onto numbered boxes. After a wrong Check, Ask why / Dopytaj AI explains in simple language for this age. Use EN | PL for help text, and PL tiles on/off to show Polish words on the tiles. Signed-in players save each correct sentence (with a Polish translation) to a Colour Blocks set in My Sets.</div>
+                <div class="pe-instr-pl">Każde słowo to osobny kafel (a i an osobno; have to to jeden kafel; don’t have to to don’t + have to). Osoby: I, You, We, They, He, She. Kolory są zawsze te same. Rzeczy są w kategoriach — jedzenie, meble, szkoła, ubrania… Otwórz lub zamknij kategorię. Składaj zdania, rób ćwiczenia tekstowe albo otwórz zakładkę Ułóż zdanie i przesuń obrazkowe kafelki na ponumerowane okienka. Po błędnym Sprawdź przycisk Dopytaj AI tłumaczy prosto, na poziomie tej grupy wiekowej. EN | PL zmienia pomoc, a PL na kafelkach pokazuje polskie słowa. Po zalogowaniu każde poprawne zdanie (z polskim tłumaczeniem) trafia do zestawu Colour Blocks w My Sets.</div>
             </div>
             <div id="colour-blocks-root"></div>
-        </div>
-
-        <!-- PRIMARY ENGLISH: LINE UP -->
-        <div id="screen-pe-line" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-line">0</span></span>
-            </div>
-            <div class="game-header">
-                <h2>Line Up <span class="pe-level-badge" id="line-age-badge">8–9</span></h2>
-                <button class="btn btn-outline" onclick="initLineUp()" id="pe-line-btn">New sentence <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
-                </div>
-                <div class="pe-instr-en">Look at the picture clues. Drag the scrambled tiles onto the numbered boxes to make the sentence. You can also tap a tile, then tap a box. Hear it reads the sentence aloud. After Check, green boxes are right and red boxes need moving. Signed-in players save each correct sentence (with a Polish translation) to a Line Up set in My Sets.</div>
-                <div class="pe-instr-pl">Spójrz na obrazki-podpowiedzi. Przesuń rozsypane kafelki na ponumerowane okienka, żeby złożyć zdanie. Możesz też stuknąć kafel, a potem okienko. Posłuchaj odczytuje zdanie. Po Sprawdź zielone okienka są dobre, a czerwone trzeba przesunąć. Po zalogowaniu każde poprawne zdanie (z polskim tłumaczeniem) trafia do zestawu Line Up w My Sets.</div>
-            </div>
-            <div id="line-up-root"></div>
         </div>
 
         <!-- CORE VOCAB: BOMB DEFUSAL -->
@@ -1943,8 +1930,8 @@
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-line']);
-        const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour', 'pe-line']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
+        const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
         const VOCAB_GAMES = new Set(['flashcard', 'bomb', 'grid']);
 
         function routePath(hash) {
@@ -1974,7 +1961,12 @@
                 const path = routePath(hash);
                 const parts = path.split('/').filter(Boolean);
                 const root = parts[0] || 'home';
-                const arg = parts[1] || '';
+                let arg = parts[1] || '';
+                if ((root === 'setup' || root === 'game') && arg === 'pe-line') {
+                    window.colourStartTab = 'lineup';
+                    arg = 'pe-colour';
+                    history.replaceState(null, '', '#/' + root + '/pe-colour');
+                }
 
                 if (root === 'home') {
                     showScreen('home');
@@ -2022,7 +2014,6 @@
                         if (arg === 'pe-exam') initPeExam();
                         if (arg === 'pe-dictation') initPeDictation();
                         if (arg === 'pe-colour') initColourBlocks();
-                        if (arg === 'pe-line') initLineUp();
                     }
                 } else {
                     showScreen('home');
@@ -2212,10 +2203,17 @@
         }
 
         function refreshMySetsView() {
-            loadMySets();
+            if (wsEditor) {
+                syncWsEditorFromDom();
+                showWordSetEditorPane(true);
+                renderWordSetEditor();
+            } else {
+                showWordSetEditorPane(false);
+                loadMySets();
+            }
             const glossary = document.getElementById('glossary-input');
             const saveRow = document.getElementById('mysets-save-row');
-            if (saveRow) saveRow.style.display = (glossary && glossary.value.trim() && isLoggedIn()) ? 'block' : 'none';
+            if (saveRow) saveRow.style.display = (glossary && glossary.value.trim() && isLoggedIn() && !wsEditor) ? 'block' : 'none';
         }
 
         function getDemoSets() {
@@ -2274,6 +2272,7 @@
                     <div class="ws-card-meta">${esc(s.description || 'Ready-made set for every player')}</div>
                     <div class="ws-card-actions">
                         <button class="btn btn-blue" onclick="applyDemoWordSet('${esc(s.id)}', { closeMenu: true })"><i class="fa-solid fa-play"></i> Load</button>
+                        <button class="btn btn-outline" onclick="editDemoWordSet('${esc(s.id)}')"><i class="fa-solid fa-pen"></i> Edit</button>
                     </div>
                 </div>
             `).join('');
@@ -2305,6 +2304,7 @@
                             <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
                             <div class="ws-card-actions">
                                 <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
+                                <button class="btn btn-outline" onclick="editWordSet(${s.id})"><i class="fa-solid fa-pen"></i> Edit</button>
                                 <button class="btn btn-grey" onclick="deleteWordSet(${s.id})"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>`;
@@ -2318,6 +2318,184 @@
         }
 
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        let wsEditor = null;
+        let wsEditorBusy = false;
+
+        function showWordSetEditorPane(on) {
+            const editor = document.getElementById('ws-editor');
+            const browse = document.getElementById('mysets-browse');
+            if (editor) editor.hidden = !on;
+            if (browse) browse.style.display = on ? 'none' : '';
+        }
+
+        function normaliseWsItems(items) {
+            return (items || []).map((item) => ({
+                id: Number(item.id) > 0 ? Number(item.id) : null,
+                term: String(item.term || '').trim(),
+                definition: String(item.definition || item.def || '').trim()
+            }));
+        }
+
+        function openWordSetEditor({ id, name, items, isDemo }) {
+            wsEditor = {
+                id: id || null,
+                name: name || '',
+                items: normaliseWsItems(items),
+                isDemo: !!isDemo
+            };
+            if (!wsEditor.items.length) wsEditor.items.push({ id: null, term: '', definition: '' });
+            showWordSetEditorPane(true);
+            const saveRow = document.getElementById('mysets-save-row');
+            if (saveRow) saveRow.style.display = 'none';
+            renderWordSetEditor();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function closeWordSetEditor() {
+            wsEditor = null;
+            wsEditorBusy = false;
+            showWordSetEditorPane(false);
+            const editor = document.getElementById('ws-editor');
+            if (editor) editor.innerHTML = '';
+            loadMySets();
+            const glossary = document.getElementById('glossary-input');
+            const saveRow = document.getElementById('mysets-save-row');
+            if (saveRow) saveRow.style.display = (glossary && glossary.value.trim() && isLoggedIn()) ? 'block' : 'none';
+        }
+
+        function syncWsEditorFromDom() {
+            if (!wsEditor) return;
+            const nameEl = document.getElementById('ws-editor-name');
+            if (nameEl) wsEditor.name = nameEl.value;
+            const rows = document.querySelectorAll('#ws-editor .ws-edit-row');
+            wsEditor.items = Array.from(rows).map((row) => ({
+                id: Number(row.getAttribute('data-item-id')) || null,
+                term: (row.querySelector('[data-ws="term"]')?.value || '').trimStart(),
+                definition: row.querySelector('[data-ws="def"]')?.value || ''
+            }));
+        }
+
+        function renderWordSetEditor() {
+            const host = document.getElementById('ws-editor');
+            if (!host || !wsEditor) return;
+            const note = wsEditor.isDemo
+                ? 'This is a demo set. Saving creates your own copy — the shared demo stays unchanged.'
+                : 'Change the name or any word below. Removing a word also clears its flashcard progress.';
+            const rows = wsEditor.items.map((item, i) => `
+                <div class="ws-edit-row" data-item-id="${item.id || ''}">
+                    <input type="text" data-ws="term" maxlength="200" placeholder="Word or phrase" aria-label="Term ${i + 1}" value="${esc(item.term)}">
+                    <textarea data-ws="def" maxlength="500" rows="2" placeholder="Definition or translation" aria-label="Definition ${i + 1}">${esc(item.definition)}</textarea>
+                    <button type="button" class="btn btn-grey ws-edit-del" onclick="wsEditorRemoveRow(${i})" title="Remove this word" aria-label="Remove word ${i + 1}"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `).join('');
+            host.innerHTML = `
+                <div class="ws-editor-head">
+                    <h3>${wsEditor.id ? 'Edit word list' : (wsEditor.isDemo ? 'Edit demo copy' : 'Edit word list')}</h3>
+                    <button type="button" class="btn btn-grey" onclick="closeWordSetEditor()"><i class="fa-solid fa-arrow-left"></i> Back to lists</button>
+                </div>
+                <p class="ws-edit-note">${note}</p>
+                <label for="ws-editor-name">List name</label>
+                <input type="text" id="ws-editor-name" class="ws-editor-name" maxlength="80" value="${esc(wsEditor.name)}" placeholder="Set name...">
+                <div class="ws-edit-cols"><span>Term</span><span>Definition</span><span></span></div>
+                <div id="ws-editor-rows">${rows}</div>
+                <div class="ws-editor-actions">
+                    <button type="button" class="btn btn-outline" onclick="wsEditorAddRow()"><i class="fa-solid fa-plus"></i> Add word</button>
+                    <button type="button" class="btn btn-blue" id="ws-editor-save" onclick="saveWordSetEditor()"><i class="fa-solid fa-floppy-disk"></i> Save list</button>
+                </div>
+            `;
+        }
+
+        function wsEditorAddRow() {
+            syncWsEditorFromDom();
+            if (!wsEditor) return;
+            if (wsEditor.items.length >= 500) { appAlert('A set can have at most 500 words.'); return; }
+            wsEditor.items.push({ id: null, term: '', definition: '' });
+            renderWordSetEditor();
+            const inputs = document.querySelectorAll('#ws-editor [data-ws="term"]');
+            const last = inputs[inputs.length - 1];
+            if (last) last.focus();
+        }
+
+        function wsEditorRemoveRow(index) {
+            syncWsEditorFromDom();
+            if (!wsEditor) return;
+            wsEditor.items.splice(index, 1);
+            if (!wsEditor.items.length) wsEditor.items.push({ id: null, term: '', definition: '' });
+            renderWordSetEditor();
+        }
+
+        function collectWsEditorItems() {
+            syncWsEditorFromDom();
+            return (wsEditor.items || [])
+                .map((item) => ({
+                    id: item.id || null,
+                    term: String(item.term || '').trim().slice(0, 200),
+                    definition: String(item.definition || '').trim().slice(0, 500)
+                }))
+                .filter((item) => item.term);
+        }
+
+        async function editWordSet(id) {
+            if (!isLoggedIn()) { openAuthModal('login'); return; }
+            try {
+                const res = await fetch(`/api/word-sets/${id}`, { credentials: 'same-origin' });
+                const data = await res.json();
+                if (!res.ok || !data.set) { appAlert(data.error || 'Could not open this set.'); return; }
+                openWordSetEditor({ id: data.set.id, name: data.set.name, items: data.set.items || [] });
+            } catch (e) {
+                appAlert('Failed to load set for editing.');
+            }
+        }
+
+        function editDemoWordSet(demoId) {
+            const set = demoSetById(demoId);
+            if (!set) return;
+            openWordSetEditor({
+                id: null,
+                name: set.name,
+                items: set.items || [],
+                isDemo: true
+            });
+        }
+
+        async function saveWordSetEditor() {
+            if (!wsEditor || wsEditorBusy) return;
+            syncWsEditorFromDom();
+            const name = (wsEditor.name || '').trim();
+            if (!name) { appAlert('Enter a name for this set.'); return; }
+            const items = collectWsEditorItems();
+            if (!items.length) { appAlert('Add at least one word or phrase.'); return; }
+            if (!isLoggedIn()) {
+                openAuthModal('login');
+                return;
+            }
+            wsEditorBusy = true;
+            const saveBtn = document.getElementById('ws-editor-save');
+            if (saveBtn) saveBtn.disabled = true;
+            try {
+                const isNew = !wsEditor.id;
+                const res = await fetch(isNew ? '/api/word-sets' : `/api/word-sets/${wsEditor.id}`, {
+                    method: isNew ? 'POST' : 'PUT',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(isNew
+                        ? { name, setType: 'vocab', testDirection: 'def', items }
+                        : { name, items })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) { appAlert(data.error || 'Save failed'); return; }
+                if (data.set && data.set.id) wsEditor.id = data.set.id;
+                wsEditor.isDemo = false;
+                closeWordSetEditor();
+            } catch (e) {
+                appAlert('Failed to save set.');
+            } finally {
+                wsEditorBusy = false;
+                const btn = document.getElementById('ws-editor-save');
+                if (btn) btn.disabled = false;
+            }
+        }
 
         async function loadWordSet(id) {
             try {
@@ -2951,6 +3129,10 @@
         }
 
         async function goToWritingSetup(gameType) {
+            if (gameType === 'pe-line') {
+                window.colourStartTab = 'lineup';
+                gameType = 'pe-colour';
+            }
             if (FREE_PE_GAMES.has(gameType)) {
                 goToSetup(gameType);
                 pendingWritingGame = null;
@@ -2972,11 +3154,15 @@
         }
 
         function goToSetup(gameType) {
+            if (gameType === 'pe-line') {
+                window.colourStartTab = 'lineup';
+                gameType = 'pe-colour';
+            }
             activeGame = gameType;
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'bomb', 'grid'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-line'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -2990,8 +3176,6 @@
             document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('pe-colour-settings').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
             document.getElementById('colour-setup-note').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
-            document.getElementById('pe-line-settings').style.display = (gameType === 'pe-line') ? 'block' : 'none';
-            document.getElementById('line-setup-note').style.display = (gameType === 'pe-line') ? 'block' : 'none';
             document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType)) ? 'block' : 'none';
 
             if (gameType === 'mission') renderMissionPicker();
@@ -3003,9 +3187,6 @@
             }
             if (gameType === 'pe-colour') {
                 document.getElementById('setup-title').innerText = 'Colour Blocks Setup';
-            }
-            if (gameType === 'pe-line') {
-                document.getElementById('setup-title').innerText = 'Line Up Setup';
             }
             if (vocabGames.includes(gameType) || hybridGames.includes(gameType)) {
                 renderDemoSetButtons();
@@ -3084,7 +3265,6 @@
             if(activeGame === 'pe-exam') initPeExam();
             if(activeGame === 'pe-dictation') initPeDictation();
             if(activeGame === 'pe-colour') initColourBlocks();
-            if(activeGame === 'pe-line') initLineUp();
         }
 
         function toggleLoading(prefix, isLoading) {

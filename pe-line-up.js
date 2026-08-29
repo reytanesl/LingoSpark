@@ -1,11 +1,11 @@
 /**
- * Line Up — Primary English scramble. Drag pictured word tiles onto numbered slots.
+ * Line Up — pictured scramble hosted inside Colour Blocks (Line Up tab).
  */
 (function (global) {
     'use strict';
 
     const CSS_ID = 'pe-line-up-css';
-    const SET_NAME = 'Line Up';
+    const SET_NAME = 'Colour Blocks';
     const ICONIFY = 'https://api.iconify.design/';
     const PACK_DEFAULT = 'fluent-emoji';
 
@@ -206,7 +206,7 @@
     ];
 
     const CSS = `
-#screen-pe-line.engine-container { max-width: 1100px; }
+#cb-lineup-host { margin-top: 0.15rem; }
 .pl-coach {
     background: #fff; border: 2px solid var(--border-light); border-left: 5px solid var(--royal-blue);
     border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1rem; display: flex; gap: 0.75rem; align-items: flex-start;
@@ -281,6 +281,8 @@
 
     let S = null;
     let skipClick = false;
+    let hostEl = null;
+    let embed = false;
 
     function esc(s) {
         return String(s == null ? '' : s)
@@ -377,7 +379,7 @@
                 })
             });
         } catch (e) {
-            console.warn('Line Up set save failed:', e);
+            console.warn('Colour Blocks Line Up save failed:', e);
         }
     }
 
@@ -389,10 +391,10 @@
     }
 
     function award(n, result) {
-        if (typeof global.peAddPoints === 'function') global.peAddPoints('line', n);
+        if (typeof global.peAddPoints === 'function') global.peAddPoints('colour', n);
         if (typeof global.incrementGameCount === 'function') global.incrementGameCount();
         if (typeof global.recordGameSessionApi === 'function') {
-            global.recordGameSessionApi('pe_line', { score: n, pointsEarned: n, result: result || {} });
+            global.recordGameSessionApi('pe_colour', { score: n, pointsEarned: n, result: result || { kind: 'lineup' } });
         }
     }
 
@@ -537,7 +539,7 @@
     }
 
     function render() {
-        const root = document.getElementById('line-up-root');
+        const root = hostEl || document.getElementById('cb-lineup-host') || document.getElementById('line-up-root');
         if (!root || !S || !S.item) return;
         const cue = S.item.cue.map(function (id, i) {
             const arrow = i ? '<span class="pl-cue-arrow" aria-hidden="true">→</span>' : '';
@@ -554,7 +556,7 @@
         }).join('');
         const bank = S.bank.map(function (uid) { return tileHtml(uid); }).join('');
         const fbCls = S.ok ? ' ok' : (S.fbEn ? ' bad' : '');
-        root.innerHTML =
+        const coachBlock = embed ? '' :
             '<div class="pl-coach">' +
                 '<p>' + esc(L(
                     'Look at the pictures. Drag each tile into the right numbered box to make the sentence. You can also tap a tile, then tap a box.',
@@ -566,7 +568,9 @@
                         '<button type="button" data-pl="lang" data-id="pl"' + (S.polish ? ' class="on"' : '') + '>PL</button>' +
                     '</div>' +
                 '</div>' +
-            '</div>' +
+            '</div>';
+        root.innerHTML =
+            coachBlock +
             '<div class="pl-cue" aria-hidden="true">' + cue + '</div>' +
             '<div class="pl-slots">' + slots + '</div>' +
             '<div class="pl-actions">' +
@@ -583,6 +587,7 @@
 
     function bind(root) {
         root.onclick = function (e) {
+            e.stopPropagation();
             if (skipClick) return;
             const btn = e.target.closest('[data-pl]');
             if (btn) {
@@ -756,17 +761,36 @@
         };
     }
 
-    function initLineUp() {
+    function mount(host, opts) {
+        opts = opts || {};
         ensureCss();
-        const age = (document.querySelector('input[name="line-age"]:checked') || {}).value || 'young';
-        const keepPolish = !!(S && S.polish);
-        S = defaultState(age);
-        S.polish = keepPolish;
-        const badge = document.getElementById('line-age-badge');
-        if (badge) badge.textContent = S.ageBand === 'older' ? '10–12' : '8–9';
-        loadItem();
+        hostEl = host || document.getElementById('cb-lineup-host');
+        embed = !!opts.hideCoach;
+        const age = opts.ageBand === 'older' ? 'older' : 'young';
+        if (!S) S = defaultState(age);
+        S.polish = !!opts.polish;
+        if (S.ageBand !== age || !S.item) {
+            S.ageBand = age;
+            loadItem();
+        }
         render();
     }
 
-    global.initLineUp = initLineUp;
+    function newSentence() {
+        if (!S) return;
+        loadItem();
+        if (hostEl || document.getElementById('cb-lineup-host')) render();
+    }
+
+    function reset(ageBand, polish) {
+        S = defaultState(ageBand);
+        S.polish = !!polish;
+        loadItem();
+    }
+
+    global.LineUp = { mount: mount, newSentence: newSentence, reset: reset };
+    global.initLineUp = function () {
+        global.colourStartTab = 'lineup';
+        if (typeof global.initColourBlocks === 'function') global.initColourBlocks();
+    };
 })(typeof window !== 'undefined' ? window : globalThis);

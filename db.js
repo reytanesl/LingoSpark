@@ -635,38 +635,110 @@ export async function getWordSet(setId, userId) {
 
 export async function updateWordSet(setId, userId, { name, testDirection, items }) {
     const db = getPool();
-    const existing = await db.query('SELECT * FROM word_sets WHERE id = $1 AND user_id = $2', [setId, userId]);
-    if (!existing.rows[0]) return null;
-
-    const updates = [];
-    const vals = [];
-    let idx = 1;
-    if (name !== undefined) { updates.push(`name = $${idx++}`); vals.push((name || '').trim().slice(0, 80)); }
-    if (testDirection !== undefined) { updates.push(`test_direction = $${idx++}`); vals.push(testDirection === 'term' ? 'term' : 'def'); }
-
-    if (items !== undefined) {
-        if (items.length > 500) throw new Error('Max 500 items per set');
-        await db.query('DELETE FROM word_set_items WHERE set_id = $1', [setId]);
-        for (let i = 0; i < items.length; i++) {
-            const term = (items[i].term || '').trim().slice(0, 200);
-            const def = (items[i].definition || items[i].def || '').trim().slice(0, 500) || null;
-            if (!term) continue;
-            await db.query(
-                `INSERT INTO word_set_items (set_id, term, definition, position) VALUES ($1, $2, $3, $4)`,
-                [setId, term, def, i]
-            );
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+        const existing = await client.query(
+            'SELECT * FROM word_sets WHERE id = $1 AND user_id = $2 FOR UPDATE',
+            [setId, userId]
+        );
+        if (!existing.rows[0]) {
+            await client.query('ROLLBACK');
+            return null;
         }
-        updates.push(`item_count = $${idx++}`);
-        vals.push(items.length);
-    }
 
-    updates.push(`updated_at = NOW()`);
-    vals.push(setId, userId);
-    const result = await db.query(
-        `UPDATE word_sets SET ${updates.join(', ')} WHERE id = $${idx++} AND user_id = $${idx} RETURNING *`,
-        vals
-    );
-    return result.rows[0] || null;
+        const updates = [];
+        const vals = [];
+        let idx = 1;
+        if (name !== undefined) {
+            const trimName = (name || '').trim().slice(0, 80);
+            if (!trimName) throw new Error('Set name is required');
+            updates.push(`name = $${idx++}`);
+            vals.push(trimName);
+        }
+        if (testDirection !== undefined) {
+            updates.push(`test_direction = $${idx++}`);
+            vals.push(testDirection === 'term' ? 'term' : 'def');
+        }
+
+        if (items !== undefined) {
+            if (!Array.isArray(items)) throw new Error('Items must be a list');
+            const cleaned = [];
+            for (const item of items) {
+                const term = (item.term || '').trim().slice(0, 200);
+                const definition = (item.definition || item.def || '').trim().slice(0, 500) || null;
+                if (!term) continue;
+                cleaned.push({
+                    id: Number(item.id) > 0 ? Number(item.id) : null,
+                    term,
+                    definition
+                });
+            }
+            if (cleaned.length < 1) throw new Error('At least 1 item required');
+            if (cleaned.length > WORD_SET_ITEM_CAP) throw new Error('Max 500 items per set');
+
+            const current = await client.query(
+                'SELECT id, term FROM word_set_items WHERE set_id = $1',
+                [setId]
+            );
+            const byId = new Map(current.rows.map((row) => [row.id, row]));
+            const byTerm = new Map();
+            for (const row of current.rows) {
+                const key = String(row.term || '').toLowerCase();
+                if (!byTerm.has(key)) byTerm.set(key, row);
+            }
+
+            const kept = new Set();
+            let pos = 0;
+            for (const item of cleaned) {
+                let row = item.id && byId.has(item.id) ? byId.get(item.id) : null;
+                if (!row) {
+                    const cand = byTerm.get(item.term.toLowerCase());
+                    if (cand && !kept.has(cand.id)) row = cand;
+                }
+                if (row && !kept.has(row.id)) {
+                    await client.query(
+                        'UPDATE word_set_items SET term = $1, definition = $2, position = $3 WHERE id = $4 AND set_id = $5',
+                        [item.term, item.definition, pos, row.id, setId]
+                    );
+                    kept.add(row.id);
+                } else {
+                    const ins = await client.query(
+                        `INSERT INTO word_set_items (set_id, term, definition, position)
+                         VALUES ($1, $2, $3, $4) RETURNING id`,
+                        [setId, item.term, item.definition, pos]
+                    );
+                    kept.add(ins.rows[0].id);
+                }
+                pos += 1;
+            }
+
+            const toDelete = current.rows.filter((row) => !kept.has(row.id)).map((row) => row.id);
+            if (toDelete.length) {
+                await client.query(
+                    'DELETE FROM word_set_items WHERE set_id = $1 AND id = ANY($2::int[])',
+                    [setId, toDelete]
+                );
+            }
+
+            updates.push(`item_count = $${idx++}`);
+            vals.push(pos);
+        }
+
+        updates.push('updated_at = NOW()');
+        vals.push(setId, userId);
+        const result = await client.query(
+            `UPDATE word_sets SET ${updates.join(', ')} WHERE id = $${idx++} AND user_id = $${idx} RETURNING *`,
+            vals
+        );
+        await client.query('COMMIT');
+        return result.rows[0] || null;
+    } catch (err) {
+        try { await client.query('ROLLBACK'); } catch { /* ignore */ }
+        throw err;
+    } finally {
+        client.release();
+    }
 }
 
 export async function deleteWordSet(setId, userId) {

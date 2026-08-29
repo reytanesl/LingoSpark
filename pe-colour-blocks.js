@@ -1177,6 +1177,11 @@
 
     function coach() {
         const pl = S.polish;
+        if (S.tab === 'lineup') {
+            return pl
+                ? 'Spójrz na obrazki. Przesuń kafelki na ponumerowane okienka, żeby złożyć zdanie. Możesz też stuknąć kafel, a potem okienko.'
+                : 'Look at the pictures. Drag each tile into the right numbered box to make the sentence. You can also tap a tile, then tap a box.';
+        }
         if (S.tab === 'build') {
             if (!S.goal) {
                 return pl ? 'Co chcesz powiedzieć? Wybierz cel, potem układaj kafelki od lewej.' : 'What do you want to say? Pick a goal, then line the tiles up from the left.';
@@ -1201,12 +1206,20 @@
     function render() {
         const root = rootEl();
         if (!root) return;
-        if (S.tab !== 'build' && S.tab !== 'text') S.tab = 'build';
+        if (S.tab !== 'build' && S.tab !== 'text' && S.tab !== 'lineup') S.tab = 'build';
         root.innerHTML = legendHtml() + tabsHtml() + coachHtml() +
             (S.tab === 'build' ? buildHtml() : '') +
             (S.tab === 'text' ? textHtml() : '') +
+            (S.tab === 'lineup' ? '<div id="cb-lineup-host"></div>' : '') +
             nounPickHtml();
         bind(root);
+        if (S.tab === 'lineup' && global.LineUp) {
+            global.LineUp.mount(document.getElementById('cb-lineup-host'), {
+                ageBand: S.ageBand,
+                polish: S.polish,
+                hideCoach: true
+            });
+        }
     }
 
     function legendHtml() {
@@ -1224,17 +1237,20 @@
         return '<div class="cb-tabs">' +
             t('build', 'Build a sentence', 'Złóż zdanie') +
             t('text', 'Text tasks', 'Zadania tekstowe') +
+            t('lineup', 'Line Up', 'Ułóż zdanie') +
             '</div>';
     }
 
     function coachHtml() {
         const tilePlOn = S.tilePl;
-        return '<div class="cb-coach"><p>' + esc(coach()) + '</p>' +
-            '<div class="cb-coach-tools">' +
+        const tilePlBtn = S.tab === 'lineup' ? '' :
             '<button type="button" class="cb-tilepl' + (tilePlOn ? ' on' : '') + '" data-cb="tilepl" title="' +
             esc(L('Show Polish words on tiles', 'Pokaż polskie słowa na kafelkach')) + '">' +
             esc(tilePlOn ? L('PL tiles on', 'PL na kafelkach') : L('PL tiles off', 'Bez PL na kafelkach')) +
-            '</button>' +
+            '</button>';
+        return '<div class="cb-coach"><p>' + esc(coach()) + '</p>' +
+            '<div class="cb-coach-tools">' +
+            tilePlBtn +
             '<div class="cb-lang" role="group" aria-label="' + esc(L('Language', 'Język')) + '">' +
             '<button type="button"' + (S.polish ? '' : ' class="on"') + ' data-cb="lang" data-id="en">EN</button>' +
             '<button type="button"' + (S.polish ? ' class="on"' : '') + ' data-cb="lang" data-id="pl">PL</button>' +
@@ -1899,13 +1915,17 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
         const keepPolish = !!(S && S.polish);
         const keepTilePl = !!(S && S.tilePl);
         const keepSheets = S && S.sheetsOpen ? S.sheetsOpen : null;
+        const startTab = global.colourStartTab || (S && S.tab) || 'build';
+        global.colourStartTab = null;
         S = defaultState(age);
         S.polish = keepPolish;
         S.tilePl = keepTilePl;
         S.sheetsOpen = keepSheets;
+        S.tab = (startTab === 'lineup' || startTab === 'text' || startTab === 'build') ? startTab : 'build';
         const badge = document.getElementById('colour-age-badge');
         if (badge) badge.textContent = S.ageBand === 'older' ? '10–12' : '8–9';
         loadTextTask();
+        if (S.tab === 'lineup' && global.LineUp) global.LineUp.reset(S.ageBand, S.polish);
         render();
     }
 
