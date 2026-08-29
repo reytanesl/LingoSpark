@@ -483,6 +483,8 @@
             if (result.won) {
                 setAnswerInputsEnabled(false);
                 if (status) status.textContent = 'You won!';
+            } else if (result.nextQuestion) {
+                showPlayerQuestion(result.nextQuestion);
             }
         });
 

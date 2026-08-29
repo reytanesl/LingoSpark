@@ -115,7 +115,6 @@ function clearPlayerQuestionState(player) {
     player.questionForTermIndex = -1;
     player.questionInputMode = null;
     player.questionChoices = null;
-    player.questionId = 0;
     player.answerLocked = false;
 }
 
