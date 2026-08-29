@@ -21,6 +21,8 @@
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
     <script src="pe-line-up.js"></script>
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script src="live-game-client.js" defer></script>
     
     <style>
         /* British Style, Bright Theme & Custom Fonts */
@@ -153,7 +155,7 @@
         @media (min-width: 768px) {
             .home-hub {
                 flex-direction: row; justify-content: center; align-items: stretch;
-                max-width: 960px; gap: 1.5rem; padding: 0 1rem; margin: 1.5rem auto 2rem;
+                max-width: 960px; gap: 1.5rem; padding: 0 1rem; margin: 1.5rem auto 0.75rem;
             }
             .hub-square {
                 width: auto; flex: 1 1 0; max-width: 280px; min-width: 0;
@@ -163,6 +165,94 @@
             .hub-square .hub-icon { height: 64px; width: 64px; font-size: 1.75rem; }
             .hub-square .hub-title { font-size: 1.64rem; }
             .hub-square .hub-sub { font-size: 1.11rem; max-width: none; }
+        }
+        .home-hub-wrap {
+            max-width: 960px; width: 100%; margin: 0.75rem auto 1.5rem; padding: 0 0.75rem;
+        }
+        @media (min-width: 768px) {
+            .home-hub-wrap { padding: 0 1rem; margin: 1.5rem auto 2rem; }
+        }
+        .hub-bar {
+            display: flex; align-items: center; gap: 1rem;
+            width: 100%; min-height: 76px; padding: 0.9rem 1.15rem;
+            border: none; border-radius: 12px; cursor: pointer;
+            background: var(--bright-white); color: var(--text-dark);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #d4a017;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none; font: inherit; margin-top: 1rem;
+        }
+        .hub-bar:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+        }
+        .hub-bar .hub-icon {
+            height: 48px; width: 48px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(212, 160, 23, 0.12); color: #b8860b; font-size: 1.35rem;
+        }
+        .hub-bar .hub-bar-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 0.15rem; }
+        .hub-bar .hub-title { font-family: var(--font-primary); font-size: 1.35rem; font-weight: 700; color: var(--royal-blue); line-height: 1.2; }
+        .hub-bar .hub-sub { font-family: var(--font-secondary); font-size: 1rem; color: var(--text-muted); line-height: 1.35; }
+        @media (min-width: 768px) {
+            .hub-bar { min-height: 84px; padding: 1rem 1.35rem; }
+            .hub-bar .hub-title { font-size: 1.5rem; }
+            .hub-bar .hub-sub { font-size: 1.05rem; }
+        }
+        .live-muted { color: var(--text-muted); font-size: 0.95rem; }
+        .live-room-code {
+            font-family: var(--font-primary); font-size: clamp(2.5rem, 10vw, 4rem);
+            letter-spacing: 0.35em; font-weight: 800; color: var(--royal-blue); text-align: center;
+            margin: 0.5rem 0 1rem;
+        }
+        .live-timer-track { height: 10px; background: var(--border-light); border-radius: 999px; overflow: hidden; margin: 0.75rem 0; }
+        .live-timer-bar { height: 100%; width: 100%; background: var(--royal-blue); transition: width 0.1s linear; }
+        .live-answer-btn {
+            display: block; width: 100%; border: none; border-radius: 10px; color: #fff;
+            font-family: var(--font-primary); font-size: 1.1rem; font-weight: 700;
+            padding: 1rem 1.1rem; margin-bottom: 0.65rem; cursor: pointer; text-align: left;
+        }
+        .live-answer-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+        .live-choice {
+            padding: 0.65rem 0.85rem; border-radius: 8px; background: var(--light-grey);
+            margin-bottom: 0.5rem; font-weight: 600;
+        }
+        .live-choice.correct { background: rgba(0, 130, 59, 0.12); color: var(--success-green); }
+        .live-choice.wrong { background: rgba(200, 16, 46, 0.08); color: var(--pillarbox-red); }
+        .live-choice-sm { font-size: 0.92rem; font-weight: 500; }
+        .live-player-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-light); }
+        .live-leaderboard { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+        .live-leaderboard th, .live-leaderboard td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border-light); }
+        .live-host-grid { display: grid; gap: 1.25rem; }
+        @media (min-width: 768px) { .live-host-grid { grid-template-columns: 1fr 1fr; } }
+        .live-player-progress { margin-bottom: 0.85rem; }
+        .live-player-progress-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; font-size: 0.95rem; }
+        .live-player-progress-head strong { color: var(--royal-blue); }
+        .live-progress-track { height: 12px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
+        .live-progress-fill { height: 100%; background: linear-gradient(90deg, var(--royal-blue), #3d7be8); transition: width 0.35s ease; border-radius: 999px; }
+        .live-progress-fill.winner { background: linear-gradient(90deg, #d4a017, #f0c040); }
+        .live-progress-fill.reset-flash { background: var(--pillarbox-red); transition: none; }
+        .live-own-progress { margin: 0.75rem 0 1rem; }
+        .live-own-progress-label { display: flex; justify-content: space-between; font-weight: 700; color: var(--royal-blue); margin-bottom: 0.35rem; }
+        #live-confetti-canvas {
+            position: fixed; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999; display: none;
+        }
+        #live-confetti-canvas.active { display: block; }
+        .live-champion-banner {
+            text-align: center; padding: 1.25rem; margin: 1rem 0;
+            background: linear-gradient(135deg, rgba(212,160,23,0.15), rgba(1,33,105,0.08));
+            border-radius: 12px; border: 2px solid #d4a017;
+        }
+        .live-champion-banner h2 { margin: 0 0 0.35rem; color: var(--royal-blue); font-size: 1.75rem; }
+        .live-champion-banner p { margin: 0; color: var(--text-muted); font-size: 1.05rem; }
+        #live-error-banner {
+            background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red);
+            padding: 0.65rem 0.9rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600;
+        }
+        .live-rules-note {
+            padding: 0.75rem 1rem; background: var(--light-grey); border-radius: 8px;
+            border-left: 4px solid #d4a017; margin-bottom: 1rem; font-size: 0.98rem; color: var(--text-muted);
         }
         .section-back-row { margin-bottom: 1.25rem; }
 
@@ -946,6 +1036,9 @@
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
                 <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
 
+                <h3>Live Game</h3>
+                <div class="guide-item"><strong>Live Vocab Quiz</strong><p>Teachers sign in and host a live classroom race. At least 2 players join with a room code and nickname. Each player must type the matching word for 12 definitions in a row — answers are not case-sensitive. One wrong answer sends that player back to the start. First to finish all 12 wins!</p></div>
+
                 <h3>Team Challenge</h3>
                 <div class="guide-item"><strong>Sentence Scramble</strong><p>Race to rebuild correct sentences from scrambled words. Great on a classroom projector.</p></div>
                 <div class="guide-item"><strong>Quintagrams</strong><p>Solve five clues using every jumbled letter exactly once.</p></div>
@@ -980,6 +1073,7 @@
         <!-- HOME SCREEN -->
         <div id="screen-home" class="screen active">
 
+            <div class="home-hub-wrap">
             <div id="home-hub" class="home-hub active">
                 <a href="#/vocab" class="hub-square">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
@@ -996,6 +1090,14 @@
                     <span class="hub-title">Writing Suite</span>
                     <span class="hub-sub">Primary English practice and Essay tools</span>
                 </a>
+            </div>
+            <a href="#/live" class="hub-bar hub-bar-live">
+                <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+                <span class="hub-bar-text">
+                    <span class="hub-title">Live Game</span>
+                    <span class="hub-sub">Classroom quiz — phones join with a code</span>
+                </span>
+            </a>
             </div>
 
         <div id="section-mysets" class="home-section">
@@ -1045,6 +1147,30 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word or phrase that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own list.</p><a href="#/auction" class="btn btn-outline">Play Now</a></div>
+                </div>
+            </div>
+
+            <div id="section-live" class="home-section">
+                <div class="section-back-row">
+                    <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+                </div>
+                <div class="category-header">
+                    <i class="fa-solid fa-bolt cat-icon"></i><h2>Live Game</h2>
+                </div>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Race to complete 12 definitions in a row. Type the matching term — not case-sensitive. One mistake sends you back to the start. Minimum 2 players.</p>
+                <div class="grid">
+                    <div class="card">
+                        <div class="icon-container"><i class="fa-solid fa-chalkboard-user"></i></div>
+                        <h2>Host Live Game</h2>
+                        <p>Sign in, pick a word list, and share the room code with your class. Control rounds from your screen.</p>
+                        <a href="#/live/host" class="btn btn-blue">Host a Game</a>
+                    </div>
+                    <div class="card">
+                        <div class="icon-container"><i class="fa-solid fa-mobile-screen"></i></div>
+                        <h2>Join a Game</h2>
+                        <p>Enter the room code from your teacher and pick a nickname. No account needed.</p>
+                        <a href="#/live/join" class="btn btn-outline">Join with Code</a>
+                    </div>
                 </div>
             </div>
 
@@ -1831,7 +1957,119 @@
             <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank" scrolling="no"></iframe>
         </div>
 
+        <!-- LIVE GAME: HOST -->
+        <div id="screen-live-host" class="screen engine-container">
+            <div class="top-bar">
+                <a href="#/live" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-chalkboard-user"></i> Host Live Game</h2>
+                <div style="width:80px;"></div>
+            </div>
+            <div id="live-error-banner" hidden></div>
+            <div id="live-host-signin-gate" class="card" style="max-width:560px;margin:0 auto 1.5rem;">
+                <h2>Sign in to host</h2>
+                <p>Hosting requires a free LingoSpark account so only teachers can create rooms.</p>
+                <button type="button" class="btn btn-blue" onclick="openAuthModal('login')">Sign in</button>
+            </div>
+            <form id="live-host-setup-form" class="card" style="max-width:640px;margin:0 auto 1.5rem;" onsubmit="return false;">
+                <h2>Game setup</h2>
+                <label style="font-weight:600;display:block;margin:0.75rem 0 0.35rem;">Word source</label>
+                <label style="display:block;margin:0.25rem 0;"><input type="radio" name="live-source" value="builtin" checked> Built-in level</label>
+                <label style="display:block;margin:0.25rem 0;"><input type="radio" name="live-source" value="wordset"> Saved Word Set</label>
+                <label style="display:block;margin:0.25rem 0;"><input type="radio" name="live-source" value="paste"> Paste glossary</label>
+                <div id="live-host-level-row" style="margin-top:0.75rem;">
+                    <label for="live-host-level" style="font-weight:600;">Level</label>
+                    <select id="live-host-level" style="width:100%;padding:0.5rem;margin-top:0.35rem;border:2px solid var(--border-light);border-radius:6px;">
+                        <option value="beginner">Beginner</option>
+                        <option value="easy">Easy</option>
+                        <option value="intermediate" selected>Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div id="live-host-wordset-row" hidden style="margin-top:0.75rem;">
+                    <label for="live-host-wordset" style="font-weight:600;">Word Set</label>
+                    <select id="live-host-wordset" style="width:100%;padding:0.5rem;margin-top:0.35rem;border:2px solid var(--border-light);border-radius:6px;"></select>
+                </div>
+                <div id="live-host-paste-row" hidden style="margin-top:0.75rem;">
+                    <label for="live-host-glossary" style="font-weight:600;">Glossary (term = definition)</label>
+                    <textarea id="live-host-glossary" rows="6" style="width:100%;padding:0.5rem;margin-top:0.35rem;border:2px solid var(--border-light);border-radius:6px;" placeholder="apple = A round fruit&#10;house = A building where people live"></textarea>
+                </div>
+                <div class="live-rules-note">
+                    <strong>12 terms</strong> per player · <strong>min. 2 players</strong> · answers are <strong>not case-sensitive</strong> · one mistake = <strong>back to the start</strong>
+                </div>
+                <button type="button" id="live-host-create-btn" class="btn btn-blue" style="width:100%;margin-top:0.25rem;">Create room</button>
+            </form>
+            <div id="live-host-room-panel" hidden>
+                <div class="live-host-grid">
+                    <div class="card">
+                        <h2>Room code</h2>
+                        <div id="live-host-code" class="live-room-code">----</div>
+                        <p style="text-align:center;"><a id="live-host-join-link" href="#" target="_blank" rel="noopener"></a></p>
+                        <p style="text-align:center;"><img id="live-host-qr" alt="Join QR code" width="180" height="180" hidden style="margin:0 auto;display:block;border-radius:8px;"></p>
+                        <h3 style="margin-top:1rem;">Players</h3>
+                        <p id="live-host-player-count" class="live-muted">0 players joined (minimum 2 to start)</p>
+                    </div>
+                    <div class="card" id="live-host-game-panel">
+                        <h2 style="margin-top:0;">Live race</h2>
+                        <p id="live-host-status" class="live-muted">Waiting for at least 2 players to join.</p>
+                        <div id="live-host-progress-board" style="margin-top:1rem;"></div>
+                        <div class="btn-group" style="margin-top:1.25rem;">
+                            <button type="button" id="live-host-start" class="btn btn-blue" disabled>Start game (need 2+ players)</button>
+                            <button type="button" id="live-host-end" class="btn btn-grey">End game</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="live-host-finished" class="card" hidden style="margin-top:1.25rem;">
+                    <div id="live-host-champion" class="live-champion-banner" hidden></div>
+                    <h2>Final standings</h2>
+                    <div id="live-host-final-board"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE GAME: JOIN -->
+        <div id="screen-live-join" class="screen engine-container">
+            <div class="top-bar">
+                <a href="#/live" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-mobile-screen"></i> Join Game</h2>
+                <div style="width:80px;"></div>
+            </div>
+            <div class="card" style="max-width:420px;margin:0 auto;">
+                <label for="live-join-code" style="font-weight:600;">Room code</label>
+                <input type="text" id="live-join-code" maxlength="4" autocomplete="off" style="width:100%;padding:0.65rem;margin:0.35rem 0 1rem;border:2px solid var(--border-light);border-radius:6px;text-transform:uppercase;letter-spacing:0.2em;font-size:1.4rem;text-align:center;">
+                <label for="live-join-nickname" style="font-weight:600;">Nickname</label>
+                <input type="text" id="live-join-nickname" maxlength="20" autocomplete="nickname" style="width:100%;padding:0.65rem;margin:0.35rem 0 1rem;border:2px solid var(--border-light);border-radius:6px;">
+                <button type="button" id="live-join-btn" class="btn btn-blue" style="width:100%;">Join game</button>
+            </div>
+        </div>
+
+        <!-- LIVE GAME: PLAY (student) -->
+        <div id="screen-live-play" class="screen engine-container">
+            <div class="top-bar">
+                <span class="live-muted">Playing as <strong id="live-play-nickname">Player</strong></span>
+            </div>
+            <div class="live-own-progress">
+                <div class="live-own-progress-label">
+                    <span>Your progress</span>
+                    <span id="live-play-progress-label">0 / 12</span>
+                </div>
+                <div class="live-progress-track"><div id="live-play-progress-bar" class="live-progress-fill" style="width:0%"></div></div>
+            </div>
+            <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.5rem;"></div>
+            <div id="live-play-definition" class="word-prompt" style="min-height:4rem;">Connecting…</div>
+            <p class="live-muted" style="text-align:center;font-size:0.92rem;margin:0.5rem 0 0;">Type the matching word — not case-sensitive</p>
+            <input type="text" id="live-play-answer" class="game-input" placeholder="Type the matching word or phrase" autocomplete="off" maxlength="120" style="margin-top:1rem;">
+            <div class="btn-group" style="margin-top:0.75rem;">
+                <button type="button" id="live-play-submit" class="btn btn-blue" style="width:100%;">Submit answer</button>
+            </div>
+            <div id="live-play-result" style="margin-top:1rem;"></div>
+            <div id="live-play-champion" class="live-champion-banner" hidden></div>
+            <h3 style="margin-top:1.5rem;color:var(--royal-blue);">All players</h3>
+            <div id="live-play-progress-board"></div>
+        </div>
+
     </div>
+
+    <canvas id="live-confetti-canvas" aria-hidden="true"></canvas>
 
     <!-- FLASHCARD STATS -->
     <div id="fc-stats-overlay" class="fc-stats-overlay" onclick="if(event.target===this)closeFcStatsModal()">
@@ -2024,8 +2262,11 @@
                 const sec = document.querySelector('.home-section.active');
                 if (sec && sec.id.startsWith('section-')) setAppHash(sec.id.replace('section-', ''));
                 else setAppHash('home');
-            } else if (screenId === 'setup') setAppHash('setup/' + (activeGame || 'flashcard'));
+            }             else if (screenId === 'setup') setAppHash('setup/' + (activeGame || 'flashcard'));
             else if (screenId === 'auction') setAppHash('auction');
+            else if (screenId === 'live-host') setAppHash('live/host');
+            else if (screenId === 'live-join') setAppHash('live/join');
+            else if (screenId === 'live-play') setAppHash('live/play');
             else setAppHash('game/' + screenId);
         }
 
@@ -2045,9 +2286,24 @@
                 if (root === 'home') {
                     showScreen('home');
                     closeHomeSection();
-                } else if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'mysets' || root === 'progress') {
+                } else if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'live' || root === 'mysets' || root === 'progress') {
                     showScreen('home');
-                    openHomeSection(root);
+                    if (root === 'live' && arg) {
+                        if (arg === 'host') {
+                            if (window.LiveGame) LiveGame.openHost();
+                            else showScreen('live-host');
+                        } else if (arg === 'join') {
+                            if (window.LiveGame) LiveGame.openJoin();
+                            else showScreen('live-join');
+                        } else if (arg === 'play') {
+                            if (window.LiveGame) LiveGame.openPlay();
+                            else showScreen('live-play');
+                        } else {
+                            openHomeSection('live');
+                        }
+                    } else {
+                        openHomeSection(root);
+                    }
                 } else if (root === 'auction') {
                     goToAuction();
                 } else if (root === 'setup' && arg) {
@@ -2662,7 +2918,8 @@
                     const gameNames = {
                         flashcards: 'Flashcards', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up',
-                        frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing'
+                        frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
+                        live_host: 'Live Game (host)'
                     };
                     for (const t of data.gameTotals) {
                         html += `<div class="progress-tile"><h4>${gameNames[t.game_key] || t.game_key}</h4><div class="pt-val">${t.sessions_count}</div><div class="pt-label">sessions · ${t.total_points} pts · best ${t.best_score}</div></div>`;
@@ -2696,7 +2953,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Game (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -2715,18 +2972,18 @@
         let peCustomDeckIndex = 0;
 
         function openHomeSection(sectionId) {
-            const hub = document.getElementById('home-hub');
-            const map = { vocab: 'section-vocab', team: 'section-team', writing: 'section-writing', mysets: 'section-mysets', progress: 'section-progress' };
+            const hubWrap = document.querySelector('.home-hub-wrap');
+            const map = { vocab: 'section-vocab', team: 'section-team', writing: 'section-writing', live: 'section-live', mysets: 'section-mysets', progress: 'section-progress' };
             const targetId = map[sectionId];
             if (!targetId) return;
             document.querySelectorAll('.home-section').forEach((el) => el.classList.remove('active'));
-            if (hub) hub.classList.remove('active');
+            if (hubWrap) hubWrap.style.display = 'none';
             const section = document.getElementById(targetId);
             if (section) section.classList.add('active');
             if (sectionId === 'mysets') refreshMySetsView();
             if (sectionId === 'progress') loadProgressDashboard();
             syncAuthBarNavActive();
-            const trackKey = sectionId === 'writing' ? 'writing' : sectionId === 'team' ? 'team' : sectionId === 'mysets' ? 'mysets' : sectionId === 'progress' ? 'progress' : 'vocab';
+            const trackKey = sectionId === 'writing' ? 'writing' : sectionId === 'team' ? 'team' : sectionId === 'live' ? 'live' : sectionId === 'mysets' ? 'mysets' : sectionId === 'progress' ? 'progress' : 'vocab';
             trackSectionOpen('section:cat-' + trackKey);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (!applyingRoute) setAppHash(sectionId === 'mysets' || sectionId === 'progress' ? sectionId : sectionId);
@@ -2734,8 +2991,8 @@
 
         function closeHomeSection() {
             document.querySelectorAll('.home-section').forEach((el) => el.classList.remove('active'));
-            const hub = document.getElementById('home-hub');
-            if (hub) hub.classList.add('active');
+            const hubWrap = document.querySelector('.home-hub-wrap');
+            if (hubWrap) hubWrap.style.display = '';
             syncAuthBarNavActive();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (!applyingRoute) setAppHash('home');

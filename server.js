@@ -1,11 +1,13 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
 import passport from 'passport';
 import connectPgSimple from 'connect-pg-simple';
+import { Server as SocketIOServer } from 'socket.io';
 import { Agent } from '@cursor/sdk';
 import {
     initDb,
@@ -45,6 +47,15 @@ import {
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook } from './billing.js';
+import {
+    buildDeckFromRequest,
+    createRoom,
+    getRoom,
+    initLiveGame,
+    joinRoom,
+    publicRoomSnapshot,
+} from './live-game.js';
+import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -476,6 +487,92 @@ async function start() {
     });
 
     // ==========================================
+    // LIVE GAME API
+    // ==========================================
+
+    app.post('/api/live/create', requireLogin, async (req, res) => {
+        try {
+            let deckPayload;
+            const { source, setId, level, terms, glossary } = req.body || {};
+
+            if (source === 'wordset') {
+                if (!setId) return res.status(400).json({ error: 'setId required for word set source.' });
+                const data = await loadWordSetForGame(Number(setId), req.user.id);
+                if (!data) return res.status(404).json({ error: 'Word set not found.' });
+                deckPayload = buildDeckFromRequest({
+                    source: 'wordset',
+                    items: data.items,
+                    level,
+                });
+            } else if (source === 'paste') {
+                deckPayload = buildDeckFromRequest({ source: 'paste', terms: terms || glossary, level });
+            } else {
+                deckPayload = buildDeckFromRequest({ source: 'builtin', level: level || 'intermediate' });
+            }
+
+            if (deckPayload.deck.length < 12) {
+                return res.status(400).json({ error: 'At least 12 terms with definitions are required.' });
+            }
+
+            const room = createRoom(req.user.id, {
+                deck: deckPayload.deck,
+                level: deckPayload.level,
+            });
+
+            res.json({
+                code: room.code,
+                hostToken: room.hostToken,
+                termsToWin: 12,
+                minPlayers: 2,
+                joinUrl: `${APP_BASE_URL}/#/live/join?code=${room.code}`,
+            });
+        } catch (err) {
+            res.status(400).json({ error: err.message || 'Could not create room.' });
+        }
+    });
+
+    app.post('/api/live/join', async (req, res) => {
+        try {
+            const { code, nickname } = req.body || {};
+            if (!code) return res.status(400).json({ error: 'Room code required.' });
+            const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+            const { room, player } = joinRoom(code, nickname, ip);
+            res.json({
+                code: room.code,
+                playerId: player.id,
+                playerToken: player.playerToken,
+                nickname: player.nickname,
+                snapshot: publicRoomSnapshot(room),
+            });
+        } catch (err) {
+            res.status(400).json({ error: err.message || 'Could not join room.' });
+        }
+    });
+
+    app.get('/api/live/room/:code', (req, res) => {
+        const room = getRoom(req.params.code);
+        if (!room) return res.status(404).json({ error: 'Room not found or expired.' });
+        res.json(publicRoomSnapshot(room));
+    });
+
+    app.get('/api/live/builtin-levels', (_req, res) => {
+        res.json({
+            levels: [
+                { id: 'beginner', label: 'Beginner' },
+                { id: 'easy', label: 'Easy' },
+                { id: 'intermediate', label: 'Intermediate' },
+                { id: 'advanced', label: 'Advanced' },
+            ],
+            samples: {
+                beginner: loadBuiltinDeck('beginner').length,
+                easy: loadBuiltinDeck('easy').length,
+                intermediate: loadBuiltinDeck('intermediate').length,
+                advanced: loadBuiltinDeck('advanced').length,
+            },
+        });
+    });
+
+    // ==========================================
     // MATURA ESSAY REVIEW HISTORY (text only — no images/PDFs)
     // ==========================================
 
@@ -716,7 +813,26 @@ app.get('/api/health', (_req, res) => {
 
     app.use(express.static(__dirname));
 
-    app.listen(PORT, '0.0.0.0', () => {
+    const httpServer = http.createServer(app);
+    const io = new SocketIOServer(httpServer, {
+        cors: { origin: true, credentials: true },
+    });
+
+    initLiveGame(io, {
+        onGameEnd(room) {
+            if (!room.hostUserId) return;
+            const topScore = Array.from(room.players.values()).reduce((m, p) => Math.max(m, p.score), 0);
+            recordGameSession(room.hostUserId, {
+                gameKey: 'live_host',
+                score: room.players.size,
+                pointsEarned: topScore,
+                wordsTotal: 12,
+                result: { code: room.code, players: room.players.size },
+            }).catch((err) => console.warn('live_host session save failed:', err.message));
+        },
+    });
+
+    httpServer.listen(PORT, '0.0.0.0', () => {
         console.log(`LingoSpark running on ${APP_BASE_URL} (port ${PORT})`);
     if (!process.env.CURSOR_API_KEY) {
             console.warn('Warning: CURSOR_API_KEY is not set.');

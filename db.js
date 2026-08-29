@@ -499,6 +499,7 @@ export const ANALYTICS_PAGE_KEYS = new Set([
     'section:cat-vocab',
     'section:cat-team',
     'section:cat-writing',
+    'section:cat-live',
     'section:primary-english',
 ]);
 
@@ -854,7 +855,7 @@ export async function loadWordSetForGame(setId, userId) {
 // ==========================================
 
 const VALID_GAME_KEYS = new Set([
-    'flashcards', 'bomb', 'grid', 'odyssey', 'mission', 'auction',
+    'flashcards', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'live_host',
     'pe_boring', 'pe_detail', 'pe_link', 'pe_exam', 'pe_dictation', 'pe_colour', 'pe_line',
     'frank', 'trans', 'devil', 'bloat', 'vocab_upgrade', 'matura',
 ]);
