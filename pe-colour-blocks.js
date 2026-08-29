@@ -540,6 +540,34 @@
     font-family: var(--font-primary); font-weight: 700; font-size: 0.62rem;
     color: #0f766e; background: #ccfbf1; border-radius: 999px; padding: 0.05rem 0.4rem; margin-top: 0.05rem;
 }
+.cb-card.suggest {
+    box-shadow: 0 0 0 3px #fbbf24, 0 6px 14px rgba(245, 158, 11, 0.35);
+    transform: translateY(-2px);
+}
+.cb-guide {
+    background: #fff7ed; border: 2px solid #fdba74; border-radius: 14px;
+    padding: 0.85rem 1rem 1rem; margin: 0 0 0.9rem;
+}
+.cb-guide h3 {
+    font-family: var(--font-primary); font-size: 1.05rem; margin: 0 0 0.35rem; color: #9a3412;
+}
+.cb-guide p { margin: 0 0 0.7rem; font-size: 0.98rem; line-height: 1.45; color: var(--text-dark); }
+.cb-guide-opts { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.cb-guide-opt {
+    border: 2px solid #ea580c; background: #fff; color: #9a3412; border-radius: 12px;
+    padding: 0.55rem 0.75rem; cursor: pointer; text-align: left;
+    font-family: var(--font-primary); font-weight: 700; font-size: 0.88rem; line-height: 1.3;
+}
+.cb-guide-opt:hover { background: #ffedd5; }
+.cb-guide-opt small { display: block; font-family: var(--font-secondary); font-weight: 400; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
+.cb-guide-skip {
+    border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    font-size: 0.85rem; margin-top: 0.55rem; text-decoration: underline;
+}
+.cb-need {
+    background: #ecfeff; border-left: 4px solid #0891b2; border-radius: 8px;
+    padding: 0.65rem 0.85rem; margin: 0 0 0.75rem; font-size: 0.98rem; line-height: 1.45;
+}
 .cb-card.in-chain { cursor: grab; touch-action: none; }
 .cb-card.in-chain.dragging { opacity: 0.45; cursor: grabbing; transform: scale(1.05); z-index: 2; }
 .cb-chain.sorting { border-color: var(--royal-blue); background: #eff6ff; }
@@ -652,6 +680,7 @@
 
     function pickPerson() { return pick(PERSONS); }
     function gotTile(personId) { return (personId === 'he' || personId === 'she') ? 'has-got' : 'have-got'; }
+    function notGotTile(personId) { return (personId === 'he' || personId === 'she') ? 'hasnt-got' : 'havent-got'; }
 
     function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -669,10 +698,435 @@
         return /^[aeiou]/i.test(w) ? 'an' : 'a';
     }
 
+    function plLabel(t) {
+        if (!t) return '';
+        if (t.kind === 'subj') return PERSON_PL[t.id] || t.wordPl || t.text;
+        return t.wordPl || t.glossPl || t.text;
+    }
+
+    function olderOk() { return S && S.ageBand === 'older'; }
+
+    function resetGuide() {
+        S.guideOpen = false;
+        S.guideSeed = null;
+        S.intent = null;
+        S.guideNeed = null;
+        S.pendingNoun = null;
+        S.pendingVerb = null;
+        S.pendingPrep = null;
+        S.freeBuild = false;
+        S.hintEn = '';
+        S.hintPl = '';
+    }
+
+    function openGuide(tileId) {
+        S.guideSeed = tileId;
+        S.guideOpen = true;
+        S.intent = null;
+        S.guideNeed = null;
+        render();
+    }
+
+    function intentChoices(seed) {
+        const t = byId(seed);
+        if (!t) return [];
+        const nameEn = t.text;
+        const namePl = plLabel(t);
+        const older = olderOk();
+        const out = [];
+        const add = (id, en, pl, subEn, subPl) => {
+            out.push({ id: id, en: en, pl: pl, subEn: subEn || '', subPl: subPl || '' });
+        };
+
+        if (t.kind === 'noun') {
+            const one = t.number !== 'pl';
+            add('there-where',
+                'Do you want to say where the ' + nameEn + ' is?',
+                'Czy chcesz powiedzieć, gdzie jest ' + namePl + '?',
+                one ? 'There is a/an … + place' : 'There are … + place',
+                one ? 'There is a/an … + miejsce' : 'There are … + miejsce');
+            add('there-ask',
+                'Do you want to ask if there is a ' + nameEn + '?',
+                'Czy chcesz o coś zapytać? (Is / Are there …?)',
+                one ? 'Is there a/an …?' : 'Are there …?',
+                one ? 'Is there a/an …?' : 'Are there …?');
+            add('there-neg',
+                'Do you want to say there isn’t a ' + nameEn + '?',
+                'Czy chcesz powiedzieć, że nie ma ' + namePl + '?',
+                one ? "There isn't a/an …" : "There aren't …",
+                one ? "There isn't …" : "There aren't …");
+            add('have',
+                'Has someone got a ' + nameEn + '?',
+                'Czy chcesz powiedzieć, że ktoś ma ' + namePl + '?',
+                'I / You / He … + have/has got',
+                'I / You / He … + have/has got');
+            add('have-neg',
+                'Hasn’t someone got a ' + nameEn + '?',
+                'Czy chcesz powiedzieć, że ktoś nie ma ' + namePl + '?',
+                "haven't / hasn't got",
+                "haven't / hasn't got");
+            if (t.goals && t.goals.indexOf('like') !== -1) {
+                add('like', 'Does someone like ' + nameEn + '?', 'Czy chcesz powiedzieć, że ktoś lubi ' + namePl + '?', 'I/You/We/They + like', 'like / don’t like');
+                add('like-neg', "Doesn’t someone like " + nameEn + '?', 'Czy chcesz powiedzieć, że ktoś nie lubi ' + namePl + '?', "don't + like", "don't + like");
+            }
+        } else if (t.kind === 'subj') {
+            const who = namePl.toLowerCase();
+            add('have', 'Do you want to say that ' + nameEn + ' has got something?', 'Czy chcesz powiedzieć, że ' + who + ' coś ma?', 'have got / has got', 'have got / has got');
+            add('have-neg', 'Do you want to say that ' + nameEn + " hasn’t got something?", 'Czy chcesz powiedzieć, że ' + who + ' czegoś nie ma?', "haven't / hasn't got", "haven't / hasn't got");
+            add('can', 'Do you want to say that ' + nameEn + ' can do something?', 'Czy chcesz powiedzieć, że ' + who + ' umie / potrafi?', 'can + action', 'can + czynność');
+            add('cant', 'Do you want to say that ' + nameEn + " can’t?", 'Czy chcesz powiedzieć, że ' + who + ' nie może / nie potrafi?', "can't + action", "can't + czynność");
+            add('like', 'Do you want to say that ' + nameEn + ' likes something?', 'Czy chcesz powiedzieć, że ' + who + ' coś lubi?', 'like', 'like');
+            add('like-neg', 'Do you want to say that ' + nameEn + " doesn’t like something?", 'Czy chcesz powiedzieć, że ' + who + ' czegoś nie lubi?', "don't + like", "don't + like");
+            if (older) {
+                add('must', 'Do you want to say that ' + nameEn + ' must do something?', 'Czy chcesz powiedzieć, że ' + who + ' musi?', 'must + action', 'must + czynność');
+                add('haveto', 'Do you want to say that ' + nameEn + ' has to do something?', 'Czy chcesz powiedzieć, że ' + who + ' musi (have to)?', 'have to + action', 'have to');
+                add('haveto-neg', 'Do you want to say that ' + nameEn + " doesn’t have to?", 'Czy chcesz powiedzieć, że ' + who + ' nie musi?', "don't + have to", "don't + have to");
+            }
+        } else if (t.kind === 'verb') {
+            add('can', 'Do you want to say someone can ' + nameEn + '?', 'Czy chcesz powiedzieć, że ktoś umie / potrafi ' + namePl + '?', 'person + can + ' + nameEn, 'osoba + can');
+            add('cant', 'Do you want to say someone can’t ' + nameEn + '?', 'Czy chcesz powiedzieć, że ktoś nie może / nie potrafi ' + namePl + '?', "can't + " + nameEn, "can't");
+            if (older) {
+                add('must', 'Do you want to say someone must ' + nameEn + '?', 'Czy chcesz powiedzieć, że ktoś musi ' + namePl + '?', 'must', 'must');
+                add('haveto', 'Do you want to say someone has to ' + nameEn + '?', 'Czy chcesz powiedzieć, że ktoś musi ' + namePl + ' (have to)?', 'have to', 'have to');
+                add('haveto-neg', 'Do you want to say someone doesn’t have to ' + nameEn + '?', 'Czy chcesz powiedzieć, że ktoś nie musi ' + namePl + '?', "don't have to", "don't have to");
+            }
+        } else if (t.kind === 'verbp' || t.kind === 'modal' || t.kind === 'neg') {
+            if (t.id === 'have-got' || t.id === 'has-got') {
+                add('have', 'Do you want to say that someone has got something?', 'Czy chcesz powiedzieć, że ktoś coś ma?', 'person + have/has got', 'osoba + have/has got');
+            } else if (t.id === 'havent-got' || t.id === 'hasnt-got') {
+                add('have-neg', 'Do you want to say that someone hasn’t got something?', 'Czy chcesz powiedzieć, że ktoś czegoś nie ma?', "haven't / hasn't got", "haven't / hasn't got");
+            } else if (t.id === 'can') {
+                add('can', 'Do you want to say that someone can do something?', 'Czy chcesz powiedzieć, że ktoś umie / potrafi?', 'person + can + action', 'osoba + can');
+            } else if (t.id === 'cant') {
+                add('cant', 'Do you want to say that someone can’t?', 'Czy chcesz powiedzieć, że ktoś nie może / nie potrafi?', "can't + action", "can't");
+            } else if (t.id === 'like') {
+                add('like', 'Do you want to say that someone likes something?', 'Czy chcesz powiedzieć, że ktoś coś lubi?', 'person + like', 'osoba + like');
+            } else if (t.id === 'dont') {
+                add('like-neg', "Do you want to say that someone doesn’t like something?", 'Czy chcesz powiedzieć, że ktoś czegoś nie lubi?', "don't + like", "don't + like");
+                if (older) add('haveto-neg', "Do you want to say that someone doesn’t have to?", 'Czy chcesz powiedzieć, że ktoś nie musi?', "don't + have to", "don't + have to");
+            } else if (t.id === 'must' && older) {
+                add('must', 'Do you want to say that someone must do something?', 'Czy chcesz powiedzieć, że ktoś musi?', 'must + action', 'must');
+            } else if (t.id === 'have-to' && older) {
+                add('haveto', 'Do you want to say that someone has to do something?', 'Czy chcesz powiedzieć, że ktoś musi (have to)?', 'have to + action', 'have to');
+            }
+        } else if (t.kind === 'struct') {
+            if (t.family === 'is' && t.id.indexOf('isnt') === -1 && t.id.indexOf('is-there') === -1) {
+                add('there-where', 'Say where one thing is.', 'Powiedzieć, gdzie jest jedna rzecz.', 'There is a/an …', 'There is');
+            } else if (t.family === 'are' && t.id.indexOf('arent') === -1 && t.id.indexOf('are-there') === -1) {
+                add('there-where', 'Say where many things are.', 'Powiedzieć, gdzie jest wiele rzeczy.', 'There are …', 'There are');
+            } else if (t.id === 'is-there' || t.id === 'are-there') {
+                add('there-ask', 'Ask a question.', 'Zadać pytanie.', t.text + ' …?', t.text);
+            } else {
+                add('there-neg', 'Say something is not there.', 'Powiedzieć, że czegoś nie ma.', t.text, t.text);
+            }
+        } else if (t.kind === 'prep') {
+            add('there-where', 'Say where something is, using “' + nameEn + '”.', 'Powiedzieć, gdzie coś jest, używając „' + nameEn + '”.', 'There is/are … ' + nameEn, 'There is/are');
+        }
+        return out;
+    }
+
+    function artForNoun(n) {
+        if (!n || n.number === 'pl' || n.number === 'unc') return null;
+        return (n.vowel || articleWanted(n.speak) === 'an') ? 'an' : 'a';
+    }
+
+    function openSheetsForNeed(need) {
+        ensureSheetsOpen();
+        const map = { subj: 'who', struct: 'struct', art: 'art', num: 'num', verbp: 'grammar', modal: 'grammar', neg: 'grammar', prep: 'prep', noun: 'noun', verb: 'verb' };
+        Object.keys(S.sheetsOpen).forEach((k) => { S.sheetsOpen[k] = false; });
+        (need.kinds || []).forEach((k) => {
+            const g = map[k];
+            if (g) S.sheetsOpen[g] = true;
+        });
+        if (need.ids) {
+            need.ids.forEach((id) => {
+                const t = byId(id);
+                if (!t) return;
+                const g = map[t.kind];
+                if (g) S.sheetsOpen[g] = true;
+            });
+        }
+    }
+
+    function setNeed(kinds, ids, en, pl) {
+        S.guideNeed = { kinds: kinds || [], ids: ids || [] };
+        S.hintEn = en || '';
+        S.hintPl = pl || '';
+        openSheetsForNeed(S.guideNeed);
+    }
+
+    function applyIntent(intent) {
+        const seed = byId(S.guideSeed);
+        S.intent = intent;
+        S.guideOpen = false;
+        S.goal = 'sandbox';
+        S.chain = [];
+        S.pendingNoun = null;
+        S.pendingVerb = null;
+        S.pendingPrep = null;
+        S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
+        const older = olderOk();
+        const sgHe = seed && seed.kind === 'subj' && (seed.id === 'he' || seed.id === 'she');
+
+        const startPerson = () => {
+            if (seed && seed.kind === 'subj') S.chain.push(seed.id);
+        };
+        const startNoun = () => {
+            if (seed && seed.kind === 'noun') {
+                const art = artForNoun(seed);
+                if (art) S.chain.push(art);
+                S.chain.push(seed.id);
+            }
+        };
+
+        if (intent === 'there-where') {
+            if (seed && seed.kind === 'noun') {
+                if (seed.number === 'pl') S.chain = ['there-are', seed.id];
+                else S.chain = ['there-is', artForNoun(seed), seed.id].filter(Boolean);
+                setNeed(['prep', 'noun'], ['in', 'on', 'under', 'the'],
+                    'Now add a place word (in / on / under…) and the place (the desk).',
+                    'Teraz dodaj przyimek (in / on / under…) i miejsce (the desk).');
+            } else if (seed && seed.kind === 'prep') {
+                S.chain = ['there-is'];
+                S.pendingPrep = seed.id;
+                setNeed(['art', 'noun'], [],
+                    'Add a / an + the thing, then “' + seed.text + '” and the place.',
+                    'Dodaj a / an + rzecz, potem „' + seed.text + '” i miejsce.');
+            } else {
+                S.chain = seed && seed.id ? [seed.id] : ['there-is'];
+                setNeed(['art', 'noun'], ['a', 'an'],
+                    'Add a / an and the thing, then a place.',
+                    'Dodaj a / an i rzecz, potem miejsce.');
+            }
+        } else if (intent === 'there-ask') {
+            if (seed && seed.kind === 'noun' && seed.number === 'pl') {
+                S.chain = ['are-there'];
+                if (older) S.chain.push('any');
+                S.chain.push(seed.id);
+            } else if (seed && seed.kind === 'noun') {
+                S.chain = ['is-there', artForNoun(seed), seed.id].filter(Boolean);
+            } else {
+                S.chain = [seed && (seed.id === 'are-there' ? 'are-there' : 'is-there')];
+                setNeed(['art', 'noun'], ['a', 'an', 'any'], 'Add the thing you are asking about.', 'Dodaj rzecz, o którą pytasz.');
+                render(); return;
+            }
+            setNeed(['prep', 'noun'], ['in', 'on', 'the'],
+                'Optional: add a place (in the kitchen). Then Check.',
+                'Opcjonalnie dodaj miejsce (in the kitchen). Potem Sprawdź.');
+        } else if (intent === 'there-neg') {
+            if (seed && seed.kind === 'noun' && seed.number === 'pl') {
+                S.chain = ['there-arent'];
+                if (older) S.chain.push('any');
+                S.chain.push(seed.id);
+            } else if (seed && seed.kind === 'noun') {
+                S.chain = ['there-isnt', artForNoun(seed), seed.id].filter(Boolean);
+            } else {
+                S.chain = [seed && seed.id && seed.id.indexOf('arent') !== -1 ? 'there-arent' : 'there-isnt'];
+                setNeed(['art', 'noun'], ['a', 'an', 'any'], 'Add the thing that is missing.', 'Dodaj rzecz, której nie ma.');
+                render(); return;
+            }
+            setNeed(['prep', 'noun'], ['in', 'on', 'the'],
+                'You can add a place, then Check.',
+                'Możesz dodać miejsce, potem Sprawdź.');
+        } else if (intent === 'have' || intent === 'have-neg') {
+            const neg = intent === 'have-neg';
+            if (seed && seed.kind === 'subj') {
+                S.chain = [seed.id, neg ? notGotTile(seed.id) : gotTile(seed.id)];
+                setNeed(['art', 'noun'], ['a', 'an'],
+                    'Now tap the thing ' + seed.text + (neg ? " hasn’t" : ' has') + ' got.',
+                    'Teraz kliknij rzecz, którą ' + plLabel(seed).toLowerCase() + (neg ? ' nie ma.' : ' ma.'));
+            } else if (seed && seed.kind === 'noun') {
+                S.pendingNoun = seed.id;
+                setNeed(['subj'], ['i', 'you', 'he', 'she', 'we', 'they'],
+                    'Who has got the ' + seed.text + '? Tap I / You / He / She / We / They.',
+                    'Kto ma ' + plLabel(seed) + '? Kliknij I / You / He / She / We / They.');
+            } else {
+                setNeed(['subj'], ['i', 'you', 'he', 'she', 'we', 'they'],
+                    'Who? Tap I / You / He / She / We / They.',
+                    'Kto? Kliknij I / You / He / She / We / They.');
+            }
+        } else if (intent === 'can' || intent === 'cant' || intent === 'must' || intent === 'haveto' || intent === 'haveto-neg') {
+            const modal = intent === 'can' ? 'can' : intent === 'cant' ? 'cant' : intent === 'must' ? 'must' : 'have-to';
+            if (seed && seed.kind === 'subj') {
+                S.chain = [seed.id];
+                if (intent === 'haveto-neg') S.chain.push('dont', 'have-to');
+                else S.chain.push(modal);
+                setNeed(['verb'], [],
+                    'Now tap the action (swim, run, tidy…).',
+                    'Teraz kliknij czynność (swim, run, tidy…).');
+            } else if (seed && seed.kind === 'verb') {
+                S.pendingVerb = seed.id;
+                setNeed(['subj'], ['i', 'you', 'he', 'she', 'we', 'they'],
+                    'Who ' + (intent === 'cant' ? "can’t" : intent === 'must' ? 'must' : intent === 'haveto-neg' ? "doesn’t have to" : intent === 'haveto' ? 'has to' : 'can') + ' ' + seed.text + '? Tap a person.',
+                    'Kto? Kliknij I / You / He / She / We / They.');
+            } else {
+                setNeed(['subj'], ['i', 'you', 'he', 'she', 'we', 'they'],
+                    'Who? Tap a person, then the action.',
+                    'Kto? Kliknij osobę, potem czynność.');
+            }
+        } else if (intent === 'like' || intent === 'like-neg') {
+            if (seed && seed.kind === 'subj') {
+                S.chain = [seed.id];
+                if (intent === 'like-neg') S.chain.push('dont');
+                S.chain.push('like');
+                setNeed(['noun', 'verb'], [],
+                    'Tap what they like (pizza, music, swim…).',
+                    'Kliknij, co lubią (pizza, music, swim…).');
+            } else if (seed && seed.kind === 'noun') {
+                S.pendingNoun = seed.id;
+                setNeed(['subj'], ['i', 'you', 'he', 'she', 'we', 'they'],
+                    'Who likes ' + seed.text + '? Tap a person.',
+                    'Kto lubi ' + plLabel(seed) + '? Kliknij osobę.');
+            } else {
+                setNeed(['subj'], ['i', 'you', 'he', 'she', 'we', 'they'],
+                    'Who? Tap a person.',
+                    'Kto? Kliknij osobę.');
+            }
+        }
+        render();
+    }
+
+    function continueGuideAfterAdd(id) {
+        const t = byId(id);
+        if (!t || !S.intent) return;
+        const personStart = t.kind === 'subj' && (S.pendingNoun || S.pendingVerb || !S.chain.length);
+        if (personStart) {
+            const noun = S.pendingNoun ? byId(S.pendingNoun) : null;
+            const neg = S.intent === 'have-neg' || S.intent === 'like-neg';
+            if (S.intent === 'have' || S.intent === 'have-neg') {
+                S.chain = [t.id, neg ? notGotTile(t.id) : gotTile(t.id)];
+                const art = artForNoun(noun);
+                if (art) S.chain.push(art);
+                if (noun) S.chain.push(noun.id);
+                S.pendingNoun = null;
+                if (noun) setNeed([], [], 'Nice. You can Check now — or add more words.', 'Super. Możesz kliknąć Sprawdź — albo dodać więcej słów.');
+                else setNeed(['art', 'noun'], ['a', 'an'], 'Now tap the thing.', 'Teraz kliknij rzecz.');
+            } else if (S.intent === 'like' || S.intent === 'like-neg') {
+                S.chain = [t.id];
+                if (neg) S.chain.push('dont');
+                S.chain.push('like');
+                if (noun) S.chain.push(noun.id);
+                S.pendingNoun = null;
+                if (noun) setNeed([], [], 'Check the sentence, or add more.', 'Sprawdź zdanie albo dodaj więcej.');
+                else setNeed(['noun', 'verb'], [], 'Tap what they like.', 'Kliknij, co lubią.');
+            } else if (S.intent === 'can' || S.intent === 'cant' || S.intent === 'must' || S.intent === 'haveto' || S.intent === 'haveto-neg') {
+                const v = S.pendingVerb;
+                S.chain = [t.id];
+                if (S.intent === 'haveto-neg') S.chain.push('dont', 'have-to');
+                else if (S.intent === 'can') S.chain.push('can');
+                else if (S.intent === 'cant') S.chain.push('cant');
+                else if (S.intent === 'must') S.chain.push('must');
+                else if (S.intent === 'haveto') S.chain.push('have-to');
+                if (v) S.chain.push(v);
+                S.pendingVerb = null;
+                if (v) setNeed([], [], 'Check the sentence.', 'Sprawdź zdanie.');
+                else setNeed(['verb'], [], 'Now tap the action.', 'Teraz kliknij czynność.');
+            }
+            if (S.intent === 'have' || S.intent === 'have-neg' || S.intent === 'like' || S.intent === 'like-neg' ||
+                S.intent === 'can' || S.intent === 'cant' || S.intent === 'must' || S.intent === 'haveto' || S.intent === 'haveto-neg') {
+                return;
+            }
+        }
+        if (S.pendingPrep && t.kind === 'noun' && S.chain.indexOf(S.pendingPrep) === -1) {
+            const hasNoun = S.chain.some((cid) => (byId(cid) || {}).kind === 'noun');
+            if (hasNoun) {
+                S.chain.push(S.pendingPrep);
+                S.pendingPrep = null;
+                setNeed(['art', 'noun'], ['the'], 'Add the place after the place word (the desk).', 'Po przyimku dodaj miejsce (the desk).');
+            }
+        }
+        refreshGuideHint();
+    }
+
+    function refreshGuideHint() {
+        if (!S.intent || !S.chain.length) return;
+        const tiles = chainTiles(S.chain);
+        const kinds = tiles.map((x) => x.kind);
+        const has = (k) => kinds.indexOf(k) !== -1;
+        if ((S.intent === 'there-where' || S.intent === 'there-ask' || S.intent === 'there-neg') && has('noun') && !has('prep')) {
+            setNeed(['prep', 'noun'], ['in', 'on', 'under', 'the'],
+                'Add where: in / on / under + the + place.',
+                'Dodaj gdzie: in / on / under + the + miejsce.');
+            return;
+        }
+        if ((S.intent === 'there-where' || S.intent === 'there-ask' || S.intent === 'there-neg') && has('prep')) {
+            const prepI = tiles.findIndex((x) => x.kind === 'prep');
+            const after = prepI >= 0 && tiles.slice(prepI + 1).some((x) => x.kind === 'noun');
+            if (!after) {
+                setNeed(['art', 'noun'], ['the'],
+                    'Add the place after the place word (the desk).',
+                    'Po przyimku dodaj miejsce (the desk).');
+                return;
+            }
+        }
+        if (S.intent === 'have' || S.intent === 'have-neg') {
+            const n = tiles.find((x) => x.kind === 'noun');
+            if (!n) {
+                setNeed(['art', 'noun'], ['a', 'an'], 'Add a / an and the thing.', 'Dodaj a / an i rzecz.');
+                return;
+            }
+            if (n.number !== 'pl' && n.number !== 'unc' && !has('a') && !has('an') && !has('the')) {
+                setNeed(['art'], ['a', 'an'], 'Add a or an before one thing.', 'Dodaj a lub an przed jedną rzeczą.');
+                return;
+            }
+        }
+        if ((S.intent === 'can' || S.intent === 'cant' || S.intent === 'must' || S.intent === 'haveto' || S.intent === 'haveto-neg') && !has('verb')) {
+            setNeed(['verb'], [], 'Add an action.', 'Dodaj czynność.');
+            return;
+        }
+        if ((S.intent === 'like' || S.intent === 'like-neg') && !has('noun') && !has('verb')) {
+            setNeed(['noun', 'verb'], [], 'Add what they like.', 'Dodaj, co lubią.');
+            return;
+        }
+        setNeed([], [],
+            'Looks ready — tap Check. You can still add or drag tiles.',
+            'Wygląda gotowo — kliknij Sprawdź. Możesz jeszcze dodać lub przeciągnąć kafelki.');
+    }
+
+    function isSuggested(t) {
+        if (!t || !S || !S.guideNeed) return false;
+        if (S.guideNeed.ids && S.guideNeed.ids.indexOf(t.id) !== -1) return true;
+        if (S.guideNeed.kinds && S.guideNeed.kinds.indexOf(t.kind) !== -1) {
+            if (S.guideNeed.ids && S.guideNeed.ids.length && S.guideNeed.kinds.length > 1) {
+                return S.guideNeed.ids.indexOf(t.id) !== -1 || S.guideNeed.kinds.indexOf(t.kind) !== -1;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function guideHtml() {
+        if (!S.guideOpen || !S.guideSeed) return '';
+        const t = byId(S.guideSeed);
+        if (!t) return '';
+        const choices = intentChoices(S.guideSeed);
+        if (!choices.length) return '';
+        const qEn = 'What do you want to say with “' + t.text + '”?';
+        const qPl = 'Co chcesz powiedzieć z „' + t.text + '”?';
+        let html = '<div class="cb-guide"><h3>' + esc(L(qEn, qPl)) + '</h3>' +
+            '<p>' + esc(L('Pick a sentence type. Then we will highlight the next tiles.', 'Wybierz typ zdania. Potem podświetlimy kolejne kafelki.')) + '</p>' +
+            '<div class="cb-guide-opts">';
+        choices.forEach((c) => {
+            html += '<button type="button" class="cb-guide-opt" data-cb="intent" data-id="' + c.id + '">' +
+                esc(L(c.en, c.pl)) +
+                (c.subEn ? '<small>' + esc(L(c.subEn, c.subPl)) + '</small>' : '') +
+                '</button>';
+        });
+        html += '</div>' +
+            '<button type="button" class="cb-guide-skip" data-cb="guide-skip">' +
+            esc(L('I’ll build it myself', 'Ułożę sam / sama')) + '</button></div>';
+        return html;
+    }
+
+    function needHtml() {
+        if (S.guideOpen || !S.hintEn) return '';
+        return '<div class="cb-need">' + esc(L(S.hintEn, S.hintPl)) + '</div>';
+    }
+
     function visibleTiles() {
         return TILES.filter((t) => {
             if (t.ages && t.ages.indexOf(S.ageBand) === -1) return false;
-            if (S.goal && t.goals && t.goals.indexOf(S.goal) === -1) return false;
+            if (S.goal && S.goal !== 'sandbox' && t.goals && t.goals.indexOf(S.goal) === -1) return false;
             return true;
         });
     }
@@ -1093,7 +1547,8 @@
         const glossCls = (S && S.tilePl && gloss) ? 'gloss plhint' : 'gloss';
         const inBank = action === 'add' && (!extraClass || extraClass.indexOf('in-chain') === -1);
         const oneOrMore = inBank && t.kind === 'noun' && t.number === 'sg' && t.plId;
-        return '<button type="button" class="cb-card' + (extraClass || '') + '" data-cb="' + action + '" data-id="' + t.id + '" style="' + colorStyle(t.family) + '">' +
+        const suggest = (action === 'add' && isSuggested(t)) ? ' suggest' : '';
+        return '<button type="button" class="cb-card' + (extraClass || '') + suggest + '" data-cb="' + action + '" data-id="' + t.id + '" style="' + colorStyle(t.family) + '">' +
             ico + esc(t.text) + (gloss ? '<span class="' + glossCls + '">' + esc(gloss) + '</span>' : '') +
             (oneOrMore ? '<span class="cb-1plus">' + esc(L('1 or +', '1 lub +')) + '</span>' : '') +
             '</button>';
@@ -1133,6 +1588,44 @@
         render();
     }
 
+    function handleAdd(id) {
+        const tile = byId(id);
+        if (!tile) return;
+        S.nounPick = null;
+        clearAskWhy();
+        S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
+
+        if (S.guideOpen) {
+            if (intentChoices(id).length) openGuide(id);
+            return;
+        }
+        if (!S.freeBuild && !S.intent && !S.chain.length && intentChoices(id).length) {
+            openGuide(id);
+            return;
+        }
+        const personIntents = S.intent === 'have' || S.intent === 'have-neg' || S.intent === 'like' || S.intent === 'like-neg' ||
+            S.intent === 'can' || S.intent === 'cant' || S.intent === 'must' || S.intent === 'haveto' || S.intent === 'haveto-neg';
+        if (tile.kind === 'subj' && personIntents && (S.pendingNoun || S.pendingVerb || !S.chain.length)) {
+            continueGuideAfterAdd(id);
+            render();
+            return;
+        }
+        if (tile.kind === 'noun' && tile.number === 'sg') {
+            const last = S.chain.length ? byId(S.chain[S.chain.length - 1]) : null;
+            const art = artForNoun(tile);
+            const lastId = last ? last.id : '';
+            const afterHave = lastId === 'have-got' || lastId === 'has-got' || lastId === 'havent-got' || lastId === 'hasnt-got';
+            const afterThere = lastId === 'there-is' || lastId === 'is-there' || lastId === 'there-isnt';
+            const afterPrep = last && last.kind === 'prep';
+            if (art && (afterHave || afterThere || afterPrep) && S.chain.indexOf('a') === -1 && S.chain.indexOf('an') === -1 && S.chain.indexOf('the') === -1) {
+                S.chain.push(afterPrep ? 'the' : art);
+            }
+        }
+        S.chain.push(id);
+        continueGuideAfterAdd(id);
+        render();
+    }
+
     function ensureCss() {
         let el = document.getElementById(CSS_ID);
         if (!el) {
@@ -1148,17 +1641,14 @@
     function coach() {
         const pl = S.polish;
         if (S.tab === 'build') {
-            if (!S.goal) {
-                return pl ? 'Co chcesz powiedzieć? Wybierz cel, potem układaj kafelki od lewej.' : 'What do you want to say? Pick a goal, then line the tiles up from the left.';
-            }
-            if (S.buildPrompt && S.ageBand === 'young') {
+            if (S.buildPrompt) {
                 return pl
                     ? 'Spójrz na obrazek. Każde słowo to osobny kafel — a i an też. Klikaj w kolejności. Możesz przeciągnąć kafel w pasku, jeśli kolejność jest zła.'
                     : 'Look at the picture. Each word is its own tile — a and an too. Tap them in order. Drag a tile in the strip if the order is wrong.';
             }
             return pl
-                ? 'Klikaj kafelki, żeby złożyć zdanie. Przeciągnij kafel w pasku, aby zmienić kolejność. Kliknij, aby go zdjąć.'
-                : 'Tap tiles to build the sentence. Drag a tile in the strip to move it. Tap it to take it out.';
+                ? 'Kliknij kafel (window, He, swim…). Pomocnik zapyta, co chcesz powiedzieć — gdzie coś jest, pytanie, przeczenie, have got, can, like. Potem klikaj podświetlone kafelki, aż powstanie pełne zdanie.'
+                : 'Tap a tile (window, He, swim…). The helper asks what you want to say — where something is, a question, a negative, have got, can, like. Then tap the highlighted tiles to finish a full sentence.';
         }
         if (S.textKind === 'reorder') {
             return pl ? 'Ułóż wyrazy. Możesz odsłuchać zdanie, jeśli potrzebujesz pomocy.' : 'Put the words in order. You can hear the sentence if you need help.';
@@ -1264,7 +1754,9 @@
         const open = {};
         sheetGroups().forEach((g) => { open[g.id] = false; });
         const g = S.goal;
-        if (g === 'have') {
+        if (g === 'sandbox') {
+            open.who = true; open.struct = true; open.art = true; open.prep = true; open.noun = true;
+        } else if (g === 'have') {
             open.who = true; open.grammar = true; open.art = true; open.noun = true;
         } else if (g === 'can' || g === 'must' || g === 'haveto') {
             open.who = true; open.grammar = true; open.verb = true;
@@ -1307,18 +1799,19 @@
     }
 
     function buildHtml() {
-        if (!S.goal) return goalsHtml();
         const fb = L(S.buildFbEn, S.buildFbPl);
         let html = '';
         if (S.buildPrompt) html += pictureHtml(S.buildPrompt);
-        html += chainHtml(S.chain, 'pop', L('Tap tiles below…', 'Kliknij kafelki poniżej…'));
+        html += chainHtml(S.chain, 'pop', L('Tap a tile to start…', 'Kliknij kafel, aby zacząć…'));
+        html += guideHtml();
+        html += needHtml();
         html += sheetsHtml();
         html += '<div class="cb-actions">' +
             '<button type="button" class="btn btn-blue" data-cb="check-build">' + esc(L('Check', 'Sprawdź')) + '</button>' +
             '<button type="button" class="btn btn-outline" data-cb="speak-build"><i class="fa-solid fa-volume-high"></i> ' + esc(L('Say it', 'Powiedz')) + '</button>' +
             '<button type="button" class="btn btn-outline" data-cb="clear-build">' + esc(L('Clear', 'Wyczyść')) + '</button>' +
-            '<button type="button" class="btn btn-outline" data-cb="new-prompt">' + esc(L('New picture', 'Nowy obrazek')) + '</button>' +
-            '<button type="button" class="btn btn-grey" data-cb="new-goal">' + esc(L('Change goal', 'Zmień cel')) + '</button>' +
+            '<button type="button" class="btn btn-outline" data-cb="new-prompt">' + esc(L(S.buildPrompt ? 'New picture' : 'Picture challenge', S.buildPrompt ? 'Nowy obrazek' : 'Wyzwanie z obrazkiem')) + '</button>' +
+            (S.buildPrompt ? '<button type="button" class="btn btn-grey" data-cb="new-goal">' + esc(L('Leave picture', 'Zostaw obrazek')) + '</button>' : '') +
             '</div>';
         if (S.buildSpoken) {
             html += '<div class="cb-sentence">' + chainTiles(S.chain).map((t) => tokHtml(t.family, t.text)).join(' ') + '</div>';
@@ -1439,12 +1932,25 @@
                     render();
                     return;
                 }
-                addToChain(id);
+                handleAdd(id);
                 return;
             }
             if (a === 'noun-pick-box') return;
             if (a === 'noun-pick-cancel') { S.nounPick = null; render(); return; }
-            if (a === 'noun-pick') { speakTile(byId(id)); addToChain(id); return; }
+            if (a === 'noun-pick') { speakTile(byId(id)); handleAdd(id); return; }
+            if (a === 'intent') { applyIntent(id); return; }
+            if (a === 'guide-skip') {
+                const seed = S.guideSeed;
+                S.guideOpen = false;
+                S.freeBuild = true;
+                S.intent = null;
+                S.guideNeed = null;
+                S.hintEn = 'Build the sentence yourself. Tap Check when you are ready.';
+                S.hintPl = 'Ułóż zdanie samodzielnie. Kliknij Sprawdź, gdy będzie gotowe.';
+                if (seed) S.chain = [seed];
+                render();
+                return;
+            }
             if (a === 'pop') {
                 speakTile(chainTiles(S.chain)[Number(id)]);
                 S.chain.splice(Number(id), 1); S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; clearAskWhy(); render(); return;
@@ -1452,9 +1958,39 @@
             if (a === 'check-build') { checkBuild(); return; }
             if (a === 'ask-why') { askWhy(); return; }
             if (a === 'speak-build') { speak(S.buildSpoken || joinSpeak(chainTiles(S.chain))); return; }
-            if (a === 'clear-build') { S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
-            if (a === 'new-prompt') { S.buildPrompt = makeBuildPrompt(S.goal); S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
-            if (a === 'new-goal') { S.goal = null; S.chain = []; S.buildPrompt = null; clearAskWhy(); render(); return; }
+            if (a === 'clear-build') {
+                const pic = S.buildPrompt;
+                S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
+                clearAskWhy();
+                resetGuide();
+                S.goal = 'sandbox';
+                if (pic) S.freeBuild = true;
+                render();
+                return;
+            }
+            if (a === 'new-prompt') {
+                const kinds = S.ageBand === 'older'
+                    ? ['is', 'are', 'have', 'can', 'like', 'must', 'haveto']
+                    : ['is', 'are', 'have', 'can', 'like'];
+                resetGuide();
+                S.freeBuild = true;
+                S.goal = 'sandbox';
+                S.buildPrompt = makeBuildPrompt(pick(kinds));
+                S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
+                clearAskWhy();
+                render();
+                return;
+            }
+            if (a === 'new-goal') {
+                S.buildPrompt = null;
+                S.chain = [];
+                resetGuide();
+                S.goal = 'sandbox';
+                S.sheetsOpen = defaultSheetsOpen();
+                clearAskWhy();
+                render();
+                return;
+            }
             if (a === 'text-kind') { S.textKind = id; loadTextTask(); render(); return; }
             if (a === 'text-next') { loadTextTask(); render(); return; }
             if (a === 'text-check') { checkText(); return; }
@@ -1823,7 +2359,17 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
             tilePl: false,
             sheetsOpen: null,
             nounPick: null,
-            goal: null,
+            goal: 'sandbox',
+            guideOpen: false,
+            guideSeed: null,
+            intent: null,
+            guideNeed: null,
+            pendingNoun: null,
+            pendingVerb: null,
+            pendingPrep: null,
+            freeBuild: false,
+            hintEn: '',
+            hintPl: '',
             chain: [],
             buildPrompt: null,
             buildFbEn: '',
