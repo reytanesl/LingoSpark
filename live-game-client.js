@@ -632,7 +632,6 @@
 
     function updateHostAuthUI() {
         const signedIn = isHostSignedIn();
-        if ($('live-host-signin-gate')) $('live-host-signin-gate').hidden = signedIn;
         if ($('live-host-setup-form')) $('live-host-setup-form').hidden = !signedIn;
     }
 
@@ -647,6 +646,7 @@
         updateHostAuthUI();
         if (!isHostSignedIn()) {
             showLiveError('Sign in to host a live game.');
+            if (typeof openAuthModal === 'function') openAuthModal('login');
             return;
         }
         const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
@@ -735,7 +735,6 @@
                 qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(joinUrl)}`;
                 qr.hidden = false;
             }
-            $('live-host-signin-gate').hidden = true;
             $('live-host-setup-form').hidden = true;
             $('live-host-room-panel').hidden = false;
             $('live-host-finished').hidden = snap.phase !== 'finished';
@@ -753,7 +752,6 @@
     async function openHost() {
         showLiveError('');
         LiveAudio.stopAll();
-        if ($('live-host-signin-gate')) $('live-host-signin-gate').hidden = true;
         if ($('live-host-setup-form')) $('live-host-setup-form').hidden = true;
         $('live-host-room-panel').hidden = true;
 
@@ -764,13 +762,13 @@
         if (!isHostSignedIn()) {
             clearStoredHostRoom();
             if (typeof showScreen === 'function') showScreen('live-host');
+            if (typeof openAuthModal === 'function') openAuthModal('login');
             return;
         }
 
         const resumed = await resumeHostRoomAsync();
         if (!resumed) {
             $('live-host-room-panel').hidden = true;
-            $('live-host-signin-gate').hidden = true;
             $('live-host-setup-form').hidden = false;
         }
         if (typeof showScreen === 'function') showScreen('live-host');
