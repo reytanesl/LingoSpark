@@ -252,19 +252,23 @@
         body.live-player-mode .container {
             max-width: 100%;
             margin: 0;
-            padding: 0;
+            padding: 0 clamp(0.5rem, 2vw, 0.75rem);
             min-height: 100dvh;
+            box-sizing: border-box;
         }
         body.live-player-mode #screen-live-join,
         body.live-player-mode #screen-live-play {
-            margin: 0;
-            padding: 0.65rem 0.85rem 0.85rem;
+            margin: 0 auto;
+            padding: 1.1rem clamp(1.5rem, 6.5vw, 2.25rem) 1.35rem;
             border-radius: 0;
             box-shadow: none;
             min-height: 100dvh;
             max-height: 100dvh;
             overflow: hidden;
             display: none;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 520px;
         }
         body.live-player-mode #screen-live-join.active,
         body.live-player-mode #screen-live-play.active {
