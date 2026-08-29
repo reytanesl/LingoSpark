@@ -32,14 +32,13 @@
         if (s._liveReconnectHandler) s.off('connect', s._liveReconnectHandler);
         s._liveReconnectHandler = () => {
             if (role === 'host' && hostState) {
-                s.emit('live:host-join', { code: hostState.code, hostToken: hostState.hostToken });
+                emitHostJoin();
             }
             if (role === 'player' && playerState) {
-                s.emit('live:player-join', {
-                    code: playerState.code,
-                    playerId: playerState.playerId,
-                    playerToken: sessionStorage.getItem('ls_live_player_token'),
-                });
+                emitPlayerJoin();
+                if (document.body.classList.contains('live-game-active')) {
+                    requestPlayerQuestion();
+                }
             }
         };
         s.on('connect', s._liveReconnectHandler);
@@ -82,21 +81,68 @@
     }
 
     function ensureSocket() {
-        if (socket && socket.connected) return socket;
         if (typeof io === 'undefined') throw new Error('Socket.IO not loaded.');
-        socket = io({ withCredentials: true });
-        socket.on('connect_error', () => {
-            showLiveError('Could not connect to the server. Check your connection.');
-        });
+        if (!socket) {
+            socket = io({ withCredentials: true, transports: ['websocket', 'polling'] });
+            socket.on('connect_error', () => {
+                showLiveError('Could not connect to the server. Check your connection.');
+            });
+        }
         return socket;
     }
 
+    function emitWhenConnected(event, payload) {
+        const s = ensureSocket();
+        const send = () => s.emit(event, payload);
+        if (s.connected) send();
+        else s.once('connect', send);
+    }
+
+    function requestPlayerQuestion() {
+        if (!playerState) return;
+        emitWhenConnected('live:request-question', {
+            code: playerState.code,
+            playerId: playerState.playerId,
+            playerToken: sessionStorage.getItem('ls_live_player_token'),
+        });
+    }
+
+    function emitPlayerJoin() {
+        if (!playerState) return;
+        emitWhenConnected('live:player-join', {
+            code: playerState.code,
+            playerId: playerState.playerId,
+            playerToken: sessionStorage.getItem('ls_live_player_token'),
+        });
+    }
+
+    function emitHostJoin() {
+        if (!hostState) return;
+        emitWhenConnected('live:host-join', {
+            code: hostState.code,
+            hostToken: hostState.hostToken,
+        });
+    }
+
+    function setLiveGameActive(active) {
+        document.body.classList.toggle('live-game-active', Boolean(active));
+        const codeEl = $('live-play-room-code');
+        if (codeEl) {
+            codeEl.textContent = playerState?.code || sessionStorage.getItem('ls_live_room_code') || '';
+            codeEl.hidden = !active;
+        }
+    }
+
     function showLiveError(msg) {
-        const el = $('live-error-banner');
-        if (el) {
-            el.textContent = msg || '';
-            el.hidden = !msg;
-        } else if (msg && typeof window.appAlert === 'function') {
+        const text = msg || '';
+        for (const id of ['live-error-banner', 'live-play-error', 'live-join-error']) {
+            const el = $(id);
+            if (el) {
+                el.textContent = text;
+                el.hidden = !text;
+            }
+        }
+        if (msg && !$('live-error-banner') && !$('live-play-error') && typeof window.appAlert === 'function') {
             window.appAlert(msg);
         }
     }
@@ -413,20 +459,30 @@
             updateOwnProgress(playerState.progress, TERMS_TO_WIN);
             renderProgressBoard($('live-play-progress-board'), data.progress?.players || []);
             if (data.phase === 'playing') {
+                setLiveGameActive(true);
                 LiveBgm.start();
                 if (data.question) showPlayerQuestion(data.question);
-                else showPlayerWaiting('Get ready…');
+                else {
+                    showPlayerWaiting('Starting…');
+                    requestPlayerQuestion();
+                }
             } else {
+                setLiveGameActive(false);
                 showPlayerWaiting('Waiting for the host to start…');
             }
         });
 
         s.on('live:game-started', () => {
+            setLiveGameActive(true);
             LiveBgm.start();
             showLiveError('');
+            showPlayerWaiting('Starting…');
+            requestPlayerQuestion();
         });
 
-        s.on('live:your-question', (q) => showPlayerQuestion(q));
+        s.on('live:your-question', (q) => {
+            if (q) showPlayerQuestion(q);
+        });
 
         s.on('live:answer-result', (result) => {
             playerState.progress = result.progress;
@@ -469,6 +525,7 @@
 
         s.on('live:game-finished', (data) => {
             LiveBgm.stop();
+            setLiveGameActive(false);
             const isWinner = data.winnerId === playerState?.playerId;
             if (data.winnerNickname) {
                 showChampionBanner($('live-play-champion'), data.winnerNickname, isWinner);
@@ -497,6 +554,8 @@
     }
 
     function showPlayerQuestion(q) {
+        if (!q) return;
+        setLiveGameActive(true);
         const def = $('live-play-definition');
         const input = $('live-play-answer');
         const btn = $('live-play-submit');
@@ -603,7 +662,7 @@
             $('live-host-champion').hidden = true;
 
             bindHostSocket();
-            ensureSocket().emit('live:host-join', { code: hostState.code, hostToken: hostState.hostToken });
+            emitHostJoin();
             startHostLobbyPoll(hostState.code);
         } catch (err) {
             showLiveError(err.message);
@@ -629,18 +688,18 @@
         $('live-host-setup-form').hidden = true;
         $('live-host-room-panel').hidden = false;
         bindHostSocket();
-        ensureSocket().emit('live:host-join', { code, hostToken });
+        emitHostJoin();
         startHostLobbyPoll(code);
     }
 
     async function openHost() {
         showLiveError('');
         LiveBgm.stop();
+        if ($('live-host-signin-gate')) $('live-host-signin-gate').hidden = true;
+        if ($('live-host-setup-form')) $('live-host-setup-form').hidden = true;
         await ensureAuthLoaded();
         updateHostAuthUI();
         loadWordSetsForHost();
-        $('live-host-setup-form').hidden = !window.authState?.user;
-        $('live-host-signin-gate').hidden = Boolean(window.authState?.user);
         $('live-host-room-panel').hidden = true;
         if (sessionStorage.getItem('ls_live_host_code')) resumeHostRoom();
         if (typeof showScreen === 'function') showScreen('live-host');
@@ -710,14 +769,16 @@
         };
         $('live-play-nickname').textContent = sessionStorage.getItem('ls_live_nickname') || 'Player';
         $('live-play-champion').hidden = true;
+        setLiveGameActive(false);
+        showPlayerWaiting('Connecting…');
         bindPlayerSocket();
-        ensureSocket().emit('live:player-join', { code, playerId, playerToken });
+        emitPlayerJoin();
         if (typeof showScreen === 'function') showScreen('live-play');
     }
 
     function hostStartGame() {
         if (!hostState) return;
-        ensureSocket().emit('live:start-game');
+        emitWhenConnected('live:start-game');
     }
 
     function hostEnd() {

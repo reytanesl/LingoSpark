@@ -124,6 +124,54 @@ function emitProgress(io, room) {
     }
 }
 
+function attachPlayerSocket(socket, room, player) {
+    player.socketId = socket.id;
+    player.connected = true;
+    socket.join(`room:${room.code}`);
+    socket.data.liveRole = 'player';
+    socket.data.roomCode = room.code;
+    socket.data.playerId = player.id;
+}
+
+function emitPlayerSession(socket, room, player) {
+    const payload = {
+        snapshot: publicRoomSnapshot(room),
+        player: playerProgress(player),
+        progress: progressSnapshot(room),
+        phase: room.phase,
+    };
+    if (room.phase === 'playing') {
+        payload.question = playerQuestionPayload(player);
+    }
+    socket.emit('live:player-joined', payload);
+    if (room.phase === 'playing') {
+        const q = playerQuestionPayload(player);
+        if (q) socket.emit('live:your-question', q);
+    }
+}
+
+async function deliverQuestionsToAllPlayers(io, room) {
+    const sockets = await io.in(`room:${room.code}`).fetchSockets();
+    const sent = new Set();
+    for (const sock of sockets) {
+        if (sock.data.liveRole !== 'player' || !sock.data.playerId) continue;
+        const player = room.players.get(sock.data.playerId);
+        if (!player) continue;
+        player.socketId = sock.id;
+        player.connected = true;
+        const q = playerQuestionPayload(player);
+        if (q) {
+            sock.emit('live:your-question', q);
+            sent.add(player.id);
+        }
+    }
+    for (const player of room.players.values()) {
+        if (sent.has(player.id) || !player.socketId) continue;
+        const q = playerQuestionPayload(player);
+        if (q) io.to(player.socketId).emit('live:your-question', q);
+    }
+}
+
 function finishGame(room, winnerPlayer) {
     room.phase = 'finished';
     room.finishedAt = Date.now();
@@ -373,28 +421,30 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 socket.emit('live:error', { error: 'Invalid player session.' });
                 return;
             }
-            player.socketId = socket.id;
-            player.connected = true;
-            socket.join(`room:${room.code}`);
-            socket.data.liveRole = 'player';
-            socket.data.roomCode = room.code;
-            socket.data.playerId = playerId;
-
-            const payload = {
-                snapshot: publicRoomSnapshot(room),
-                player: playerProgress(player),
-                progress: progressSnapshot(room),
-                phase: room.phase,
-            };
-            if (room.phase === 'playing') {
-                payload.question = playerQuestionPayload(player);
-            }
-            socket.emit('live:player-joined', payload);
-
+            attachPlayerSocket(socket, room, player);
+            emitPlayerSession(socket, room, player);
             broadcastLobbyUpdate(room.code);
         });
 
-        socket.on('live:start-game', () => {
+        socket.on('live:request-question', ({ code, playerId, playerToken }) => {
+            const room = getRoom(code || socket.data.roomCode);
+            if (!room) {
+                socket.emit('live:error', { error: 'Room not found.' });
+                return;
+            }
+            const pid = playerId || socket.data.playerId;
+            const player = rejoinPlayer(room, pid, playerToken);
+            if (!player) {
+                socket.emit('live:error', { error: 'Invalid player session.' });
+                return;
+            }
+            if (room.phase !== 'playing') return;
+            attachPlayerSocket(socket, room, player);
+            const q = playerQuestionPayload(player);
+            if (q) socket.emit('live:your-question', q);
+        });
+
+        socket.on('live:start-game', async () => {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
                 socket.emit('live:error', { error: 'Host only.' });
@@ -407,11 +457,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     termsToWin: LIVE_TERMS_TO_WIN,
                     minPlayers: LIVE_MIN_PLAYERS,
                     progress,
+                    code: room.code,
                 });
-                for (const player of room.players.values()) {
-                    if (!player.socketId) continue;
-                    io.to(player.socketId).emit('live:your-question', playerQuestionPayload(player));
-                }
+                await deliverQuestionsToAllPlayers(io, room);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }

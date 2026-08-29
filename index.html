@@ -314,6 +314,57 @@
             font-size: 0.9rem;
             margin-bottom: 0.35rem !important;
         }
+        .live-play-hero { flex-shrink: 0; }
+        .live-play-room-code {
+            display: none;
+            text-align: center;
+            font-family: var(--font-primary);
+            font-size: clamp(0.95rem, 4vw, 1.15rem);
+            letter-spacing: 0.32em;
+            font-weight: 800;
+            color: var(--royal-blue);
+            margin: 0.45rem 0 0;
+        }
+        body.live-game-active .live-play-hero {
+            flex: 0 0 auto;
+            width: 100%;
+            padding: 0.15rem 0 0.65rem;
+        }
+        body.live-game-active .live-own-progress {
+            margin: 0;
+        }
+        body.live-game-active .live-own-progress-label {
+            font-size: clamp(1.05rem, 4.5vw, 1.3rem);
+            margin-bottom: 0.5rem;
+        }
+        body.live-game-active .live-own-progress .live-progress-track {
+            height: clamp(52px, 16vh, 80px);
+            border-radius: 14px;
+        }
+        body.live-game-active .live-play-room-code {
+            display: block;
+        }
+        body.live-game-active #live-play-status {
+            font-size: 0.88rem;
+            margin-bottom: 0.25rem !important;
+        }
+        body.live-game-active #live-play-definition.word-prompt {
+            flex: 1;
+            min-height: 0;
+            margin-bottom: 0.5rem;
+        }
+        body.live-game-active .live-play-body {
+            gap: 0;
+        }
+        .live-player-error {
+            background: rgba(200, 16, 46, 0.1);
+            color: var(--pillarbox-red);
+            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
+            margin-bottom: 0.65rem;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
         #live-confetti-canvas {
             position: fixed; inset: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 9999; display: none;
@@ -2045,12 +2096,12 @@
                 <div style="width:80px;"></div>
             </div>
             <div id="live-error-banner" hidden></div>
-            <div id="live-host-signin-gate" class="card" style="max-width:560px;margin:0 auto 1.5rem;">
+            <div id="live-host-signin-gate" class="card" hidden style="max-width:560px;margin:0 auto 1.5rem;">
                 <h2>Sign in to host</h2>
                 <p>Hosting requires a free LingoSpark account so only teachers can create rooms.</p>
                 <button type="button" class="btn btn-blue" onclick="openAuthModal('login')">Sign in</button>
             </div>
-            <form id="live-host-setup-form" class="card" style="max-width:640px;margin:0 auto 1.5rem;" onsubmit="return false;">
+            <form id="live-host-setup-form" class="card" hidden style="max-width:640px;margin:0 auto 1.5rem;" onsubmit="return false;">
                 <h2>Game setup</h2>
                 <label style="font-weight:600;display:block;margin:0.75rem 0 0.35rem;">Word source</label>
                 <label style="display:block;margin:0.25rem 0;"><input type="radio" name="live-source" value="builtin" checked> Built-in level</label>
@@ -2114,6 +2165,7 @@
                 <div style="width:80px;"></div>
             </div>
             <div class="live-mobile-join" style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px;margin:0 auto;width:100%;">
+                <div id="live-join-error" class="live-player-error" hidden></div>
                 <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Game</h2>
                 <label for="live-join-code" style="font-weight:600;">Room code</label>
                 <input type="text" id="live-join-code" maxlength="4" autocomplete="off" style="width:100%;padding:0.75rem;margin:0.35rem 0 0.85rem;border:2px solid var(--border-light);border-radius:8px;text-transform:uppercase;letter-spacing:0.25em;font-size:1.5rem;text-align:center;">
@@ -2129,12 +2181,16 @@
                 <span class="live-muted">Playing as <strong id="live-play-nickname">Player</strong></span>
             </div>
             <div class="live-play-body" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+            <div id="live-play-error" class="live-player-error" hidden></div>
+            <div class="live-play-hero" id="live-play-hero">
             <div class="live-own-progress">
                 <div class="live-own-progress-label">
                     <span>Your progress</span>
                     <span id="live-play-progress-label">0 / 12</span>
                 </div>
                 <div class="live-progress-track"><div id="live-play-progress-bar" class="live-progress-fill" style="width:0%"></div></div>
+            </div>
+            <div id="live-play-room-code" class="live-play-room-code" hidden aria-label="Room code"></div>
             </div>
             <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
             <div id="live-play-definition" class="word-prompt">Connecting…</div>
@@ -3233,6 +3289,7 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
             document.body.classList.toggle('live-player-mode', screenId === 'live-join' || screenId === 'live-play');
+            if (screenId !== 'live-play') document.body.classList.remove('live-game-active');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
             const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction'];
             if (playScreens.includes(screenId) && !isLoggedIn()) startGuestLoginReminders();
