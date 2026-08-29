@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import {
+    buildChoices,
     loadBuiltinDeck,
     matchesTermAnswer,
     parseGlossaryTerms,
@@ -96,21 +97,24 @@ export function publicRoomSnapshot(room) {
     };
 }
 
-function playerQuestionPayload(player) {
+function playerQuestionPayload(player, room) {
     const entry = player.terms[player.termIndex];
-    if (!entry) return null;
+    if (!entry || !room) return null;
+    const termPool = room.masterDeck.map((d) => d.term);
+    const choices = buildChoices(entry.term, termPool, room.level || 'intermediate');
     return {
         progress: player.termIndex,
         termsToWin: LIVE_TERMS_TO_WIN,
         termIndex: player.termIndex,
         definition: entry.definition,
-        inputMode: 'typed',
+        choices,
+        inputMode: 'typed_or_choice',
         caseSensitive: false,
     };
 }
 
-function hostQuestionPayload(player) {
-    const q = playerQuestionPayload(player);
+function hostQuestionPayload(player, room) {
+    const q = playerQuestionPayload(player, room);
     if (!q) return null;
     const entry = player.terms[player.termIndex];
     return { ...q, playerId: player.id, nickname: player.nickname, correctTerm: entry.term };
@@ -141,11 +145,11 @@ function emitPlayerSession(socket, room, player) {
         phase: room.phase,
     };
     if (room.phase === 'playing') {
-        payload.question = playerQuestionPayload(player);
+        payload.question = playerQuestionPayload(player, room);
     }
     socket.emit('live:player-joined', payload);
     if (room.phase === 'playing') {
-        const q = playerQuestionPayload(player);
+        const q = playerQuestionPayload(player, room);
         if (q) socket.emit('live:your-question', q);
     }
 }
@@ -159,7 +163,7 @@ async function deliverQuestionsToAllPlayers(io, room) {
         if (!player) continue;
         player.socketId = sock.id;
         player.connected = true;
-        const q = playerQuestionPayload(player);
+        const q = playerQuestionPayload(player, room);
         if (q) {
             sock.emit('live:your-question', q);
             sent.add(player.id);
@@ -167,7 +171,7 @@ async function deliverQuestionsToAllPlayers(io, room) {
     }
     for (const player of room.players.values()) {
         if (sent.has(player.id) || !player.socketId) continue;
-        const q = playerQuestionPayload(player);
+        const q = playerQuestionPayload(player, room);
         if (q) io.to(player.socketId).emit('live:your-question', q);
     }
 }
@@ -342,7 +346,7 @@ function submitAnswer(room, playerId, rawText) {
             won: false,
             correctTerm: entry.term,
             answerText,
-            nextQuestion: playerQuestionPayload(player),
+            nextQuestion: playerQuestionPayload(player, room),
         };
     }
 
@@ -355,7 +359,7 @@ function submitAnswer(room, playerId, rawText) {
         won: false,
         correctTerm: entry.term,
         answerText,
-        nextQuestion: playerQuestionPayload(player),
+        nextQuestion: playerQuestionPayload(player, room),
     };
 }
 
@@ -440,7 +444,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             if (room.phase !== 'playing') return;
             attachPlayerSocket(socket, room, player);
-            const q = playerQuestionPayload(player);
+            const q = playerQuestionPayload(player, room);
             if (q) socket.emit('live:your-question', q);
         });
 

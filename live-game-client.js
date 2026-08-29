@@ -11,17 +11,21 @@
     let confettiAnim = null;
     let hostLobbyPoll = null;
 
+    function isHostSignedIn() {
+        return Boolean(window.authState?.user?.id);
+    }
+
     async function ensureAuthLoaded() {
-        if (window.authState?.user) return true;
+        if (isHostSignedIn()) return true;
         if (typeof window.refreshAuth === 'function') {
             await window.refreshAuth();
-            return Boolean(window.authState?.user);
+            return isHostSignedIn();
         }
         try {
             const res = await fetch('/api/auth/me', { credentials: 'include' });
             const data = await res.json();
             window.authState = data;
-            return Boolean(data.user);
+            return isHostSignedIn();
         } catch {
             return false;
         }
@@ -147,112 +151,55 @@
         }
     }
 
-    // --- Playful 20-second jingle loop (Web Audio API) ---
-    const LiveBgm = {
-        ctx: null,
-        master: null,
-        loopTimer: null,
-        LOOP_SEC: 20,
-        bpm: 120,
+    const CHOICE_COLORS = ['#C8102E', '#012169', '#00823B', '#E8A317'];
 
-        start() {
-            if (this.ctx) return;
-            try {
-                const Ctx = window.AudioContext || window.webkitAudioContext;
-                this.ctx = new Ctx();
-                this.master = this.ctx.createGain();
-                this.master.gain.value = 0.24;
-                this.master.connect(this.ctx.destination);
-                this.playLoopSegment();
-                this.loopTimer = setInterval(() => this.playLoopSegment(), this.LOOP_SEC * 1000);
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-            } catch { /* audio blocked */ }
+    const LiveAudio = {
+        lobby: null,
+        game: null,
+        VOLUME: 0.45,
+
+        _track(src) {
+            const a = new Audio(src);
+            a.loop = true;
+            a.preload = 'auto';
+            return a;
         },
 
-        stop() {
-            if (this.loopTimer) clearInterval(this.loopTimer);
-            this.loopTimer = null;
-            if (this.ctx) {
-                try { this.ctx.close(); } catch { /* ignore */ }
-            }
-            this.ctx = null;
-            this.master = null;
+        _play(audio) {
+            if (!audio) return;
+            audio.volume = this.VOLUME;
+            audio.play().catch(() => {});
         },
 
-        playLoopSegment() {
-            if (!this.ctx || !this.master) return;
-            const t0 = this.ctx.currentTime + 0.06;
-            const beat = 60 / this.bpm;
-            const melody = [
-                [0, 784], [0.5, 988], [1, 1175], [1.5, 988],
-                [2, 784], [2.5, 659], [3, 784], [3.5, 988],
-                [4, 1047], [4.5, 988], [5, 784], [5.5, 659],
-                [6, 587], [6.5, 659], [7, 784], [7.5, 988],
-                [8, 1175], [9, 1047], [10, 988], [11, 784],
-                [12, 659], [13, 784], [14, 988], [15, 1047],
-                [16, 1175], [17, 1047], [18, 988], [19, 784],
-                [19.5, 988], [19.75, 1175],
-            ];
-            for (const [b, freq] of melody) this.jingle(t0 + b * beat, freq);
-            for (let b = 0; b < 20; b++) {
-                if (b % 2 === 0) this.softBass(t0 + b * beat, [98, 110, 123, 98][Math.floor(b / 2) % 4]);
-                if (b % 1 === 0.5) this.shaker(t0 + b * beat);
-            }
-            for (let b = 0; b < 40; b++) {
-                if (b % 4 === 2) this.shaker(t0 + (b * beat) / 2);
-            }
+        _pause(audio) {
+            if (!audio) return;
+            audio.pause();
+            try { audio.currentTime = 0; } catch { /* ignore */ }
         },
 
-        jingle(time, freq) {
-            const o1 = this.ctx.createOscillator();
-            const o2 = this.ctx.createOscillator();
-            o1.type = 'sine';
-            o2.type = 'triangle';
-            o1.frequency.value = freq;
-            o2.frequency.value = freq * 2.01;
-            const g = this.ctx.createGain();
-            g.gain.setValueAtTime(0.0001, time);
-            g.gain.exponentialRampToValueAtTime(0.2, time + 0.015);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.42);
-            o1.connect(g);
-            o2.connect(g);
-            g.connect(this.master);
-            o1.start(time);
-            o2.start(time);
-            o1.stop(time + 0.45);
-            o2.stop(time + 0.45);
+        startLobby() {
+            this.stopGame();
+            if (!this.lobby) this.lobby = this._track('/audio/live-lobby.mp3');
+            this._play(this.lobby);
         },
 
-        softBass(time, freq) {
-            const o = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            o.type = 'triangle';
-            o.frequency.value = freq;
-            g.gain.setValueAtTime(0.22, time);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
-            o.connect(g);
-            g.connect(this.master);
-            o.start(time);
-            o.stop(time + 0.3);
+        startGame() {
+            this.stopLobby();
+            if (!this.game) this.game = this._track('/audio/live-gameplay.mp3');
+            this._play(this.game);
         },
 
-        shaker(time) {
-            const len = Math.floor(this.ctx.sampleRate * 0.04);
-            const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
-            const data = buf.getChannelData(0);
-            for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
-            const src = this.ctx.createBufferSource();
-            src.buffer = buf;
-            const hp = this.ctx.createBiquadFilter();
-            hp.type = 'highpass';
-            hp.frequency.value = 5000;
-            const g = this.ctx.createGain();
-            g.gain.setValueAtTime(0.08, time);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-            src.connect(hp);
-            hp.connect(g);
-            g.connect(this.master);
-            src.start(time);
+        stopLobby() {
+            this._pause(this.lobby);
+        },
+
+        stopGame() {
+            this._pause(this.game);
+        },
+
+        stopAll() {
+            this.stopLobby();
+            this.stopGame();
         },
     };
 
@@ -408,8 +355,10 @@
             updateHostStartButton(data.snapshot);
             if (data.snapshot?.phase === 'playing') {
                 stopHostLobbyPoll();
-                LiveBgm.start();
+                LiveAudio.stopLobby();
+                LiveAudio.startGame();
             } else {
+                LiveAudio.startLobby();
                 startHostLobbyPoll(hostState?.code);
             }
         });
@@ -427,7 +376,8 @@
         s.on('live:game-started', (data) => {
             hostState.phase = 'playing';
             stopHostLobbyPoll();
-            LiveBgm.start();
+            LiveAudio.stopLobby();
+            LiveAudio.startGame();
             renderProgressBoard($('live-host-progress-board'), data.progress?.players || []);
             updateHostStartButton({ phase: 'playing', players: data.progress?.players });
         });
@@ -435,7 +385,7 @@
         s.on('live:game-finished', (data) => {
             hostState.phase = 'finished';
             stopHostLobbyPoll();
-            LiveBgm.stop();
+            LiveAudio.stopAll();
             $('live-host-finished').hidden = false;
             if (data.winnerNickname) {
                 showChampionBanner($('live-host-champion'), data.winnerNickname, false);
@@ -460,7 +410,7 @@
             renderProgressBoard($('live-play-progress-board'), data.progress?.players || []);
             if (data.phase === 'playing') {
                 setLiveGameActive(true);
-                LiveBgm.start();
+                LiveAudio.startGame();
                 if (data.question) showPlayerQuestion(data.question);
                 else {
                     showPlayerWaiting('Starting…');
@@ -474,7 +424,7 @@
 
         s.on('live:game-started', () => {
             setLiveGameActive(true);
-            LiveBgm.start();
+            LiveAudio.startGame();
             showLiveError('');
             showPlayerWaiting('Starting…');
             requestPlayerQuestion();
@@ -503,15 +453,13 @@
             }
 
             if (!result.won) {
+                setAnswerInputsEnabled(true);
                 if (input) {
                     input.value = '';
-                    input.disabled = false;
                     input.focus();
                 }
-                if (btn) btn.disabled = false;
             } else {
-                if (input) input.disabled = true;
-                if (btn) btn.disabled = true;
+                setAnswerInputsEnabled(false);
                 if (status) status.textContent = 'You won!';
             }
         });
@@ -524,7 +472,7 @@
         });
 
         s.on('live:game-finished', (data) => {
-            LiveBgm.stop();
+            LiveAudio.stopGame();
             setLiveGameActive(false);
             const isWinner = data.winnerId === playerState?.playerId;
             if (data.winnerNickname) {
@@ -534,23 +482,52 @@
             renderProgressBoard($('live-play-progress-board'), data.players || [], { winnerId: data.winnerId });
             const def = $('live-play-definition');
             if (def) def.textContent = 'Game over!';
-            $('live-play-answer').disabled = true;
-            $('live-play-submit').disabled = true;
+            setAnswerInputsEnabled(false);
         });
 
         s.on('live:error', (data) => showLiveError(data.error || 'Something went wrong.'));
     }
 
-    function showPlayerWaiting(msg) {
-        const def = $('live-play-definition');
+    function setAnswerInputsEnabled(enabled) {
         const input = $('live-play-answer');
         const btn = $('live-play-submit');
+        const choices = $('live-play-choices');
+        if (input) input.disabled = !enabled;
+        if (btn) btn.disabled = !enabled;
+        if (choices) {
+            choices.querySelectorAll('button').forEach((b) => { b.disabled = !enabled; });
+        }
+    }
+
+    function renderChoiceButtons(choices) {
+        const container = $('live-play-choices');
+        if (!container) return;
+        if (!choices || !choices.length) {
+            container.innerHTML = '';
+            container.hidden = true;
+            return;
+        }
+        container.hidden = false;
+        container.innerHTML = choices.map((term, i) =>
+            `<button type="button" class="live-answer-btn" style="background:${CHOICE_COLORS[i % CHOICE_COLORS.length]}"></button>`
+        ).join('');
+        container.querySelectorAll('button').forEach((btn, i) => {
+            btn.textContent = choices[i];
+            btn.addEventListener('click', () => {
+                if (btn.disabled) return;
+                submitPlayerAnswer(choices[i]);
+            });
+        });
+    }
+
+    function showPlayerWaiting(msg) {
+        const def = $('live-play-definition');
         const status = $('live-play-status');
         if (def) def.textContent = msg;
-        if (input) { input.value = ''; input.disabled = true; }
-        if (btn) btn.disabled = true;
+        setAnswerInputsEnabled(false);
         if (status) status.textContent = '';
         $('live-play-result').innerHTML = '';
+        renderChoiceButtons([]);
     }
 
     function showPlayerQuestion(q) {
@@ -558,31 +535,27 @@
         setLiveGameActive(true);
         const def = $('live-play-definition');
         const input = $('live-play-answer');
-        const btn = $('live-play-submit');
         const status = $('live-play-status');
         if (def) def.textContent = q.definition;
-        if (status) status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — not case-sensitive`;
+        if (status) status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN}`;
         updateOwnProgress(q.progress || 0, q.termsToWin || TERMS_TO_WIN);
-        if (input) {
-            input.value = '';
-            input.disabled = false;
-            input.focus();
-        }
-        if (btn) btn.disabled = false;
+        if (input) input.value = '';
+        renderChoiceButtons(q.choices || []);
+        setAnswerInputsEnabled(true);
+        if (input) input.focus();
         $('live-play-result').innerHTML = '';
     }
 
-    function submitPlayerAnswer() {
+    function submitPlayerAnswer(choiceText) {
         if (!playerState) return;
         const input = $('live-play-answer');
-        const text = (input?.value || '').trim();
+        const text = (choiceText != null ? String(choiceText) : (input?.value || '')).trim();
         if (!text) {
-            showLiveError('Type an answer first.');
+            showLiveError('Type or tap an answer first.');
             return;
         }
         showLiveError('');
-        if (input) input.disabled = true;
-        $('live-play-submit').disabled = true;
+        setAnswerInputsEnabled(false);
         ensureSocket().emit('live:submit-answer', { text });
     }
 
@@ -590,7 +563,7 @@
         const sel = $('live-host-wordset');
         if (!sel) return;
         sel.innerHTML = '<option value="">— Select a saved set —</option>';
-        if (!window.authState?.user) { sel.disabled = true; return; }
+        if (!isHostSignedIn()) { sel.disabled = true; return; }
         sel.disabled = false;
         try {
             const res = await fetch('/api/word-sets', { credentials: 'include' });
@@ -606,16 +579,21 @@
     }
 
     function updateHostAuthUI() {
-        const signedIn = Boolean(window.authState?.user);
+        const signedIn = isHostSignedIn();
         if ($('live-host-signin-gate')) $('live-host-signin-gate').hidden = signedIn;
         if ($('live-host-setup-form')) $('live-host-setup-form').hidden = !signedIn;
+    }
+
+    function onAuthChanged() {
+        updateHostAuthUI();
+        if (isHostSignedIn()) loadWordSetsForHost();
     }
 
     async function createHostRoom() {
         showLiveError('');
         await ensureAuthLoaded();
         updateHostAuthUI();
-        if (!window.authState?.user) {
+        if (!isHostSignedIn()) {
             showLiveError('Sign in to host a live game.');
             return;
         }
@@ -664,6 +642,7 @@
             bindHostSocket();
             emitHostJoin();
             startHostLobbyPoll(hostState.code);
+            LiveAudio.startLobby();
         } catch (err) {
             showLiveError(err.message);
         } finally {
@@ -690,11 +669,12 @@
         bindHostSocket();
         emitHostJoin();
         startHostLobbyPoll(code);
+        if (hostState.phase !== 'playing') LiveAudio.startLobby();
     }
 
     async function openHost() {
         showLiveError('');
-        LiveBgm.stop();
+        LiveAudio.stopAll();
         if ($('live-host-signin-gate')) $('live-host-signin-gate').hidden = true;
         if ($('live-host-setup-form')) $('live-host-setup-form').hidden = true;
         await ensureAuthLoaded();
@@ -808,5 +788,5 @@
         toggleLiveSourcePanels();
     });
 
-    window.LiveGame = { openHost, openJoin, openPlay, createHostRoom, joinRoom };
+    window.LiveGame = { openHost, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged };
 })();
