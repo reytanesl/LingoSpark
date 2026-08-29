@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
     <script src="demo-sets.js"></script>
+    <script src="frank-paragraphs.js"></script>
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
     <script src="pe-line-up.js"></script>
@@ -231,10 +232,20 @@
         .loading-spinner { text-align: center; padding: 3rem; color: var(--royal-blue); font-family: var(--font-primary); font-weight: bold; font-size: 1.2rem; }
         
         /* Writing Suite specific */
-        .frank-item { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .frank-item { background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); text-align: left; }
         .frank-item:hover { border-color: var(--royal-blue); }
+        .frank-item span { flex: 1; line-height: 1.5; }
+        .frank-controls { flex-shrink: 0; display: flex; flex-direction: column; gap: 0.25rem; }
         .frank-controls button { background: var(--light-grey); border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; transition: 0.2s; font-size: 1.2rem; }
         .frank-controls button:hover { background: var(--border-light); }
+        .frank-type-card {
+            background: var(--bright-white); border: 1px solid var(--border-light); border-left: 4px solid var(--royal-blue);
+            border-radius: 12px; padding: 0.95rem 1.15rem; margin: 0 auto 1.35rem; max-width: 720px; text-align: left;
+            box-shadow: 0 4px 14px rgba(1, 33, 105, 0.06);
+        }
+        .frank-type-name { font-family: var(--font-primary); font-weight: 800; color: var(--royal-blue); font-size: 1.08rem; margin: 0 0 0.2rem; }
+        .frank-type-topic { font-size: 0.88rem; color: var(--text-muted); margin: 0 0 0.5rem; }
+        .frank-type-hint { font-size: 0.92rem; line-height: 1.5; margin: 0; color: var(--text-dark); }
         .trans-box { background: var(--light-grey); border-left: 4px solid var(--royal-blue); padding: 1.5rem; border-radius: 8px; font-size: 1.2rem; line-height: 1.8; margin-bottom: 2rem; }
         .trans-slot { color: var(--royal-blue); font-weight: 700; text-decoration: underline; padding: 0 8px; }
         .trans-slot.solved { color: var(--success-green); }
@@ -534,25 +545,79 @@
         .ws-card-bar-fill { height: 100%; background: var(--success-green); border-radius: 3px; transition: width 0.3s; }
         .ws-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
         .ws-card-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
-        .ws-editor { max-width: 720px; margin: 0 auto 1.5rem; }
-        .ws-editor-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
-        .ws-editor-head h3 { margin: 0; font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.15rem; }
-        .ws-editor label { display: block; font-weight: 600; font-size: 0.88rem; margin: 0 0 0.35rem; }
-        .ws-editor-name { width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.9rem; font-size: 1rem; }
-        .ws-edit-note { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.8rem; }
-        .ws-edit-cols { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.4rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 0.3rem; padding: 0 0.1rem; }
-        .ws-edit-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.4rem; align-items: start; margin-bottom: 0.45rem; }
-        .ws-edit-row input, .ws-edit-row textarea {
-            width: 100%; padding: 0.45rem 0.5rem; border: 2px solid var(--border-light); border-radius: 6px;
-            font-family: var(--font-secondary); font-size: 0.92rem; line-height: 1.35;
+        .ws-editor { max-width: 860px; margin: 0 auto 1.5rem; text-align: left; }
+        .ws-editor-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.55rem; }
+        .ws-editor-head h3 { margin: 0; font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.35rem; font-weight: 800; }
+        .ws-editor-count { font-family: var(--font-primary); font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin: 0.15rem 0 0; }
+        .ws-edit-note { font-family: var(--font-secondary); font-size: 0.9rem; color: var(--text-muted); margin: 0 0 1rem; line-height: 1.45; }
+        .ws-title-card {
+            background: var(--bright-white); border: 1px solid var(--border-light); border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(1, 33, 105, 0.06); padding: 1rem 1.2rem 1.05rem; margin-bottom: 1.1rem;
         }
-        .ws-edit-row textarea { min-height: 2.5rem; resize: vertical; }
-        .ws-edit-row .ws-edit-del { padding: 0.4rem 0.55rem; min-width: 0; }
-        .ws-editor-actions { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.9rem; }
-        @media (max-width: 640px) {
-            .ws-edit-cols { display: none; }
-            .ws-edit-row { grid-template-columns: 1fr auto; }
-            .ws-edit-row textarea { grid-column: 1 / -1; }
+        .ws-editor-name, .ws-field input, .ws-field textarea {
+            font-family: var(--font-secondary); color: var(--text-dark); background: transparent;
+            width: 100%; border: none; border-bottom: 2px solid #d8dde6; border-radius: 0;
+            padding: 0.2rem 0 0.45rem; margin: 0; box-shadow: none; outline: none;
+        }
+        .ws-editor-name {
+            font-family: var(--font-primary); font-size: 1.45rem; font-weight: 700; color: var(--royal-blue);
+            line-height: 1.3;
+        }
+        .ws-field input {
+            font-family: var(--font-primary); font-weight: 600; font-size: 1.08rem;
+        }
+        .ws-field textarea {
+            font-size: 1.05rem; line-height: 1.45; min-height: 2.15rem; height: auto;
+            padding: 0.2rem 0 0.45rem !important; margin-bottom: 0 !important; resize: none;
+            overflow: hidden; display: block; field-sizing: content;
+        }
+        .ws-editor-name::placeholder, .ws-field input::placeholder, .ws-field textarea::placeholder {
+            color: #a8b0bd; font-weight: 400;
+        }
+        .ws-editor-name:focus, .ws-field input:focus, .ws-field textarea:focus {
+            border-bottom-color: var(--royal-blue);
+        }
+        .ws-field-label {
+            display: block; margin-top: 0.4rem; font-family: var(--font-primary); font-size: 0.7rem;
+            font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);
+        }
+        .ws-edit-row {
+            background: var(--bright-white); border: 1px solid var(--border-light); border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(1, 33, 105, 0.06); margin-bottom: 0.8rem; overflow: hidden;
+        }
+        .ws-edit-card-top {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.45rem 0.85rem; border-bottom: 1px solid var(--border-light); background: #f8f9fb;
+        }
+        .ws-edit-num {
+            font-family: var(--font-primary); font-weight: 800; font-size: 0.95rem; color: var(--royal-blue);
+            font-variant-numeric: tabular-nums;
+        }
+        .ws-edit-del {
+            border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+            width: 2rem; height: 2rem; border-radius: 999px; display: inline-flex; align-items: center;
+            justify-content: center; font-size: 0.95rem;
+        }
+        .ws-edit-del:hover { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); }
+        .ws-edit-fields {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; padding: 1rem 1.15rem 1.15rem;
+        }
+        .ws-add-card {
+            width: 100%; font-family: var(--font-primary); font-weight: 700; font-size: 1rem;
+            color: var(--royal-blue); background: var(--bright-white); border: 2px dashed #cfd6e2;
+            border-radius: 12px; padding: 1rem; cursor: pointer; margin: 0.15rem 0 1.1rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+        }
+        .ws-add-card:hover { border-color: var(--royal-blue); background: rgba(1, 33, 105, 0.04); }
+        .ws-editor-actions {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; align-items: center;
+            position: sticky; bottom: 2.4rem; z-index: 6; pointer-events: none;
+            padding: 0.85rem 0 0.35rem;
+        }
+        .ws-editor-actions .btn { pointer-events: auto; box-shadow: 0 8px 22px rgba(1, 33, 105, 0.22); }
+        @media (max-width: 700px) {
+            .ws-edit-fields { grid-template-columns: 1fr; gap: 0.95rem; }
+            .ws-editor-name { font-size: 1.2rem; }
         }
         .ws-demo-badge {
             display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.4px;
@@ -898,7 +963,7 @@
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
-                <div class="guide-item"><strong>Frankenstein Builder</strong><p>Drag sentence blocks into the right essay order (hook → context → thesis → evidence → analysis).</p></div>
+                <div class="guide-item"><strong>Frankenstein Builder</strong><p>A paragraph type is named (introduction, body for/against/opinion, or conclusion). Unscramble the sentences into the original order.</p></div>
                 <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
                 <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
@@ -1041,12 +1106,12 @@
                 <button type="button" class="pe-pack-toggle" id="adv-pack-toggle" onclick="toggleAdvancedEnglishPack()">
                     <span>
                         <i class="fa-solid fa-feather-pointed" style="color: var(--pillarbox-red);"></i> Advanced English
-                        <span class="pe-pack-meta">8 AI essay, writing &amp; speaking tools for academic structure, vocabulary, and fluency</span>
+                        <span class="pe-pack-meta">Paragraph scramble plus 7 AI essay, writing and speaking tools for academic structure, vocabulary and fluency</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
                 <div class="grid pe-pack-grid" id="adv-pack-grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Arrange AI-generated sentences from essays, formal letters or articles into the correct 5-part order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a ready-made essay paragraph — introduction, body or conclusion — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
@@ -1182,6 +1247,11 @@
                 <p style="font-size: 0.85rem; margin-bottom: 0;">Writing Suite access required (sign in with email or Google + Buy Me a Coffee or teacher approval). Content is generated via Cursor AI on the server.</p>
             </div>
 
+            <div id="frank-setup-note" class="form-group" style="display:none; background: rgba(1,33,105,0.06); border-left-color: var(--royal-blue);">
+                <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Ready-made essay paragraphs from a fixed bank — no AI. Each round names the paragraph type (introduction, body for, body against, body opinion, or conclusion). Scramble the sentences back into the original order.</p>
+            </div>
+
             <div style="text-align: center; margin-top: 2rem;">
                 <button class="btn btn-blue" style="font-size: 1.2rem; padding: 1rem 3rem;" onclick="launchSelectedGame()">Launch Game <i class="fa-solid fa-rocket"></i></button>
             </div>
@@ -1193,11 +1263,15 @@
                 <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
             </div>
             <div class="game-header">
-                <h2 id="frank-title">Frankenstein Builder <span class="live-badge">Cursor AI</span></h2>
+                <h2 id="frank-title">Frankenstein Builder</h2>
                 <button class="btn btn-outline" onclick="initFrankenstein()" id="frank-btn">New Paragraph <i class="fa-solid fa-rotate"></i></button>
             </div>
-            <p class="game-desc" id="frank-game-desc">Arrange the scrambled parts into the correct rhetorical order for this text type.<br><strong id="frank-structure-label">Hook → Context → Thesis → Evidence → Analysis</strong></p>
-            
+            <p class="game-desc" id="frank-game-desc">Put the scrambled sentences back into the original paragraph order.</p>
+            <div id="frank-type-card" class="frank-type-card" hidden>
+                <p class="frank-type-name" id="frank-type-name"></p>
+                <p class="frank-type-topic" id="frank-type-topic"></p>
+                <p class="frank-type-hint" id="frank-type-hint"></p>
+            </div>
             <div id="frank-loading" class="loading-spinner" style="display:none;"></div>
             <div id="frank-content">
                 <div id="frank-container" style="margin-bottom: 2rem;"></div>
@@ -2376,34 +2450,62 @@
             }));
         }
 
+        function growWsEditorFields(host) {
+            (host || document).querySelectorAll('.ws-field textarea[data-ws="def"]').forEach((el) => {
+                const grow = () => {
+                    el.style.height = 'auto';
+                    el.style.height = Math.max(34, el.scrollHeight) + 'px';
+                };
+                el.addEventListener('input', grow);
+                grow();
+            });
+        }
+
         function renderWordSetEditor() {
             const host = document.getElementById('ws-editor');
             if (!host || !wsEditor) return;
+            const filled = wsEditor.items.filter((item) => String(item.term || '').trim()).length;
             const note = wsEditor.isDemo
                 ? 'This is a demo set. Saving creates your own copy — the shared demo stays unchanged.'
                 : 'Change the name or any word below. Removing a word also clears its flashcard progress.';
             const rows = wsEditor.items.map((item, i) => `
                 <div class="ws-edit-row" data-item-id="${item.id || ''}">
-                    <input type="text" data-ws="term" maxlength="200" placeholder="Word or phrase" aria-label="Term ${i + 1}" value="${esc(item.term)}">
-                    <textarea data-ws="def" maxlength="500" rows="2" placeholder="Definition or translation" aria-label="Definition ${i + 1}">${esc(item.definition)}</textarea>
-                    <button type="button" class="btn btn-grey ws-edit-del" onclick="wsEditorRemoveRow(${i})" title="Remove this word" aria-label="Remove word ${i + 1}"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="ws-edit-card-top">
+                        <span class="ws-edit-num">${i + 1}</span>
+                        <button type="button" class="ws-edit-del" onclick="wsEditorRemoveRow(${i})" title="Remove this word" aria-label="Remove word ${i + 1}"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="ws-edit-fields">
+                        <label class="ws-field">
+                            <input type="text" data-ws="term" maxlength="200" placeholder="Type the term" aria-label="Term ${i + 1}" value="${esc(item.term)}">
+                            <span class="ws-field-label">Term</span>
+                        </label>
+                        <label class="ws-field">
+                            <textarea data-ws="def" maxlength="500" rows="1" placeholder="Type the definition" aria-label="Definition ${i + 1}">${esc(item.definition)}</textarea>
+                            <span class="ws-field-label">Definition</span>
+                        </label>
+                    </div>
                 </div>
             `).join('');
             host.innerHTML = `
                 <div class="ws-editor-head">
-                    <h3>${wsEditor.id ? 'Edit word list' : (wsEditor.isDemo ? 'Edit demo copy' : 'Edit word list')}</h3>
+                    <div>
+                        <h3>${wsEditor.id ? 'Edit word list' : (wsEditor.isDemo ? 'Edit demo copy' : 'Edit word list')}</h3>
+                        <p class="ws-editor-count">${filled} ${filled === 1 ? 'word' : 'words'}</p>
+                    </div>
                     <button type="button" class="btn btn-grey" onclick="closeWordSetEditor()"><i class="fa-solid fa-arrow-left"></i> Back to lists</button>
                 </div>
                 <p class="ws-edit-note">${note}</p>
-                <label for="ws-editor-name">List name</label>
-                <input type="text" id="ws-editor-name" class="ws-editor-name" maxlength="80" value="${esc(wsEditor.name)}" placeholder="Set name...">
-                <div class="ws-edit-cols"><span>Term</span><span>Definition</span><span></span></div>
+                <div class="ws-title-card">
+                    <input type="text" id="ws-editor-name" class="ws-editor-name" maxlength="80" value="${esc(wsEditor.name)}" placeholder="Enter a title" aria-label="List name">
+                    <span class="ws-field-label">Title</span>
+                </div>
                 <div id="ws-editor-rows">${rows}</div>
+                <button type="button" class="ws-add-card" onclick="wsEditorAddRow()"><i class="fa-solid fa-plus"></i> Add a card</button>
                 <div class="ws-editor-actions">
-                    <button type="button" class="btn btn-outline" onclick="wsEditorAddRow()"><i class="fa-solid fa-plus"></i> Add word</button>
                     <button type="button" class="btn btn-blue" id="ws-editor-save" onclick="saveWordSetEditor()"><i class="fa-solid fa-floppy-disk"></i> Save list</button>
                 </div>
             `;
+            growWsEditorFields(host);
         }
 
         function wsEditorAddRow() {
@@ -3176,7 +3278,8 @@
             document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('pe-colour-settings').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
             document.getElementById('colour-setup-note').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
-            document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType)) ? 'block' : 'none';
+            document.getElementById('frank-setup-note').style.display = (gameType === 'frank') ? 'block' : 'none';
+            document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType) && gameType !== 'frank') ? 'block' : 'none';
 
             if (gameType === 'mission') renderMissionPicker();
             if (gameType === 'matura') {
@@ -3187,6 +3290,9 @@
             }
             if (gameType === 'pe-colour') {
                 document.getElementById('setup-title').innerText = 'Colour Blocks Setup';
+            }
+            if (gameType === 'frank') {
+                document.getElementById('setup-title').innerText = 'Frankenstein Builder';
             }
             if (vocabGames.includes(gameType) || hybridGames.includes(gameType)) {
                 renderDemoSetButtons();
@@ -3357,90 +3463,126 @@
             };
         }
 
-        // 1. FRANKENSTEIN BUILDER
+        // 1. FRANKENSTEIN BUILDER — scramble a bank paragraph (no AI)
         let frankensteinState = null;
-        const FRANK_GENRES = {
-            essay: {
-                key: 'essay',
-                label: 'academic essay paragraph',
-                roles: ['Hook', 'Context', 'Thesis', 'Evidence', 'Analysis'],
-                structureLine: 'Hook → Context → Thesis → Evidence → Analysis',
-                structurePrompt: '1) Hook 2) Context 3) Thesis 4) Evidence 5) Analysis'
+        let frankLastId = null;
+        const FRANK_PARA_TYPES = {
+            introduction: {
+                label: 'Introduction',
+                hint: 'Typical shape: general context → the debate or problem → the writer’s thesis or question.'
             },
-            letter: {
-                key: 'letter',
-                label: 'formal letter paragraph sequence',
-                roles: ['Opening purpose', 'Background', 'Main point', 'Supporting detail', 'Polite closing'],
-                structureLine: 'Opening purpose → Background → Main point → Supporting detail → Polite closing',
-                structurePrompt: '1) Opening stating purpose 2) Background/context 3) Main request or point 4) Supporting detail/justification 5) Polite closing / next step'
+            body_for: {
+                label: 'Body paragraph — arguments for',
+                hint: 'Typical shape: a point in favour → explanation → extra support → result or wrap-up.'
             },
-            article: {
-                key: 'article',
-                label: 'article paragraph sequence',
-                roles: ['Lead', 'Background', 'Main angle', 'Evidence/example', 'Closing comment'],
-                structureLine: 'Lead → Background → Main angle → Evidence/example → Closing comment',
-                structurePrompt: '1) Attention-grabbing lead 2) Background context 3) Main angle/claim 4) Evidence or concrete example 5) Closing comment/implication'
+            body_against: {
+                label: 'Body paragraph — arguments against',
+                hint: 'Typical shape: a contrasting point → explanation → extra support → result or wrap-up.'
+            },
+            body_opinion: {
+                label: 'Body paragraph — opinion',
+                hint: 'Typical shape: a clear personal view → reasons → further justification → a firm close.'
+            },
+            conclusion_for_against: {
+                label: 'Conclusion — for and against',
+                hint: 'Typical shape: a balanced summary → both sides in brief → a measured closing judgement.'
+            },
+            conclusion_opinion: {
+                label: 'Conclusion — opinion',
+                hint: 'Typical shape: a restated opinion → a key reason → a final recommendation.'
             }
         };
 
-        async function initFrankenstein() {
-            document.getElementById('frank-check-btn').style.display = 'none';
-            document.getElementById('frank-feedback').textContent = '';
-            toggleLoading('frank', true);
+        function frankShuffle(items) {
+            const arr = items.slice();
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const tmp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = tmp;
+            }
+            return arr;
+        }
 
-            const genre = FRANK_GENRES[wsPick(Object.keys(FRANK_GENRES))];
-            const R = wsRandomnessBlock();
-            document.getElementById('frank-structure-label').textContent = genre.structureLine;
-            document.getElementById('frank-game-desc').innerHTML =
-                `Arrange the scrambled parts into the correct order for this <strong>${genre.label}</strong>.<br><strong id="frank-structure-label">${genre.structureLine}</strong>`;
+        function pickFrankParagraph() {
+            const bank = Array.isArray(window.LINGOSPARK_FRANK_PARAGRAPHS) ? window.LINGOSPARK_FRANK_PARAGRAPHS : [];
+            const usable = bank.filter((p) => Array.isArray(p.sentences) && p.sentences.length >= 2);
+            const pool = usable.filter((p) => p.id !== frankLastId);
+            const list = pool.length ? pool : usable;
+            if (!list.length) return null;
+            const para = list[Math.floor(Math.random() * list.length)];
+            frankLastId = para.id;
+            return para;
+        }
 
-            const prompt = `Create a UNIQUE ${genre.label} as exactly 5 consecutive sentences for advanced high-school ESL writers.
-LEVEL: ${WS_LEVEL}
-RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}. Never reuse near-identical content.
-Structure MUST be exactly: ${genre.structurePrompt}.
-CRITICAL FOR FAIR MARKING:
-- Return sentences in the ONLY correct rhetorical order (index 0 = role 1, … index 4 = role 5).
-- Each sentence must clearly perform its role so that no other order is logically valid.
-- Do not make sentences interchangeable; use clear discourse signals appropriate to the text type.
-- Formal register; no slang.
-Return ONLY a JSON object: {"genre":"${genre.key}","sentences":["s1","s2","s3","s4","s5"],"roles":${JSON.stringify(genre.roles)}}`;
+        function frankTypeInfo(type) {
+            return FRANK_PARA_TYPES[type] || {
+                label: String(type || 'Paragraph').replace(/_/g, ' '),
+                hint: 'Put the sentences back into the original paragraph order.'
+            };
+        }
 
-            const data = await fetchGenerativeAI(prompt);
+        function initFrankenstein() {
+            const checkBtn = document.getElementById('frank-check-btn');
+            const feedback = document.getElementById('frank-feedback');
+            const container = document.getElementById('frank-container');
+            const typeCard = document.getElementById('frank-type-card');
+            if (checkBtn) checkBtn.style.display = 'none';
+            if (feedback) {
+                feedback.textContent = '';
+                feedback.className = 'feedback';
+            }
 
-            if (!data || data.__error || !Array.isArray(data.sentences) || data.sentences.length !== 5) {
-                toggleLoading('frank', false);
-                document.getElementById('frank-feedback').className = "feedback error";
-                document.getElementById('frank-feedback').textContent = aiErrorMessage(data);
+            const para = pickFrankParagraph();
+            if (!para) {
+                if (container) container.innerHTML = '';
+                if (typeCard) typeCard.hidden = true;
+                if (feedback) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = 'No paragraphs are available right now.';
+                }
                 return;
             }
 
-            frankensteinState = {
-                genre: genre.key,
-                roles: data.roles || genre.roles,
-                structureLine: genre.structureLine
-            };
+            const info = frankTypeInfo(para.type);
+            const nameEl = document.getElementById('frank-type-name');
+            const topicEl = document.getElementById('frank-type-topic');
+            const hintEl = document.getElementById('frank-type-hint');
+            if (nameEl) nameEl.textContent = info.label;
+            if (topicEl) topicEl.textContent = para.topic ? ('Topic: ' + para.topic) : '';
+            if (hintEl) hintEl.textContent = info.hint;
+            if (typeCard) typeCard.hidden = false;
 
-            const container = document.getElementById('frank-container');
-            container.innerHTML = '';
-            let objects = data.sentences.map((text, idx) => ({ id: idx + 1, text }));
-            let shuffled = [...objects].sort(() => Math.random() - 0.5);
-            // Ensure the starting order is not already correct (fair challenge)
+            const desc = document.getElementById('frank-game-desc');
+            if (desc) desc.textContent = 'Put these scrambled sentences back into the original order for this ' + info.label.toLowerCase() + '.';
+
+            const objects = para.sentences.map((text, idx) => ({ id: idx + 1, text: String(text || '') }));
+            let shuffled = frankShuffle(objects);
             let guard = 0;
-            while (guard < 8 && shuffled.every((s, i) => s.id === i + 1)) {
-                shuffled = [...objects].sort(() => Math.random() - 0.5);
+            while (guard < 12 && shuffled.every((s, i) => s.id === i + 1)) {
+                shuffled = frankShuffle(objects);
                 guard++;
             }
 
-            shuffled.forEach((s) => {
-                let div = document.createElement('div');
-                div.className = "frank-item";
-                div.dataset.id = s.id;
-                div.innerHTML = `<span style="padding-right: 1rem;">${s.text}</span><div class="frank-controls"><button onclick="moveFrank(this, -1)" aria-label="Move up"><i class="fa-solid fa-chevron-up"></i></button><button onclick="moveFrank(this, 1)" aria-label="Move down"><i class="fa-solid fa-chevron-down"></i></button></div>`;
-                container.appendChild(div);
-            });
+            frankensteinState = {
+                id: para.id,
+                type: para.type,
+                typeLabel: info.label,
+                topic: para.topic || '',
+                length: objects.length
+            };
 
-            toggleLoading('frank', false);
-            document.getElementById('frank-check-btn').style.display = 'block';
+            if (container) {
+                container.innerHTML = '';
+                shuffled.forEach((s) => {
+                    const div = document.createElement('div');
+                    div.className = 'frank-item';
+                    div.dataset.id = String(s.id);
+                    div.innerHTML = `<span>${esc(s.text)}</span><div class="frank-controls"><button type="button" onclick="moveFrank(this, -1)" aria-label="Move up"><i class="fa-solid fa-chevron-up"></i></button><button type="button" onclick="moveFrank(this, 1)" aria-label="Move down"><i class="fa-solid fa-chevron-down"></i></button></div>`;
+                    container.appendChild(div);
+                });
+            }
+            if (checkBtn) checkBtn.style.display = 'block';
         }
 
         function moveFrank(btn, direction) {
@@ -3456,24 +3598,22 @@ Return ONLY a JSON object: {"genre":"${genre.key}","sentences":["s1","s2","s3","
         }
 
         function checkFrankenstein() {
-            let items = Array.from(document.getElementById('frank-container').children);
-            let currentOrder = items.map(el => parseInt(el.dataset.id, 10));
-            let correctOrder = [1, 2, 3, 4, 5];
-            let feedback = document.getElementById('frank-feedback');
-            const roles = (frankensteinState && frankensteinState.roles) || FRANK_GENRES.essay.roles;
-            const structureLine = (frankensteinState && frankensteinState.structureLine) || FRANK_GENRES.essay.structureLine;
+            const items = Array.from(document.getElementById('frank-container').children);
+            const currentOrder = items.map((el) => parseInt(el.dataset.id, 10));
+            const n = (frankensteinState && frankensteinState.length) || currentOrder.length;
+            const correctOrder = Array.from({ length: n }, (_, i) => i + 1);
+            const feedback = document.getElementById('frank-feedback');
+            const typeLabel = (frankensteinState && frankensteinState.typeLabel) || 'paragraph';
 
             if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
-                feedback.className = "feedback success";
-                feedback.textContent = `🎉 Perfect structure! ${structureLine}`;
+                feedback.className = 'feedback success';
+                feedback.textContent = `Perfect — that is the original order for this ${typeLabel.toLowerCase()}.`;
                 incrementGameCount();
                 recordGameSessionApi('frank', { score: 100, pointsEarned: 100 });
             } else {
-                // Fair, specific feedback: first misplaced slot
-                let firstWrong = currentOrder.findIndex((id, i) => id !== i + 1);
-                const expected = firstWrong >= 0 ? roles[firstWrong] : 'the next part';
-                feedback.className = "feedback error";
-                feedback.textContent = `❌ Order not quite right. Check position ${firstWrong + 1}: it should be the ${expected}. Target flow: ${structureLine}`;
+                const firstWrong = currentOrder.findIndex((id, i) => id !== i + 1);
+                feedback.className = 'feedback error';
+                feedback.textContent = `Not quite. Check sentence ${firstWrong + 1} — it does not belong there in this ${typeLabel.toLowerCase()}.`;
             }
         }
 
