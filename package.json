@@ -4,7 +4,8 @@
   "description": "LingoSpark: Gamify Your Words",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "packs": "node packs/build.mjs"
   },
   "engines": {
     "node": ">=22.13.0"

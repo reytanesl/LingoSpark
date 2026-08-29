@@ -9,3 +9,7 @@ __pycache__/
 shorts/frames_*/
 shorts/bgm_*.wav
 shorts/*_silent.mp4
+
+# Generated pack binaries (rebuild with npm run packs)
+packs/dist/*.zip
+packs/dist/**/*.pdf

@@ -781,6 +781,10 @@
             font-family: var(--font-primary); font-weight: 600; transition: 0.2s;
         }
         .auth-nav-btn:hover, .auth-nav-btn.active { background: rgba(255,255,255,0.18); }
+        .auth-premium-btn {
+            background: #fff; color: var(--pillarbox-red); border-color: #fff; text-decoration: none;
+        }
+        .auth-premium-btn:hover { background: rgba(255,255,255,0.92); color: var(--royal-blue); }
         .auth-bar .auth-user { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 0.9rem; }
         .auth-bar .auth-user img { width: 28px; height: 28px; border-radius: 50%; }
         .menu-btn {
@@ -914,9 +918,55 @@
         .dictation-gap-input.dictation-gap-wrong { border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.1); }
         .dictation-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
 
-        .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+        .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto; }
         .paywall-overlay.open { display: flex; }
-        .paywall-modal { background: var(--bright-white); border-radius: 12px; max-width: 440px; width: 100%; padding: 2rem; border-top: 6px solid var(--royal-blue); box-shadow: 0 12px 40px rgba(0,0,0,0.2); text-align: center; }
+        .paywall-modal { background: var(--bright-white); border-radius: 12px; max-width: 680px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 1.75rem 1.6rem; border-top: 6px solid var(--royal-blue); box-shadow: 0 12px 40px rgba(0,0,0,0.2); text-align: center; }
+        .paywall-perks {
+            list-style: none; text-align: left; margin: 0 0 1.15rem; padding: 0;
+            display: grid; gap: 0.45rem;
+        }
+        .paywall-perks li {
+            display: flex; align-items: flex-start; gap: 0.55rem;
+            font-size: 0.9rem; color: var(--text-dark); line-height: 1.4;
+        }
+        .paywall-perks li i { color: var(--success-green); margin-top: 0.2rem; flex-shrink: 0; }
+        .paywall-plans {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem;
+            margin: 0 0 1rem; text-align: center;
+        }
+        .paywall-plan {
+            display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+            padding: 1rem 0.7rem 0.9rem; border: 2px solid var(--border-light); border-radius: 12px;
+            background: var(--bright-white); text-decoration: none; color: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            position: relative;
+        }
+        a.paywall-plan:hover {
+            transform: translateY(-3px); box-shadow: 0 8px 18px rgba(1,33,105,0.12);
+            border-color: var(--royal-blue);
+        }
+        .paywall-plan.featured {
+            border-color: var(--royal-blue); background: #f4f7ff;
+            box-shadow: 0 6px 16px rgba(1,33,105,0.1);
+        }
+        .paywall-plan.is-static { cursor: default; pointer-events: none; }
+        .paywall-plan-badge {
+            position: absolute; top: -0.65rem; left: 50%; transform: translateX(-50%);
+            background: var(--royal-blue); color: #fff; font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 0.03em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 999px;
+            white-space: nowrap;
+        }
+        .paywall-plan-label { font-family: var(--font-primary); font-weight: 700; color: var(--royal-blue); font-size: 0.95rem; }
+        .paywall-plan-price { font-family: var(--font-primary); font-size: 1.55rem; font-weight: 800; color: var(--text-dark); line-height: 1.15; }
+        .paywall-plan-usd { font-size: 0.78rem; color: var(--text-muted); }
+        .paywall-plan-period { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.35rem; }
+        .paywall-plan-cta { font-size: 0.78rem; font-weight: 700; color: var(--royal-blue); margin-top: 0.15rem; }
+        .paywall-plan.featured .paywall-plan-cta { color: var(--pillarbox-red); }
+        .paywall-plan:has(.paywall-plan-badge) { padding-top: 1.25rem; }
+        @media (max-width: 640px) {
+            .paywall-plans { grid-template-columns: 1fr; }
+            .paywall-plan { padding: 0.9rem 1rem; }
+        }
 
         .ai-reminder-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 90; align-items: center; justify-content: center; padding: 1rem; animation: aiReminderFadeIn 0.3s ease; }
         .ai-reminder-overlay.open { display: flex; }
@@ -1058,10 +1108,10 @@
         .guest-save-card { background: var(--bright-white); border-radius: 16px; max-width: 420px; width: 100%; padding: 1.8rem 1.6rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); text-align: center; }
         .guest-save-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.6rem; font-size: 1.15rem; }
         .guest-save-card p { font-size: 0.92rem; color: var(--text-dark); line-height: 1.5; margin: 0 0 1.2rem; }
-        .paywall-modal h3 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.5rem; margin-bottom: 0.75rem; }
-        .paywall-modal p { color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+        .paywall-modal h3 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.5rem; margin-bottom: 0.4rem; }
+        .paywall-modal p { color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5; }
         .paywall-modal .paywall-actions { display: flex; flex-direction: column; gap: 0.75rem; }
-        .paywall-modal .paywall-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; margin-bottom: 0; }
+        .paywall-modal .paywall-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem; margin-bottom: 0; }
         .auth-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
         .auth-tabs button {
             flex: 1; padding: 0.55rem; border: 2px solid var(--light-grey); background: var(--light-grey);
@@ -1298,6 +1348,7 @@
 
     <div class="auth-bar" id="auth-bar">
         <div class="auth-bar-left" id="auth-bar-left">
+            <a href="https://buymeacoffee.com/lingospark/extras" id="auth-nav-premium" class="auth-nav-btn auth-premium-btn" target="_blank" rel="noopener" style="display:none;"><i class="fa-solid fa-crown"></i> Go Premium</a>
             <button type="button" class="auth-nav-btn" id="auth-nav-mysets" onclick="openWordSets()" style="display:none;"><i class="fa-solid fa-book"></i> Word Sets</button>
             <button type="button" class="auth-nav-btn" id="auth-nav-progress" onclick="openMyProgress()" style="display:none;"><i class="fa-solid fa-chart-line"></i> My Progress</button>
         </div>
@@ -1316,13 +1367,15 @@
             <p>LingoSpark is a growing collection of interactive ESL tools designed to make learning English fun, fast, and engaging. I build small, practical apps for teachers and learners—vocab games, writing challenges, team activities, and creative practice tools that turn everyday lessons into something students actually enjoy.</p>
             <p>What I am really proud of is the Writing Suite, the feature that allows students to practice their writing skills and expand their glossaries individually and at their own pace. It can also be used by teachers as support for their writing classes.</p>
             <p>More new activities coming soon!</p>
-            <p>If you like the project, want to test the AI features or support further development, your coffee helps me keep improving the platform, implementing new ideas and making English learning more appealing, natural and meaningful for everyone.</p>
+            <p><strong>Vocab games stay free forever.</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction, Team Challenge, and Live Game never need a plan.</p>
+            <p>Writing Suite and Primary English need paid access so the AI tools can stay online. <strong>Buying access is the best way to support LingoSpark</strong> — you unlock premium games for yourself or your students, and help cover running costs.</p>
             <div class="about-pricing">
-                <p style="margin-bottom:0.4rem;"><strong>Support options</strong></p>
-                <p style="margin-bottom:0.6rem;"><strong>Vocab practice: FREE FOREVER!</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction and Team Challenge stay free.</p>
-                <p style="margin-bottom:0;">Writing Suite &amp; Primary English: the coffee is ONLY <strong>$3</strong> a week, <strong>$10</strong> a month for unlimited use!</p>
+                <p style="margin-bottom:0.4rem;"><strong>Writing Suite — 40 zł / month</strong> <span style="font-weight:600;color:var(--text-muted);">($10)</span></p>
+                <p style="margin-bottom:0.6rem;">Plans: <strong>12 zł / week</strong> ($3) · <strong>40 zł / month</strong> ($10) · <strong>280 zł / year</strong> ($70, best value). Unlimited Writing Suite and Primary English for the days you paid.</p>
+                <p style="margin-bottom:0;font-size:0.88rem;">Checkout is in USD on Buy Me a Coffee (same email as your LingoSpark account). PLN is the local price at about 4 zł per $1 — card billing in złoty comes later.</p>
             </div>
-            <p><a href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">https://buymeacoffee.com/lingospark/extras</a></p>
+            <p><a href="https://buymeacoffee.com/lingospark/extras" id="about-premium-link" target="_blank" rel="noopener">Go Premium — open the shop</a></p>
+            <p>Teachers: exam vocab packs (ósmoklasista / Matura) with paste-ready lists for Bomb Defusal, Flashcards, Auction and Live Quiz — email <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a> for the ZIP.</p>
             <p>For any questions, email me: <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a></p>
         </div>
 
@@ -1671,7 +1724,7 @@
 
             <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
                 <label style="color: #4f46e5;"><i class="fa-solid fa-robot"></i> Cursor AI Generation</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Writing Suite access required (sign in with email or Google + Buy Me a Coffee or teacher approval). Content is generated via Cursor AI on the server.</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Writing Suite access required (sign in, then buy a plan — or teacher approval). Content is generated via Cursor AI on the server.</p>
             </div>
 
             <div id="frank-setup-note" class="form-group" style="display:none; background: rgba(1,33,105,0.06); border-left-color: var(--royal-blue);">
@@ -2447,8 +2500,10 @@
     <!-- WRITING SUITE PAYWALL -->
     <div class="paywall-overlay" id="paywall-overlay" onclick="if(event.target===this)closePaywall()">
         <div class="paywall-modal" role="dialog" aria-labelledby="paywall-title">
-            <h3 id="paywall-title">Writing Suite Access</h3>
+            <h3 id="paywall-title">Writing Suite access</h3>
             <p id="paywall-body">Sign in to continue.</p>
+            <ul class="paywall-perks" id="paywall-perks" hidden></ul>
+            <div class="paywall-plans" id="paywall-plans" hidden></div>
             <div class="paywall-actions" id="paywall-actions"></div>
             <p class="paywall-note" id="paywall-note"></p>
             <button class="btn btn-grey" style="margin-top:1rem;" onclick="closePaywall()">Cancel</button>
@@ -2481,7 +2536,7 @@
                     <i class="fa-brands fa-google"></i> Continue with Google
                 </a>
             </div>
-            <p class="paywall-note">Use the same email on Buy Me a Coffee as your LingoSpark account.</p>
+            <p class="paywall-note">After you sign in, buy access with the same email as this account.</p>
             <button type="button" class="btn btn-grey" style="margin-top:0.75rem;width:100%;" onclick="closeAuthModal()">Cancel</button>
         </div>
     </div>
@@ -2847,8 +2902,16 @@
             const logged = isLoggedIn();
             const setsBtn = document.getElementById('auth-nav-mysets');
             const progBtn = document.getElementById('auth-nav-progress');
+            const premiumBtn = document.getElementById('auth-nav-premium');
+            const premiumUrl = authState.bmcPaymentUrl || 'https://buymeacoffee.com/lingospark/extras';
             if (setsBtn) setsBtn.style.display = logged ? '' : 'none';
             if (progBtn) progBtn.style.display = logged ? '' : 'none';
+            if (premiumBtn) {
+                premiumBtn.style.display = authState.hasAccess ? 'none' : '';
+                premiumBtn.href = premiumUrl;
+            }
+            const aboutPremiumLink = document.getElementById('about-premium-link');
+            if (aboutPremiumLink) aboutPremiumLink.href = premiumUrl;
             syncAuthBarNavActive();
         }
 
@@ -3622,10 +3685,20 @@
             stopAnalyticsHeartbeat();
         });
 
-        const WRITING_SUITE_PASSWORD = null; // replaced by account login + Buy Me a Coffee paywall
+        const WRITING_SUITE_PASSWORD = null; // replaced by account login + paid access
         let pendingWritingGame = null;
         let authTab = 'login';
-        let authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false, localAuthEnabled: true };
+        const DEFAULT_ACCESS_PLANS = [
+            { id: 'week', usd: 3, pln: 12, label: 'Week', period: '7 days' },
+            { id: 'month', usd: 10, pln: 40, label: 'Month', period: '30 days', featured: true, badge: 'Most popular' },
+            { id: 'year', usd: 70, pln: 280, label: 'Year', period: '12 months', badge: 'Best value' },
+        ];
+        const emptyAuthState = () => ({
+            user: null, isAdmin: false, hasAccess: false,
+            bmcPaymentUrl: 'https://buymeacoffee.com/lingospark/extras',
+            googleConfigured: false, localAuthEnabled: true, accessPlans: DEFAULT_ACCESS_PLANS,
+        });
+        let authState = emptyAuthState();
         window.authState = authState;
 
         async function refreshAuth() {
@@ -3633,7 +3706,7 @@
                 const res = await fetch('/api/auth/me', { credentials: 'include' });
                 authState = await res.json();
             } catch {
-                authState = { user: null, isAdmin: false, hasAccess: false, bmcPaymentUrl: '', googleConfigured: false, localAuthEnabled: true };
+                authState = emptyAuthState();
             }
             window.authState = authState;
             renderAuthBar();
@@ -3799,28 +3872,83 @@
             pendingWritingGame = null;
         }
 
+        function escapePaywallHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+            }[ch]));
+        }
+
+        function getAccessPlans() {
+            const fromApi = Array.isArray(authState.accessPlans) && authState.accessPlans.length
+                ? authState.accessPlans
+                : DEFAULT_ACCESS_PLANS;
+            const fallbackUrl = authState.bmcPaymentUrl || 'https://buymeacoffee.com/lingospark/extras';
+            return fromApi.map((plan) => ({
+                ...plan,
+                checkoutUrl: plan.checkoutUrl || fallbackUrl,
+            }));
+        }
+
+        function renderPaywallPerks() {
+            return `
+                <li><i class="fa-solid fa-check"></i> Writing Suite — essays, vocab upgrade, and AI writing practice</li>
+                <li><i class="fa-solid fa-check"></i> Primary English games beyond free Dictation and Colour Blocks</li>
+                <li><i class="fa-solid fa-check"></i> Unlimited use for the days you paid</li>
+                <li><i class="fa-solid fa-check"></i> Vocab Review stays free forever</li>
+            `;
+        }
+
+        function renderPaywallPlans(clickable) {
+            return getAccessPlans().map((plan) => {
+                const featured = plan.featured || plan.id === 'month';
+                const badge = plan.badge
+                    ? `<span class="paywall-plan-badge">${escapePaywallHtml(plan.badge)}</span>`
+                    : '';
+                const inner = `
+                    ${badge}
+                    <span class="paywall-plan-label">${escapePaywallHtml(plan.label)}</span>
+                    <span class="paywall-plan-price">${Number(plan.pln)} zł</span>
+                    <span class="paywall-plan-usd">$${Number(plan.usd)} on checkout</span>
+                    <span class="paywall-plan-period">${escapePaywallHtml(plan.period)}</span>
+                    <span class="paywall-plan-cta">${clickable ? 'Choose plan' : 'Sign in to buy'}</span>
+                `;
+                const cls = `paywall-plan${featured ? ' featured' : ''}${clickable ? '' : ' is-static'}`;
+                if (!clickable) return `<div class="${cls}">${inner}</div>`;
+                const href = escapePaywallHtml(plan.checkoutUrl);
+                return `<a class="${cls}" href="${href}" target="_blank" rel="noopener">${inner}</a>`;
+            }).join('');
+        }
+
         function openPaywallModal() {
             const overlay = document.getElementById('paywall-overlay');
+            const title = document.getElementById('paywall-title');
             const body = document.getElementById('paywall-body');
+            const perks = document.getElementById('paywall-perks');
+            const plans = document.getElementById('paywall-plans');
             const actions = document.getElementById('paywall-actions');
             const note = document.getElementById('paywall-note');
 
+            title.textContent = 'Writing Suite access';
+            perks.hidden = false;
+            perks.innerHTML = renderPaywallPerks();
+            plans.hidden = false;
+
             if (!authState.user) {
-                body.textContent = 'Sign in with email/password or Google to unlock the Writing Suite.';
+                body.textContent = 'Writing Suite — 40 zł / month ($10). Sign in, then pick a plan. Vocab practice stays free.';
+                plans.innerHTML = renderPaywallPlans(false);
                 actions.innerHTML = `
                     <button class="btn btn-blue" onclick="closePaywall(); openAuthModal('login')">
                         <i class="fa-solid fa-right-to-bracket"></i> Sign in / Create account
                     </button>
                 `;
-                note.textContent = 'After signing in, buy access with the same email on Buy Me a Coffee.';
+                note.textContent = 'Buy with the same email as your LingoSpark account. Checkout is in USD; PLN is the local price.';
             } else if (!authState.hasAccess) {
-                body.textContent = 'Buy Access for Writing Suite & Primary English — $3 / week or $10 / month. Vocab practice stays FREE FOREVER.';
-                const bmcUrl = authState.bmcPaymentUrl || '';
-                actions.innerHTML = bmcUrl
-                    ? `<a class="btn btn-blue" href="${bmcUrl}" target="_blank" rel="noopener"><i class="fa-solid fa-mug-hot"></i> Buy Access</a>
-                       <button class="btn btn-outline" onclick="checkAccessAfterPurchase()"><i class="fa-solid fa-rotate"></i> I already paid — refresh access</button>`
-                    : `<button class="btn btn-blue" disabled>Buy Access (not configured)</button>`;
-                note.textContent = 'Use the same email on Buy Me a Coffee as your LingoSpark account (' + (authState.user.email || '') + ').';
+                body.textContent = 'Writing Suite — 40 zł / month ($10). Pick a plan. Vocab practice stays free.';
+                plans.innerHTML = renderPaywallPlans(true);
+                actions.innerHTML = `
+                    <button class="btn btn-outline" onclick="checkAccessAfterPurchase()"><i class="fa-solid fa-rotate"></i> I already paid — refresh access</button>
+                `;
+                note.textContent = 'Pay with the same email as this account (' + (authState.user.email || '') + '). Checkout is in USD on Buy Me a Coffee.';
             } else {
                 closePaywall();
                 if (pendingWritingGame) goToSetup(pendingWritingGame);
@@ -3835,7 +3963,7 @@
                 closePaywall();
                 if (pendingWritingGame) goToSetup(pendingWritingGame);
             } else {
-                appAlert('Access not found yet. Make sure you paid with the same email as your LingoSpark account, or wait a moment and try again. Your teacher can also approve your account.');
+                appAlert('Access not found yet. Pay with the same email as your LingoSpark account, wait a moment, then try again. Your teacher can also approve your account.');
             }
         }
 
@@ -7650,7 +7778,7 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             });
         });
     </script>
-    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="lingospark" data-description="Support me on Buy me a coffee!" data-message="Play all the vocabulary games for free but, being honest, a coffee would make my day" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="lingospark" data-description="Writing Suite access" data-message="Vocab games stay free. Writing Suite is 40 zł a month ($10)." data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
     <div class="site-copyright">Copyright Karol Sęk 2026</div>
 </body>
 </html>

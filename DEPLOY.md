@@ -15,7 +15,7 @@ You host one server with:
 1. **Cursor API key** — [cursor.com/dashboard/api](https://cursor.com/dashboard/api)
 2. **Postgres** — Render Postgres or [Neon](https://neon.tech)
 3. **Google Cloud OAuth** — [console.cloud.google.com](https://console.cloud.google.com/)
-4. **Buy Me a Coffee** — shop Extras: **$3 = 7 days**, **$10 = 30 days** (BMC is USD-only)
+4. **Buy Me a Coffee** — shop Extras: **$3 = 7 days**, **$10 = 30 days**, **$70 = 365 days** (BMC is USD-only; site shows PLN)
 5. **GitHub** + Git (optional but recommended)
 
 ---
@@ -65,6 +65,9 @@ URL example: `https://lingospark.onrender.com`
 | `GOOGLE_CALLBACK_URL` | `https://your-app.onrender.com/auth/google/callback` |
 | `ADMIN_EMAIL` | your Gmail (admin panel) |
 | `BMC_PAYMENT_URL` | `https://buymeacoffee.com/lingospark/extras` |
+| `BMC_WEEK_URL` | optional direct Extra for the week plan |
+| `BMC_MONTH_URL` | optional direct Extra for the month plan |
+| `BMC_YEAR_URL` | optional direct Extra for the year plan |
 | `BMC_WEBHOOK_SECRET` | from BMC Integrations → Webhooks |
 | `NODE_ENV` | `production` |
 
@@ -76,11 +79,12 @@ URL example: `https://lingospark.onrender.com`
 
 ### Buy Me a Coffee setup
 
-1. Create two paid options that match the site copy:
-   - **$3** → weekly access (webhook grants **7 days**)
-   - **$10** → monthly access (webhook grants **30 days**)
-   Use Extras (shop items) and/or memberships — name them clearly (e.g. “Week — $3”, “Month — $10”).
-2. Copy the payment page URL → `BMC_PAYMENT_URL` (use `https://buymeacoffee.com/lingospark/extras`)
+1. Create three paid Extras that match the site copy (name them clearly):
+   - **Week — $3** → webhook grants **7 days** (shown as **12 zł**)
+   - **Month — $10** → webhook grants **30 days** (shown as **40 zł**)
+   - **Year — $70** → webhook grants **365 days** (shown as **280 zł**, best value)
+   PLN is display-only (~4 zł / $1). Checkout stays USD until Stripe / Przelewy24.
+2. Copy the shop URL → `BMC_PAYMENT_URL` (use `https://buymeacoffee.com/lingospark/extras`). Optional: set `BMC_WEEK_URL` / `BMC_MONTH_URL` / `BMC_YEAR_URL` to each Extra’s direct link so plan cards skip the listing.
 3. Studio → Integrations → Webhooks → endpoint:
    `https://lingospark.study/api/billing/bmc-webhook`
 4. Enable at least: `donation.created`, `extra_purchase.created`, `membership.started`, `membership.updated`, and the matching `*.refunded` events
@@ -100,9 +104,10 @@ Access is automatic after a successful webhook: Writing Suite **and** Primary En
 | Admin Approves user at `/admin.html` | Writing Suite + Primary English until you Revoke (BMC does not change this) |
 | BMC payment ≈ **$3** | Premium for **7 days** (stacks if they renew while still active) |
 | BMC payment ≈ **$10** | Premium for **30 days** (stacks the same way) |
+| BMC payment ≈ **$70** (or Extra titled Year / Annual) | Premium for **365 days** (stacks the same way) |
 | BMC refund | BMC premium removed (admin Approve untouched) |
 | Membership cancel/pause | Remaining paid days kept until `access_until` |
-| No access | Play Now shows Sign in / Buy Access only |
+| No access | Play Now shows the access plans (sign in, then buy) |
 
 ---
 

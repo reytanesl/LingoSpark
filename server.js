@@ -46,7 +46,7 @@ import {
     getMaturaProgressSummary,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
-import { verifyBmcSignature, handleBmcWebhook } from './billing.js';
+import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, checkoutUrls } from './billing.js';
 import {
     buildDeckFromRequest,
     createRoom,
@@ -231,7 +231,8 @@ async function start() {
             status: getAccessStatus(user),
             googleConfigured: googleReady,
             localAuthEnabled: dbReady,
-            bmcPaymentUrl: process.env.BMC_PAYMENT_URL || 'https://buymeacoffee.com/lingospark/extras',
+            bmcPaymentUrl: checkoutUrls().extras,
+            accessPlans: publicAccessPlans(),
             dbReady,
         });
     });
@@ -269,8 +270,14 @@ async function start() {
     });
 
     app.get('/api/billing/bmc-url', (_req, res) => {
-        const url = process.env.BMC_PAYMENT_URL || 'https://buymeacoffee.com/lingospark/extras';
-        res.json({ url });
+        res.json({ url: checkoutUrls().extras });
+    });
+
+    app.get('/api/billing/plans', (_req, res) => {
+        res.json({
+            plans: publicAccessPlans(),
+            checkoutNote: 'Checkout is in USD on Buy Me a Coffee. PLN is the local price (~4 zł / $1). Stripe / Przelewy24 later.',
+        });
     });
 
     // Anonymous + logged-in game/section popularity tracking
@@ -813,6 +820,10 @@ app.get('/api/health', (_req, res) => {
             dbReady,
             bmcConfigured: Boolean(process.env.BMC_PAYMENT_URL),
         });
+    });
+
+    app.use('/packs', (_req, res) => {
+        res.status(404).type('text/plain').send('Not found');
     });
 
     app.use(express.static(__dirname));

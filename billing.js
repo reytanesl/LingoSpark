@@ -1,11 +1,61 @@
 import crypto from 'crypto';
 import { grantBmcAccessByEmail, revokeBmcAccessByEmail } from './db.js';
 
-/** $3 ≈ 1 week; $10 ≈ 1 month (Writing Suite + Primary English). BMC is USD-only. */
-const WEEK_DAYS = 7;
-const MONTH_DAYS = 30;
+/** Checkout is still BMC (USD-only). PLN is display-only (~4 zł / $1) until Stripe/Przelewy24. */
+export const WEEK_DAYS = 7;
+export const MONTH_DAYS = 30;
+export const YEAR_DAYS = 365;
 const WEEK_AMOUNT = 3;
 const MONTH_AMOUNT = 10;
+const YEAR_AMOUNT = 70;
+
+export const ACCESS_PLANS = [
+    {
+        id: 'week',
+        days: WEEK_DAYS,
+        usd: WEEK_AMOUNT,
+        pln: 12,
+        label: 'Week',
+        period: '7 days',
+    },
+    {
+        id: 'month',
+        days: MONTH_DAYS,
+        usd: MONTH_AMOUNT,
+        pln: 40,
+        label: 'Month',
+        period: '30 days',
+        featured: true,
+        badge: 'Most popular',
+    },
+    {
+        id: 'year',
+        days: YEAR_DAYS,
+        usd: YEAR_AMOUNT,
+        pln: 280,
+        label: 'Year',
+        period: '12 months',
+        badge: 'Best value',
+    },
+];
+
+export function checkoutUrls() {
+    const extras = process.env.BMC_PAYMENT_URL || 'https://buymeacoffee.com/lingospark/extras';
+    return {
+        extras,
+        week: process.env.BMC_WEEK_URL || extras,
+        month: process.env.BMC_MONTH_URL || extras,
+        year: process.env.BMC_YEAR_URL || extras,
+    };
+}
+
+export function publicAccessPlans() {
+    const urls = checkoutUrls();
+    return ACCESS_PLANS.map((plan) => ({
+        ...plan,
+        checkoutUrl: urls[plan.id] || urls.extras,
+    }));
+}
 
 function payloadRoots(payload) {
     const data = payload?.data || payload || {};
@@ -73,20 +123,38 @@ function extractTitle(payload) {
     return '';
 }
 
+function grantActionName(days) {
+    if (days >= YEAR_DAYS) return 'grant_365_days';
+    if (days >= MONTH_DAYS) return 'grant_30_days';
+    return 'grant_7_days';
+}
+
 /**
  * Map payment → access days.
- * Prefer product title hints, then amount near $3 / $10, then event-type default.
+ * Prefer product title hints, then amount near $70 / $10 / $3, then event-type default.
  */
 export function resolveAccessDays(payload, eventType = '') {
     const title = extractTitle(payload).toLowerCase();
     const amount = extractAmount(payload);
     const type = String(eventType || '').toLowerCase();
 
+    // Year before month so "12 months" / "annual" is not treated as a 30-day month.
+    if (
+        /\b(year|annual|yearly)\b/.test(title) ||
+        /\b12\s*months?\b/.test(title) ||
+        /\b365\s*days?\b/.test(title) ||
+        /\$?\s*70\b/.test(title) ||
+        /\b70\s*(usd|dollars?|\$)\b/.test(title) ||
+        /\b280\s*z[lł]\b/.test(title)
+    ) {
+        return YEAR_DAYS;
+    }
     if (
         /\bweek\b/.test(title) ||
         /\b7\s*days?\b/.test(title) ||
         /\$?\s*3\b/.test(title) ||
-        /\b3\s*(usd|dollars?|\$)\b/.test(title)
+        /\b3\s*(usd|dollars?|\$)\b/.test(title) ||
+        /\b12\s*z[lł]\b/.test(title)
     ) {
         return WEEK_DAYS;
     }
@@ -94,12 +162,16 @@ export function resolveAccessDays(payload, eventType = '') {
         /\bmonth\b/.test(title) ||
         /\b30\s*days?\b/.test(title) ||
         /\$?\s*10\b/.test(title) ||
-        /\b10\s*(usd|dollars?|\$)\b/.test(title)
+        /\b10\s*(usd|dollars?|\$)\b/.test(title) ||
+        /\b40\s*z[lł]\b/.test(title)
     ) {
         return MONTH_DAYS;
     }
 
     if (amount != null) {
+        if (Math.abs(amount - YEAR_AMOUNT) <= 15 || (amount >= 55 && amount <= 90)) {
+            return YEAR_DAYS;
+        }
         // ~$10 → month; ~$3 → week (check month first so $10 is not treated as week)
         if (Math.abs(amount - MONTH_AMOUNT) <= 2 || (amount >= 8 && amount <= 15)) {
             return MONTH_DAYS;
@@ -114,7 +186,7 @@ export function resolveAccessDays(payload, eventType = '') {
         return MONTH_DAYS;
     }
 
-    // One-time coffee / extra without clear amount → week
+    // One-time extra without clear amount → week
     return WEEK_DAYS;
 }
 
@@ -162,7 +234,7 @@ export async function handleBmcWebhook(eventType, payload) {
         const user = await grantBmcAccessByEmail(email, { membershipId, days });
         return {
             ok: true,
-            action: days === MONTH_DAYS ? 'grant_30_days' : 'grant_7_days',
+            action: grantActionName(days),
             days,
             amount,
             user: user?.email || null,

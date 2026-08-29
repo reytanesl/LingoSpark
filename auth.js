@@ -138,7 +138,7 @@ export async function requireWritingAccess(req, res, next) {
         /* ignore expiry cleanup failures */
     }
     if (!hasWritingAccess(req.user)) {
-        return res.status(403).json({ error: 'Writing Suite access required. Use Buy Access or get admin approval.' });
+        return res.status(403).json({ error: 'Writing Suite access required. Buy a plan or get teacher approval.' });
     }
     return next();
 }
