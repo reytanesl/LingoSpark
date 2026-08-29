@@ -8,6 +8,8 @@
     let socket = null;
     let hostState = null;
     let playerState = null;
+    let answerPending = false;
+    let activeQuestionId = 0;
     let confettiAnim = null;
     let hostLobbyPoll = null;
 
@@ -448,6 +450,8 @@
         });
 
         s.on('live:game-started', () => {
+            activeQuestionId = 0;
+            answerPending = false;
             setLiveGameActive(true);
             LiveAudio.startGame();
             showLiveError('');
@@ -460,10 +464,9 @@
         });
 
         s.on('live:answer-result', (result) => {
+            answerPending = false;
             playerState.progress = result.progress;
             updateOwnProgress(result.progress, TERMS_TO_WIN, result.reset);
-            const input = $('live-play-answer');
-            const btn = $('live-play-submit');
             const status = $('live-play-status');
             const resultEl = $('live-play-result');
 
@@ -477,13 +480,7 @@
                 if (resultEl) resultEl.innerHTML = '';
             }
 
-            if (!result.won) {
-                setAnswerInputsEnabled(true);
-                if (input) {
-                    input.value = '';
-                    input.focus();
-                }
-            } else {
+            if (result.won) {
                 setAnswerInputsEnabled(false);
                 if (status) status.textContent = 'You won!';
             }
@@ -510,7 +507,11 @@
             setAnswerInputsEnabled(false);
         });
 
-        s.on('live:error', (data) => showLiveError(data.error || 'Something went wrong.'));
+        s.on('live:error', (data) => {
+            answerPending = false;
+            setAnswerInputsEnabled(true);
+            showLiveError(data.error || 'Something went wrong.');
+        });
     }
 
     function setAnswerInputsEnabled(enabled) {
@@ -578,6 +579,9 @@
 
     function showPlayerQuestion(q) {
         if (!q) return;
+        if (q.questionId != null && q.questionId < activeQuestionId) return;
+        if (q.questionId != null) activeQuestionId = q.questionId;
+        answerPending = false;
         setLiveGameActive(true);
         const def = $('live-play-definition');
         const input = $('live-play-answer');
@@ -599,7 +603,7 @@
     }
 
     function submitPlayerAnswer(choiceText) {
-        if (!playerState) return;
+        if (!playerState || answerPending) return;
         const input = $('live-play-answer');
         const text = (choiceText != null ? String(choiceText) : (input?.value || '')).trim();
         if (!text) {
@@ -607,6 +611,7 @@
             return;
         }
         showLiveError('');
+        answerPending = true;
         setAnswerInputsEnabled(false);
         ensureSocket().emit('live:submit-answer', { text });
     }

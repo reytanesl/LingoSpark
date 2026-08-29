@@ -172,8 +172,10 @@ export function termSynonymParts(text) {
 export function matchesTermAnswer(input, expectedTerm) {
     const guess = String(input || '').trim().toLowerCase();
     if (!guess) return false;
+    const expected = String(expectedTerm || '').trim().toLowerCase();
+    if (guess === expected) return true;
     const parts = termSynonymParts(expectedTerm);
-    if (!parts.length) return guess === String(expectedTerm || '').trim().toLowerCase();
+    if (!parts.length) return false;
     return parts.includes(guess);
 }
 

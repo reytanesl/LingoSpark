@@ -111,22 +111,48 @@ function resolveQuestionInputMode(room) {
     return Math.random() < 0.5 ? 'choice' : 'typed';
 }
 
-function playerQuestionPayload(player, room) {
+function clearPlayerQuestionState(player) {
+    player.questionForTermIndex = -1;
+    player.questionInputMode = null;
+    player.questionChoices = null;
+    player.questionId = 0;
+    player.answerLocked = false;
+}
+
+function ensurePlayerQuestionState(player, room) {
     const entry = player.terms[player.termIndex];
     if (!entry || !room) return null;
-    const inputMode = resolveQuestionInputMode(room);
+
+    if (player.questionForTermIndex !== player.termIndex) {
+        player.questionForTermIndex = player.termIndex;
+        player.questionInputMode = resolveQuestionInputMode(room);
+        player.questionChoices = null;
+        player.questionId = (player.questionId || 0) + 1;
+    }
+
+    if (player.questionInputMode === 'choice' && !player.questionChoices) {
+        const termPool = room.masterDeck.map((d) => d.term);
+        player.questionChoices = buildChoices(entry.term, termPool, room.level || 'intermediate');
+    }
+
+    return entry;
+}
+
+function playerQuestionPayload(player, room) {
+    const entry = ensurePlayerQuestionState(player, room);
+    if (!entry) return null;
     const payload = {
         progress: player.termIndex,
         termsToWin: LIVE_TERMS_TO_WIN,
         termIndex: player.termIndex,
+        questionId: player.questionId,
         definition: entry.definition,
-        inputMode,
+        inputMode: player.questionInputMode,
         answerMode: room.answerMode,
         caseSensitive: false,
     };
-    if (inputMode === 'choice') {
-        const termPool = room.masterDeck.map((d) => d.term);
-        payload.choices = buildChoices(entry.term, termPool, room.level || 'intermediate');
+    if (player.questionInputMode === 'choice') {
+        payload.choices = player.questionChoices;
     }
     return payload;
 }
@@ -162,14 +188,13 @@ function emitPlayerSession(socket, room, player) {
         progress: progressSnapshot(room),
         phase: room.phase,
     };
+    let question = null;
     if (room.phase === 'playing') {
-        payload.question = playerQuestionPayload(player, room);
+        question = playerQuestionPayload(player, room);
+        payload.question = question;
     }
     socket.emit('live:player-joined', payload);
-    if (room.phase === 'playing') {
-        const q = playerQuestionPayload(player, room);
-        if (q) socket.emit('live:your-question', q);
-    }
+    if (question) socket.emit('live:your-question', question);
 }
 
 async function deliverQuestionsToAllPlayers(io, room) {
@@ -308,6 +333,7 @@ function assignPlayerTerms(player, masterDeck) {
     player.terms = shuffleDeck(masterDeck, LIVE_TERMS_TO_WIN);
     player.termIndex = 0;
     player.finished = false;
+    clearPlayerQuestionState(player);
 }
 
 function reshufflePlayerTerms(player, masterDeck) {
@@ -336,6 +362,7 @@ function submitAnswer(room, playerId, rawText) {
     const player = room.players.get(playerId);
     if (!player) throw new Error('Player not found.');
     if (player.finished) throw new Error('You have already finished.');
+    if (player.answerLocked) throw new Error('Please wait for the next question.');
 
     const entry = player.terms[player.termIndex];
     if (!entry) throw new Error('No active question.');
@@ -343,43 +370,48 @@ function submitAnswer(room, playerId, rawText) {
     const answerText = sanitizeAnswerText(rawText);
     if (!answerText) throw new Error('Type an answer first.');
 
-    const correct = matchesTermAnswer(answerText, entry.term);
+    player.answerLocked = true;
+    try {
+        const correct = matchesTermAnswer(answerText, entry.term);
 
-    if (correct) {
-        player.termIndex += 1;
-        if (player.termIndex >= LIVE_TERMS_TO_WIN) {
-            finishGame(room, player);
+        if (correct) {
+            player.termIndex += 1;
+            if (player.termIndex >= LIVE_TERMS_TO_WIN) {
+                finishGame(room, player);
+                return {
+                    correct: true,
+                    reset: false,
+                    progress: LIVE_TERMS_TO_WIN,
+                    won: true,
+                    correctTerm: entry.term,
+                    answerText,
+                };
+            }
             return {
                 correct: true,
                 reset: false,
-                progress: LIVE_TERMS_TO_WIN,
-                won: true,
+                progress: player.termIndex,
+                won: false,
                 correctTerm: entry.term,
                 answerText,
+                nextQuestion: playerQuestionPayload(player, room),
             };
         }
+
+        player.termIndex = 0;
+        reshufflePlayerTerms(player, room.masterDeck);
         return {
-            correct: true,
-            reset: false,
-            progress: player.termIndex,
+            correct: false,
+            reset: true,
+            progress: 0,
             won: false,
             correctTerm: entry.term,
             answerText,
             nextQuestion: playerQuestionPayload(player, room),
         };
+    } finally {
+        player.answerLocked = false;
     }
-
-    player.termIndex = 0;
-    reshufflePlayerTerms(player, room.masterDeck);
-    return {
-        correct: false,
-        reset: true,
-        progress: 0,
-        won: false,
-        correctTerm: entry.term,
-        answerText,
-        nextQuestion: playerQuestionPayload(player, room),
-    };
 }
 
 function endGame(room) {
