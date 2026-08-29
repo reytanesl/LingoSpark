@@ -201,9 +201,9 @@
         }
         .live-muted { color: var(--text-muted); font-size: 0.95rem; }
         .live-room-code {
-            font-family: var(--font-primary); font-size: clamp(2.5rem, 10vw, 4rem);
-            letter-spacing: 0.35em; font-weight: 800; color: var(--royal-blue); text-align: center;
-            margin: 0.5rem 0 1rem;
+            font-family: var(--font-primary); font-size: clamp(1.75rem, 7vw, 2.5rem);
+            letter-spacing: 0.28em; font-weight: 800; color: var(--royal-blue); text-align: center;
+            margin: 0.35rem 0 0.75rem;
         }
         .live-timer-track { height: 10px; background: var(--border-light); border-radius: 999px; overflow: hidden; margin: 0.75rem 0; }
         .live-timer-bar { height: 100%; width: 100%; background: var(--royal-blue); transition: width 0.1s linear; }
@@ -225,15 +225,95 @@
         .live-leaderboard th, .live-leaderboard td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border-light); }
         .live-host-grid { display: grid; gap: 1.25rem; }
         @media (min-width: 768px) { .live-host-grid { grid-template-columns: 1fr 1fr; } }
-        .live-player-progress { margin-bottom: 0.85rem; }
-        .live-player-progress-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; font-size: 0.95rem; }
-        .live-player-progress-head strong { color: var(--royal-blue); }
-        .live-progress-track { height: 12px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
+        .live-host-grid .live-progress-track { height: 28px; }
+        .live-player-progress { margin-bottom: 1rem; }
+        .live-player-progress-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; font-size: 1.05rem; }
+        .live-player-progress-head strong { color: var(--royal-blue); font-size: 1.08rem; }
+        .live-progress-track { height: 24px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
         .live-progress-fill { height: 100%; background: linear-gradient(90deg, var(--royal-blue), #3d7be8); transition: width 0.35s ease; border-radius: 999px; }
         .live-progress-fill.winner { background: linear-gradient(90deg, #d4a017, #f0c040); }
         .live-progress-fill.reset-flash { background: var(--pillarbox-red); transition: none; }
-        .live-own-progress { margin: 0.75rem 0 1rem; }
-        .live-own-progress-label { display: flex; justify-content: space-between; font-weight: 700; color: var(--royal-blue); margin-bottom: 0.35rem; }
+        .live-own-progress { margin: 0.5rem 0 0.75rem; }
+        .live-own-progress .live-progress-track { height: 32px; }
+        .live-own-progress-label { display: flex; justify-content: space-between; font-weight: 700; color: var(--royal-blue); margin-bottom: 0.4rem; font-size: 1.1rem; }
+        body.live-player-mode {
+            overflow: hidden;
+            height: 100dvh;
+        }
+        body.live-player-mode header,
+        body.live-player-mode .main-logo-container,
+        body.live-player-mode .auth-bar,
+        body.live-player-mode .about-panel,
+        body.live-player-mode .site-copyright,
+        body.live-player-mode #bmc-wbtn,
+        body.live-player-mode .bmc-btn {
+            display: none !important;
+        }
+        body.live-player-mode .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            min-height: 100dvh;
+        }
+        body.live-player-mode #screen-live-join,
+        body.live-player-mode #screen-live-play {
+            margin: 0;
+            padding: 0.65rem 0.85rem 0.85rem;
+            border-radius: 0;
+            box-shadow: none;
+            min-height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            display: none;
+        }
+        body.live-player-mode #screen-live-join.active,
+        body.live-player-mode #screen-live-play.active {
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 900px) {
+            .live-desktop-only { display: block; }
+        }
+        @media (max-width: 899px) {
+            .live-desktop-only { display: none !important; }
+        }
+        body.live-player-mode #screen-live-join .top-bar,
+        body.live-player-mode #screen-live-play .top-bar {
+            display: none;
+        }
+        body.live-player-mode #screen-live-join .card,
+        body.live-player-mode #screen-live-play.engine-container {
+            padding: 0;
+            box-shadow: none;
+            background: transparent;
+        }
+        body.live-player-mode #screen-live-play .word-prompt {
+            font-size: clamp(1.15rem, 5.2vw, 1.45rem);
+            line-height: 1.35;
+            margin-bottom: 0.65rem;
+            min-height: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        body.live-player-mode #screen-live-play .game-input {
+            width: 100%;
+            max-width: none;
+            font-size: 1.15rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        body.live-player-mode #live-play-progress-board,
+        body.live-player-mode #live-play-champion,
+        body.live-player-mode #live-play-result {
+            display: none !important;
+        }
+        body.live-player-mode #live-play-status {
+            font-size: 0.9rem;
+            margin-bottom: 0.35rem !important;
+        }
         #live-confetti-canvas {
             position: fixed; inset: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 9999; display: none;
@@ -2028,25 +2108,27 @@
 
         <!-- LIVE GAME: JOIN -->
         <div id="screen-live-join" class="screen engine-container">
-            <div class="top-bar">
+            <div class="top-bar live-desktop-only">
                 <a href="#/live" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back</a>
                 <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-mobile-screen"></i> Join Game</h2>
                 <div style="width:80px;"></div>
             </div>
-            <div class="card" style="max-width:420px;margin:0 auto;">
+            <div class="live-mobile-join" style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px;margin:0 auto;width:100%;">
+                <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Game</h2>
                 <label for="live-join-code" style="font-weight:600;">Room code</label>
-                <input type="text" id="live-join-code" maxlength="4" autocomplete="off" style="width:100%;padding:0.65rem;margin:0.35rem 0 1rem;border:2px solid var(--border-light);border-radius:6px;text-transform:uppercase;letter-spacing:0.2em;font-size:1.4rem;text-align:center;">
+                <input type="text" id="live-join-code" maxlength="4" autocomplete="off" style="width:100%;padding:0.75rem;margin:0.35rem 0 0.85rem;border:2px solid var(--border-light);border-radius:8px;text-transform:uppercase;letter-spacing:0.25em;font-size:1.5rem;text-align:center;">
                 <label for="live-join-nickname" style="font-weight:600;">Nickname</label>
-                <input type="text" id="live-join-nickname" maxlength="20" autocomplete="nickname" style="width:100%;padding:0.65rem;margin:0.35rem 0 1rem;border:2px solid var(--border-light);border-radius:6px;">
-                <button type="button" id="live-join-btn" class="btn btn-blue" style="width:100%;">Join game</button>
+                <input type="text" id="live-join-nickname" maxlength="20" autocomplete="nickname" style="width:100%;padding:0.75rem;margin:0.35rem 0 1rem;border:2px solid var(--border-light);border-radius:8px;font-size:1.1rem;">
+                <button type="button" id="live-join-btn" class="btn btn-blue" style="width:100%;padding:0.85rem;font-size:1.1rem;">Join game</button>
             </div>
         </div>
 
         <!-- LIVE GAME: PLAY (student) -->
-        <div id="screen-live-play" class="screen engine-container">
-            <div class="top-bar">
+        <div id="screen-live-play" class="screen engine-container live-play-shell">
+            <div class="top-bar live-desktop-only">
                 <span class="live-muted">Playing as <strong id="live-play-nickname">Player</strong></span>
             </div>
+            <div class="live-play-body" style="flex:1;display:flex;flex-direction:column;min-height:0;">
             <div class="live-own-progress">
                 <div class="live-own-progress-label">
                     <span>Your progress</span>
@@ -2054,17 +2136,15 @@
                 </div>
                 <div class="live-progress-track"><div id="live-play-progress-bar" class="live-progress-fill" style="width:0%"></div></div>
             </div>
-            <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.5rem;"></div>
-            <div id="live-play-definition" class="word-prompt" style="min-height:4rem;">Connecting…</div>
-            <p class="live-muted" style="text-align:center;font-size:0.92rem;margin:0.5rem 0 0;">Type the matching word — not case-sensitive</p>
-            <input type="text" id="live-play-answer" class="game-input" placeholder="Type the matching word or phrase" autocomplete="off" maxlength="120" style="margin-top:1rem;">
-            <div class="btn-group" style="margin-top:0.75rem;">
-                <button type="button" id="live-play-submit" class="btn btn-blue" style="width:100%;">Submit answer</button>
-            </div>
-            <div id="live-play-result" style="margin-top:1rem;"></div>
+            <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
+            <div id="live-play-definition" class="word-prompt">Connecting…</div>
+            <input type="text" id="live-play-answer" class="game-input" placeholder="Type the word" autocomplete="off" maxlength="120" style="margin-top:0.5rem;">
+            <button type="button" id="live-play-submit" class="btn btn-blue" style="width:100%;margin-top:0.5rem;padding:0.85rem;font-size:1.1rem;">Submit</button>
+            <div id="live-play-result" style="margin-top:0.5rem;"></div>
             <div id="live-play-champion" class="live-champion-banner" hidden></div>
-            <h3 style="margin-top:1.5rem;color:var(--royal-blue);">All players</h3>
-            <div id="live-play-progress-board"></div>
+            <h3 style="margin-top:1rem;color:var(--royal-blue);" class="live-desktop-only">All players</h3>
+            <div id="live-play-progress-board" class="live-desktop-only"></div>
+            </div>
         </div>
 
     </div>
@@ -3152,6 +3232,7 @@
             }
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
+            document.body.classList.toggle('live-player-mode', screenId === 'live-join' || screenId === 'live-play');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
             const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction'];
             if (playScreens.includes(screenId) && !isLoggedIn()) startGuestLoginReminders();
@@ -3300,6 +3381,7 @@
             }
             return authState;
         }
+        window.refreshAuth = refreshAuth;
 
         async function trackVisit() {
             try {

@@ -239,6 +239,10 @@ function assignPlayerTerms(player, masterDeck) {
     player.finished = false;
 }
 
+function reshufflePlayerTerms(player, masterDeck) {
+    assignPlayerTerms(player, masterDeck);
+}
+
 function startGame(room) {
     if (room.phase === 'finished') throw new Error('Game has ended.');
     if (room.phase === 'playing') throw new Error('Game is already in progress.');
@@ -295,6 +299,7 @@ function submitAnswer(room, playerId, rawText) {
     }
 
     player.termIndex = 0;
+    reshufflePlayerTerms(player, room.masterDeck);
     return {
         correct: false,
         reset: true,
@@ -312,7 +317,23 @@ function endGame(room) {
     touchRoom(room);
 }
 
+let liveIo = null;
+
+export function broadcastLobbyUpdate(code) {
+    const room = getRoom(code);
+    if (!room || !liveIo) return;
+    const progress = progressSnapshot(room);
+    const snapshot = publicRoomSnapshot(room);
+    liveIo.to(`room:${room.code}`).emit('live:progress-update', progress);
+    liveIo.to(`room:${room.code}`).emit('live:room-state', snapshot);
+    if (room.hostSocketId) {
+        liveIo.to(room.hostSocketId).emit('live:progress-update', progress);
+        liveIo.to(room.hostSocketId).emit('live:room-state', snapshot);
+    }
+}
+
 export function initLiveGame(io, { onGameEnd } = {}) {
+    liveIo = io;
     setInterval(() => {
         const now = Date.now();
         for (const [code, room] of rooms) {
@@ -370,9 +391,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             socket.emit('live:player-joined', payload);
 
-            if (room.hostSocketId) {
-                io.to(room.hostSocketId).emit('live:progress-update', progressSnapshot(room));
-            }
+            broadcastLobbyUpdate(room.code);
         });
 
         socket.on('live:start-game', () => {

@@ -8,8 +8,62 @@
     let socket = null;
     let hostState = null;
     let playerState = null;
-    let bgm = null;
     let confettiAnim = null;
+    let hostLobbyPoll = null;
+
+    async function ensureAuthLoaded() {
+        if (window.authState?.user) return true;
+        if (typeof window.refreshAuth === 'function') {
+            await window.refreshAuth();
+            return Boolean(window.authState?.user);
+        }
+        try {
+            const res = await fetch('/api/auth/me', { credentials: 'include' });
+            const data = await res.json();
+            window.authState = data;
+            return Boolean(data.user);
+        } catch {
+            return false;
+        }
+    }
+
+    function bindSocketReconnect(role) {
+        const s = ensureSocket();
+        if (s._liveReconnectHandler) s.off('connect', s._liveReconnectHandler);
+        s._liveReconnectHandler = () => {
+            if (role === 'host' && hostState) {
+                s.emit('live:host-join', { code: hostState.code, hostToken: hostState.hostToken });
+            }
+            if (role === 'player' && playerState) {
+                s.emit('live:player-join', {
+                    code: playerState.code,
+                    playerId: playerState.playerId,
+                    playerToken: sessionStorage.getItem('ls_live_player_token'),
+                });
+            }
+        };
+        s.on('connect', s._liveReconnectHandler);
+    }
+
+    function startHostLobbyPoll(code) {
+        stopHostLobbyPoll();
+        if (!code) return;
+        hostLobbyPoll = setInterval(async () => {
+            if (hostState?.phase === 'playing') return;
+            try {
+                const res = await fetch(`/api/live/room/${encodeURIComponent(code)}`);
+                if (!res.ok) return;
+                const snap = await res.json();
+                renderProgressBoard($('live-host-progress-board'), snap.players || []);
+                updateHostStartButton(snap);
+            } catch { /* ignore */ }
+        }, 2000);
+    }
+
+    function stopHostLobbyPoll() {
+        if (hostLobbyPoll) clearInterval(hostLobbyPoll);
+        hostLobbyPoll = null;
+    }
 
     function $(id) {
         return document.getElementById(id);
@@ -47,13 +101,13 @@
         }
     }
 
-    // --- Upbeat looping BGM (Web Audio API) ---
+    // --- Playful 20-second jingle loop (Web Audio API) ---
     const LiveBgm = {
         ctx: null,
         master: null,
-        timer: null,
-        step: 0,
-        bpm: 138,
+        loopTimer: null,
+        LOOP_SEC: 20,
+        bpm: 120,
 
         start() {
             if (this.ctx) return;
@@ -61,20 +115,17 @@
                 const Ctx = window.AudioContext || window.webkitAudioContext;
                 this.ctx = new Ctx();
                 this.master = this.ctx.createGain();
-                this.master.gain.value = 0.22;
+                this.master.gain.value = 0.24;
                 this.master.connect(this.ctx.destination);
-                this.step = 0;
-                const beatMs = (60 / this.bpm) * 1000;
-                this.timer = setInterval(() => this.tick(), beatMs / 2);
+                this.playLoopSegment();
+                this.loopTimer = setInterval(() => this.playLoopSegment(), this.LOOP_SEC * 1000);
                 if (this.ctx.state === 'suspended') this.ctx.resume();
-            } catch {
-                /* audio blocked */
-            }
+            } catch { /* audio blocked */ }
         },
 
         stop() {
-            if (this.timer) clearInterval(this.timer);
-            this.timer = null;
+            if (this.loopTimer) clearInterval(this.loopTimer);
+            this.loopTimer = null;
             if (this.ctx) {
                 try { this.ctx.close(); } catch { /* ignore */ }
             }
@@ -82,54 +133,65 @@
             this.master = null;
         },
 
-        tick() {
+        playLoopSegment() {
             if (!this.ctx || !this.master) return;
-            const t = this.ctx.currentTime + 0.02;
-            const beat = this.step % 8;
-            this.step++;
-
-            if (beat % 2 === 0) this.kick(t);
-            if (beat % 4 === 2) this.snare(t);
-            if (beat % 2 === 1) this.hat(t);
-
-            const bassNotes = [110, 110, 146.83, 110, 130.81, 110, 164.81, 146.83];
-            this.bass(t, bassNotes[beat % 8]);
-
-            const arpNotes = [440, 554.37, 659.25, 554.37, 493.88, 587.33, 659.25, 739.99];
-            if (beat % 2 === 0) this.arp(t, arpNotes[beat % 8]);
+            const t0 = this.ctx.currentTime + 0.06;
+            const beat = 60 / this.bpm;
+            const melody = [
+                [0, 784], [0.5, 988], [1, 1175], [1.5, 988],
+                [2, 784], [2.5, 659], [3, 784], [3.5, 988],
+                [4, 1047], [4.5, 988], [5, 784], [5.5, 659],
+                [6, 587], [6.5, 659], [7, 784], [7.5, 988],
+                [8, 1175], [9, 1047], [10, 988], [11, 784],
+                [12, 659], [13, 784], [14, 988], [15, 1047],
+                [16, 1175], [17, 1047], [18, 988], [19, 784],
+                [19.5, 988], [19.75, 1175],
+            ];
+            for (const [b, freq] of melody) this.jingle(t0 + b * beat, freq);
+            for (let b = 0; b < 20; b++) {
+                if (b % 2 === 0) this.softBass(t0 + b * beat, [98, 110, 123, 98][Math.floor(b / 2) % 4]);
+                if (b % 1 === 0.5) this.shaker(t0 + b * beat);
+            }
+            for (let b = 0; b < 40; b++) {
+                if (b % 4 === 2) this.shaker(t0 + (b * beat) / 2);
+            }
         },
 
-        kick(time) {
+        jingle(time, freq) {
+            const o1 = this.ctx.createOscillator();
+            const o2 = this.ctx.createOscillator();
+            o1.type = 'sine';
+            o2.type = 'triangle';
+            o1.frequency.value = freq;
+            o2.frequency.value = freq * 2.01;
+            const g = this.ctx.createGain();
+            g.gain.setValueAtTime(0.0001, time);
+            g.gain.exponentialRampToValueAtTime(0.2, time + 0.015);
+            g.gain.exponentialRampToValueAtTime(0.001, time + 0.42);
+            o1.connect(g);
+            o2.connect(g);
+            g.connect(this.master);
+            o1.start(time);
+            o2.start(time);
+            o1.stop(time + 0.45);
+            o2.stop(time + 0.45);
+        },
+
+        softBass(time, freq) {
             const o = this.ctx.createOscillator();
             const g = this.ctx.createGain();
-            o.type = 'sine';
-            o.frequency.setValueAtTime(150, time);
-            o.frequency.exponentialRampToValueAtTime(40, time + 0.12);
-            g.gain.setValueAtTime(0.9, time);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+            o.type = 'triangle';
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0.22, time);
+            g.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
             o.connect(g);
             g.connect(this.master);
             o.start(time);
-            o.stop(time + 0.15);
+            o.stop(time + 0.3);
         },
 
-        snare(time) {
-            const len = Math.floor(this.ctx.sampleRate * 0.08);
-            const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
-            const data = buf.getChannelData(0);
-            for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
-            const src = this.ctx.createBufferSource();
-            src.buffer = buf;
-            const g = this.ctx.createGain();
-            g.gain.setValueAtTime(0.35, time);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-            src.connect(g);
-            g.connect(this.master);
-            src.start(time);
-        },
-
-        hat(time) {
-            const len = Math.floor(this.ctx.sampleRate * 0.03);
+        shaker(time) {
+            const len = Math.floor(this.ctx.sampleRate * 0.04);
             const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
             const data = buf.getChannelData(0);
             for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
@@ -137,40 +199,14 @@
             src.buffer = buf;
             const hp = this.ctx.createBiquadFilter();
             hp.type = 'highpass';
-            hp.frequency.value = 6000;
+            hp.frequency.value = 5000;
             const g = this.ctx.createGain();
-            g.gain.setValueAtTime(0.12, time);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+            g.gain.setValueAtTime(0.08, time);
+            g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
             src.connect(hp);
             hp.connect(g);
             g.connect(this.master);
             src.start(time);
-        },
-
-        bass(time, freq) {
-            const o = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            o.type = 'triangle';
-            o.frequency.value = freq;
-            g.gain.setValueAtTime(0.28, time);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
-            o.connect(g);
-            g.connect(this.master);
-            o.start(time);
-            o.stop(time + 0.24);
-        },
-
-        arp(time, freq) {
-            const o = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            o.type = 'square';
-            o.frequency.value = freq;
-            g.gain.setValueAtTime(0.06, time);
-            g.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-            o.connect(g);
-            g.connect(this.master);
-            o.start(time);
-            o.stop(time + 0.12);
         },
     };
 
@@ -316,27 +352,43 @@
 
     function bindHostSocket() {
         const s = ensureSocket();
-        ['live:host-joined', 'live:progress-update', 'live:game-started', 'live:game-finished', 'live:error'].forEach((ev) => s.off(ev));
+        bindSocketReconnect('host');
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
-            renderProgressBoard($('live-host-progress-board'), data.snapshot?.players || []);
+            hostState.phase = data.snapshot?.phase || 'lobby';
+            renderProgressBoard($('live-host-progress-board'), data.snapshot?.players || data.progress?.players || []);
             updateHostStartButton(data.snapshot);
-            if (data.snapshot?.phase === 'playing') LiveBgm.start();
+            if (data.snapshot?.phase === 'playing') {
+                stopHostLobbyPoll();
+                LiveBgm.start();
+            } else {
+                startHostLobbyPoll(hostState?.code);
+            }
+        });
+
+        s.on('live:room-state', (snap) => {
+            renderProgressBoard($('live-host-progress-board'), snap.players || []);
+            updateHostStartButton(snap);
         });
 
         s.on('live:progress-update', (data) => {
             renderProgressBoard($('live-host-progress-board'), data.players || []);
-            updateHostStartButton({ ...data, playerCount: data.players?.length });
+            updateHostStartButton({ ...data, playerCount: data.players?.length, phase: data.phase || hostState?.phase });
         });
 
         s.on('live:game-started', (data) => {
+            hostState.phase = 'playing';
+            stopHostLobbyPoll();
             LiveBgm.start();
             renderProgressBoard($('live-host-progress-board'), data.progress?.players || []);
             updateHostStartButton({ phase: 'playing', players: data.progress?.players });
         });
 
         s.on('live:game-finished', (data) => {
+            hostState.phase = 'finished';
+            stopHostLobbyPoll();
             LiveBgm.stop();
             $('live-host-finished').hidden = false;
             if (data.winnerNickname) {
@@ -352,6 +404,7 @@
 
     function bindPlayerSocket() {
         const s = ensureSocket();
+        bindSocketReconnect('player');
         ['live:player-joined', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:progress-update', 'live:game-finished', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:player-joined', (data) => {
@@ -449,7 +502,7 @@
         const btn = $('live-play-submit');
         const status = $('live-play-status');
         if (def) def.textContent = q.definition;
-        if (status) status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN}`;
+        if (status) status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — not case-sensitive`;
         updateOwnProgress(q.progress || 0, q.termsToWin || TERMS_TO_WIN);
         if (input) {
             input.value = '';
@@ -501,6 +554,8 @@
 
     async function createHostRoom() {
         showLiveError('');
+        await ensureAuthLoaded();
+        updateHostAuthUI();
         if (!window.authState?.user) {
             showLiveError('Sign in to host a live game.');
             return;
@@ -528,7 +583,7 @@
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Could not create room.');
 
-            hostState = { code: data.code, hostToken: data.hostToken };
+            hostState = { code: data.code, hostToken: data.hostToken, phase: 'lobby' };
             sessionStorage.setItem('ls_live_host_code', data.code);
             sessionStorage.setItem('ls_live_host_token', data.hostToken);
 
@@ -549,6 +604,7 @@
 
             bindHostSocket();
             ensureSocket().emit('live:host-join', { code: hostState.code, hostToken: hostState.hostToken });
+            startHostLobbyPoll(hostState.code);
         } catch (err) {
             showLiveError(err.message);
         } finally {
@@ -560,7 +616,7 @@
         const code = sessionStorage.getItem('ls_live_host_code');
         const hostToken = sessionStorage.getItem('ls_live_host_token');
         if (!code || !hostToken) return;
-        hostState = { code, hostToken };
+        hostState = { code, hostToken, phase: 'lobby' };
         $('live-host-code').textContent = code;
         const joinUrl = `${location.origin}${location.pathname}#/live/join?code=${code}`;
         const linkEl = $('live-host-join-link');
@@ -574,6 +630,20 @@
         $('live-host-room-panel').hidden = false;
         bindHostSocket();
         ensureSocket().emit('live:host-join', { code, hostToken });
+        startHostLobbyPoll(code);
+    }
+
+    async function openHost() {
+        showLiveError('');
+        LiveBgm.stop();
+        await ensureAuthLoaded();
+        updateHostAuthUI();
+        loadWordSetsForHost();
+        $('live-host-setup-form').hidden = !window.authState?.user;
+        $('live-host-signin-gate').hidden = Boolean(window.authState?.user);
+        $('live-host-room-panel').hidden = true;
+        if (sessionStorage.getItem('ls_live_host_code')) resumeHostRoom();
+        if (typeof showScreen === 'function') showScreen('live-host');
     }
 
     async function joinRoom() {
@@ -616,17 +686,6 @@
         }
     }
 
-    function openHost() {
-        showLiveError('');
-        LiveBgm.stop();
-        updateHostAuthUI();
-        loadWordSetsForHost();
-        $('live-host-setup-form').hidden = !window.authState?.user;
-        $('live-host-room-panel').hidden = true;
-        if (sessionStorage.getItem('ls_live_host_code')) resumeHostRoom();
-        if (typeof showScreen === 'function') showScreen('live-host');
-    }
-
     function openJoin() {
         showLiveError('');
         const prefill = getQueryParam('code');
@@ -643,7 +702,12 @@
             if (typeof showScreen === 'function') showScreen('live-join');
             return;
         }
-        playerState = { playerId, playerToken, code, progress: 0 };
+        playerState = {
+            playerId,
+            playerToken,
+            code,
+            progress: 0,
+        };
         $('live-play-nickname').textContent = sessionStorage.getItem('ls_live_nickname') || 'Player';
         $('live-play-champion').hidden = true;
         bindPlayerSocket();
