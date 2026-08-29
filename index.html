@@ -387,6 +387,9 @@
         body.live-game-active .live-type-or-label {
             display: block;
         }
+        #live-play-type-section[hidden] {
+            display: none !important;
+        }
         .live-player-error {
             background: rgba(200, 16, 46, 0.1);
             color: var(--pillarbox-red);
@@ -2155,6 +2158,12 @@
                     <label for="live-host-glossary" style="font-weight:600;">Glossary (term = definition)</label>
                     <textarea id="live-host-glossary" rows="6" style="width:100%;padding:0.5rem;margin-top:0.35rem;border:2px solid var(--border-light);border-radius:6px;" placeholder="apple = A round fruit&#10;house = A building where people live"></textarea>
                 </div>
+                <div style="margin-top:0.85rem;">
+                    <span style="font-weight:600;display:block;margin-bottom:0.4rem;">Answer mode</span>
+                    <label style="display:block;margin:0.3rem 0;"><input type="radio" name="live-answer-mode" value="recognise"> <strong>Recognise</strong> — choose the term</label>
+                    <label style="display:block;margin:0.3rem 0;"><input type="radio" name="live-answer-mode" value="realise"> <strong>Realise</strong> — type the term</label>
+                    <label style="display:block;margin:0.3rem 0;"><input type="radio" name="live-answer-mode" value="randomise" checked> <strong>Randomise</strong> — one or the other each question</label>
+                </div>
                 <div class="live-rules-note">
                     <strong>12 terms</strong> per player · <strong>min. 2 players</strong> · answers are <strong>not case-sensitive</strong> · one mistake = <strong>back to the start</strong>
                 </div>
@@ -2169,6 +2178,7 @@
                         <p style="text-align:center;"><img id="live-host-qr" alt="Join QR code" width="180" height="180" hidden style="margin:0 auto;display:block;border-radius:8px;"></p>
                         <h3 style="margin-top:1rem;">Players</h3>
                         <p id="live-host-player-count" class="live-muted">0 players joined (minimum 2 to start)</p>
+                        <p id="live-host-answer-mode" class="live-muted" hidden></p>
                     </div>
                     <div class="card" id="live-host-game-panel">
                         <h2 style="margin-top:0;">Live race</h2>
@@ -2226,9 +2236,11 @@
             <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
             <div id="live-play-definition" class="word-prompt">Connecting…</div>
             <div id="live-play-choices" hidden></div>
-            <p class="live-type-or-label">Or type the word</p>
+            <div id="live-play-type-section">
+            <p class="live-type-or-label" id="live-play-type-hint">Type the word</p>
             <input type="text" id="live-play-answer" class="game-input" placeholder="Type the word" autocomplete="off" maxlength="120" style="margin-top:0.25rem;">
             <button type="button" id="live-play-submit" class="btn btn-blue" style="width:100%;margin-top:0.5rem;padding:0.85rem;font-size:1.1rem;">Submit</button>
+            </div>
             <div id="live-play-result" style="margin-top:0.5rem;"></div>
             <div id="live-play-champion" class="live-champion-banner" hidden></div>
             <h3 style="margin-top:1rem;color:var(--royal-blue);" class="live-desktop-only">All players</h3>

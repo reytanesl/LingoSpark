@@ -10,6 +10,7 @@ import {
 
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
+export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
 const MAX_PLAYERS = 40;
 const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -93,24 +94,41 @@ export function publicRoomSnapshot(room) {
         canStart: room.phase === 'lobby' && room.players.size >= LIVE_MIN_PLAYERS,
         winnerId: room.winnerId,
         winnerNickname: room.winnerNickname,
+        answerMode: room.answerMode,
         players: playerList(room),
     };
+}
+
+function normalizeAnswerMode(mode) {
+    const m = String(mode || 'randomise').toLowerCase();
+    return LIVE_ANSWER_MODES.includes(m) ? m : 'randomise';
+}
+
+function resolveQuestionInputMode(room) {
+    const mode = room.answerMode || 'randomise';
+    if (mode === 'recognise') return 'choice';
+    if (mode === 'realise') return 'typed';
+    return Math.random() < 0.5 ? 'choice' : 'typed';
 }
 
 function playerQuestionPayload(player, room) {
     const entry = player.terms[player.termIndex];
     if (!entry || !room) return null;
-    const termPool = room.masterDeck.map((d) => d.term);
-    const choices = buildChoices(entry.term, termPool, room.level || 'intermediate');
-    return {
+    const inputMode = resolveQuestionInputMode(room);
+    const payload = {
         progress: player.termIndex,
         termsToWin: LIVE_TERMS_TO_WIN,
         termIndex: player.termIndex,
         definition: entry.definition,
-        choices,
-        inputMode: 'typed_or_choice',
+        inputMode,
+        answerMode: room.answerMode,
         caseSensitive: false,
     };
+    if (inputMode === 'choice') {
+        const termPool = room.masterDeck.map((d) => d.term);
+        payload.choices = buildChoices(entry.term, termPool, room.level || 'intermediate');
+    }
+    return payload;
 }
 
 function hostQuestionPayload(player, room) {
@@ -215,7 +233,7 @@ export function buildDeckFromRequest(body) {
     throw new Error('Invalid word source.');
 }
 
-export function createRoom(hostUserId, { deck, level }) {
+export function createRoom(hostUserId, { deck, level, answerMode }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
@@ -227,6 +245,7 @@ export function createRoom(hostUserId, { deck, level }) {
         hostToken: randomToken(),
         phase: 'lobby',
         level: level || 'intermediate',
+        answerMode: normalizeAnswerMode(answerMode),
         masterDeck: shuffleDeck(deck, deck.length),
         players: new Map(),
         winnerId: null,

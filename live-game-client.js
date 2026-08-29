@@ -517,11 +517,30 @@
         const input = $('live-play-answer');
         const btn = $('live-play-submit');
         const choices = $('live-play-choices');
-        if (input) input.disabled = !enabled;
-        if (btn) btn.disabled = !enabled;
-        if (choices) {
+        const typeSection = $('live-play-type-section');
+        if (input && !typeSection?.hidden) input.disabled = !enabled;
+        if (btn && !typeSection?.hidden) btn.disabled = !enabled;
+        if (choices && !choices.hidden) {
             choices.querySelectorAll('button').forEach((b) => { b.disabled = !enabled; });
         }
+    }
+
+    const ANSWER_MODE_LABELS = {
+        recognise: 'Recognise (choose)',
+        realise: 'Realise (type)',
+        randomise: 'Randomise',
+    };
+
+    function answerModeLabel(mode) {
+        return ANSWER_MODE_LABELS[mode] || ANSWER_MODE_LABELS.randomise;
+    }
+
+    function applyQuestionInputMode(inputMode) {
+        const choiceMode = inputMode === 'choice';
+        const typeSection = $('live-play-type-section');
+        const typeHint = $('live-play-type-hint');
+        if (typeSection) typeSection.hidden = choiceMode;
+        if (typeHint) typeHint.textContent = choiceMode ? '' : 'Type the word';
     }
 
     function renderChoiceButtons(choices) {
@@ -553,6 +572,8 @@
         if (status) status.textContent = '';
         $('live-play-result').innerHTML = '';
         renderChoiceButtons([]);
+        applyQuestionInputMode('typed');
+        if ($('live-play-type-section')) $('live-play-type-section').hidden = true;
     }
 
     function showPlayerQuestion(q) {
@@ -561,13 +582,19 @@
         const def = $('live-play-definition');
         const input = $('live-play-answer');
         const status = $('live-play-status');
+        const choiceMode = q.inputMode === 'choice';
         if (def) def.textContent = q.definition;
-        if (status) status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN}`;
+        if (status) {
+            const modeHint = choiceMode ? 'Tap the matching term' : 'Type the matching term';
+            status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — ${modeHint}`;
+        }
         updateOwnProgress(q.progress || 0, q.termsToWin || TERMS_TO_WIN);
         if (input) input.value = '';
-        renderChoiceButtons(q.choices || []);
+        applyQuestionInputMode(q.inputMode);
+        if (choiceMode) renderChoiceButtons(q.choices || []);
+        else renderChoiceButtons([]);
         setAnswerInputsEnabled(true);
-        if (input) input.focus();
+        if (!choiceMode && input) input.focus();
         $('live-play-result').innerHTML = '';
     }
 
@@ -576,7 +603,7 @@
         const input = $('live-play-answer');
         const text = (choiceText != null ? String(choiceText) : (input?.value || '')).trim();
         if (!text) {
-            showLiveError('Type or tap an answer first.');
+            showLiveError(choiceText != null ? 'Choose an answer first.' : 'Type an answer first.');
             return;
         }
         showLiveError('');
@@ -624,7 +651,8 @@
         }
         const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
         const level = $('live-host-level')?.value || 'intermediate';
-        const body = { source, level };
+        const answerMode = document.querySelector('input[name="live-answer-mode"]:checked')?.value || 'randomise';
+        const body = { source, level, answerMode };
         if (source === 'wordset') {
             const setId = $('live-host-wordset')?.value;
             if (!setId) { showLiveError('Choose a Word Set.'); return; }
@@ -645,11 +673,16 @@
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Could not create room.');
 
-            hostState = { code: data.code, hostToken: data.hostToken, phase: 'lobby' };
+            hostState = { code: data.code, hostToken: data.hostToken, phase: 'lobby', answerMode: data.answerMode || answerMode };
             sessionStorage.setItem('ls_live_host_code', data.code);
             sessionStorage.setItem('ls_live_host_token', data.hostToken);
 
             $('live-host-code').textContent = data.code;
+            const modeEl = $('live-host-answer-mode');
+            if (modeEl) {
+                modeEl.textContent = `Mode: ${answerModeLabel(hostState.answerMode)}`;
+                modeEl.hidden = false;
+            }
             const joinUrl = data.joinUrl || `${location.origin}${location.pathname}#/live/join?code=${data.code}`;
             const linkEl = $('live-host-join-link');
             if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }
@@ -687,8 +720,13 @@
                 return false;
             }
             const snap = await res.json();
-            hostState = { code, hostToken, phase: snap.phase || 'lobby' };
+            hostState = { code, hostToken, phase: snap.phase || 'lobby', answerMode: snap.answerMode || 'randomise' };
             $('live-host-code').textContent = code;
+            const modeEl = $('live-host-answer-mode');
+            if (modeEl) {
+                modeEl.textContent = `Mode: ${answerModeLabel(hostState.answerMode)}`;
+                modeEl.hidden = false;
+            }
             const joinUrl = `${location.origin}${location.pathname}#/live/join?code=${code}`;
             const linkEl = $('live-host-join-link');
             if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }

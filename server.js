@@ -494,7 +494,7 @@ async function start() {
     app.post('/api/live/create', requireLogin, async (req, res) => {
         try {
             let deckPayload;
-            const { source, setId, level, terms, glossary } = req.body || {};
+            const { source, setId, level, terms, glossary, answerMode } = req.body || {};
 
             if (source === 'wordset') {
                 if (!setId) return res.status(400).json({ error: 'setId required for word set source.' });
@@ -518,6 +518,7 @@ async function start() {
             const room = createRoom(req.user.id, {
                 deck: deckPayload.deck,
                 level: deckPayload.level,
+                answerMode,
             });
 
             res.json({
@@ -525,6 +526,7 @@ async function start() {
                 hostToken: room.hostToken,
                 termsToWin: 12,
                 minPlayers: 2,
+                answerMode: room.answerMode,
                 joinUrl: `${APP_BASE_URL}/#/live/join?code=${room.code}`,
             });
         } catch (err) {
