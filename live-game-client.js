@@ -16,7 +16,6 @@
     }
 
     async function ensureAuthLoaded() {
-        if (isHostSignedIn()) return true;
         if (typeof window.refreshAuth === 'function') {
             await window.refreshAuth();
             return isHostSignedIn();
@@ -29,6 +28,32 @@
         } catch {
             return false;
         }
+    }
+
+    function clearStoredHostRoom() {
+        sessionStorage.removeItem('ls_live_host_code');
+        sessionStorage.removeItem('ls_live_host_token');
+        hostState = null;
+        stopHostLobbyPoll();
+        LiveAudio.stopLobby();
+    }
+
+    function resetHostToSetup(message) {
+        clearStoredHostRoom();
+        $('live-host-room-panel').hidden = true;
+        $('live-host-finished').hidden = true;
+        if ($('live-host-champion')) $('live-host-champion').hidden = true;
+        updateHostAuthUI();
+        if (message) showLiveError(message);
+    }
+
+    function handleHostSocketError(msg) {
+        const text = String(msg || '');
+        if (/invalid host credentials|room not found|expired/i.test(text)) {
+            resetHostToSetup('Your previous room expired. Create a new room below.');
+            return;
+        }
+        showLiveError(text || 'Something went wrong.');
     }
 
     function bindSocketReconnect(role) {
@@ -395,7 +420,7 @@
             updateHostStartButton({ phase: 'finished' });
         });
 
-        s.on('live:error', (data) => showLiveError(data.error || 'Something went wrong.'));
+        s.on('live:error', (data) => handleHostSocketError(data.error));
     }
 
     function bindPlayerSocket() {
@@ -650,26 +675,41 @@
         }
     }
 
-    function resumeHostRoom() {
+    async function resumeHostRoomAsync() {
         const code = sessionStorage.getItem('ls_live_host_code');
         const hostToken = sessionStorage.getItem('ls_live_host_token');
-        if (!code || !hostToken) return;
-        hostState = { code, hostToken, phase: 'lobby' };
-        $('live-host-code').textContent = code;
-        const joinUrl = `${location.origin}${location.pathname}#/live/join?code=${code}`;
-        const linkEl = $('live-host-join-link');
-        if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }
-        const qr = $('live-host-qr');
-        if (qr) {
-            qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(joinUrl)}`;
-            qr.hidden = false;
+        if (!code || !hostToken) return false;
+
+        try {
+            const res = await fetch(`/api/live/room/${encodeURIComponent(code)}`);
+            if (!res.ok) {
+                clearStoredHostRoom();
+                return false;
+            }
+            const snap = await res.json();
+            hostState = { code, hostToken, phase: snap.phase || 'lobby' };
+            $('live-host-code').textContent = code;
+            const joinUrl = `${location.origin}${location.pathname}#/live/join?code=${code}`;
+            const linkEl = $('live-host-join-link');
+            if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }
+            const qr = $('live-host-qr');
+            if (qr) {
+                qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(joinUrl)}`;
+                qr.hidden = false;
+            }
+            $('live-host-signin-gate').hidden = true;
+            $('live-host-setup-form').hidden = true;
+            $('live-host-room-panel').hidden = false;
+            $('live-host-finished').hidden = snap.phase !== 'finished';
+            bindHostSocket();
+            emitHostJoin();
+            startHostLobbyPoll(code);
+            if (hostState.phase !== 'playing') LiveAudio.startLobby();
+            return true;
+        } catch {
+            clearStoredHostRoom();
+            return false;
         }
-        $('live-host-setup-form').hidden = true;
-        $('live-host-room-panel').hidden = false;
-        bindHostSocket();
-        emitHostJoin();
-        startHostLobbyPoll(code);
-        if (hostState.phase !== 'playing') LiveAudio.startLobby();
     }
 
     async function openHost() {
@@ -677,11 +717,24 @@
         LiveAudio.stopAll();
         if ($('live-host-signin-gate')) $('live-host-signin-gate').hidden = true;
         if ($('live-host-setup-form')) $('live-host-setup-form').hidden = true;
+        $('live-host-room-panel').hidden = true;
+
         await ensureAuthLoaded();
         updateHostAuthUI();
         loadWordSetsForHost();
-        $('live-host-room-panel').hidden = true;
-        if (sessionStorage.getItem('ls_live_host_code')) resumeHostRoom();
+
+        if (!isHostSignedIn()) {
+            clearStoredHostRoom();
+            if (typeof showScreen === 'function') showScreen('live-host');
+            return;
+        }
+
+        const resumed = await resumeHostRoomAsync();
+        if (!resumed) {
+            $('live-host-room-panel').hidden = true;
+            $('live-host-signin-gate').hidden = true;
+            $('live-host-setup-form').hidden = false;
+        }
         if (typeof showScreen === 'function') showScreen('live-host');
     }
 
