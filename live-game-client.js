@@ -84,7 +84,7 @@
                 const res = await fetch(`/api/live/room/${encodeURIComponent(code)}`);
                 if (!res.ok) return;
                 const snap = await res.json();
-                renderProgressBoard($('live-host-progress-board'), snap.players || []);
+                renderHostPlayerBoard(snap.players || []);
                 updateHostStartButton(snap);
             } catch { /* ignore */ }
         }, 2000);
@@ -290,6 +290,47 @@
         return Math.min(100, Math.round((progress / total) * 100));
     }
 
+    function renderHostLobbyBoard(container, players) {
+        if (!container) return;
+        if (!players || !players.length) {
+            container.innerHTML = '<p class="live-muted">No players yet.</p>';
+            return;
+        }
+        const sorted = [...players].sort((a, b) => a.nickname.localeCompare(b.nickname));
+        container.innerHTML = sorted.map((p) => {
+            const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
+            return `<div class="live-lobby-player-row" data-player-id="${esc(p.id)}">
+                <span class="live-lobby-player-name"><strong>${esc(p.nickname)}</strong>${offline}</span>
+                <button type="button" class="live-remove-player-btn btn btn-grey" data-remove-player="${esc(p.id)}">Remove</button>
+            </div>`;
+        }).join('');
+    }
+
+    function renderHostPlayerBoard(players, options = {}) {
+        const board = $('live-host-progress-board');
+        if (!board) return;
+        const inLobby = (hostState?.phase || 'lobby') === 'lobby' && !options.playing;
+        if (inLobby) renderHostLobbyBoard(board, players);
+        else renderProgressBoard(board, players, options);
+    }
+
+    function bindHostLobbyBoard() {
+        const board = $('live-host-progress-board');
+        if (!board || board._removeBound) return;
+        board._removeBound = true;
+        board.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-remove-player]');
+            if (!btn || hostState?.phase !== 'lobby') return;
+            const playerId = btn.getAttribute('data-remove-player');
+            if (playerId) hostRemovePlayer(playerId);
+        });
+    }
+
+    function hostRemovePlayer(playerId) {
+        if (!hostState || hostState.phase !== 'lobby') return;
+        emitWhenConnected('live:remove-player', { playerId });
+    }
+
     function renderProgressBar(player, { flashReset = false, isWinner = false } = {}) {
         const total = player.termsToWin || TERMS_TO_WIN;
         const pct = progressPct(player.progress || 0, total);
@@ -378,7 +419,7 @@
         s.on('live:host-joined', (data) => {
             showLiveError('');
             hostState.phase = data.snapshot?.phase || 'lobby';
-            renderProgressBoard($('live-host-progress-board'), data.snapshot?.players || data.progress?.players || []);
+            renderHostPlayerBoard(data.snapshot?.players || data.progress?.players || []);
             updateHostStartButton(data.snapshot);
             if (data.snapshot?.phase === 'playing') {
                 stopHostLobbyPoll();
@@ -391,12 +432,12 @@
         });
 
         s.on('live:room-state', (snap) => {
-            renderProgressBoard($('live-host-progress-board'), snap.players || []);
+            renderHostPlayerBoard(snap.players || []);
             updateHostStartButton(snap);
         });
 
         s.on('live:progress-update', (data) => {
-            renderProgressBoard($('live-host-progress-board'), data.players || []);
+            renderHostPlayerBoard(data.players || []);
             updateHostStartButton({ ...data, playerCount: data.players?.length, phase: data.phase || hostState?.phase });
         });
 
@@ -405,7 +446,7 @@
             stopHostLobbyPoll();
             LiveAudio.stopLobby();
             LiveAudio.startGame();
-            renderProgressBoard($('live-host-progress-board'), data.progress?.players || []);
+            renderHostPlayerBoard(data.progress?.players || [], { playing: true });
             updateHostStartButton({ phase: 'playing', players: data.progress?.players });
         });
 
@@ -428,7 +469,7 @@
     function bindPlayerSocket() {
         const s = ensureSocket();
         bindSocketReconnect('player');
-        ['live:player-joined', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:progress-update', 'live:game-finished', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:player-joined', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:progress-update', 'live:game-finished', 'live:player-removed', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:player-joined', (data) => {
             showLiveError('');
@@ -507,6 +548,19 @@
             const def = $('live-play-definition');
             if (def) def.textContent = 'Game over!';
             setAnswerInputsEnabled(false);
+        });
+
+        s.on('live:player-removed', (data) => {
+            sessionStorage.removeItem('ls_live_player_id');
+            sessionStorage.removeItem('ls_live_player_token');
+            sessionStorage.removeItem('ls_live_room_code');
+            playerState = null;
+            answerPending = false;
+            LiveAudio.stopGame();
+            LiveAudio.stopLobby();
+            setLiveGameActive(false);
+            if (typeof showScreen === 'function') showScreen('live-join');
+            showLiveError(data.message || 'You were removed from the lobby.');
         });
 
         s.on('live:error', (data) => {
@@ -877,6 +931,7 @@
         $('live-join-btn')?.addEventListener('click', joinRoom);
         $('live-host-start')?.addEventListener('click', hostStartGame);
         $('live-host-end')?.addEventListener('click', hostEnd);
+        bindHostLobbyBoard();
         $('live-play-submit')?.addEventListener('click', submitPlayerAnswer);
         $('live-play-answer')?.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); submitPlayerAnswer(); }

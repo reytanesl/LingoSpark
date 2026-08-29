@@ -328,6 +328,17 @@ export function rejoinPlayer(room, playerId, playerToken) {
     return player;
 }
 
+export function removePlayer(room, playerId) {
+    if (room.phase !== 'lobby') {
+        throw new Error('Players can only be removed before the game starts.');
+    }
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+    room.players.delete(playerId);
+    touchRoom(room);
+    return player;
+}
+
 function assignPlayerTerms(player, masterDeck) {
     player.terms = shuffleDeck(masterDeck, LIVE_TERMS_TO_WIN);
     player.termIndex = 0;
@@ -496,6 +507,31 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             attachPlayerSocket(socket, room, player);
             const q = playerQuestionPayload(player, room);
             if (q) socket.emit('live:your-question', q);
+        });
+
+        socket.on('live:remove-player', ({ playerId }) => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            try {
+                const removed = removePlayer(room, playerId);
+                if (removed.socketId) {
+                    io.to(removed.socketId).emit('live:player-removed', {
+                        message: 'The host removed you from the lobby.',
+                    });
+                    const playerSocket = io.sockets.sockets.get(removed.socketId);
+                    if (playerSocket) {
+                        playerSocket.leave(`room:${room.code}`);
+                        playerSocket.data.liveRole = null;
+                        playerSocket.data.playerId = null;
+                    }
+                }
+                broadcastLobbyUpdate(room.code);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
         });
 
         socket.on('live:start-game', async () => {

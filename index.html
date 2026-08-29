@@ -229,6 +229,15 @@
         .live-player-progress { margin-bottom: 1rem; }
         .live-player-progress-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; font-size: 1.05rem; }
         .live-player-progress-head strong { color: var(--royal-blue); font-size: 1.08rem; }
+        .live-lobby-player-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+            padding: 0.55rem 0; border-bottom: 1px solid var(--border-light);
+        }
+        .live-lobby-player-row:last-child { border-bottom: none; }
+        .live-lobby-player-name strong { color: var(--royal-blue); }
+        .live-remove-player-btn {
+            flex-shrink: 0; font-size: 0.78rem; padding: 0.28rem 0.65rem;
+        }
         .live-progress-track { height: 24px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
         .live-progress-fill { height: 100%; background: linear-gradient(90deg, var(--royal-blue), #3d7be8); transition: width 0.35s ease; border-radius: 999px; }
         .live-progress-fill.winner { background: linear-gradient(90deg, #d4a017, #f0c040); }
