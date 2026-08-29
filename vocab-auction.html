@@ -856,9 +856,6 @@
                 <label><input type="radio" name="level" value="advanced"> Advanced</label>
                 <label><input type="radio" name="level" value="custom"> Custom</label>
             </div>
-            <p class="hint-cost-note" style="text-align: left; margin-top: 0.65rem;">
-                Local banks of words, phrases and idioms — no dictionary lookup.
-            </p>
             <div id="custom-words-wrap">
                 <textarea id="custom-words" placeholder="Words from the built-in banks, or term = definition (one per line). Example: apple = A round fruit…"></textarea>
             </div>
@@ -868,7 +865,7 @@
             <label class="group-label"><i class="fa-solid fa-users"></i> Players</label>
             <div class="option-row">
                 <label><input type="radio" name="players" value="1" checked> 1 Player</label>
-                <label><input type="radio" name="players" value="2"> 2 Players (alternating turns)</label>
+                <label><input type="radio" name="players" value="2"> 2 Players</label>
             </div>
         </div>
 
@@ -878,9 +875,6 @@
                 <label><input type="radio" name="length" value="10" checked> 10 Rounds</label>
                 <label><input type="radio" name="length" value="survival"> Survival</label>
             </div>
-            <p id="length-duo-note" class="hint-cost-note hidden" style="text-align: left; margin-top: 0.6rem;">
-                Each player gets their own bankroll and plays the full number of rounds.
-            </p>
         </div>
 
         <div class="form-group">
@@ -1281,7 +1275,6 @@ const els = {
     },
     customWrap: $("#custom-words-wrap"),
     customWords: $("#custom-words"),
-    lengthDuoNote: $("#length-duo-note"),
     btnStart: $("#btn-start"),
     roundLoading: $("#round-loading"),
     roundContent: $("#round-content"),
@@ -1404,13 +1397,6 @@ document.querySelectorAll('input[name="level"]').forEach((radio) => {
         } else if (radio.checked) {
             els.customWrap.classList.remove("visible");
         }
-    });
-});
-
-document.querySelectorAll('input[name="players"]').forEach((radio) => {
-    radio.addEventListener("change", () => {
-        const duo = document.querySelector('input[name="players"]:checked').value === "2";
-        els.lengthDuoNote.classList.toggle("hidden", !duo);
     });
 });
 

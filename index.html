@@ -944,7 +944,7 @@
                 <div class="guide-item"><strong>Classic Flashcards</strong><p>Paste a glossary, flip each card, then mark Know / Don’t know. Unknown cards stay in the deck until you master them.</p></div>
                 <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
-                <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players taking alternating turns, each with their own bankroll. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
+                <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
 
                 <h3>Team Challenge</h3>
                 <div class="guide-item"><strong>Sentence Scramble</strong><p>Race to rebuild correct sentences from scrambled words. Great on a classroom projector.</p></div>
@@ -994,7 +994,7 @@
                 <a href="#/writing" class="hub-square writing">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-pen-nib"></i></span>
                     <span class="hub-title">Writing Suite</span>
-                    <span class="hub-sub">AI essay tools &amp; Primary English prep</span>
+                    <span class="hub-sub">Primary English practice and Essay tools</span>
                 </a>
             </div>
 
@@ -1043,7 +1043,7 @@
                 <div class="grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Humans claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word or phrase that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own list.</p><a href="#/auction" class="btn btn-outline">Play Now</a></div>
                 </div>
             </div>
@@ -1072,7 +1072,7 @@
                 <div class="category-header">
                     <i class="fa-solid fa-pen-nib cat-icon"></i><h2>Writing Suite</h2>
                 </div>
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills. <strong>Powered by Cursor AI.</strong></p>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills.</p>
 
                 <!-- Primary English -->
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
@@ -1096,7 +1096,7 @@
                 </div>
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
                     <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><span class="card-corner-badge">from 8 yrs</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Write a short exam-style email and get friendly AI examiner feedback.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
@@ -3378,7 +3378,7 @@
             const content = document.getElementById(`${prefix}-content`);
             const btn = document.getElementById(`${prefix}-btn`);
             if(isLoading) {
-                loader.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating live academic content via Cursor AI...`;
+                loader.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating live academic content`;
                 loader.style.display = 'block';
                 if(content) content.style.display = 'none';
                 if(btn) btn.disabled = true;
