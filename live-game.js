@@ -12,7 +12,37 @@ export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
 export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
 export const LIVE_GAME_FORMATS = ['race', 'captain-crew'];
-export const LIVE_TEAM_SIZES = [2, 3];
+export const LIVE_TEAM_ASSIGNMENT = ['random', 'pick'];
+export const LIVE_TEAM_MIN = 2;
+export const LIVE_TEAM_MAX = 4;
+export const LIVE_CAPTAIN_CREW_MIN_PLAYERS = 4;
+
+const BRITISH_TEAM_NAMES = [
+    'The Rowan Atkinsons',
+    'The Benedict Cumberbatches',
+    'The David Beckhams',
+    'The Kate Bushes',
+    'The Elton Johns',
+    'The Freddie Mercurys',
+    'The David Bowies',
+    'The Emma Watsons',
+    'The Daniel Radcliffes',
+    'The Tom Hollands',
+    'The Idris Elbas',
+    'The Helen Mirrens',
+    'The Judi Denchs',
+    'The Mick Jaggers',
+    'The Paul McCartneys',
+    'The Ed Sheerans',
+    'The Adeles',
+    'The Harry Styleses',
+    'The James Bonds',
+    'The Mr Beans',
+    'The Doctor Whos',
+    'The Sherlock Holmeses',
+    'The James Cordens',
+    'The Graham Nortons',
+];
 const MAX_PLAYERS = 40;
 const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -102,8 +132,113 @@ function raceEntities(room) {
 }
 
 function minPlayersForRoom(room) {
-    if (isCaptainCrew(room)) return (room.teamSize || 2) * 2;
+    if (isCaptainCrew(room)) return LIVE_CAPTAIN_CREW_MIN_PLAYERS;
     return LIVE_MIN_PLAYERS;
+}
+
+function normalizeTeamAssignment(mode) {
+    const m = String(mode || 'random').toLowerCase();
+    return LIVE_TEAM_ASSIGNMENT.includes(m) ? m : 'random';
+}
+
+function usedTeamNames(room) {
+    return new Set(Array.from(room.teams?.values() || []).map((t) => t.name));
+}
+
+function pickTeamName(room) {
+    const used = usedTeamNames(room);
+    const available = BRITISH_TEAM_NAMES.filter((n) => !used.has(n));
+    const pool = available.length ? available : BRITISH_TEAM_NAMES;
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function computeTeamSizes(playerCount) {
+    if (playerCount < LIVE_CAPTAIN_CREW_MIN_PLAYERS) {
+        throw new Error(`At least ${LIVE_CAPTAIN_CREW_MIN_PLAYERS} players are required for team mode.`);
+    }
+    for (let teamCount = Math.ceil(playerCount / LIVE_TEAM_MAX); teamCount <= Math.floor(playerCount / LIVE_TEAM_MIN); teamCount++) {
+        const base = Math.floor(playerCount / teamCount);
+        const extra = playerCount % teamCount;
+        const sizes = Array.from({ length: teamCount }, (_, i) => base + (i < extra ? 1 : 0));
+        if (sizes.every((s) => s >= LIVE_TEAM_MIN && s <= LIVE_TEAM_MAX)) {
+            return sizes;
+        }
+    }
+    throw new Error(`Could not form teams of ${LIVE_TEAM_MIN}–${LIVE_TEAM_MAX} players.`);
+}
+
+function createEmptyTeam(room, memberIds = []) {
+    const teamId = `team-${crypto.randomBytes(4).toString('hex')}`;
+    const team = {
+        id: teamId,
+        name: pickTeamName(room),
+        memberIds: [...memberIds],
+        termIndex: 0,
+        terms: [],
+        finished: false,
+        questionForTermIndex: -1,
+        questionChoices: null,
+        questionId: 0,
+        answerLocked: false,
+        crewVotes: new Map(),
+    };
+    room.teams.set(teamId, team);
+    for (const memberId of memberIds) {
+        const player = room.players.get(memberId);
+        if (player) player.teamId = teamId;
+    }
+    return team;
+}
+
+function lobbyTeamSnapshot(team, room) {
+    const members = team.memberIds
+        .map((id) => room.players.get(id))
+        .filter(Boolean);
+    return {
+        id: team.id,
+        name: team.name,
+        memberIds: [...team.memberIds],
+        memberNicknames: members.map((p) => p.nickname),
+        memberCount: team.memberIds.length,
+        maxMembers: LIVE_TEAM_MAX,
+        canJoin: team.memberIds.length < LIVE_TEAM_MAX,
+    };
+}
+
+function lobbyTeamsList(room) {
+    if (!room.teams) return [];
+    return Array.from(room.teams.values()).map((t) => lobbyTeamSnapshot(t, room));
+}
+
+function unassignedPlayerList(room) {
+    return Array.from(room.players.values())
+        .filter((p) => !p.teamId)
+        .map((p) => playerProgress(p));
+}
+
+function validateTeamsForStart(room) {
+    const teams = Array.from(room.teams?.values() || []);
+    if (teams.length < 2) {
+        return { ok: false, error: 'Need at least 2 teams before starting.' };
+    }
+    const assigned = new Set();
+    for (const team of teams) {
+        if (team.memberIds.length < LIVE_TEAM_MIN || team.memberIds.length > LIVE_TEAM_MAX) {
+            return { ok: false, error: `Each team needs ${LIVE_TEAM_MIN}–${LIVE_TEAM_MAX} players.` };
+        }
+        for (const id of team.memberIds) assigned.add(id);
+    }
+    if (assigned.size !== room.players.size) {
+        return { ok: false, error: 'Every player must join a team before starting.' };
+    }
+    return { ok: true };
+}
+
+function canStartRoom(room) {
+    if (room.phase !== 'lobby') return false;
+    if (!isCaptainCrew(room)) return room.players.size >= LIVE_MIN_PLAYERS;
+    if (room.teamAssignment === 'pick') return validateTeamsForStart(room).ok;
+    return room.players.size >= LIVE_CAPTAIN_CREW_MIN_PLAYERS;
 }
 
 function progressSnapshot(room) {
@@ -125,14 +260,17 @@ export function publicRoomSnapshot(room) {
         playerCount: room.players.size,
         termsToWin: LIVE_TERMS_TO_WIN,
         minPlayers,
-        canStart: room.phase === 'lobby' && room.players.size >= minPlayers,
+        canStart: canStartRoom(room),
         winnerId: room.winnerId,
         winnerNickname: room.winnerNickname,
         answerMode: room.answerMode,
         gameFormat: room.gameFormat || 'race',
-        teamSize: room.teamSize || 2,
+        teamAssignment: room.teamAssignment || 'random',
+        teamMin: LIVE_TEAM_MIN,
+        teamMax: LIVE_TEAM_MAX,
         players: playerList(room),
-        teams: teamList(room),
+        teams: room.phase === 'lobby' && isCaptainCrew(room) ? lobbyTeamsList(room) : teamList(room),
+        unassignedPlayers: room.phase === 'lobby' && isCaptainCrew(room) ? unassignedPlayerList(room) : [],
     };
 }
 
@@ -146,17 +284,11 @@ function normalizeGameFormat(format) {
     return LIVE_GAME_FORMATS.includes(f) ? f : 'race';
 }
 
-function normalizeTeamSize(size) {
-    const n = Number(size) || 2;
-    return LIVE_TEAM_SIZES.includes(n) ? n : 2;
-}
-
 function isCaptainCrew(room) {
     return room?.gameFormat === 'captain-crew';
 }
 
 function resolveQuestionInputMode(room) {
-    if (isCaptainCrew(room)) return 'choice';
     const mode = room.answerMode || 'randomise';
     if (mode === 'recognise') return 'choice';
     if (mode === 'realise') return 'typed';
@@ -172,6 +304,7 @@ function clearPlayerQuestionState(player) {
 
 function clearTeamQuestionState(team) {
     team.questionForTermIndex = -1;
+    team.questionInputMode = null;
     team.questionChoices = null;
     team.answerLocked = false;
     team.crewVotes = new Map();
@@ -246,12 +379,13 @@ function ensureTeamQuestionState(team, room) {
 
     if (team.questionForTermIndex !== team.termIndex) {
         team.questionForTermIndex = team.termIndex;
+        team.questionInputMode = resolveQuestionInputMode(room);
         team.questionChoices = null;
         team.questionId = (team.questionId || 0) + 1;
         team.crewVotes = new Map();
     }
 
-    if (!team.questionChoices) {
+    if (team.questionInputMode === 'choice' && !team.questionChoices) {
         const termPool = room.masterDeck.map((d) => d.term);
         team.questionChoices = buildChoices(entry.term, termPool, room.level || 'intermediate');
     }
@@ -269,8 +403,8 @@ function teamQuestionPayload(team, room, player) {
         termIndex: team.termIndex,
         questionId: team.questionId,
         definition: entry.definition,
-        inputMode: 'choice',
-        answerMode: 'recognise',
+        inputMode: team.questionInputMode,
+        answerMode: room.answerMode,
         gameFormat: 'captain-crew',
         caseSensitive: false,
         teamId: team.id,
@@ -278,8 +412,8 @@ function teamQuestionPayload(team, room, player) {
         captainId,
         captainNickname: room.players.get(captainId)?.nickname || '',
         isCaptain: player.id === captainId,
-        choices: team.questionChoices,
         crew: crewVotePayload(team, room, player.id),
+        ...(team.questionInputMode === 'choice' ? { choices: team.questionChoices } : {}),
     };
 }
 
@@ -378,6 +512,7 @@ function emitPlayerSession(socket, room, player) {
         gameFormat: room.gameFormat || 'race',
         teamId: player.teamId || null,
         teamName: team?.name || null,
+        teamAssignment: room.teamAssignment || 'random',
     };
     let question = null;
     if (room.phase === 'playing') {
@@ -450,12 +585,11 @@ export function buildDeckFromRequest(body) {
     throw new Error('Invalid word source.');
 }
 
-export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamSize }) {
+export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
     const normalizedFormat = normalizeGameFormat(gameFormat);
-    const normalizedTeamSize = normalizeTeamSize(teamSize);
     const code = generateCode();
     const room = {
         code,
@@ -464,9 +598,9 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         hostToken: randomToken(),
         phase: 'lobby',
         level: level || 'intermediate',
-        answerMode: normalizedFormat === 'captain-crew' ? 'recognise' : normalizeAnswerMode(answerMode),
+        answerMode: normalizeAnswerMode(answerMode),
         gameFormat: normalizedFormat,
-        teamSize: normalizedTeamSize,
+        teamAssignment: normalizedFormat === 'captain-crew' ? normalizeTeamAssignment(teamAssignment) : 'random',
         masterDeck: shuffleDeck(deck, deck.length),
         players: new Map(),
         teams: new Map(),
@@ -510,6 +644,7 @@ export function joinRoom(code, nickname, ip) {
         nickname: clean,
         socketId: null,
         playerToken: randomToken(),
+        teamId: null,
         termIndex: 0,
         terms: [],
         finished: false,
@@ -532,9 +667,57 @@ export function removePlayer(room, playerId) {
     }
     const player = room.players.get(playerId);
     if (!player) throw new Error('Player not found.');
+    if (player.teamId) {
+        leaveTeam(room, playerId, { skipBroadcast: true });
+    }
     room.players.delete(playerId);
     touchRoom(room);
     return player;
+}
+
+function leaveTeam(room, playerId, { skipBroadcast = false } = {}) {
+    const player = room.players.get(playerId);
+    if (!player?.teamId) return null;
+    const team = room.teams.get(player.teamId);
+    player.teamId = null;
+    if (team) {
+        team.memberIds = team.memberIds.filter((id) => id !== playerId);
+        if (!team.memberIds.length && room.phase === 'lobby') {
+            room.teams.delete(team.id);
+        }
+    }
+    touchRoom(room);
+    if (!skipBroadcast) broadcastLobbyUpdate(room.code);
+    return team;
+}
+
+function joinTeam(room, playerId, teamId) {
+    if (room.phase !== 'lobby') throw new Error('Teams can only be changed before the game starts.');
+    if (room.teamAssignment !== 'pick') throw new Error('This room uses random team assignment.');
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+    const team = room.teams.get(teamId);
+    if (!team) throw new Error('Team not found.');
+    if (team.memberIds.length >= LIVE_TEAM_MAX) throw new Error('That team is full.');
+    if (player.teamId === teamId) return team;
+    leaveTeam(room, playerId, { skipBroadcast: true });
+    team.memberIds.push(playerId);
+    player.teamId = teamId;
+    touchRoom(room);
+    broadcastLobbyUpdate(room.code);
+    return team;
+}
+
+function createPlayerTeam(room, playerId) {
+    if (room.phase !== 'lobby') throw new Error('Teams can only be changed before the game starts.');
+    if (room.teamAssignment !== 'pick') throw new Error('This room uses random team assignment.');
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+    leaveTeam(room, playerId, { skipBroadcast: true });
+    const team = createEmptyTeam(room, [playerId]);
+    touchRoom(room);
+    broadcastLobbyUpdate(room.code);
+    return team;
 }
 
 function assignPlayerTerms(player, masterDeck) {
@@ -552,7 +735,6 @@ function assignTeamTerms(team, masterDeck) {
     team.terms = shuffleDeck(masterDeck, LIVE_TERMS_TO_WIN);
     team.termIndex = 0;
     team.finished = false;
-    team.questionId = 0;
     clearTeamQuestionState(team);
 }
 
@@ -560,36 +742,18 @@ function reshuffleTeamTerms(team, masterDeck) {
     assignTeamTerms(team, masterDeck);
 }
 
-function buildTeams(room) {
-    const players = Array.from(room.players.values());
-    const size = room.teamSize || 2;
+function buildRandomTeams(room) {
+    const players = shuffleDeck(Array.from(room.players.values()), Array.from(room.players.values()).length);
+    const sizes = computeTeamSizes(players.length);
     room.teams = new Map();
-    const chunks = [];
-    for (let i = 0; i < players.length; i += size) {
-        chunks.push(players.slice(i, i + size));
+    for (const player of room.players.values()) {
+        player.teamId = null;
     }
-    if (chunks.length > 1 && chunks[chunks.length - 1].length === 1) {
-        chunks[chunks.length - 2].push(chunks.pop()[0]);
-    }
-    chunks.forEach((members, index) => {
-        const teamId = `team-${index + 1}`;
-        const team = {
-            id: teamId,
-            name: `Team ${index + 1}`,
-            memberIds: members.map((p) => p.id),
-            termIndex: 0,
-            terms: [],
-            finished: false,
-            questionForTermIndex: -1,
-            questionChoices: null,
-            questionId: 0,
-            answerLocked: false,
-            crewVotes: new Map(),
-        };
-        room.teams.set(teamId, team);
-        for (const member of members) {
-            member.teamId = teamId;
-        }
+    let offset = 0;
+    sizes.forEach((size) => {
+        const members = players.slice(offset, offset + size);
+        offset += size;
+        createEmptyTeam(room, members.map((p) => p.id));
     });
 }
 
@@ -628,8 +792,10 @@ function submitCrewVote(room, playerId, rawText) {
 
     const answerText = sanitizeAnswerText(rawText);
     if (!answerText) throw new Error('Choose an answer first.');
-    if (!team.questionChoices?.some((c) => matchesTermAnswer(answerText, c))) {
-        throw new Error('Invalid choice.');
+    if (team.questionInputMode === 'choice') {
+        if (!team.questionChoices?.some((c) => matchesTermAnswer(answerText, c))) {
+            throw new Error('Invalid choice.');
+        }
     }
 
     team.crewVotes.set(playerId, answerText);
@@ -714,7 +880,12 @@ function startGame(room) {
         throw new Error(`At least ${minPlayers} players are required to start.`);
     }
     if (isCaptainCrew(room)) {
-        buildTeams(room);
+        if (room.teamAssignment === 'random') {
+            buildRandomTeams(room);
+        } else {
+            const check = validateTeamsForStart(room);
+            if (!check.ok) throw new Error(check.error);
+        }
         for (const team of room.teams.values()) {
             assignTeamTerms(team, room.masterDeck);
         }
@@ -893,6 +1064,32 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     }
                 }
                 broadcastLobbyUpdate(room.code);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:join-team', ({ teamId }) => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'player') {
+                socket.emit('live:error', { error: 'Players only.' });
+                return;
+            }
+            try {
+                joinTeam(room, socket.data.playerId, teamId);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:create-team', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'player') {
+                socket.emit('live:error', { error: 'Players only.' });
+                return;
+            }
+            try {
+                createPlayerTeam(room, socket.data.playerId);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }

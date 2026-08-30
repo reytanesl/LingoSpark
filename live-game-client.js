@@ -95,7 +95,7 @@
                 const res = await fetch(`/api/live/room/${encodeURIComponent(code)}`);
                 if (!res.ok) return;
                 const snap = await res.json();
-                renderHostPlayerBoard(snap.players || []);
+                renderHostLobbyFromSnapshot(snap);
                 updateHostStartButton(snap);
             } catch { /* ignore */ }
         }, 2000);
@@ -236,7 +236,7 @@
         }
     }
 
-    const CHOICE_COLORS = ['#C8102E', '#012169', '#00823B', '#E8A317'];
+    const CHOICE_COLORS = ['#C8102E', '#012169', '#00823B', '#E8A317']; // legacy fallback
 
     const LiveAudio = {
         lobby: null,
@@ -348,6 +348,52 @@
         return Math.min(100, Math.round((progress / total) * 100));
     }
 
+    function renderHostTeamLobbyBoard(container, snap) {
+        if (!container) return;
+        const teams = snap?.teams || [];
+        const unassigned = snap?.unassignedPlayers || [];
+        const maxMembers = snap?.teamMax || 4;
+        if (!teams.length && !unassigned.length) {
+            container.innerHTML = '<p class="live-muted">No players yet.</p>';
+            return;
+        }
+        let html = '<div class="live-team-lobby">';
+        for (const team of teams) {
+            const members = team.memberNicknames?.length
+                ? esc(team.memberNicknames.join(', '))
+                : '<em>No members yet</em>';
+            html += `<div class="live-team-card">
+                <div class="live-team-card-head">
+                    <span class="live-team-card-name">${esc(team.name)}</span>
+                    <span class="live-muted">${team.memberCount || 0}/${maxMembers}</span>
+                </div>
+                <div class="live-team-card-members">${members}</div>
+            </div>`;
+        }
+        html += '</div>';
+        if (unassigned.length) {
+            html += `<p class="live-team-unassigned"><strong>Waiting for a team:</strong> ${unassigned.map((p) => esc(p.nickname)).join(', ')}</p>`;
+            html += unassigned.map((p) => {
+                const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
+                return `<div class="live-lobby-player-row" data-player-id="${esc(p.id)}">
+                    <span class="live-lobby-player-name"><strong>${esc(p.nickname)}</strong>${offline}</span>
+                    <button type="button" class="live-remove-player-btn btn btn-grey" data-remove-player="${esc(p.id)}">Remove</button>
+                </div>`;
+            }).join('');
+        }
+        container.innerHTML = html;
+    }
+
+    function renderHostLobbyFromSnapshot(snap) {
+        const board = $('live-host-progress-board');
+        if (!board) return;
+        if (snap?.gameFormat === 'captain-crew' && snap?.teamAssignment === 'pick') {
+            renderHostTeamLobbyBoard(board, snap);
+        } else {
+            renderHostLobbyBoard(board, snap?.players || []);
+        }
+    }
+
     function renderHostLobbyBoard(container, players) {
         if (!container) return;
         if (!players || !players.length) {
@@ -364,11 +410,12 @@
         }).join('');
     }
 
-    function renderHostPlayerBoard(players, options = {}) {
+    function renderHostPlayerBoard(snap, options = {}) {
         const board = $('live-host-progress-board');
         if (!board) return;
+        const players = snap?.players || snap || [];
         const inLobby = (hostState?.phase || 'lobby') === 'lobby' && !options.playing;
-        if (inLobby) renderHostLobbyBoard(board, players);
+        if (inLobby) renderHostLobbyFromSnapshot(snap);
         else renderHostRaceBoard(players, options);
     }
 
@@ -436,7 +483,7 @@
             const fillCls = `live-host-race-fill${flash ? ' reset-flash' : ''}${isWinner ? ' winner' : ''}`;
             const fillStyle = isWinner ? '' : `background:${color}`;
             return `<div class="live-host-race-row" data-player-id="${esc(p.id)}">
-                <div class="live-host-race-name" title="${esc(p.nickname)}">${esc(p.nickname)}${p.memberNicknames?.length ? `<span style="display:block;font-size:0.68em;font-weight:600;opacity:0.9;margin-top:0.1rem;">${esc(p.memberNicknames.join(', '))}</span>` : ''}</div>
+                <div class="live-host-race-name" title="${esc(p.nickname)}">${esc(p.nickname)}${p.memberNicknames?.length ? `<span style="display:block;font-size:0.68em;font-weight:400;opacity:0.9;margin-top:0.1rem;">${esc(p.memberNicknames.join(', '))}</span>` : ''}</div>
                 <div class="live-host-race-track">
                     <div class="${fillCls}" style="width:${pct}%;${fillStyle}"></div>
                 </div>
@@ -515,10 +562,69 @@
 
     function minPlayersForSnapshot(snapshot) {
         if (snapshot?.minPlayers) return snapshot.minPlayers;
-        if (snapshot?.gameFormat === 'captain-crew') {
-            return (snapshot?.teamSize || hostState?.teamSize || 2) * 2;
-        }
+        if (snapshot?.gameFormat === 'captain-crew') return 4;
         return MIN_PLAYERS;
+    }
+
+    function isCaptainCrewPickLobby(snap) {
+        const s = snap || playerState;
+        return s?.gameFormat === 'captain-crew' && s?.teamAssignment === 'pick';
+    }
+
+    function renderPlayerTeamLobby(snap) {
+        const panel = $('live-play-team-lobby');
+        const list = $('live-play-team-list');
+        const createBtn = $('live-play-create-team');
+        if (!panel || !list) return;
+        if (!isCaptainCrewPickLobby(snap)) {
+            panel.hidden = true;
+            return;
+        }
+        panel.hidden = false;
+        const teams = snap?.teams || [];
+        const maxMembers = snap?.teamMax || 4;
+        if (!teams.length) {
+            list.innerHTML = '<p class="live-muted" style="margin:0;">No teams yet. Start one below.</p>';
+        } else {
+            list.innerHTML = teams.map((team) => {
+                const onTeam = team.memberIds?.includes(playerState?.playerId);
+                const members = team.memberNicknames?.length
+                    ? esc(team.memberNicknames.join(', '))
+                    : 'No members yet';
+                const joinBtn = !onTeam && team.canJoin
+                    ? `<button type="button" class="btn btn-blue live-join-team-btn" data-team-id="${esc(team.id)}" style="width:100%;margin-top:0.5rem;">Join team</button>`
+                    : '';
+                const joined = onTeam
+                    ? '<span class="live-muted" style="display:block;margin-top:0.35rem;">You are on this team</span>'
+                    : '';
+                return `<div class="live-team-card">
+                    <div class="live-team-card-head">
+                        <span class="live-team-card-name">${esc(team.name)}</span>
+                        <span class="live-muted">${team.memberCount || 0}/${maxMembers}</span>
+                    </div>
+                    <div class="live-team-card-members">${members}</div>
+                    ${joinBtn}${joined}
+                </div>`;
+            }).join('');
+        }
+        if (createBtn) createBtn.hidden = Boolean(playerState?.teamId);
+        list.querySelectorAll('.live-join-team-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const teamId = btn.getAttribute('data-team-id');
+                if (teamId) ensureSocket().emit('live:join-team', { teamId });
+            });
+        });
+    }
+
+    function applyPlayerLobbySnapshot(snap) {
+        if (!playerState || !snap) return;
+        playerState.gameFormat = snap.gameFormat || playerState.gameFormat || 'race';
+        playerState.teamAssignment = snap.teamAssignment || playerState.teamAssignment || 'random';
+        playerState.lastSnapshot = snap;
+        const myTeam = (snap.teams || []).find((t) => t.memberIds?.includes(playerState.playerId));
+        playerState.teamId = myTeam?.id || null;
+        playerState.teamName = myTeam?.name || null;
+        renderPlayerTeamLobby(snap);
     }
 
     function isCaptainCrewMode() {
@@ -533,8 +639,11 @@
         const count = snapshot?.playerCount ?? snapshot?.players?.length ?? 0;
         const minPlayers = minPlayersForSnapshot(snapshot || hostState);
         const isTeamMode = (snapshot?.gameFormat || hostState?.gameFormat) === 'captain-crew';
-        const canStart = snapshot?.canStart ?? (count >= minPlayers && snapshot?.phase === 'lobby');
+        const isPickTeams = isTeamMode && (snapshot?.teamAssignment || hostState?.teamAssignment) === 'pick';
         const playing = snapshot?.phase === 'playing';
+        const canStart = snapshot?.canStart != null
+            ? snapshot.canStart
+            : !isPickTeams && count >= minPlayers && snapshot?.phase === 'lobby';
         btn.disabled = !canStart || playing;
         if (countEl) {
             countEl.textContent = playing
@@ -551,9 +660,16 @@
         } else if (count < minPlayers) {
             btn.textContent = `Start game (need ${minPlayers}+ players)`;
             if (status) status.textContent = `Waiting for players (${count} / ${minPlayers} minimum)…`;
+        } else if (isPickTeams && !canStart) {
+            btn.textContent = 'Start game (teams not ready)';
+            if (status) status.textContent = 'Players are choosing teams (2–4 per team, all players assigned)…';
         } else {
             btn.textContent = 'Start game';
-            if (status) status.textContent = `${count} players ready. Start when everyone has joined.`;
+            if (status) {
+                status.textContent = isPickTeams
+                    ? 'All teams ready — start when you are.'
+                    : `${count} players ready. Start when everyone has joined.`;
+            }
         }
     }
 
@@ -576,12 +692,14 @@
         s.on('live:host-joined', (data) => {
             showLiveError('');
             hostState.phase = data.snapshot?.phase || 'lobby';
+            hostState.gameFormat = data.snapshot?.gameFormat || hostState?.gameFormat || 'race';
+            hostState.teamAssignment = data.snapshot?.teamAssignment || hostState?.teamAssignment || 'random';
             if (data.snapshot?.phase === 'playing') {
                 setHostRaceMode(true);
                 renderHostRaceBoard(data.snapshot?.players || data.progress?.players || []);
             } else {
                 setHostRaceMode(false);
-                renderHostLobbyBoard($('live-host-progress-board'), data.snapshot?.players || data.progress?.players || []);
+                renderHostLobbyFromSnapshot(data.snapshot);
             }
             updateHostStartButton(data.snapshot);
             if (data.snapshot?.phase === 'playing') {
@@ -595,10 +713,13 @@
         });
 
         s.on('live:room-state', (snap) => {
+            hostState.canStart = snap.canStart;
+            hostState.gameFormat = snap.gameFormat || hostState?.gameFormat || 'race';
+            hostState.teamAssignment = snap.teamAssignment || hostState?.teamAssignment || 'random';
             if (hostState?.phase === 'playing') {
                 renderHostRaceBoard(snap.players || []);
             } else {
-                renderHostLobbyBoard($('live-host-progress-board'), snap.players || []);
+                renderHostLobbyFromSnapshot(snap);
             }
             updateHostStartButton(snap);
         });
@@ -613,10 +734,20 @@
             if (hostState?.phase === 'playing') {
                 renderHostRaceBoard(data.players || [], { flashId: hostState.lastFlashId });
                 hostState.lastFlashId = null;
+            } else if (hostState?.gameFormat === 'captain-crew' && hostState?.teamAssignment === 'pick') {
+                /* teams view comes from live:room-state */
             } else {
                 renderHostLobbyBoard($('live-host-progress-board'), data.players || []);
             }
-            updateHostStartButton({ ...data, playerCount: data.players?.length, phase: data.phase || hostState?.phase });
+            updateHostStartButton({
+                ...data,
+                playerCount: data.players?.length,
+                phase: data.phase || hostState?.phase,
+                gameFormat: hostState?.gameFormat,
+                teamAssignment: hostState?.teamAssignment,
+                canStart: hostState?.canStart,
+                minPlayers: hostState?.minPlayers,
+            });
         });
 
         s.on('live:game-started', (data) => {
@@ -651,11 +782,12 @@
     function bindPlayerSocket() {
         const s = ensureSocket();
         bindSocketReconnect('player');
-        ['live:player-joined', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:player-removed', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:player-removed', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:player-joined', (data) => {
             showLiveError('');
             playerState.gameFormat = data.gameFormat || data.snapshot?.gameFormat || 'race';
+            playerState.teamAssignment = data.teamAssignment || data.snapshot?.teamAssignment || 'random';
             playerState.teamId = data.teamId || null;
             playerState.teamName = data.teamName || null;
             playerState.progress = data.player?.progress || 0;
@@ -671,7 +803,15 @@
                 }
             } else {
                 setLiveGameActive(false);
-                showPlayerWaiting('Waiting for the host to start…');
+                applyPlayerLobbySnapshot(data.snapshot);
+                showPlayerWaiting('Waiting for the host to start…', data.snapshot);
+            }
+        });
+
+        s.on('live:room-state', (snap) => {
+            applyPlayerLobbySnapshot(snap);
+            if (playerState && snap?.phase === 'lobby') {
+                showPlayerWaiting('Waiting for the host to start…', snap);
             }
         });
 
@@ -720,8 +860,11 @@
                 setAnswerInputsEnabled(false);
                 hideCrewPanel();
                 if (status) status.textContent = isCaptainCrewMode() ? 'Your team won!' : 'You won!';
-            } else if (result.nextQuestion && typeof result.nextQuestion === 'object') {
-                showPlayerQuestion(result.nextQuestion);
+            } else {
+                setAnswerInputsEnabled(true);
+                if (result.nextQuestion && typeof result.nextQuestion === 'object') {
+                    showPlayerQuestion(result.nextQuestion);
+                }
             }
         });
 
@@ -775,9 +918,11 @@
         const choices = $('live-play-choices');
         const typeSection = $('live-play-type-section');
         const captainBtn = $('live-play-captain-submit');
+        const crewVoteBtn = $('live-play-crew-vote-btn');
         if (input && !typeSection?.hidden) input.disabled = !enabled;
-        if (btn && !typeSection?.hidden) btn.disabled = !enabled;
-        if (captainBtn && playerIsCaptain) captainBtn.disabled = !enabled;
+        if (btn && !typeSection?.hidden && !btn.hidden) btn.disabled = !enabled;
+        if (captainBtn && playerIsCaptain && !captainBtn.hidden) captainBtn.disabled = !enabled;
+        if (crewVoteBtn && !crewVoteBtn.hidden) crewVoteBtn.disabled = !enabled;
         if (choices && !choices.hidden) {
             choices.querySelectorAll('button').forEach((b) => { b.disabled = !enabled; });
         }
@@ -798,9 +943,10 @@
         return ANSWER_MODE_LABELS[mode] || ANSWER_MODE_LABELS.randomise;
     }
 
-    function gameFormatLabel(format, teamSize) {
+    function gameFormatLabel(format, teamAssignment) {
         if (format === 'captain-crew') {
-            return `${GAME_FORMAT_LABELS['captain-crew']} (teams of ${teamSize || 2})`;
+            const mode = teamAssignment === 'pick' ? 'players choose teams' : 'random teams';
+            return `${GAME_FORMAT_LABELS['captain-crew']} · ${mode}`;
         }
         return GAME_FORMAT_LABELS[format] || GAME_FORMAT_LABELS.race;
     }
@@ -808,10 +954,8 @@
     function updateHostSetupFormatUI() {
         const format = document.querySelector('input[name="live-game-format"]:checked')?.value || 'race';
         const isCrew = format === 'captain-crew';
-        const teamRow = $('live-host-team-size-row');
-        const answerSection = $('live-host-answer-mode-section');
+        const teamRow = $('live-host-team-assignment-row');
         if (teamRow) teamRow.hidden = !isCrew;
-        if (answerSection) answerSection.hidden = isCrew;
     }
 
     function hideCrewPanel() {
@@ -866,7 +1010,7 @@
         if (q.isCaptain) {
             role.textContent = `${team} — You are the captain this round`;
         } else {
-            role.textContent = `${team} — Captain: ${q.captainNickname || '…'} — vote below`;
+            role.textContent = `${team} — Captain: ${q.captainNickname || '…'} — ${q.inputMode === 'choice' ? 'vote below' : 'type & vote below'}`;
         }
     }
 
@@ -875,12 +1019,35 @@
         if (label) label.textContent = isCaptainCrewMode() ? 'Team progress' : 'Your progress';
     }
 
-    function applyQuestionInputMode(inputMode) {
+    function applyQuestionInputMode(inputMode, q = null) {
         const choiceMode = inputMode === 'choice';
+        const crewMode = q && (q.gameFormat === 'captain-crew' || isCaptainCrewMode());
         const typeSection = $('live-play-type-section');
         const typeHint = $('live-play-type-hint');
+        const submitBtn = $('live-play-submit');
+        const crewVoteBtn = $('live-play-crew-vote-btn');
+        const captainSubmit = $('live-play-captain-submit');
+
         if (typeSection) typeSection.hidden = choiceMode;
-        if (typeHint) typeHint.textContent = choiceMode ? '' : 'Type the word';
+        if (typeHint) {
+            if (crewMode && !choiceMode) {
+                typeHint.textContent = q?.isCaptain
+                    ? 'Type your answer, or submit the crew majority'
+                    : 'Type your answer, then vote';
+            } else {
+                typeHint.textContent = choiceMode ? '' : 'Type the word';
+            }
+        }
+
+        if (crewMode) {
+            if (submitBtn) submitBtn.hidden = true;
+            if (crewVoteBtn) crewVoteBtn.hidden = choiceMode || Boolean(q?.isCaptain);
+            if (captainSubmit) captainSubmit.hidden = !q?.isCaptain;
+        } else {
+            if (submitBtn) submitBtn.hidden = choiceMode;
+            if (crewVoteBtn) crewVoteBtn.hidden = true;
+            if (captainSubmit) captainSubmit.hidden = true;
+        }
     }
 
     function renderChoiceButtons(choices, options = {}) {
@@ -894,7 +1061,7 @@
         }
         container.hidden = false;
         container.innerHTML = choices.map((term, i) =>
-            `<button type="button" class="live-answer-btn${playerCrewVote === term ? ' crew-voted' : ''}" style="background:${CHOICE_COLORS[i % CHOICE_COLORS.length]}"></button>`
+            `<button type="button" class="live-answer-btn live-answer-btn--${i % 4}${playerCrewVote === term ? ' crew-voted' : ''}"></button>`
         ).join('');
         container.querySelectorAll('button').forEach((btn, i) => {
             btn.textContent = choices[i];
@@ -907,6 +1074,11 @@
                 submitPlayerAnswer(choices[i]);
             });
         });
+    }
+
+    function submitCrewVoteFromInput() {
+        const input = $('live-play-answer');
+        submitCrewVote(input?.value || '');
     }
 
     function submitCrewVote(choiceText) {
@@ -926,9 +1098,10 @@
 
     function submitCaptainAnswer() {
         if (!playerState || answerPending || !playerIsCaptain) return;
-        const text = (playerCrewVote || captainSuggestedAnswer || '').trim();
+        const input = $('live-play-answer');
+        const text = (playerCrewVote || captainSuggestedAnswer || input?.value || '').trim();
         if (!text) {
-            showLiveError('Wait for crew votes, or tap an answer first.');
+            showLiveError('Wait for crew votes, or enter an answer first.');
             return;
         }
         showLiveError('');
@@ -937,16 +1110,32 @@
         ensureSocket().emit('live:submit-answer', { text });
     }
 
-    function showPlayerWaiting(msg) {
+    function showPlayerWaiting(msg, snap) {
         const def = $('live-play-definition');
         const status = $('live-play-status');
-        if (def) def.textContent = msg;
+        const pickLobby = isCaptainCrewPickLobby(snap);
+        if (def) {
+            def.hidden = pickLobby;
+            if (!pickLobby) def.textContent = msg;
+        }
+        if (pickLobby) {
+            applyPlayerLobbySnapshot(snap || playerState?.lastSnapshot);
+            if (status) {
+                status.textContent = playerState?.teamName
+                    ? `On ${playerState.teamName} — waiting for the host…`
+                    : 'Join a team below, then wait for the host…';
+            }
+        } else {
+            $('live-play-team-lobby').hidden = true;
+            if (status) status.textContent = pickLobby ? '' : msg;
+        }
         setAnswerInputsEnabled(false);
-        if (status) status.textContent = '';
         $('live-play-result').innerHTML = '';
         renderChoiceButtons([]);
         applyQuestionInputMode('typed');
         hideCrewPanel();
+        const crewVoteBtn = $('live-play-crew-vote-btn');
+        if (crewVoteBtn) crewVoteBtn.hidden = true;
         if ($('live-play-type-section')) $('live-play-type-section').hidden = true;
     }
 
@@ -967,11 +1156,14 @@
         const input = $('live-play-answer');
         const status = $('live-play-status');
         const crewMode = q.gameFormat === 'captain-crew' || isCaptainCrewMode();
-        const choiceMode = crewMode || q.inputMode === 'choice';
+        const choiceMode = q.inputMode === 'choice';
         if (def) def.textContent = q.definition;
+        if (def) def.hidden = false;
+        $('live-play-team-lobby').hidden = true;
         if (status) {
             if (crewMode) {
-                status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — crew votes, captain submits`;
+                const modeHint = choiceMode ? 'crew votes, captain submits' : 'crew types & votes, captain submits';
+                status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — ${modeHint}`;
             } else {
                 const modeHint = choiceMode ? 'Tap the matching term' : 'Type the matching term';
                 status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — ${modeHint}`;
@@ -979,7 +1171,7 @@
         }
         updateOwnProgress(q.progress || 0, q.termsToWin || TERMS_TO_WIN);
         if (input) input.value = '';
-        applyQuestionInputMode(crewMode ? 'choice' : q.inputMode);
+        applyQuestionInputMode(q.inputMode, q);
         if (choiceMode) {
             renderChoiceButtons(q.choices || [], { crewMode });
             if (crewMode) {
@@ -992,7 +1184,14 @@
             }
         } else {
             renderChoiceButtons([]);
-            hideCrewPanel();
+            if (crewMode) {
+                const panel = $('live-play-crew-panel');
+                if (panel) panel.hidden = false;
+                updateCrewRoleUI(q);
+                updateCrewVoteUI(q.crew || { votes: {}, votedCount: 0, crewSize: 0, isCaptain: q.isCaptain, suggestedAnswer: null });
+            } else {
+                hideCrewPanel();
+            }
         }
         setAnswerInputsEnabled(true);
         if (!choiceMode && input) input.focus();
@@ -1054,9 +1253,9 @@
         const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
         const level = $('live-host-level')?.value || 'intermediate';
         const gameFormat = document.querySelector('input[name="live-game-format"]:checked')?.value || 'race';
-        const teamSize = Number($('live-host-team-size')?.value) || 2;
+        const teamAssignment = document.querySelector('input[name="live-team-assignment"]:checked')?.value || 'random';
         const answerMode = document.querySelector('input[name="live-answer-mode"]:checked')?.value || 'randomise';
-        const body = { source, level, gameFormat, teamSize, answerMode };
+        const body = { source, level, gameFormat, teamAssignment, answerMode };
         if (source === 'wordset') {
             const setId = $('live-host-wordset')?.value;
             if (!setId) { showLiveError('Choose a Word Set.'); return; }
@@ -1083,7 +1282,7 @@
                 phase: 'lobby',
                 answerMode: data.answerMode || answerMode,
                 gameFormat: data.gameFormat || gameFormat,
-                teamSize: data.teamSize || teamSize,
+                teamAssignment: data.teamAssignment || teamAssignment,
                 minPlayers: data.minPlayers,
             };
             sessionStorage.setItem('ls_live_host_code', data.code);
@@ -1094,7 +1293,7 @@
             if (modeEl) {
                 modeEl.hidden = false;
                 modeEl.textContent = hostState.gameFormat === 'captain-crew'
-                    ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamSize)}`
+                    ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)}`
                     : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
             }
             const joinUrl = data.joinUrl || `${location.origin}${location.pathname}#/live/join?code=${data.code}`;
@@ -1140,7 +1339,7 @@
                 phase: snap.phase || 'lobby',
                 answerMode: snap.answerMode || 'randomise',
                 gameFormat: snap.gameFormat || 'race',
-                teamSize: snap.teamSize || 2,
+                teamAssignment: snap.teamAssignment || 'random',
                 minPlayers: snap.minPlayers,
             };
             $('live-host-code').textContent = code;
@@ -1148,7 +1347,7 @@
             if (modeEl) {
                 modeEl.hidden = false;
                 modeEl.textContent = hostState.gameFormat === 'captain-crew'
-                    ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamSize)}`
+                    ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)}`
                     : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
             }
             const joinUrl = `${location.origin}${location.pathname}#/live/join?code=${code}`;
@@ -1228,6 +1427,7 @@
                 nickname: data.nickname,
                 progress: 0,
                 gameFormat: data.snapshot?.gameFormat || 'race',
+                teamAssignment: data.snapshot?.teamAssignment || 'random',
                 teamId: null,
                 teamName: null,
             };
@@ -1308,8 +1508,14 @@
         bindHostLobbyBoard();
         $('live-play-submit')?.addEventListener('click', submitPlayerAnswer);
         $('live-play-captain-submit')?.addEventListener('click', submitCaptainAnswer);
+        $('live-play-crew-vote-btn')?.addEventListener('click', submitCrewVoteFromInput);
+        $('live-play-create-team')?.addEventListener('click', () => ensureSocket().emit('live:create-team'));
         $('live-play-answer')?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); submitPlayerAnswer(); }
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            const crewVoteBtn = $('live-play-crew-vote-btn');
+            if (crewVoteBtn && !crewVoteBtn.hidden) submitCrewVoteFromInput();
+            else submitPlayerAnswer();
         });
         toggleLiveSourcePanels();
         toggleLiveFormatPanels();

@@ -527,17 +527,17 @@ async function start() {
                 level: deckPayload.level,
                 answerMode,
                 gameFormat: req.body?.gameFormat,
-                teamSize: req.body?.teamSize,
+                teamAssignment: req.body?.teamAssignment,
             });
 
             res.json({
                 code: room.code,
                 hostToken: room.hostToken,
                 termsToWin: 12,
-                minPlayers: room.gameFormat === 'captain-crew' ? (room.teamSize || 2) * 2 : 2,
+                minPlayers: room.gameFormat === 'captain-crew' ? 4 : 2,
                 answerMode: room.answerMode,
                 gameFormat: room.gameFormat,
-                teamSize: room.teamSize,
+                teamAssignment: room.teamAssignment,
                 joinUrl: `${APP_BASE_URL}/#/live/join?code=${room.code}`,
             });
         } catch (err) {

@@ -208,11 +208,19 @@
         .live-timer-track { height: 10px; background: var(--border-light); border-radius: 999px; overflow: hidden; margin: 0.75rem 0; }
         .live-timer-bar { height: 100%; width: 100%; background: var(--royal-blue); transition: width 0.1s linear; }
         .live-answer-btn {
-            display: block; width: 100%; border: none; border-radius: 10px; color: #fff;
-            font-family: var(--font-primary); font-size: 1.1rem; font-weight: 700;
-            padding: 1rem 1.1rem; margin-bottom: 0.65rem; cursor: pointer; text-align: left;
+            display: block; width: 100%; border: 2px solid transparent; border-radius: 12px;
+            font-family: var(--font-primary); font-size: 1.05rem; font-weight: 600;
+            padding: 0.85rem 1rem; margin-bottom: 0.55rem; cursor: pointer; text-align: center;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
+        .live-answer-btn:active:not(:disabled) { transform: scale(0.98); }
         .live-answer-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+        .live-answer-btn--0 { background: #ffd6dc; color: #7f1d2e; border-color: #f5b8c2; }
+        .live-answer-btn--1 { background: #d6e8ff; color: #1e3a6e; border-color: #b8d4f5; }
+        .live-answer-btn--2 { background: #d8f5e0; color: #14532d; border-color: #b8e8c8; }
+        .live-answer-btn--3 { background: #fff0c2; color: #713f12; border-color: #f5dfa0; }
         .live-choice {
             padding: 0.65rem 0.85rem; border-radius: 8px; background: var(--light-grey);
             margin-bottom: 0.5rem; font-weight: 600;
@@ -309,7 +317,7 @@
         }
         .live-host-race-status {
             margin: 0; flex: 1; text-align: center; font-family: var(--font-primary);
-            font-weight: 900; font-size: clamp(1.1rem, 2.8vw, 1.5rem); color: #fff;
+            font-weight: 400; font-size: clamp(1.1rem, 2.8vw, 1.5rem); color: #fff;
             text-shadow:
                 0 1px 0 rgba(0, 0, 0, 0.9),
                 0 2px 6px rgba(0, 0, 0, 0.7),
@@ -320,6 +328,22 @@
             flex-shrink: 0; background: rgba(255, 255, 255, 0.9) !important; border: none !important;
             color: var(--text-dark) !important; font-weight: 700;
         }
+        .live-host-race-end-float {
+            position: fixed;
+            top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
+            right: max(0.75rem, env(safe-area-inset-right, 0.75rem));
+            z-index: 520;
+            padding: 0.55rem 1rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92) !important;
+            border: none !important;
+            color: var(--text-dark) !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            touch-action: manipulation;
+        }
+        .live-host-race-end-float[hidden] { display: none !important; }
         .live-host-race-board {
             flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(0.85rem, 2.5vh, 1.35rem);
             min-height: 0; overflow-y: auto;
@@ -329,7 +353,7 @@
             align-items: center; gap: clamp(0.65rem, 2vw, 1.25rem);
         }
         .live-host-race-name {
-            font-family: var(--font-primary); font-weight: 900; font-size: clamp(1.1rem, 3vw, 1.6rem);
+            font-family: var(--font-primary); font-weight: 400; font-size: clamp(1.1rem, 3vw, 1.6rem);
             color: #fff;
             text-shadow:
                 0 1px 0 rgba(0, 0, 0, 0.9),
@@ -357,7 +381,7 @@
             box-shadow: 0 0 18px rgba(251, 191, 36, 0.65);
         }
         .live-host-race-score {
-            font-family: var(--font-primary); font-weight: 900; font-size: clamp(1.05rem, 2.8vw, 1.45rem);
+            font-family: var(--font-primary); font-weight: 400; font-size: clamp(1.05rem, 2.8vw, 1.45rem);
             color: #fff; text-align: right;
             text-shadow:
                 0 1px 0 rgba(0, 0, 0, 0.9),
@@ -511,13 +535,13 @@
             font-size: 0.88rem;
             margin-bottom: 0.25rem !important;
         }
-        body.live-game-active #live-play-definition.word-prompt {
+        body.live-game-active .live-play-body {
+            gap: 0.35rem;
             flex: 1;
             min-height: 0;
-            margin-bottom: 0.5rem;
-        }
-        body.live-game-active .live-play-body {
-            gap: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
         }
         body.live-player-mode .live-play-shell {
             display: flex;
@@ -539,13 +563,6 @@
             padding: 0.6rem 0.75rem;
             font-size: 0.95rem;
             text-align: center;
-        }
-        body.live-game-active #screen-live-play {
-            position: relative;
-            max-width: 100% !important;
-            padding: clamp(0.85rem, 3vw, 1.5rem) clamp(0.85rem, 4vw, 2rem) clamp(1rem, 3vh, 1.35rem);
-            background: transparent;
-            overflow: hidden;
         }
         body.live-game-active #live-play-race-bg {
             display: block;
@@ -627,16 +644,21 @@
             box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
             color: var(--text-dark);
             font-weight: 700;
-            max-height: none;
-            flex: 1;
-            min-height: 4.5rem;
+            max-height: min(32vh, 11rem);
+            flex: 0 1 auto;
+            min-height: 3.5rem;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            font-size: clamp(1rem, 4.2vw, 1.25rem);
+            line-height: 1.35;
+            margin-bottom: 0.5rem;
         }
         body.live-game-active #live-play-choices .live-answer-btn {
             border-radius: 12px;
-            padding: 0.75rem 0.9rem;
-            font-size: clamp(0.95rem, 4vw, 1.05rem);
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-            text-align: center;
+            padding: clamp(0.7rem, 3.5vw, 0.85rem) clamp(0.75rem, 3vw, 0.9rem);
+            font-size: clamp(0.92rem, 3.8vw, 1.02rem);
+            min-height: 48px;
+            margin-bottom: 0.45rem;
         }
         body.live-game-active #live-play-type-section {
             background: rgba(255, 255, 255, 0.92);
@@ -644,6 +666,36 @@
             padding: 0.75rem;
             box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14);
             flex-shrink: 0;
+        }
+        body.live-game-active #live-play-type-section .game-input {
+            font-size: clamp(1rem, 4.2vw, 1.15rem);
+            padding: 0.8rem 0.75rem;
+            min-height: 48px;
+        }
+        body.live-game-active #live-play-submit,
+        body.live-game-active #live-play-crew-vote-btn,
+        body.live-game-active #live-play-captain-submit {
+            min-height: 48px;
+            font-size: clamp(1rem, 4vw, 1.1rem);
+        }
+        body.live-game-active #screen-live-play {
+            position: relative;
+            max-width: 100% !important;
+            padding:
+                max(0.65rem, env(safe-area-inset-top, 0.65rem))
+                clamp(0.75rem, 3.5vw, 1.25rem)
+                max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+            background: transparent;
+            overflow: hidden;
+        }
+        @media (max-width: 380px) {
+            body.live-game-active .live-own-progress .live-progress-track {
+                height: clamp(32px, 5vh, 44px);
+            }
+            body.live-game-active .live-play-hero {
+                gap: 0.4rem;
+                padding-bottom: 0.25rem;
+            }
         }
         body.live-game-active .live-type-or-label {
             color: var(--text-muted);
@@ -688,9 +740,9 @@
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
         }
         #live-play-choices .live-answer-btn.crew-voted {
-            outline: 3px solid #fff;
+            outline: 3px solid rgba(255, 255, 255, 0.95);
             outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 0 0 3px rgba(30, 58, 110, 0.35);
         }
         #live-play-captain-submit {
             width: 100%;
@@ -698,7 +750,56 @@
             font-size: 1.05rem;
         }
         #live-play-captain-submit[hidden] { display: none !important; }
-        #live-host-team-size-row { margin-top: 0.85rem; }
+        #live-host-team-assignment-row { margin-top: 0.85rem; }
+        .live-team-lobby {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+        .live-team-card {
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0.75rem 0.85rem;
+            background: #fff;
+        }
+        .live-team-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+        .live-team-card-name {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            color: var(--royal-blue);
+            font-size: 1rem;
+        }
+        .live-team-card-members {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .live-team-card-actions {
+            margin-top: 0.5rem;
+        }
+        .live-team-unassigned {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0.35rem 0 0;
+        }
+        body.live-game-active .live-team-lobby-player {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 14px;
+            padding: 0.75rem;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14);
+            flex-shrink: 0;
+        }
+        body.live-game-active .live-team-lobby-player h3 {
+            margin: 0 0 0.65rem;
+            font-size: 1rem;
+            color: var(--royal-blue);
+        }
         body.live-game-active .live-type-or-label {
             display: block;
         }
@@ -2683,13 +2784,21 @@
                     </div>
                 </fieldset>
 
-                <div id="live-host-team-size-row" class="live-setup-field" hidden>
-                    <label for="live-host-team-size"><i class="fa-solid fa-users"></i> Team size</label>
-                    <select id="live-host-team-size" class="live-setup-select">
-                        <option value="2" selected>2 players per team</option>
-                        <option value="3">3 players per team</option>
-                    </select>
-                    <p class="live-muted" style="margin:0.35rem 0 0;font-size:0.88rem;">Teams are formed automatically when the game starts. Minimum players: team size × 2.</p>
+                <div id="live-host-team-assignment-row" class="live-setup-field" hidden>
+                    <label><i class="fa-solid fa-users"></i> Team setup</label>
+                    <div class="live-option-grid live-option-grid--2" style="margin-top:0.45rem;">
+                        <label class="live-option">
+                            <input type="radio" name="live-team-assignment" value="random" checked>
+                            <span class="live-option-title">Random teams</span>
+                            <span class="live-option-desc">Split into teams of 2–4 when the game starts</span>
+                        </label>
+                        <label class="live-option">
+                            <input type="radio" name="live-team-assignment" value="pick">
+                            <span class="live-option-title">Players choose</span>
+                            <span class="live-option-desc">Students join a team in the lobby before you start</span>
+                        </label>
+                    </div>
+                    <p class="live-muted" style="margin:0.45rem 0 0;font-size:0.88rem;">Each team gets a random British pop-culture name (e.g. The Rowan Atkinsons). Minimum 4 players.</p>
                 </div>
 
                 <fieldset id="live-host-answer-mode-section" class="live-setup-section" style="margin-top:1.1rem;">
@@ -2745,10 +2854,10 @@
                                 <span id="live-host-race-code" class="live-host-race-code">----</span>
                             </div>
                             <p id="live-host-race-status" class="live-host-race-status">Race underway!</p>
-                            <button type="button" id="live-host-race-end" class="live-host-race-end-btn btn btn-grey">End game</button>
                         </header>
                         <div id="live-host-race-board" class="live-host-race-board"></div>
                     </div>
+                    <button type="button" id="live-host-race-end" class="live-host-race-end-float btn btn-grey">End game</button>
                     <div id="live-host-race-bubbles" class="live-host-race-bubbles" aria-hidden="true"></div>
                 </div>
                 <div id="live-host-finished" class="card" hidden style="margin-top:1.25rem;">
@@ -2801,6 +2910,11 @@
             </div>
             </div>
             <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
+            <div id="live-play-team-lobby" class="live-team-lobby-player" hidden>
+                <h3>Choose your team</h3>
+                <div id="live-play-team-list" class="live-team-lobby"></div>
+                <button type="button" id="live-play-create-team" class="btn btn-blue" style="width:100%;margin-top:0.65rem;">Start a new team</button>
+            </div>
             <div id="live-play-definition" class="word-prompt">Connecting…</div>
             <p id="live-play-crew-role" class="live-crew-role" hidden></p>
             <div id="live-play-choices" hidden></div>
@@ -2811,6 +2925,7 @@
             <div id="live-play-type-section">
             <p class="live-type-or-label" id="live-play-type-hint">Type the word</p>
             <input type="text" id="live-play-answer" class="game-input" placeholder="Type the word" autocomplete="off" maxlength="120" style="margin-top:0.25rem;">
+            <button type="button" id="live-play-crew-vote-btn" class="btn btn-grey" style="width:100%;margin-top:0.5rem;padding:0.85rem;font-size:1.1rem;" hidden>Vote</button>
             <button type="button" id="live-play-submit" class="btn btn-blue" style="width:100%;margin-top:0.5rem;padding:0.85rem;font-size:1.1rem;">Submit</button>
             </div>
             <div id="live-play-result" style="margin-top:0.5rem;"></div>
