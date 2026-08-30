@@ -422,7 +422,10 @@
     function setHostRaceMode(active) {
         document.body.classList.toggle('live-host-race', active);
         const race = $('live-host-race');
-        if (race) race.hidden = !active;
+        if (race) {
+            race.hidden = !active;
+            race.classList.toggle('live-host-race--teams', active && hostState?.gameFormat === 'captain-crew');
+        }
         const grid = document.querySelector('.live-host-grid');
         if (grid) grid.hidden = active;
         if (active) {
@@ -483,7 +486,7 @@
             const fillCls = `live-host-race-fill${flash ? ' reset-flash' : ''}${isWinner ? ' winner' : ''}`;
             const fillStyle = isWinner ? '' : `background:${color}`;
             return `<div class="live-host-race-row" data-player-id="${esc(p.id)}">
-                <div class="live-host-race-name" title="${esc(p.nickname)}">${esc(p.nickname)}${p.memberNicknames?.length ? `<span style="display:block;font-size:0.68em;font-weight:400;opacity:0.9;margin-top:0.1rem;">${esc(p.memberNicknames.join(', '))}</span>` : ''}</div>
+                <div class="live-host-race-name" title="${esc(p.nickname)}">${esc(p.nickname)}</div>
                 <div class="live-host-race-track">
                     <div class="${fillCls}" style="width:${pct}%;${fillStyle}"></div>
                 </div>
