@@ -242,6 +242,155 @@
         .live-progress-fill { height: 100%; background: linear-gradient(90deg, var(--royal-blue), #3d7be8); transition: width 0.35s ease; border-radius: 999px; }
         .live-progress-fill.winner { background: linear-gradient(90deg, #d4a017, #f0c040); }
         .live-progress-fill.reset-flash { background: var(--pillarbox-red); transition: none; }
+        /* Host fullscreen race (Kahoot-style) */
+        body.live-host-race { overflow: hidden; }
+        body.live-host-race header,
+        body.live-host-race .auth-bar,
+        body.live-host-race .main-logo-container,
+        body.live-host-race .about-panel,
+        body.live-host-race .site-copyright,
+        body.live-host-race #ls-premium-float,
+        body.live-host-race #screen-live-host > .top-bar {
+            display: none !important;
+        }
+        body.live-host-race .container {
+            max-width: 100%; margin: 0; padding: 0; min-height: 100dvh;
+        }
+        body.live-host-race #screen-live-host {
+            min-height: 100dvh; border-radius: 0; box-shadow: none; padding: 0;
+            background: transparent;
+        }
+        body.live-host-race #live-host-finished { display: none !important; }
+        .live-host-race {
+            position: fixed; inset: 0; z-index: 500; display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .live-host-race[hidden] { display: none !important; }
+        .live-race-bg {
+            position: absolute; inset: 0; z-index: 0;
+            background:
+                radial-gradient(circle at 12% 18%, rgba(255, 214, 0, 0.55) 0%, transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.5) 0%, transparent 40%),
+                radial-gradient(circle at 78% 82%, rgba(244, 63, 94, 0.45) 0%, transparent 38%),
+                radial-gradient(circle at 18% 78%, rgba(74, 222, 128, 0.45) 0%, transparent 40%),
+                linear-gradient(135deg, #5b21b6 0%, #1d4ed8 35%, #0e7490 70%, #be185d 100%);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 200% 200%;
+            animation: liveHostRaceBg 18s ease-in-out infinite alternate;
+        }
+        .live-host-race-bg { position: absolute; inset: 0; z-index: 0; }
+        @keyframes liveHostRaceBg {
+            0% { background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%; }
+            100% { background-position: 8% 6%, 92% 10%, 86% 88%, 12% 84%, 100% 50%; }
+        }
+        .live-host-race-content {
+            position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column;
+            padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem);
+            min-height: 0;
+        }
+        .live-host-race-header {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            flex-wrap: wrap; margin-bottom: clamp(1rem, 3vh, 1.75rem);
+        }
+        .live-host-race-code-wrap,
+        .live-play-room-code {
+            display: flex; align-items: center; gap: 0.65rem;
+            background: rgba(255, 255, 255, 0.92); padding: 0.5rem 1.1rem; border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        .live-host-race-label,
+        .live-play-room-label {
+            font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted); line-height: 1;
+        }
+        .live-host-race-code,
+        .live-play-room-code-value {
+            font-family: var(--font-primary); font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 800;
+            letter-spacing: 0.2em; color: var(--royal-blue); line-height: 1;
+        }
+        .live-host-race-status {
+            margin: 0; flex: 1; text-align: center; font-family: var(--font-primary);
+            font-weight: 900; font-size: clamp(1.1rem, 2.8vw, 1.5rem); color: #fff;
+            text-shadow:
+                0 1px 0 rgba(0, 0, 0, 0.9),
+                0 2px 6px rgba(0, 0, 0, 0.7),
+                0 4px 18px rgba(0, 0, 0, 0.45);
+            -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.35);
+        }
+        .live-host-race-end-btn {
+            flex-shrink: 0; background: rgba(255, 255, 255, 0.9) !important; border: none !important;
+            color: var(--text-dark) !important; font-weight: 700;
+        }
+        .live-host-race-board {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(0.85rem, 2.5vh, 1.35rem);
+            min-height: 0; overflow-y: auto;
+        }
+        .live-host-race-row {
+            display: grid; grid-template-columns: minmax(5rem, 11rem) 1fr minmax(3.5rem, 5rem);
+            align-items: center; gap: clamp(0.65rem, 2vw, 1.25rem);
+        }
+        .live-host-race-name {
+            font-family: var(--font-primary); font-weight: 900; font-size: clamp(1.1rem, 3vw, 1.6rem);
+            color: #fff;
+            text-shadow:
+                0 1px 0 rgba(0, 0, 0, 0.9),
+                0 2px 5px rgba(0, 0, 0, 0.75),
+                0 4px 16px rgba(0, 0, 0, 0.5);
+            -webkit-text-stroke: 0.4px rgba(0, 0, 0, 0.4);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .live-host-race-track {
+            position: relative; height: clamp(36px, 6vh, 52px);
+            background: rgba(0, 0, 0, 0.28); border-radius: 999px; overflow: visible;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        .live-host-race-fill {
+            height: 100%; border-radius: 999px; transition: width 0.45s cubic-bezier(0.34, 1.2, 0.64, 1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .live-host-race-fill.reset-flash { filter: brightness(1.2); animation: liveHostRaceFlash 0.55s ease; }
+        @keyframes liveHostRaceFlash {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.35); background: #ef4444 !important; }
+        }
+        .live-host-race-fill.winner {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b) !important;
+            box-shadow: 0 0 18px rgba(251, 191, 36, 0.65);
+        }
+        .live-host-race-score {
+            font-family: var(--font-primary); font-weight: 900; font-size: clamp(1.05rem, 2.8vw, 1.45rem);
+            color: #fff; text-align: right;
+            text-shadow:
+                0 1px 0 rgba(0, 0, 0, 0.9),
+                0 2px 5px rgba(0, 0, 0, 0.75),
+                0 4px 16px rgba(0, 0, 0, 0.5);
+            -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.4);
+        }
+        .live-race-bubbles,
+        .live-host-race-bubbles {
+            position: fixed; inset: 0; pointer-events: none; z-index: 600; overflow: hidden;
+        }
+        .live-race-feedback-bubble,
+        .live-host-feedback-bubble {
+            position: fixed; pointer-events: none; z-index: 601;
+            font-family: var(--font-primary); font-weight: 800; font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+            padding: 0.45rem 1rem; border-radius: 999px; white-space: nowrap;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+            animation: liveHostBubbleUp 1.75s ease-out forwards;
+        }
+        .live-race-feedback-bubble.positive,
+        .live-host-feedback-bubble.positive {
+            background: #fff; color: #15803d; border: 3px solid #4ade80;
+        }
+        .live-race-feedback-bubble.negative,
+        .live-host-feedback-bubble.negative {
+            background: #fff; color: #b91c1c; border: 3px solid #f87171;
+        }
+        @keyframes liveHostBubbleUp {
+            0% { opacity: 0; transform: translate(-50%, 8px) scale(0.8); }
+            12% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            75% { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -72px) scale(1.05); }
+        }
         .live-own-progress { margin: 0.5rem 0 0.75rem; }
         .live-own-progress .live-progress-track { height: 32px; }
         .live-own-progress-label { display: flex; justify-content: space-between; font-weight: 700; color: var(--royal-blue); margin-bottom: 0.4rem; font-size: 1.1rem; }
@@ -340,13 +489,7 @@
         .live-play-hero { flex-shrink: 0; }
         .live-play-room-code {
             display: none;
-            text-align: center;
-            font-family: var(--font-primary);
-            font-size: clamp(0.95rem, 4vw, 1.15rem);
-            letter-spacing: 0.32em;
-            font-weight: 800;
-            color: var(--royal-blue);
-            margin: 0.45rem 0 0;
+            margin: 0;
         }
         body.live-game-active .live-play-hero {
             flex: 0 0 auto;
@@ -364,9 +507,6 @@
             height: clamp(52px, 16vh, 80px);
             border-radius: 14px;
         }
-        body.live-game-active .live-play-room-code {
-            display: block;
-        }
         body.live-game-active #live-play-status {
             font-size: 0.88rem;
             margin-bottom: 0.25rem !important;
@@ -379,6 +519,17 @@
         body.live-game-active .live-play-body {
             gap: 0;
         }
+        body.live-player-mode .live-play-shell {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        body.live-player-mode .live-play-surface {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
         #live-play-choices {
             margin: 0.25rem 0 0.35rem;
             flex-shrink: 0;
@@ -389,11 +540,118 @@
             font-size: 0.95rem;
             text-align: center;
         }
-        body.live-game-active #live-play-definition.word-prompt {
-            flex: 0 0 auto;
-            min-height: 0;
-            max-height: 28vh;
+        body.live-game-active #screen-live-play {
+            position: relative;
+            max-width: 100% !important;
+            padding: clamp(0.85rem, 3vw, 1.5rem) clamp(0.85rem, 4vw, 2rem) clamp(1rem, 3vh, 1.35rem);
+            background: transparent;
             overflow: hidden;
+        }
+        body.live-game-active #live-play-race-bg {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+        body.live-game-active #live-play-bubbles {
+            display: block;
+        }
+        body.live-game-active .live-play-surface {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        body.live-game-active .live-play-hero {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            padding-bottom: 0.35rem;
+        }
+        body.live-game-active .live-play-room-code {
+            order: -1;
+            align-self: center;
+            display: none;
+            padding: 0.4rem 1rem;
+            margin: 0;
+        }
+        body.live-game-active .live-play-room-code:not([hidden]) {
+            display: inline-flex;
+        }
+        body.live-game-active .live-own-progress-label {
+            color: #fff;
+            font-weight: 900;
+            font-size: clamp(0.95rem, 3.8vw, 1.15rem);
+            text-shadow:
+                0 1px 0 rgba(0, 0, 0, 0.9),
+                0 2px 5px rgba(0, 0, 0, 0.75),
+                0 4px 16px rgba(0, 0, 0, 0.5);
+            -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.4);
+        }
+        body.live-game-active .live-own-progress .live-progress-track {
+            background: rgba(0, 0, 0, 0.28);
+            border-radius: 999px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+            height: clamp(36px, 6vh, 52px);
+            overflow: visible;
+        }
+        body.live-game-active #live-play-progress-bar {
+            border-radius: 999px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(90deg, var(--royal-blue), #3d7be8);
+        }
+        body.live-game-active #live-play-progress-bar.winner {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b) !important;
+            box-shadow: 0 0 18px rgba(251, 191, 36, 0.65);
+        }
+        body.live-game-active #live-play-progress-bar.reset-flash {
+            filter: brightness(1.2);
+            animation: liveHostRaceFlash 0.55s ease;
+        }
+        body.live-game-active #live-play-status {
+            color: #fff;
+            font-weight: 900;
+            font-size: clamp(0.88rem, 3.5vw, 1rem);
+            text-shadow:
+                0 1px 0 rgba(0, 0, 0, 0.9),
+                0 2px 6px rgba(0, 0, 0, 0.7),
+                0 4px 18px rgba(0, 0, 0, 0.45);
+            -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.35);
+        }
+        body.live-game-active #live-play-definition.word-prompt {
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 16px;
+            padding: clamp(0.85rem, 4vw, 1.35rem);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+            color: var(--text-dark);
+            font-weight: 700;
+            max-height: none;
+            flex: 1;
+            min-height: 4.5rem;
+        }
+        body.live-game-active #live-play-choices .live-answer-btn {
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+            font-size: clamp(0.95rem, 4vw, 1.05rem);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+            text-align: center;
+        }
+        body.live-game-active #live-play-type-section {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 14px;
+            padding: 0.75rem;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14);
+            flex-shrink: 0;
+        }
+        body.live-game-active .live-type-or-label {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        #live-play-race-bg,
+        #live-play-bubbles {
+            display: none;
         }
         .live-type-or-label {
             font-size: 0.85rem;
@@ -403,6 +661,44 @@
             flex-shrink: 0;
             display: none;
         }
+        .live-crew-panel {
+            margin-top: 0.35rem;
+            flex-shrink: 0;
+        }
+        .live-crew-panel[hidden] { display: none !important; }
+        .live-crew-votes {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 0.55rem 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            text-align: center;
+        }
+        .live-crew-role {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 0.35rem;
+            color: var(--royal-blue);
+        }
+        body.live-game-active .live-crew-role {
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+        }
+        #live-play-choices .live-answer-btn.crew-voted {
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.25);
+        }
+        #live-play-captain-submit {
+            width: 100%;
+            padding: 0.85rem;
+            font-size: 1.05rem;
+        }
+        #live-play-captain-submit[hidden] { display: none !important; }
+        #live-host-team-size-row { margin-top: 0.85rem; }
         body.live-game-active .live-type-or-label {
             display: block;
         }
@@ -2372,6 +2668,31 @@
                 </div>
 
                 <fieldset class="live-setup-section" style="margin-top:1.1rem;">
+                    <legend><i class="fa-solid fa-people-group"></i> Game format</legend>
+                    <div class="live-option-grid live-option-grid--2">
+                        <label class="live-option">
+                            <input type="radio" name="live-game-format" value="race" checked>
+                            <span class="live-option-title">Solo race</span>
+                            <span class="live-option-desc">Each player races alone to 12 in a row</span>
+                        </label>
+                        <label class="live-option">
+                            <input type="radio" name="live-game-format" value="captain-crew">
+                            <span class="live-option-title">Captain &amp; Crew</span>
+                            <span class="live-option-desc">Teams vote, captain submits the team answer</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div id="live-host-team-size-row" class="live-setup-field" hidden>
+                    <label for="live-host-team-size"><i class="fa-solid fa-users"></i> Team size</label>
+                    <select id="live-host-team-size" class="live-setup-select">
+                        <option value="2" selected>2 players per team</option>
+                        <option value="3">3 players per team</option>
+                    </select>
+                    <p class="live-muted" style="margin:0.35rem 0 0;font-size:0.88rem;">Teams are formed automatically when the game starts. Minimum players: team size × 2.</p>
+                </div>
+
+                <fieldset id="live-host-answer-mode-section" class="live-setup-section" style="margin-top:1.1rem;">
                     <legend><i class="fa-solid fa-gamepad"></i> Answer mode</legend>
                     <div class="live-option-grid live-option-grid--3">
                         <label class="live-option">
@@ -2415,6 +2736,21 @@
                         </div>
                     </div>
                 </div>
+                <div id="live-host-race" class="live-host-race" hidden>
+                    <div class="live-race-bg live-host-race-bg" aria-hidden="true"></div>
+                    <div class="live-host-race-content">
+                        <header class="live-host-race-header">
+                            <div class="live-host-race-code-wrap">
+                                <span class="live-host-race-label">Room</span>
+                                <span id="live-host-race-code" class="live-host-race-code">----</span>
+                            </div>
+                            <p id="live-host-race-status" class="live-host-race-status">Race underway!</p>
+                            <button type="button" id="live-host-race-end" class="live-host-race-end-btn btn btn-grey">End game</button>
+                        </header>
+                        <div id="live-host-race-board" class="live-host-race-board"></div>
+                    </div>
+                    <div id="live-host-race-bubbles" class="live-host-race-bubbles" aria-hidden="true"></div>
+                </div>
                 <div id="live-host-finished" class="card" hidden style="margin-top:1.25rem;">
                     <div id="live-host-champion" class="live-champion-banner" hidden></div>
                     <h2>Final standings</h2>
@@ -2443,6 +2779,9 @@
 
         <!-- LIVE GAME: PLAY (student) -->
         <div id="screen-live-play" class="screen engine-container live-play-shell">
+            <div id="live-play-race-bg" class="live-race-bg" aria-hidden="true"></div>
+            <div id="live-play-bubbles" class="live-race-bubbles" aria-hidden="true"></div>
+            <div class="live-play-surface">
             <div class="top-bar live-desktop-only">
                 <span class="live-muted">Playing as <strong id="live-play-nickname">Player</strong></span>
             </div>
@@ -2456,11 +2795,19 @@
                 </div>
                 <div class="live-progress-track"><div id="live-play-progress-bar" class="live-progress-fill" style="width:0%"></div></div>
             </div>
-            <div id="live-play-room-code" class="live-play-room-code" hidden aria-label="Room code"></div>
+            <div id="live-play-room-code" class="live-play-room-code" hidden aria-label="Room code">
+                <span class="live-play-room-label">Room</span>
+                <span id="live-play-room-code-value" class="live-play-room-code-value"></span>
+            </div>
             </div>
             <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
             <div id="live-play-definition" class="word-prompt">Connecting…</div>
+            <p id="live-play-crew-role" class="live-crew-role" hidden></p>
             <div id="live-play-choices" hidden></div>
+            <div id="live-play-crew-panel" class="live-crew-panel" hidden>
+                <div id="live-play-crew-votes" class="live-crew-votes"></div>
+                <button type="button" id="live-play-captain-submit" class="btn btn-blue" hidden>Submit team answer</button>
+            </div>
             <div id="live-play-type-section">
             <p class="live-type-or-label" id="live-play-type-hint">Type the word</p>
             <input type="text" id="live-play-answer" class="game-input" placeholder="Type the word" autocomplete="off" maxlength="120" style="margin-top:0.25rem;">
@@ -2470,6 +2817,7 @@
             <div id="live-play-champion" class="live-champion-banner" hidden></div>
             <h3 style="margin-top:1rem;color:var(--royal-blue);" class="live-desktop-only">All players</h3>
             <div id="live-play-progress-board" class="live-desktop-only"></div>
+            </div>
             </div>
         </div>
 

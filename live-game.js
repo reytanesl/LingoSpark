@@ -11,6 +11,8 @@ import {
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
 export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
+export const LIVE_GAME_FORMATS = ['race', 'captain-crew'];
+export const LIVE_TEAM_SIZES = [2, 3];
 const MAX_PLAYERS = 40;
 const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -74,28 +76,63 @@ function playerList(room) {
     return Array.from(room.players.values()).map((p) => playerProgress(p));
 }
 
+function teamProgress(team, room) {
+    const members = team.memberIds
+        .map((id) => room.players.get(id))
+        .filter(Boolean)
+        .map((p) => p.nickname);
+    return {
+        id: team.id,
+        nickname: team.name,
+        memberNicknames: members,
+        progress: team.termIndex,
+        termsToWin: LIVE_TERMS_TO_WIN,
+        finished: Boolean(team.finished),
+        connected: team.memberIds.some((id) => Boolean(room.players.get(id)?.socketId)),
+    };
+}
+
+function teamList(room) {
+    if (!room.teams) return [];
+    return Array.from(room.teams.values()).map((t) => teamProgress(t, room));
+}
+
+function raceEntities(room) {
+    return isCaptainCrew(room) ? teamList(room) : playerList(room);
+}
+
+function minPlayersForRoom(room) {
+    if (isCaptainCrew(room)) return (room.teamSize || 2) * 2;
+    return LIVE_MIN_PLAYERS;
+}
+
 function progressSnapshot(room) {
     return {
-        players: playerList(room),
+        players: raceEntities(room),
         termsToWin: LIVE_TERMS_TO_WIN,
         phase: room.phase,
         winnerId: room.winnerId,
         winnerNickname: room.winnerNickname,
+        gameFormat: room.gameFormat,
     };
 }
 
 export function publicRoomSnapshot(room) {
+    const minPlayers = minPlayersForRoom(room);
     return {
         code: room.code,
         phase: room.phase,
         playerCount: room.players.size,
         termsToWin: LIVE_TERMS_TO_WIN,
-        minPlayers: LIVE_MIN_PLAYERS,
-        canStart: room.phase === 'lobby' && room.players.size >= LIVE_MIN_PLAYERS,
+        minPlayers,
+        canStart: room.phase === 'lobby' && room.players.size >= minPlayers,
         winnerId: room.winnerId,
         winnerNickname: room.winnerNickname,
         answerMode: room.answerMode,
+        gameFormat: room.gameFormat || 'race',
+        teamSize: room.teamSize || 2,
         players: playerList(room),
+        teams: teamList(room),
     };
 }
 
@@ -104,7 +141,22 @@ function normalizeAnswerMode(mode) {
     return LIVE_ANSWER_MODES.includes(m) ? m : 'randomise';
 }
 
+function normalizeGameFormat(format) {
+    const f = String(format || 'race').toLowerCase();
+    return LIVE_GAME_FORMATS.includes(f) ? f : 'race';
+}
+
+function normalizeTeamSize(size) {
+    const n = Number(size) || 2;
+    return LIVE_TEAM_SIZES.includes(n) ? n : 2;
+}
+
+function isCaptainCrew(room) {
+    return room?.gameFormat === 'captain-crew';
+}
+
 function resolveQuestionInputMode(room) {
+    if (isCaptainCrew(room)) return 'choice';
     const mode = room.answerMode || 'randomise';
     if (mode === 'recognise') return 'choice';
     if (mode === 'realise') return 'typed';
@@ -116,6 +168,119 @@ function clearPlayerQuestionState(player) {
     player.questionInputMode = null;
     player.questionChoices = null;
     player.answerLocked = false;
+}
+
+function clearTeamQuestionState(team) {
+    team.questionForTermIndex = -1;
+    team.questionChoices = null;
+    team.answerLocked = false;
+    team.crewVotes = new Map();
+}
+
+function getPlayerTeam(room, player) {
+    if (!player?.teamId || !room.teams) return null;
+    return room.teams.get(player.teamId) || null;
+}
+
+function currentCaptainId(team) {
+    if (!team?.memberIds?.length) return null;
+    const idx = team.termIndex % team.memberIds.length;
+    return team.memberIds[idx];
+}
+
+function majorityVote(team) {
+    if (!team.crewVotes || team.crewVotes.size === 0) return null;
+    const counts = new Map();
+    for (const answer of team.crewVotes.values()) {
+        const key = sanitizeAnswerText(answer);
+        if (!key) continue;
+        counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    let best = null;
+    let bestCount = 0;
+    for (const [answer, count] of counts) {
+        if (count > bestCount) {
+            best = answer;
+            bestCount = count;
+        }
+    }
+    return best;
+}
+
+function crewVotePayload(team, room, viewerPlayerId) {
+    const counts = {};
+    const memberVotes = {};
+    for (const [memberId, answer] of team.crewVotes.entries()) {
+        const key = sanitizeAnswerText(answer);
+        if (!key) continue;
+        counts[key] = (counts[key] || 0) + 1;
+        const member = room.players.get(memberId);
+        if (member) memberVotes[memberId] = { nickname: member.nickname, answer: key };
+    }
+    const captainId = currentCaptainId(team);
+    return {
+        teamId: team.id,
+        questionId: team.questionId,
+        votes: counts,
+        memberVotes,
+        captainId,
+        captainNickname: room.players.get(captainId)?.nickname || '',
+        isCaptain: viewerPlayerId === captainId,
+        suggestedAnswer: majorityVote(team),
+        votedCount: team.crewVotes.size,
+        crewSize: team.memberIds.length,
+    };
+}
+
+function emitTeamVoteUpdate(io, room, team) {
+    for (const memberId of team.memberIds) {
+        const member = room.players.get(memberId);
+        if (!member?.socketId) continue;
+        io.to(member.socketId).emit('live:crew-vote-update', crewVotePayload(team, room, memberId));
+    }
+}
+
+function ensureTeamQuestionState(team, room) {
+    const entry = team.terms[team.termIndex];
+    if (!entry || !room) return null;
+
+    if (team.questionForTermIndex !== team.termIndex) {
+        team.questionForTermIndex = team.termIndex;
+        team.questionChoices = null;
+        team.questionId = (team.questionId || 0) + 1;
+        team.crewVotes = new Map();
+    }
+
+    if (!team.questionChoices) {
+        const termPool = room.masterDeck.map((d) => d.term);
+        team.questionChoices = buildChoices(entry.term, termPool, room.level || 'intermediate');
+    }
+
+    return entry;
+}
+
+function teamQuestionPayload(team, room, player) {
+    const entry = ensureTeamQuestionState(team, room);
+    if (!entry) return null;
+    const captainId = currentCaptainId(team);
+    return {
+        progress: team.termIndex,
+        termsToWin: LIVE_TERMS_TO_WIN,
+        termIndex: team.termIndex,
+        questionId: team.questionId,
+        definition: entry.definition,
+        inputMode: 'choice',
+        answerMode: 'recognise',
+        gameFormat: 'captain-crew',
+        caseSensitive: false,
+        teamId: team.id,
+        teamName: team.name,
+        captainId,
+        captainNickname: room.players.get(captainId)?.nickname || '',
+        isCaptain: player.id === captainId,
+        choices: team.questionChoices,
+        crew: crewVotePayload(team, room, player.id),
+    };
 }
 
 function ensurePlayerQuestionState(player, room) {
@@ -138,6 +303,11 @@ function ensurePlayerQuestionState(player, room) {
 }
 
 function playerQuestionPayload(player, room) {
+    if (isCaptainCrew(room)) {
+        const team = getPlayerTeam(room, player);
+        if (!team) return null;
+        return teamQuestionPayload(team, room, player);
+    }
     const entry = ensurePlayerQuestionState(player, room);
     if (!entry) return null;
     const payload = {
@@ -148,6 +318,7 @@ function playerQuestionPayload(player, room) {
         definition: entry.definition,
         inputMode: player.questionInputMode,
         answerMode: room.answerMode,
+        gameFormat: room.gameFormat || 'race',
         caseSensitive: false,
     };
     if (player.questionInputMode === 'choice') {
@@ -171,6 +342,20 @@ function emitProgress(io, room) {
     }
 }
 
+function emitHostAnswerFeed(io, room, entity, result) {
+    if (!room.hostSocketId) return;
+    const isTeam = Boolean(result.teamId);
+    io.to(room.hostSocketId).emit('live:host-answer', {
+        playerId: isTeam ? result.teamId : entity.id,
+        nickname: isTeam ? entity.name : entity.nickname,
+        correct: Boolean(result.correct),
+        reset: Boolean(result.reset),
+        progress: result.progress,
+        won: Boolean(result.won),
+        teamId: result.teamId || null,
+    });
+}
+
 function attachPlayerSocket(socket, room, player) {
     player.socketId = socket.id;
     player.connected = true;
@@ -181,11 +366,18 @@ function attachPlayerSocket(socket, room, player) {
 }
 
 function emitPlayerSession(socket, room, player) {
+    const team = getPlayerTeam(room, player);
+    const entityProgress = isCaptainCrew(room) && team
+        ? teamProgress(team, room)
+        : playerProgress(player);
     const payload = {
         snapshot: publicRoomSnapshot(room),
-        player: playerProgress(player),
+        player: entityProgress,
         progress: progressSnapshot(room),
         phase: room.phase,
+        gameFormat: room.gameFormat || 'race',
+        teamId: player.teamId || null,
+        teamName: team?.name || null,
     };
     let question = null;
     if (room.phase === 'playing') {
@@ -218,12 +410,12 @@ async function deliverQuestionsToAllPlayers(io, room) {
     }
 }
 
-function finishGame(room, winnerPlayer) {
+function finishGame(room, winnerEntity, { isTeam = false } = {}) {
     room.phase = 'finished';
     room.finishedAt = Date.now();
-    room.winnerId = winnerPlayer.id;
-    room.winnerNickname = winnerPlayer.nickname;
-    winnerPlayer.finished = true;
+    room.winnerId = winnerEntity.id;
+    room.winnerNickname = isTeam ? winnerEntity.name : winnerEntity.nickname;
+    winnerEntity.finished = true;
 }
 
 function gameFinishedPayload(room) {
@@ -231,7 +423,8 @@ function gameFinishedPayload(room) {
         winnerId: room.winnerId,
         winnerNickname: room.winnerNickname,
         termsToWin: LIVE_TERMS_TO_WIN,
-        players: playerList(room).sort((a, b) => b.progress - a.progress || a.nickname.localeCompare(b.nickname)),
+        gameFormat: room.gameFormat || 'race',
+        players: raceEntities(room).sort((a, b) => b.progress - a.progress || a.nickname.localeCompare(b.nickname)),
     };
 }
 
@@ -257,10 +450,12 @@ export function buildDeckFromRequest(body) {
     throw new Error('Invalid word source.');
 }
 
-export function createRoom(hostUserId, { deck, level, answerMode }) {
+export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamSize }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
+    const normalizedFormat = normalizeGameFormat(gameFormat);
+    const normalizedTeamSize = normalizeTeamSize(teamSize);
     const code = generateCode();
     const room = {
         code,
@@ -269,9 +464,12 @@ export function createRoom(hostUserId, { deck, level, answerMode }) {
         hostToken: randomToken(),
         phase: 'lobby',
         level: level || 'intermediate',
-        answerMode: normalizeAnswerMode(answerMode),
+        answerMode: normalizedFormat === 'captain-crew' ? 'recognise' : normalizeAnswerMode(answerMode),
+        gameFormat: normalizedFormat,
+        teamSize: normalizedTeamSize,
         masterDeck: shuffleDeck(deck, deck.length),
         players: new Map(),
+        teams: new Map(),
         winnerId: null,
         winnerNickname: null,
         createdAt: Date.now(),
@@ -350,14 +548,180 @@ function reshufflePlayerTerms(player, masterDeck) {
     assignPlayerTerms(player, masterDeck);
 }
 
+function assignTeamTerms(team, masterDeck) {
+    team.terms = shuffleDeck(masterDeck, LIVE_TERMS_TO_WIN);
+    team.termIndex = 0;
+    team.finished = false;
+    team.questionId = 0;
+    clearTeamQuestionState(team);
+}
+
+function reshuffleTeamTerms(team, masterDeck) {
+    assignTeamTerms(team, masterDeck);
+}
+
+function buildTeams(room) {
+    const players = Array.from(room.players.values());
+    const size = room.teamSize || 2;
+    room.teams = new Map();
+    const chunks = [];
+    for (let i = 0; i < players.length; i += size) {
+        chunks.push(players.slice(i, i + size));
+    }
+    if (chunks.length > 1 && chunks[chunks.length - 1].length === 1) {
+        chunks[chunks.length - 2].push(chunks.pop()[0]);
+    }
+    chunks.forEach((members, index) => {
+        const teamId = `team-${index + 1}`;
+        const team = {
+            id: teamId,
+            name: `Team ${index + 1}`,
+            memberIds: members.map((p) => p.id),
+            termIndex: 0,
+            terms: [],
+            finished: false,
+            questionForTermIndex: -1,
+            questionChoices: null,
+            questionId: 0,
+            answerLocked: false,
+            crewVotes: new Map(),
+        };
+        room.teams.set(teamId, team);
+        for (const member of members) {
+            member.teamId = teamId;
+        }
+    });
+}
+
+function deliverTeamQuestion(io, room, team) {
+    for (const memberId of team.memberIds) {
+        const member = room.players.get(memberId);
+        if (!member?.socketId) continue;
+        const q = teamQuestionPayload(team, room, member);
+        if (q) io.to(member.socketId).emit('live:your-question', q);
+    }
+}
+
+function deliverTeamAnswerResult(io, room, team, result) {
+    const payload = { ...result, teamId: team.id };
+    for (const memberId of team.memberIds) {
+        const member = room.players.get(memberId);
+        if (!member?.socketId) continue;
+        io.to(member.socketId).emit('live:answer-result', payload);
+        if (result.nextQuestion) {
+            const q = teamQuestionPayload(team, room, member);
+            if (q) io.to(member.socketId).emit('live:your-question', q);
+        }
+    }
+}
+
+function submitCrewVote(room, playerId, rawText) {
+    if (room.phase !== 'playing') throw new Error('The game is not in progress.');
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+    const team = getPlayerTeam(room, player);
+    if (!team) throw new Error('You are not on a team.');
+    if (team.finished) throw new Error('Your team has already finished.');
+
+    const entry = ensureTeamQuestionState(team, room);
+    if (!entry) throw new Error('No active question.');
+
+    const answerText = sanitizeAnswerText(rawText);
+    if (!answerText) throw new Error('Choose an answer first.');
+    if (!team.questionChoices?.some((c) => matchesTermAnswer(answerText, c))) {
+        throw new Error('Invalid choice.');
+    }
+
+    team.crewVotes.set(playerId, answerText);
+    touchRoom(room);
+    return crewVotePayload(team, room, playerId);
+}
+
+function submitTeamAnswer(room, playerId, rawText) {
+    if (room.phase !== 'playing') throw new Error('The game is not in progress.');
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+    const team = getPlayerTeam(room, player);
+    if (!team) throw new Error('You are not on a team.');
+    if (team.finished) throw new Error('Your team has already finished.');
+    if (currentCaptainId(team) !== playerId) {
+        throw new Error('Only the captain can submit the team answer.');
+    }
+    if (team.answerLocked) throw new Error('Please wait for the next question.');
+
+    const entry = team.terms[team.termIndex];
+    if (!entry) throw new Error('No active question.');
+
+    const answerText = sanitizeAnswerText(rawText);
+    if (!answerText) throw new Error('Choose an answer first.');
+
+    team.answerLocked = true;
+    try {
+        const correct = matchesTermAnswer(answerText, entry.term);
+
+        if (correct) {
+            team.termIndex += 1;
+            if (team.termIndex >= LIVE_TERMS_TO_WIN) {
+                finishGame(room, team, { isTeam: true });
+                return {
+                    correct: true,
+                    reset: false,
+                    progress: LIVE_TERMS_TO_WIN,
+                    won: true,
+                    correctTerm: entry.term,
+                    answerText,
+                    teamId: team.id,
+                    teamName: team.name,
+                };
+            }
+            clearTeamQuestionState(team);
+            return {
+                correct: true,
+                reset: false,
+                progress: team.termIndex,
+                won: false,
+                correctTerm: entry.term,
+                answerText,
+                teamId: team.id,
+                teamName: team.name,
+                nextQuestion: true,
+            };
+        }
+
+        team.termIndex = 0;
+        reshuffleTeamTerms(team, room.masterDeck);
+        return {
+            correct: false,
+            reset: true,
+            progress: 0,
+            won: false,
+            correctTerm: entry.term,
+            answerText,
+            teamId: team.id,
+            teamName: team.name,
+            nextQuestion: true,
+        };
+    } finally {
+        team.answerLocked = false;
+    }
+}
+
 function startGame(room) {
     if (room.phase === 'finished') throw new Error('Game has ended.');
     if (room.phase === 'playing') throw new Error('Game is already in progress.');
-    if (room.players.size < LIVE_MIN_PLAYERS) {
-        throw new Error(`At least ${LIVE_MIN_PLAYERS} players are required to start.`);
+    const minPlayers = minPlayersForRoom(room);
+    if (room.players.size < minPlayers) {
+        throw new Error(`At least ${minPlayers} players are required to start.`);
     }
-    for (const player of room.players.values()) {
-        assignPlayerTerms(player, room.masterDeck);
+    if (isCaptainCrew(room)) {
+        buildTeams(room);
+        for (const team of room.teams.values()) {
+            assignTeamTerms(team, room.masterDeck);
+        }
+    } else {
+        for (const player of room.players.values()) {
+            assignPlayerTerms(player, room.masterDeck);
+        }
     }
     room.phase = 'playing';
     room.startedAt = Date.now();
@@ -545,11 +909,33 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 const progress = progressSnapshot(room);
                 io.to(`room:${room.code}`).emit('live:game-started', {
                     termsToWin: LIVE_TERMS_TO_WIN,
-                    minPlayers: LIVE_MIN_PLAYERS,
+                    minPlayers: minPlayersForRoom(room),
                     progress,
                     code: room.code,
+                    gameFormat: room.gameFormat || 'race',
                 });
                 await deliverQuestionsToAllPlayers(io, room);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:crew-vote', ({ text, answer }) => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'player') {
+                socket.emit('live:error', { error: 'Players only.' });
+                return;
+            }
+            if (!isCaptainCrew(room)) {
+                socket.emit('live:error', { error: 'Crew votes are only used in Captain & Crew mode.' });
+                return;
+            }
+            try {
+                const player = room.players.get(socket.data.playerId);
+                const team = player ? getPlayerTeam(room, player) : null;
+                if (!team) throw new Error('You are not on a team.');
+                submitCrewVote(room, socket.data.playerId, text ?? answer);
+                emitTeamVoteUpdate(io, room, team);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }
@@ -562,7 +948,27 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                const player = room.players.get(socket.data.playerId);
+                if (isCaptainCrew(room)) {
+                    const team = player ? getPlayerTeam(room, player) : null;
+                    if (!team) throw new Error('You are not on a team.');
+                    const result = submitTeamAnswer(room, socket.data.playerId, text ?? answer);
+                    emitHostAnswerFeed(io, room, team, result);
+                    deliverTeamAnswerResult(io, room, team, result);
+
+                    if (result.won) {
+                        const finished = gameFinishedPayload(room);
+                        io.to(`room:${room.code}`).emit('live:game-finished', finished);
+                        if (onGameEnd) onGameEnd(room);
+                        return;
+                    }
+
+                    emitProgress(io, room);
+                    return;
+                }
+
                 const result = submitAnswer(room, socket.data.playerId, text ?? answer);
+                if (player) emitHostAnswerFeed(io, room, player, result);
                 socket.emit('live:answer-result', result);
 
                 if (result.won) {
