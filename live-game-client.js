@@ -61,8 +61,6 @@
         setHostRaceMode(false);
         hostRaceColors = new Map();
         $('live-host-room-panel').hidden = true;
-        $('live-host-finished').hidden = true;
-        if ($('live-host-champion')) $('live-host-champion').hidden = true;
         updateHostAuthUI();
         if (message) showLiveError(message);
     }
@@ -873,14 +871,11 @@
             stopHostLobbyPoll();
             LiveAudio.stopAll();
             setHostRaceMode(false);
-            $('live-host-finished').hidden = false;
             if (data.winnerNickname) {
-                showChampionBanner($('live-host-champion'), data.winnerNickname, false);
                 showLiveWinnerScreen(data.winnerNickname, false, {
                     teamMode: hostState?.gameFormat === 'captain-crew',
                 });
             }
-            renderProgressBoard($('live-host-final-board'), data.players || [], { winnerId: data.winnerId });
             updateHostStartButton({ phase: 'finished' });
         });
 
@@ -1415,14 +1410,12 @@
             if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }
             const qr = $('live-host-qr');
             if (qr) {
-                qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(joinUrl)}`;
+                qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(joinUrl)}`;
                 qr.hidden = false;
             }
 
             $('live-host-setup-form').hidden = true;
             $('live-host-room-panel').hidden = false;
-            $('live-host-finished').hidden = true;
-            $('live-host-champion').hidden = true;
 
             bindHostSocket();
             emitHostJoin();
@@ -1469,12 +1462,11 @@
             if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }
             const qr = $('live-host-qr');
             if (qr) {
-                qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(joinUrl)}`;
+                qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(joinUrl)}`;
                 qr.hidden = false;
             }
             $('live-host-setup-form').hidden = true;
             $('live-host-room-panel').hidden = false;
-            $('live-host-finished').hidden = snap.phase !== 'finished';
             bindHostSocket();
             emitHostJoin();
             startHostLobbyPoll(code);
