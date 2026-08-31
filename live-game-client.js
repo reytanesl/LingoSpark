@@ -17,6 +17,16 @@
     let playerIsCaptain = false;
     let captainSuggestedAnswer = null;
     let currentQuestion = null;
+    let hostPrefill = null;
+    let raceBlobAnim = null;
+    const raceBlobMotion = [];
+
+    const BLOB_SPECS = [
+        { cls: 'live-race-blob--yellow', x: 0.12, y: 0.18, vx: 0.00022, vy: 0.00016 },
+        { cls: 'live-race-blob--cyan', x: 0.86, y: 0.14, vx: -0.0002, vy: 0.00014 },
+        { cls: 'live-race-blob--rose', x: 0.78, y: 0.8, vx: -0.00018, vy: -0.0002 },
+        { cls: 'live-race-blob--green', x: 0.16, y: 0.76, vx: 0.00019, vy: -0.00017 },
+    ];
 
     const RACE_BAR_COLORS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#9c27b0', '#ff6600', '#06b6d4', '#ec4899'];
     const HOST_POSITIVE_FEEDBACK = ['Way to go!', "That's right!", 'Nice one!', 'Spot on!', 'Keep going!', 'Brilliant!', 'Yes!'];
@@ -52,6 +62,7 @@
     function resetHostToSetup(message) {
         clearStoredHostRoom();
         setHostRaceMode(false);
+        hideFinishScreen();
         hostRaceColors = new Map();
         $('live-host-room-panel').hidden = true;
         $('live-host-finished').hidden = true;
@@ -185,15 +196,147 @@
         document.body.classList.toggle('live-game-active', Boolean(active));
         const codeEl = $('live-play-room-code');
         const codeVal = $('live-play-room-code-value');
+        const watermark = $('live-play-watermark');
         if (codeVal) {
             codeVal.textContent = playerState?.code || sessionStorage.getItem('ls_live_room_code') || '';
         }
         if (codeEl) {
             codeEl.hidden = !active;
         }
+        if (watermark) watermark.hidden = !active;
         const bubbles = $('live-play-bubbles');
         if (bubbles && !active) bubbles.innerHTML = '';
+        const bg = $('live-play-race-bg');
+        if (active) startRaceBlobMotion(bg);
+        else stopRaceBlobMotion();
         applyPlayerBarColor();
+    }
+
+    function ensureRaceBlobs(bgEl) {
+        if (!bgEl || bgEl.dataset.blobsReady) return;
+        bgEl.dataset.blobsReady = '1';
+        BLOB_SPECS.forEach((spec) => {
+            const el = document.createElement('span');
+            el.className = `live-race-blob ${spec.cls}`;
+            bgEl.appendChild(el);
+        });
+    }
+
+    function startRaceBlobMotion(bgEl) {
+        stopRaceBlobMotion();
+        if (!bgEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        ensureRaceBlobs(bgEl);
+        const blobs = bgEl.querySelectorAll('.live-race-blob');
+        const rect = () => bgEl.getBoundingClientRect();
+        raceBlobMotion.length = 0;
+        blobs.forEach((el, i) => {
+            const spec = BLOB_SPECS[i] || BLOB_SPECS[0];
+            const w = rect().width || 800;
+            const h = rect().height || 600;
+            const size = el.offsetWidth || 140;
+            const half = size * 0.45;
+            raceBlobMotion.push({
+                el,
+                half,
+                x: spec.x * w,
+                y: spec.y * h,
+                vx: spec.vx * w,
+                vy: spec.vy * h,
+            });
+        });
+        let last = performance.now();
+        const tick = (now) => {
+            const w = rect().width;
+            const h = rect().height;
+            const dt = Math.min(32, now - last);
+            last = now;
+            raceBlobMotion.forEach((b) => {
+                b.x += b.vx * dt;
+                b.y += b.vy * dt;
+                if (b.x < b.half) { b.x = b.half; b.vx = Math.abs(b.vx); }
+                if (b.y < b.half) { b.y = b.half; b.vy = Math.abs(b.vy); }
+                if (b.x > w - b.half) { b.x = w - b.half; b.vx = -Math.abs(b.vx); }
+                if (b.y > h - b.half) { b.y = h - b.half; b.vy = -Math.abs(b.vy); }
+                b.el.style.transform = `translate(${b.x - b.half}px, ${b.y - b.half}px)`;
+            });
+            raceBlobAnim = requestAnimationFrame(tick);
+        };
+        raceBlobAnim = requestAnimationFrame(tick);
+    }
+
+    function stopRaceBlobMotion() {
+        if (raceBlobAnim) cancelAnimationFrame(raceBlobAnim);
+        raceBlobAnim = null;
+        raceBlobMotion.length = 0;
+    }
+
+    function hideFinishScreen() {
+        const overlay = $('live-finish-overlay');
+        if (overlay) overlay.hidden = true;
+        const canvas = $('live-confetti-canvas');
+        if (canvas) {
+            canvas.classList.remove('active');
+            const ctx = canvas.getContext('2d');
+            if (ctx) ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        }
+        if (confettiAnim) {
+            cancelAnimationFrame(confettiAnim);
+            confettiAnim = null;
+        }
+    }
+
+    function showFinishScreen(data, role) {
+        const overlay = $('live-finish-overlay');
+        if (!overlay) return;
+        const isTeam = role === 'player'
+            ? isCaptainCrewMode()
+            : hostState?.gameFormat === 'captain-crew';
+        const isWinner = role === 'player'
+            ? (isTeam ? data.winnerId === playerState?.teamId : data.winnerId === playerState?.playerId)
+            : false;
+        const title = $('live-finish-title');
+        const msg = $('live-finish-message');
+        const board = $('live-finish-board');
+        if (title) title.textContent = isWinner ? 'You won!' : 'Champion!';
+        if (msg) {
+            const youMsg = isWinner
+                ? (isTeam ? ' That\'s your team!' : ' That\'s you!')
+                : '';
+            msg.innerHTML = data.winnerNickname
+                ? `<strong>${esc(data.winnerNickname)}</strong> completed all 12 terms first!${youMsg}`
+                : 'Game over!';
+        }
+        renderProgressBoard(board, data.players || [], { winnerId: data.winnerId });
+        overlay.hidden = false;
+        launchConfetti();
+        if (role === 'host') setHostRaceMode(false);
+        else setLiveGameActive(false);
+    }
+
+    function applyHostPrefill() {
+        if (!hostPrefill) return;
+        const pf = hostPrefill;
+        hostPrefill = null;
+        if (pf.setId) {
+            const radio = document.querySelector('input[name="live-source"][value="wordset"]');
+            if (radio) radio.checked = true;
+            toggleLiveSourcePanels();
+            const sel = $('live-host-wordset');
+            if (sel) sel.value = String(pf.setId);
+            if ((!sel?.value || sel.value !== String(pf.setId)) && pf.terms) {
+                const pasteRadio = document.querySelector('input[name="live-source"][value="paste"]');
+                if (pasteRadio) pasteRadio.checked = true;
+                toggleLiveSourcePanels();
+                const ta = $('live-host-glossary');
+                if (ta) ta.value = pf.terms;
+            }
+        } else if (pf.terms) {
+            const radio = document.querySelector('input[name="live-source"][value="paste"]');
+            if (radio) radio.checked = true;
+            toggleLiveSourcePanels();
+            const ta = $('live-host-glossary');
+            if (ta) ta.value = pf.terms;
+        }
     }
 
     function applyPlayerBarColor() {
@@ -426,6 +569,11 @@
             race.hidden = !active;
             race.classList.toggle('live-host-race--teams', active && hostState?.gameFormat === 'captain-crew');
         }
+        const watermark = $('live-host-watermark');
+        if (watermark) watermark.hidden = !active;
+        const bg = race?.querySelector('.live-race-bg');
+        if (active) startRaceBlobMotion(bg);
+        else stopRaceBlobMotion();
         const grid = document.querySelector('.live-host-grid');
         if (grid) grid.hidden = active;
         if (active) {
@@ -586,34 +734,38 @@
         panel.hidden = false;
         const teams = snap?.teams || [];
         const maxMembers = snap?.teamMax || 4;
+        const hint = playerState?.teamId
+            ? `You're on <strong>${esc(playerState.teamName || 'a team')}</strong> — waiting for the host…`
+            : 'Tap a team card below to join';
         if (!teams.length) {
-            list.innerHTML = '<p class="live-muted" style="margin:0;">No teams yet. Start one below.</p>';
+            list.innerHTML = `<p class="live-team-join-hint">${hint}</p><p class="live-muted" style="margin:0;text-align:center;">No teams yet. Start one below.</p>`;
         } else {
-            list.innerHTML = teams.map((team) => {
+            list.innerHTML = `<p class="live-team-join-hint">${hint}</p>` + teams.map((team) => {
                 const onTeam = team.memberIds?.includes(playerState?.playerId);
+                const canJoin = !onTeam && team.canJoin;
                 const members = team.memberNicknames?.length
                     ? esc(team.memberNicknames.join(', '))
                     : 'No members yet';
-                const joinBtn = !onTeam && team.canJoin
-                    ? `<button type="button" class="btn btn-blue live-join-team-btn" data-team-id="${esc(team.id)}" style="width:100%;margin-top:0.5rem;">Join team</button>`
-                    : '';
-                const joined = onTeam
-                    ? '<span class="live-muted" style="display:block;margin-top:0.35rem;">You are on this team</span>'
-                    : '';
-                return `<div class="live-team-card">
+                const cardCls = `live-team-card${onTeam ? ' live-team-card--yours' : ''}${canJoin ? ' live-team-card--joinable' : ''}`;
+                const action = onTeam
+                    ? '<span class="live-muted" style="display:block;margin-top:0.45rem;font-weight:600;">✓ Your team</span>'
+                    : (canJoin
+                        ? '<span class="live-muted" style="display:block;margin-top:0.45rem;">Tap to join</span>'
+                        : '<span class="live-muted" style="display:block;margin-top:0.45rem;">Team full</span>');
+                return `<div class="${cardCls}" data-team-id="${esc(team.id)}" data-can-join="${canJoin ? '1' : '0'}">
                     <div class="live-team-card-head">
                         <span class="live-team-card-name">${esc(team.name)}</span>
                         <span class="live-muted">${team.memberCount || 0}/${maxMembers}</span>
                     </div>
                     <div class="live-team-card-members">${members}</div>
-                    ${joinBtn}${joined}
+                    ${action}
                 </div>`;
             }).join('');
         }
         if (createBtn) createBtn.hidden = Boolean(playerState?.teamId);
-        list.querySelectorAll('.live-join-team-btn').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                const teamId = btn.getAttribute('data-team-id');
+        list.querySelectorAll('.live-team-card--joinable').forEach((card) => {
+            card.addEventListener('click', () => {
+                const teamId = card.getAttribute('data-team-id');
                 if (teamId) ensureSocket().emit('live:join-team', { teamId });
             });
         });
@@ -769,13 +921,8 @@
             hostState.phase = 'finished';
             stopHostLobbyPoll();
             LiveAudio.stopAll();
-            setHostRaceMode(false);
-            $('live-host-finished').hidden = false;
-            if (data.winnerNickname) {
-                showChampionBanner($('live-host-champion'), data.winnerNickname, false);
-                launchConfetti();
-            }
-            renderProgressBoard($('live-host-final-board'), data.players || [], { winnerId: data.winnerId });
+            $('live-host-finished').hidden = true;
+            showFinishScreen(data, 'host');
             updateHostStartButton({ phase: 'finished' });
         });
 
@@ -880,16 +1027,8 @@
 
         s.on('live:game-finished', (data) => {
             LiveAudio.stopGame();
-            setLiveGameActive(false);
             hideCrewPanel();
-            const isWinner = isCaptainCrewMode()
-                ? data.winnerId === playerState?.teamId
-                : data.winnerId === playerState?.playerId;
-            if (data.winnerNickname) {
-                showChampionBanner($('live-play-champion'), data.winnerNickname, isWinner);
-                launchConfetti();
-            }
-            renderProgressBoard($('live-play-progress-board'), data.players || [], { winnerId: data.winnerId });
+            showFinishScreen(data, 'player');
             const def = $('live-play-definition');
             if (def) def.textContent = 'Game over!';
             setAnswerInputsEnabled(false);
@@ -1071,7 +1210,12 @@
             btn.addEventListener('click', () => {
                 if (btn.disabled) return;
                 if (crewMode) {
-                    submitCrewVote(choices[i]);
+                    if (playerIsCaptain) {
+                        playerCrewVote = choices[i];
+                        submitCaptainAnswer();
+                    } else {
+                        submitCrewVote(choices[i]);
+                    }
                     return;
                 }
                 submitPlayerAnswer(choices[i]);
@@ -1383,7 +1527,7 @@
 
         await ensureAuthLoaded();
         updateHostAuthUI();
-        loadWordSetsForHost();
+        await loadWordSetsForHost();
 
         if (!isHostSignedIn()) {
             clearStoredHostRoom();
@@ -1396,8 +1540,14 @@
         if (!resumed) {
             $('live-host-room-panel').hidden = true;
             $('live-host-setup-form').hidden = false;
+            applyHostPrefill();
         }
         if (typeof showScreen === 'function') showScreen('live-host');
+    }
+
+    async function openHostPrefilled(opts = {}) {
+        hostPrefill = opts || null;
+        await openHost();
     }
 
     async function joinRoom() {
@@ -1405,7 +1555,7 @@
         const code = ($('live-join-code')?.value || '').trim().toUpperCase();
         const nickname = ($('live-join-nickname')?.value || '').trim();
         if (!code || code.length < 4) { showLiveError('Enter a 4-letter room code.'); return; }
-        if (!nickname) { showLiveError('Enter a nickname.'); return; }
+        if (!nickname || nickname.length < 2) { showLiveError('Enter a nickname (at least 2 characters).'); return; }
 
         const btn = $('live-join-btn');
         if (btn) btn.disabled = true;
@@ -1468,6 +1618,7 @@
         };
         $('live-play-nickname').textContent = sessionStorage.getItem('ls_live_nickname') || 'Player';
         $('live-play-champion').hidden = true;
+        hideFinishScreen();
         setLiveGameActive(false);
         showPlayerWaiting('Connecting…');
         bindPlayerSocket();
@@ -1518,11 +1669,22 @@
             e.preventDefault();
             const crewVoteBtn = $('live-play-crew-vote-btn');
             if (crewVoteBtn && !crewVoteBtn.hidden) submitCrewVoteFromInput();
+            else if (playerIsCaptain && isCaptainCrewMode()) submitCaptainAnswer();
             else submitPlayerAnswer();
+        });
+        $('live-finish-close')?.addEventListener('click', hideFinishScreen);
+        $('vocab-live-quiz-btn')?.addEventListener('click', () => {
+            const terms = document.getElementById('glossary-input')?.value || '';
+            const setId = typeof window.getCurrentWordSetId === 'function' ? window.getCurrentWordSetId() : null;
+            if (!terms.trim()) {
+                alert('Add a word list first.');
+                return;
+            }
+            openHostPrefilled(setId ? { setId, terms } : { terms });
         });
         toggleLiveSourcePanels();
         toggleLiveFormatPanels();
     });
 
-    window.LiveGame = { openHost, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged };
+    window.LiveGame = { openHost, openHostPrefilled, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged };
 })();

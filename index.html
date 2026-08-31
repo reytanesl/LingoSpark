@@ -152,6 +152,45 @@
             font-size: clamp(1.08rem, 4.4vw, 1.3rem);
             font-weight: 400; color: var(--text-muted); max-width: 92%; line-height: 1.4;
         }
+        .hub-square { order: 1; }
+        .hub-square.team { order: 3; }
+        .hub-square.writing { order: 4; }
+        .hub-live-quiz {
+            order: 2;
+            align-self: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: clamp(7.5rem, 34vw, 9.5rem);
+            height: clamp(7.5rem, 34vw, 9.5rem);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            text-decoration: none;
+            font: inherit;
+            background: linear-gradient(145deg, rgba(240, 210, 120, 0.92) 0%, rgba(212, 160, 23, 0.78) 55%, rgba(184, 134, 11, 0.85) 100%);
+            color: #5c3d00;
+            box-shadow: 0 8px 22px rgba(184, 134, 11, 0.28), inset 0 2px 8px rgba(255, 255, 255, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            margin: 0.15rem auto 0.35rem;
+        }
+        .hub-live-quiz:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 14px 28px rgba(184, 134, 11, 0.35), inset 0 2px 8px rgba(255, 255, 255, 0.4);
+        }
+        .hub-live-quiz-lines {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.05;
+            letter-spacing: 0.12em;
+        }
+        .hub-live-quiz-lines span {
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: clamp(0.82rem, 3.6vw, 1rem);
+        }
         @media (min-width: 768px) {
             .home-hub {
                 flex-direction: row; justify-content: center; align-items: stretch;
@@ -165,6 +204,14 @@
             .hub-square .hub-icon { height: 64px; width: 64px; font-size: 1.75rem; }
             .hub-square .hub-title { font-size: 1.64rem; }
             .hub-square .hub-sub { font-size: 1.11rem; max-width: none; }
+            .hub-live-quiz {
+                flex: 0 0 100%;
+                order: 0;
+                width: clamp(8rem, 14vw, 9.5rem);
+                height: clamp(8rem, 14vw, 9.5rem);
+                margin: 0 auto 0.25rem;
+            }
+            .hub-live-quiz-lines span { font-size: 1.05rem; }
         }
         .home-hub-wrap {
             max-width: 960px; width: 100%; margin: 0.75rem auto 1.5rem; padding: 0 0.75rem;
@@ -285,50 +332,29 @@
             background-size: 200% 200%;
             animation: liveRaceBaseDrift 52s ease-in-out infinite alternate;
         }
-        .live-race-bg::before,
-        .live-race-bg::after {
-            content: '';
+        .live-race-blob {
             position: absolute;
-            inset: -12%;
+            left: 0;
+            top: 0;
+            width: clamp(100px, 18vw, 160px);
+            height: clamp(100px, 18vw, 160px);
+            border-radius: 50%;
+            filter: blur(42px);
+            opacity: 0.58;
             pointer-events: none;
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
+            will-change: transform;
         }
-        .live-race-bg::before {
-            background-image:
-                radial-gradient(circle at 22% 28%, rgba(255, 214, 0, 0.32) 0%, transparent 14%),
-                radial-gradient(circle at 78% 18%, rgba(56, 189, 248, 0.28) 0%, transparent 13%);
-            animation: liveRaceBlobDriftA 34s ease-in-out infinite;
-        }
-        .live-race-bg::after {
-            background-image:
-                radial-gradient(circle at 72% 76%, rgba(244, 63, 94, 0.26) 0%, transparent 13%),
-                radial-gradient(circle at 18% 72%, rgba(74, 222, 128, 0.26) 0%, transparent 14%);
-            animation: liveRaceBlobDriftB 42s ease-in-out infinite;
-        }
+        .live-race-blob--yellow { background: rgba(255, 214, 0, 0.7); }
+        .live-race-blob--cyan { background: rgba(56, 189, 248, 0.65); }
+        .live-race-blob--rose { background: rgba(244, 63, 94, 0.6); }
+        .live-race-blob--green { background: rgba(74, 222, 128, 0.6); }
         .live-host-race-bg { position: absolute; inset: 0; z-index: 0; }
         @keyframes liveRaceBaseDrift {
             0% { background-position: 0% 50%; }
             100% { background-position: 100% 50%; }
         }
-        @keyframes liveRaceBlobDriftA {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(2.2%, 1.4%); }
-            50% { transform: translate(-1.2%, 2%); }
-            75% { transform: translate(1.6%, -1%); }
-        }
-        @keyframes liveRaceBlobDriftB {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(-2%, -1.2%); }
-            50% { transform: translate(1.4%, -1.8%); }
-            75% { transform: translate(-1.6%, 1.2%); }
-        }
         @media (prefers-reduced-motion: reduce) {
-            .live-race-bg,
-            .live-race-bg::before,
-            .live-race-bg::after {
-                animation: none;
-            }
+            .live-race-bg { animation: none; }
         }
         .live-host-race-content {
             position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column;
@@ -384,11 +410,11 @@
             min-height: 0; overflow-y: auto;
         }
         .live-host-race-row {
-            display: grid; grid-template-columns: minmax(5rem, 11rem) 1fr minmax(3.5rem, 5rem);
-            align-items: center; gap: clamp(0.65rem, 2vw, 1.25rem);
+            display: grid; grid-template-columns: minmax(4.5rem, max-content) 1fr minmax(2.75rem, max-content);
+            align-items: center; gap: clamp(0.4rem, 1.2vw, 0.75rem);
         }
         .live-host-race--teams .live-host-race-row {
-            grid-template-columns: minmax(9rem, 1.5fr) 3.3fr minmax(3.5rem, 5rem);
+            grid-template-columns: minmax(6.5rem, max-content) 1fr minmax(2.75rem, max-content);
             align-items: center;
         }
         .live-host-race-name {
@@ -805,6 +831,27 @@
             font-size: 0.9rem;
             color: var(--text-muted);
         }
+        .live-team-card--joinable {
+            cursor: pointer;
+            border-color: rgba(212, 160, 23, 0.45);
+            transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .live-team-card--joinable:hover,
+        .live-team-card--joinable:active {
+            transform: translateY(-2px);
+            border-color: #d4a017;
+            box-shadow: 0 6px 18px rgba(212, 160, 23, 0.22);
+        }
+        .live-team-card--yours {
+            border-color: var(--royal-blue);
+            background: rgba(1, 33, 105, 0.05);
+        }
+        .live-team-join-hint {
+            margin: 0 0 0.65rem;
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
         .live-team-card-actions {
             margin-top: 0.5rem;
         }
@@ -844,7 +891,97 @@
             position: fixed; inset: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 9999; display: none;
         }
-        #live-confetti-canvas.active { display: block; }
+        #live-confetti-canvas.active { display: block; z-index: 10001; }
+        #live-finish-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(ellipse at 50% 35%, rgba(255, 215, 0, 0.22) 0%, transparent 55%),
+                linear-gradient(160deg, rgba(255, 248, 220, 0.97) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(1, 33, 105, 0.08) 100%);
+            padding: 1.5rem;
+        }
+        #live-finish-overlay[hidden] { display: none !important; }
+        .live-finish-inner {
+            position: relative;
+            z-index: 10002;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            padding: 2rem 1.5rem 1.35rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(212, 160, 23, 0.35);
+        }
+        .live-finish-trophy {
+            font-size: clamp(4rem, 15vw, 6rem);
+            line-height: 1;
+            margin-bottom: 0.35rem;
+            filter: drop-shadow(0 8px 24px rgba(212, 160, 23, 0.45));
+        }
+        .live-finish-inner h2 {
+            margin: 0 0 0.5rem;
+            font-family: var(--font-primary);
+            color: var(--royal-blue);
+            font-size: clamp(1.5rem, 5vw, 2rem);
+        }
+        .live-finish-inner p {
+            margin: 0 0 1rem;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+        .live-join-split {
+            display: grid;
+            grid-template-columns: 35% 65%;
+            gap: 1rem 1.25rem;
+            align-items: start;
+            width: 100%;
+        }
+        .live-join-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .live-join-field label {
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+        .live-join-field input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .live-join-field--code input {
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            font-size: 1.35rem;
+            text-align: center;
+        }
+        .live-join-field--name input {
+            font-size: 1.1rem;
+        }
+        @media (max-width: 420px) {
+            .live-join-split { grid-template-columns: 1fr; }
+        }
+        .live-game-watermark {
+            position: fixed;
+            left: max(0.65rem, env(safe-area-inset-left, 0.65rem));
+            bottom: max(0.65rem, env(safe-area-inset-bottom, 0.65rem));
+            z-index: 510;
+            pointer-events: none;
+            opacity: 0.55;
+        }
+        .live-game-watermark[hidden] { display: none !important; }
+        .live-game-watermark img {
+            width: clamp(52px, 12vw, 72px);
+            height: auto;
+            display: block;
+        }
         .live-champion-banner {
             text-align: center; padding: 1.25rem; margin: 1rem 0;
             background: linear-gradient(135deg, rgba(212,160,23,0.15), rgba(1,33,105,0.08));
@@ -1211,8 +1348,9 @@
             padding: 0.4rem 0.85rem; font-size: 0.85rem; border: 2px solid #fff;
             background: transparent; color: #fff; border-radius: 8px; cursor: pointer;
             font-family: var(--font-primary); font-weight: 600; transition: 0.2s;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
         }
-        .auth-nav-btn:hover, .auth-nav-btn.active { background: rgba(255,255,255,0.18); }
+        .auth-nav-btn:hover, .auth-nav-btn.active { background: rgba(255,255,255,0.18); color: #fff; }
         .auth-premium-btn {
             background: #fff; color: var(--pillarbox-red); border-color: #fff; text-decoration: none;
         }
@@ -1780,6 +1918,7 @@
 
     <div class="auth-bar" id="auth-bar">
         <div class="auth-bar-left" id="auth-bar-left">
+            <a href="/shop.html" id="auth-nav-shop" class="auth-nav-btn"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
             <a href="https://buymeacoffee.com/lingospark/extras" id="auth-nav-premium" class="auth-nav-btn auth-premium-btn" target="_blank" rel="noopener" style="display:none;"><i class="fa-solid fa-crown"></i> Go Premium</a>
             <button type="button" class="auth-nav-btn" id="auth-nav-mysets" onclick="openWordSets()" style="display:none;"><i class="fa-solid fa-book"></i> Word Sets</button>
             <button type="button" class="auth-nav-btn" id="auth-nav-progress" onclick="openMyProgress()" style="display:none;"><i class="fa-solid fa-chart-line"></i> My Progress</button>
@@ -1807,7 +1946,7 @@
                 <p style="margin-bottom:0;font-size:0.88rem;">Checkout is in USD on Buy Me a Coffee (same email as your LingoSpark account). PLN is the local price at about 4 zł per $1 — card billing in złoty comes later.</p>
             </div>
             <p><a href="https://buymeacoffee.com/lingospark/extras" id="about-premium-link" target="_blank" rel="noopener">Go Premium — open the shop</a></p>
-            <p>Teachers: exam vocab packs (ósmoklasista / Matura) with paste-ready lists for Bomb Defusal, Flashcards, Auction and Live Quiz — email <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a> for the ZIP.</p>
+            <p>Teachers: <a href="/shop.html">exam vocab packs</a> (ósmoklasista / Matura) with paste-ready lists for Bomb Defusal, Flashcards, Auction and Live Quiz. Preview each pack, then buy on <a href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">Buy Me a Coffee</a>.</p>
             <p>For any questions, email me: <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a></p>
         </div>
 
@@ -1866,6 +2005,9 @@
                     <span class="hub-title">Vocab Review</span>
                     <span class="hub-sub">Flashcards, Bomb, Grid &amp; Auction — free forever</span>
                 </a>
+                <a href="#/live" class="hub-live-quiz" aria-label="Live Quiz">
+                    <span class="hub-live-quiz-lines" aria-hidden="true"><span>LIVE</span><span>QUIZ</span></span>
+                </a>
                 <a href="#/team" class="hub-square team">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
                     <span class="hub-title">Team Challenge</span>
@@ -1877,13 +2019,6 @@
                     <span class="hub-sub">Primary English practice and Essay tools</span>
                 </a>
             </div>
-            <a href="#/live" class="hub-bar hub-bar-live">
-                <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
-                <span class="hub-bar-text">
-                    <span class="hub-title">Live Game</span>
-                    <span class="hub-sub">Classroom quiz — phones join with a code</span>
-                </span>
-            </a>
             </div>
 
         <div id="section-mysets" class="home-section">
@@ -2101,6 +2236,9 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline" style="margin-top: 0.75rem;" onclick="openFcStatsFromSetup()"><i class="fa-solid fa-chart-bar"></i> View word stats</button>
+                </div>
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <button type="button" id="vocab-live-quiz-btn" class="btn btn-outline" style="font-size: 1rem; padding: 0.75rem 1.5rem;"><i class="fa-solid fa-bolt"></i> Host Live Quiz with this list</button>
                 </div>
             </div>
 
@@ -2872,6 +3010,9 @@
                 </div>
                 <div id="live-host-race" class="live-host-race" hidden>
                     <div class="live-race-bg live-host-race-bg" aria-hidden="true"></div>
+                    <div id="live-host-watermark" class="live-game-watermark" hidden aria-hidden="true">
+                        <img src="Projekt bez nazwy.png" alt="">
+                    </div>
                     <div class="live-host-race-content">
                         <header class="live-host-race-header">
                             <div class="live-host-race-code-wrap">
@@ -2900,20 +3041,29 @@
                 <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-mobile-screen"></i> Join Game</h2>
                 <div style="width:80px;"></div>
             </div>
-            <div class="live-mobile-join" style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px;margin:0 auto;width:100%;">
+            <div class="live-mobile-join" style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:480px;margin:0 auto;width:100%;">
                 <div id="live-join-error" class="live-player-error" hidden></div>
-                <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Game</h2>
-                <label for="live-join-code" style="font-weight:600;">Room code</label>
-                <input type="text" id="live-join-code" maxlength="4" autocomplete="off" style="width:100%;padding:0.75rem;margin:0.35rem 0 0.85rem;border:2px solid var(--border-light);border-radius:8px;text-transform:uppercase;letter-spacing:0.25em;font-size:1.5rem;text-align:center;">
-                <label for="live-join-nickname" style="font-weight:600;">Nickname</label>
-                <input type="text" id="live-join-nickname" maxlength="20" autocomplete="nickname" style="width:100%;padding:0.75rem;margin:0.35rem 0 1rem;border:2px solid var(--border-light);border-radius:8px;font-size:1.1rem;">
-                <button type="button" id="live-join-btn" class="btn btn-blue" style="width:100%;padding:0.85rem;font-size:1.1rem;">Join game</button>
+                <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Quiz</h2>
+                <div class="live-join-split">
+                    <div class="live-join-field live-join-field--code">
+                        <label for="live-join-code">Room code</label>
+                        <input type="text" id="live-join-code" maxlength="4" autocomplete="off">
+                    </div>
+                    <div class="live-join-field live-join-field--name">
+                        <label for="live-join-nickname">Your name</label>
+                        <input type="text" id="live-join-nickname" maxlength="20" autocomplete="nickname" placeholder="Nickname">
+                    </div>
+                </div>
+                <button type="button" id="live-join-btn" class="btn btn-blue" style="width:100%;padding:0.85rem;font-size:1.1rem;margin-top:1rem;">Join game</button>
             </div>
         </div>
 
         <!-- LIVE GAME: PLAY (student) -->
         <div id="screen-live-play" class="screen engine-container live-play-shell">
             <div id="live-play-race-bg" class="live-race-bg" aria-hidden="true"></div>
+            <div id="live-play-watermark" class="live-game-watermark" hidden aria-hidden="true">
+                <img src="Projekt bez nazwy.png" alt="">
+            </div>
             <div id="live-play-bubbles" class="live-race-bubbles" aria-hidden="true"></div>
             <div class="live-play-surface">
             <div class="top-bar live-desktop-only">
@@ -2936,7 +3086,7 @@
             </div>
             <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
             <div id="live-play-team-lobby" class="live-team-lobby-player" hidden>
-                <h3>Choose your team</h3>
+                <h3>Pick your team</h3>
                 <div id="live-play-team-list" class="live-team-lobby"></div>
                 <button type="button" id="live-play-create-team" class="btn btn-blue" style="width:100%;margin-top:0.65rem;">Start a new team</button>
             </div>
@@ -2961,6 +3111,16 @@
             </div>
         </div>
 
+    </div>
+
+    <div id="live-finish-overlay" hidden>
+        <div class="live-finish-inner">
+            <div class="live-finish-trophy" aria-hidden="true">🏆</div>
+            <h2 id="live-finish-title">Champion!</h2>
+            <p id="live-finish-message">Game over!</p>
+            <div id="live-finish-board"></div>
+            <button type="button" id="live-finish-close" class="btn btn-blue" style="margin-top:1rem;min-width:10rem;">Continue</button>
+        </div>
     </div>
 
     <canvas id="live-confetti-canvas" aria-hidden="true"></canvas>
@@ -3291,6 +3451,7 @@
         // WORD SETS & PROGRESS
         // ==========================================
         let currentWordSetId = null;
+        window.getCurrentWordSetId = () => currentWordSetId;
 
         function isLoggedIn() { return !!(window.authState && window.authState.user && window.authState.user.id); }
 
