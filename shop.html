@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sklep — paczki słówek | LingoSpark</title>
+    <title>Sklep — materiały dla nauczyciela i ucznia | LingoSpark</title>
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -85,7 +85,7 @@
         }
         .auth-premium-btn:hover { background: rgba(255,255,255,0.92); color: var(--royal-blue); }
 
-        .wrap { max-width: 1120px; margin: 0 auto; padding: 1.5rem 1.25rem 2.5rem; }
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.25rem 2.5rem; }
 
         .hero {
             background: #fff;
@@ -95,9 +95,102 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             margin-bottom: 1.25rem;
         }
+        .hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
         .hero h1 { color: var(--royal-blue); font-size: 1.85rem; margin-bottom: 0.35rem; }
         .hero p { color: var(--text-muted); max-width: 72ch; }
         .hero-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1rem; }
+        .lang-switch {
+            display: inline-flex;
+            border: 2px solid var(--royal-blue);
+            border-radius: 999px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .lang-switch button {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.38rem 0.85rem;
+            border: none;
+            background: #fff;
+            color: var(--royal-blue);
+            cursor: pointer;
+        }
+        .lang-switch button:hover { background: rgba(1,33,105,0.06); }
+        .lang-switch button.active {
+            background: var(--royal-blue);
+            color: #fff;
+        }
+
+        .shop-layout {
+            display: grid;
+            grid-template-columns: minmax(200px, 220px) 1fr;
+            gap: 1.35rem;
+            align-items: start;
+        }
+        .shop-sidebar {
+            position: sticky;
+            top: 1rem;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            padding: 1rem 0.85rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+        .sidebar-section + .sidebar-section {
+            margin-top: 1.1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+        }
+        .sidebar-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 0 0 0.55rem 0.35rem;
+        }
+        .shop-categories,
+        .shop-exam-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .sidebar-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.65rem;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--text-dark);
+        }
+        .sidebar-btn:hover { background: rgba(1,33,105,0.06); color: var(--royal-blue); }
+        .sidebar-btn.active {
+            background: rgba(1,33,105,0.1);
+            color: var(--royal-blue);
+        }
+        .shop-main { min-width: 0; }
+        .shop-empty {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px dashed var(--border-light);
+            padding: 2rem 1.25rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
         .btn {
             display: inline-flex; align-items: center; gap: 0.45rem;
             font-family: var(--font-primary); font-weight: 700; font-size: 0.92rem;
@@ -120,6 +213,37 @@
         }
         .filter-btn:hover { background: rgba(1,33,105,0.06); }
         .filter-btn.active { background: var(--royal-blue); color: #fff; }
+
+        @media (max-width: 820px) {
+            .shop-layout { grid-template-columns: 1fr; }
+            .shop-sidebar {
+                position: static;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.75rem 1rem;
+            }
+            .sidebar-section + .sidebar-section {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
+            }
+            .shop-categories,
+            .shop-exam-filters {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.35rem;
+            }
+            .sidebar-btn {
+                width: auto;
+                padding: 0.4rem 0.75rem;
+                border: 1px solid var(--border-light);
+                border-radius: 999px;
+                font-size: 0.82rem;
+            }
+            .sidebar-btn.active {
+                border-color: var(--royal-blue);
+            }
+        }
 
         .grid {
             display: grid;
@@ -263,30 +387,43 @@
 
     <main class="wrap">
         <section class="hero">
-            <h1 id="shop-title">Sklep dla nauczycieli</h1>
-            <p id="shop-intro"></p>
+            <div class="hero-top">
+                <div>
+                    <h1 id="shop-title">Sklep dla nauczyciela i ucznia</h1>
+                    <p id="shop-intro"></p>
+                </div>
+                <div class="lang-switch" role="group" id="lang-switch" aria-label="Language">
+                    <button type="button" data-lang="pl" class="active">PL</button>
+                    <button type="button" data-lang="en">EN</button>
+                </div>
+            </div>
             <div class="hero-actions">
                 <a class="btn btn-red" id="bmc-shop-btn" href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">
-                    <i class="fa-solid fa-mug-hot"></i> Otwórz sklep
+                    <i class="fa-solid fa-mug-hot"></i> <span id="bmc-shop-btn-label">Otwórz sklep</span>
                 </a>
-                <a class="btn btn-outline" href="mailto:karolsenk@gmail.com"><i class="fa-solid fa-envelope"></i> Pytania: karolsenk@gmail.com</a>
+                <a class="btn btn-outline" href="mailto:karolsenk@gmail.com"><i class="fa-solid fa-envelope"></i> <span id="shop-email-label">Pytania</span>: karolsenk@gmail.com</a>
             </div>
         </section>
 
-        <div class="filters" role="tablist" aria-label="Filtr paczek">
-            <button type="button" class="filter-btn active" data-filter="all">Wszystkie</button>
-            <button type="button" class="filter-btn" data-filter="study-plan">Plan nauki</button>
-            <button type="button" class="filter-btn" data-filter="Egzamin ósmoklasisty">Ósmoklasista</button>
-            <button type="button" class="filter-btn" data-filter="Matura podstawowa">Matura PP</button>
+        <div class="shop-layout">
+            <aside class="shop-sidebar" aria-label="Shop navigation">
+                <div class="sidebar-section">
+                    <h2 class="sidebar-title" id="sidebar-categories-title">Kategorie</h2>
+                    <nav class="shop-categories" id="shop-categories" role="tablist"></nav>
+                </div>
+                <div class="sidebar-section">
+                    <h2 class="sidebar-title" id="sidebar-exam-title">Poziom</h2>
+                    <div class="shop-exam-filters" id="shop-exam-filters" role="tablist"></div>
+                </div>
+            </aside>
+
+            <div class="shop-main">
+                <div class="grid" id="shop-grid"></div>
+                <p class="shop-empty" id="shop-empty" hidden></p>
+            </div>
         </div>
 
-        <div class="grid" id="shop-grid"></div>
-
-        <p class="note">
-            Vocab games na LingoSpark zostają darmowe. Paczki to listy + karty do druku — kupujesz je w sklepie
-            <a href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">Buy Me a Coffee / extras</a>.
-            Writing Suite (tydzień / miesiąc / rok) też jest tam. Po zakupie ZIP przychodzi na maila z zamówienia.
-        </p>
+        <p class="note" id="shop-note"></p>
     </main>
 
     <p class="site-copyright">© <span id="year"></span> Karol Senk, LingoSpark</p>
@@ -295,10 +432,25 @@
     <script>
         const shop = window.LS_SHOP || { products: [], bmcShop: 'https://buymeacoffee.com/lingospark/extras' };
         const bmc = shop.bmcShop || 'https://buymeacoffee.com/lingospark/extras';
+        const LANG_KEY = 'ls_shop_lang';
+        let lang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'pl';
+        let categoryFilter = 'all';
+        let examFilter = 'all';
+
         document.getElementById('year').textContent = new Date().getFullYear();
-        document.getElementById('shop-title').textContent = shop.introTitle || 'Sklep';
-        document.getElementById('shop-intro').textContent = shop.intro || '';
         document.getElementById('bmc-shop-btn').href = bmc;
+
+        function t(key) {
+            const pack = shop.i18n?.[lang] || shop.i18n?.pl || {};
+            return pack[key] ?? '';
+        }
+
+        function loc(value) {
+            if (value && typeof value === 'object' && (value.pl || value.en)) {
+                return value[lang] || value.pl || value.en || '';
+            }
+            return value || '';
+        }
 
         function escapeHtml(s) {
             return String(s)
@@ -331,21 +483,26 @@
 
         function examShort(exam) {
             if (exam === 'Egzamin ósmoklasisty') return 'E8';
-            if (exam === 'Matura podstawowa') return 'Matura';
+            if (exam === 'Matura podstawowa') return lang === 'en' ? 'Matura' : 'Matura';
             return exam || '';
         }
 
         function productKicker(p) {
-            if (p.kind === 'study-plan') return 'Plan nauki';
+            if (p.kind === 'study-plan') return t('studyPlanKicker');
             return examShort(p.exam);
         }
 
         function metaLine(p) {
-            if (p.kind === 'study-plan') return 'PDF · ok. 90 stron';
-            return `${p.terms} haseł`;
+            if (p.kind === 'study-plan') return t('studyPlanMeta');
+            return `${p.terms} ${t('terms')}`;
         }
 
-        function matchesFilter(p, filter) {
+        function matchesCategory(p, filter) {
+            if (filter === 'all') return true;
+            return Array.isArray(p.categories) && p.categories.includes(filter);
+        }
+
+        function matchesExam(p, filter) {
             if (filter === 'all') return true;
             if (filter === 'study-plan') return p.kind === 'study-plan';
             return p.exam === filter;
@@ -354,44 +511,121 @@
         function previewBlock(p) {
             const pages = Array.isArray(p.previewPages) ? p.previewPages : [];
             if (!pages.length) return '';
+            const hint = typeof t('previewHint') === 'function' ? t('previewHint')(pages.length) : '';
             const imgs = pages
                 .map((src) => `<img src="${escapeHtml(src)}" alt="" loading="lazy">`)
                 .join('');
             return `
-                    <p class="preview-hint">Przewiń podgląd · ${pages.length} strony z PDF</p>
+                    <p class="preview-hint">${escapeHtml(hint)}</p>
                     <div class="preview-scroll">${imgs}</div>`;
         }
 
-        function render(filter) {
+        function renderProducts() {
             const grid = document.getElementById('shop-grid');
-            const items = (shop.products || []).filter((p) => matchesFilter(p, filter));
+            const empty = document.getElementById('shop-empty');
+            const items = (shop.products || []).filter(
+                (p) => matchesCategory(p, categoryFilter) && matchesExam(p, examFilter),
+            );
+
+            if (!items.length) {
+                grid.innerHTML = '';
+                empty.hidden = false;
+                empty.textContent = t('emptyCategory');
+                return;
+            }
+
+            empty.hidden = true;
             grid.innerHTML = items.map((p) => {
                 const featured = Boolean(p.featured);
                 const hasPreview = Array.isArray(p.previewPages) && p.previewPages.length;
                 return `
                 <article class="card${featured ? ' featured' : ''}${hasPreview ? ' has-preview' : ''}" data-exam="${escapeHtml(p.exam || '')}">
                     <div class="kicker">${escapeHtml(productKicker(p))}</div>
-                    <h2>${escapeHtml(p.title)}</h2>
+                    <h2>${escapeHtml(loc(p.title))}</h2>
                     <div class="meta">${escapeHtml(metaLine(p))}</div>
                     ${previewBlock(p)}
-                    <p>${escapeHtml(p.description)}</p>
+                    <p>${escapeHtml(loc(p.description))}</p>
                     <div class="card-foot">
                         <div class="price">${priceBlock(p)}</div>
-                        <a class="btn btn-blue" href="${escapeHtml(buyUrl(p))}" target="_blank" rel="noopener">Kup</a>
+                        <a class="btn btn-blue" href="${escapeHtml(buyUrl(p))}" target="_blank" rel="noopener">${escapeHtml(t('buy'))}</a>
                     </div>
                 </article>`;
             }).join('');
         }
 
-        document.querySelectorAll('.filter-btn').forEach((btn) => {
+        function renderSidebar() {
+            const categoriesEl = document.getElementById('shop-categories');
+            const examEl = document.getElementById('shop-exam-filters');
+            const categories = shop.categories || [];
+
+            categoriesEl.innerHTML = categories.map((cat) => `
+                <button type="button" class="sidebar-btn${categoryFilter === cat.id ? ' active' : ''}"
+                    data-category="${escapeHtml(cat.id)}" role="tab"
+                    aria-selected="${categoryFilter === cat.id}">
+                    ${escapeHtml(cat[lang] || cat.pl)}
+                </button>`).join('');
+
+            const examFilters = [
+                { id: 'all', label: t('examAll') },
+                { id: 'study-plan', label: t('examStudyPlan') },
+                { id: 'Egzamin ósmoklasisty', label: t('examE8') },
+                { id: 'Matura podstawowa', label: t('examMatura') },
+            ];
+
+            examEl.innerHTML = examFilters.map((item) => `
+                <button type="button" class="sidebar-btn${examFilter === item.id ? ' active' : ''}"
+                    data-exam="${escapeHtml(item.id)}" role="tab"
+                    aria-selected="${examFilter === item.id}">
+                    ${escapeHtml(item.label)}
+                </button>`).join('');
+
+            categoriesEl.querySelectorAll('[data-category]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    categoryFilter = btn.dataset.category || 'all';
+                    renderSidebar();
+                    renderProducts();
+                });
+            });
+
+            examEl.querySelectorAll('[data-exam]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    examFilter = btn.dataset.exam || 'all';
+                    renderSidebar();
+                    renderProducts();
+                });
+            });
+        }
+
+        function applyLanguage() {
+            document.documentElement.lang = lang;
+            document.title = t('pageTitle');
+            document.getElementById('shop-title').textContent = t('introTitle');
+            document.getElementById('shop-intro').textContent = t('intro');
+            document.getElementById('bmc-shop-btn-label').textContent = t('openShop');
+            document.getElementById('shop-email-label').textContent = t('questions');
+            document.getElementById('sidebar-categories-title').textContent = t('browseCategories');
+            document.getElementById('sidebar-exam-title').textContent = t('examLevel');
+            document.getElementById('shop-note').innerHTML = t('note');
+
+            document.querySelectorAll('#lang-switch [data-lang]').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            renderSidebar();
+            renderProducts();
+        }
+
+        document.querySelectorAll('#lang-switch [data-lang]').forEach((btn) => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
-                btn.classList.add('active');
-                render(btn.dataset.filter);
+                const next = btn.dataset.lang === 'en' ? 'en' : 'pl';
+                if (next === lang) return;
+                lang = next;
+                localStorage.setItem(LANG_KEY, lang);
+                applyLanguage();
             });
         });
 
-        render('all');
+        applyLanguage();
     </script>
 </body>
 </html>
