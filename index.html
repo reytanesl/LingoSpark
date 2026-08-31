@@ -446,6 +446,71 @@
             font-family: var(--font-primary); font-weight: 400; font-size: clamp(1.05rem, 2.8vw, 1.45rem);
             color: var(--royal-blue); text-align: right;
         }
+        .live-host-race-row--challenge .live-host-race-name {
+            color: #b45309;
+        }
+        .live-host-challenge-badge {
+            display: inline-block;
+            margin-right: 0.35rem;
+            padding: 0.12rem 0.45rem;
+            border-radius: 999px;
+            background: #fbbf24;
+            color: #78350f;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+        .live-host-challenge-panel {
+            position: fixed;
+            left: 50%;
+            bottom: max(0.85rem, env(safe-area-inset-bottom, 0.85rem));
+            transform: translateX(-50%);
+            z-index: 530;
+            width: min(640px, calc(100vw - 1.5rem));
+            max-height: 42vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+        .live-host-challenge-panel[hidden] { display: none !important; }
+        .live-host-challenge-card {
+            background: rgba(255, 255, 255, 0.97);
+            border: 1px solid rgba(251, 191, 36, 0.55);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            text-align: left;
+        }
+        .live-host-challenge-card-head {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+            color: var(--royal-blue);
+        }
+        .live-host-challenge-def {
+            margin: 0 0 0.35rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        .live-host-challenge-answers {
+            margin: 0 0 0.65rem;
+            font-size: 0.88rem;
+            color: var(--text-dark);
+        }
+        .live-host-challenge-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .live-host-challenge-actions .btn {
+            flex: 1 1 8rem;
+            min-height: 42px;
+        }
         .live-race-bubbles,
         .live-host-race-bubbles {
             position: fixed; inset: 0; pointer-events: none; z-index: 600; overflow: hidden;
@@ -465,6 +530,9 @@
         .live-race-feedback-bubble.negative,
         .live-host-feedback-bubble.negative {
             background: #fff; color: #b91c1c; border: 3px solid #f87171;
+        }
+        .live-host-feedback-bubble.challenge {
+            background: #fff; color: #b45309; border: 3px solid #fbbf24;
         }
         @keyframes liveHostBubbleUp {
             0% { opacity: 0; transform: translate(-50%, 8px) scale(0.8); }
@@ -685,10 +753,11 @@
             font-size: clamp(0.88rem, 3.5vw, 1rem);
         }
         body.live-game-active #live-play-definition.word-prompt {
-            background: rgba(255, 255, 255, 0.94);
-            border-radius: 16px;
-            padding: clamp(0.85rem, 4vw, 1.35rem);
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(1, 33, 105, 0.1);
+            border-radius: 14px;
+            padding: clamp(0.85rem, 4vw, 1.25rem);
+            box-shadow: none;
             color: var(--text-dark);
             font-weight: 700;
             max-height: min(32vh, 11rem);
@@ -708,11 +777,62 @@
             margin-bottom: 0.45rem;
         }
         body.live-game-active #live-play-type-section {
-            background: rgba(255, 255, 255, 0.92);
-            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(1, 33, 105, 0.1);
+            border-radius: 12px;
             padding: 0.75rem;
-            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14);
+            box-shadow: none;
             flex-shrink: 0;
+        }
+        .live-play-challenge-actions {
+            display: none;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(200, 16, 46, 0.18);
+            border-radius: 12px;
+            padding: 0.85rem 0.9rem;
+            margin-top: 0.35rem;
+            flex-shrink: 0;
+        }
+        .live-play-challenge-actions--visible,
+        body.live-player-mode #live-play-challenge-actions.live-play-challenge-actions--visible {
+            display: block !important;
+        }
+        .live-challenge-prompt {
+            margin: 0 0 0.45rem;
+            font-weight: 700;
+            color: var(--royal-blue);
+            font-size: 0.95rem;
+        }
+        .live-challenge-detail {
+            margin: 0 0 0.3rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+        .live-challenge-btns {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.65rem;
+        }
+        .live-challenge-btns .btn {
+            flex: 1;
+            min-height: 46px;
+        }
+        #live-play-result.live-play-result--visible,
+        body.live-player-mode #live-play-result.live-play-result--visible {
+            display: block !important;
+            margin-top: 0.35rem;
+        }
+        #live-play-result .live-choice {
+            border: 1px solid rgba(200, 16, 46, 0.2);
+            border-radius: 10px;
+            padding: 0.65rem 0.75rem;
+            background: rgba(255, 255, 255, 0.88);
+            font-size: 0.9rem;
+            box-shadow: none;
+        }
+        #live-play-choices .live-answer-btn {
+            border: 1px solid rgba(1, 33, 105, 0.12);
+            box-shadow: none;
         }
         body.live-game-active #live-play-type-section .game-input {
             font-size: clamp(1rem, 4.2vw, 1.15rem);
@@ -2982,6 +3102,7 @@
                         </header>
                         <div id="live-host-race-board" class="live-host-race-board"></div>
                     </div>
+                    <div id="live-host-challenge-panel" class="live-host-challenge-panel" hidden aria-live="polite"></div>
                     <button type="button" id="live-host-race-end" class="live-host-race-end-float btn btn-grey">End game</button>
                     <div id="live-host-race-bubbles" class="live-host-race-bubbles" aria-hidden="true"></div>
                 </div>
@@ -3055,6 +3176,7 @@
             <button type="button" id="live-play-submit" class="btn btn-blue" style="width:100%;margin-top:0.5rem;padding:0.85rem;font-size:1.1rem;">Submit</button>
             </div>
             <div id="live-play-result" style="margin-top:0.5rem;"></div>
+            <div id="live-play-challenge-actions" class="live-play-challenge-actions" hidden></div>
             <div id="live-play-champion" class="live-champion-banner" hidden></div>
             <div id="live-play-progress-board" class="live-desktop-only" hidden aria-hidden="true"></div>
             </div>

@@ -17,6 +17,8 @@
     let playerIsCaptain = false;
     let captainSuggestedAnswer = null;
     let currentQuestion = null;
+    let hostPendingChallenges = new Map();
+    let playerChallengePending = false;
 
     const RACE_BAR_COLORS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#9c27b0', '#ff6600', '#06b6d4', '#ec4899'];
     const HOST_POSITIVE_FEEDBACK = ['Way to go!', "That's right!", 'Nice one!', 'Spot on!', 'Keep going!', 'Brilliant!', 'Yes!'];
@@ -83,8 +85,11 @@
             }
             if (role === 'player' && playerState) {
                 emitPlayerJoin();
-                if (document.body.classList.contains('live-game-active')) {
-                    requestPlayerQuestion();
+                if (document.body.classList.contains('live-game-active') && !playerChallengePending) {
+                    const challengePanel = $('live-play-challenge-actions');
+                    if (!challengePanel?.classList.contains('live-play-challenge-actions--visible')) {
+                        requestPlayerQuestion();
+                    }
                 }
             }
         };
@@ -541,7 +546,7 @@
         return pool[Math.floor(Math.random() * pool.length)];
     }
 
-    function spawnHostFeedbackBubble(playerId, correct, progress, termsToWin, won) {
+    function spawnHostFeedbackBubble(playerId, correct, progress, termsToWin, won, customText) {
         const row = document.querySelector(`.live-host-race-row[data-player-id="${CSS.escape(playerId)}"]`);
         const track = row?.querySelector('.live-host-race-track');
         const container = $('live-host-race-bubbles');
@@ -553,8 +558,8 @@
         const x = rect.left + Math.max(20, (rect.width * pct) / 100);
 
         const bubble = document.createElement('div');
-        bubble.className = `live-host-feedback-bubble ${correct ? 'positive' : 'negative'}`;
-        bubble.textContent = won ? 'Winner!' : pickHostFeedback(correct);
+        bubble.className = `live-host-feedback-bubble ${customText ? 'challenge' : (correct ? 'positive' : 'negative')}`;
+        bubble.textContent = customText || (won ? 'Winner!' : pickHostFeedback(correct));
         bubble.style.left = `${Math.min(x, rect.right - 20)}px`;
         bubble.style.top = `${rect.top + rect.height / 2}px`;
         container.appendChild(bubble);
@@ -577,14 +582,174 @@
             const isWinner = options.winnerId === p.id || p.progress >= total;
             const fillCls = `live-host-race-fill${flash ? ' reset-flash' : ''}${isWinner ? ' winner' : ''}`;
             const fillStyle = isWinner ? '' : `background:${color}`;
-            return `<div class="live-host-race-row" data-player-id="${esc(p.id)}">
-                <div class="live-host-race-name" title="${esc(p.nickname)}">${esc(p.nickname)}</div>
+            const hasChallenge = hostPendingChallenges.has(p.id);
+            const rowCls = `live-host-race-row${hasChallenge ? ' live-host-race-row--challenge' : ''}`;
+            const challengeBadge = hasChallenge
+                ? '<span class="live-host-challenge-badge">Challenge</span>'
+                : '';
+            return `<div class="${rowCls}" data-player-id="${esc(p.id)}">
+                <div class="live-host-race-name" title="${esc(p.nickname)}">${challengeBadge}${esc(p.nickname)}</div>
                 <div class="live-host-race-track">
                     <div class="${fillCls}" style="width:${pct}%;${fillStyle}"></div>
                 </div>
                 <div class="live-host-race-score">${p.progress || 0}/${total}</div>
             </div>`;
         }).join('');
+    }
+
+    function renderHostChallengePanel() {
+        const panel = $('live-host-challenge-panel');
+        if (!panel) return;
+        const challenges = Array.from(hostPendingChallenges.values());
+        if (!challenges.length) {
+            panel.hidden = true;
+            panel.innerHTML = '';
+            return;
+        }
+        panel.hidden = false;
+        panel.innerHTML = challenges.map((c) => `
+            <div class="live-host-challenge-card" data-challenge-id="${esc(c.id)}">
+                <div class="live-host-challenge-card-head">
+                    <span class="live-host-challenge-badge">Challenge</span>
+                    <strong>${esc(c.nickname)}</strong>
+                </div>
+                <p class="live-host-challenge-def">${esc(c.definition)}</p>
+                <p class="live-host-challenge-answers">
+                    Submitted: <strong>${esc(c.answerText)}</strong>
+                    <span class="live-muted">· Expected: ${esc(c.correctTerm)}</span>
+                </p>
+                <div class="live-host-challenge-actions">
+                    <button type="button" class="btn btn-blue live-challenge-accept" data-challenge-id="${esc(c.id)}">Accept</button>
+                    <button type="button" class="btn btn-grey live-challenge-decline" data-challenge-id="${esc(c.id)}">Decline</button>
+                </div>
+            </div>
+        `).join('');
+        panel.querySelectorAll('.live-challenge-accept').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-challenge-id');
+                if (id) ensureSocket().emit('live:resolve-challenge', { challengeId: id, accept: true });
+            });
+        });
+        panel.querySelectorAll('.live-challenge-decline').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-challenge-id');
+                if (id) ensureSocket().emit('live:resolve-challenge', { challengeId: id, accept: false });
+            });
+        });
+    }
+
+    function canPlayerChallengeAction() {
+        if (!isCaptainCrewMode()) return true;
+        return playerIsCaptain;
+    }
+
+    function showChallengeActions(result) {
+        const panel = $('live-play-challenge-actions');
+        const resultEl = $('live-play-result');
+        if (!panel) return;
+        playerChallengePending = false;
+        panel.hidden = false;
+        panel.classList.add('live-play-challenge-actions--visible');
+        if (resultEl) resultEl.classList.add('live-play-result--visible');
+        const teamLabel = isCaptainCrewMode() ? 'Team' : 'You';
+        const canAct = canPlayerChallengeAction();
+        panel.innerHTML = `
+            <p class="live-challenge-prompt">Marked wrong. Think your answer should count?</p>
+            <p class="live-challenge-detail">Your answer: <strong>${esc(result.answerText)}</strong></p>
+            <p class="live-challenge-detail live-muted">Expected: ${esc(result.correctTerm)}</p>
+            <div class="live-challenge-btns">
+                ${canAct
+                    ? `<button type="button" id="live-play-challenge-btn" class="btn btn-blue">Challenge</button>
+                       <button type="button" id="live-play-skip-challenge-btn" class="btn btn-grey">Continue</button>`
+                    : '<p class="live-muted" style="margin:0;">Waiting for captain to decide…</p>'}
+            </div>`;
+        if (canAct) {
+            $('live-play-challenge-btn')?.addEventListener('click', submitChallenge);
+            $('live-play-skip-challenge-btn')?.addEventListener('click', skipChallenge);
+        }
+        if (resultEl) {
+            resultEl.innerHTML = `<div class="live-choice wrong">Marked incorrect. ${teamLabel} can challenge or continue.</div>`;
+        }
+        const status = $('live-play-status');
+        if (status) status.textContent = 'Review your answer';
+        setAnswerInputsEnabled(false);
+        hideCrewPanel();
+        renderChoiceButtons([]);
+        if ($('live-play-type-section')) $('live-play-type-section').hidden = true;
+    }
+
+    function showChallengeWaiting() {
+        const panel = $('live-play-challenge-actions');
+        if (!panel) return;
+        playerChallengePending = true;
+        panel.hidden = false;
+        panel.classList.add('live-play-challenge-actions--visible');
+        panel.innerHTML = `
+            <p class="live-challenge-prompt"><span class="live-host-challenge-badge">Challenge</span> sent to teacher</p>
+            <p class="live-muted" style="margin:0;">Waiting for review…</p>`;
+        const status = $('live-play-status');
+        if (status) status.textContent = 'Challenge pending';
+        setAnswerInputsEnabled(false);
+    }
+
+    function hideChallengeActions() {
+        playerChallengePending = false;
+        const panel = $('live-play-challenge-actions');
+        if (panel) {
+            panel.hidden = true;
+            panel.classList.remove('live-play-challenge-actions--visible');
+            panel.innerHTML = '';
+        }
+        const resultEl = $('live-play-result');
+        if (resultEl) resultEl.classList.remove('live-play-result--visible');
+    }
+
+    function submitChallenge() {
+        if (!playerState || playerChallengePending) return;
+        showLiveError('');
+        ensureSocket().emit('live:challenge-answer');
+    }
+
+    function skipChallenge() {
+        if (!playerState || playerChallengePending) return;
+        showLiveError('');
+        ensureSocket().emit('live:skip-challenge');
+    }
+
+    function applyChallengeResolved(result) {
+        hideChallengeActions();
+        answerPending = false;
+        playerCrewVote = null;
+        playerState.progress = result.progress;
+        updateOwnProgress(result.progress, TERMS_TO_WIN, result.reset);
+        const status = $('live-play-status');
+        const resultEl = $('live-play-result');
+        const teamLabel = isCaptainCrewMode() ? 'Team' : 'You';
+
+        if (result.challengeAccepted) {
+            spawnPlayerFeedbackBubble(true, result.won);
+            if (result.won) {
+                setAnswerInputsEnabled(false);
+                hideCrewPanel();
+                if (status) status.textContent = isCaptainCrewMode() ? 'Your team won!' : 'You won!';
+                if (resultEl) resultEl.innerHTML = '';
+            } else {
+                if (status) status.textContent = `Challenge accepted! ${result.progress} / ${TERMS_TO_WIN}`;
+                if (resultEl) resultEl.innerHTML = '';
+            }
+        } else if (result.reset) {
+            spawnPlayerFeedbackBubble(false, false);
+            if (status) status.textContent = `Challenge declined — ${teamLabel.toLowerCase()} back to the start!`;
+            if (resultEl) {
+                resultEl.innerHTML = `<div class="live-choice wrong">The answer was <strong>${esc(result.correctTerm)}</strong>. ${teamLabel} ${teamLabel === 'Team' ? 'is' : 'are'} back at term 1.</div>`;
+                resultEl.classList.add('live-play-result--visible');
+            }
+        }
+
+        if (result.won) return;
+        if (result.nextQuestion && typeof result.nextQuestion === 'object') {
+            showPlayerQuestion(result.nextQuestion);
+        }
     }
 
     function bindHostLobbyBoard() {
@@ -791,10 +956,15 @@
     function bindHostSocket() {
         const s = ensureSocket();
         bindSocketReconnect('host');
-        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:host-answer', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
+            hostPendingChallenges = new Map();
+            (data.pendingChallenges || []).forEach((c) => {
+                if (c?.id) hostPendingChallenges.set(c.entityId, c);
+            });
+            renderHostChallengePanel();
             hostState.phase = data.snapshot?.phase || 'lobby';
             hostState.gameFormat = data.snapshot?.gameFormat || hostState?.gameFormat || 'race';
             hostState.teamAssignment = data.snapshot?.teamAssignment || hostState?.teamAssignment || 'random';
@@ -830,12 +1000,42 @@
 
         s.on('live:host-answer', (data) => {
             if (hostState?.phase !== 'playing') return;
-            spawnHostFeedbackBubble(data.playerId, data.correct, data.progress, TERMS_TO_WIN, data.won);
+            if (!data.challengeable) {
+                spawnHostFeedbackBubble(data.playerId, data.correct, data.progress, TERMS_TO_WIN, data.won);
+            }
             if (!data.correct && data.reset) hostState.lastFlashId = data.playerId;
+        });
+
+        s.on('live:challenge-pending', (data) => {
+            if (!data?.id) return;
+            hostPendingChallenges.set(data.entityId, data);
+            spawnHostFeedbackBubble(data.entityId, true, data.progress, TERMS_TO_WIN, false, 'Challenge!');
+            renderHostChallengePanel();
+            const board = $('live-host-race-board');
+            if (board && hostState?.phase === 'playing') {
+                renderHostRaceBoard(
+                    board._lastPlayers || [],
+                    { flashId: hostState.lastFlashId },
+                );
+            }
+        });
+
+        s.on('live:challenge-resolved', (data) => {
+            if (!data?.id) return;
+            const existing = hostPendingChallenges.get(data.entityId)
+                || Array.from(hostPendingChallenges.values()).find((c) => c.id === data.id);
+            if (existing) hostPendingChallenges.delete(existing.entityId);
+            renderHostChallengePanel();
+            const board = $('live-host-race-board');
+            if (board && hostState?.phase === 'playing') {
+                renderHostRaceBoard(board._lastPlayers || []);
+            }
         });
 
         s.on('live:progress-update', (data) => {
             if (hostState?.phase === 'playing') {
+                const board = $('live-host-race-board');
+                if (board) board._lastPlayers = data.players || [];
                 renderHostRaceBoard(data.players || [], { flashId: hostState.lastFlashId });
                 hostState.lastFlashId = null;
             } else if (hostState?.gameFormat === 'captain-crew' && hostState?.teamAssignment === 'pick') {
@@ -858,6 +1058,8 @@
             hostState.phase = 'playing';
             hostState.gameFormat = data.gameFormat || hostState.gameFormat || 'race';
             hostRaceColors = new Map();
+            hostPendingChallenges = new Map();
+            renderHostChallengePanel();
             stopHostLobbyPoll();
             LiveAudio.stopLobby();
             LiveAudio.startGame();
@@ -868,6 +1070,8 @@
 
         s.on('live:game-finished', (data) => {
             hostState.phase = 'finished';
+            hostPendingChallenges = new Map();
+            renderHostChallengePanel();
             stopHostLobbyPoll();
             LiveAudio.stopAll();
             setHostRaceMode(false);
@@ -885,7 +1089,7 @@
     function bindPlayerSocket() {
         const s = ensureSocket();
         bindSocketReconnect('player');
-        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:player-removed', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:player-removed', 'live:challenge-submitted', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:player-joined', (data) => {
             showLiveError('');
@@ -900,7 +1104,7 @@
                 setLiveGameActive(true);
                 LiveAudio.startGame();
                 if (data.question) showPlayerQuestion(data.question);
-                else {
+                else if (!data.awaitingChallenge) {
                     showPlayerWaiting('Starting…');
                     requestPlayerQuestion();
                 }
@@ -942,17 +1146,28 @@
         s.on('live:answer-result', (result) => {
             answerPending = false;
             playerCrewVote = null;
-            playerState.progress = result.progress;
-            updateOwnProgress(result.progress, TERMS_TO_WIN, result.reset);
-            spawnPlayerFeedbackBubble(result.correct, result.won);
             const status = $('live-play-status');
             const resultEl = $('live-play-result');
             const teamLabel = isCaptainCrewMode() ? 'Team' : 'You';
+
+            if (result.challengeable) {
+                playerState.progress = result.progress;
+                updateOwnProgress(result.progress, TERMS_TO_WIN, false);
+                spawnPlayerFeedbackBubble(false, false);
+                showChallengeActions(result);
+                return;
+            }
+
+            hideChallengeActions();
+            playerState.progress = result.progress;
+            updateOwnProgress(result.progress, TERMS_TO_WIN, result.reset);
+            spawnPlayerFeedbackBubble(result.correct, result.won);
 
             if (result.reset) {
                 if (status) status.textContent = `Wrong — ${teamLabel.toLowerCase()} back to the start!`;
                 if (resultEl) {
                     resultEl.innerHTML = `<div class="live-choice wrong">The answer was <strong>${esc(result.correctTerm)}</strong>. ${teamLabel} ${teamLabel === 'Team' ? 'is' : 'are'} back at term 1.</div>`;
+                    resultEl.classList.add('live-play-result--visible');
                 }
             } else if (result.correct && !result.won) {
                 if (status) status.textContent = `Correct! ${result.progress} / ${TERMS_TO_WIN}`;
@@ -968,6 +1183,27 @@
                 if (result.nextQuestion && typeof result.nextQuestion === 'object') {
                     showPlayerQuestion(result.nextQuestion);
                 }
+            }
+        });
+
+        s.on('live:challenge-submitted', () => {
+            showChallengeWaiting();
+        });
+
+        s.on('live:challenge-resolved', (result) => {
+            applyChallengeResolved(result);
+            if (result.won) {
+                LiveAudio.stopGame();
+                setLiveGameActive(false);
+                hideCrewPanel();
+                const isWinner = isCaptainCrewMode()
+                    ? result.teamId === playerState?.teamId
+                    : result.won;
+                if (playerState && isWinner) {
+                    // game-finished event follows
+                }
+            } else if (!result.nextQuestion) {
+                setAnswerInputsEnabled(true);
             }
         });
 
@@ -1253,6 +1489,7 @@
         if (q.questionId != null && q.questionId < activeQuestionId) return;
         if (q.questionId != null) activeQuestionId = q.questionId;
         answerPending = false;
+        hideChallengeActions();
         currentQuestion = q;
         playerState.gameFormat = q.gameFormat || playerState?.gameFormat || 'race';
         playerState.teamId = q.teamId || playerState?.teamId || null;

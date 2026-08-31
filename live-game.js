@@ -487,7 +487,307 @@ function emitHostAnswerFeed(io, room, entity, result) {
         progress: result.progress,
         won: Boolean(result.won),
         teamId: result.teamId || null,
+        challengeable: Boolean(result.challengeable),
     });
+}
+
+function setPendingChallenge(entity, entry, answerText) {
+    entity.pendingChallenge = {
+        answerText,
+        correctTerm: entry.term,
+        definition: entry.definition,
+        progressBefore: entity.termIndex,
+        questionId: entity.questionId,
+        challenged: false,
+        challengeId: null,
+    };
+}
+
+function buildPendingWrongResult(entity, entry, answerText, isTeam) {
+    return {
+        correct: false,
+        reset: false,
+        challengeable: true,
+        progress: entity.termIndex,
+        won: false,
+        correctTerm: entry.term,
+        answerText,
+        definition: entry.definition,
+        ...(isTeam ? { teamId: entity.id, teamName: entity.name } : {}),
+    };
+}
+
+function clearPendingChallenge(entity) {
+    entity.pendingChallenge = null;
+    entity.answerLocked = false;
+}
+
+function applyWrongAnswerReset(entity, room, isTeam) {
+    if (isTeam) {
+        entity.termIndex = 0;
+        reshuffleTeamTerms(entity, room.masterDeck);
+    } else {
+        entity.termIndex = 0;
+        reshufflePlayerTerms(entity, room.masterDeck);
+    }
+}
+
+function processCorrectAnswerPlayer(room, player, entry, answerText) {
+    player.termIndex += 1;
+    if (player.termIndex >= LIVE_TERMS_TO_WIN) {
+        finishGame(room, player);
+        return {
+            correct: true,
+            reset: false,
+            progress: LIVE_TERMS_TO_WIN,
+            won: true,
+            correctTerm: entry.term,
+            answerText,
+        };
+    }
+    clearPlayerQuestionState(player);
+    return {
+        correct: true,
+        reset: false,
+        progress: player.termIndex,
+        won: false,
+        correctTerm: entry.term,
+        answerText,
+        nextQuestion: playerQuestionPayload(player, room),
+    };
+}
+
+function processCorrectAnswerTeam(room, team, entry, answerText) {
+    team.termIndex += 1;
+    if (team.termIndex >= LIVE_TERMS_TO_WIN) {
+        finishGame(room, team, { isTeam: true });
+        return {
+            correct: true,
+            reset: false,
+            progress: LIVE_TERMS_TO_WIN,
+            won: true,
+            correctTerm: entry.term,
+            answerText,
+            teamId: team.id,
+            teamName: team.name,
+        };
+    }
+    clearTeamQuestionState(team);
+    return {
+        correct: true,
+        reset: false,
+        progress: team.termIndex,
+        won: false,
+        correctTerm: entry.term,
+        answerText,
+        teamId: team.id,
+        teamName: team.name,
+        nextQuestion: true,
+    };
+}
+
+function getChallengeEntity(room, challenge) {
+    if (challenge.entityType === 'team') {
+        return { entity: room.teams.get(challenge.entityId), isTeam: true };
+    }
+    return { entity: room.players.get(challenge.entityId), isTeam: false };
+}
+
+function challengePayload(challenge) {
+    return {
+        id: challenge.id,
+        entityId: challenge.entityId,
+        entityType: challenge.entityType,
+        nickname: challenge.nickname,
+        answerText: challenge.answerText,
+        correctTerm: challenge.correctTerm,
+        definition: challenge.definition,
+        progress: challenge.progressBefore,
+    };
+}
+
+function emitChallengePending(io, room, challenge) {
+    if (!room.hostSocketId) return;
+    io.to(room.hostSocketId).emit('live:challenge-pending', challengePayload(challenge));
+}
+
+function listPendingChallenges(room) {
+    return Array.from(room.challenges.values())
+        .filter((c) => c.status === 'pending')
+        .map((c) => challengePayload(c));
+}
+
+function deliverEntityOutcome(io, room, entity, isTeam, result, onGameEnd) {
+    if (isTeam) {
+        emitHostAnswerFeed(io, room, entity, result);
+        for (const memberId of entity.memberIds) {
+            const member = room.players.get(memberId);
+            if (!member?.socketId) continue;
+            io.to(member.socketId).emit('live:challenge-resolved', result);
+            if (result.nextQuestion) {
+                const q = teamQuestionPayload(entity, room, member);
+                if (q) io.to(member.socketId).emit('live:your-question', q);
+            }
+        }
+    } else {
+        emitHostAnswerFeed(io, room, entity, result);
+        if (entity.socketId) {
+            io.to(entity.socketId).emit('live:challenge-resolved', result);
+            if (result.nextQuestion) {
+                io.to(entity.socketId).emit('live:your-question', result.nextQuestion);
+            }
+        }
+    }
+
+    if (result.won) {
+        const finished = gameFinishedPayload(room);
+        io.to(`room:${room.code}`).emit('live:game-finished', finished);
+        if (onGameEnd) onGameEnd(room);
+        return;
+    }
+
+    emitProgress(io, room);
+}
+
+function submitChallenge(room, playerId) {
+    if (room.phase !== 'playing') throw new Error('The game is not in progress.');
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+
+    let entity;
+    let isTeam = false;
+    if (isCaptainCrew(room)) {
+        const team = getPlayerTeam(room, player);
+        if (!team) throw new Error('You are not on a team.');
+        if (currentCaptainId(team) !== playerId) {
+            throw new Error('Only the captain can challenge a team answer.');
+        }
+        entity = team;
+        isTeam = true;
+    } else {
+        entity = player;
+    }
+
+    const pending = entity.pendingChallenge;
+    if (!pending) throw new Error('There is no answer to challenge.');
+    if (pending.challenged) throw new Error('Challenge already submitted.');
+
+    const challengeId = `ch-${crypto.randomBytes(4).toString('hex')}`;
+    const challenge = {
+        id: challengeId,
+        entityId: entity.id,
+        entityType: isTeam ? 'team' : 'player',
+        nickname: isTeam ? entity.name : entity.nickname,
+        answerText: pending.answerText,
+        correctTerm: pending.correctTerm,
+        definition: pending.definition,
+        progressBefore: pending.progressBefore,
+        status: 'pending',
+    };
+    room.challenges.set(challengeId, challenge);
+    pending.challenged = true;
+    pending.challengeId = challengeId;
+    touchRoom(room);
+    return challenge;
+}
+
+function skipChallenge(room, playerId) {
+    if (room.phase !== 'playing') throw new Error('The game is not in progress.');
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+
+    let entity;
+    let isTeam = false;
+    if (isCaptainCrew(room)) {
+        const team = getPlayerTeam(room, player);
+        if (!team) throw new Error('You are not on a team.');
+        if (currentCaptainId(team) !== playerId) {
+            throw new Error('Only the captain can continue.');
+        }
+        entity = team;
+        isTeam = true;
+    } else {
+        entity = player;
+    }
+
+    const pending = entity.pendingChallenge;
+    if (!pending) throw new Error('No pending answer.');
+    if (pending.challenged) throw new Error('Waiting for teacher review.');
+
+    const entry = entity.terms[pending.progressBefore];
+    applyWrongAnswerReset(entity, room, isTeam);
+    clearPendingChallenge(entity);
+    touchRoom(room);
+
+    return {
+        correct: false,
+        reset: true,
+        challengeable: false,
+        progress: 0,
+        won: false,
+        correctTerm: pending.correctTerm,
+        answerText: pending.answerText,
+        definition: pending.definition,
+        ...(isTeam
+            ? { teamId: entity.id, teamName: entity.name, nextQuestion: true }
+            : { nextQuestion: playerQuestionPayload(player, room) }),
+    };
+}
+
+function resolveChallenge(io, room, challengeId, accept, onGameEnd) {
+    if (room.phase !== 'playing') throw new Error('The game is not in progress.');
+    const challenge = room.challenges.get(challengeId);
+    if (!challenge || challenge.status !== 'pending') {
+        throw new Error('Challenge not found or already resolved.');
+    }
+
+    const { entity, isTeam } = getChallengeEntity(room, challenge);
+    if (!entity) throw new Error('Player or team not found.');
+
+    const pending = entity.pendingChallenge;
+    if (!pending || pending.challengeId !== challengeId) {
+        throw new Error('Challenge state mismatch.');
+    }
+
+    const entry = entity.terms[pending.progressBefore];
+    if (!entry) throw new Error('Question no longer available.');
+
+    challenge.status = accept ? 'accepted' : 'declined';
+    room.challenges.delete(challengeId);
+    clearPendingChallenge(entity);
+
+    let result;
+    if (accept) {
+        result = isTeam
+            ? processCorrectAnswerTeam(room, entity, entry, pending.answerText)
+            : processCorrectAnswerPlayer(room, entity, entry, pending.answerText);
+        result.challengeAccepted = true;
+    } else {
+        applyWrongAnswerReset(entity, room, isTeam);
+        result = {
+            correct: false,
+            reset: true,
+            challengeable: false,
+            progress: 0,
+            won: false,
+            correctTerm: pending.correctTerm,
+            answerText: pending.answerText,
+            definition: pending.definition,
+            challengeDeclined: true,
+            ...(isTeam
+                ? { teamId: entity.id, teamName: entity.name, nextQuestion: true }
+                : { nextQuestion: isTeam ? undefined : playerQuestionPayload(entity, room) }),
+        };
+    }
+
+    touchRoom(room);
+    deliverEntityOutcome(io, room, entity, isTeam, result, onGameEnd);
+    io.to(room.hostSocketId).emit('live:challenge-resolved', {
+        id: challengeId,
+        accepted: accept,
+        entityId: challenge.entityId,
+    });
+    return result;
 }
 
 function attachPlayerSocket(socket, room, player) {
@@ -513,11 +813,24 @@ function emitPlayerSession(socket, room, player) {
         teamId: player.teamId || null,
         teamName: team?.name || null,
         teamAssignment: room.teamAssignment || 'random',
+        awaitingChallenge: false,
     };
     let question = null;
     if (room.phase === 'playing') {
-        question = playerQuestionPayload(player, room);
-        payload.question = question;
+        const entity = isCaptainCrew(room) && team ? team : player;
+        const isTeam = Boolean(isCaptainCrew(room) && team);
+        if (entity?.pendingChallenge) {
+            payload.awaitingChallenge = true;
+            const pending = entity.pendingChallenge;
+            const entry = { term: pending.correctTerm, definition: pending.definition };
+            socket.emit('live:answer-result', buildPendingWrongResult(entity, entry, pending.answerText, isTeam));
+            if (pending.challenged) {
+                socket.emit('live:challenge-submitted', { challengeId: pending.challengeId });
+            }
+        } else {
+            question = playerQuestionPayload(player, room);
+            payload.question = question;
+        }
     }
     socket.emit('live:player-joined', payload);
     if (question) socket.emit('live:your-question', question);
@@ -610,6 +923,7 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         lastActivityAt: Date.now(),
         startedAt: null,
         finishedAt: null,
+        challenges: new Map(),
     };
     rooms.set(code, room);
     return room;
@@ -822,53 +1136,19 @@ function submitTeamAnswer(room, playerId, rawText) {
     if (!answerText) throw new Error('Choose an answer first.');
 
     team.answerLocked = true;
+    let keepLocked = false;
     try {
         const correct = matchesTermAnswer(answerText, entry.term);
 
         if (correct) {
-            team.termIndex += 1;
-            if (team.termIndex >= LIVE_TERMS_TO_WIN) {
-                finishGame(room, team, { isTeam: true });
-                return {
-                    correct: true,
-                    reset: false,
-                    progress: LIVE_TERMS_TO_WIN,
-                    won: true,
-                    correctTerm: entry.term,
-                    answerText,
-                    teamId: team.id,
-                    teamName: team.name,
-                };
-            }
-            clearTeamQuestionState(team);
-            return {
-                correct: true,
-                reset: false,
-                progress: team.termIndex,
-                won: false,
-                correctTerm: entry.term,
-                answerText,
-                teamId: team.id,
-                teamName: team.name,
-                nextQuestion: true,
-            };
+            return processCorrectAnswerTeam(room, team, entry, answerText);
         }
 
-        team.termIndex = 0;
-        reshuffleTeamTerms(team, room.masterDeck);
-        return {
-            correct: false,
-            reset: true,
-            progress: 0,
-            won: false,
-            correctTerm: entry.term,
-            answerText,
-            teamId: team.id,
-            teamName: team.name,
-            nextQuestion: true,
-        };
+        setPendingChallenge(team, entry, answerText);
+        keepLocked = true;
+        return buildPendingWrongResult(team, entry, answerText, true);
     } finally {
-        team.answerLocked = false;
+        if (!keepLocked) team.answerLocked = false;
     }
 }
 
@@ -916,46 +1196,19 @@ function submitAnswer(room, playerId, rawText) {
     if (!answerText) throw new Error('Type an answer first.');
 
     player.answerLocked = true;
+    let keepLocked = false;
     try {
         const correct = matchesTermAnswer(answerText, entry.term);
 
         if (correct) {
-            player.termIndex += 1;
-            if (player.termIndex >= LIVE_TERMS_TO_WIN) {
-                finishGame(room, player);
-                return {
-                    correct: true,
-                    reset: false,
-                    progress: LIVE_TERMS_TO_WIN,
-                    won: true,
-                    correctTerm: entry.term,
-                    answerText,
-                };
-            }
-            return {
-                correct: true,
-                reset: false,
-                progress: player.termIndex,
-                won: false,
-                correctTerm: entry.term,
-                answerText,
-                nextQuestion: playerQuestionPayload(player, room),
-            };
+            return processCorrectAnswerPlayer(room, player, entry, answerText);
         }
 
-        player.termIndex = 0;
-        reshufflePlayerTerms(player, room.masterDeck);
-        return {
-            correct: false,
-            reset: true,
-            progress: 0,
-            won: false,
-            correctTerm: entry.term,
-            answerText,
-            nextQuestion: playerQuestionPayload(player, room),
-        };
+        setPendingChallenge(player, entry, answerText);
+        keepLocked = true;
+        return buildPendingWrongResult(player, entry, answerText, false);
     } finally {
-        player.answerLocked = false;
+        if (!keepLocked) player.answerLocked = false;
     }
 }
 
@@ -1007,6 +1260,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             socket.emit('live:host-joined', {
                 snapshot: publicRoomSnapshot(room),
                 progress: progressSnapshot(room),
+                pendingChallenges: listPendingChallenges(room),
             });
         });
 
@@ -1040,6 +1294,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             if (room.phase !== 'playing') return;
             attachPlayerSocket(socket, room, player);
+            const team = getPlayerTeam(room, player);
+            const entity = isCaptainCrew(room) && team ? team : player;
+            if (entity?.pendingChallenge) return;
             const q = playerQuestionPayload(player, room);
             if (q) socket.emit('live:your-question', q);
         });
@@ -1160,7 +1417,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                         return;
                     }
 
-                    emitProgress(io, room);
+                    if (!result.challengeable) emitProgress(io, room);
                     return;
                 }
 
@@ -1175,10 +1432,71 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     return;
                 }
 
-                if (result.nextQuestion) {
-                    socket.emit('live:your-question', result.nextQuestion);
+                if (!result.challengeable) {
+                    if (result.nextQuestion) {
+                        socket.emit('live:your-question', result.nextQuestion);
+                    }
+                    emitProgress(io, room);
                 }
-                emitProgress(io, room);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:challenge-answer', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'player') {
+                socket.emit('live:error', { error: 'Players only.' });
+                return;
+            }
+            try {
+                const challenge = submitChallenge(room, socket.data.playerId);
+                emitChallengePending(io, room, challenge);
+                const player = room.players.get(socket.data.playerId);
+                const team = player ? getPlayerTeam(room, player) : null;
+                const payload = { challengeId: challenge.id };
+                if (isCaptainCrew(room) && team) {
+                    for (const memberId of team.memberIds) {
+                        const member = room.players.get(memberId);
+                        if (member?.socketId) io.to(member.socketId).emit('live:challenge-submitted', payload);
+                    }
+                } else {
+                    socket.emit('live:challenge-submitted', payload);
+                }
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:skip-challenge', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'player') {
+                socket.emit('live:error', { error: 'Players only.' });
+                return;
+            }
+            try {
+                const player = room.players.get(socket.data.playerId);
+                const result = skipChallenge(room, socket.data.playerId);
+                if (isCaptainCrew(room)) {
+                    const team = player ? getPlayerTeam(room, player) : null;
+                    if (!team) throw new Error('You are not on a team.');
+                    deliverEntityOutcome(io, room, team, true, result, onGameEnd);
+                } else if (player) {
+                    deliverEntityOutcome(io, room, player, false, result, onGameEnd);
+                }
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:resolve-challenge', ({ challengeId, accept }) => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            try {
+                resolveChallenge(io, room, String(challengeId || ''), Boolean(accept), onGameEnd);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }
