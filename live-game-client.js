@@ -17,20 +17,17 @@
     let playerIsCaptain = false;
     let captainSuggestedAnswer = null;
     let currentQuestion = null;
-    let hostPrefill = null;
-    let raceBlobAnim = null;
-    const raceBlobMotion = [];
-
-    const BLOB_SPECS = [
-        { cls: 'live-race-blob--yellow', x: 0.12, y: 0.18, vx: 0.00022, vy: 0.00016 },
-        { cls: 'live-race-blob--cyan', x: 0.86, y: 0.14, vx: -0.0002, vy: 0.00014 },
-        { cls: 'live-race-blob--rose', x: 0.78, y: 0.8, vx: -0.00018, vy: -0.0002 },
-        { cls: 'live-race-blob--green', x: 0.16, y: 0.76, vx: 0.00019, vy: -0.00017 },
-    ];
 
     const RACE_BAR_COLORS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#9c27b0', '#ff6600', '#06b6d4', '#ec4899'];
     const HOST_POSITIVE_FEEDBACK = ['Way to go!', "That's right!", 'Nice one!', 'Spot on!', 'Keep going!', 'Brilliant!', 'Yes!'];
     const HOST_NEGATIVE_FEEDBACK = ['Ouch!', "That's unfortunate.", 'Back to the start!', 'So close!', 'Not this time.'];
+    const RACE_BLOB_DEFS = [
+        { cls: 'live-race-blob--yellow', size: 0.14, x: 0.14, y: 0.18, vx: 0.00022, vy: 0.00016 },
+        { cls: 'live-race-blob--cyan', size: 0.13, x: 0.82, y: 0.14, vx: -0.00018, vy: 0.0002 },
+        { cls: 'live-race-blob--rose', size: 0.13, x: 0.76, y: 0.78, vx: -0.0002, vy: -0.00017 },
+        { cls: 'live-race-blob--green', size: 0.14, x: 0.16, y: 0.74, vx: 0.00019, vy: -0.00021 },
+    ];
+    const raceBlobAnim = { raf: null, blobs: [], container: null };
 
     function isHostSignedIn() {
         return Boolean(window.authState?.user?.id);
@@ -62,7 +59,6 @@
     function resetHostToSetup(message) {
         clearStoredHostRoom();
         setHostRaceMode(false);
-        hideFinishScreen();
         hostRaceColors = new Map();
         $('live-host-room-panel').hidden = true;
         $('live-host-finished').hidden = true;
@@ -196,147 +192,100 @@
         document.body.classList.toggle('live-game-active', Boolean(active));
         const codeEl = $('live-play-room-code');
         const codeVal = $('live-play-room-code-value');
-        const watermark = $('live-play-watermark');
         if (codeVal) {
             codeVal.textContent = playerState?.code || sessionStorage.getItem('ls_live_room_code') || '';
         }
         if (codeEl) {
             codeEl.hidden = !active;
         }
-        if (watermark) watermark.hidden = !active;
         const bubbles = $('live-play-bubbles');
         if (bubbles && !active) bubbles.innerHTML = '';
-        const bg = $('live-play-race-bg');
-        if (active) startRaceBlobMotion(bg);
-        else stopRaceBlobMotion();
+        if (active) startRaceBgBlobs($('live-play-race-bg'));
+        else stopRaceBgBlobs();
         applyPlayerBarColor();
     }
 
-    function ensureRaceBlobs(bgEl) {
-        if (!bgEl || bgEl.dataset.blobsReady) return;
-        bgEl.dataset.blobsReady = '1';
-        BLOB_SPECS.forEach((spec) => {
-            const el = document.createElement('span');
-            el.className = `live-race-blob ${spec.cls}`;
-            bgEl.appendChild(el);
+    function startRaceBgBlobs(container) {
+        if (!container || raceBlobAnim.raf) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        stopRaceBgBlobs();
+        raceBlobAnim.container = container;
+        raceBlobAnim.blobs = RACE_BLOB_DEFS.map((def) => {
+            const el = document.createElement('div');
+            el.className = `live-race-blob ${def.cls}`;
+            container.appendChild(el);
+            return { el, size: def.size, x: def.x, y: def.y, vx: def.vx, vy: def.vy };
         });
-    }
-
-    function startRaceBlobMotion(bgEl) {
-        stopRaceBlobMotion();
-        if (!bgEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        ensureRaceBlobs(bgEl);
-        const blobs = bgEl.querySelectorAll('.live-race-blob');
-        const rect = () => bgEl.getBoundingClientRect();
-        raceBlobMotion.length = 0;
-        blobs.forEach((el, i) => {
-            const spec = BLOB_SPECS[i] || BLOB_SPECS[0];
-            const w = rect().width || 800;
-            const h = rect().height || 600;
-            const size = el.offsetWidth || 140;
-            const half = size * 0.45;
-            raceBlobMotion.push({
-                el,
-                half,
-                x: spec.x * w,
-                y: spec.y * h,
-                vx: spec.vx * w,
-                vy: spec.vy * h,
+        const tick = () => {
+            const host = raceBlobAnim.container;
+            if (!host) return;
+            const w = host.clientWidth || window.innerWidth;
+            const h = host.clientHeight || window.innerHeight;
+            raceBlobAnim.blobs.forEach((b) => {
+                b.x += b.vx;
+                b.y += b.vy;
+                const sizePx = Math.min(w, h) * b.size;
+                const half = sizePx / 2;
+                const px = b.x * w;
+                const py = b.y * h;
+                if (px <= half) { b.x = half / w; b.vx = Math.abs(b.vx); }
+                if (px >= w - half) { b.x = (w - half) / w; b.vx = -Math.abs(b.vx); }
+                if (py <= half) { b.y = half / h; b.vy = Math.abs(b.vy); }
+                if (py >= h - half) { b.y = (h - half) / h; b.vy = -Math.abs(b.vy); }
+                b.el.style.width = `${sizePx}px`;
+                b.el.style.height = `${sizePx}px`;
+                b.el.style.transform = `translate(${b.x * w - half}px, ${b.y * h - half}px)`;
             });
-        });
-        let last = performance.now();
-        const tick = (now) => {
-            const w = rect().width;
-            const h = rect().height;
-            const dt = Math.min(32, now - last);
-            last = now;
-            raceBlobMotion.forEach((b) => {
-                b.x += b.vx * dt;
-                b.y += b.vy * dt;
-                if (b.x < b.half) { b.x = b.half; b.vx = Math.abs(b.vx); }
-                if (b.y < b.half) { b.y = b.half; b.vy = Math.abs(b.vy); }
-                if (b.x > w - b.half) { b.x = w - b.half; b.vx = -Math.abs(b.vx); }
-                if (b.y > h - b.half) { b.y = h - b.half; b.vy = -Math.abs(b.vy); }
-                b.el.style.transform = `translate(${b.x - b.half}px, ${b.y - b.half}px)`;
-            });
-            raceBlobAnim = requestAnimationFrame(tick);
+            raceBlobAnim.raf = requestAnimationFrame(tick);
         };
-        raceBlobAnim = requestAnimationFrame(tick);
+        raceBlobAnim.raf = requestAnimationFrame(tick);
     }
 
-    function stopRaceBlobMotion() {
-        if (raceBlobAnim) cancelAnimationFrame(raceBlobAnim);
-        raceBlobAnim = null;
-        raceBlobMotion.length = 0;
+    function stopRaceBgBlobs() {
+        if (raceBlobAnim.raf) cancelAnimationFrame(raceBlobAnim.raf);
+        raceBlobAnim.raf = null;
+        raceBlobAnim.blobs.forEach((b) => b.el.remove());
+        raceBlobAnim.blobs = [];
+        raceBlobAnim.container = null;
     }
 
-    function hideFinishScreen() {
-        const overlay = $('live-finish-overlay');
-        if (overlay) overlay.hidden = true;
+    function showLiveWinnerScreen(winnerNickname, isYou, options = {}) {
+        const screen = $('live-winner-screen');
+        const content = $('live-winner-content');
+        if (!screen || !content || !winnerNickname) return;
+        const teamMode = Boolean(options.teamMode);
+        const youMsg = isYou ? (teamMode ? " That's your team!" : " That's you!") : '';
+        launchConfetti(12000);
+        content.innerHTML = `
+            <h2>🏆 Champion!</h2>
+            <p><strong>${esc(winnerNickname)}</strong> completed all 12 terms first!${youMsg}</p>
+            <button type="button" class="btn btn-blue" id="live-winner-dismiss" style="padding:0.75rem 2rem;">Continue</button>`;
+        screen.hidden = false;
+        $('live-winner-dismiss')?.addEventListener('click', hideLiveWinnerScreen, { once: true });
+    }
+
+    function hideLiveWinnerScreen() {
+        const screen = $('live-winner-screen');
+        if (screen) screen.hidden = true;
         const canvas = $('live-confetti-canvas');
         if (canvas) {
             canvas.classList.remove('active');
             const ctx = canvas.getContext('2d');
-            if (ctx) ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-        if (confettiAnim) {
-            cancelAnimationFrame(confettiAnim);
-            confettiAnim = null;
-        }
+        if (confettiAnim) cancelAnimationFrame(confettiAnim);
+        confettiAnim = null;
     }
 
-    function showFinishScreen(data, role) {
-        const overlay = $('live-finish-overlay');
-        if (!overlay) return;
-        const isTeam = role === 'player'
-            ? isCaptainCrewMode()
-            : hostState?.gameFormat === 'captain-crew';
-        const isWinner = role === 'player'
-            ? (isTeam ? data.winnerId === playerState?.teamId : data.winnerId === playerState?.playerId)
-            : false;
-        const title = $('live-finish-title');
-        const msg = $('live-finish-message');
-        const board = $('live-finish-board');
-        if (title) title.textContent = isWinner ? 'You won!' : 'Champion!';
-        if (msg) {
-            const youMsg = isWinner
-                ? (isTeam ? ' That\'s your team!' : ' That\'s you!')
-                : '';
-            msg.innerHTML = data.winnerNickname
-                ? `<strong>${esc(data.winnerNickname)}</strong> completed all 12 terms first!${youMsg}`
-                : 'Game over!';
-        }
-        renderProgressBoard(board, data.players || [], { winnerId: data.winnerId });
-        overlay.hidden = false;
-        launchConfetti();
-        if (role === 'host') setHostRaceMode(false);
-        else setLiveGameActive(false);
-    }
-
-    function applyHostPrefill() {
-        if (!hostPrefill) return;
-        const pf = hostPrefill;
-        hostPrefill = null;
-        if (pf.setId) {
-            const radio = document.querySelector('input[name="live-source"][value="wordset"]');
-            if (radio) radio.checked = true;
-            toggleLiveSourcePanels();
-            const sel = $('live-host-wordset');
-            if (sel) sel.value = String(pf.setId);
-            if ((!sel?.value || sel.value !== String(pf.setId)) && pf.terms) {
-                const pasteRadio = document.querySelector('input[name="live-source"][value="paste"]');
-                if (pasteRadio) pasteRadio.checked = true;
-                toggleLiveSourcePanels();
-                const ta = $('live-host-glossary');
-                if (ta) ta.value = pf.terms;
-            }
-        } else if (pf.terms) {
-            const radio = document.querySelector('input[name="live-source"][value="paste"]');
-            if (radio) radio.checked = true;
-            toggleLiveSourcePanels();
-            const ta = $('live-host-glossary');
-            if (ta) ta.value = pf.terms;
-        }
+    function applyGlossaryPrefill() {
+        const terms = sessionStorage.getItem('ls_live_prefill_glossary');
+        if (!terms) return;
+        sessionStorage.removeItem('ls_live_prefill_glossary');
+        const pasteRadio = document.querySelector('input[name="live-source"][value="paste"]');
+        if (pasteRadio) pasteRadio.checked = true;
+        toggleLiveSourcePanels();
+        const ta = $('live-host-glossary');
+        if (ta) ta.value = terms;
     }
 
     function applyPlayerBarColor() {
@@ -569,11 +518,6 @@
             race.hidden = !active;
             race.classList.toggle('live-host-race--teams', active && hostState?.gameFormat === 'captain-crew');
         }
-        const watermark = $('live-host-watermark');
-        if (watermark) watermark.hidden = !active;
-        const bg = race?.querySelector('.live-race-bg');
-        if (active) startRaceBlobMotion(bg);
-        else stopRaceBlobMotion();
         const grid = document.querySelector('.live-host-grid');
         if (grid) grid.hidden = active;
         if (active) {
@@ -586,9 +530,11 @@
                     ? 'Captain & Crew — teams race to 12!'
                     : 'First to 12 in a row wins!';
             }
+            startRaceBgBlobs(document.querySelector('#live-host-race .live-race-bg'));
         } else {
             const bubbles = $('live-host-race-bubbles');
             if (bubbles) bubbles.innerHTML = '';
+            stopRaceBgBlobs();
         }
     }
 
@@ -734,40 +680,45 @@
         panel.hidden = false;
         const teams = snap?.teams || [];
         const maxMembers = snap?.teamMax || 4;
-        const hint = playerState?.teamId
-            ? `You're on <strong>${esc(playerState.teamName || 'a team')}</strong> — waiting for the host…`
-            : 'Tap a team card below to join';
+        const hint = '<p class="live-team-join-hint">Tap a team to join</p>';
         if (!teams.length) {
-            list.innerHTML = `<p class="live-team-join-hint">${hint}</p><p class="live-muted" style="margin:0;text-align:center;">No teams yet. Start one below.</p>`;
+            list.innerHTML = `${hint}<p class="live-muted" style="margin:0;">No teams yet — start one below.</p>`;
         } else {
-            list.innerHTML = `<p class="live-team-join-hint">${hint}</p>` + teams.map((team) => {
+            list.innerHTML = hint + teams.map((team) => {
                 const onTeam = team.memberIds?.includes(playerState?.playerId);
-                const canJoin = !onTeam && team.canJoin;
                 const members = team.memberNicknames?.length
-                    ? esc(team.memberNicknames.join(', '))
-                    : 'No members yet';
-                const cardCls = `live-team-card${onTeam ? ' live-team-card--yours' : ''}${canJoin ? ' live-team-card--joinable' : ''}`;
-                const action = onTeam
-                    ? '<span class="live-muted" style="display:block;margin-top:0.45rem;font-weight:600;">✓ Your team</span>'
-                    : (canJoin
-                        ? '<span class="live-muted" style="display:block;margin-top:0.45rem;">Tap to join</span>'
-                        : '<span class="live-muted" style="display:block;margin-top:0.45rem;">Team full</span>');
-                return `<div class="${cardCls}" data-team-id="${esc(team.id)}" data-can-join="${canJoin ? '1' : '0'}">
+                    ? team.memberNicknames.map((n) => `<span class="live-team-member-pill">${esc(n)}</span>`).join('')
+                    : '<span class="live-muted">No members yet</span>';
+                const joinBtn = !onTeam && team.canJoin
+                    ? `<button type="button" class="btn btn-blue live-join-team-btn" data-team-id="${esc(team.id)}" style="width:100%;margin-top:0.5rem;">Join ${esc(team.name)}</button>`
+                    : '';
+                const joined = onTeam
+                    ? '<span class="live-muted" style="display:block;margin-top:0.35rem;font-weight:600;color:var(--success-green);">✓ You\'re on this team</span>'
+                    : '';
+                const cardCls = `live-team-card${onTeam ? ' on-team' : ''}${!onTeam && team.canJoin ? ' joinable' : ''}`;
+                const dataTeam = !onTeam && team.canJoin ? ` data-team-id="${esc(team.id)}"` : '';
+                return `<div class="${cardCls}"${dataTeam}>
                     <div class="live-team-card-head">
                         <span class="live-team-card-name">${esc(team.name)}</span>
                         <span class="live-muted">${team.memberCount || 0}/${maxMembers}</span>
                     </div>
-                    <div class="live-team-card-members">${members}</div>
-                    ${action}
+                    <div class="live-team-member-pills">${members}</div>
+                    ${joinBtn}${joined}
                 </div>`;
             }).join('');
         }
         if (createBtn) createBtn.hidden = Boolean(playerState?.teamId);
-        list.querySelectorAll('.live-team-card--joinable').forEach((card) => {
-            card.addEventListener('click', () => {
-                const teamId = card.getAttribute('data-team-id');
-                if (teamId) ensureSocket().emit('live:join-team', { teamId });
+        const joinTeam = (teamId) => {
+            if (teamId) ensureSocket().emit('live:join-team', { teamId });
+        };
+        list.querySelectorAll('.live-join-team-btn').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                joinTeam(btn.getAttribute('data-team-id'));
             });
+        });
+        list.querySelectorAll('.live-team-card.joinable').forEach((card) => {
+            card.addEventListener('click', () => joinTeam(card.getAttribute('data-team-id')));
         });
     }
 
@@ -921,8 +872,15 @@
             hostState.phase = 'finished';
             stopHostLobbyPoll();
             LiveAudio.stopAll();
-            $('live-host-finished').hidden = true;
-            showFinishScreen(data, 'host');
+            setHostRaceMode(false);
+            $('live-host-finished').hidden = false;
+            if (data.winnerNickname) {
+                showChampionBanner($('live-host-champion'), data.winnerNickname, false);
+                showLiveWinnerScreen(data.winnerNickname, false, {
+                    teamMode: hostState?.gameFormat === 'captain-crew',
+                });
+            }
+            renderProgressBoard($('live-host-final-board'), data.players || [], { winnerId: data.winnerId });
             updateHostStartButton({ phase: 'finished' });
         });
 
@@ -1027,8 +985,17 @@
 
         s.on('live:game-finished', (data) => {
             LiveAudio.stopGame();
+            setLiveGameActive(false);
             hideCrewPanel();
-            showFinishScreen(data, 'player');
+            const isWinner = isCaptainCrewMode()
+                ? data.winnerId === playerState?.teamId
+                : data.winnerId === playerState?.playerId;
+            if (data.winnerNickname) {
+                showLiveWinnerScreen(data.winnerNickname, isWinner, {
+                    teamMode: isCaptainCrewMode(),
+                });
+            }
+            renderProgressBoard($('live-play-progress-board'), data.players || [], { winnerId: data.winnerId });
             const def = $('live-play-definition');
             if (def) def.textContent = 'Game over!';
             setAnswerInputsEnabled(false);
@@ -1527,7 +1494,7 @@
 
         await ensureAuthLoaded();
         updateHostAuthUI();
-        await loadWordSetsForHost();
+        loadWordSetsForHost();
 
         if (!isHostSignedIn()) {
             clearStoredHostRoom();
@@ -1540,13 +1507,13 @@
         if (!resumed) {
             $('live-host-room-panel').hidden = true;
             $('live-host-setup-form').hidden = false;
-            applyHostPrefill();
+            applyGlossaryPrefill();
         }
         if (typeof showScreen === 'function') showScreen('live-host');
     }
 
-    async function openHostPrefilled(opts = {}) {
-        hostPrefill = opts || null;
+    async function openHostWithGlossary(terms) {
+        if (terms) sessionStorage.setItem('ls_live_prefill_glossary', terms);
         await openHost();
     }
 
@@ -1555,7 +1522,7 @@
         const code = ($('live-join-code')?.value || '').trim().toUpperCase();
         const nickname = ($('live-join-nickname')?.value || '').trim();
         if (!code || code.length < 4) { showLiveError('Enter a 4-letter room code.'); return; }
-        if (!nickname || nickname.length < 2) { showLiveError('Enter a nickname (at least 2 characters).'); return; }
+        if (!nickname) { showLiveError('Enter a nickname.'); return; }
 
         const btn = $('live-join-btn');
         if (btn) btn.disabled = true;
@@ -1618,7 +1585,6 @@
         };
         $('live-play-nickname').textContent = sessionStorage.getItem('ls_live_nickname') || 'Player';
         $('live-play-champion').hidden = true;
-        hideFinishScreen();
         setLiveGameActive(false);
         showPlayerWaiting('Connecting…');
         bindPlayerSocket();
@@ -1668,23 +1634,17 @@
             if (e.key !== 'Enter') return;
             e.preventDefault();
             const crewVoteBtn = $('live-play-crew-vote-btn');
-            if (crewVoteBtn && !crewVoteBtn.hidden) submitCrewVoteFromInput();
-            else if (playerIsCaptain && isCaptainCrewMode()) submitCaptainAnswer();
+            const captainBtn = $('live-play-captain-submit');
+            if (playerIsCaptain && captainBtn && !captainBtn.hidden) {
+                const input = $('live-play-answer');
+                if (input?.value?.trim()) playerCrewVote = input.value.trim();
+                submitCaptainAnswer();
+            } else if (crewVoteBtn && !crewVoteBtn.hidden) submitCrewVoteFromInput();
             else submitPlayerAnswer();
-        });
-        $('live-finish-close')?.addEventListener('click', hideFinishScreen);
-        $('vocab-live-quiz-btn')?.addEventListener('click', () => {
-            const terms = document.getElementById('glossary-input')?.value || '';
-            const setId = typeof window.getCurrentWordSetId === 'function' ? window.getCurrentWordSetId() : null;
-            if (!terms.trim()) {
-                alert('Add a word list first.');
-                return;
-            }
-            openHostPrefilled(setId ? { setId, terms } : { terms });
         });
         toggleLiveSourcePanels();
         toggleLiveFormatPanels();
     });
 
-    window.LiveGame = { openHost, openHostPrefilled, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged };
+    window.LiveGame = { openHost, openHostWithGlossary, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged };
 })();
