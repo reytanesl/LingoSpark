@@ -6,10 +6,10 @@ Suggested prices (raise later if they sell):
 
 | Product | TPT | Polish groups / Etsy |
 |---------|-----|----------------------|
-| One E8 pack (~120 terms) | **$5.50** | **22 zł** |
-| E8 complete (14 modules) | **$49.50** | **179 zł** |
-| Matura PP pack | **$4.25** | **17 zł** |
-| Matura PP pair (Work + Health) | **$7.50** | **29 zł** |
+| One E8 pack (~120 terms) | **$3** | **12 zł** |
+| E8 complete (14 modules) | **$29** | **99 zł** |
+| Matura PP pack | **$3** | **12 zł** |
+| Matura PP pair (Work + Health) | **$5** | **20 zł** |
 
 Upload `packs/dist/LingoSpark-LS-8-COMPLETE.zip` with copy from `BUNDLE-LISTING-E8.txt`. Single modules are `LingoSpark-LS-8-*.zip`.
 
@@ -45,7 +45,7 @@ Post in Polish. Template (edit the topic/price):
 >
 > Wklejasz listę w darmowe gry na lingospark.study (bomba, fiszki, aukcja, live quiz). Około sześć lekcji po 45 min, klucz.
 >
-> Cena: 22 zł / dział albo 179 zł za wszystkie 14. ZIP na maila. Licencja na jedną klasę.
+> Cena: 12 zł / dział albo 99 zł za wszystkie 14. ZIP na maila. Licencja na jedną klasę.
 
 Take payment via BLIK / transfer, then email the ZIP. Keep a note of who bought (so you can resend if Gmail eats it).
 

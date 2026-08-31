@@ -466,8 +466,8 @@ Licence: classroom (see LICENSE-CLASSROOM.txt in packs/).
 function bundleListing(packs, kind) {
     const e8 = kind === 'e8';
     const count = packs.length;
-    const usd = e8 ? '49.50' : kind === 'matura' ? '7.50' : '54.00';
-    const pln = e8 ? '179' : kind === 'matura' ? '29' : '199';
+    const usd = e8 ? '29' : kind === 'matura' ? '5' : '32';
+    const pln = e8 ? '99' : kind === 'matura' ? '20' : '119';
     const title =
         kind === 'e8'
             ? `Polish Grade-8 English (Egzamin ósmoklasisty) — all ${count} CKE modules`
@@ -610,7 +610,7 @@ function loadPacks() {
         }
         pack.titlePl = pack.titlePl.replace(/— \d+ haseł/, `— ${pack.items.length} haseł`);
         pack.titleEn = pack.titleEn.replace(/— \d+ terms/, `— ${pack.items.length} terms`);
-        if (e8) pack.priceHint = { tptUsd: 5.5, pln: 22 };
+        if (e8) pack.priceHint = { tptUsd: 3, pln: 12 };
     }
     return packs;
 }

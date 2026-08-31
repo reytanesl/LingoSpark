@@ -14,10 +14,9 @@ window.LS_SHOP = {
             title: 'Komplet 14 działów CKE',
             image: 'shop/previews/ls-8-complete.svg',
             terms: 1755,
-            pricePln: 179,
-            priceUsd: 49.5,
-            description:
-                'Pełny komplet 14 działów z informatora CKE — łącznie ponad 1700 haseł na poziomie A2–B1, bez powtórek między modułami. Każdy dział ma listy do wklejenia w gry, karty pracy i klucz. Taniej niż kupno wszystkich paczek osobno.',
+            pricePln: 99,
+            priceUsd: 29,
+            description: 'Wszystkie 14 działów CKE — ponad 1700 haseł, listy do gier i karty z kluczem.',
         },
         {
             id: 'osmoklasista-czlowiek',
@@ -26,10 +25,9 @@ window.LS_SHOP = {
             title: 'Człowiek',
             image: 'shop/previews/osmoklasista-czlowiek.svg',
             terms: 124,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Dział Człowiek: wygląd, cechy charakteru, ubrania i emocje. Około 120 autentycznych haseł na ósmoklasistę — wklejasz do gier LingoSpark i dostajesz karty z kluczem na lekcję.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Wygląd, cechy charakteru, ubrania i emocje.',
         },
         {
             id: 'osmoklasista-dom',
@@ -38,10 +36,9 @@ window.LS_SHOP = {
             title: 'Miejsce zamieszkania',
             image: 'shop/previews/osmoklasista-dom.svg',
             terms: 119,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Typy domów, pomieszczenia, meble i okolica. Paczka na dział Miejsce zamieszkania: listy PL/EN do gier oraz karty matching, luk i mini-quiz.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Typy domów, pomieszczenia, meble i okolica.',
         },
         {
             id: 'osmoklasista-edukacja',
@@ -50,10 +47,9 @@ window.LS_SHOP = {
             title: 'Edukacja',
             image: 'shop/previews/osmoklasista-edukacja.svg',
             terms: 120,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Szkoła, przedmioty, oceny, egzaminy i życie klasy. Hasła gotowe do Bomb Defusal, fiszek i Live Quiz — plus materiały do druku.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Szkoła, przedmioty, oceny, egzaminy i życie klasy.',
         },
         {
             id: 'osmoklasista-praca',
@@ -62,10 +58,9 @@ window.LS_SHOP = {
             title: 'Praca',
             image: 'shop/previews/osmoklasista-praca.svg',
             terms: 121,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Zawody, etat, rozmowa kwalifikacyjna i pierwsze pieniądze — prostsze niż matura, ale pełny dział CKE. Idealne pod 45-minutowe lekcje z grą.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Zawody, etat, rozmowa kwalifikacyjna i pierwsze pieniądze.',
         },
         {
             id: 'osmoklasista-zycie-prywatne',
@@ -74,10 +69,9 @@ window.LS_SHOP = {
             title: 'Życie prywatne',
             image: 'shop/previews/osmoklasista-zycie-prywatne.svg',
             terms: 122,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Rodzina, znajomi, rutyna dnia i czas wolny. Lista na dział Życie prywatne z przykładami w zdaniach i kartami do pracy w parach.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Rodzina, znajomi, rutyna dnia i czas wolny.',
         },
         {
             id: 'osmoklasista-zywienie',
@@ -86,10 +80,9 @@ window.LS_SHOP = {
             title: 'Żywienie',
             image: 'shop/previews/osmoklasista-zywienie.svg',
             terms: 131,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Posiłki, smaki, gotowanie i jedzenie na mieście. Największa paczka E8 — wklejasz pełną listę albo zestawy po 20 haseł na lekcję.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Posiłki, smaki, gotowanie i jedzenie na mieście.',
         },
         {
             id: 'osmoklasista-zakupy',
@@ -98,10 +91,9 @@ window.LS_SHOP = {
             title: 'Zakupy i usługi',
             image: 'shop/previews/osmoklasista-zakupy.svg',
             terms: 123,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Sklepy, płatność, reklamacja, poczta i usługi. Hasła, których uczniowie potrzebują w dialogach i na egzaminie ustnym.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Sklepy, płatność, reklamacja, poczta i usługi.',
         },
         {
             id: 'osmoklasista-podroze',
@@ -110,10 +102,9 @@ window.LS_SHOP = {
             title: 'Podróże',
             image: 'shop/previews/osmoklasista-podroze.svg',
             terms: 130,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Lotnisko, dworzec, hotel, zwiedzanie i pytanie o drogę. Dział Podróżowanie i turystyka z listami do gier i kartami na lekcję.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Lotnisko, dworzec, hotel, zwiedzanie i pytanie o drogę.',
         },
         {
             id: 'osmoklasista-kultura',
@@ -122,10 +113,9 @@ window.LS_SHOP = {
             title: 'Kultura',
             image: 'shop/previews/osmoklasista-kultura.svg',
             terms: 130,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Film, książka, muzyka, teatr i tradycje. Paczka na dział Kultura — od kina po folklor — pod fiszki, bombę i quiz na żywo.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Film, książka, muzyka, teatr i tradycje.',
         },
         {
             id: 'osmoklasista-sport',
@@ -134,10 +124,9 @@ window.LS_SHOP = {
             title: 'Sport',
             image: 'shop/previews/osmoklasista-sport.svg',
             terms: 128,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Dyscypliny, sprzęt, mecz i kibice. Lista na dział Sport z zestawami po 20 haseł — w sam raz na lekcję WF-owo-angielską albo powtórkę.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Dyscypliny, sprzęt, mecz i kibice.',
         },
         {
             id: 'osmoklasista-zdrowie',
@@ -146,10 +135,9 @@ window.LS_SHOP = {
             title: 'Zdrowie',
             image: 'shop/previews/osmoklasista-zdrowie.svg',
             terms: 127,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Objawy, wizyta u lekarza, zdrowy styl życia i pierwsza pomoc. Poziom ósmoklasisty — nie kopia listy maturalnej ze strony.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Objawy, wizyta u lekarza, zdrowy styl życia i pierwsza pomoc.',
         },
         {
             id: 'osmoklasista-nauka-technika',
@@ -158,10 +146,9 @@ window.LS_SHOP = {
             title: 'Nauka i technika',
             image: 'shop/previews/osmoklasista-nauka-technika.svg',
             terms: 127,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Komputer, internet, urządzenia i proste słownictwo naukowe. Dział Nauka i technika gotowy do wklejenia w gry LingoSpark.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Komputer, internet, urządzenia i proste słownictwo naukowe.',
         },
         {
             id: 'osmoklasista-przyroda',
@@ -170,10 +157,9 @@ window.LS_SHOP = {
             title: 'Świat przyrody',
             image: 'shop/previews/osmoklasista-przyroda.svg',
             terms: 126,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Pogoda, krajobraz, zwierzęta i ekologia. Paczka na Świat przyrody z kartami do druku i listami PL oraz EN.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Pogoda, krajobraz, zwierzęta i ekologia.',
         },
         {
             id: 'osmoklasista-zycie-spoleczne',
@@ -182,10 +168,9 @@ window.LS_SHOP = {
             title: 'Życie społeczne',
             image: 'shop/previews/osmoklasista-zycie-spoleczne.svg',
             terms: 127,
-            pricePln: 22,
-            priceUsd: 5.5,
-            description:
-                'Społeczność, prawo, wybory, wolontariat i dobre maniery. Dział Życie społeczne pod dialogi, gry i karty pracy.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Społeczność, prawo, wybory, wolontariat i dobre maniery.',
         },
         {
             id: 'matura-pp-praca',
@@ -194,10 +179,9 @@ window.LS_SHOP = {
             title: 'Matura PP: Praca',
             image: 'shop/previews/matura-pp-praca.svg',
             terms: 36,
-            pricePln: 17,
-            priceUsd: 4.25,
-            description:
-                '36 haseł z działu Praca na maturę podstawową: CV, etat, nadgodziny, zwolnienie. Dwie lekcje po 45 minut — listy do gier i karty z kluczem.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'CV, etat, nadgodziny i zwolnienie — 36 haseł na maturę PP.',
         },
         {
             id: 'matura-pp-zdrowie',
@@ -206,10 +190,9 @@ window.LS_SHOP = {
             title: 'Matura PP: Zdrowie',
             image: 'shop/previews/matura-pp-zdrowie.svg',
             terms: 36,
-            pricePln: 17,
-            priceUsd: 4.25,
-            description:
-                'Objawy, wizyta u lekarza i leczenie na poziomie matury podstawowej. 36 haseł, zestawy A i B, karty do druku. To nie jest lista E8.',
+            pricePln: 12,
+            priceUsd: 3,
+            description: 'Objawy, wizyta u lekarza i leczenie — 36 haseł na maturę PP.',
         },
     ],
 };
