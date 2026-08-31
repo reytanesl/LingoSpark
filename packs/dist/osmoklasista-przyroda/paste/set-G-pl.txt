@@ -1,0 +1,6 @@
+poacher = kłusownik
+breed = hodować; gatunek rasowy
+hunt = polować
+organic farming = rolnictwo ekologiczne
+pesticide = pestycyd, środek owadobójczy
+climate change = zmiana klimatu

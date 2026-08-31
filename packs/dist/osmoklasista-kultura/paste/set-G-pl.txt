@@ -1,0 +1,10 @@
+exhibition opening = wernisaż
+curator = kurator wystawy
+exhibit = eksponat
+guided visit = zwiedzanie z przewodnikiem (muzeum)
+folk dance = taniec ludowy
+national costume = strój narodowy
+custom = zwyczaj
+legend = legenda
+myth = mit
+folklore = folklor

@@ -1,0 +1,121 @@
+firefighter
+nurse
+mechanic
+shop assistant
+waiter
+journalist
+engineer
+lawyer
+chef
+plumber
+police officer
+programmer
+apply for
+interview
+CV
+salary
+unemployed
+part-time
+full-time
+overtime
+shift
+employer
+employee
+colleague
+well-paid
+stressful
+work from home
+retire
+skills
+experience
+nine-to-five
+vacancy
+get a job
+earn
+do for a living
+self-employed
+doctor
+teacher
+farmer
+pilot
+driver
+lorry driver
+builder
+electrician
+architect
+accountant
+receptionist
+secretary
+postman
+librarian
+vet
+paramedic
+soldier
+sailor
+actor
+musician
+artist
+photographer
+hairdresser
+baker
+butcher
+florist
+cleaner
+security guard
+shopkeeper
+businessman
+businesswoman
+freelancer
+apprentice
+trainee
+boss
+staff
+workplace
+office
+factory
+warehouse
+building site
+workshop
+job advertisement
+application form
+covering letter
+reference
+qualifications
+training course
+work experience
+paid job
+unpaid work
+minimum wage
+pocket money job
+working hours
+flexitime
+night shift
+day off
+holiday pay
+sick pay
+clock in
+clock out
+promotion
+raise
+fire
+give the sack
+look for a job
+get hired
+lose your job
+career
+profession
+manual work
+white-collar
+blue-collar
+customer service
+deal with
+be in charge of
+work overtime
+commute
+rush hour
+work-life balance
+stress at work
+teamwork
+meeting
+contract
+run a company

@@ -1,0 +1,7 @@
+gravity = the force that pulls things towards the Earth
+solar system = the sun and the planets that go around it
+planet = a large round object that goes around a star
+space station = a large spacecraft that stays in orbit and people live in
+astronaut = a person who travels into space
+research = careful study to find out new facts
+theory = an explanation based on evidence, not just a guess

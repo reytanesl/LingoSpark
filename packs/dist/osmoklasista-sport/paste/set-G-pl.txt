@@ -1,0 +1,8 @@
+World Cup = mistrzostwa świata
+home game = mecz u siebie
+away game = mecz wyjazdowy
+season ticket holder = kibic z karnetem
+fair play = fair play, uczciwa gra
+doping = doping
+disabled sport = sport osób z niepełnosprawnością
+PE kit = strój na WF

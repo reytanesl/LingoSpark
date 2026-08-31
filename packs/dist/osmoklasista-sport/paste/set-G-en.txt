@@ -1,0 +1,8 @@
+World Cup = an international tournament to find the best national team
+home game = a match played at your own stadium
+away game = a match played at the other team's stadium
+season ticket holder = a fan who has paid for all home matches
+fair play = playing by the rules and showing respect
+doping = using banned drugs to improve sport results
+disabled sport = sport organised for athletes with disabilities
+PE kit = the clothes you must wear for physical education

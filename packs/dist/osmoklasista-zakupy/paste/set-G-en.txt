@@ -1,0 +1,3 @@
+closed = not open for customers
+open 24 hours = open all day and all night
+fitting room = a small room in a clothes shop for trying clothes on

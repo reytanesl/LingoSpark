@@ -1,0 +1,7 @@
+noise complaint = skarga na hałas
+homeless shelter = schronisko dla bezdomnych
+fundraiser = zbiórka pieniędzy
+sponsor = sponsorować; sponsor
+awareness = świadomość (społeczna)
+global issue = problem globalny
+fair trade = fair trade, sprawiedliwy handel

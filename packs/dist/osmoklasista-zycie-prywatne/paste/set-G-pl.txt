@@ -1,0 +1,2 @@
+routine = rutyna dnia
+chores = obowiązki (domowe)

@@ -1,0 +1,4 @@
+tight = fitting very close to the body
+loose = not tight; with extra space
+wear = to have clothes on your body
+get changed = to take off one set of clothes and put on another

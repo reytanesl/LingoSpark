@@ -1,0 +1,11 @@
+gravy = sos pieczeniowy
+stew = gulasz, potrawka
+salad dressing = sos do sałatki
+smoothie = koktajl owocowy (smoothie)
+lemonade = lemoniada
+herbal tea = herbata ziołowa
+sip = sączyć, łyk
+chew = żuć
+swallow = połykać
+bite = gryźć; kęs
+side dish = dodatek do dania głównego

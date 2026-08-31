@@ -1,0 +1,130 @@
+journey
+destination
+departure
+arrival
+delay
+platform
+boarding pass
+luggage
+suitcase
+backpack
+check in
+take off
+land
+return ticket
+single ticket
+book a room
+bed and breakfast
+campsite
+sightseeing
+guidebook
+souvenir
+package holiday
+go abroad
+get lost
+traffic jam
+petrol station
+train timetable
+ferry
+long-distance coach
+aisle
+window seat
+cancelled
+resort
+landmark
+hitchhike
+overland
+airport
+flight
+passenger
+passport
+visa
+border
+customs
+security check
+passport control
+terminal
+departure lounge
+baggage reclaim
+hand luggage
+lost luggage
+runway
+direct flight
+stopover
+cabin crew
+seat belt
+turbulence
+delayed
+railway station
+bus station
+bus stop
+catch a bus
+miss the train
+change trains
+get on
+get off
+set off
+pick up
+drop off
+hire a car
+driving licence
+motorway
+roundabout
+traffic lights
+speed limit
+car park
+taxi rank
+fare
+travel card
+season ticket
+sleeper
+first class
+announcement
+waiting room
+left luggage
+lost property
+hotel
+hostel
+youth hostel
+guest house
+reception
+single room
+double room
+twin room
+check out
+fully booked
+room service
+air conditioning
+sea view
+tourist
+tour guide
+guided tour
+excursion
+day trip
+city break
+cruise
+harbour
+coast
+seaside
+beach
+sunbathe
+sunscreen
+tent
+sleeping bag
+hike
+trail
+signpost
+map
+ask the way
+go straight on
+turn left
+turn right
+travel insurance
+currency
+exchange rate
+phrasebook
+brochure
+tourist information
+itinerary
+jet lag
+abroad

@@ -1,0 +1,120 @@
+timetable
+headteacher
+form tutor
+canteen
+playground
+homework
+mark
+fail
+pass
+revise
+cheat
+break time
+term
+uniform
+compulsory
+optional
+subject
+science
+take an exam
+hand in
+school trip
+locker
+whiteboard
+raise your hand
+detention
+skip classes
+classmate
+staff room
+library
+borrow
+primary school
+secondary school
+project
+attend
+concentrate
+learn by heart
+register
+absent
+present
+late
+on time
+assembly
+break
+lunch break
+after-school club
+homework diary
+exercise book
+textbook
+workbook
+worksheet
+folder
+pencil case
+rubber
+ruler
+highlighter
+glue stick
+scissors
+interactive whiteboard
+computer lab
+science lab
+gym
+changing rooms
+playing field
+noticeboard
+school office
+headmaster
+headmistress
+deputy head
+caretaker
+year group
+mixed ability
+set
+core subject
+foreign language
+art
+music
+history
+geography
+biology
+chemistry
+physics
+ICT
+citizenship
+tutor group
+lesson
+period
+bell
+corridor
+classroom
+sit an exam
+oral exam
+written exam
+mock exam
+pass mark
+grade
+report
+parents' evening
+coursework
+deadline
+extension
+cheat sheet
+revise notes
+memorise
+make mistakes
+pay attention
+take notes
+hand out
+collect in
+copy from the board
+work in pairs
+group work
+presentation
+school rules
+exclusion
+uniform policy
+packed lunch
+school dinner
+bus pass
+open day
+graduation

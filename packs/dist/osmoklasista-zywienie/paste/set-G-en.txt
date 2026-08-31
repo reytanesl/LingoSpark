@@ -1,0 +1,11 @@
+gravy = a brown sauce made from meat juices
+stew = meat and vegetables cooked slowly in liquid
+salad dressing = a sauce of oil and vinegar (or similar) for salad
+smoothie = a thick cold drink of blended fruit
+lemonade = a sweet drink made with lemon
+herbal tea = a hot drink made from herbs, not black tea
+sip = to drink a very small amount at a time
+chew = to bite food many times before you swallow
+swallow = to make food or drink go down your throat
+bite = to cut food with your teeth; a small piece you eat
+side dish = a small extra dish served with the main course

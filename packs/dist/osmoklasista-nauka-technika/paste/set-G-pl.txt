@@ -1,0 +1,7 @@
+gravity = grawitacja
+solar system = układ słoneczny
+planet = planeta
+space station = stacja kosmiczna
+astronaut = astronauta
+research = badania naukowe
+theory = teoria

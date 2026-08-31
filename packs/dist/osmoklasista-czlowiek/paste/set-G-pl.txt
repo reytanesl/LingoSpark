@@ -1,0 +1,4 @@
+tight = ciasny (o ubraniu)
+loose = luźny
+wear = nosić (ubranie)
+get changed = przebrać się

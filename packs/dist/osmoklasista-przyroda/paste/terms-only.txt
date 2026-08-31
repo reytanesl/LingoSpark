@@ -1,0 +1,126 @@
+forecast
+cloudy
+foggy
+lightning
+thunder
+hail
+drought
+flood
+hurricane
+climate
+environment
+pollution
+recycle
+rubbish
+litter
+endangered
+extinct
+wildlife
+habitat
+rainforest
+desert
+island
+valley
+waterfall
+volcano
+earthquake
+protect
+global warming
+greenhouse effect
+renewable energy
+species
+wild animal
+insect
+plant
+harvest
+season
+sunny
+rainy
+windy
+snowy
+storm
+blizzard
+heatwave
+frost
+freezing
+mild
+boiling
+breeze
+gale
+rainbow
+sunshine
+shade
+puddle
+mud
+soil
+rock
+pebble
+sand
+forest
+woods
+meadow
+field
+mountain
+hill
+river
+lake
+pond
+ocean
+wave
+tide
+cliff
+cave
+tree
+leaf
+branch
+root
+seed
+flower
+grass
+bush
+oak
+pine
+bird
+nest
+feather
+beak
+wing
+fish
+whale
+dolphin
+shark
+bear
+wolf
+fox
+deer
+rabbit
+squirrel
+hedgehog
+bee
+butterfly
+spider
+ant
+worm
+paw
+fur
+tail
+hibernate
+migrate
+nature reserve
+national park
+zoo
+safari
+compost
+landfill
+plastic
+packaging
+save energy
+carbon footprint
+deforestation
+oil spill
+poacher
+breed
+hunt
+organic farming
+pesticide
+climate change

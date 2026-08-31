@@ -1,0 +1,7 @@
+take your temperature = zmierzyć temperaturę
+call an ambulance = wezwać karetkę
+emergency number = numer alarmowy
+first-aid kit = apteczka
+side effect = działanie niepożądane
+dose = dawka
+get well soon = szybko wracaj do zdrowia

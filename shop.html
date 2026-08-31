@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sklep — paczki słówek | LingoSpark</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --font-primary: 'Poppins', 'Montserrat', 'Nunito', sans-serif;
+            --font-secondary: 'Inter', 'Roboto', 'Lato', sans-serif;
+            --royal-blue: #012169;
+            --pillarbox-red: #C8102E;
+            --bright-white: #FFFFFF;
+            --light-grey: #F4F5F7;
+            --text-dark: #2D2D2D;
+            --text-muted: #5A5A5A;
+            --success-green: #00823B;
+            --border-light: #E0E0E0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 90%; }
+        body {
+            font-family: var(--font-secondary);
+            background: var(--light-grey);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding-bottom: 3rem;
+        }
+        h1, h2, h3 { font-family: var(--font-primary); }
+        a { color: var(--royal-blue); }
+        a:hover { color: var(--pillarbox-red); }
+
+        header {
+            background: #fff;
+            text-align: center;
+            padding: 1.25rem 1rem 0.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .main-logo-container {
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        .main-logo-container img { width: 100%; height: auto; display: block; }
+
+        .auth-bar {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            max-width: 1200px; margin: 0 auto; padding: 0.75rem 1.5rem; flex-wrap: wrap;
+            background: var(--pillarbox-red); border-radius: 0 0 10px 10px;
+        }
+        .auth-bar-left, .auth-bar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .auth-bar-right { margin-left: auto; }
+        .auth-nav-btn {
+            padding: 0.4rem 0.85rem; font-size: 0.85rem; border: 2px solid #fff;
+            background: transparent; color: #fff; border-radius: 8px;
+            font-family: var(--font-primary); font-weight: 600; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .auth-nav-btn:hover, .auth-nav-btn.active { background: rgba(255,255,255,0.18); color: #fff; }
+        .auth-premium-btn {
+            background: #fff; color: var(--pillarbox-red); border-color: #fff;
+        }
+        .auth-premium-btn:hover { background: rgba(255,255,255,0.92); color: var(--royal-blue); }
+
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.25rem 2.5rem; }
+
+        .hero {
+            background: #fff;
+            border-radius: 12px;
+            border-top: 4px solid var(--royal-blue);
+            padding: 1.5rem 1.6rem 1.35rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 1.25rem;
+        }
+        .hero h1 { color: var(--royal-blue); font-size: 1.85rem; margin-bottom: 0.35rem; }
+        .hero p { color: var(--text-muted); max-width: 72ch; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1rem; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            font-family: var(--font-primary); font-weight: 700; font-size: 0.92rem;
+            padding: 0.65rem 1.15rem; border-radius: 10px; text-decoration: none; border: 2px solid transparent;
+        }
+        .btn-red { background: var(--pillarbox-red); color: #fff; border-color: var(--pillarbox-red); }
+        .btn-red:hover { background: #a50d25; color: #fff; border-color: #a50d25; }
+        .btn-blue { background: var(--royal-blue); color: #fff; border-color: var(--royal-blue); }
+        .btn-blue:hover { background: #01164a; color: #fff; }
+        .btn-outline { background: #fff; color: var(--royal-blue); border-color: var(--royal-blue); }
+        .btn-outline:hover { background: rgba(1,33,105,0.06); color: var(--royal-blue); }
+
+        .filters {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.25rem 0 1.15rem;
+        }
+        .filter-btn {
+            font-family: var(--font-primary); font-weight: 600; font-size: 0.88rem;
+            padding: 0.4rem 0.95rem; border-radius: 999px; cursor: pointer;
+            border: 2px solid var(--royal-blue); background: #fff; color: var(--royal-blue);
+        }
+        .filter-btn:hover { background: rgba(1,33,105,0.06); }
+        .filter-btn.active { background: var(--royal-blue); color: #fff; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.15rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+        }
+        .card.featured {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: minmax(240px, 0.9fr) 1.1fr;
+        }
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            object-position: top;
+            background: var(--light-grey);
+            display: block;
+        }
+        .card.featured img { height: 100%; min-height: 220px; }
+        .card-body { padding: 1rem 1.1rem 1.15rem; display: flex; flex-direction: column; gap: 0.45rem; flex: 1; }
+        .kicker {
+            font-family: var(--font-primary); font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase; color: var(--pillarbox-red);
+        }
+        .card h2 { color: var(--royal-blue); font-size: 1.2rem; line-height: 1.25; }
+        .meta { font-size: 0.88rem; color: var(--text-muted); }
+        .card p { color: var(--text-muted); font-size: 0.92rem; flex: 1; }
+        .price {
+            font-family: var(--font-primary); font-weight: 800; color: var(--royal-blue); font-size: 1.15rem;
+        }
+        .card .btn { margin-top: 0.35rem; justify-content: center; }
+
+        .note {
+            margin-top: 1.5rem; padding: 1rem 1.15rem; background: #fff; border-radius: 10px;
+            border-left: 4px solid var(--royal-blue); color: var(--text-muted); font-size: 0.92rem;
+        }
+
+        .site-copyright {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+            text-align: center; padding: 0.45rem 0.75rem; font-size: 0.75rem;
+            color: var(--text-muted); background: rgba(255,255,255,0.94);
+            border-top: 1px solid var(--border-light);
+        }
+
+        @media (max-width: 760px) {
+            .card.featured { grid-template-columns: 1fr; }
+            .card.featured img { height: 180px; min-height: 0; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="main-logo-container">
+            <a href="/"><img src="Projekt bez nazwy.png" alt="LingoSpark"></a>
+        </div>
+    </header>
+
+    <div class="auth-bar">
+        <div class="auth-bar-left">
+            <a href="/" class="auth-nav-btn"><i class="fa-solid fa-house"></i> Gry</a>
+            <a href="/shop.html" class="auth-nav-btn active"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
+            <a href="https://buymeacoffee.com/lingospark/extras" class="auth-nav-btn auth-premium-btn" target="_blank" rel="noopener"><i class="fa-solid fa-crown"></i> Buy Me a Coffee</a>
+        </div>
+    </div>
+
+    <main class="wrap">
+        <section class="hero">
+            <h1 id="shop-title">Sklep dla nauczycieli</h1>
+            <p id="shop-intro"></p>
+            <div class="hero-actions">
+                <a class="btn btn-red" id="bmc-shop-btn" href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-mug-hot"></i> Otwórz sklep Buy Me a Coffee
+                </a>
+                <a class="btn btn-outline" href="mailto:karolsenk@gmail.com"><i class="fa-solid fa-envelope"></i> Pytania: karolsenk@gmail.com</a>
+            </div>
+        </section>
+
+        <div class="filters" role="tablist" aria-label="Filtr paczek">
+            <button type="button" class="filter-btn active" data-filter="all">Wszystkie</button>
+            <button type="button" class="filter-btn" data-filter="Egzamin ósmoklasisty">Ósmoklasista</button>
+            <button type="button" class="filter-btn" data-filter="Matura podstawowa">Matura PP</button>
+        </div>
+
+        <div class="grid" id="shop-grid"></div>
+
+        <p class="note">
+            Vocab games na LingoSpark zostają darmowe. Paczki to listy + karty do druku — kupujesz je w sklepie
+            <a href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener">Buy Me a Coffee / extras</a>.
+            Writing Suite (tydzień / miesiąc / rok) też jest tam. Po zakupie ZIP przychodzi na maila z zamówienia.
+        </p>
+    </main>
+
+    <p class="site-copyright">© <span id="year"></span> Karol Senk, LingoSpark</p>
+
+    <script src="shop/catalog.js"></script>
+    <script>
+        const shop = window.LS_SHOP || { products: [], bmcShop: 'https://buymeacoffee.com/lingospark/extras' };
+        const bmc = shop.bmcShop || 'https://buymeacoffee.com/lingospark/extras';
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('shop-title').textContent = shop.introTitle || 'Sklep';
+        document.getElementById('shop-intro').textContent = shop.intro || '';
+        document.getElementById('bmc-shop-btn').href = bmc;
+
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function buyUrl(product) {
+            return product.buyUrl || bmc;
+        }
+
+        function priceLabel(product) {
+            const pln = Number(product.pricePln);
+            const usd = Number(product.priceUsd);
+            const plnText = Number.isFinite(pln) ? `${pln} zł` : '';
+            const usdText = Number.isFinite(usd) ? `$${usd % 1 ? usd.toFixed(2) : usd}` : '';
+            return [plnText, usdText].filter(Boolean).join(' · ');
+        }
+
+        function render(filter) {
+            const grid = document.getElementById('shop-grid');
+            const items = (shop.products || []).filter((p) => filter === 'all' || p.exam === filter);
+            grid.innerHTML = items.map((p, i) => {
+                const featured = p.featured && filter === 'all' && i === 0;
+                return `
+                <article class="card${featured ? ' featured' : ''}" data-exam="${escapeHtml(p.exam || '')}">
+                    <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)} — podgląd paczki ${escapeHtml(p.sku)}">
+                    <div class="card-body">
+                        <div class="kicker">${escapeHtml(p.exam || '')}</div>
+                        <h2>${escapeHtml(p.title)}</h2>
+                        <div class="meta">${p.terms} haseł · ${escapeHtml(p.sku)}</div>
+                        <p>${escapeHtml(p.description)}</p>
+                        <div class="price">${escapeHtml(priceLabel(p))}</div>
+                        <a class="btn btn-blue" href="${escapeHtml(buyUrl(p))}" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-bag-shopping"></i> Kup w sklepie BMC
+                        </a>
+                    </div>
+                </article>`;
+            }).join('');
+        }
+
+        document.querySelectorAll('.filter-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
+                btn.classList.add('active');
+                render(btn.dataset.filter);
+            });
+        });
+
+        render('all');
+    </script>
+</body>
+</html>

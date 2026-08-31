@@ -1,0 +1,130 @@
+audience
+performance
+rehearsal
+stage
+exhibition
+gallery
+sculpture
+novel
+author
+plot
+character
+chapter
+review
+live concert
+lyrics
+orchestra
+festival
+tradition
+carnival
+fireworks
+costume
+masterpiece
+classical music
+science fiction
+comedy
+horror film
+subtitles
+trailer
+box office
+talent show
+celebrity
+museum
+heritage
+ticket
+interval
+bestseller
+cinema
+theatre
+opera house
+concert hall
+art gallery
+library book
+borrow a book
+paperback
+hardback
+e-book
+audiobook
+fairy tale
+short story
+poem
+poetry
+rhyme
+narrator
+hero
+villain
+setting
+twist
+ending
+page-turner
+bookshelf novel
+film
+movie
+director
+cast
+leading role
+extra
+special effects
+soundtrack
+credits
+blockbuster
+documentary
+cartoon
+soap opera
+series
+episode
+TV season
+binge-watch
+channel
+remote control
+on demand
+streaming service
+playlist
+hit
+album
+music single
+band
+lead singer
+guitarist
+drummer
+composer
+conductor
+choir
+tune
+beat
+lyrics sheet
+pop music
+rock music
+folk music
+jazz
+hip-hop
+musical
+ballet
+play
+act
+scene
+script
+curtain
+applause
+encore
+standing ovation
+row
+aisle seat
+sold-out show
+book tickets
+painting
+drawing
+portrait
+landscape
+still life
+sketch
+exhibition opening
+curator
+exhibit
+guided visit
+folk dance
+national costume
+custom
+legend
+myth
+folklore

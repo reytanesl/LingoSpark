@@ -1,0 +1,10 @@
+exhibition opening = the first evening when a new art show is opened
+curator = a person who chooses and looks after museum objects
+exhibit = an object shown in a museum or gallery
+guided visit = a museum tour with someone who explains the exhibits
+folk dance = a traditional dance from a region
+national costume = traditional clothes of a country
+custom = something people in a culture usually do
+legend = an old story that may not be completely true
+myth = an old story about gods or how the world began
+folklore = the traditional stories, songs and beliefs of a place

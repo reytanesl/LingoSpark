@@ -1,0 +1,119 @@
+detached house
+semi-detached house
+block of flats
+cottage
+attic
+basement
+chimney
+fence
+gate
+driveway
+wardrobe
+chest of drawers
+sink
+tap
+dishwasher
+central heating
+neighbour
+outskirts
+city centre
+countryside
+rent
+landlord
+spacious
+cramped
+cosy
+fully furnished
+move house
+do the housework
+vacuum cleaner
+curtains
+carpet
+balcony
+downstairs
+upstairs
+suburb
+hall
+flat
+studio flat
+terraced house
+bungalow
+skyscraper
+ground floor
+first floor
+lift
+stairs
+landing
+front door
+back door
+doorbell
+letterbox
+roof
+garage
+garden
+lawn
+hedge
+path
+porch
+living room
+dining room
+kitchen
+bedroom
+bathroom
+toilet
+study
+utility room
+sofa
+armchair
+coffee table
+bookshelf
+desk
+lamp
+mirror
+rug
+pillow
+blanket
+duvet
+sheet
+mattress
+bunk beds
+shelf
+cupboard
+drawer
+washing machine
+tumble dryer
+iron
+radiator
+plug
+socket
+light switch
+bin
+recycling bin
+doormat
+key
+lock
+alarm
+furnished
+unfurnished
+bills
+neighbourhood
+residential area
+village
+town
+city
+urban
+rural
+noisy
+quiet
+tidy up
+do the laundry
+hoover
+dust
+do the ironing
+make the bed
+take the bins out
+move in
+move out
+share a room
+view
+location

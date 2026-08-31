@@ -1,0 +1,2 @@
+routine = the usual order of things you do
+chores = regular jobs at home

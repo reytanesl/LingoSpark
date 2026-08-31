@@ -1,0 +1,123 @@
+bargain
+discount
+sale
+receipt
+refund
+exchange
+cash desk
+credit card
+cash
+try on
+fit
+size
+window shopping
+shopping centre
+department store
+grocer's
+butcher's
+baker's
+newsagent's
+queue
+customer
+brand
+second-hand
+online shopping
+delivery
+expensive
+cheap
+value for money
+hairdresser's
+post office
+bank account
+withdraw
+ATM
+afford
+price
+open late
+shop
+store
+supermarket
+hypermarket
+corner shop
+market stall
+flea market
+mall
+high street
+outlet
+bookshop
+clothes shop
+shoe shop
+sports shop
+toy shop
+chemist's
+optician's
+jeweller's
+dry cleaner's
+shoe repair
+travel agent's
+estate agent's
+petrol station shop
+vending machine
+checkout
+self-service till
+shopping basket
+trolley
+carrier bag
+loyalty card
+gift card
+voucher
+special offer
+two for one
+half price
+reduced
+best before
+use by
+bar code
+label
+price tag
+till receipt
+PIN
+contactless
+debit card
+notes
+coins
+change
+keep the change
+overcharge
+undercharge
+complaint
+complain
+manager
+customer service desk
+return
+guarantee
+warranty
+faulty
+out of stock
+in stock
+sold out
+order
+click and collect
+home delivery
+track a parcel
+courier
+postage
+stamp
+parcel
+open an account
+savings
+lend
+borrow money
+owe
+be broke
+save up
+splash out
+good deal
+rip-off
+shop around
+browse
+queue-jump
+opening hours
+closed
+open 24 hours
+fitting room

@@ -1,0 +1,10 @@
+turn right = skręcić w prawo
+travel insurance = ubezpieczenie podróżne
+currency = waluta
+exchange rate = kurs wymiany
+phrasebook = rozmówki
+brochure = ulotka, broszura (turystyczna)
+tourist information = informacja turystyczna
+itinerary = plan podróży
+jet lag = jet lag, rozstrój po zmianie strefy
+abroad = za granicą

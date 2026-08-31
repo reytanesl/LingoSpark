@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
+  <rect width="1200" height="900" fill="#F4F5F7"/>
+  <rect width="1200" height="132" fill="#012169"/>
+  <text x="60" y="62" fill="#ffffff" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="34" font-weight="700" letter-spacing="3">LINGOSPARK</text>
+  <text x="60" y="102" fill="#F4F5F7" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="20">paczka lekcyjna · listy + karty do gier</text>
+  <text x="1140" y="82" text-anchor="end" fill="#ffffff" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="18" font-weight="700">LS-8-SHOP</text>
+  <rect y="132" width="1200" height="10" fill="#C8102E"/>
+  <rect x="80" y="200" width="1040" height="560" rx="18" fill="#ffffff" stroke="#E0E0E0" stroke-width="2"/>
+  <rect x="80" y="200" width="12" height="560" fill="#C8102E"/>
+  <text x="130" y="255" fill="#C8102E" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="2">ÓSMOKLASISTA</text>
+  <text x="130" y="330" fill="#012169" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="52" font-weight="700">Zakupy i usługi</text>
+  <text x="130" y="380" fill="#5A5A5A" font-family="Segoe UI, sans-serif" font-size="24">Egzamin ósmoklasisty</text>
+  <g fill="none" stroke="#012169" stroke-width="8" stroke-linejoin="round">
+              <path d="M520 300h160l-18 120H538z"/>
+              <path d="M555 300c0-28 18-48 45-48s45 20 45 48" stroke="#C8102E"/>
+            </g>
+  <text x="130" y="700" fill="#012169" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="28" font-weight="700">123 haseł · 22 zł</text>
+  <text x="130" y="740" fill="#5A5A5A" font-family="Segoe UI, sans-serif" font-size="20">Bomb Defusal · Flashcards · Auction · Live Quiz</text>
+</svg>
