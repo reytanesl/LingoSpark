@@ -280,19 +280,55 @@
             --live-race-base-3: #f0fdfa;
             --live-race-base-4: #fdf2f8;
             position: absolute; inset: 0; z-index: 0;
-            background:
-                radial-gradient(circle at 12% 18%, rgba(255, 214, 0, 0.42) 0%, transparent 24%),
-                radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.38) 0%, transparent 22%),
-                radial-gradient(circle at 78% 82%, rgba(244, 63, 94, 0.34) 0%, transparent 22%),
-                radial-gradient(circle at 18% 78%, rgba(74, 222, 128, 0.34) 0%, transparent 24%),
-                linear-gradient(135deg, var(--live-race-base-1) 0%, var(--live-race-base-2) 35%, var(--live-race-base-3) 70%, var(--live-race-base-4) 100%);
-            background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 200% 200%;
-            animation: liveHostRaceBg 18s ease-in-out infinite alternate;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--live-race-base-1) 0%, var(--live-race-base-2) 35%, var(--live-race-base-3) 70%, var(--live-race-base-4) 100%);
+            background-size: 200% 200%;
+            animation: liveRaceBaseDrift 52s ease-in-out infinite alternate;
+        }
+        .live-race-bg::before,
+        .live-race-bg::after {
+            content: '';
+            position: absolute;
+            inset: -12%;
+            pointer-events: none;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+        .live-race-bg::before {
+            background-image:
+                radial-gradient(circle at 22% 28%, rgba(255, 214, 0, 0.32) 0%, transparent 14%),
+                radial-gradient(circle at 78% 18%, rgba(56, 189, 248, 0.28) 0%, transparent 13%);
+            animation: liveRaceBlobDriftA 34s ease-in-out infinite;
+        }
+        .live-race-bg::after {
+            background-image:
+                radial-gradient(circle at 72% 76%, rgba(244, 63, 94, 0.26) 0%, transparent 13%),
+                radial-gradient(circle at 18% 72%, rgba(74, 222, 128, 0.26) 0%, transparent 14%);
+            animation: liveRaceBlobDriftB 42s ease-in-out infinite;
         }
         .live-host-race-bg { position: absolute; inset: 0; z-index: 0; }
-        @keyframes liveHostRaceBg {
-            0% { background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%; }
-            100% { background-position: 8% 6%, 92% 10%, 86% 88%, 12% 84%, 100% 50%; }
+        @keyframes liveRaceBaseDrift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        @keyframes liveRaceBlobDriftA {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(2.2%, 1.4%); }
+            50% { transform: translate(-1.2%, 2%); }
+            75% { transform: translate(1.6%, -1%); }
+        }
+        @keyframes liveRaceBlobDriftB {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2%, -1.2%); }
+            50% { transform: translate(1.4%, -1.8%); }
+            75% { transform: translate(-1.6%, 1.2%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .live-race-bg,
+            .live-race-bg::before,
+            .live-race-bg::after {
+                animation: none;
+            }
         }
         .live-host-race-content {
             position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column;
