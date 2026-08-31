@@ -65,17 +65,18 @@
         header { 
             background-color: #FFFFFF; 
             color: var(--text-dark); 
-            text-align: center; 
-            padding: 1.25rem 1rem 0.5rem; 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.85rem clamp(0.75rem, 3vw, 1.5rem) 0.5rem; 
             border-bottom: 1px solid var(--border-light); 
             position: relative; 
         }
 
         .main-logo-container { 
-            width: 100%; 
-            max-width: 648px; 
+            flex: 0 1 auto;
             margin: 0 0 0 auto; 
-            padding-right: clamp(0.75rem, 3vw, 1.5rem);
             display: flex; 
             align-items: center; 
             justify-content: flex-end; 
@@ -176,8 +177,9 @@
         }
         .hub-live-quiz-circle {
             display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
             width: clamp(74px, 20vw, 98px); height: clamp(74px, 20vw, 98px);
-            border-radius: 50%; margin: 0 auto 0.75rem;
+            border-radius: 50%; margin: 0;
             background: rgba(212, 160, 23, 0.48);
             border: 2px solid rgba(255, 255, 255, 0.65);
             box-shadow: 0 6px 16px rgba(212, 160, 23, 0.28);
@@ -1844,6 +1846,9 @@
 <body>
 
     <header>
+        <a href="#/live" class="hub-live-quiz-circle" aria-label="Live Quiz">
+            <span class="hub-live-quiz-text">LIVE<br>QUIZ</span>
+        </a>
         <div class="main-logo-container">
             <img src="Projekt bez nazwy.png" alt="LingoSpark Logo">
         </div>
@@ -1851,6 +1856,7 @@
 
     <div class="auth-bar" id="auth-bar">
         <div class="auth-bar-left" id="auth-bar-left">
+            <a href="/shop.html" class="auth-nav-btn" id="auth-nav-shop"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
             <a href="https://buymeacoffee.com/lingospark/extras" id="auth-nav-premium" class="auth-nav-btn auth-premium-btn" target="_blank" rel="noopener" style="display:none;"><i class="fa-solid fa-crown"></i> Go Premium</a>
             <button type="button" class="auth-nav-btn" id="auth-nav-mysets" onclick="openWordSets()" style="display:none;"><i class="fa-solid fa-book"></i> Word Sets</button>
             <button type="button" class="auth-nav-btn" id="auth-nav-progress" onclick="openMyProgress()" style="display:none;"><i class="fa-solid fa-chart-line"></i> My Progress</button>
@@ -1931,9 +1937,6 @@
         <div id="screen-home" class="screen active">
 
             <div class="home-hub-wrap">
-            <a href="#/live" class="hub-live-quiz-circle" aria-label="Live Quiz">
-                <span class="hub-live-quiz-text">LIVE<br>QUIZ</span>
-            </a>
             <div id="home-hub" class="home-hub active">
                 <a href="#/vocab" class="hub-square">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
