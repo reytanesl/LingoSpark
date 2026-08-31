@@ -15,6 +15,6 @@
               <circle cx="600" cy="350" r="70"/>
               <path d="M600 280c18-40 48-48 62-42" stroke="#012169"/>
             </g>
-  <text x="130" y="700" fill="#012169" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="28" font-weight="700">131 haseł · 22 zł</text>
+  <text x="130" y="700" fill="#012169" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="28" font-weight="700">131 haseł · 12 zł</text>
   <text x="130" y="740" fill="#5A5A5A" font-family="Segoe UI, sans-serif" font-size="20">Bomb Defusal · Flashcards · Auction · Live Quiz</text>
 </svg>

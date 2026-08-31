@@ -27,6 +27,14 @@ function icon(id) {
     const r = '#C8102E';
     const g = '#00823B';
     switch (id) {
+        case 'e8-2027-study-plan':
+            return `<g fill="none" stroke="${c}" stroke-width="8" stroke-linejoin="round">
+              <rect x="500" y="270" width="200" height="260" rx="10"/>
+              <path d="M530 310h140M530 350h110M530 390h140M530 430h90" stroke="${r}" stroke-width="6"/>
+              <rect x="545" y="455" width="22" height="22" stroke="${g}" stroke-width="5"/>
+              <rect x="580" y="455" width="22" height="22" stroke="${g}" stroke-width="5"/>
+              <rect x="615" y="455" width="22" height="22" stroke="${g}" stroke-width="5"/>
+            </g>`;
         case 'ls-8-complete':
             return `<g fill="none" stroke="${c}" stroke-width="8" stroke-linejoin="round">
               <rect x="430" y="268" width="90" height="110" rx="8"/>
@@ -130,10 +138,19 @@ function svgFor(p) {
     const exam = xml(p.exam);
     const title = xml(p.title);
     const count =
-        p.id === 'ls-8-complete'
+        p.kind === 'study-plan'
+            ? '1755 haseł · checklisty · PDF'
+            : p.id === 'ls-8-complete'
             ? '14 działów · 1700+ haseł'
             : `${p.terms} haseł · ${p.pricePln} zł`;
-    const badge = p.exam.includes('Matura') ? 'MATURA PP' : p.featured ? 'KOMPLET E8' : 'ÓSMOKLASISTA';
+    const badge =
+        p.kind === 'study-plan'
+            ? 'PLAN NAUKI E8'
+            : p.exam.includes('Matura')
+            ? 'MATURA PP'
+            : p.featured
+            ? 'KOMPLET E8'
+            : 'ÓSMOKLASISTA';
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
   <rect width="1200" height="900" fill="#F4F5F7"/>

@@ -7,7 +7,26 @@ window.LS_SHOP = {
         'Gotowe paczki słówek na egzamin ósmoklasisty i maturę podstawową. Wklejasz listę do darmowych gier LingoSpark (bomba, fiszki, aukcja, live quiz) i od razu grasz. W ZIP-ie są też karty do druku i klucz. Płatność w sklepie Buy Me a Coffee — po zakupie plik przychodzi na maila. Licencja: jedna osoba, jedna klasa.',
     products: [
         {
-            id: 'ls-8-complete',
+            id: 'e8-2027-study-plan',
+            sku: 'LS-8-STUDY',
+            featured: true,
+            kind: 'study-plan',
+            exam: 'Egzamin ósmoklasisty',
+            title: 'Plan nauki E8 2027',
+            image: 'shop/previews/e8-2027-study-plan.svg',
+            previewPages: [
+                'shop/previews/e8-study-plan/page-1.png',
+                'shop/previews/e8-study-plan/page-2.png',
+                'shop/previews/e8-study-plan/page-3.png',
+                'shop/previews/e8-study-plan/page-4.png',
+            ],
+            terms: 1755,
+            pricePln: 40,
+            priceUsd: 10,
+            description:
+                'Zeszyt PDF do druku: harmonogram, checklisty gramatyki, 14 działów CKE, mapy myśli i 1755 haseł. Dla ucznia ósmoklasisty.',
+        },
+        {
             sku: 'LS-8-COMPLETE',
             featured: true,
             exam: 'Egzamin ósmoklasisty',

@@ -198,6 +198,38 @@
             border-radius: 8px;
             gap: 0;
         }
+        .card.has-preview {
+            grid-column: 1 / -1;
+            max-width: 380px;
+        }
+        @media (min-width: 860px) {
+            .card.has-preview { max-width: 400px; }
+        }
+        .preview-scroll {
+            max-height: 360px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background: #eef1f6;
+            padding: 6px;
+            margin: 0.45rem 0 0.55rem;
+            scroll-behavior: smooth;
+        }
+        .preview-scroll img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        .preview-scroll img:last-child { margin-bottom: 0; }
+        .preview-hint {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
 
         .note {
             margin-top: 1.5rem; padding: 1rem 1.15rem; background: #fff; border-radius: 10px;
@@ -243,6 +275,7 @@
 
         <div class="filters" role="tablist" aria-label="Filtr paczek">
             <button type="button" class="filter-btn active" data-filter="all">Wszystkie</button>
+            <button type="button" class="filter-btn" data-filter="study-plan">Plan nauki</button>
             <button type="button" class="filter-btn" data-filter="Egzamin ósmoklasisty">Ósmoklasista</button>
             <button type="button" class="filter-btn" data-filter="Matura podstawowa">Matura PP</button>
         </div>
@@ -314,7 +347,19 @@
 
         function matchesFilter(p, filter) {
             if (filter === 'all') return true;
+            if (filter === 'study-plan') return p.kind === 'study-plan';
             return p.exam === filter;
+        }
+
+        function previewBlock(p) {
+            const pages = Array.isArray(p.previewPages) ? p.previewPages : [];
+            if (!pages.length) return '';
+            const imgs = pages
+                .map((src) => `<img src="${escapeHtml(src)}" alt="" loading="lazy">`)
+                .join('');
+            return `
+                    <p class="preview-hint">Przewiń podgląd · ${pages.length} strony z PDF</p>
+                    <div class="preview-scroll">${imgs}</div>`;
         }
 
         function render(filter) {
@@ -322,11 +367,13 @@
             const items = (shop.products || []).filter((p) => matchesFilter(p, filter));
             grid.innerHTML = items.map((p) => {
                 const featured = Boolean(p.featured);
+                const hasPreview = Array.isArray(p.previewPages) && p.previewPages.length;
                 return `
-                <article class="card${featured ? ' featured' : ''}" data-exam="${escapeHtml(p.exam || '')}">
+                <article class="card${featured ? ' featured' : ''}${hasPreview ? ' has-preview' : ''}" data-exam="${escapeHtml(p.exam || '')}">
                     <div class="kicker">${escapeHtml(productKicker(p))}</div>
                     <h2>${escapeHtml(p.title)}</h2>
                     <div class="meta">${escapeHtml(metaLine(p))}</div>
+                    ${previewBlock(p)}
                     <p>${escapeHtml(p.description)}</p>
                     <div class="card-foot">
                         <div class="price">${priceBlock(p)}</div>

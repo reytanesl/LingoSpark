@@ -123,6 +123,7 @@ p { margin: 0.35em 0 0.5em; }
   background: #012169; color: #fff; padding: 9px 12px; margin: 0 0 10px;
   display: flex; justify-content: space-between; align-items: center;
   flex-shrink: 0;
+  border-radius: 8px;
 }
 .banner strong { letter-spacing: 0.04em; font-size: 11pt; }
 .banner span { font-size: 8.5pt; opacity: 0.9; }
@@ -136,20 +137,44 @@ p { margin: 0.35em 0 0.5em; }
 .cover-badge {
   display: inline-block; background: #C8102E; color: #fff;
   font-size: 9pt; padding: 4px 10px; margin: 0 6px 6px 0;
+  border-radius: 6px;
 }
 .box {
   border: 1px solid #012169; background: #f7f8fb;
   padding: 8px 10px; margin: 0.45em 0;
+  border-radius: 8px;
 }
-.box-light { border: 1px dashed #9aa3b5; background: #fff; }
+.box-light { border: 1px dashed #9aa3b5; background: #fff; border-radius: 8px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
 .grid-2.fill-stack { flex: 1; min-height: 0; align-content: stretch; }
 .grid-2.fill-stack > div { display: flex; flex-direction: column; min-height: 0; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 12px; }
-table { width: 100%; border-collapse: collapse; margin: 0.35em 0 0.5em; font-size: 9.5pt; }
-th, td { border: 1px solid #cfcfcf; padding: 5px 7px; vertical-align: top; }
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0.35em 0 0.5em;
+  font-size: 9.5pt;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  overflow: hidden;
+}
+th, td {
+  border: none;
+  border-bottom: 1px solid #e4e4e4;
+  border-right: 1px solid #e4e4e4;
+  padding: 5px 7px;
+  vertical-align: top;
+}
+tr th:last-child, tr td:last-child { border-right: none; }
+tbody tr:last-child td, thead tr:last-child th,
+table tr:last-child td, table tr:last-child th { border-bottom: none; }
 th { background: #F4F5F7; color: #012169; text-align: left; }
-.check { width: 14px; height: 14px; border: 1.5px solid #333; display: inline-block; flex-shrink: 0; margin-top: 1px; }
+.check {
+  width: 14px; height: 14px; border: 1.5px solid #333;
+  display: inline-block; flex-shrink: 0; margin-top: 1px;
+  border-radius: 3px;
+}
 .vocab-block { flex: 1; min-height: 0; display: flex; flex-direction: column; margin: 0.2em 0; }
 .vocab-row {
   display: flex; gap: 7px; align-items: flex-start;
@@ -171,20 +196,25 @@ th { background: #F4F5F7; color: #012169; text-align: left; }
   min-height: 45mm;
 }
 .notes-area {
-  border: 1px solid #bbb; border-radius: 4px;
+  border: 1px solid #bbb; border-radius: 8px;
   background: linear-gradient(#fff 23px, #e8ebf0 24px);
   background-size: 100% 24px;
   min-height: 18mm;
 }
 .line-field { border-bottom: 1px solid #999; min-height: 1.35em; margin: 0.25em 0; }
-.planner-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; margin: 0.35em 0; }
+.planner-wrap {
+  flex: 1; min-height: 0; display: flex; flex-direction: column; margin: 0.35em 0;
+  border: 1px solid #ccc; border-radius: 8px; overflow: hidden;
+}
 .planner-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 0;
   font-size: 8pt; flex: 1; min-height: 0;
   grid-template-rows: auto repeat(5, 1fr);
 }
 .planner-grid .head { background: #012169; color: #fff; text-align: center; padding: 4px 2px; font-weight: 600; }
-.planner-grid .cell { border: 1px solid #ccc; min-height: 11mm; padding: 2px 3px; }
+.planner-grid .cell { border: 1px solid #ddd; border-top: none; border-left: none; min-height: 11mm; padding: 2px 3px; }
+.planner-grid .head { border: none; border-right: 1px solid rgba(255,255,255,0.15); }
+.planner-grid .head:nth-child(7n) { border-right: none; }
 .timeline { border-left: 3px solid #012169; padding-left: 12px; margin: 0.4em 0; }
 .timeline.fill-grow {
   display: flex; flex-direction: column; justify-content: space-between;
@@ -203,7 +233,10 @@ th { background: #F4F5F7; color: #012169; text-align: left; }
 .fill-stack .notes-area,
 .fill-stack .mindmap,
 .fill-stack .box { flex: 1; min-height: 14mm; }
-.compact-table td, .compact-table th { padding: 4px 6px; font-size: 9pt; }
+.tracker-progress { white-space: nowrap; font-size: 9pt; }
+.tracker-progress .check { margin-right: 2px; }
+.tracker-table td, .tracker-table th { padding: 3px 6px; font-size: 9pt; line-height: 1.3; }
+.tracker-table .line-field { min-height: 1.1em; margin: 0; }
 .cover-stack { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
 .cover-fields .line-field { min-height: 1.6em; margin-bottom: 0.35em; }
 .checklist-grid {
@@ -327,21 +360,40 @@ function howToUsePage() {
 `);
 }
 
+function trackerRow(p, index) {
+    return `<tr><td>${index + 1}</td><td><strong>${escapeHtml(p.topicPl)}</strong> <span class="meta">/ ${escapeHtml(p.topicEn)}</span></td><td>${p.items.length}</td><td class="tracker-progress"><span class="check"></span> nauka · <span class="check"></span> p1 · <span class="check"></span> p2</td><td><div class="line-field"></div></td></tr>`;
+}
+
+function trackerTableHeader() {
+    return `<tr><th>#</th><th>Dział</th><th>Haseł</th><th>Postęp</th><th>Data ukończenia</th></tr>`;
+}
+
 function topicTrackerPage(packs) {
-    const rows = packs
-        .map(
-            (p, i) =>
-                `<tr><td>${i + 1}</td><td><strong>${escapeHtml(p.topicPl)}</strong><br><span class="meta">${escapeHtml(p.topicEn)}</span></td><td>${p.items.length}</td><td><span class="check"></span> nauka<br><span class="check"></span> powtórka 1<br><span class="check"></span> powtórka 2</td><td><div class="line-field"></div></td></tr>`
-        )
-        .join('');
     const total = packs.reduce((n, p) => n + p.items.length, 0);
-    return page(`
-  <div class="banner"><strong>LingoSpark</strong><span>Tracker działów</span></div>
-  <h2>Tracker — 14 działów tematycznych</h2>
-  <p>Łącznie <strong>${total}</strong> haseł. Zaznacz, kiedy skończysz naukę i dwie powtórki każdego działu.</p>
-  <table>
-    <tr><th>#</th><th>Dział</th><th>Haseł</th><th>Postęp</th><th>Data ukończenia</th></tr>
-    ${rows}
+    const midpoint = Math.ceil(packs.length / 2);
+    const firstHalf = packs.slice(0, midpoint);
+    const secondHalf = packs.slice(midpoint);
+    return (
+        page(`
+  <div class="banner"><strong>LingoSpark</strong><span>Tracker działów · 1/2</span></div>
+  <h2>Tracker — 14 działów tematycznych (1/2)</h2>
+  <p>Łącznie <strong>${total}</strong> haseł. Zaznacz postęp: nauka · powtórka 1 (p1) · powtórka 2 (p2).</p>
+  <table class="tracker-table">
+    ${trackerTableHeader()}
+    ${firstHalf.map((p, i) => trackerRow(p, i)).join('')}
+  </table>
+  <div class="fill-stack">
+    <h3>Notatki — działy 1–${midpoint}</h3>
+    <div class="notes-area fill-grow"></div>
+  </div>
+`) +
+        page(`
+  <div class="banner"><strong>LingoSpark</strong><span>Tracker działów · 2/2</span></div>
+  <h2>Tracker — 14 działów tematycznych (2/2)</h2>
+  <p>Kontynuacja trackera. Po ukończeniu wszystkich działów wróć do powtórek z harmonogramu.</p>
+  <table class="tracker-table">
+    ${trackerTableHeader()}
+    ${secondHalf.map((p, i) => trackerRow(p, midpoint + i)).join('')}
   </table>
   <div class="fill-stack">
     <h3>Moje mocne strony</h3>
@@ -349,7 +401,8 @@ function topicTrackerPage(packs) {
     <h3>Do poprawy przed egzaminem</h3>
     <div class="notes-area fill-grow"></div>
   </div>
-`);
+`)
+    );
 }
 
 function timelinePage() {
