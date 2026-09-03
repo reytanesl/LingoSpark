@@ -46,6 +46,13 @@ Complete E8 zip: `packs/dist/LingoSpark-LS-8-COMPLETE.zip` (listing: `BUNDLE-LIS
 
 Complete PR zip: `packs/dist/LingoSpark-LS-PR-COMPLETE.zip` (listing: `BUNDLE-LISTING-MATURA-PR.txt`).
 
+Study plans (printable PDF workbooks, not flashcard zips):
+
+| Product | Language | Rebuild |
+|---------|----------|---------|
+| `packs/dist/e8-2027-study-plan/` | Polish | `npm run study-plan` |
+| `packs/dist/matura-pr-2027-study-plan/` | English | `npm run study-plan-pr` |
+
 ## Matura podstawowa
 
 | Pack | Topic | SKU |

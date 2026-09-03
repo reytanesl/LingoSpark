@@ -12,6 +12,8 @@ Suggested prices (raise later if they sell):
 | Matura PR complete (14 modules) | **$39** | **149 zł** |
 | Matura PP pack | **$3** | **12 zł** |
 | Matura PP pair (Work + Health) | **$5** | **20 zł** |
+| E8 2027 study plan (PDF workbook) | **$10** | **40 zł** |
+| Matura Extended 2027 study plan (English PDF) | **$12** | **48 zł** |
 
 Upload `packs/dist/LingoSpark-LS-8-COMPLETE.zip` with copy from `BUNDLE-LISTING-E8.txt`. Single modules are `LingoSpark-LS-8-*.zip`.
 
@@ -59,6 +61,9 @@ Do **not** dump the paste files in the public group. Sell, then send.
 
 E8 complete: `packs/dist/LingoSpark-LS-8-COMPLETE.zip` + `BUNDLE-LISTING-E8.txt`.
 Matura pair: `BUNDLE-LISTING-MATURA.txt`.
+Matura PR complete: `packs/dist/LingoSpark-LS-PR-COMPLETE.zip` + `BUNDLE-LISTING-MATURA-PR.txt`.
+E8 study plan: `packs/dist/e8-2027-study-plan/` (Polish PDF workbook).
+Matura Extended study plan: `packs/dist/matura-pr-2027-study-plan/` (English PDF workbook).
 
 ---
 

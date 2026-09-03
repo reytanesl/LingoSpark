@@ -494,7 +494,7 @@
         }
 
         function metaLine(p) {
-            if (p.kind === 'study-plan') return t('studyPlanMeta');
+            if (p.kind === 'study-plan') return loc(p.workbookMeta) || t('studyPlanMeta');
             return `${p.terms} ${t('terms')}`;
         }
 

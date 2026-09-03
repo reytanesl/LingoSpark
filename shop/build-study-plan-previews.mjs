@@ -1,6 +1,8 @@
 /**
- * PNG previews (first 4 pages) for the E8 study plan shop listing.
+ * PNG previews (first 4 pages) for study-plan shop listings.
  *   node shop/build-study-plan-previews.mjs
+ *   node shop/build-study-plan-previews.mjs e8
+ *   node shop/build-study-plan-previews.mjs pr
  */
 import { spawnSync } from 'child_process';
 import fs from 'fs';
@@ -9,12 +11,24 @@ import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
-const STUDY_HTML = path.join(ROOT, 'packs', 'dist', 'e8-2027-study-plan', 'E8-2027-study-plan.html');
-const OUT_DIR = path.join(__dirname, 'previews', 'e8-study-plan');
-const TMP_DIR = path.join(OUT_DIR, '_tmp');
 const PAGE_COUNT = 4;
 const VIEW_W = 794;
 const VIEW_H = 1024;
+
+const PLANS = {
+    e8: {
+        html: path.join(ROOT, 'packs', 'dist', 'e8-2027-study-plan', 'E8-2027-study-plan.html'),
+        outDir: path.join(__dirname, 'previews', 'e8-study-plan'),
+        rebuild: 'node packs/build-study-plan.mjs',
+        lang: 'pl',
+    },
+    pr: {
+        html: path.join(ROOT, 'packs', 'dist', 'matura-pr-2027-study-plan', 'Matura-PR-2027-study-plan.html'),
+        outDir: path.join(__dirname, 'previews', 'matura-pr-study-plan'),
+        rebuild: 'node packs/build-matura-pr-study-plan.mjs',
+        lang: 'en',
+    },
+};
 
 function findBrowser() {
     const candidates = [
@@ -45,7 +59,7 @@ function extractPages(html) {
     return { styles, pages };
 }
 
-function wrapPage(styles, pageHtml) {
+function wrapPage(styles, pageHtml, lang) {
     const screenStyles = `
 ${styles}
 html, body { margin: 0; padding: 0; background: #fff; }
@@ -60,7 +74,7 @@ html, body { margin: 0; padding: 0; background: #fff; }
 body { width: ${VIEW_W}px; }
 `.trim();
     return `<!DOCTYPE html>
-<html lang="pl">
+<html lang="${lang}">
 <head>
 <meta charset="UTF-8">
 <style>${screenStyles}</style>
@@ -91,8 +105,37 @@ function screenshot(browser, htmlPath, pngPath) {
     }
 }
 
-if (!fs.existsSync(STUDY_HTML)) {
-    console.error(`Missing ${STUDY_HTML} — run: node packs/build-study-plan.mjs`);
+function buildPlan(browser, key, plan) {
+    if (!fs.existsSync(plan.html)) {
+        console.error(`Missing ${plan.html} — run: ${plan.rebuild}`);
+        return false;
+    }
+    const html = fs.readFileSync(plan.html, 'utf8');
+    const { styles, pages } = extractPages(html);
+    const tmpDir = path.join(plan.outDir, '_tmp');
+    fs.mkdirSync(plan.outDir, { recursive: true });
+    fs.mkdirSync(tmpDir, { recursive: true });
+
+    for (let i = 0; i < pages.length; i++) {
+        const tmpHtml = path.join(tmpDir, `page-${i + 1}.html`);
+        const pngPath = path.join(plan.outDir, `page-${i + 1}.png`);
+        fs.writeFileSync(tmpHtml, wrapPage(styles, pages[i], plan.lang), 'utf8');
+        screenshot(browser, tmpHtml, pngPath);
+        console.log(`Preview ${key} ${i + 1}/${pages.length} → ${path.relative(ROOT, pngPath)}`);
+    }
+
+    try {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+        /* ignore */
+    }
+    return true;
+}
+
+const arg = (process.argv[2] || 'all').toLowerCase();
+const keys = arg === 'all' ? Object.keys(PLANS) : arg in PLANS ? [arg] : null;
+if (!keys) {
+    console.error(`Unknown plan "${arg}". Use: e8, pr, or all.`);
     process.exit(1);
 }
 
@@ -102,25 +145,9 @@ if (!browser) {
     process.exit(1);
 }
 
-const html = fs.readFileSync(STUDY_HTML, 'utf8');
-const { styles, pages } = extractPages(html);
-fs.mkdirSync(OUT_DIR, { recursive: true });
-fs.mkdirSync(TMP_DIR, { recursive: true });
-
-const outFiles = [];
-for (let i = 0; i < pages.length; i++) {
-    const tmpHtml = path.join(TMP_DIR, `page-${i + 1}.html`);
-    const pngPath = path.join(OUT_DIR, `page-${i + 1}.png`);
-    fs.writeFileSync(tmpHtml, wrapPage(styles, pages[i]), 'utf8');
-    screenshot(browser, tmpHtml, pngPath);
-    outFiles.push(pngPath);
-    console.log(`Preview ${i + 1}/${pages.length} → ${path.relative(ROOT, pngPath)}`);
+let ok = true;
+for (const key of keys) {
+    if (!buildPlan(browser, key, PLANS[key])) ok = false;
 }
-
-try {
-    fs.rmSync(TMP_DIR, { recursive: true, force: true });
-} catch {
-    /* ignore */
-}
-
-console.log(`Done — ${outFiles.length} shop preview PNGs in ${path.relative(ROOT, OUT_DIR)}`);
+if (!ok) process.exit(1);
+console.log('Done — study plan shop preview PNGs.');

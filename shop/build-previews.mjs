@@ -28,6 +28,7 @@ function icon(id) {
     const g = '#00823B';
     switch (id) {
         case 'e8-2027-study-plan':
+        case 'matura-pr-2027-study-plan':
             return `<g fill="none" stroke="${c}" stroke-width="8" stroke-linejoin="round">
               <rect x="500" y="270" width="200" height="260" rx="10"/>
               <path d="M530 310h140M530 350h110M530 390h140M530 430h90" stroke="${r}" stroke-width="6"/>
@@ -134,19 +135,28 @@ function icon(id) {
     }
 }
 
+function locTitle(p) {
+    if (p.title && typeof p.title === 'object') return p.title.pl || p.title.en || '';
+    return p.title || '';
+}
+
 function svgFor(p) {
     const exam = xml(p.exam);
-    const title = xml(p.title);
+    const title = xml(locTitle(p));
     const count =
         p.kind === 'study-plan'
-            ? '1755 haseł · checklisty · PDF'
-            : p.id === 'ls-8-complete'
-            ? '14 działów · 1700+ haseł'
+            ? `${p.terms} haseł · checklisty · PDF`
+            : p.id === 'ls-8-complete' || p.id === 'ls-pr-complete'
+            ? `14 działów · ${p.terms}+ haseł`
             : `${p.terms} haseł · ${p.pricePln} zł`;
     const badge =
-        p.kind === 'study-plan'
+        p.kind === 'study-plan' && p.exam === 'Matura rozszerzona'
+            ? 'PLAN NAUKI PR'
+            : p.kind === 'study-plan'
             ? 'PLAN NAUKI E8'
-            : p.exam.includes('Matura')
+            : p.exam === 'Matura rozszerzona'
+            ? 'MATURA PR'
+            : p.exam && p.exam.includes('Matura')
             ? 'MATURA PP'
             : p.featured
             ? 'KOMPLET E8'
@@ -173,6 +183,7 @@ function svgFor(p) {
 
 fs.mkdirSync(outDir, { recursive: true });
 for (const p of products) {
+    if (!p.image) continue;
     const file = path.join(outDir, path.basename(p.image));
     fs.writeFileSync(file, svgFor(p), 'utf8');
     console.log('wrote', path.basename(file));

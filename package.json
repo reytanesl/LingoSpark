@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "packs": "node packs/build.mjs"
+    "packs": "node packs/build.mjs",
+    "study-plan": "node packs/build-study-plan.mjs",
+    "study-plan-pr": "node packs/build-matura-pr-study-plan.mjs"
   },
   "engines": {
     "node": ">=22.13.0"
