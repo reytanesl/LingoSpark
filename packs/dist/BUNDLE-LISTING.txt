@@ -1,13 +1,27 @@
-# Bundle listing — all packs (16)
+# Bundle listing — all packs (30)
 
 ## TPT title
-LingoSpark exam packs bundle (16 packs) | Paste into LingoSpark games
+LingoSpark exam packs bundle (30 packs) | Paste into LingoSpark games
 
 ## Description
 Paste-ready LingoSpark packs:
 
 - **Praca / Work and employment** (Matura podstawowa) — 36 terms
 - **Zdrowie / Health and fitness** (Matura podstawowa) — 36 terms
+- **Człowiek / People and identity** (Matura rozszerzona) — 180 terms
+- **Miejsce zamieszkania / Home and living** (Matura rozszerzona) — 180 terms
+- **Edukacja / Education** (Matura rozszerzona) — 180 terms
+- **Kultura / Culture and the arts** (Matura rozszerzona) — 180 terms
+- **Nauka i technika / Science and technology** (Matura rozszerzona) — 180 terms
+- **Państwo i społeczeństwo / The state and society** (Matura rozszerzona) — 180 terms
+- **Podróżowanie i turystyka / Travel and tourism** (Matura rozszerzona) — 180 terms
+- **Praca / Work and employment** (Matura rozszerzona) — 180 terms
+- **Świat przyrody / The natural world** (Matura rozszerzona) — 180 terms
+- **Sport / Sport** (Matura rozszerzona) — 180 terms
+- **Zakupy i usługi / Shopping and services** (Matura rozszerzona) — 180 terms
+- **Zdrowie / Health** (Matura rozszerzona) — 180 terms
+- **Życie prywatne / Private life and leisure** (Matura rozszerzona) — 180 terms
+- **Żywienie / Food and nutrition** (Matura rozszerzona) — 180 terms
 - **Człowiek / People** (Egzamin ósmoklasisty) — 124 terms
 - **Miejsce zamieszkania / Home and living** (Egzamin ósmoklasisty) — 119 terms
 - **Edukacja / Education and school** (Egzamin ósmoklasisty) — 120 terms
@@ -27,6 +41,6 @@ Each pack: paste files by set plus a full list (PL + EN glosses), terms-only for
 
 Play on https://lingospark.study (vocab games are free).
 
-Suggested bundle price: USD 54.00 / 199 zł (save vs buying separately).
+Suggested bundle price: USD 69 / 249 zł (save vs buying separately).
 
 The E8 Człowiek pack is original Grade-8 vocab — not the free Matura “Człowiek” demo on the site.

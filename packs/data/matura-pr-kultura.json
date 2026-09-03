@@ -1,0 +1,1109 @@
+{
+  "id": "matura-pr-kultura",
+  "sku": "LS-PR-CULTURE",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Kultura",
+  "topicEn": "Culture and the arts",
+  "titlePl": "Matura PR: Kultura — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Culture — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Kultura na maturę rozszerzoną: sztuka, media, dziedzictwo i uczestnictwo w kulturze. Fiszki ENG–PL.",
+  "blurbEn": "Extended-level Culture vocabulary for the Polish Matura: the arts, media, heritage and cultural participation. ENG–PL flashcards.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura",
+    "rozszerzona",
+    "kultura",
+    "culture",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "Polish exam"
+  ],
+  "items": [
+    {
+      "term": "bestseller",
+      "definitionPl": "bestseller, bardzo poczytna książka",
+      "definitionEn": "a book that sells in very large numbers",
+      "example": "Her debut novel was a bestseller in twelve countries."
+    },
+    {
+      "term": "sequel",
+      "definitionPl": "kontynuacja, sequel",
+      "definitionEn": "a book or film that continues an earlier story",
+      "example": "The sequel is darker than the original novel."
+    },
+    {
+      "term": "prequel",
+      "definitionPl": "prequel, historia wcześniejsza",
+      "definitionEn": "a story set before the events of the original",
+      "example": "The prequel explains how the two families first met."
+    },
+    {
+      "term": "autobiography",
+      "definitionPl": "autobiografia",
+      "definitionEn": "a book a person writes about their own life",
+      "example": "In her autobiography she describes leaving Poland at eighteen."
+    },
+    {
+      "term": "biography",
+      "definitionPl": "biografia",
+      "definitionEn": "a book about another person's life, written by someone else",
+      "example": "We compared a biography of Chopin with his letters."
+    },
+    {
+      "term": "memoir",
+      "definitionPl": "pamiętnik, wspomnienia literackie",
+      "definitionEn": "a personal account of a period in the writer's life",
+      "example": "The memoir focuses on her years as a war correspondent."
+    },
+    {
+      "term": "satire",
+      "definitionPl": "satyra",
+      "definitionEn": "writing that uses humour to criticise people or institutions",
+      "example": "The play is a satire of celebrity culture."
+    },
+    {
+      "term": "metaphor",
+      "definitionPl": "metafora",
+      "definitionEn": "a figure of speech that describes something as if it were something else",
+      "example": "The poet uses winter as a metaphor for loneliness."
+    },
+    {
+      "term": "protagonist",
+      "definitionPl": "protagonista, główny bohater",
+      "definitionEn": "the main character in a story",
+      "example": "The protagonist of the novel is a teenage refugee."
+    },
+    {
+      "term": "antagonist",
+      "definitionPl": "antagonista, przeciwnik bohatera",
+      "definitionEn": "the character who opposes the main character",
+      "example": "The antagonist is more interesting than the hero."
+    },
+    {
+      "term": "narrator",
+      "definitionPl": "narrator",
+      "definitionEn": "the voice that tells the story",
+      "example": "The narrator of the novel is an unreliable child."
+    },
+    {
+      "term": "plot twist",
+      "definitionPl": "zwrot akcji",
+      "definitionEn": "a sudden, surprising change in the story",
+      "example": "The plot twist in the last chapter shocked every reader."
+    },
+    {
+      "term": "cliffhanger",
+      "definitionPl": "zakończenie na wielkim napięciu",
+      "definitionEn": "an ending that leaves the audience waiting to know what happens",
+      "example": "Each episode ends on a cliffhanger so viewers come back."
+    },
+    {
+      "term": "anthology",
+      "definitionPl": "antologia",
+      "definitionEn": "a collection of poems, stories or extracts by different writers",
+      "example": "The anthology includes three contemporary Polish poets."
+    },
+    {
+      "term": "prose",
+      "definitionPl": "proza",
+      "definitionEn": "ordinary written language, not poetry",
+      "example": "She writes clearer prose than most academic critics."
+    },
+    {
+      "term": "sonnet",
+      "definitionPl": "sonet",
+      "definitionEn": "a fourteen-line poem with a set rhyme pattern",
+      "example": "Shakespeare's sonnet 18 is still taught in schools."
+    },
+    {
+      "term": "fable",
+      "definitionPl": "bajka (z morałem)",
+      "definitionEn": "a short story, often with animals, that teaches a moral",
+      "example": "Aesop's fable about the tortoise is known worldwide."
+    },
+    {
+      "term": "allegory",
+      "definitionPl": "alegoria",
+      "definitionEn": "a story whose characters and events stand for ideas",
+      "example": "The novel is an allegory of totalitarian power."
+    },
+    {
+      "term": "irony",
+      "definitionPl": "ironia",
+      "definitionEn": "a contrast between what is said or expected and what is meant or happens",
+      "example": "The irony is that the fire station burned down."
+    },
+    {
+      "term": "theme",
+      "definitionPl": "motyw, temat utworu",
+      "definitionEn": "a central idea that a work of art explores",
+      "example": "A major theme of the film is loyalty under pressure."
+    },
+    {
+      "term": "manuscript",
+      "definitionPl": "rękopis, maszynopis utworu",
+      "definitionEn": "the original typed or handwritten version of a text",
+      "example": "The museum displays the author's first manuscript."
+    },
+    {
+      "term": "publisher",
+      "definitionPl": "wydawca",
+      "definitionEn": "a company that prepares and sells books",
+      "example": "The publisher delayed the paperback by six months."
+    },
+    {
+      "term": "ghostwriter",
+      "definitionPl": "ghostwriter, autor-widmo",
+      "definitionEn": "a person who writes a book that is published under someone else's name",
+      "example": "A ghostwriter drafted most of the celebrity's memoir."
+    },
+    {
+      "term": "book signing",
+      "definitionPl": "spotkanie autorskie z podpisem książek",
+      "definitionEn": "an event where an author signs copies for readers",
+      "example": "There was a long queue at the book signing."
+    },
+    {
+      "term": "literary critic",
+      "definitionPl": "krytyk literacki",
+      "definitionEn": "a person who writes professional judgements of books",
+      "example": "The literary critic accused the novel of being derivative."
+    },
+    {
+      "term": "coming-of-age novel",
+      "definitionPl": "powieść o dorastaniu",
+      "definitionEn": "a novel about a young person growing into adulthood",
+      "example": "The coming-of-age novel is set in a small seaside town."
+    },
+    {
+      "term": "historical fiction",
+      "definitionPl": "powieść historyczna",
+      "definitionEn": "a novel set in the past, mixing invented characters with real events",
+      "example": "Her historical fiction is based on the Warsaw Uprising."
+    },
+    {
+      "term": "dystopian fiction",
+      "definitionPl": "proza dystopijna",
+      "definitionEn": "stories set in an imagined society that has gone badly wrong",
+      "example": "Dystopian fiction often warns about the misuse of technology."
+    },
+    {
+      "term": "page-turner",
+      "definitionPl": "wciągająca książka",
+      "definitionEn": "a book so interesting that you want to keep reading",
+      "example": "The thriller is a genuine page-turner from chapter one."
+    },
+    {
+      "term": "banned book",
+      "definitionPl": "książka zakazana",
+      "definitionEn": "a book that authorities have forbidden people to read or sell",
+      "example": "The library held a debate about a banned book from the 1950s."
+    },
+    {
+      "term": "commemorate",
+      "definitionPl": "upamiętniać",
+      "definitionEn": "to honour the memory of a person or event",
+      "example": "The mural was painted to commemorate local factory workers."
+    },
+    {
+      "term": "premiere",
+      "definitionPl": "premiera",
+      "definitionEn": "the first public showing of a film, play or work",
+      "example": "The film's Polish premiere is at the Gdynia festival."
+    },
+    {
+      "term": "box office",
+      "definitionPl": "kasa biletowa; wyniki kasowe",
+      "definitionEn": "the place that sells tickets; the money a film takes",
+      "example": "The comedy broke box office records on its opening weekend."
+    },
+    {
+      "term": "blockbuster",
+      "definitionPl": "przebój kasowy",
+      "definitionEn": "a very popular film that makes a huge amount of money",
+      "example": "Summer blockbuster films often rely on special effects."
+    },
+    {
+      "term": "box-office flop",
+      "definitionPl": "klapa kasowa",
+      "definitionEn": "a film that fails to make much money",
+      "example": "The expensive sequel was a box-office flop."
+    },
+    {
+      "term": "arthouse cinema",
+      "definitionPl": "kino artystyczne",
+      "definitionEn": "films made for artistic value rather than mass entertainment",
+      "example": "She prefers arthouse cinema to superhero franchises."
+    },
+    {
+      "term": "film festival",
+      "definitionPl": "festiwal filmowy",
+      "definitionEn": "an event where new films are shown and often judged",
+      "example": "The short was selected for a student film festival."
+    },
+    {
+      "term": "cinematography",
+      "definitionPl": "zdjęcia filmowe, operatorstwo",
+      "definitionEn": "the art of camera work and lighting in a film",
+      "example": "The cinematography of the mountain scenes is breathtaking."
+    },
+    {
+      "term": "screenplay",
+      "definitionPl": "scenariusz filmowy",
+      "definitionEn": "the written script of a film, including dialogue and action",
+      "example": "He adapted the novel into a screenplay in six weeks."
+    },
+    {
+      "term": "film adaptation",
+      "definitionPl": "ekranizacja",
+      "definitionEn": "a film based on a book, play or other work",
+      "example": "The film adaptation cuts several minor characters."
+    },
+    {
+      "term": "remake",
+      "definitionPl": "nowa wersja filmu, remake",
+      "definitionEn": "a new version of an earlier film",
+      "example": "The remake is set in London instead of New York."
+    },
+    {
+      "term": "biopic",
+      "definitionPl": "film biograficzny",
+      "definitionEn": "a film that tells the life story of a real person",
+      "example": "The biopic of the singer has already won two awards."
+    },
+    {
+      "term": "period drama",
+      "definitionPl": "kostiumowy dramat obyczajowy",
+      "definitionEn": "a film or series set in a historical period, with period clothes",
+      "example": "The period drama was filmed in a listed manor house."
+    },
+    {
+      "term": "close-up",
+      "definitionPl": "zbliżenie (kadr)",
+      "definitionEn": "a shot that shows a face or object in great detail",
+      "example": "The close-up of her hands revealed that she was shaking."
+    },
+    {
+      "term": "voice-over",
+      "definitionPl": "narracja zza kadru",
+      "definitionEn": "speech heard on the soundtrack while someone else is shown",
+      "example": "A calm voice-over explains the archive footage."
+    },
+    {
+      "term": "dubbing",
+      "definitionPl": "dubbing, wersja dubbingowana",
+      "definitionEn": "replacing the original speech in a film with another language",
+      "example": "Polish dubbing of cartoons is often excellent."
+    },
+    {
+      "term": "subtitles",
+      "definitionPl": "napisy (w filmie)",
+      "definitionEn": "words on the screen that translate or transcribe the speech",
+      "example": "Watch the original with English subtitles, not a dubbed version."
+    },
+    {
+      "term": "cameo",
+      "definitionPl": "epizodyczny występ gwiazdy",
+      "definitionEn": "a brief appearance by a well-known person in a film",
+      "example": "The director makes a cameo as a taxi driver."
+    },
+    {
+      "term": "typecast",
+      "definitionPl": "obsadzany wciąż w podobnych rolach",
+      "definitionEn": "repeatedly given the same kind of acting role",
+      "example": "After the sitcom he was typecast as the clumsy neighbour."
+    },
+    {
+      "term": "cult film",
+      "definitionPl": "film kultowy",
+      "definitionEn": "a film with a small but very devoted group of fans",
+      "example": "The midnight screenings turned it into a cult film."
+    },
+    {
+      "term": "independent film",
+      "definitionPl": "film niezależny, kino niezależne",
+      "definitionEn": "a film made outside the major studios, often on a low budget",
+      "example": "The independent film was shot in two weeks in Kraków."
+    },
+    {
+      "term": "stunt double",
+      "definitionPl": "kaskader zastępujący aktora",
+      "definitionEn": "a performer who does dangerous scenes in place of an actor",
+      "example": "The stunt double jumped from the roof, not the lead actor."
+    },
+    {
+      "term": "supporting role",
+      "definitionPl": "rola drugoplanowa",
+      "definitionEn": "an important acting part that is not the lead",
+      "example": "She won an award for a supporting role as the mother."
+    },
+    {
+      "term": "leading role",
+      "definitionPl": "główna rola",
+      "definitionEn": "the main acting part in a film or play",
+      "example": "He was offered the leading role after one audition."
+    },
+    {
+      "term": "feature film",
+      "definitionPl": "film pełnometrażowy",
+      "definitionEn": "a full-length film, usually over about ninety minutes",
+      "example": "Her first feature film premiered in Berlin."
+    },
+    {
+      "term": "short film",
+      "definitionPl": "film krótkometrażowy",
+      "definitionEn": "a film lasting only a few minutes to about forty minutes",
+      "example": "Students submitted a short film of eight minutes."
+    },
+    {
+      "term": "thriller",
+      "definitionPl": "dreszczowiec, thriller",
+      "definitionEn": "a film or book meant to keep you tense and excited",
+      "example": "The political thriller is set during a state visit."
+    },
+    {
+      "term": "genre",
+      "definitionPl": "gatunek (filmowy, literacki)",
+      "definitionEn": "a category of art with shared features, such as comedy or horror",
+      "example": "Science fiction is the genre she writes most often."
+    },
+    {
+      "term": "film critic",
+      "definitionPl": "krytyk filmowy",
+      "definitionEn": "a person who writes professional reviews of films",
+      "example": "The film critic gave the documentary five stars."
+    },
+    {
+      "term": "age rating",
+      "definitionPl": "kategoria wiekowa, ograniczenie wiekowe",
+      "definitionEn": "an official label showing the minimum age for a film",
+      "example": "The age rating was raised after complaints about violence."
+    },
+    {
+      "term": "slow motion",
+      "definitionPl": "zwolnione tempo, slow motion",
+      "definitionEn": "a film effect that makes movement appear slower than real life",
+      "example": "The goal is shown again in slow motion."
+    },
+    {
+      "term": "end credits",
+      "definitionPl": "napisy końcowe",
+      "definitionEn": "the list of names shown after a film finishes",
+      "example": "Stay for the end credits — there is an extra scene."
+    },
+    {
+      "term": "audience",
+      "definitionPl": "publiczność",
+      "definitionEn": "the people watching a play, film or concert",
+      "example": "The audience rose to its feet after the last aria."
+    },
+    {
+      "term": "rehearsal",
+      "definitionPl": "próba (przed występem)",
+      "definitionEn": "a practice session before a public performance",
+      "example": "The cast has a rehearsal every evening this week."
+    },
+    {
+      "term": "dress rehearsal",
+      "definitionPl": "próba generalna",
+      "definitionEn": "the final rehearsal in costume, as if it were the real show",
+      "example": "Nothing went wrong at the dress rehearsal, which made us nervous."
+    },
+    {
+      "term": "encore",
+      "definitionPl": "bis",
+      "definitionEn": "an extra song or piece performed after the planned end",
+      "example": "The pianist played Chopin as an encore."
+    },
+    {
+      "term": "standing ovation",
+      "definitionPl": "owacja na stojąco",
+      "definitionEn": "when the whole audience stands up and claps",
+      "example": "The premiere received a standing ovation lasting five minutes."
+    },
+    {
+      "term": "understudy",
+      "definitionPl": "dubler, zastępca aktora",
+      "definitionEn": "an actor who learns a role in case the main actor cannot perform",
+      "example": "The understudy took over when the lead lost her voice."
+    },
+    {
+      "term": "matinee",
+      "definitionPl": "spektakl popołudniowy",
+      "definitionEn": "an afternoon performance of a play or film",
+      "example": "We booked the Saturday matinee because evening tickets were sold out."
+    },
+    {
+      "term": "opening night",
+      "definitionPl": "wieczór premierowy",
+      "definitionEn": "the first public performance of a play or show",
+      "example": "Critics were invited to opening night in the West End."
+    },
+    {
+      "term": "stalls",
+      "definitionPl": "parter (w teatrze)",
+      "definitionEn": "the seats on the ground floor of a theatre",
+      "example": "Our seats in the stalls were close enough to see every gesture."
+    },
+    {
+      "term": "dress circle",
+      "definitionPl": "pierwszy balkon (w teatrze)",
+      "definitionEn": "the first raised seating level in a theatre",
+      "example": "A box in the dress circle costs more than a seat in the stalls."
+    },
+    {
+      "term": "usher",
+      "definitionPl": "bileter, bileterka",
+      "definitionEn": "a person who shows people to their seats in a theatre or cinema",
+      "example": "The usher asked us to switch off our phones."
+    },
+    {
+      "term": "interval",
+      "definitionPl": "przerwa (w spektaklu)",
+      "definitionEn": "a short break in the middle of a play or concert",
+      "example": "Ice cream is sold in the foyer during the interval."
+    },
+    {
+      "term": "curtain call",
+      "definitionPl": "ukłony po spektaklu",
+      "definitionEn": "when the cast return to the stage to receive applause",
+      "example": "The whole company came out for the curtain call."
+    },
+    {
+      "term": "soliloquy",
+      "definitionPl": "solilokwium, monolog wewnętrzny",
+      "definitionEn": "a speech in which a character speaks thoughts aloud, alone on stage",
+      "example": "Hamlet's soliloquy is the most famous speech in English drama."
+    },
+    {
+      "term": "monologue",
+      "definitionPl": "monolog",
+      "definitionEn": "a long speech by one person in a play or performance",
+      "example": "She performed a ten-minute monologue at the drama exam."
+    },
+    {
+      "term": "improvisation",
+      "definitionPl": "improwizacja",
+      "definitionEn": "performing without a prepared script",
+      "example": "The comedy night is based entirely on improvisation."
+    },
+    {
+      "term": "stage fright",
+      "definitionPl": "trema sceniczna",
+      "definitionEn": "nervousness before or during a public performance",
+      "example": "Even experienced actors admit to stage fright on opening night."
+    },
+    {
+      "term": "playwright",
+      "definitionPl": "dramatopisarz",
+      "definitionEn": "a person who writes plays",
+      "example": "The playwright set the new piece in a shipyard."
+    },
+    {
+      "term": "scenery",
+      "definitionPl": "scenografia, dekoracje",
+      "definitionEn": "the painted backgrounds and structures on a stage",
+      "example": "The scenery for the forest act was built from recycled wood."
+    },
+    {
+      "term": "props",
+      "definitionPl": "rekwizyty",
+      "definitionEn": "objects that actors use on stage or on set",
+      "example": "The props include a vintage typewriter and a suitcase."
+    },
+    {
+      "term": "backstage",
+      "definitionPl": "kulisy, zaplecze sceny",
+      "definitionEn": "the area behind the stage, not seen by the audience",
+      "example": "No fans are allowed backstage after the show."
+    },
+    {
+      "term": "tragedy",
+      "definitionPl": "tragedia (gatunek)",
+      "definitionEn": "a serious play with a sad ending, often about a hero's downfall",
+      "example": "Greek tragedy still influences modern political drama."
+    },
+    {
+      "term": "farce",
+      "definitionPl": "farsa",
+      "definitionEn": "a comic play based on ridiculous situations and mistakes",
+      "example": "The farce involves four doors and a missing wedding ring."
+    },
+    {
+      "term": "West End",
+      "definitionPl": "West End, londyńskie teatry komercyjne",
+      "definitionEn": "London's main commercial theatre district",
+      "example": "A West End ticket can cost more than a weekend in Paris."
+    },
+    {
+      "term": "fringe theatre",
+      "definitionPl": "teatr offowy, teatr niezależny",
+      "definitionEn": "small, experimental theatre outside the commercial mainstream",
+      "example": "Fringe theatre in Edinburgh is cheaper and more daring."
+    },
+    {
+      "term": "amateur dramatics",
+      "definitionPl": "amatorski teatr",
+      "definitionEn": "theatre performed by non-professionals, often locally",
+      "example": "She joined amateur dramatics after leaving the conservatoire."
+    },
+    {
+      "term": "orchestra pit",
+      "definitionPl": "kanał orkiestrowy",
+      "definitionEn": "the lowered area in front of the stage where musicians play",
+      "example": "The violinists in the orchestra pit drowned out the dialogue."
+    },
+    {
+      "term": "piracy",
+      "definitionPl": "piractwo (filmowe, muzyczne)",
+      "definitionEn": "illegal copying or sharing of films, music or books",
+      "example": "Film piracy costs studios millions, but cheap tickets also help."
+    },
+    {
+      "term": "symphony",
+      "definitionPl": "symfonia",
+      "definitionEn": "a long piece of music for a full orchestra, usually in several movements",
+      "example": "The last movement of the symphony is unexpectedly quiet."
+    },
+    {
+      "term": "concerto",
+      "definitionPl": "koncert (utwór z solistą)",
+      "definitionEn": "a piece for a solo instrument with orchestral accompaniment",
+      "example": "The piano concerto demands huge stamina from the soloist."
+    },
+    {
+      "term": "chamber music",
+      "definitionPl": "muzyka kameralna",
+      "definitionEn": "classical music for a small group of players, often one to a part",
+      "example": "Sunday afternoon chamber music in the palace is free."
+    },
+    {
+      "term": "aria",
+      "definitionPl": "aria",
+      "definitionEn": "a song for one voice in an opera, with orchestral accompaniment",
+      "example": "The soprano's aria stopped the performance for applause."
+    },
+    {
+      "term": "virtuoso",
+      "definitionPl": "wirtuoz",
+      "definitionEn": "a musician of outstanding technical skill",
+      "example": "The young virtuoso played the étude without a single slip."
+    },
+    {
+      "term": "cover version",
+      "definitionPl": "cover, nowa wersja utworu",
+      "definitionEn": "a new recording of a song first performed by someone else",
+      "example": "Their cover version of the folk song reached number two."
+    },
+    {
+      "term": "busker",
+      "definitionPl": "uliczny muzyk",
+      "definitionEn": "a musician who performs in the street for money",
+      "example": "A busker on the Underground was playing Chopin on a keyboard."
+    },
+    {
+      "term": "acoustic",
+      "definitionPl": "akustyczny (bez wzmocnienia)",
+      "definitionEn": "played without electronic amplification",
+      "example": "The band did an acoustic set in the bookshop."
+    },
+    {
+      "term": "headliner",
+      "definitionPl": "gwiazda wieczoru, headliner",
+      "definitionEn": "the main act that a concert or festival is built around",
+      "example": "The headliner came on at half past ten."
+    },
+    {
+      "term": "support act",
+      "definitionPl": "support, zespół rozgrzewający",
+      "definitionEn": "a band or singer who performs before the main artist",
+      "example": "The support act was better than the famous headliner."
+    },
+    {
+      "term": "gig",
+      "definitionPl": "koncert (potocznie)",
+      "definitionEn": "an informal word for a concert, especially of popular music",
+      "example": "Their first gig was in a cellar that held forty people."
+    },
+    {
+      "term": "concert venue",
+      "definitionPl": "sala / miejsce koncertu",
+      "definitionEn": "the building or site where a concert is held",
+      "example": "The concert venue has a strict bag check at the door."
+    },
+    {
+      "term": "sheet music",
+      "definitionPl": "nuty (zapis)",
+      "definitionEn": "printed music showing the notes to play or sing",
+      "example": "The choir still prefers sheet music to tablets."
+    },
+    {
+      "term": "recording studio",
+      "definitionPl": "studio nagrań",
+      "definitionEn": "a room designed for recording music or sound",
+      "example": "They booked a recording studio for three nights."
+    },
+    {
+      "term": "record label",
+      "definitionPl": "wytwórnia płytowa",
+      "definitionEn": "a company that produces and markets recorded music",
+      "example": "The record label dropped the band after one album."
+    },
+    {
+      "term": "vinyl",
+      "definitionPl": "płyta winylowa",
+      "definitionEn": "music pressed on a plastic disc, often collected again today",
+      "example": "He bought the album on vinyl for the larger artwork."
+    },
+    {
+      "term": "arts funding",
+      "definitionPl": "finansowanie kultury i sztuki",
+      "definitionEn": "public or private money given to support the arts",
+      "example": "Cuts to arts funding closed two regional theatres."
+    },
+    {
+      "term": "book club",
+      "definitionPl": "klub książki, DKK",
+      "definitionEn": "a group that meets to discuss a book they have all read",
+      "example": "Our book club chose a contemporary Polish novel this month."
+    },
+    {
+      "term": "jam session",
+      "definitionPl": "jam session, wspólne improwizowanie",
+      "definitionEn": "an informal session in which musicians improvise together",
+      "example": "Saxophonists joined the jam session after midnight."
+    },
+    {
+      "term": "live album",
+      "definitionPl": "album koncertowy",
+      "definitionEn": "a recording of music performed in front of an audience",
+      "example": "The live album captures the crowd singing every chorus."
+    },
+    {
+      "term": "chart-topping",
+      "definitionPl": "na szczycie list przebojów",
+      "definitionEn": "reaching the highest position on the music charts",
+      "example": "Their chart-topping single was used in a car advert."
+    },
+    {
+      "term": "intangible heritage",
+      "definitionPl": "niematerialne dziedzictwo kulturowe",
+      "definitionEn": "traditions, skills and practices passed down, not buildings",
+      "example": "The harvest songs are listed as intangible heritage."
+    },
+    {
+      "term": "freedom of expression",
+      "definitionPl": "wolność wypowiedzi",
+      "definitionEn": "the right to say, write or create without unfair restriction",
+      "example": "Artists argued that the ban threatened freedom of expression."
+    },
+    {
+      "term": "still life",
+      "definitionPl": "martwa natura",
+      "definitionEn": "a picture of arranged objects such as fruit, flowers or crockery",
+      "example": "We painted a still life of apples and a pewter jug."
+    },
+    {
+      "term": "abstract art",
+      "definitionPl": "sztuka abstrakcyjna",
+      "definitionEn": "art that does not try to show things as they look in real life",
+      "example": "Many visitors find abstract art harder to 'read' than portraits."
+    },
+    {
+      "term": "impressionism",
+      "definitionPl": "impresjonizm",
+      "definitionEn": "a nineteenth-century style that captures light and a moment's impression",
+      "example": "Monet's water lilies are classic impressionism."
+    },
+    {
+      "term": "cubism",
+      "definitionPl": "kubizm",
+      "definitionEn": "an early twentieth-century style showing objects from several angles at once",
+      "example": "Picasso's cubism shocked Paris before it became fashionable."
+    },
+    {
+      "term": "surrealism",
+      "definitionPl": "surrealizm",
+      "definitionEn": "art that mixes dream images with unexpected, illogical combinations",
+      "example": "Dalí's melting clocks are a textbook example of surrealism."
+    },
+    {
+      "term": "Renaissance",
+      "definitionPl": "renesans",
+      "definitionEn": "the European revival of classical art and learning, roughly 14th–16th centuries",
+      "example": "Renaissance portraits often show the sitter with a book or globe."
+    },
+    {
+      "term": "watercolour",
+      "definitionPl": "akwarela",
+      "definitionEn": "paint that is mixed with water; a picture made with it",
+      "example": "The watercolour of the harbour faded in the sunlight."
+    },
+    {
+      "term": "fresco",
+      "definitionPl": "fresk",
+      "definitionEn": "a painting done on wet plaster, usually on a wall or ceiling",
+      "example": "The church fresco was damaged by damp and later restored."
+    },
+    {
+      "term": "mural",
+      "definitionPl": "mural, malowidło ścienne",
+      "definitionEn": "a large painting on a wall, often in a public place",
+      "example": "A new mural on the underpass shows the town's shipyard past."
+    },
+    {
+      "term": "collage",
+      "definitionPl": "kolaż",
+      "definitionEn": "art made by sticking different materials onto a surface",
+      "example": "Her collage combines newspaper headlines with family photos."
+    },
+    {
+      "term": "installation art",
+      "definitionPl": "instalacja artystyczna",
+      "definitionEn": "a three-dimensional artwork designed for a particular space",
+      "example": "The installation art filled the whole hall with hanging fabric."
+    },
+    {
+      "term": "contemporary art",
+      "definitionPl": "sztuka współczesna",
+      "definitionEn": "art being made in the present period",
+      "example": "The museum of contemporary art is free on Friday evenings."
+    },
+    {
+      "term": "street art",
+      "definitionPl": "sztuka uliczna",
+      "definitionEn": "art in public spaces, including murals and stencils, often unsanctioned",
+      "example": "Street art in the old factory district now draws tour groups."
+    },
+    {
+      "term": "graffiti",
+      "definitionPl": "graffiti",
+      "definitionEn": "writing or drawings, often sprayed, on walls in public places",
+      "example": "Not all graffiti is vandalism; some pieces are commissioned."
+    },
+    {
+      "term": "pop art",
+      "definitionPl": "pop-art",
+      "definitionEn": "mid-twentieth-century art that uses images from advertising and mass culture",
+      "example": "Warhol's soup cans are the most famous works of pop art."
+    },
+    {
+      "term": "canvas",
+      "definitionPl": "płótno malarskie",
+      "definitionEn": "a strong cloth surface on which oil paintings are usually made",
+      "example": "The canvas was so large it barely fitted through the door."
+    },
+    {
+      "term": "palette",
+      "definitionPl": "paleta (malarska)",
+      "definitionEn": "the board on which an artist mixes colours; the range of colours used",
+      "example": "His palette in this period is almost entirely grey and gold."
+    },
+    {
+      "term": "composition",
+      "definitionPl": "kompozycja (obrazu)",
+      "definitionEn": "the way shapes, colours and figures are arranged in a work of art",
+      "example": "The composition leads the eye from the doorway to the window."
+    },
+    {
+      "term": "perspective",
+      "definitionPl": "perspektywa (w rysunku)",
+      "definitionEn": "the technique of drawing objects so they appear to recede in space",
+      "example": "Renaissance painters used linear perspective to create depth."
+    },
+    {
+      "term": "self-portrait",
+      "definitionPl": "autoportret",
+      "definitionEn": "a picture an artist makes of themselves",
+      "example": "Rembrandt painted a self-portrait in almost every decade of his life."
+    },
+    {
+      "term": "art collector",
+      "definitionPl": "kolekcjoner sztuki",
+      "definitionEn": "a person who buys artworks, often as an investment or passion",
+      "example": "A private art collector lent the sculpture for six months."
+    },
+    {
+      "term": "forgery",
+      "definitionPl": "fałszerstwo (dzieła sztuki)",
+      "definitionEn": "a fake artwork made to look like the work of a famous artist",
+      "example": "Tests showed the 'Vermeer' was a twentieth-century forgery."
+    },
+    {
+      "term": "restoration",
+      "definitionPl": "konserwacja, restauracja dzieła",
+      "definitionEn": "repairing and cleaning an artwork or historic object",
+      "example": "The restoration of the altarpiece took four years."
+    },
+    {
+      "term": "broadsheet",
+      "definitionPl": "gazeta poważna (duży format)",
+      "definitionEn": "a serious newspaper, traditionally printed on large sheets",
+      "example": "She reads a broadsheet on the train, not a celebrity weekly."
+    },
+    {
+      "term": "tabloid",
+      "definitionPl": "brukowiec, tabloid",
+      "definitionEn": "a popular newspaper with short articles, big headlines and many photos",
+      "example": "The tabloid put a footballer's wedding on the front page."
+    },
+    {
+      "term": "bias",
+      "definitionPl": "stronniczość, tendencyjność",
+      "definitionEn": "an unfair preference for or against a person, group or idea",
+      "example": "The report was accused of political bias in its headlines."
+    },
+    {
+      "term": "breaking news",
+      "definitionPl": "wiadomości z ostatniej chwili",
+      "definitionEn": "news that is just coming in and is being reported immediately",
+      "example": "Breaking news interrupted the evening film on the public channel."
+    },
+    {
+      "term": "streaming",
+      "definitionPl": "streaming, oglądanie / słuchanie online",
+      "definitionEn": "watching or listening to media over the internet as it is sent",
+      "example": "Streaming has replaced DVD rental for most households."
+    },
+    {
+      "term": "paywall",
+      "definitionPl": "paywall, zapora płatna",
+      "definitionEn": "a system that allows only paying users to read or watch content",
+      "example": "The investigation sits behind a paywall after the first paragraphs."
+    },
+    {
+      "term": "influencer",
+      "definitionPl": "influencer, twórca opiniotwórczy w sieci",
+      "definitionEn": "a person who promotes products or views to a large online following",
+      "example": "The fashion influencer did not say the trip was paid for by a brand."
+    },
+    {
+      "term": "headline",
+      "definitionPl": "nagłówek",
+      "definitionEn": "the title of a newspaper article, printed in large letters",
+      "example": "The headline oversimplified a complicated court judgement."
+    },
+    {
+      "term": "editorial",
+      "definitionPl": "artykuł wstępny, editorial",
+      "definitionEn": "an article that gives the newspaper's own opinion",
+      "example": "Yesterday's editorial called for more funding for public theatres."
+    },
+    {
+      "term": "investigative journalism",
+      "definitionPl": "dziennikarstwo śledcze",
+      "definitionEn": "reporting that uncovers hidden facts, often over a long period",
+      "example": "Investigative journalism exposed how the tickets were sold twice."
+    },
+    {
+      "term": "correspondent",
+      "definitionPl": "korespondent",
+      "definitionEn": "a journalist who reports from a particular place or on a particular topic",
+      "example": "The Warsaw correspondent filed her piece just before midnight."
+    },
+    {
+      "term": "press conference",
+      "definitionPl": "konferencja prasowa",
+      "definitionEn": "a meeting where someone answers journalists' questions",
+      "example": "The director called a press conference to deny the rumours."
+    },
+    {
+      "term": "exclusive",
+      "definitionPl": "newsy na wyłączność, exclusive",
+      "definitionEn": "a story published or broadcast by only one news organisation",
+      "example": "The paper paid for an exclusive interview with the conductor."
+    },
+    {
+      "term": "fake news",
+      "definitionPl": "fałszywe wiadomości",
+      "definitionEn": "false stories presented as news, often to mislead or attract clicks",
+      "example": "Teachers now train pupils to spot fake news before sharing it."
+    },
+    {
+      "term": "misinformation",
+      "definitionPl": "fałszywe informacje (niekoniecznie celowe)",
+      "definitionEn": "false or inaccurate information, whether spread on purpose or not",
+      "example": "Misinformation about the festival times caused huge queues."
+    },
+    {
+      "term": "clickbait",
+      "definitionPl": "clickbait, wabik na kliknięcia",
+      "definitionEn": "a sensational headline designed to make people click, often misleading",
+      "example": "The clickbait title promised a scandal the article never proved."
+    },
+    {
+      "term": "sensationalism",
+      "definitionPl": "sensacyjność, pogoń za sensacją",
+      "definitionEn": "presenting stories in an exaggerated way to shock or excite",
+      "example": "Critics accused the channel of sensationalism over a minor protest."
+    },
+    {
+      "term": "freedom of the press",
+      "definitionPl": "wolność prasy",
+      "definitionEn": "the right of newspapers and broadcasters to report without unfair control",
+      "example": "Freedom of the press is weaker where papers need state licences."
+    },
+    {
+      "term": "prime time",
+      "definitionPl": "godziny największej oglądalności",
+      "definitionEn": "the evening hours when the largest television audience is watching",
+      "example": "The talent show was moved to prime time on Saturday."
+    },
+    {
+      "term": "readership",
+      "definitionPl": "czytelnicy (pisma, portalu)",
+      "definitionEn": "the people who regularly read a newspaper or magazine",
+      "example": "The magazine redesigned its cover to attract a younger readership."
+    },
+    {
+      "term": "paparazzi",
+      "definitionPl": "paparazzi",
+      "definitionEn": "photographers who aggressively pursue celebrities for pictures",
+      "example": "The paparazzi waited all night outside the hotel."
+    },
+    {
+      "term": "podcast",
+      "definitionPl": "podcast",
+      "definitionEn": "a spoken audio programme you can download or stream in episodes",
+      "example": "I listen to a film podcast on the way to school."
+    },
+    {
+      "term": "going viral",
+      "definitionPl": "rozchodzenie się treści w sieci, viral",
+      "definitionEn": "spreading extremely quickly across the internet",
+      "example": "The dance clip is going viral for the wrong reasons."
+    },
+    {
+      "term": "echo chamber",
+      "definitionPl": "bańka informacyjna",
+      "definitionEn": "an online space where you only meet opinions you already agree with",
+      "example": "A social-media echo chamber made the debate more extreme."
+    },
+    {
+      "term": "binge-watching",
+      "definitionPl": "oglądanie serialu maratonem",
+      "definitionEn": "watching many episodes of a series one after another",
+      "example": "Binge-watching the whole season the night before an exam is unwise."
+    },
+    {
+      "term": "subscription",
+      "definitionPl": "subskrypcja, abonament",
+      "definitionEn": "a regular payment that gives access to a service or publication",
+      "example": "A streaming subscription now costs more than a cinema ticket."
+    },
+    {
+      "term": "mass media",
+      "definitionPl": "mass media, środki masowego przekazu",
+      "definitionEn": "newspapers, television, radio and large websites that reach huge audiences",
+      "example": "Mass media still shape what counts as a national scandal."
+    },
+    {
+      "term": "public service broadcasting",
+      "definitionPl": "media publiczne",
+      "definitionEn": "radio and television funded to inform, educate and entertain, not only to profit",
+      "example": "Public service broadcasting is expected to cover minority languages."
+    },
+    {
+      "term": "listed building",
+      "definitionPl": "zabytek wpisany do rejestru",
+      "definitionEn": "a historic building legally protected from harmful alteration",
+      "example": "You cannot replace the windows of a listed building without permission."
+    },
+    {
+      "term": "folklore",
+      "definitionPl": "folklor",
+      "definitionEn": "the traditional stories, songs, customs and beliefs of a community",
+      "example": "Highland folklore includes tales of spirits in the mountain lakes."
+    },
+    {
+      "term": "high culture",
+      "definitionPl": "kultura wysoka",
+      "definitionEn": "art forms traditionally seen as serious and elite, such as opera and classical music",
+      "example": "Some critics still treat comics as inferior to high culture."
+    },
+    {
+      "term": "popular culture",
+      "definitionPl": "kultura popularna",
+      "definitionEn": "entertainment and fashions enjoyed by large numbers of ordinary people",
+      "example": "Football and reality television are part of popular culture."
+    },
+    {
+      "term": "cultural heritage",
+      "definitionPl": "dziedzictwo kulturowe",
+      "definitionEn": "the buildings, objects, traditions and knowledge inherited from the past",
+      "example": "Wooden churches are a vital part of the region's cultural heritage."
+    },
+    {
+      "term": "artefact",
+      "definitionPl": "artefakt, zabytek ruchomy",
+      "definitionEn": "an object made by people in the past, of historical interest",
+      "example": "Each artefact in the case has a label in Polish and English."
+    },
+    {
+      "term": "UNESCO World Heritage Site",
+      "definitionPl": "obiekt z listy światowego dziedzictwa UNESCO",
+      "definitionEn": "a place recognised internationally as having outstanding cultural or natural value",
+      "example": "The salt mine is a UNESCO World Heritage Site and a major tourist draw."
+    },
+    {
+      "term": "cultural identity",
+      "definitionPl": "tożsamość kulturowa",
+      "definitionEn": "the sense of belonging to a group that shares language, traditions or history",
+      "example": "Language lessons at Saturday school support children's cultural identity."
+    },
+    {
+      "term": "cultural appropriation",
+      "definitionPl": "zawłaszczenie kulturowe",
+      "definitionEn": "adopting elements of a minority culture in a way many see as disrespectful or exploitative",
+      "example": "The fashion show was criticised for cultural appropriation of Indigenous patterns."
+    },
+    {
+      "term": "censorship",
+      "definitionPl": "cenzura",
+      "definitionEn": "official control that forbids or cuts parts of books, films or news",
+      "example": "Wartime censorship stopped newspapers printing troop movements."
+    },
+    {
+      "term": "copyright",
+      "definitionPl": "prawo autorskie",
+      "definitionEn": "the legal right to control how a work is copied, performed or sold",
+      "example": "Copyright in the recording lasts for seventy years after the author's death."
+    },
+    {
+      "term": "intellectual property",
+      "definitionPl": "własność intelektualna",
+      "definitionEn": "legal rights over creations of the mind, such as books, films, designs and inventions",
+      "example": "The museum warned that photographs of the exhibit may still be intellectual property."
+    },
+    {
+      "term": "fair dealing",
+      "definitionPl": "dozwolony użytek (w prawie UK)",
+      "definitionEn": "limited legal use of copyrighted material, for example for criticism or teaching",
+      "example": "Quoting two lines in a review can fall under fair dealing."
+    },
+    {
+      "term": "patron of the arts",
+      "definitionPl": "mecenas sztuki",
+      "definitionEn": "a person or organisation that gives money to support artists or cultural institutions",
+      "example": "A local factory owner became a patron of the arts after the war."
+    },
+    {
+      "term": "commercialisation of culture",
+      "definitionPl": "komercjalizacja kultury",
+      "definitionEn": "turning art and traditions mainly into products to sell",
+      "example": "Street festivals risk the commercialisation of culture if only brands are visible."
+    },
+    {
+      "term": "spin",
+      "definitionPl": "manipulacja przekazem, spin medialny",
+      "definitionEn": "presenting information so that it looks better than it is",
+      "example": "The press office put a positive spin on the disappointing results."
+    }
+  ]
+}

@@ -1,0 +1,1109 @@
+{
+  "id": "matura-pr-zdrowie",
+  "sku": "LS-PR-HEALTH",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Zdrowie",
+  "topicEn": "Health",
+  "titlePl": "Matura PR: Zdrowie — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Health — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Zdrowie na maturę rozszerzoną: system ochrony zdrowia, choroby, uzależnienia i profilaktyka. Fiszki ENG–PL.",
+  "blurbEn": "Extended-level Matura Health vocabulary: the healthcare system, illness, addiction and prevention. ENG–PL flashcards for LingoSpark games.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura",
+    "rozszerzona",
+    "zdrowie",
+    "health",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "Polish exam"
+  ],
+  "items": [
+    {
+      "term": "well-being",
+      "definitionPl": "dobrostan, samopoczucie",
+      "definitionEn": "a state of being healthy, comfortable and content, not only free from illness",
+      "example": "Regular sleep and close friendships support mental well-being."
+    },
+    {
+      "term": "quality of life",
+      "definitionPl": "jakość życia",
+      "definitionEn": "how good or bad a person’s life feels in health, comfort and opportunity",
+      "example": "Pain can reduce quality of life even when tests look normal."
+    },
+    {
+      "term": "life expectancy",
+      "definitionPl": "przeciętna długość życia",
+      "definitionEn": "the average number of years a person in a group is expected to live",
+      "example": "Life expectancy has risen, but not equally in every region."
+    },
+    {
+      "term": "public health",
+      "definitionPl": "zdrowie publiczne",
+      "definitionEn": "organised efforts to protect and improve the health of a whole population",
+      "example": "Public health campaigns reduced smoking among teenagers."
+    },
+    {
+      "term": "health literacy",
+      "definitionPl": "świadomość zdrowotna, kompetencje zdrowotne",
+      "definitionEn": "the ability to find, understand and use information to make health decisions",
+      "example": "Low health literacy makes prescription labels harder to follow."
+    },
+    {
+      "term": "health inequality",
+      "definitionPl": "nierówności zdrowotne",
+      "definitionEn": "unfair differences in health between social or economic groups",
+      "example": "Health inequality is wider in areas with poor housing and low income."
+    },
+    {
+      "term": "preventive care",
+      "definitionPl": "opieka profilaktyczna",
+      "definitionEn": "medical services that stop illness before it starts or catches it early",
+      "example": "Preventive care includes vaccinations and regular blood-pressure checks."
+    },
+    {
+      "term": "risk factor",
+      "definitionPl": "czynnik ryzyka",
+      "definitionEn": "something that raises the chance of developing a disease",
+      "example": "Smoking is a major risk factor for heart disease."
+    },
+    {
+      "term": "underlying condition",
+      "definitionPl": "schorzenie podstawowe, choroba współistniejąca",
+      "definitionEn": "an existing long-term illness that makes other problems more serious",
+      "example": "People with an underlying condition were offered the vaccine first."
+    },
+    {
+      "term": "immune system",
+      "definitionPl": "układ odpornościowy",
+      "definitionEn": "the body’s defences against infection",
+      "example": "Stress and poor sleep can weaken the immune system."
+    },
+    {
+      "term": "health promotion",
+      "definitionPl": "promocja zdrowia",
+      "definitionEn": "activity that encourages people to live in ways that protect their health",
+      "example": "The city funded health promotion in schools and workplaces."
+    },
+    {
+      "term": "screening programme",
+      "definitionPl": "program badań przesiewowych",
+      "definitionEn": "organised tests offered to a group to find disease early",
+      "example": "The national screening programme invites women for breast checks."
+    },
+    {
+      "term": "early detection",
+      "definitionPl": "wczesne wykrywanie",
+      "definitionEn": "finding a disease at a stage when treatment works better",
+      "example": "Early detection of cancer can mean less aggressive surgery."
+    },
+    {
+      "term": "preventable disease",
+      "definitionPl": "choroba, której można zapobiec",
+      "definitionEn": "an illness that vaccination, hygiene or lifestyle change can stop",
+      "example": "Measles is a preventable disease, yet outbreaks still occur."
+    },
+    {
+      "term": "universal healthcare",
+      "definitionPl": "powszechny dostęp do ochrony zdrowia",
+      "definitionEn": "a system in which everyone can get medical care, usually paid from taxes",
+      "example": "Supporters of universal healthcare argue that no one should face ruinous bills."
+    },
+    {
+      "term": "private healthcare",
+      "definitionPl": "prywatna ochrona zdrowia",
+      "definitionEn": "medical care paid for by the patient or a private insurer, not the state",
+      "example": "Some families buy private healthcare to avoid long waiting lists."
+    },
+    {
+      "term": "medical ethics",
+      "definitionPl": "etyka lekarska",
+      "definitionEn": "moral rules that guide doctors, such as doing no harm and respecting choice",
+      "example": "Medical ethics forbids forcing treatment on a competent adult."
+    },
+    {
+      "term": "informed consent",
+      "definitionPl": "świadoma zgoda",
+      "definitionEn": "agreement to treatment after the risks and benefits have been explained",
+      "example": "Surgery cannot start without informed consent, except in a true emergency."
+    },
+    {
+      "term": "patient confidentiality",
+      "definitionPl": "tajemnica lekarska",
+      "definitionEn": "the duty to keep a patient’s medical information private",
+      "example": "Patient confidentiality means results are not discussed in a public corridor."
+    },
+    {
+      "term": "chronic illness",
+      "definitionPl": "choroba przewlekła",
+      "definitionEn": "a disease that lasts a long time and often cannot be fully cured",
+      "example": "A chronic illness such as asthma needs a long-term treatment plan."
+    },
+    {
+      "term": "acute illness",
+      "definitionPl": "choroba ostra",
+      "definitionEn": "an illness that starts suddenly and is often severe but may be short",
+      "example": "An acute illness can still put a healthy adult in hospital overnight."
+    },
+    {
+      "term": "infectious disease",
+      "definitionPl": "choroba zakaźna",
+      "definitionEn": "an illness caused by bacteria, viruses or other microbes that can spread",
+      "example": "Hand-washing remains a cheap defence against infectious disease."
+    },
+    {
+      "term": "non-communicable disease",
+      "definitionPl": "choroba niezakaźna",
+      "definitionEn": "a long-term illness that is not passed from person to person, such as diabetes",
+      "example": "Diet and exercise influence many types of non-communicable disease."
+    },
+    {
+      "term": "contagious",
+      "definitionPl": "zakaźny, zaraźliwy",
+      "definitionEn": "able to spread from one person to another",
+      "example": "Stay at home while the infection is still contagious."
+    },
+    {
+      "term": "outbreak",
+      "definitionPl": "ognisko epidemiczne, wybuch choroby",
+      "definitionEn": "a sudden rise in cases of a disease in a place or group",
+      "example": "The school closed after an outbreak of norovirus."
+    },
+    {
+      "term": "epidemic",
+      "definitionPl": "epidemia",
+      "definitionEn": "when a disease spreads quickly to many people in a region",
+      "example": "An influenza epidemic filled hospital wards in January."
+    },
+    {
+      "term": "pandemic",
+      "definitionPl": "pandemia",
+      "definitionEn": "an epidemic that spreads across many countries or the whole world",
+      "example": "A pandemic tests both hospitals and the supply of medicines."
+    },
+    {
+      "term": "immunity",
+      "definitionPl": "odporność",
+      "definitionEn": "the body’s ability to resist a particular infection",
+      "example": "Previous infection does not always give lasting immunity."
+    },
+    {
+      "term": "herd immunity",
+      "definitionPl": "odporność zbiorowiskowa",
+      "definitionEn": "protection that appears when enough people in a group are immune",
+      "example": "Herd immunity is harder to reach if vaccination rates fall."
+    },
+    {
+      "term": "antibody",
+      "definitionPl": "przeciwciało",
+      "definitionEn": "a protein the body makes to recognise and fight a specific germ",
+      "example": "A blood test can show whether you have an antibody after vaccination."
+    },
+    {
+      "term": "vaccination",
+      "definitionPl": "szczepienie",
+      "definitionEn": "giving a vaccine to protect someone from a disease",
+      "example": "Childhood vaccination has almost wiped out some dangerous infections."
+    },
+    {
+      "term": "booster dose",
+      "definitionPl": "dawka przypominająca",
+      "definitionEn": "an extra vaccine given later to strengthen protection",
+      "example": "Older adults were offered a booster dose before winter."
+    },
+    {
+      "term": "vaccine hesitancy",
+      "definitionPl": "niechęć do szczepień",
+      "definitionEn": "delay or refusal of a vaccine despite it being available",
+      "example": "Clear information can reduce vaccine hesitancy more than pressure."
+    },
+    {
+      "term": "immunisation",
+      "definitionPl": "uodpornienie, szczepienia ochronne",
+      "definitionEn": "the process of becoming protected against a disease, usually by vaccine",
+      "example": "The immunisation schedule is published by the health ministry."
+    },
+    {
+      "term": "quarantine",
+      "definitionPl": "kwarantanna",
+      "definitionEn": "keeping people who may be infected away from others for a set time",
+      "example": "Travellers from the affected region had to quarantine for ten days."
+    },
+    {
+      "term": "self-isolation",
+      "definitionPl": "samoizolacja",
+      "definitionEn": "staying at home and away from others because you are ill or at risk",
+      "example": "Self-isolation is pointless if you still go to the supermarket."
+    },
+    {
+      "term": "inflammation",
+      "definitionPl": "stan zapalny",
+      "definitionEn": "the body’s painful, red or swollen reaction to injury or infection",
+      "example": "Chronic inflammation in the joints makes walking difficult."
+    },
+    {
+      "term": "autoimmune disease",
+      "definitionPl": "choroba autoimmunologiczna",
+      "definitionEn": "an illness in which the immune system attacks the body’s own tissue",
+      "example": "An autoimmune disease may need lifelong medicine, not a short course of antibiotics."
+    },
+    {
+      "term": "cardiovascular disease",
+      "definitionPl": "choroba układu krążenia",
+      "definitionEn": "illness of the heart and blood vessels",
+      "example": "Cardiovascular disease remains a leading cause of death in Europe."
+    },
+    {
+      "term": "respiratory disease",
+      "definitionPl": "choroba układu oddechowego",
+      "definitionEn": "illness of the lungs and airways",
+      "example": "Air pollution worsens respiratory disease in cities."
+    },
+    {
+      "term": "heart attack",
+      "definitionPl": "zawał serca",
+      "definitionEn": "a sudden blockage of blood to part of the heart muscle",
+      "example": "Chest pain that spreads to the arm can be a heart attack — call 112."
+    },
+    {
+      "term": "stroke",
+      "definitionPl": "udar mózgu",
+      "definitionEn": "a sudden loss of brain function because blood supply is blocked or a vessel bursts",
+      "example": "Fast treatment after a stroke can limit lasting damage."
+    },
+    {
+      "term": "hypertension",
+      "definitionPl": "nadciśnienie tętnicze",
+      "definitionEn": "blood pressure that stays too high and damages organs over time",
+      "example": "Hypertension often has no obvious symptoms until a crisis."
+    },
+    {
+      "term": "type 2 diabetes",
+      "definitionPl": "cukrzyca typu 2",
+      "definitionEn": "a long-term condition in which the body cannot use insulin properly",
+      "example": "Type 2 diabetes can often be delayed by diet and activity."
+    },
+    {
+      "term": "tumour",
+      "definitionPl": "guz nowotworowy",
+      "definitionEn": "an abnormal lump of cells that may be benign or malignant",
+      "example": "The scan showed a tumour that had not yet spread."
+    },
+    {
+      "term": "cancer treatment",
+      "definitionPl": "leczenie nowotworu",
+      "definitionEn": "medical care such as surgery, drugs or radiotherapy used against cancer",
+      "example": "Cancer treatment can last months and still allow some people to work."
+    },
+    {
+      "term": "terminal illness",
+      "definitionPl": "choroba terminalna",
+      "definitionEn": "a disease that cannot be cured and will lead to death",
+      "example": "Hospice staff support families facing a terminal illness."
+    },
+    {
+      "term": "remission",
+      "definitionPl": "remisja",
+      "definitionEn": "a period when signs of a disease have reduced or disappeared",
+      "example": "She has been in remission for three years after chemotherapy."
+    },
+    {
+      "term": "relapse",
+      "definitionPl": "nawrót choroby",
+      "definitionEn": "the return of an illness after a period of improvement",
+      "example": "A relapse does not mean that all previous progress was wasted."
+    },
+    {
+      "term": "complication",
+      "definitionPl": "powikłanie",
+      "definitionEn": "an extra medical problem that appears because of a disease or treatment",
+      "example": "Infection is a possible complication after surgery."
+    },
+    {
+      "term": "prognosis",
+      "definitionPl": "rokowanie",
+      "definitionEn": "a doctor’s judgement of how an illness is likely to develop",
+      "example": "The prognosis is better when the disease is found early."
+    },
+    {
+      "term": "diagnosis",
+      "definitionPl": "diagnoza, rozpoznanie",
+      "definitionEn": "the identification of an illness after tests and examination",
+      "example": "A delayed diagnosis can make later treatment harder."
+    },
+    {
+      "term": "fracture",
+      "definitionPl": "złamanie",
+      "definitionEn": "a crack or break in a bone",
+      "example": "The X-ray confirmed a fracture of the wrist."
+    },
+    {
+      "term": "traumatic brain injury",
+      "definitionPl": "urazowe uszkodzenie mózgu",
+      "definitionEn": "damage to the brain caused by a blow, jolt or penetrating wound",
+      "example": "A traumatic brain injury can change memory and mood for months."
+    },
+    {
+      "term": "chronic pain",
+      "definitionPl": "ból przewlekły",
+      "definitionEn": "pain that lasts for months and often needs a mix of treatments",
+      "example": "Chronic pain is not always visible, which can make stigma worse."
+    },
+    {
+      "term": "occupational disease",
+      "definitionPl": "choroba zawodowa",
+      "definitionEn": "an illness caused by conditions at work, such as dust or chemicals",
+      "example": "Hearing loss can be an occupational disease in noisy factories."
+    },
+    {
+      "term": "anaphylaxis",
+      "definitionPl": "wstrząs anafilaktyczny",
+      "definitionEn": "a sudden, life-threatening allergic reaction",
+      "example": "Anaphylaxis needs adrenaline at once, then emergency care."
+    },
+    {
+      "term": "antibiotic resistance",
+      "definitionPl": "antybiotykooporność",
+      "definitionEn": "when bacteria survive drugs that used to kill them",
+      "example": "Antibiotic resistance grows if people take leftover tablets “just in case”."
+    },
+    {
+      "term": "sexually transmitted infection",
+      "definitionPl": "infekcja przenoszona drogą płciową",
+      "definitionEn": "an infection passed through sexual contact",
+      "example": "A sexually transmitted infection can be present without clear symptoms."
+    },
+    {
+      "term": "antibiotic",
+      "definitionPl": "antybiotyk",
+      "definitionEn": "a medicine that kills bacteria or stops them growing",
+      "example": "An antibiotic will not help a typical viral cold."
+    },
+    {
+      "term": "prescription",
+      "definitionPl": "recepta",
+      "definitionEn": "a written order from a doctor for a medicine",
+      "example": "Take this prescription to the chemist the same day."
+    },
+    {
+      "term": "generic drug",
+      "definitionPl": "lek generyczny",
+      "definitionEn": "a medicine with the same active ingredient as a brand-name product, usually cheaper",
+      "example": "The pharmacist offered a generic drug at half the price."
+    },
+    {
+      "term": "over-the-counter medicine",
+      "definitionPl": "lek bez recepty",
+      "definitionEn": "a drug you can buy without a doctor’s order",
+      "example": "Ask the pharmacist before mixing any over-the-counter medicine with alcohol."
+    },
+    {
+      "term": "recommended dose",
+      "definitionPl": "zalecana dawka",
+      "definitionEn": "the amount of a medicine that should be taken at one time",
+      "example": "Never exceed the recommended dose printed on the packet."
+    },
+    {
+      "term": "side effect",
+      "definitionPl": "działanie niepożądane",
+      "definitionEn": "an unwanted result of a medicine or treatment",
+      "example": "Drowsiness is a common side effect of this antihistamine."
+    },
+    {
+      "term": "clinical trial",
+      "definitionPl": "badanie kliniczne",
+      "definitionEn": "a carefully controlled test of a new treatment in people",
+      "example": "Volunteers in a clinical trial are told the risks in writing."
+    },
+    {
+      "term": "placebo",
+      "definitionPl": "placebo",
+      "definitionEn": "a dummy treatment with no active drug, used to test whether a medicine really works",
+      "example": "Half the group received a placebo so the results could be compared fairly."
+    },
+    {
+      "term": "surgery",
+      "definitionPl": "operacja chirurgiczna",
+      "definitionEn": "a medical operation that involves cutting or repairing the body",
+      "example": "He will need surgery on his knee before he can walk unaided."
+    },
+    {
+      "term": "keyhole surgery",
+      "definitionPl": "chirurgia małoinwazyjna, laparoskopia",
+      "definitionEn": "an operation done through small cuts, often with a camera",
+      "example": "Keyhole surgery usually means a shorter stay in hospital."
+    },
+    {
+      "term": "organ transplant",
+      "definitionPl": "przeszczep narządu",
+      "definitionEn": "an operation that replaces a failing organ with one from a donor",
+      "example": "An organ transplant requires lifelong medicine to prevent rejection."
+    },
+    {
+      "term": "organ donor",
+      "definitionPl": "dawca narządu",
+      "definitionEn": "a person who gives an organ for transplant, in life or after death",
+      "example": "Carrying a card shows you wish to be an organ donor."
+    },
+    {
+      "term": "blood transfusion",
+      "definitionPl": "transfuzja krwi",
+      "definitionEn": "putting donated blood into a patient’s vein",
+      "example": "A blood transfusion was needed after the accident."
+    },
+    {
+      "term": "physiotherapy",
+      "definitionPl": "fizjoterapia",
+      "definitionEn": "treatment that uses movement, exercise and massage to restore function",
+      "example": "Physiotherapy after the fracture helped her climb stairs again."
+    },
+    {
+      "term": "occupational therapy",
+      "definitionPl": "terapia zajęciowa",
+      "definitionEn": "treatment that helps people manage daily tasks after illness or disability",
+      "example": "Occupational therapy taught him new ways to dress with one hand."
+    },
+    {
+      "term": "alternative medicine",
+      "definitionPl": "medycyna alternatywna",
+      "definitionEn": "treatments outside standard scientific medicine, such as some herbal or needle therapies",
+      "example": "Alternative medicine should not replace a treatment your specialist has prescribed."
+    },
+    {
+      "term": "acupuncture",
+      "definitionPl": "akupunktura",
+      "definitionEn": "a therapy that uses thin needles at specific points on the body",
+      "example": "Some patients try acupuncture for long-term back pain."
+    },
+    {
+      "term": "medical rehabilitation",
+      "definitionPl": "rehabilitacja medyczna",
+      "definitionEn": "a programme of therapy to regain strength or skills after illness or injury",
+      "example": "Medical rehabilitation after a stroke can take many months of daily practice."
+    },
+    {
+      "term": "palliative care",
+      "definitionPl": "opieka paliatywna",
+      "definitionEn": "care that relieves pain and stress when a disease cannot be cured",
+      "example": "Palliative care can start long before the last weeks of life."
+    },
+    {
+      "term": "hospice",
+      "definitionPl": "hospicjum",
+      "definitionEn": "a place or service that cares for people with a terminal illness",
+      "example": "The hospice offered overnight rooms for relatives."
+    },
+    {
+      "term": "pain management",
+      "definitionPl": "leczenie bólu",
+      "definitionEn": "planned medical help to reduce long-term or severe pain",
+      "example": "Pain management may combine physiotherapy, medicine and counselling."
+    },
+    {
+      "term": "treatment plan",
+      "definitionPl": "plan leczenia",
+      "definitionEn": "an agreed set of steps for how a patient will be treated",
+      "example": "The treatment plan was explained to the family in plain language."
+    },
+    {
+      "term": "follow-up appointment",
+      "definitionPl": "wizyta kontrolna",
+      "definitionEn": "a later visit to check how treatment is working",
+      "example": "Book a follow-up appointment two weeks after the procedure."
+    },
+    {
+      "term": "medical history",
+      "definitionPl": "wywiad lekarski, historia choroby",
+      "definitionEn": "a record of past illnesses, operations, allergies and medicines",
+      "example": "Always mention allergies when you give your medical history."
+    },
+    {
+      "term": "anaesthetic",
+      "definitionPl": "znieczulenie",
+      "definitionEn": "a drug that stops you feeling pain during a procedure",
+      "example": "A local anaesthetic numbs the area but you stay awake."
+    },
+    {
+      "term": "MRI scan",
+      "definitionPl": "rezonans magnetyczny",
+      "definitionEn": "a detailed image of the inside of the body made with magnets, not X-rays",
+      "example": "The MRI scan showed a small tear in the cartilage."
+    },
+    {
+      "term": "operating theatre",
+      "definitionPl": "sala operacyjna",
+      "definitionEn": "the hospital room where surgeons perform operations",
+      "example": "She was taken to the operating theatre at seven in the morning."
+    },
+    {
+      "term": "biopsy",
+      "definitionPl": "biopsja",
+      "definitionEn": "removal of a small piece of tissue so it can be tested",
+      "example": "The biopsy confirmed that the lump was benign."
+    },
+    {
+      "term": "GP",
+      "definitionPl": "lekarz rodzinny, lekarz POZ",
+      "definitionEn": "a general doctor you visit first, not a hospital specialist",
+      "example": "Phone your GP if the fever lasts more than three days."
+    },
+    {
+      "term": "the NHS",
+      "definitionPl": "brytyjska Narodowa Służba Zdrowia",
+      "definitionEn": "the United Kingdom’s publicly funded health service",
+      "example": "Treatment on the NHS is generally free at the point of use."
+    },
+    {
+      "term": "A&E",
+      "definitionPl": "SOR, izba przyjęć",
+      "definitionEn": "the hospital department for sudden serious illness or injury",
+      "example": "Go to A&E if the bleeding does not stop or you cannot breathe."
+    },
+    {
+      "term": "waiting list",
+      "definitionPl": "lista oczekujących",
+      "definitionEn": "a list of patients who must wait for a test, operation or specialist",
+      "example": "The waiting list for a hip replacement is still over a year."
+    },
+    {
+      "term": "health insurance",
+      "definitionPl": "ubezpieczenie zdrowotne",
+      "definitionEn": "a policy that pays some or all of your medical costs",
+      "example": "Health insurance may not cover dental work or physiotherapy."
+    },
+    {
+      "term": "GP surgery",
+      "definitionPl": "przychodnia lekarza rodzinnego",
+      "definitionEn": "the clinic where a general practitioner sees patients",
+      "example": "The GP surgery opens at eight and closes at six on weekdays."
+    },
+    {
+      "term": "referral",
+      "definitionPl": "skierowanie",
+      "definitionEn": "a written request from a GP for you to see a specialist",
+      "example": "You need a referral before the hospital will book the scan."
+    },
+    {
+      "term": "consultant",
+      "definitionPl": "lekarz specjalista (szpitalny)",
+      "definitionEn": "a senior hospital specialist who leads a patient’s hospital care",
+      "example": "The consultant explained the risks of the operation in person."
+    },
+    {
+      "term": "outpatient",
+      "definitionPl": "pacjent ambulatoryjny",
+      "definitionEn": "a patient who visits hospital for treatment but does not stay overnight",
+      "example": "Most chemotherapy is given on an outpatient basis."
+    },
+    {
+      "term": "inpatient",
+      "definitionPl": "pacjent hospitalizowany",
+      "definitionEn": "a patient who stays in hospital overnight or longer",
+      "example": "As an inpatient you will be on the surgical ward."
+    },
+    {
+      "term": "discharge",
+      "definitionPl": "wypis ze szpitala",
+      "definitionEn": "official permission to leave hospital after treatment",
+      "example": "Discharge was delayed until a carer could be arranged at home."
+    },
+    {
+      "term": "medical records",
+      "definitionPl": "dokumentacja medyczna",
+      "definitionEn": "the written or digital file of a patient’s history and treatment",
+      "example": "You have the right to see your own medical records."
+    },
+    {
+      "term": "second opinion",
+      "definitionPl": "druga opinia lekarska",
+      "definitionEn": "advice from another doctor about a diagnosis or treatment",
+      "example": "Families often seek a second opinion before major surgery."
+    },
+    {
+      "term": "healthcare system",
+      "definitionPl": "system ochrony zdrowia",
+      "definitionEn": "the organised network of hospitals, clinics, staff and funding in a country",
+      "example": "An ageing population puts pressure on every healthcare system."
+    },
+    {
+      "term": "primary care",
+      "definitionPl": "podstawowa opieka zdrowotna",
+      "definitionEn": "first-contact health services, especially GPs, dentists and pharmacies",
+      "example": "Strong primary care keeps minor problems out of hospital."
+    },
+    {
+      "term": "secondary care",
+      "definitionPl": "lecznictwo specjalistyczne",
+      "definitionEn": "hospital and specialist services after a GP referral",
+      "example": "Secondary care includes surgery, scans and most consultant clinics."
+    },
+    {
+      "term": "paramedic",
+      "definitionPl": "ratownik medyczny",
+      "definitionEn": "a trained emergency clinician who treats people at the scene and in an ambulance",
+      "example": "The paramedic started treatment before they reached A&E."
+    },
+    {
+      "term": "midwife",
+      "definitionPl": "położna",
+      "definitionEn": "a specialist who cares for women during pregnancy, birth and after",
+      "example": "The midwife visited the family at home on the third day."
+    },
+    {
+      "term": "paediatrician",
+      "definitionPl": "pediatra",
+      "definitionEn": "a doctor who specialises in the health of babies and children",
+      "example": "The paediatrician adjusted the dose for the child’s weight."
+    },
+    {
+      "term": "anaesthetist",
+      "definitionPl": "anestezjolog",
+      "definitionEn": "a doctor who gives anaesthetics and watches the patient during surgery",
+      "example": "The anaesthetist asked about previous reactions to drugs."
+    },
+    {
+      "term": "pharmacist",
+      "definitionPl": "farmaceuta",
+      "definitionEn": "a professional who prepares and advises on medicines",
+      "example": "Ask the pharmacist if two medicines are safe to take together."
+    },
+    {
+      "term": "telemedicine",
+      "definitionPl": "telemedycyna",
+      "definitionEn": "medical consultation by phone or video instead of a face-to-face visit",
+      "example": "Telemedicine helped rural patients speak to a specialist without travel."
+    },
+    {
+      "term": "walk-in centre",
+      "definitionPl": "przychodnia bez umówionej wizyty",
+      "definitionEn": "a clinic you can attend without booking in advance",
+      "example": "The walk-in centre treated the cut and sent her home the same morning."
+    },
+    {
+      "term": "out-of-hours service",
+      "definitionPl": "nocna i świąteczna opieka zdrowotna",
+      "definitionEn": "medical help available when the usual GP surgery is closed",
+      "example": "Call the out-of-hours service rather than waiting until Monday."
+    },
+    {
+      "term": "medical negligence",
+      "definitionPl": "zaniedbanie lekarskie, błąd w sztuce",
+      "definitionEn": "harm caused when care falls below the standard a patient should expect",
+      "example": "A claim for medical negligence can take years to resolve."
+    },
+    {
+      "term": "mental health",
+      "definitionPl": "zdrowie psychiczne",
+      "definitionEn": "the condition of your mind and emotions, including how you cope with life",
+      "example": "Schools now treat mental health as seriously as physical fitness."
+    },
+    {
+      "term": "anxiety disorder",
+      "definitionPl": "zaburzenie lękowe",
+      "definitionEn": "a mental-health condition with intense, lasting worry that disrupts daily life",
+      "example": "An anxiety disorder is not the same as ordinary exam nerves."
+    },
+    {
+      "term": "counselling",
+      "definitionPl": "poradnictwo psychologiczne",
+      "definitionEn": "talking regularly with a trained person to work through emotional problems",
+      "example": "She started counselling after months of panic on the way to school."
+    },
+    {
+      "term": "stigma",
+      "definitionPl": "stygmatyzacja, piętno społeczne",
+      "definitionEn": "unfair shame or discrimination attached to an illness or situation",
+      "example": "Stigma still stops many men from asking for psychological help."
+    },
+    {
+      "term": "depression",
+      "definitionPl": "depresja",
+      "definitionEn": "a mental illness with lasting low mood, loss of interest and often poor sleep",
+      "example": "Depression is an illness, not a sign of weakness or laziness."
+    },
+    {
+      "term": "bipolar disorder",
+      "definitionPl": "choroba afektywna dwubiegunowa",
+      "definitionEn": "a condition with extreme swings between high and low mood",
+      "example": "Bipolar disorder needs specialist care, not advice to “cheer up”."
+    },
+    {
+      "term": "anorexia nervosa",
+      "definitionPl": "anoreksja",
+      "definitionEn": "an eating disorder involving severe food restriction and a distorted body image",
+      "example": "Anorexia nervosa can affect boys as well as girls and needs specialist care."
+    },
+    {
+      "term": "post-traumatic stress disorder",
+      "definitionPl": "zespół stresu pourazowego",
+      "definitionEn": "a condition after a shocking event, with flashbacks, nightmares and high alertness",
+      "example": "Post-traumatic stress disorder can appear months after an accident."
+    },
+    {
+      "term": "emotional exhaustion",
+      "definitionPl": "wyczerpanie emocjonalne",
+      "definitionEn": "a state of feeling drained and unable to cope after prolonged stress",
+      "example": "Emotional exhaustion is more than a busy week — it needs rest and a change of load."
+    },
+    {
+      "term": "talking therapy",
+      "definitionPl": "psychoterapia oparta na rozmowie",
+      "definitionEn": "treatment that uses structured conversation rather than only medicine",
+      "example": "Talking therapy can work alongside antidepressants."
+    },
+    {
+      "term": "cognitive behavioural therapy",
+      "definitionPl": "terapia poznawczo-behawioralna",
+      "definitionEn": "a talking treatment that helps people change unhelpful thoughts and habits",
+      "example": "Cognitive behavioural therapy is widely used for anxiety and depression."
+    },
+    {
+      "term": "psychiatrist",
+      "definitionPl": "psychiatra",
+      "definitionEn": "a medical doctor who diagnoses mental illness and can prescribe medicine",
+      "example": "A psychiatrist reviewed the dose after the first month."
+    },
+    {
+      "term": "psychologist",
+      "definitionPl": "psycholog",
+      "definitionEn": "a specialist in behaviour and the mind who offers assessment and therapy but is not a medical doctor",
+      "example": "The psychologist used tests as well as interviews."
+    },
+    {
+      "term": "counsellor",
+      "definitionPl": "doradca, psycholog konsultant",
+      "definitionEn": "a trained person who listens and helps you talk through problems",
+      "example": "The school counsellor keeps meetings confidential unless you are in danger."
+    },
+    {
+      "term": "panic attack",
+      "definitionPl": "atak paniki",
+      "definitionEn": "a sudden episode of intense fear with physical symptoms such as a racing heart",
+      "example": "A panic attack is frightening but it is not a heart attack."
+    },
+    {
+      "term": "insomnia",
+      "definitionPl": "bezsenność",
+      "definitionEn": "a lasting difficulty falling or staying asleep",
+      "example": "Caffeine late in the day can worsen insomnia."
+    },
+    {
+      "term": "coping strategy",
+      "definitionPl": "strategia radzenia sobie",
+      "definitionEn": "a method you use to manage stress or difficult emotions",
+      "example": "Exercise can be a healthy coping strategy if it does not become compulsive."
+    },
+    {
+      "term": "support group",
+      "definitionPl": "grupa wsparcia",
+      "definitionEn": "people with a similar problem who meet to share experience and encouragement",
+      "example": "The support group meets every Thursday in the community centre."
+    },
+    {
+      "term": "self-harm",
+      "definitionPl": "samookaleczenie",
+      "definitionEn": "hurting yourself on purpose as a way of dealing with emotional pain",
+      "example": "Teachers must take self-harm seriously and seek professional support."
+    },
+    {
+      "term": "mental-health crisis",
+      "definitionPl": "kryzys zdrowia psychicznego",
+      "definitionEn": "a point when a person cannot stay safe or cope and needs urgent help",
+      "example": "A mental-health crisis line is not a substitute for long-term therapy, but it can keep someone safe overnight."
+    },
+    {
+      "term": "addiction",
+      "definitionPl": "uzależnienie",
+      "definitionEn": "a condition in which you cannot control a harmful habit even when you want to stop",
+      "example": "Addiction changes the brain, which is why willpower alone often fails."
+    },
+    {
+      "term": "substance abuse",
+      "definitionPl": "nadużywanie substancji",
+      "definitionEn": "harmful or risky use of alcohol, drugs or other substances",
+      "example": "Substance abuse in the family affects children even if they do not drink."
+    },
+    {
+      "term": "alcoholism",
+      "definitionPl": "alkoholizm",
+      "definitionEn": "addiction to alcohol that damages health, work or relationships",
+      "example": "Alcoholism is a medical condition, not a moral failure."
+    },
+    {
+      "term": "nicotine addiction",
+      "definitionPl": "uzależnienie od nikotyny",
+      "definitionEn": "physical and psychological dependence on nicotine from tobacco or vapes",
+      "example": "Nicotine addiction can start after only a few weeks of regular vaping."
+    },
+    {
+      "term": "withdrawal symptoms",
+      "definitionPl": "objawy odstawienne",
+      "definitionEn": "unpleasant physical or mental effects when a dependent person stops a substance",
+      "example": "Withdrawal symptoms are a reason to seek medical help, not to give up quitting."
+    },
+    {
+      "term": "harm reduction",
+      "definitionPl": "redukcja szkód",
+      "definitionEn": "policies that lower the damage of drug use even if the person is not yet abstinent",
+      "example": "Needle programmes are an example of harm reduction, not an invitation to start."
+    },
+    {
+      "term": "binge drinking",
+      "definitionPl": "picie na umór, upijanie się",
+      "definitionEn": "drinking a large amount of alcohol in a short time",
+      "example": "Binge drinking at weekends still damages the liver over the years."
+    },
+    {
+      "term": "passive smoking",
+      "definitionPl": "bierne palenie",
+      "definitionEn": "breathing in other people’s tobacco smoke",
+      "example": "Passive smoking raises the risk of asthma in children."
+    },
+    {
+      "term": "vaping",
+      "definitionPl": "korzystanie z e-papierosów, wapowanie",
+      "definitionEn": "inhaling vapour from an electronic cigarette",
+      "example": "Vaping is not harmless, even if it is often less toxic than cigarettes."
+    },
+    {
+      "term": "gambling addiction",
+      "definitionPl": "uzależnienie od hazardu",
+      "definitionEn": "an inability to control betting despite serious harm",
+      "example": "Gambling addiction can destroy a family’s finances in months."
+    },
+    {
+      "term": "rehab clinic",
+      "definitionPl": "ośrodek leczenia uzależnień",
+      "definitionEn": "a centre that treats people for addiction, often with therapy and medical support",
+      "example": "He spent six weeks in a rehab clinic after leaving hospital."
+    },
+    {
+      "term": "addictive substance",
+      "definitionPl": "substancja uzależniająca",
+      "definitionEn": "a drug or chemical that can create dependence",
+      "example": "An addictive substance may be legal, like alcohol, or banned."
+    },
+    {
+      "term": "healthy lifestyle",
+      "definitionPl": "zdrowy styl życia",
+      "definitionEn": "habits such as balanced eating, activity, sleep and avoiding harmful substances",
+      "example": "A healthy lifestyle lowers the risk of several long-term diseases."
+    },
+    {
+      "term": "sedentary lifestyle",
+      "definitionPl": "siedzący tryb życia",
+      "definitionEn": "a way of living with little physical movement",
+      "example": "A sedentary lifestyle is linked to type 2 diabetes and back pain."
+    },
+    {
+      "term": "childhood obesity",
+      "definitionPl": "otyłość dziecięca",
+      "definitionEn": "a level of body fat in children that is high enough to harm present and future health",
+      "example": "Childhood obesity has become a public-health priority in many countries."
+    },
+    {
+      "term": "undernutrition",
+      "definitionPl": "niedożywienie",
+      "definitionEn": "poor health caused by too little food, or food that lacks essential nutrients",
+      "example": "Undernutrition can occur in hospitals if patients cannot eat enough."
+    },
+    {
+      "term": "sleep deprivation",
+      "definitionPl": "niewyspanie, niedobór snu",
+      "definitionEn": "a lasting lack of enough sleep",
+      "example": "Sleep deprivation harms concentration as much as a small amount of alcohol."
+    },
+    {
+      "term": "mindfulness",
+      "definitionPl": "uważność",
+      "definitionEn": "paying attention to the present moment, often used to reduce stress",
+      "example": "Ten minutes of mindfulness is not a cure, but it can calm racing thoughts."
+    },
+    {
+      "term": "physical inactivity",
+      "definitionPl": "brak aktywności fizycznej",
+      "definitionEn": "not doing enough movement to protect health",
+      "example": "Physical inactivity is a separate risk from being overweight."
+    },
+    {
+      "term": "disability",
+      "definitionPl": "niepełnosprawność",
+      "definitionEn": "a physical, sensory, intellectual or mental condition that makes some activities harder",
+      "example": "Disability is not only a medical fact — barriers in buildings matter too."
+    },
+    {
+      "term": "accessibility",
+      "definitionPl": "dostępność (dla osób z niepełnosprawnością)",
+      "definitionEn": "how easily people with disabilities can use a place, service or product",
+      "example": "Accessibility includes ramps, captions and clear signs, not only a wheelchair icon."
+    },
+    {
+      "term": "reasonable adjustment",
+      "definitionPl": "racjonalne usprawnienie",
+      "definitionEn": "a practical change an employer or school must make so a disabled person can take part",
+      "example": "A reasonable adjustment might be extra time in an exam or a ground-floor classroom."
+    },
+    {
+      "term": "wheelchair access",
+      "definitionPl": "dostępność dla wózków",
+      "definitionEn": "the possibility for a wheelchair user to enter and move around a place",
+      "example": "Wheelchair access at the station still requires a member of staff with a ramp."
+    },
+    {
+      "term": "sign language",
+      "definitionPl": "język migowy",
+      "definitionEn": "a visual language using hands, face and body, used by many deaf people",
+      "example": "Public events should offer a sign language interpreter, not only a microphone."
+    },
+    {
+      "term": "visually impaired",
+      "definitionPl": "niewidomy lub słabowidzący",
+      "definitionEn": "having little or no sight",
+      "example": "A visually impaired passenger may need an announcement, not only a screen."
+    },
+    {
+      "term": "hearing impairment",
+      "definitionPl": "uszkodzenie słuchu, niedosłuch",
+      "definitionEn": "partial or complete loss of hearing",
+      "example": "A hearing impairment is not the same as being unwilling to listen."
+    },
+    {
+      "term": "learning disability",
+      "definitionPl": "niepełnosprawność intelektualna",
+      "definitionEn": "a reduced ability to understand new or complex information and to learn new skills",
+      "example": "Adults with a learning disability still have the right to make choices about their care."
+    },
+    {
+      "term": "neurodiversity",
+      "definitionPl": "neuroróżnorodność",
+      "definitionEn": "the idea that brains differ and that autism, ADHD and similar conditions are variations, not only defects",
+      "example": "Neurodiversity in the classroom needs quieter rooms as well as extra time."
+    },
+    {
+      "term": "mobility aid",
+      "definitionPl": "sprzęt ułatwiający poruszanie się",
+      "definitionEn": "a device such as a stick, frame or wheelchair that helps a person move",
+      "example": "A mobility aid should be fitted by a specialist, not bought at random online."
+    },
+    {
+      "term": "guide dog",
+      "definitionPl": "pies przewodnik",
+      "definitionEn": "a trained dog that helps a blind or visually impaired person travel safely",
+      "example": "A guide dog is a working animal, not a pet you should stroke without asking."
+    },
+    {
+      "term": "Braille",
+      "definitionPl": "brajl, pismo Braille’a",
+      "definitionEn": "a system of raised dots that blind people read by touch",
+      "example": "Lift buttons should include Braille as well as large print."
+    },
+    {
+      "term": "carer",
+      "definitionPl": "opiekun osoby chorej lub z niepełnosprawnością",
+      "definitionEn": "a person who looks after someone ill, elderly or disabled, often unpaid",
+      "example": "A young carer may miss school if no respite is offered."
+    },
+    {
+      "term": "long-term care",
+      "definitionPl": "opieka długoterminowa",
+      "definitionEn": "ongoing help with daily life for people who cannot live fully independently",
+      "example": "Long-term care is expensive, whether it is at home or in a home."
+    },
+    {
+      "term": "step-free access",
+      "definitionPl": "dostęp bez schodów",
+      "definitionEn": "a route into a building or vehicle that does not require climbing steps",
+      "example": "Step-free access at every platform is still a distant goal on many railways."
+    },
+    {
+      "term": "first aid",
+      "definitionPl": "pierwsza pomoc",
+      "definitionEn": "simple medical help given before professional care arrives",
+      "example": "Every workplace should have staff trained in first aid."
+    },
+    {
+      "term": "recovery position",
+      "definitionPl": "pozycja boczna ustalona",
+      "definitionEn": "lying someone on their side so the airway stays open if they are unconscious but breathing",
+      "example": "Put an unconscious breathing person in the recovery position and call 112."
+    },
+    {
+      "term": "CPR",
+      "definitionPl": "resuscytacja krążeniowo-oddechowa",
+      "definitionEn": "chest compressions, and sometimes rescue breaths, to keep blood moving when the heart has stopped",
+      "example": "Early CPR doubles the chance of survival after cardiac arrest."
+    },
+    {
+      "term": "defibrillator",
+      "definitionPl": "defibrylator",
+      "definitionEn": "a device that can restart the heart with a controlled electric shock",
+      "example": "A public defibrillator on the wall is useless if nobody knows the code."
+    },
+    {
+      "term": "abdominal thrusts",
+      "definitionPl": "naciśnięcia nadbrzusza (przy zadławieniu)",
+      "definitionEn": "inward and upward presses on the upper abdomen to clear a blocked airway",
+      "example": "Abdominal thrusts are used when a person is choking and cannot cough or speak."
+    },
+    {
+      "term": "triage",
+      "definitionPl": "segregacja medyczna",
+      "definitionEn": "sorting patients so the most urgent cases are treated first",
+      "example": "Triage at A&E explains why a broken arm may wait while chest pain goes in first."
+    },
+    {
+      "term": "medical emergency",
+      "definitionPl": "nagły stan zagrożenia życia lub zdrowia",
+      "definitionEn": "a sudden, serious health event that needs immediate professional help",
+      "example": "Difficulty breathing is a medical emergency, not something to sleep off."
+    },
+    {
+      "term": "emergency services",
+      "definitionPl": "służby ratunkowe",
+      "definitionEn": "organisations such as ambulance, fire and police that respond to urgent incidents",
+      "example": "Give a clear address when you call the emergency services."
+    },
+    {
+      "term": "adrenaline auto-injector",
+      "definitionPl": "autostrzykawka z adrenaliną",
+      "definitionEn": "a device a person at risk of anaphylaxis can use to inject adrenaline quickly",
+      "example": "Keep the adrenaline auto-injector with you, not in a locker downstairs."
+    },
+    {
+      "term": "blood donation",
+      "definitionPl": "honorowe krwiodawstwo",
+      "definitionEn": "giving your blood so it can be used for patients who need it",
+      "example": "Regular blood donation is one of the simplest ways to save lives."
+    },
+    {
+      "term": "donor card",
+      "definitionPl": "oświadczenie woli dawcy / karta dawcy",
+      "definitionEn": "a document showing you agree that your organs may be used after death",
+      "example": "A donor card should be backed up by telling your family your wishes."
+    },
+    {
+      "term": "euthanasia",
+      "definitionPl": "eutanazja",
+      "definitionEn": "intentionally ending a person’s life to relieve suffering from a terminal illness, illegal in many countries",
+      "example": "Euthanasia is a frequent topic in Matura essays on medical ethics."
+    },
+    {
+      "term": "medical certificate",
+      "definitionPl": "zaświadczenie lekarskie, zwolnienie",
+      "definitionEn": "an official note from a doctor confirming illness or fitness",
+      "example": "The employer asked for a medical certificate after the third day off."
+    },
+    {
+      "term": "vital signs",
+      "definitionPl": "parametry życiowe",
+      "definitionEn": "basic measurements such as pulse, temperature, breathing rate and blood pressure",
+      "example": "Nurses record vital signs several times a day on the ward."
+    }
+  ]
+}

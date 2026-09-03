@@ -1,0 +1,1107 @@
+{
+  "id": "matura-pr-dom",
+  "sku": "LS-PR-HOME",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Miejsce zamieszkania",
+  "topicEn": "Home and living",
+  "titlePl": "Matura PR: Miejsce zamieszkania — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Home — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Miejsce zamieszkania na maturę rozszerzoną: mieszkalnictwo, urbanizacja, sąsiedztwo i problemy mieszkaniowe. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura Home module: housing, urban life, neighbourhoods and housing problems. ENG–PL flashcards.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "dom",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "tenement",
+      "definitionPl": "kamienica (czynszowa)",
+      "definitionEn": "an old multi-storey building divided into rented flats, often in a city centre",
+      "example": "Many students rent rooms in a pre-war tenement near the university."
+    },
+    {
+      "term": "penthouse",
+      "definitionPl": "luksusowy apartament na ostatnim piętrze",
+      "definitionEn": "a high-status flat on the top floor of a building, usually with a terrace",
+      "example": "A penthouse with a skyline view is far beyond a first-time buyer's budget."
+    },
+    {
+      "term": "council housing",
+      "definitionPl": "mieszkania komunalne / socjalne",
+      "definitionEn": "homes provided by the local authority at lower rent for people on low incomes",
+      "example": "Waiting lists for council housing can stretch for years in large cities."
+    },
+    {
+      "term": "studio flat",
+      "definitionPl": "kawalerka",
+      "definitionEn": "a small flat in which the living room and bedroom share one space",
+      "example": "A studio flat is cheaper, but the lack of privacy becomes exhausting."
+    },
+    {
+      "term": "bedsit",
+      "definitionPl": "pokój z aneksem (kuchennym)",
+      "definitionEn": "a single rented room used for both living and sleeping, with basic cooking facilities",
+      "example": "He spent his first year in a damp bedsit above a noisy shop."
+    },
+    {
+      "term": "high-rise block",
+      "definitionPl": "wysoki blok / wieżowiec mieszkalny",
+      "definitionEn": "a tall residential building with many floors of flats",
+      "example": "Children in a high-rise block may have no safe place to play downstairs."
+    },
+    {
+      "term": "tower block",
+      "definitionPl": "wieżowiec mieszkalny",
+      "definitionEn": "a very tall block of flats, often associated with post-war housing estates",
+      "example": "A neglected tower block can become a symbol of urban decay."
+    },
+    {
+      "term": "maisonette",
+      "definitionPl": "mieszkanie dwupoziomowe",
+      "definitionEn": "a flat on two floors with its own internal stairs, usually in a larger building",
+      "example": "The maisonette has a small garden that a mid-floor flat would lack."
+    },
+    {
+      "term": "loft conversion",
+      "definitionPl": "adaptacja poddasza na mieszkanie",
+      "definitionEn": "an attic turned into extra living space",
+      "example": "A loft conversion added a study without the cost of moving house."
+    },
+    {
+      "term": "converted warehouse",
+      "definitionPl": "zaadaptowany magazyn (lofty)",
+      "definitionEn": "a former industrial building turned into flats",
+      "example": "Artists moved into a converted warehouse long before the cafés arrived."
+    },
+    {
+      "term": "period property",
+      "definitionPl": "zabytkowa nieruchomość z epoki",
+      "definitionEn": "an older house with historic architectural features",
+      "example": "They restored a period property with original wooden floors."
+    },
+    {
+      "term": "thatched cottage",
+      "definitionPl": "chata z dachem krytym strzechą",
+      "definitionEn": "a small country house with a roof made of straw or reeds",
+      "example": "A thatched cottage looks charming, but insurance and upkeep are expensive."
+    },
+    {
+      "term": "farmhouse",
+      "definitionPl": "dom na gospodarstwie / dworek wiejski",
+      "definitionEn": "the main house on a farm",
+      "example": "They restored a farmhouse and now commute to the city twice a week."
+    },
+    {
+      "term": "hall of residence",
+      "definitionPl": "akademik",
+      "definitionEn": "a building of rooms for students, usually run by a university",
+      "example": "Life in a hall of residence teaches you more about compromise than any textbook."
+    },
+    {
+      "term": "shared accommodation",
+      "definitionPl": "mieszkanie współdzielone",
+      "definitionEn": "a flat or house in which unrelated people rent rooms together",
+      "example": "Bills in shared accommodation should be written into the tenancy agreement."
+    },
+    {
+      "term": "sheltered housing",
+      "definitionPl": "mieszkania chronione (dla seniorów)",
+      "definitionEn": "flats for elderly or vulnerable people with some on-site support",
+      "example": "Sheltered housing allowed her grandmother to stay independent without isolation."
+    },
+    {
+      "term": "mobile home",
+      "definitionPl": "dom mobilny / przyczepa mieszkalna",
+      "definitionEn": "a prefabricated dwelling that can be moved, often on a permanent site",
+      "example": "A mobile home on the edge of town was the only option they could afford."
+    },
+    {
+      "term": "prefabricated house",
+      "definitionPl": "dom z prefabrykatów",
+      "definitionEn": "a house built from factory-made sections assembled on site",
+      "example": "A prefabricated house can be weatherproof in weeks rather than months."
+    },
+    {
+      "term": "newly built property",
+      "definitionPl": "nieruchomość z rynku pierwotnego",
+      "definitionEn": "a home that has just been constructed and not lived in before",
+      "example": "A newly built property may still have snagging problems in the first year."
+    },
+    {
+      "term": "second home",
+      "definitionPl": "drugi dom (letniskowy / inwestycyjny)",
+      "definitionEn": "an additional property used for holidays or investment, not as a main residence",
+      "example": "Villagers complain that a second home sits empty for ten months a year."
+    },
+    {
+      "term": "buy-to-let property",
+      "definitionPl": "mieszkanie pod wynajem (inwestycyjne)",
+      "definitionEn": "a home bought in order to rent it out rather than live in it",
+      "example": "Investors chasing a buy-to-let property push prices beyond local wages."
+    },
+    {
+      "term": "gated community",
+      "definitionPl": "osiedle strzeżone",
+      "definitionEn": "a residential area with controlled entrances and private security",
+      "example": "A gated community can feel safe, yet it weakens everyday contact with the town."
+    },
+    {
+      "term": "housing estate",
+      "definitionPl": "osiedle mieszkaniowe",
+      "definitionEn": "a planned area of houses or blocks built as a single development",
+      "example": "The housing estate has a playground but no shop within walking distance."
+    },
+    {
+      "term": "brownfield site",
+      "definitionPl": "teren poprzemysłowy pod zabudowę",
+      "definitionEn": "previously developed land, often industrial, reused for new housing",
+      "example": "Building on a brownfield site spares countryside but may require decontamination."
+    },
+    {
+      "term": "greenfield site",
+      "definitionPl": "teren niezabudowany (zielony) pod zabudowę",
+      "definitionEn": "land that has not been built on before, usually countryside or fields",
+      "example": "Opponents say a greenfield site should not be sacrificed to urban sprawl."
+    },
+    {
+      "term": "terraced housing",
+      "definitionPl": "zabudowa szeregowa",
+      "definitionEn": "a row of houses that share side walls with their neighbours",
+      "example": "Terraced housing is dense, which can mean both community and thin walls."
+    },
+    {
+      "term": "detached property",
+      "definitionPl": "dom wolnostojący",
+      "definitionEn": "a house that stands alone and does not share walls with another dwelling",
+      "example": "A detached property on the outskirts often means a long commute."
+    },
+    {
+      "term": "purpose-built flat",
+      "definitionPl": "mieszkanie w budynku zaprojektowanym jako blok",
+      "definitionEn": "an apartment constructed as a flat from the start, not converted from a house",
+      "example": "A purpose-built flat usually has better soundproofing than a converted tenement."
+    },
+    {
+      "term": "mixed-use development",
+      "definitionPl": "zabudowa wielofunkcyjna",
+      "definitionEn": "a project combining housing with shops, offices or public services",
+      "example": "A mixed-use development can reduce commuting if the jobs are genuine."
+    },
+    {
+      "term": "residential development",
+      "definitionPl": "inwestycja mieszkaniowa",
+      "definitionEn": "a new group of houses or flats built by a developer",
+      "example": "The residential development promised amenities that still have not opened."
+    },
+    {
+      "term": "co-housing scheme",
+      "definitionPl": "wspólnota mieszkaniowa (co-housing)",
+      "definitionEn": "a community of private homes with shared facilities and joint decisions",
+      "example": "A co-housing scheme can ease loneliness among both students and pensioners."
+    },
+    {
+      "term": "granny flat",
+      "definitionPl": "mieszkanie dla seniora przy domu rodziny",
+      "definitionEn": "a small self-contained dwelling attached to or in the garden of a family house",
+      "example": "A granny flat let her father stay close without sacrificing everyone's privacy."
+    },
+    {
+      "term": "basement flat",
+      "definitionPl": "mieszkanie w suterenie",
+      "definitionEn": "a flat partly or wholly below street level",
+      "example": "A basement flat can be dark and prone to rising damp."
+    },
+    {
+      "term": "attic flat",
+      "definitionPl": "mieszkanie na poddaszu",
+      "definitionEn": "a flat on the top floor, often with sloping ceilings",
+      "example": "An attic flat is cheaper, but there is no lift and the rooms overheat in summer."
+    },
+    {
+      "term": "garden flat",
+      "definitionPl": "mieszkanie z wyjściem do ogrodu (parter)",
+      "definitionEn": "a ground-floor apartment with access to a garden",
+      "example": "A garden flat is ideal with a dog, provided the fence is solid."
+    },
+    {
+      "term": "housing cooperative",
+      "definitionPl": "spółdzielnia mieszkaniowa",
+      "definitionEn": "an organisation whose members jointly own and manage their housing",
+      "example": "A housing cooperative can keep rents lower than a private landlord would."
+    },
+    {
+      "term": "open-plan",
+      "definitionPl": "otwarta przestrzeń (bez ścian działowych)",
+      "definitionEn": "designed as one large space rather than separate rooms",
+      "example": "An open-plan kitchen is sociable, but cooking smells reach the sofa."
+    },
+    {
+      "term": "underfloor heating",
+      "definitionPl": "ogrzewanie podłogowe",
+      "definitionEn": "a system that warms a room through pipes or cables beneath the floor",
+      "example": "Underfloor heating is pleasant, yet it is slow to adjust on a sudden cold night."
+    },
+    {
+      "term": "fitted kitchen",
+      "definitionPl": "kuchnia na wymiar",
+      "definitionEn": "a kitchen with cupboards and appliances built to fill the space",
+      "example": "The landlord advertised a fitted kitchen that turned out to be fifteen years old."
+    },
+    {
+      "term": "built-in wardrobe",
+      "definitionPl": "szafa wnękowa",
+      "definitionEn": "a wardrobe constructed as part of the wall, not a free-standing piece",
+      "example": "A built-in wardrobe saves floor space in a studio flat."
+    },
+    {
+      "term": "ensuite bathroom",
+      "definitionPl": "łazienka przy sypialni",
+      "definitionEn": "a private bathroom attached to a bedroom",
+      "example": "An ensuite bathroom makes shared accommodation far easier to live with."
+    },
+    {
+      "term": "walk-in wardrobe",
+      "definitionPl": "garderoba, do której można wejść",
+      "definitionEn": "a small room used only for storing and organising clothes",
+      "example": "A walk-in wardrobe is a luxury that most city rents will not stretch to."
+    },
+    {
+      "term": "conservatory",
+      "definitionPl": "ogród zimowy, przeszklona przybudówka",
+      "definitionEn": "a glass room attached to a house, used for sitting and plants",
+      "example": "The conservatory is unusable in August without blinds."
+    },
+    {
+      "term": "cellar",
+      "definitionPl": "piwnica (murowana, często na wino/przechowywanie)",
+      "definitionEn": "an underground room used for storage, often cooler than the house",
+      "example": "Bicycles and winter coats live in the cellar because the flat has no storage space."
+    },
+    {
+      "term": "pantry",
+      "definitionPl": "spiżarnia",
+      "definitionEn": "a small room or cupboard for storing food",
+      "example": "A pantry next to the kitchen beats cramming packets into a single cupboard."
+    },
+    {
+      "term": "mezzanine",
+      "definitionPl": "antresola",
+      "definitionEn": "an extra partial floor between two main storeys",
+      "example": "A mezzanine sleeping area works in a loft but can feel exposed to guests."
+    },
+    {
+      "term": "skylight",
+      "definitionPl": "świetlik, okno dachowe",
+      "definitionEn": "a window set into the roof",
+      "example": "A skylight brightens an attic flat, yet it can leak after heavy snow."
+    },
+    {
+      "term": "bay window",
+      "definitionPl": "wykusz",
+      "definitionEn": "a window that sticks out from the wall, creating an alcove inside",
+      "example": "A bay window with a window seat became the only quiet corner to revise."
+    },
+    {
+      "term": "double glazing",
+      "definitionPl": "szyby zespolone / okna dwuszybowe",
+      "definitionEn": "windows with two layers of glass to reduce heat loss and noise",
+      "example": "Double glazing finally made homework possible next to the ring road."
+    },
+    {
+      "term": "insulation",
+      "definitionPl": "izolacja (termiczna)",
+      "definitionEn": "material that stops heat escaping from a building",
+      "example": "Poor insulation is a major cause of fuel poverty in older tenements."
+    },
+    {
+      "term": "boiler",
+      "definitionPl": "piec / kocioł grzewczy",
+      "definitionEn": "the device that heats water for radiators and taps",
+      "example": "When the boiler broke in January, the landlord took a week to send a plumber."
+    },
+    {
+      "term": "fuse box",
+      "definitionPl": "skrzynka z bezpiecznikami",
+      "definitionEn": "the panel that controls and protects a building's electrical circuits",
+      "example": "The fuse box is in the hall, so a power cut means groping for a torch."
+    },
+    {
+      "term": "extractor fan",
+      "definitionPl": "wentylator wyciągowy",
+      "definitionEn": "a device that removes steam and cooking smells from a room",
+      "example": "Without an extractor fan, mould spread across the bathroom ceiling."
+    },
+    {
+      "term": "smoke detector",
+      "definitionPl": "czujnik dymu",
+      "definitionEn": "a device that sounds an alarm when it senses smoke",
+      "example": "Every rented property should have a working smoke detector on each floor."
+    },
+    {
+      "term": "burglar alarm",
+      "definitionPl": "alarm antywłamaniowy",
+      "definitionEn": "a security system that sounds if someone breaks in",
+      "example": "A burglar alarm is little use if the tenants forget to set it."
+    },
+    {
+      "term": "intercom",
+      "definitionPl": "domofon",
+      "definitionEn": "a speaker system used to let visitors into a building",
+      "example": "The intercom has been broken for months, so couriers ring random flats."
+    },
+    {
+      "term": "parquet flooring",
+      "definitionPl": "parkiet",
+      "definitionEn": "a floor made of small wooden blocks arranged in a pattern",
+      "example": "Original parquet flooring was one reason they chose the pre-war tenement."
+    },
+    {
+      "term": "laminate flooring",
+      "definitionPl": "panele podłogowe",
+      "definitionEn": "a factory-made floor covering that imitates wood",
+      "example": "Laminate flooring is cheap, but downstairs neighbours hear every footstep."
+    },
+    {
+      "term": "period features",
+      "definitionPl": "elementy zabytkowe / oryginalne detale",
+      "definitionEn": "original decorative details from the time a building was constructed",
+      "example": "Buyers pay extra for period features such as ceiling roses and panelled doors."
+    },
+    {
+      "term": "exposed brickwork",
+      "definitionPl": "odsłonięta cegła",
+      "definitionEn": "interior walls left as bare brick for a decorative industrial look",
+      "example": "Exposed brickwork looks stylish until you try to hang a bookshelf."
+    },
+    {
+      "term": "power shower",
+      "definitionPl": "prysznic z mocnym strumieniem",
+      "definitionEn": "a shower with a pump that produces a strong flow of water",
+      "example": "A power shower is advertised as a luxury and then restricted by weak water pressure."
+    },
+    {
+      "term": "storage space",
+      "definitionPl": "przestrzeń do przechowywania",
+      "definitionEn": "room in a home for keeping belongings",
+      "example": "The biggest complaint about studio flats is the lack of storage space."
+    },
+    {
+      "term": "communal staircase",
+      "definitionPl": "klatka schodowa (wspólna)",
+      "definitionEn": "stairs shared by several flats in a building",
+      "example": "Nobody wants to be the one who cleans the communal staircase."
+    },
+    {
+      "term": "fire escape",
+      "definitionPl": "ewakuacyjne schody pożarowe",
+      "definitionEn": "an external staircase or route for leaving a building during a fire",
+      "example": "The landlord had blocked the fire escape with bicycles."
+    },
+    {
+      "term": "communal garden",
+      "definitionPl": "wspólny ogród dla mieszkańców",
+      "definitionEn": "outdoor space shared by residents of a block or estate",
+      "example": "A communal garden can create a sense of community if people actually use it."
+    },
+    {
+      "term": "smart meter",
+      "definitionPl": "inteligentny licznik (prądu/gazu)",
+      "definitionEn": "a device that records energy use in real time and sends readings automatically",
+      "example": "A smart meter made the tenants realise how much heating they were wasting."
+    },
+    {
+      "term": "heat pump",
+      "definitionPl": "pompa ciepła",
+      "definitionEn": "a system that extracts heat from air or ground to warm a building",
+      "example": "A heat pump is efficient in a well-insulated house and disappointing in a draughty one."
+    },
+    {
+      "term": "broadband connection",
+      "definitionPl": "łącze szerokopasmowe / internet stacjonarny",
+      "definitionEn": "a fast internet service supplied to a home",
+      "example": "Without a stable broadband connection, remote learning from a village is a lottery."
+    },
+    {
+      "term": "damp-proof course",
+      "definitionPl": "izolacja przeciwwilgociowa",
+      "definitionEn": "a barrier in a wall that stops moisture rising from the ground",
+      "example": "The surveyor noted that the damp-proof course had failed in two rooms."
+    },
+    {
+      "term": "cavity wall insulation",
+      "definitionPl": "ocieplenie ścian szczelinowych",
+      "definitionEn": "material pumped into the gap between two layers of an outside wall to keep heat in",
+      "example": "Cavity wall insulation cut their heating bills by almost a third."
+    },
+    {
+      "term": "airing cupboard",
+      "definitionPl": "szafa na pościel przy piecu / suszarnia",
+      "definitionEn": "a warm cupboard, often around the hot-water tank, used to dry linen",
+      "example": "Towels dry overnight in the airing cupboard next to the boiler."
+    },
+    {
+      "term": "breakfast bar",
+      "definitionPl": "bar śniadaniowy (w kuchni)",
+      "definitionEn": "a high counter where people can sit and eat in the kitchen",
+      "example": "An open-plan breakfast bar replaced the separate dining room."
+    },
+    {
+      "term": "kitchen island",
+      "definitionPl": "wyspa kuchenna",
+      "definitionEn": "a free-standing worktop in the middle of a kitchen",
+      "example": "A kitchen island looks impressive and then blocks every useful walking route."
+    },
+    {
+      "term": "fitted appliances",
+      "definitionPl": "sprzęt AGD w zabudowie",
+      "definitionEn": "fridges, ovens and similar machines built into kitchen units",
+      "example": "The rent is higher because the flat comes with fitted appliances."
+    },
+    {
+      "term": "walk-in shower",
+      "definitionPl": "prysznic walk-in (bez brodzika/kabiny)",
+      "definitionEn": "a shower area you enter without stepping over a high tray",
+      "example": "A walk-in shower is easier for a frail resident than a high bath."
+    },
+    {
+      "term": "wet room",
+      "definitionPl": "łazienka typu wet room (cała wylewana)",
+      "definitionEn": "a fully waterproofed bathroom in which the shower has no separate tray",
+      "example": "A wet room is practical, but a single blocked drain floods the whole floor."
+    },
+    {
+      "term": "amenities",
+      "definitionPl": "udogodnienia / infrastruktura osiedlowa",
+      "definitionEn": "useful facilities such as shops, parks, schools and clinics near a home",
+      "example": "The brochure promised amenities that turned out to be a single corner shop."
+    },
+    {
+      "term": "local amenities",
+      "definitionPl": "lokalna infrastruktura (sklepy, przychodnia, szkoła)",
+      "definitionEn": "everyday services available in the immediate neighbourhood",
+      "example": "Young families look first at local amenities, not at the kitchen island."
+    },
+    {
+      "term": "within walking distance",
+      "definitionPl": "w odległości spaceru",
+      "definitionEn": "close enough to reach on foot in a reasonable time",
+      "example": "If the station is not within walking distance, the cheap rent is a false economy."
+    },
+    {
+      "term": "well-connected",
+      "definitionPl": "dobrze skomunikowany",
+      "definitionEn": "having convenient transport links to other places",
+      "example": "A well-connected suburb can be more practical than a fashionable but isolated loft."
+    },
+    {
+      "term": "poorly served by public transport",
+      "definitionPl": "źle skomunikowany komunikacją publiczną",
+      "definitionEn": "having few or unreliable buses and trains",
+      "example": "Villages poorly served by public transport force teenagers to depend on parents."
+    },
+    {
+      "term": "green space",
+      "definitionPl": "tereny zielone",
+      "definitionEn": "parks, squares and other vegetated public areas in a town",
+      "example": "Access to green space is uneven between inner-city wards."
+    },
+    {
+      "term": "high street",
+      "definitionPl": "główna ulica handlowa",
+      "definitionEn": "the main shopping street of a town",
+      "example": "When the high street loses its last bank, older residents are stranded."
+    },
+    {
+      "term": "cul-de-sac",
+      "definitionPl": "ślepa uliczka, zasieka",
+      "definitionEn": "a street closed at one end, with no through traffic",
+      "example": "Parents like a cul-de-sac because children can play with less traffic."
+    },
+    {
+      "term": "traffic congestion",
+      "definitionPl": "korki, zatłoczenie dróg",
+      "definitionEn": "too many vehicles on the roads, causing slow movement",
+      "example": "Traffic congestion in the commuter belt starts before seven in the morning."
+    },
+    {
+      "term": "cycle lane",
+      "definitionPl": "wydzielony pas rowerowy",
+      "definitionEn": "a marked part of the road reserved for bicycles",
+      "example": "A painted cycle lane that cars ignore is a political gesture, not infrastructure."
+    },
+    {
+      "term": "pedestrianised zone",
+      "definitionPl": "strefa piesza",
+      "definitionEn": "a street or area where cars are not allowed",
+      "example": "A pedestrianised zone revived cafés but complicated deliveries to residents."
+    },
+    {
+      "term": "refuse collection",
+      "definitionPl": "wywóz śmieci",
+      "definitionEn": "the regular service that takes household rubbish away",
+      "example": "Irregular refuse collection turned the courtyard into an unofficial dump."
+    },
+    {
+      "term": "commuter belt",
+      "definitionPl": "strefa dojazdów do dużego miasta",
+      "definitionEn": "towns and suburbs from which people travel daily to work in a city",
+      "example": "House prices in the commuter belt rose as soon as the fast train opened."
+    },
+    {
+      "term": "dormitory town",
+      "definitionPl": "miasto-sypialnia",
+      "definitionEn": "a town whose residents mostly work elsewhere and return only to sleep",
+      "example": "A dormitory town can feel empty on weekdays and overcrowded at weekends."
+    },
+    {
+      "term": "inner city",
+      "definitionPl": "śródmieście / zdegradowane centrum",
+      "definitionEn": "the central area of a city, often denser and sometimes poorer than the suburbs",
+      "example": "Inner city schools face overcrowding that suburban campuses rarely see."
+    },
+    {
+      "term": "leafy suburb",
+      "definitionPl": "zielone przedmieście",
+      "definitionEn": "a quiet residential area outside the centre, with trees and gardens",
+      "example": "A leafy suburb offers space, at the cost of commuting from the suburbs."
+    },
+    {
+      "term": "rundown area",
+      "definitionPl": "zaniedbana dzielnica",
+      "definitionEn": "a neighbourhood in poor physical and social condition",
+      "example": "Artists often arrive in a rundown area just before gentrification begins."
+    },
+    {
+      "term": "up-and-coming area",
+      "definitionPl": "wschodząca / rozwijająca się dzielnica",
+      "definitionEn": "a neighbourhood that is becoming more fashionable and expensive",
+      "example": "Rents in an up-and-coming area can double within a few years."
+    },
+    {
+      "term": "rural idyll",
+      "definitionPl": "wiejska sielanka",
+      "definitionEn": "an idealised picture of peaceful country life",
+      "example": "The rural idyll collapses when the last bus is cancelled in October."
+    },
+    {
+      "term": "urban lifestyle",
+      "definitionPl": "miejski styl życia",
+      "definitionEn": "the way of living associated with cities: density, services, noise and choice",
+      "example": "An urban lifestyle suits students until they want a garden and silence."
+    },
+    {
+      "term": "pace of life",
+      "definitionPl": "tempo życia",
+      "definitionEn": "how fast or slow everyday living feels in a place",
+      "example": "The pace of life in a market town can feel either calming or claustrophobic."
+    },
+    {
+      "term": "sense of community",
+      "definitionPl": "poczucie wspólnoty lokalnej",
+      "definitionEn": "the feeling that neighbours know and support one another",
+      "example": "A sense of community is harder to build in a block where people never meet."
+    },
+    {
+      "term": "neighbourhood watch",
+      "definitionPl": "straż sąsiedzka",
+      "definitionEn": "a local scheme in which residents look out for crime and report it",
+      "example": "The neighbourhood watch group also organised a street clean-up."
+    },
+    {
+      "term": "next-door neighbour",
+      "definitionPl": "sąsiad zza ściany / z domu obok",
+      "definitionEn": "the person living in the adjoining house or flat",
+      "example": "A considerate next-door neighbour is worth more than a designer kitchen."
+    },
+    {
+      "term": "keep yourself to yourself",
+      "definitionPl": "żyć na swoim, nie wdawać się w życie sąsiadów",
+      "definitionEn": "to avoid social contact with neighbours and live privately",
+      "example": "In a big city it is easy to keep yourself to yourself and never learn names."
+    },
+    {
+      "term": "transport links",
+      "definitionPl": "połączenia komunikacyjne",
+      "definitionEn": "bus, rail and road connections from a place to other areas",
+      "example": "Poor transport links can isolate a new housing estate from jobs and schools."
+    },
+    {
+      "term": "catchment area",
+      "definitionPl": "obwód szkolny / rejonizacja",
+      "definitionEn": "the zone around a school or hospital that determines who may use it",
+      "example": "Families move house simply to enter a better school's catchment area."
+    },
+    {
+      "term": "shopping precinct",
+      "definitionPl": "pasaż / osiedlowe centrum handlowe",
+      "definitionEn": "a pedestrian area or small centre with a group of shops",
+      "example": "The shopping precinct is convenient, yet it killed the independent high street."
+    },
+    {
+      "term": "street lighting",
+      "definitionPl": "oświetlenie uliczne",
+      "definitionEn": "public lamps that make roads and pavements visible at night",
+      "example": "Residents demanded better street lighting after a series of thefts."
+    },
+    {
+      "term": "isolated hamlet",
+      "definitionPl": "odludna osada",
+      "definitionEn": "a very small rural settlement far from towns and services",
+      "example": "An isolated hamlet may have beauty and no doctor within twenty kilometres."
+    },
+    {
+      "term": "recreation ground",
+      "definitionPl": "boisko / teren rekreacyjny",
+      "definitionEn": "a public field used for sport and play",
+      "example": "The recreation ground is the only free meeting place for teenagers on the estate."
+    },
+    {
+      "term": "park-and-ride",
+      "definitionPl": "parking przesiadkowy",
+      "definitionEn": "a car park on the edge of a town from which buses take people into the centre",
+      "example": "A park-and-ride scheme reduced traffic congestion in the old town."
+    },
+    {
+      "term": "ring road",
+      "definitionPl": "obwodnica",
+      "definitionEn": "a main road that goes around a town rather than through its centre",
+      "example": "The ring road moved lorries out of the high street but split a housing estate in two."
+    },
+    {
+      "term": "convivial neighbourhood",
+      "definitionPl": "życzliwe, towarzyskie sąsiedztwo",
+      "definitionEn": "an area where people are friendly and often spend time together",
+      "example": "A convivial neighbourhood can compensate for a cramped flat."
+    },
+    {
+      "term": "cultural facilities",
+      "definitionPl": "infrastruktura kulturalna",
+      "definitionEn": "places such as theatres, libraries and galleries in an area",
+      "example": "Without cultural facilities, a dormitory town offers little except sleep."
+    },
+    {
+      "term": "healthcare facilities",
+      "definitionPl": "placówki służby zdrowia",
+      "definitionEn": "clinics, hospitals and other medical services available locally",
+      "example": "New estates often appear before healthcare facilities have been funded."
+    },
+    {
+      "term": "overcrowding",
+      "definitionPl": "przeludnienie mieszkaniowe",
+      "definitionEn": "too many people living in a space that is too small",
+      "example": "Overcrowding in student flats is treated as a joke until exam season arrives."
+    },
+    {
+      "term": "gentrification",
+      "definitionPl": "gentryfikacja",
+      "definitionEn": "the process by which wealthier people move in and prices push original residents out",
+      "example": "Gentrification replaced the bakery with a café that locals cannot afford."
+    },
+    {
+      "term": "homelessness",
+      "definitionPl": "bezdomność",
+      "definitionEn": "the condition of having no secure place to live",
+      "example": "Homelessness is not only sleeping rough; it includes unstable temporary rooms."
+    },
+    {
+      "term": "urban sprawl",
+      "definitionPl": "niekontrolowana rozbudowa miast",
+      "definitionEn": "the unplanned spread of a city into surrounding countryside",
+      "example": "Urban sprawl destroys farmland and makes car travel almost compulsory."
+    },
+    {
+      "term": "commuting from the suburbs",
+      "definitionPl": "dojazdy do pracy z przedmieść",
+      "definitionEn": "travelling daily from an outer residential area into the city for work or school",
+      "example": "Commuting from the suburbs costs her three hours a day and a season ticket."
+    },
+    {
+      "term": "housing shortage",
+      "definitionPl": "deficyt mieszkań",
+      "definitionEn": "a lack of enough homes for the people who need them",
+      "example": "A housing shortage lets landlords raise rents with little fear of empty flats."
+    },
+    {
+      "term": "soaring property prices",
+      "definitionPl": "szybko rosnące ceny nieruchomości",
+      "definitionEn": "house and flat prices that are rising rapidly",
+      "example": "Soaring property prices have locked a generation out of ownership."
+    },
+    {
+      "term": "unaffordable housing",
+      "definitionPl": "mieszkania poza zasięgiem finansowym",
+      "definitionEn": "homes that cost more than local people can reasonably pay",
+      "example": "Unaffordable housing forces graduates to stay in their childhood bedrooms."
+    },
+    {
+      "term": "substandard housing",
+      "definitionPl": "mieszkania niespełniające norm",
+      "definitionEn": "homes that are unsafe, unhealthy or below legal quality standards",
+      "example": "Charities document substandard housing with mould, faulty wiring and no heating."
+    },
+    {
+      "term": "rising damp",
+      "definitionPl": "wilgoć podciągana z gruntu",
+      "definitionEn": "moisture that travels up walls from the ground, causing stains and decay",
+      "example": "Rising damp ruined the downstairs plaster within a single winter."
+    },
+    {
+      "term": "mould",
+      "definitionPl": "grzyb / pleśń na ścianach",
+      "definitionEn": "a fungus that grows in damp rooms and can damage health",
+      "example": "Mould behind the wardrobe is a health issue, not a cosmetic one."
+    },
+    {
+      "term": "infestation",
+      "definitionPl": "plaga (robactwa, gryzoni)",
+      "definitionEn": "a large number of insects or vermin living in a building",
+      "example": "An infestation of mice is grounds for demanding repairs from the landlord."
+    },
+    {
+      "term": "noise pollution",
+      "definitionPl": "hałas (jako uciążliwość środowiskowa)",
+      "definitionEn": "harmful or annoying levels of sound in the environment",
+      "example": "Noise pollution from the ring road made the cheap rent far less attractive."
+    },
+    {
+      "term": "communal bin store",
+      "definitionPl": "wspólna wiata na odpady",
+      "definitionEn": "a shared place in a block where residents leave rubbish",
+      "example": "Please take cardboard to the communal bin store, not the hallway."
+    },
+    {
+      "term": "vandalism",
+      "definitionPl": "wandalizm",
+      "definitionEn": "deliberate damage to property",
+      "example": "Vandalism in the communal staircase made residents feel unsafe at night."
+    },
+    {
+      "term": "antisocial behaviour",
+      "definitionPl": "zachowania antyspołeczne",
+      "definitionEn": "conduct that causes alarm, distress or nuisance to other people",
+      "example": "Persistent antisocial behaviour can justify eviction, but the process is slow."
+    },
+    {
+      "term": "derelict building",
+      "definitionPl": "budynek zrujnowany / opuszczony",
+      "definitionEn": "an empty structure in a very bad state of repair",
+      "example": "A derelict building on the high street dragged the whole street's reputation down."
+    },
+    {
+      "term": "vacant property",
+      "definitionPl": "pustostan",
+      "definitionEn": "a house or flat that is empty and not being lived in",
+      "example": "Taxing vacant property is one proposed answer to the housing shortage."
+    },
+    {
+      "term": "eviction",
+      "definitionPl": "eksmisja",
+      "definitionEn": "the legal process of forcing a tenant to leave a property",
+      "example": "An eviction for rent arrears can push a family into homelessness."
+    },
+    {
+      "term": "housing bubble",
+      "definitionPl": "bańka na rynku nieruchomości",
+      "definitionEn": "a period when property prices rise far above real value and then risk collapsing",
+      "example": "Economists warn that a housing bubble leaves young buyers with negative equity."
+    },
+    {
+      "term": "negative equity",
+      "definitionPl": "ujemny kapitał (kredyt wyższy niż wartość mieszkania)",
+      "definitionEn": "the situation in which a mortgage is larger than the home's market value",
+      "example": "Negative equity trapped them in a flat they could neither sell nor remortgage."
+    },
+    {
+      "term": "fuel poverty",
+      "definitionPl": "ubóstwo energetyczne",
+      "definitionEn": "being unable to afford adequate heating without cutting other essentials",
+      "example": "Fuel poverty is common in poorly insulated tenements with expensive electric heating."
+    },
+    {
+      "term": "sleeping rough",
+      "definitionPl": "spać na ulicy / bez dachu nad głową",
+      "definitionEn": "spending the night outdoors because you have no home",
+      "example": "Charities count people sleeping rough, but many more are hidden in unstable rooms."
+    },
+    {
+      "term": "sofa-surfing",
+      "definitionPl": "spać po znajomych (bez stałego lokum)",
+      "definitionEn": "staying temporarily on friends' sofas because you have no home of your own",
+      "example": "Sofa-surfing is a form of hidden homelessness among young people."
+    },
+    {
+      "term": "housing waiting list",
+      "definitionPl": "lista oczekujących na mieszkanie (komunalne)",
+      "definitionEn": "an official queue for social or council housing",
+      "example": "Families can spend a decade on a housing waiting list in the capital."
+    },
+    {
+      "term": "deprived area",
+      "definitionPl": "dzielnica o wysokim ubóstwie / deficycie usług",
+      "definitionEn": "a neighbourhood with high poverty and poor services",
+      "example": "A deprived area may be a bus ride from wealth and still lack a GP surgery."
+    },
+    {
+      "term": "sink estate",
+      "definitionPl": "zdegradowane osiedle (socjalne)",
+      "definitionEn": "a housing estate with severe social problems and a poor reputation",
+      "example": "Calling a place a sink estate can stigmatise residents who have no other choice."
+    },
+    {
+      "term": "urban decay",
+      "definitionPl": "degradacja tkanki miejskiej",
+      "definitionEn": "the process by which buildings and public spaces in a city fall into neglect",
+      "example": "Urban decay and empty shops feed each other once the last bank closes."
+    },
+    {
+      "term": "regeneration",
+      "definitionPl": "rewitalizacja",
+      "definitionEn": "planned investment to improve a declining urban area",
+      "example": "Regeneration that ignores existing tenants is just another name for gentrification."
+    },
+    {
+      "term": "lack of privacy",
+      "definitionPl": "brak prywatności",
+      "definitionEn": "the inability to be unseen or uninterrupted in your own home",
+      "example": "A lack of privacy is the hidden cost of shared accommodation."
+    },
+    {
+      "term": "thin walls",
+      "definitionPl": "cienkie ściany (słaba izolacja akustyczna)",
+      "definitionEn": "poorly insulated walls that let sound pass between homes",
+      "example": "Thin walls mean you learn your next-door neighbour's timetable by accident."
+    },
+    {
+      "term": "noisy neighbours",
+      "definitionPl": "hałaśliwi sąsiedzi",
+      "definitionEn": "people living nearby who disturb others with loud sound",
+      "example": "Mediation failed, so the tenants reported the noisy neighbours to the council."
+    },
+    {
+      "term": "planning permission",
+      "definitionPl": "pozwolenie na budowę / zagospodarowanie",
+      "definitionEn": "official approval required before constructing or significantly altering a building",
+      "example": "They could not add a conservatory without planning permission."
+    },
+    {
+      "term": "nimbyism",
+      "definitionPl": "postawa NIMBY („nie na moim podwórku”)",
+      "definitionEn": "opposition to new housing or infrastructure near one's own home, while accepting it elsewhere",
+      "example": "Nimbyism can block the very homes that would ease a local housing shortage."
+    },
+    {
+      "term": "boundary dispute",
+      "definitionPl": "spór o granicę działki",
+      "definitionEn": "a legal disagreement about where one property ends and another begins",
+      "example": "A boundary dispute over a fence lasted longer than the friendship next door."
+    },
+    {
+      "term": "house in multiple occupation",
+      "definitionPl": "lokal zamieszkany przez kilka niezwiązanych gospodarstw (HMO)",
+      "definitionEn": "a property rented room by room to three or more unrelated people sharing facilities",
+      "example": "A house in multiple occupation needs extra fire safety checks."
+    },
+    {
+      "term": "mortgage",
+      "definitionPl": "kredyt hipoteczny",
+      "definitionEn": "a long-term bank loan used to buy a home, secured on the property",
+      "example": "Without a stable income it is almost impossible to obtain a mortgage."
+    },
+    {
+      "term": "deposit",
+      "definitionPl": "kaucja (przy wynajmie)",
+      "definitionEn": "a sum paid to a landlord as security, usually returned if the property is left in good condition",
+      "example": "The landlord kept part of the deposit because the walls were damaged."
+    },
+    {
+      "term": "landlord",
+      "definitionPl": "wynajmujący, właściciel lokalu",
+      "definitionEn": "the person or company that owns a property and rents it to others",
+      "example": "A responsible landlord replies to repair requests within days, not months."
+    },
+    {
+      "term": "tenant",
+      "definitionPl": "najemca",
+      "definitionEn": "a person who pays rent to live in a property owned by someone else",
+      "example": "A tenant has a right to a safe home, even in the cheapest studio flat."
+    },
+    {
+      "term": "landlady",
+      "definitionPl": "wynajmująca (kobieta)",
+      "definitionEn": "a woman who owns a property and rents it to tenants",
+      "example": "Their landlady lived upstairs and complained about every late-night guest."
+    },
+    {
+      "term": "letting agency",
+      "definitionPl": "agencja wynajmu",
+      "definitionEn": "a company that finds tenants and manages rented property for the owner",
+      "example": "The letting agency charged both sides and still lost the keys twice."
+    },
+    {
+      "term": "estate agent",
+      "definitionPl": "agent nieruchomości",
+      "definitionEn": "a professional who markets homes for sale or rent and shows them to clients",
+      "example": "An estate agent described the noisy road as 'well-connected'."
+    },
+    {
+      "term": "tenancy agreement",
+      "definitionPl": "umowa najmu",
+      "definitionEn": "the legal contract between landlord and tenant setting out the terms of the let",
+      "example": "Read the tenancy agreement before you pay a deposit you may never see again."
+    },
+    {
+      "term": "notice to quit",
+      "definitionPl": "wypowiedzenie najmu",
+      "definitionEn": "a formal warning that a tenancy will end",
+      "example": "The landlord sent a notice to quit after unpaid rent."
+    },
+    {
+      "term": "sitting tenant",
+      "definitionPl": "najemca zasiedziały (z ochroną praw)",
+      "definitionEn": "a tenant already living in a property, often with strong legal protection",
+      "example": "A sitting tenant can make a house harder to sell and sometimes safer to occupy."
+    },
+    {
+      "term": "rent arrears",
+      "definitionPl": "zaległości czynszowe",
+      "definitionEn": "unpaid rent that a tenant owes",
+      "example": "Rent arrears of two months triggered a warning letter from the letting agency."
+    },
+    {
+      "term": "bills included",
+      "definitionPl": "opłaty wliczone w czynsz",
+      "definitionEn": "an arrangement in which utilities are covered by the rent rather than paid separately",
+      "example": "A room with bills included is easier to budget for, even if the rent looks higher."
+    },
+    {
+      "term": "council tax",
+      "definitionPl": "podatek lokalny od nieruchomości (UK)",
+      "definitionEn": "a local tax on residential property that funds council services",
+      "example": "Students in a hall of residence are usually exempt from council tax."
+    },
+    {
+      "term": "stamp duty",
+      "definitionPl": "podatek od transakcji nieruchomości",
+      "definitionEn": "a tax paid when buying a property above a certain price",
+      "example": "Stamp duty on a second home is higher, which angers buy-to-let investors."
+    },
+    {
+      "term": "conveyancing",
+      "definitionPl": "obsługa prawna transakcji nieruchomości",
+      "definitionEn": "the legal work of transferring ownership of a property",
+      "example": "Slow conveyancing delayed the move by six weeks and cost another month's rent."
+    },
+    {
+      "term": "freehold",
+      "definitionPl": "pełna własność gruntu i budynku",
+      "definitionEn": "ownership of a building and the land it stands on, with no time limit",
+      "example": "A freehold house avoids the ground rent that leaseholders must pay."
+    },
+    {
+      "term": "leasehold",
+      "definitionPl": "własność czasowa lokalu (najem wieczysty / prawo własności ograniczone czasem)",
+      "definitionEn": "ownership of a flat or house for a fixed number of years, not of the land itself",
+      "example": "A short leasehold can make a mortgage more expensive or impossible."
+    },
+    {
+      "term": "ground rent",
+      "definitionPl": "czynsz wieczysty / opłata za grunt",
+      "definitionEn": "an annual fee a leaseholder pays to the landowner",
+      "example": "Rising ground rent turned a cheap flat into a financial trap."
+    },
+    {
+      "term": "service lift",
+      "definitionPl": "winda towarowa",
+      "definitionEn": "a lift in a building used for goods rather than residents",
+      "example": "Furniture was taken up in the service lift so it would not scratch the hall."
+    },
+    {
+      "term": "rent",
+      "definitionPl": "czynsz (za najem mieszkania)",
+      "definitionEn": "the money a tenant pays regularly to live in a property they do not own",
+      "example": "The rent went up by ten percent with no improvements to the flat."
+    },
+    {
+      "term": "remortgage",
+      "definitionPl": "refinansować hipotekę, wziąć nowy kredyt hipoteczny",
+      "definitionEn": "to take out a new mortgage on a property you already own, often to get a better rate",
+      "example": "They decided to remortgage when the fixed deal ended and rates fell."
+    },
+    {
+      "term": "equity",
+      "definitionPl": "kapitał własny w nieruchomości",
+      "definitionEn": "the portion of a property's value that you own, after subtracting the mortgage",
+      "example": "Years of repayments slowly built up equity they later used to move."
+    },
+    {
+      "term": "first-time buyer",
+      "definitionPl": "osoba kupująca pierwsze mieszkanie",
+      "definitionEn": "someone purchasing a home who has not owned one before",
+      "example": "A first-time buyer often competes with investors who can pay in cash."
+    },
+    {
+      "term": "joint tenancy",
+      "definitionPl": "wspólny najem (na równych prawach)",
+      "definitionEn": "an arrangement in which two or more people rent a property together on equal terms",
+      "example": "A joint tenancy means you may be liable if a flatmate stops paying."
+    },
+    {
+      "term": "guarantor",
+      "definitionPl": "poręczyciel (np. najmu)",
+      "definitionEn": "a person who legally agrees to pay the rent if the tenant does not",
+      "example": "Many students need a parent as guarantor before a landlord will sign."
+    },
+    {
+      "term": "inventory",
+      "definitionPl": "protokół zdawczo-odbiorczy / spis wyposażenia",
+      "definitionEn": "a detailed list of a property's contents and condition at the start of a tenancy",
+      "example": "Photograph every mark on the inventory or you may lose part of the deposit."
+    },
+    {
+      "term": "wear and tear",
+      "definitionPl": "normalne zużycie",
+      "definitionEn": "ordinary damage that happens through everyday use, not through negligence",
+      "example": "A landlord cannot keep the deposit for reasonable wear and tear."
+    },
+    {
+      "term": "housing association",
+      "definitionPl": "towarzystwo budownictwa społecznego",
+      "definitionEn": "a non-profit organisation that provides rented homes at below-market rates",
+      "example": "A housing association flat is more secure than a short private tenancy."
+    },
+    {
+      "term": "sublet",
+      "definitionPl": "podnająć (komuś pokój / mieszkanie)",
+      "definitionEn": "to rent out a room or flat that you yourself are renting from a landlord",
+      "example": "You usually need written permission before you sublet a room to a classmate."
+    },
+    {
+      "term": "lodger",
+      "definitionPl": "lokator pokoju (mieszkający u kogoś)",
+      "definitionEn": "a person who rents a room in someone else's home, often sharing the kitchen",
+      "example": "Taking in a lodger can help a homeowner cover a rising mortgage."
+    },
+    {
+      "term": "break clause",
+      "definitionPl": "klauzula wcześniejszego wypowiedzenia umowy",
+      "definitionEn": "a term in a tenancy that allows either side to end the contract early after giving notice",
+      "example": "Without a break clause you may pay rent until the end of the academic year."
+    },
+    {
+      "term": "energy performance certificate",
+      "definitionPl": "świadectwo charakterystyki energetycznej",
+      "definitionEn": "an official rating of how energy-efficient a home is",
+      "example": "Landlords must show an energy performance certificate before advertising a let."
+    }
+  ]
+}

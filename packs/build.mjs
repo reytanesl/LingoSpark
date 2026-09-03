@@ -257,9 +257,14 @@ function matchingBlock(items, seed, label) {
 </div>`;
 }
 
-function gapBlock(items, label) {
+function gapBlock(items, label, seed) {
     const pick = items.slice(0, Math.min(8, items.length));
-    const box = pick.map((i) => escapeHtml(i.term)).join(' · ');
+    const original = pick.map((i) => i.term);
+    let boxed = shuffle(original, seed);
+    for (let n = 1; n < 12 && boxed.length > 1 && boxed.every((t, i) => t === original[i]); n += 1) {
+        boxed = shuffle(original, seed + n);
+    }
+    const box = boxed.map((t) => escapeHtml(t)).join(' · ');
     const list = pick
         .map((i, idx) => `<p>${idx + 1}. ${escapeHtml(blankExample(i))}</p>`)
         .join('');
@@ -292,7 +297,7 @@ function studentPages(pack) {
   <h1>${escapeHtml(pack.topicPl)} — karty (Set ${set.label})</h1>
   <p class="meta">Imię: ______________________ Klasa: ______ Data: __________</p>
   ${matchingBlock(set.items, seed, set.label)}
-  ${gapBlock(set.items, set.label)}
+  ${gapBlock(set.items, set.label, seed + 97)}
   ${footer(pack)}
 </div>
 <div class="page">
@@ -465,28 +470,33 @@ Licence: classroom (see LICENSE-CLASSROOM.txt in packs/).
 
 function bundleListing(packs, kind) {
     const e8 = kind === 'e8';
+    const pr = kind === 'matura-pr';
     const count = packs.length;
-    const usd = e8 ? '29' : kind === 'matura' ? '5' : '32';
-    const pln = e8 ? '99' : kind === 'matura' ? '20' : '119';
+    const usd = e8 ? '29' : pr ? '39' : kind === 'matura' ? '5' : '69';
+    const pln = e8 ? '99' : pr ? '149' : kind === 'matura' ? '20' : '249';
     const title =
         kind === 'e8'
             ? `Polish Grade-8 English (Egzamin ósmoklasisty) — all ${count} CKE modules`
-            : kind === 'matura'
-              ? 'Polish Matura Basic — Work + Health vocab games'
-              : `LingoSpark exam packs bundle (${count} packs)`;
+            : pr
+              ? `Polish Matura Extended (rozszerzona) — all ${count} CKE modules`
+              : kind === 'matura'
+                ? 'Polish Matura Basic — Work + Health vocab games'
+                : `LingoSpark exam packs bundle (${count} packs)`;
     const heading =
         kind === 'e8'
             ? `# Bundle listing — E8 complete (${count} modules)`
-            : kind === 'matura'
-              ? `# Bundle listing — Matura PP (2 packs)`
-              : `# Bundle listing — all packs (${count})`;
+            : pr
+              ? `# Bundle listing — Matura PR complete (${count} modules)`
+              : kind === 'matura'
+                ? `# Bundle listing — Matura PP (2 packs)`
+                : `# Bundle listing — all packs (${count})`;
     return `${heading}
 
 ## TPT title
 ${title} | Paste into LingoSpark games
 
 ## Description
-${e8 ? 'Every thematic module from the CKE Grade-8 English exam informator.' : 'Paste-ready LingoSpark packs:'}
+${e8 ? 'Every thematic module from the CKE Grade-8 English exam informator.' : pr ? 'Every thematic module from the CKE Matura Extended (poziom rozszerzony) informator. B2 lexis, ENG–PL glosses.' : 'Paste-ready LingoSpark packs:'}
 
 ${packs.map((p) => `- **${p.topicPl} / ${p.topicEn}** (${p.exam}) — ${p.items.length} terms`).join('\n')}
 
@@ -517,17 +527,38 @@ const E8_ORDER = [
     'osmoklasista-zycie-spoleczne',
 ];
 
+const PR_ORDER = [
+    'matura-pr-czlowiek',
+    'matura-pr-dom',
+    'matura-pr-edukacja',
+    'matura-pr-praca',
+    'matura-pr-zycie-prywatne',
+    'matura-pr-zywienie',
+    'matura-pr-zakupy',
+    'matura-pr-podroze',
+    'matura-pr-kultura',
+    'matura-pr-sport',
+    'matura-pr-zdrowie',
+    'matura-pr-nauka-technika',
+    'matura-pr-przyroda',
+    'matura-pr-panstwo-spoleczenstwo',
+];
+
 function sortPacks(packs) {
     const rank = (id) => {
-        const i = E8_ORDER.indexOf(id);
-        return i === -1 ? 1000 + id.charCodeAt(0) : i;
+        const e8 = E8_ORDER.indexOf(id);
+        if (e8 !== -1) return e8;
+        const pr = PR_ORDER.indexOf(id);
+        if (pr !== -1) return 200 + pr;
+        return 1000 + id.charCodeAt(0);
     };
     return [...packs].sort((a, b) => rank(a.id) - rank(b.id) || a.id.localeCompare(b.id));
 }
 
 function distIndex(packs) {
     const e8 = sortPacks(packs.filter((p) => p.id.startsWith('osmoklasista-')));
-    const other = packs.filter((p) => !p.id.startsWith('osmoklasista-'));
+    const pr = sortPacks(packs.filter((p) => p.id.startsWith('matura-pr-')));
+    const other = packs.filter((p) => !p.id.startsWith('osmoklasista-') && !p.id.startsWith('matura-pr-'));
     const list = (items) =>
         items
             .map(
@@ -543,6 +574,8 @@ function distIndex(packs) {
 <p>Open a guide, then Ctrl+P → Save as PDF before uploading to TPT / Etsy.</p>
 <h2>Egzamin ósmoklasisty — all 14 CKE modules</h2>
 <ul>${list(e8)}</ul>
+<h2>Matura rozszerzona — all 14 CKE modules</h2>
+<ul>${list(pr)}</ul>
 <h2>Matura podstawowa</h2>
 <ul>${list(other)}</ul>
 <p class="small">Source JSON lives in packs/data/. Rebuild with <code>node packs/build.mjs</code>.</p>`
@@ -570,18 +603,22 @@ function loadPacks() {
         return pack;
     });
 
-    const taken = new Map();
+    const takenE8 = new Map();
+    const takenPr = new Map();
     for (const pack of packs) {
         const seen = new Set();
+        const e8 = pack.id.startsWith('osmoklasista-');
+        const pr = pack.id.startsWith('matura-pr-');
+        const taken = e8 ? takenE8 : pr ? takenPr : null;
         for (const item of pack.items) {
             validateItem(pack._file, item);
             const key = normalizeTerm(item.term);
             if (seen.has(key)) throw new Error(`${pack._file}: duplicate term "${item.term}"`);
             seen.add(key);
-            if (pack.id.startsWith('osmoklasista-') && taken.has(key)) {
+            if (taken && taken.has(key)) {
                 throw new Error(`Base clash "${item.term}": ${taken.get(key)} and ${pack.id}`);
             }
-            if (pack.id.startsWith('osmoklasista-')) taken.set(key, pack.id);
+            if (taken) taken.set(key, pack.id);
         }
     }
 
@@ -590,6 +627,9 @@ function loadPacks() {
         if (!fs.existsSync(extraPath)) continue;
         const extra = JSON.parse(fs.readFileSync(extraPath, 'utf8'));
         if (!Array.isArray(extra)) throw new Error(`extra/${pack._file} must be an array`);
+        const e8 = pack.id.startsWith('osmoklasista-');
+        const pr = pack.id.startsWith('matura-pr-');
+        const taken = e8 ? takenE8 : pr ? takenPr : new Map();
         for (const item of extra) {
             validateItem('extra/' + pack._file, item);
             const key = normalizeTerm(item.term);
@@ -602,15 +642,20 @@ function loadPacks() {
     for (const pack of packs) {
         delete pack._file;
         const e8 = pack.id.startsWith('osmoklasista-');
+        const pr = pack.id.startsWith('matura-pr-');
         if (e8 && (pack.items.length < 100 || pack.items.length > 150)) {
             throw new Error(`${pack.id}: E8 packs need 100–150 items, got ${pack.items.length}`);
         }
-        if (!e8 && pack.items.length < 16) {
+        if (pr && (pack.items.length < 150 || pack.items.length > 200)) {
+            throw new Error(`${pack.id}: Matura PR packs need 150–200 items, got ${pack.items.length}`);
+        }
+        if (!e8 && !pr && pack.items.length < 16) {
             throw new Error(`${pack.id}: need at least 16 items`);
         }
         pack.titlePl = pack.titlePl.replace(/— \d+ haseł/, `— ${pack.items.length} haseł`);
         pack.titleEn = pack.titleEn.replace(/— \d+ terms/, `— ${pack.items.length} terms`);
         if (e8) pack.priceHint = { tptUsd: 3, pln: 12 };
+        if (pr) pack.priceHint = { tptUsd: 4, pln: 16 };
     }
     return packs;
 }
@@ -677,11 +722,13 @@ function zipMany(dirs, zipPath) {
 
 const packs = loadPacks();
 const e8Packs = sortPacks(packs.filter((p) => p.id.startsWith('osmoklasista-')));
-const maturaPacks = packs.filter((p) => !p.id.startsWith('osmoklasista-'));
+const prPacks = sortPacks(packs.filter((p) => p.id.startsWith('matura-pr-')));
+const maturaPacks = packs.filter((p) => p.id.startsWith('matura-pp-'));
 fs.mkdirSync(DIST_DIR, { recursive: true });
 for (const pack of packs) writePack(pack);
 fs.writeFileSync(path.join(DIST_DIR, 'BUNDLE-LISTING-E8.txt'), bundleListing(e8Packs, 'e8'), 'utf8');
 fs.writeFileSync(path.join(DIST_DIR, 'BUNDLE-LISTING-MATURA.txt'), bundleListing(maturaPacks, 'matura'), 'utf8');
+fs.writeFileSync(path.join(DIST_DIR, 'BUNDLE-LISTING-MATURA-PR.txt'), bundleListing(prPacks, 'matura-pr'), 'utf8');
 fs.writeFileSync(path.join(DIST_DIR, 'BUNDLE-LISTING.txt'), bundleListing(packs, 'all'), 'utf8');
 fs.writeFileSync(path.join(DIST_DIR, 'index.html'), distIndex(packs), 'utf8');
 console.log(`Built ${packs.length} packs → ${DIST_DIR}`);
@@ -711,3 +758,10 @@ zipMany(
     path.join(DIST_DIR, 'LingoSpark-LS-8-COMPLETE.zip')
 );
 console.log('  ZIP LingoSpark-LS-8-COMPLETE.zip');
+if (prPacks.length) {
+    zipMany(
+        prPacks.map((p) => path.join(DIST_DIR, p.id)),
+        path.join(DIST_DIR, 'LingoSpark-LS-PR-COMPLETE.zip')
+    );
+    console.log('  ZIP LingoSpark-LS-PR-COMPLETE.zip');
+}

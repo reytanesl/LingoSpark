@@ -1,0 +1,1107 @@
+{
+  "id": "matura-pr-zycie-prywatne",
+  "sku": "LS-PR-LIFE",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Życie prywatne",
+  "topicEn": "Private life and leisure",
+  "titlePl": "Matura PR: Życie prywatne — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Private life — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Życie prywatne na maturę rozszerzoną: rodzina, relacje, rutyna i czas wolny. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura private life: family, relationships, routines and leisure.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "życie prywatne",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "blended family",
+      "definitionPl": "rodzina patchworkowa",
+      "definitionEn": "a family in which parents and children from previous relationships live together",
+      "example": "A blended family needs patience while new routines form."
+    },
+    {
+      "term": "next of kin",
+      "definitionPl": "najbliższy krewny",
+      "definitionEn": "the person legally recognised as your closest family member",
+      "example": "Write your next of kin on the hospital form."
+    },
+    {
+      "term": "sibling rivalry",
+      "definitionPl": "rywalizacja między rodzeństwem",
+      "definitionEn": "competition or jealousy between brothers and sisters",
+      "example": "Teachers often see sibling rivalry when one child gets more praise."
+    },
+    {
+      "term": "nuclear family",
+      "definitionPl": "rodzina dwupokoleniowa",
+      "definitionEn": "two parents and their children living as one household",
+      "example": "The advert showed a nuclear family around a Sunday table."
+    },
+    {
+      "term": "single-parent family",
+      "definitionPl": "rodzina z jednym rodzicem",
+      "definitionEn": "a household in which one parent brings up the children",
+      "example": "A single-parent family may rely on grandparents for childcare."
+    },
+    {
+      "term": "foster family",
+      "definitionPl": "rodzina zastępcza",
+      "definitionEn": "a family that cares for a child who is not legally theirs",
+      "example": "The boy settled well with his foster family."
+    },
+    {
+      "term": "adoptive parent",
+      "definitionPl": "rodzic adopcyjny",
+      "definitionEn": "an adult who has legally become a child's parent",
+      "example": "An adoptive parent has the same duties as a biological one."
+    },
+    {
+      "term": "breadwinner",
+      "definitionPl": "żywiciel rodziny",
+      "definitionEn": "the person whose wage mainly supports the household",
+      "example": "After the factory closed, she became the only breadwinner."
+    },
+    {
+      "term": "dependent",
+      "definitionPl": "osoba na utrzymaniu",
+      "definitionEn": "a person who relies on someone else for money or care",
+      "example": "Each child counts as a dependent until they finish school."
+    },
+    {
+      "term": "upbringing",
+      "definitionPl": "wychowanie",
+      "definitionEn": "the way a child is raised and taught at home",
+      "example": "A strict upbringing does not suit every teenager."
+    },
+    {
+      "term": "in-laws",
+      "definitionPl": "teściowie; rodzina współmałżonka",
+      "definitionEn": "the family of your husband or wife",
+      "example": "We spend Christmas with my in-laws every other year."
+    },
+    {
+      "term": "spouse",
+      "definitionPl": "małżonek; małżonka",
+      "definitionEn": "a husband or wife",
+      "example": "Please give the full name of your spouse."
+    },
+    {
+      "term": "fiancé",
+      "definitionPl": "narzeczony",
+      "definitionEn": "a man who is engaged to be married",
+      "example": "Her fiancé proposed during a walking holiday in Scotland."
+    },
+    {
+      "term": "fiancée",
+      "definitionPl": "narzeczona",
+      "definitionEn": "a woman who is engaged to be married",
+      "example": "He introduced his fiancée to the whole extended family."
+    },
+    {
+      "term": "widow",
+      "definitionPl": "wdowa",
+      "definitionEn": "a woman whose husband has died",
+      "example": "The widow still wears her wedding ring."
+    },
+    {
+      "term": "widower",
+      "definitionPl": "wdowiec",
+      "definitionEn": "a man whose wife has died",
+      "example": "The widower moved closer to his daughter."
+    },
+    {
+      "term": "descendant",
+      "definitionPl": "potomek",
+      "definitionEn": "a person related to you who is born later, such as a grandchild",
+      "example": "She is a descendant of farmers who left the village in 1900."
+    },
+    {
+      "term": "ancestor",
+      "definitionPl": "przodek",
+      "definitionEn": "a person in your family who lived a long time ago",
+      "example": "He researched an ancestor who fought in the war."
+    },
+    {
+      "term": "offspring",
+      "definitionPl": "potomstwo",
+      "definitionEn": "a person's child or children",
+      "example": "Protective parents find it hard to let their offspring move out."
+    },
+    {
+      "term": "kinship",
+      "definitionPl": "pokrewieństwo",
+      "definitionEn": "the state of being related by blood or marriage",
+      "example": "In a crisis, kinship still shapes who people turn to."
+    },
+    {
+      "term": "family ties",
+      "definitionPl": "więzi rodzinne",
+      "definitionEn": "the emotional and practical bonds between relatives",
+      "example": "Even after emigration, family ties remained strong."
+    },
+    {
+      "term": "family reunion",
+      "definitionPl": "zjazd rodzinny",
+      "definitionEn": "a gathering of relatives who do not usually all meet",
+      "example": "Cousins flew in from Dublin for the family reunion."
+    },
+    {
+      "term": "estranged",
+      "definitionPl": "w zerwanym kontakcie",
+      "definitionEn": "no longer in contact or on friendly terms with a relative",
+      "example": "He has been estranged from his father for a decade."
+    },
+    {
+      "term": "black sheep",
+      "definitionPl": "czarna owca",
+      "definitionEn": "the member of a family who is seen as a disappointment",
+      "example": "Every family joke treats him as the black sheep."
+    },
+    {
+      "term": "close-knit",
+      "definitionPl": "zżyty, silnie związany",
+      "definitionEn": "having strong, loyal relationships within a group",
+      "example": "They grew up in a close-knit neighbourhood."
+    },
+    {
+      "term": "dysfunctional family",
+      "definitionPl": "rodzina dysfunkcyjna",
+      "definitionEn": "a family whose relationships are regularly harmful or chaotic",
+      "example": "The novel portrays a dysfunctional family without cheap drama."
+    },
+    {
+      "term": "immediate family",
+      "definitionPl": "najbliższa rodzina",
+      "definitionEn": "your parents, children, brothers and sisters, and usually your spouse",
+      "example": "Only immediate family may visit in the evenings."
+    },
+    {
+      "term": "godparent",
+      "definitionPl": "rodzic chrzestny",
+      "definitionEn": "an adult who promises to support a child, often at a christening",
+      "example": "A godparent is expected to stay in the child's life."
+    },
+    {
+      "term": "legal guardian",
+      "definitionPl": "opiekun prawny",
+      "definitionEn": "a person with the legal right to care for a child",
+      "example": "Her aunt became her legal guardian after the accident."
+    },
+    {
+      "term": "heir",
+      "definitionPl": "spadkobierca",
+      "definitionEn": "a person who will receive property when someone dies",
+      "example": "The farm will pass to the eldest heir."
+    },
+    {
+      "term": "inherit",
+      "definitionPl": "dziedziczyć",
+      "definitionEn": "to receive money or property from someone who has died",
+      "example": "They will inherit the cottage if the will is valid."
+    },
+    {
+      "term": "last will",
+      "definitionPl": "testament",
+      "definitionEn": "a legal document saying who should receive your property after death",
+      "example": "She updated her last will after the second child was born."
+    },
+    {
+      "term": "family heirloom",
+      "definitionPl": "pamiątka rodzinna",
+      "definitionEn": "a valuable object passed down through generations",
+      "example": "The clock is a family heirloom from her great-grandmother."
+    },
+    {
+      "term": "family background",
+      "definitionPl": "pochodzenie rodzinne",
+      "definitionEn": "the social and family circumstances you grow up in",
+      "example": "Universities should not judge you only on family background."
+    },
+    {
+      "term": "family values",
+      "definitionPl": "wartości rodzinne",
+      "definitionEn": "beliefs about how relatives should treat one another",
+      "example": "His speech about family values felt old-fashioned to the teens."
+    },
+    {
+      "term": "household",
+      "definitionPl": "gospodarstwo domowe",
+      "definitionEn": "the people who live together in one home, and that home as a unit",
+      "example": "Everyone in the household shares the cooking on weekdays."
+    },
+    {
+      "term": "half-sibling",
+      "definitionPl": "przyrodnie rodzeństwo",
+      "definitionEn": "a brother or sister with whom you share only one parent",
+      "example": "She met her half-sibling for the first time at sixteen."
+    },
+    {
+      "term": "distant relative",
+      "definitionPl": "dalszy krewny",
+      "definitionEn": "a family member you are not closely related to",
+      "example": "A distant relative left her a small sum of money."
+    },
+    {
+      "term": "sandwich generation",
+      "definitionPl": "pokolenie kanapkowe",
+      "definitionEn": "adults who care for their children and their ageing parents at once",
+      "example": "The sandwich generation often has little time left for hobbies."
+    },
+    {
+      "term": "ageing parents",
+      "definitionPl": "starzejący się rodzice",
+      "definitionEn": "mothers and fathers who need more support as they grow old",
+      "example": "He visits his ageing parents every Sunday without fail."
+    },
+    {
+      "term": "homemaker",
+      "definitionPl": "osoba prowadząca dom",
+      "definitionEn": "a person whose main work is running the home rather than paid employment",
+      "example": "Being a homemaker is work, even when it is unpaid."
+    },
+    {
+      "term": "stay-at-home parent",
+      "definitionPl": "rodzic zostający z dziećmi",
+      "definitionEn": "a mother or father who looks after children instead of going out to work",
+      "example": "A stay-at-home parent still needs adult conversation."
+    },
+    {
+      "term": "family feud",
+      "definitionPl": "zatarg rodzinny",
+      "definitionEn": "a long, bitter quarrel between relatives",
+      "example": "The family feud started over a piece of land."
+    },
+    {
+      "term": "take after",
+      "definitionPl": "być podobnym do (krewnego)",
+      "definitionEn": "to resemble an older relative in looks or character",
+      "example": "People say I take after my grandfather when I lose my temper."
+    },
+    {
+      "term": "look up to",
+      "definitionPl": "podziwiać, brać z kogoś przykład",
+      "definitionEn": "to admire and respect someone",
+      "example": "Many younger cousins look up to her because she is honest."
+    },
+    {
+      "term": "keep in touch",
+      "definitionPl": "utrzymywać kontakt",
+      "definitionEn": "to continue communicating with someone",
+      "example": "Old classmates promised to keep in touch after graduation."
+    },
+    {
+      "term": "get on with",
+      "definitionPl": "dogadywać się z",
+      "definitionEn": "to have a friendly relationship with someone",
+      "example": "I get on with my stepmother better than I expected."
+    },
+    {
+      "term": "fall out with",
+      "definitionPl": "pokłócić się z, poróżnić",
+      "definitionEn": "to stop being friendly after an argument",
+      "example": "He used to fall out with his brother over borrowed clothes."
+    },
+    {
+      "term": "make up with",
+      "definitionPl": "pogodzić się z",
+      "definitionEn": "to become friends again after a quarrel",
+      "example": "She wants to make up with her sister before the wedding."
+    },
+    {
+      "term": "break up",
+      "definitionPl": "zerwać (z kimś)",
+      "definitionEn": "to end a romantic relationship",
+      "example": "They decided to break up after months of silence."
+    },
+    {
+      "term": "split up",
+      "definitionPl": "rozstać się",
+      "definitionEn": "to end a relationship or marriage; to start living apart",
+      "example": "My parents split up when I was twelve."
+    },
+    {
+      "term": "go out with",
+      "definitionPl": "chodzić z kimś (randkować)",
+      "definitionEn": "to have a romantic relationship with someone",
+      "example": "She used to go out with a boy from the sixth form."
+    },
+    {
+      "term": "ask out",
+      "definitionPl": "zaprosić na randkę",
+      "definitionEn": "to invite someone to go on a date",
+      "example": "He is too shy to ask out anyone from his course."
+    },
+    {
+      "term": "on the rocks",
+      "definitionPl": "w kryzysie (o związku)",
+      "definitionEn": "in serious difficulty, especially a relationship",
+      "example": "Their engagement looked on the rocks after the row."
+    },
+    {
+      "term": "tie the knot",
+      "definitionPl": "wziąć ślub (potocznie)",
+      "definitionEn": "to get married",
+      "example": "They plan to tie the knot in a small village church."
+    },
+    {
+      "term": "walk down the aisle",
+      "definitionPl": "iść do ołtarza",
+      "definitionEn": "to go to the front of a church or venue to get married",
+      "example": "She will walk down the aisle with her father."
+    },
+    {
+      "term": "best man",
+      "definitionPl": "świadek pana młodego",
+      "definitionEn": "a male friend who supports the groom at a wedding",
+      "example": "The best man forgot the rings for a dreadful minute."
+    },
+    {
+      "term": "maid of honour",
+      "definitionPl": "druhna; świadkowa panny młodej",
+      "definitionEn": "a female friend who supports the bride at a wedding",
+      "example": "Her sister will be maid of honour at the ceremony."
+    },
+    {
+      "term": "engagement",
+      "definitionPl": "zaręczyny",
+      "definitionEn": "an agreement to get married; the period before the wedding",
+      "example": "They announced their engagement at a family dinner."
+    },
+    {
+      "term": "cohabit",
+      "definitionPl": "mieszkać razem bez ślubu",
+      "definitionEn": "to live together as a couple without being married",
+      "example": "Many couples cohabit for years before they marry."
+    },
+    {
+      "term": "trial separation",
+      "definitionPl": "separacja na próbę",
+      "definitionEn": "a period when a couple lives apart to test whether the relationship can continue",
+      "example": "They agreed a trial separation rather than a sudden divorce."
+    },
+    {
+      "term": "custody",
+      "definitionPl": "opieka (nad dzieckiem po rozstaniu)",
+      "definitionEn": "the legal right to care for a child after parents separate",
+      "example": "The court granted her custody of both children."
+    },
+    {
+      "term": "child maintenance",
+      "definitionPl": "alimenty na dziecko",
+      "definitionEn": "money paid by a parent to help raise a child they do not live with",
+      "example": "He pays child maintenance on the first of every month."
+    },
+    {
+      "term": "leave the nest",
+      "definitionPl": "opuścić rodzinny dom",
+      "definitionEn": "to move out of your parents' home and live independently",
+      "example": "Not every twenty-year-old is ready to leave the nest."
+    },
+    {
+      "term": "empty nest",
+      "definitionPl": "puste gniazdo",
+      "definitionEn": "the situation when children have moved out and parents remain at home",
+      "example": "They found the empty nest strangely quiet at first."
+    },
+    {
+      "term": "soulmate",
+      "definitionPl": "bratnia dusza (partnerska)",
+      "definitionEn": "a person you feel uniquely close to, often romantically",
+      "example": "She does not believe everyone has one soulmate."
+    },
+    {
+      "term": "kindred spirit",
+      "definitionPl": "bratnia dusza",
+      "definitionEn": "a person who shares your attitudes and feelings",
+      "example": "I recognised a kindred spirit as soon as we started talking."
+    },
+    {
+      "term": "mutual friend",
+      "definitionPl": "wspólny znajomy",
+      "definitionEn": "a person who is a friend of both you and someone else",
+      "example": "They met through a mutual friend at a birthday meal."
+    },
+    {
+      "term": "fair-weather friend",
+      "definitionPl": "przyjaciel na dobre czasy",
+      "definitionEn": "someone who is kind only when life is easy",
+      "example": "A fair-weather friend disappears the moment you need help."
+    },
+    {
+      "term": "companion",
+      "definitionPl": "towarzysz; kompanka",
+      "definitionEn": "a person you spend time with and who keeps you company",
+      "example": "After retirement he wanted a companion for long walks."
+    },
+    {
+      "term": "inner circle",
+      "definitionPl": "wąski krąg zaufanych",
+      "definitionEn": "the small group of people you trust most",
+      "example": "Only her inner circle knew about the engagement."
+    },
+    {
+      "term": "keep himself to himself",
+      "definitionPl": "trzymać się na uboczu",
+      "definitionEn": "to avoid socialising much and stay private",
+      "example": "The new lodger prefers to keep himself to himself."
+    },
+    {
+      "term": "confide in",
+      "definitionPl": "zwierzać się",
+      "definitionEn": "to tell someone private thoughts because you trust them",
+      "example": "She can confide in her aunt, but not in her classmates."
+    },
+    {
+      "term": "shoulder to cry on",
+      "definitionPl": "ramię do popłakania, ktoś kto wysłucha",
+      "definitionEn": "a person who listens and comforts you when you are upset",
+      "example": "Everyone needs a shoulder to cry on during the exam season."
+    },
+    {
+      "term": "make it up with",
+      "definitionPl": "pogodzić się z kimś",
+      "definitionEn": "to become friends again after a quarrel",
+      "example": "They make it up with each other before the family dinner starts."
+    },
+    {
+      "term": "possessive",
+      "definitionPl": "zaborczy",
+      "definitionEn": "wanting to control a partner or friend and their time",
+      "example": "A possessive boyfriend checked her messages every hour."
+    },
+    {
+      "term": "supportive",
+      "definitionPl": "wspierający",
+      "definitionEn": "giving help and encouragement in a kind way",
+      "example": "She is lucky to have a supportive partner during exams."
+    },
+    {
+      "term": "take for granted",
+      "definitionPl": "brać za oczywistość, nie doceniać",
+      "definitionEn": "to fail to appreciate someone or something because they always seem available",
+      "example": "Do not take for granted the parent who drives you everywhere."
+    },
+    {
+      "term": "drift apart",
+      "definitionPl": "oddalać się od siebie",
+      "definitionEn": "to become less close gradually, without a big argument",
+      "example": "Old school friends often drift apart after university."
+    },
+    {
+      "term": "catch up with",
+      "definitionPl": "nadrobić zaległości w kontakcie",
+      "definitionEn": "to talk with someone you have not seen and hear their news",
+      "example": "I must catch up with my cousin before she goes abroad."
+    },
+    {
+      "term": "see eye to eye",
+      "definitionPl": "zgadzać się z kimś",
+      "definitionEn": "to agree with someone; to share the same opinion",
+      "example": "I do not see eye to eye with my father about curfews."
+    },
+    {
+      "term": "hit it off",
+      "definitionPl": "od razu się zaprzyjaźnić",
+      "definitionEn": "to like someone immediately and get on well",
+      "example": "They hit it off on the first day of college."
+    },
+    {
+      "term": "have a lot in common",
+      "definitionPl": "mieć wiele wspólnego",
+      "definitionEn": "to share interests, values or experiences",
+      "example": "We have a lot in common, so the friendship grew quickly."
+    },
+    {
+      "term": "patch things up",
+      "definitionPl": "załagodzić spór",
+      "definitionEn": "to repair a relationship after a quarrel",
+      "example": "They managed to patch things up before Christmas dinner."
+    },
+    {
+      "term": "on speaking terms",
+      "definitionPl": "w poprawnych stosunkach (po kłótni)",
+      "definitionEn": "willing to talk to someone after a disagreement",
+      "example": "They are barely on speaking terms after the argument."
+    },
+    {
+      "term": "cold shoulder",
+      "definitionPl": "zimny prysznic; ignorowanie kogoś",
+      "definitionEn": "unfriendly behaviour that shows you are ignoring someone",
+      "example": "She gave her former friend the cold shoulder at the party."
+    },
+    {
+      "term": "arm's length",
+      "definitionPl": "na dystans",
+      "definitionEn": "not becoming too close or involved",
+      "example": "He keeps new housemates at arm's length until he trusts them."
+    },
+    {
+      "term": "platonic",
+      "definitionPl": "platoniczny",
+      "definitionEn": "close and affectionate but not romantic or sexual",
+      "example": "Theirs is a platonic friendship and they want it to stay that way."
+    },
+    {
+      "term": "commitment",
+      "definitionPl": "zaangażowanie; zobowiązanie",
+      "definitionEn": "the decision to stay loyal to a person or a relationship",
+      "example": "Marriage requires commitment, not only a party."
+    },
+    {
+      "term": "compatibility",
+      "definitionPl": "zgodność charakterów",
+      "definitionEn": "the ability of two people to live or work together well",
+      "example": "They tested their compatibility on a long cycling holiday."
+    },
+    {
+      "term": "unfaithful",
+      "definitionPl": "niewierny (w związku)",
+      "definitionEn": "having a romantic or sexual relationship outside your partnership",
+      "example": "She left him when she discovered he had been unfaithful."
+    },
+    {
+      "term": "reconciliation",
+      "definitionPl": "pojednanie",
+      "definitionEn": "the process of becoming friends or partners again after a serious quarrel",
+      "example": "Their reconciliation took months of honest conversations."
+    },
+    {
+      "term": "wear the trousers",
+      "definitionPl": "rządzić w związku",
+      "definitionEn": "to be the person who makes the main decisions in a relationship",
+      "example": "Friends joke that she is the one to wear the trousers at home."
+    },
+    {
+      "term": "follow in their footsteps",
+      "definitionPl": "pójść w czyjeś ślady",
+      "definitionEn": "to do the same job or live in a similar way as someone older",
+      "example": "She refused to follow in their footsteps and became a designer."
+    },
+    {
+      "term": "boomerang child",
+      "definitionPl": "dorosłe dziecko wracające do domu rodziców",
+      "definitionEn": "an adult who returns to live with parents after living away",
+      "example": "High rents have made the boomerang child a common figure in cities."
+    },
+    {
+      "term": "striking resemblance",
+      "definitionPl": "uderzające podobieństwo",
+      "definitionEn": "a very noticeable likeness between two people",
+      "example": "There is a striking resemblance between the twins and their uncle."
+    },
+    {
+      "term": "chore",
+      "definitionPl": "obowiązek domowy",
+      "definitionEn": "a regular, often boring job that must be done at home",
+      "example": "Loading the dishwasher is the chore nobody wants."
+    },
+    {
+      "term": "quality time",
+      "definitionPl": "czas spędzany naprawdę razem",
+      "definitionEn": "time spent giving someone your full attention",
+      "example": "Phones stay in the kitchen during quality time after dinner."
+    },
+    {
+      "term": "run errands",
+      "definitionPl": "załatwiać sprawunki",
+      "definitionEn": "to go out to do small practical jobs such as shopping or posting a parcel",
+      "example": "I run errands for my grandmother on Saturday mornings."
+    },
+    {
+      "term": "daily grind",
+      "definitionPl": "codzienna harówka",
+      "definitionEn": "the tiring, repetitive routine of everyday life",
+      "example": "A short walk helps her survive the daily grind."
+    },
+    {
+      "term": "hectic",
+      "definitionPl": "gorączkowy, bardzo intensywny",
+      "definitionEn": "full of busy, rushed activity",
+      "example": "Monday mornings are always hectic in our flat."
+    },
+    {
+      "term": "leisurely",
+      "definitionPl": "niespieszny, spokojny",
+      "definitionEn": "done slowly, without rushing",
+      "example": "Sunday breakfast is a leisurely meal in our house."
+    },
+    {
+      "term": "night owl",
+      "definitionPl": "nocny marek",
+      "definitionEn": "a person who prefers to stay up late",
+      "example": "A night owl finds 7 a.m. lectures painful."
+    },
+    {
+      "term": "early bird",
+      "definitionPl": "ranny ptasek",
+      "definitionEn": "a person who likes to get up and start early",
+      "example": "An early bird can finish housework before the others wake."
+    },
+    {
+      "term": "household budget",
+      "definitionPl": "budżet domowy",
+      "definitionEn": "a plan for how a household will spend its money",
+      "example": "They keep a household budget in a shared notebook."
+    },
+    {
+      "term": "share the chores",
+      "definitionPl": "dzielić się obowiązkami domowymi",
+      "definitionEn": "to divide housework fairly among the people who live together",
+      "example": "Flatmates should share the chores, not leave them to one person."
+    },
+    {
+      "term": "put things off",
+      "definitionPl": "odkładać sprawy na później",
+      "definitionEn": "to delay tasks you ought to do",
+      "example": "If you put things off all week, Sunday becomes miserable."
+    },
+    {
+      "term": "financially independent",
+      "definitionPl": "niezależny finansowo",
+      "definitionEn": "able to pay for your own life without help from parents",
+      "example": "She wanted to be financially independent before she turned twenty-five."
+    },
+    {
+      "term": "move out",
+      "definitionPl": "wyprowadzić się",
+      "definitionEn": "to leave your parents' home and live elsewhere",
+      "example": "He will move out when his first salary arrives."
+    },
+    {
+      "term": "housemate",
+      "definitionPl": "współlokator",
+      "definitionEn": "a person who shares a rented house with you",
+      "example": "A tidy housemate is worth more than a cheap room."
+    },
+    {
+      "term": "spare room",
+      "definitionPl": "wolny pokój dla gościa",
+      "definitionEn": "an extra bedroom used for visitors or a tenant",
+      "example": "They turned the spare room into a study during lockdown."
+    },
+    {
+      "term": "personal space",
+      "definitionPl": "przestrzeń osobista",
+      "definitionEn": "the physical and emotional room you need around yourself",
+      "example": "Teenagers guard their personal space, including a locked bedroom."
+    },
+    {
+      "term": "privacy",
+      "definitionPl": "prywatność",
+      "definitionEn": "the state of not being watched or interrupted",
+      "example": "A thin wall leaves little privacy in a student house."
+    },
+    {
+      "term": "nosy",
+      "definitionPl": "wścibski",
+      "definitionEn": "too interested in other people's private lives",
+      "example": "A nosy neighbour asked why the lights were on at midnight."
+    },
+    {
+      "term": "overprotective",
+      "definitionPl": "nadopiekuńczy",
+      "definitionEn": "trying too hard to keep someone from any risk or independence",
+      "example": "Some overprotective parents can make leaving home feel frightening."
+    },
+    {
+      "term": "lenient",
+      "definitionPl": "pobłażliwy",
+      "definitionEn": "not strict; allowing more freedom than usual",
+      "example": "A lenient curfew still has to be taken seriously."
+    },
+    {
+      "term": "rebellious",
+      "definitionPl": "buntowniczy",
+      "definitionEn": "resisting rules and authority, especially as a teenager",
+      "example": "A rebellious phase does not mean a child rejects the whole family."
+    },
+    {
+      "term": "adolescent",
+      "definitionPl": "nastolatek; nastoletni",
+      "definitionEn": "a young person between childhood and adulthood; typical of that age",
+      "example": "An adolescent needs both boundaries and a chance to decide."
+    },
+    {
+      "term": "curfew",
+      "definitionPl": "godzina powrotu do domu",
+      "definitionEn": "a time by which you must be home in the evening",
+      "example": "Her curfew on school nights is ten o'clock."
+    },
+    {
+      "term": "nag",
+      "definitionPl": "zrzędzić, przypominać natrętnie",
+      "definitionEn": "to keep complaining or reminding someone in an annoying way",
+      "example": "Parents nag about dirty cups because nobody else notices them."
+    },
+    {
+      "term": "juggle",
+      "definitionPl": "godzić (wiele obowiązków)",
+      "definitionEn": "to deal with several responsibilities at the same time",
+      "example": "She has to juggle revision, a part-time job and family meals."
+    },
+    {
+      "term": "settle down",
+      "definitionPl": "ustatkować się",
+      "definitionEn": "to start living a calmer, more stable life, often with a partner",
+      "example": "His aunts keep asking when he will settle down."
+    },
+    {
+      "term": "put down roots",
+      "definitionPl": "zadomowić się",
+      "definitionEn": "to make a place your long-term home",
+      "example": "After three cities they wanted to put down roots near their parents."
+    },
+    {
+      "term": "house-proud",
+      "definitionPl": "dbający o wygląd domu",
+      "definitionEn": "taking great care that your home looks clean and attractive",
+      "example": "A house-proud host notices every crumb on the carpet."
+    },
+    {
+      "term": "make ends meet",
+      "definitionPl": "wiązać koniec z końcem",
+      "definitionEn": "to have just enough money for basic needs",
+      "example": "A single income made it hard to make ends meet."
+    },
+    {
+      "term": "well-off",
+      "definitionPl": "zamożny",
+      "definitionEn": "having plenty of money; comfortably rich",
+      "example": "A well-off relative paid for the driving lessons."
+    },
+    {
+      "term": "spoilt",
+      "definitionPl": "rozpieszczony",
+      "definitionEn": "allowed too much and therefore badly behaved or ungrateful",
+      "example": "A spoilt child expects a new gadget every month."
+    },
+    {
+      "term": "neglect",
+      "definitionPl": "zaniedbywać",
+      "definitionEn": "to fail to give someone or something the care they need",
+      "example": "Do not neglect old friendships when a new relationship starts."
+    },
+    {
+      "term": "bonding",
+      "definitionPl": "budowanie więzi",
+      "definitionEn": "the process of becoming emotionally closer",
+      "example": "Cooking together is simple bonding after a hard week."
+    },
+    {
+      "term": "strict upbringing",
+      "definitionPl": "surowe wychowanie",
+      "definitionEn": "a childhood with many rules and little freedom",
+      "example": "A strict upbringing taught him punctuality, but not how to relax."
+    },
+    {
+      "term": "sheltered childhood",
+      "definitionPl": "dzieciństwo pod kloszem",
+      "definitionEn": "a childhood in which a person was protected from ordinary difficulties",
+      "example": "A sheltered childhood can make university feel overwhelming."
+    },
+    {
+      "term": "pastime",
+      "definitionPl": "zajęcie czasu wolnego",
+      "definitionEn": "an activity you do regularly for pleasure rather than work",
+      "example": "Gardening is her favourite pastime in spring."
+    },
+    {
+      "term": "unwind",
+      "definitionPl": "odprężyć się",
+      "definitionEn": "to relax after stress or effort",
+      "example": "A hot bath helps me unwind after a noisy household evening."
+    },
+    {
+      "term": "couch potato",
+      "definitionPl": "kanapowiec",
+      "definitionEn": "a person who spends too much time sitting and watching screens",
+      "example": "A couch potato rarely joins the Sunday walk."
+    },
+    {
+      "term": "take up",
+      "definitionPl": "zacząć (hobby)",
+      "definitionEn": "to start a hobby or activity",
+      "example": "She wants to take up pottery this autumn."
+    },
+    {
+      "term": "keen on",
+      "definitionPl": "zainteresowany czymś; lubiący",
+      "definitionEn": "very interested in or enthusiastic about something",
+      "example": "He is keen on board games more than football."
+    },
+    {
+      "term": "avid",
+      "definitionPl": "zagorzały, zapalony",
+      "definitionEn": "very enthusiastic; doing something as often as possible",
+      "example": "She is an avid reader of family sagas."
+    },
+    {
+      "term": "household chore",
+      "definitionPl": "obowiązek domowy",
+      "definitionEn": "a regular job done to keep a home running",
+      "example": "Taking out the rubbish is his household chore this month."
+    },
+    {
+      "term": "downtime",
+      "definitionPl": "czas na odpoczynek",
+      "definitionEn": "time when you are not working or busy and can rest",
+      "example": "Even busy parents need downtime without a to-do list."
+    },
+    {
+      "term": "recharge",
+      "definitionPl": "naładować baterie",
+      "definitionEn": "to rest so that you feel energetic again",
+      "example": "A quiet weekend in the countryside helps her recharge."
+    },
+    {
+      "term": "binge-watch",
+      "definitionPl": "oglądać wiele odcinków z rzędu",
+      "definitionEn": "to watch many episodes of a series one after another",
+      "example": "We binge-watch old sitcoms when the weather is dreadful."
+    },
+    {
+      "term": "potter about",
+      "definitionPl": "krzątać się bez pośpiechu",
+      "definitionEn": "to do small, pleasant jobs at home in a relaxed way",
+      "example": "On Sunday mornings I potter about in the kitchen."
+    },
+    {
+      "term": "while away",
+      "definitionPl": "umilać sobie czas",
+      "definitionEn": "to spend time in a pleasant, unhurried way",
+      "example": "They while away winter evenings with cards and tea."
+    },
+    {
+      "term": "DIY",
+      "definitionPl": "zrób to sam; majsterkowanie",
+      "definitionEn": "repairing or decorating your home yourself instead of paying a professional",
+      "example": "He spends rainy Sundays on DIY in the spare room."
+    },
+    {
+      "term": "fulfilment",
+      "definitionPl": "spełnienie",
+      "definitionEn": "a feeling that your life or hobbies are meaningful and satisfying",
+      "example": "Creative hobbies can bring more fulfilment than shopping."
+    },
+    {
+      "term": "homebody",
+      "definitionPl": "domator",
+      "definitionEn": "a person who prefers staying at home to going out",
+      "example": "A homebody may still enjoy guests, just not noisy clubs."
+    },
+    {
+      "term": "party animal",
+      "definitionPl": "imprezowicz",
+      "definitionEn": "a person who loves going to parties and staying out late",
+      "example": "A party animal in the family can exhaust quieter relatives."
+    },
+    {
+      "term": "life and soul of the party",
+      "definitionPl": "dusza towarzystwa",
+      "definitionEn": "the person who makes a social event lively and fun",
+      "example": "Uncle Tom is the life and soul of the party at every wedding."
+    },
+    {
+      "term": "wallflower",
+      "definitionPl": "osoba trzymająca się na uboczu",
+      "definitionEn": "someone who stays at the edge of a party and does not join in",
+      "example": "A wallflower still deserves to be invited and spoken to."
+    },
+    {
+      "term": "social butterfly",
+      "definitionPl": "osoba bardzo towarzyska",
+      "definitionEn": "a person who moves easily from group to group and loves socialising",
+      "example": "A social butterfly fills the calendar with birthdays and coffees."
+    },
+    {
+      "term": "recluse",
+      "definitionPl": "odludek",
+      "definitionEn": "a person who lives a very private life and avoids other people",
+      "example": "After the divorce he lived almost like a recluse for a year."
+    },
+    {
+      "term": "fit in",
+      "definitionPl": "wpasować się (w grupę)",
+      "definitionEn": "to be accepted because you seem similar to the others",
+      "example": "Teenagers may change their clothes just to fit in."
+    },
+    {
+      "term": "left out",
+      "definitionPl": "pominięty, wykluczony",
+      "definitionEn": "not included in a group or activity",
+      "example": "She felt left out when the group chat went silent."
+    },
+    {
+      "term": "small talk",
+      "definitionPl": "luźna rozmowa towarzyska",
+      "definitionEn": "polite, light conversation about unimportant topics",
+      "example": "Some guests hate small talk and prefer a real discussion."
+    },
+    {
+      "term": "get-together",
+      "definitionPl": "spotkanie towarzyskie",
+      "definitionEn": "an informal meeting of friends or relatives",
+      "example": "We have a family get-together on the first Sunday of the month."
+    },
+    {
+      "term": "switch off",
+      "definitionPl": "odciąć się; wyłączyć (umysł lub urządzenie)",
+      "definitionEn": "to stop thinking about work or worries; to turn a device off",
+      "example": "I switch off my phone after nine so the evening stays calm."
+    },
+    {
+      "term": "screen time",
+      "definitionPl": "czas przed ekranem",
+      "definitionEn": "the amount of time spent looking at phones, tablets or televisions",
+      "example": "Parents argue about screen time more than about pocket money."
+    },
+    {
+      "term": "digital detox",
+      "definitionPl": "cyfrowy detoks",
+      "definitionEn": "a period when you avoid phones and other devices on purpose",
+      "example": "A weekend digital detox made the walk feel longer and better."
+    },
+    {
+      "term": "stand up to",
+      "definitionPl": "przeciwstawić się",
+      "definitionEn": "to refuse to accept unfair treatment or pressure",
+      "example": "You should stand up to friends who mock your hobbies."
+    },
+    {
+      "term": "unwind after work",
+      "definitionPl": "odprężyć się po pracy",
+      "definitionEn": "to relax once the working day is over",
+      "example": "He likes to unwind after work with a long walk."
+    },
+    {
+      "term": "coming of age",
+      "definitionPl": "wejście w dorosłość",
+      "definitionEn": "the time when a young person is legally or socially recognised as an adult",
+      "example": "A coming of age party marked her eighteenth birthday."
+    },
+    {
+      "term": "condolences",
+      "definitionPl": "kondolencje",
+      "definitionEn": "formal expressions of sympathy after someone has died",
+      "example": "Please accept my condolences on the loss of your grandfather."
+    },
+    {
+      "term": "housewarming",
+      "definitionPl": "parapetówka",
+      "definitionEn": "a party to celebrate moving into a new home",
+      "example": "Bring a plant to the housewarming rather than more crockery."
+    },
+    {
+      "term": "stag do",
+      "definitionPl": "wieczór kawalerski",
+      "definitionEn": "a party for a man before he gets married, usually with male friends",
+      "example": "The stag do was a walking weekend, not a nightclub crawl."
+    },
+    {
+      "term": "hen do",
+      "definitionPl": "wieczór panieński",
+      "definitionEn": "a party for a woman before she gets married, usually with female friends",
+      "example": "The hen do stayed in a cottage by the sea."
+    },
+    {
+      "term": "wedding reception",
+      "definitionPl": "przyjęcie weselne",
+      "definitionEn": "the meal and party after a marriage ceremony",
+      "example": "Speeches at the wedding reception made several guests cry."
+    },
+    {
+      "term": "propose a toast",
+      "definitionPl": "wznieść toast",
+      "definitionEn": "to invite guests to raise their glasses and wish someone well",
+      "example": "The father will propose a toast after the first course."
+    },
+    {
+      "term": "bereavement",
+      "definitionPl": "żałoba po stracie bliskiej osoby",
+      "definitionEn": "the state of having lost a close person through death",
+      "example": "Colleagues gave her time off for bereavement."
+    },
+    {
+      "term": "mourning",
+      "definitionPl": "żałoba",
+      "definitionEn": "the period and customs of showing sadness after a death",
+      "example": "Black clothes are still a sign of mourning at many funerals."
+    },
+    {
+      "term": "milestone",
+      "definitionPl": "kamień milowy",
+      "definitionEn": "an important event that marks progress in a life",
+      "example": "Graduation felt like a milestone for the whole household."
+    },
+    {
+      "term": "rite of passage",
+      "definitionPl": "rytuał przejścia",
+      "definitionEn": "a ceremony or experience that marks a new stage of life",
+      "example": "Passing the driving test is a modern rite of passage."
+    },
+    {
+      "term": "christening",
+      "definitionPl": "chrzciny",
+      "definitionEn": "a Christian ceremony in which a baby is named and welcomed",
+      "example": "The whole family travelled for the christening."
+    },
+    {
+      "term": "mark an anniversary",
+      "definitionPl": "obchodzić rocznicę",
+      "definitionEn": "to celebrate or remember a date each year",
+      "example": "They mark an anniversary of their first meeting with a picnic."
+    },
+    {
+      "term": "wedding vows",
+      "definitionPl": "przysięga małżeńska",
+      "definitionEn": "the promises a couple make to each other during the ceremony",
+      "example": "They wrote their own wedding vows instead of using the traditional ones."
+    },
+    {
+      "term": "registry office",
+      "definitionPl": "urząd stanu cywilnego",
+      "definitionEn": "a government office where civil marriages and births are recorded",
+      "example": "They booked the registry office for a Friday afternoon."
+    },
+    {
+      "term": "civil ceremony",
+      "definitionPl": "ślub cywilny",
+      "definitionEn": "a legal wedding without a religious service",
+      "example": "A civil ceremony can still feel personal and serious."
+    },
+    {
+      "term": "anniversary",
+      "definitionPl": "rocznica",
+      "definitionEn": "a date you remember each year because something important happened then",
+      "example": "Their tenth anniversary will be spent in the same seaside town."
+    },
+    {
+      "term": "family gathering",
+      "definitionPl": "rodzinne spotkanie",
+      "definitionEn": "an occasion when relatives meet together",
+      "example": "A family gathering at Easter includes aunts from both sides."
+    },
+    {
+      "term": "circle of friends",
+      "definitionPl": "grono przyjaciół",
+      "definitionEn": "the group of people you spend time with socially",
+      "example": "A supportive circle of friends makes the exam year easier."
+    },
+    {
+      "term": "me time",
+      "definitionPl": "czas tylko dla siebie",
+      "definitionEn": "time spent doing something for your own rest or hobby",
+      "example": "She blocks an hour of me time every Saturday morning."
+    }
+  ]
+}

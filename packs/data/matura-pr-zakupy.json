@@ -1,0 +1,1109 @@
+{
+  "id": "matura-pr-zakupy",
+  "sku": "LS-PR-SHOP",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Zakupy i usługi",
+  "topicEn": "Shopping and services",
+  "titlePl": "Matura PR: Zakupy i usługi — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Shopping — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Zakupy i usługi na maturę rozszerzoną: konsumpcja, reklama, reklamacje, bankowość. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura shopping: consumerism, advertising, complaints and banking.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura",
+    "zakupy",
+    "usługi",
+    "shopping",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "Polish exam"
+  ],
+  "items": [
+    {
+      "term": "chain store",
+      "definitionPl": "sieć sklepów",
+      "definitionEn": "a shop that belongs to a group with many branches",
+      "example": "A chain store often has the same layout in every town."
+    },
+    {
+      "term": "outlet",
+      "definitionPl": "sklep outletowy",
+      "definitionEn": "a shop that sells last season's or factory goods cheaper",
+      "example": "We bought winter coats at the outlet village."
+    },
+    {
+      "term": "click and collect",
+      "definitionPl": "zamów online i odbierz w sklepie",
+      "definitionEn": "ordering online and picking the goods up in a shop",
+      "example": "Click and collect is ready within two hours at this supermarket."
+    },
+    {
+      "term": "convenience store",
+      "definitionPl": "sklep osiedlowy, często całodobowy",
+      "definitionEn": "a small shop that sells everyday goods, often open late",
+      "example": "The convenience store on the corner sells milk after ten."
+    },
+    {
+      "term": "boutique",
+      "definitionPl": "butik",
+      "definitionEn": "a small shop that sells fashionable, often expensive clothes",
+      "example": "That boutique on the high street sells handmade dresses."
+    },
+    {
+      "term": "charity shop",
+      "definitionPl": "sklep charytatywny",
+      "definitionEn": "a shop that sells donated goods to raise money for a cause",
+      "example": "I found a wool coat in the charity shop for five pounds."
+    },
+    {
+      "term": "DIY store",
+      "definitionPl": "sklep dla majsterkowiczów",
+      "definitionEn": "a large shop that sells tools, paint and building materials",
+      "example": "The DIY store sells timber, nails and paint."
+    },
+    {
+      "term": "flagship store",
+      "definitionPl": "sklep flagowy",
+      "definitionEn": "the main, largest shop of a brand, often in a capital city",
+      "example": "The brand opened a flagship store on Oxford Street."
+    },
+    {
+      "term": "shop-in-shop",
+      "definitionPl": "sklep w sklepie, stoisko marki",
+      "definitionEn": "a branded counter or small shop inside a larger store",
+      "example": "The perfume brand opened a shop-in-shop in the department store."
+    },
+    {
+      "term": "independent retailer",
+      "definitionPl": "niezależny sprzedawca",
+      "definitionEn": "a shop owner who is not part of a large chain",
+      "example": "An independent retailer can choose unusual products."
+    },
+    {
+      "term": "wholesaler",
+      "definitionPl": "hurtownik",
+      "definitionEn": "a business that sells goods in large amounts to shops",
+      "example": "The greengrocer buys fruit from a wholesaler at dawn."
+    },
+    {
+      "term": "retail park",
+      "definitionPl": "park handlowy",
+      "definitionEn": "a group of large shops outside a town with a car park",
+      "example": "The retail park has a supermarket and a furniture shop."
+    },
+    {
+      "term": "pop-up shop",
+      "definitionPl": "sklep tymczasowy",
+      "definitionEn": "a shop that opens for a short time, then closes",
+      "example": "The designer ran a pop-up shop for two weeks before Christmas."
+    },
+    {
+      "term": "off-licence",
+      "definitionPl": "sklep z alkoholem",
+      "definitionEn": "a shop that sells alcoholic drinks to take away",
+      "example": "Buy the wine at the off-licence, not in the restaurant."
+    },
+    {
+      "term": "greengrocer's",
+      "definitionPl": "warzywniak",
+      "definitionEn": "a shop that sells fruit and vegetables",
+      "example": "The greengrocer's had fresh strawberries this morning."
+    },
+    {
+      "term": "delicatessen",
+      "definitionPl": "delikatesy",
+      "definitionEn": "a shop that sells high-quality cheeses, meats and speciality food",
+      "example": "Queue at the delicatessen for olives and smoked ham."
+    },
+    {
+      "term": "hardware shop",
+      "definitionPl": "sklep żelazny",
+      "definitionEn": "a shop that sells tools, screws and household fittings",
+      "example": "The hardware shop had the right screwdriver."
+    },
+    {
+      "term": "stationer's",
+      "definitionPl": "sklep papierniczy",
+      "definitionEn": "a shop that sells pens, paper and office supplies",
+      "example": "Buy folders at the stationer's before the exam."
+    },
+    {
+      "term": "florist's",
+      "definitionPl": "kwiaciarnia",
+      "definitionEn": "a shop that sells flowers and plants",
+      "example": "He ordered roses at the florist's for Saturday."
+    },
+    {
+      "term": "launderette",
+      "definitionPl": "pralnia samoobsługowa",
+      "definitionEn": "a place with washing machines that the public can pay to use",
+      "example": "Students use the launderette at the end of the street."
+    },
+    {
+      "term": "pawnbroker's",
+      "definitionPl": "lombard",
+      "definitionEn": "a shop that lends money if you leave a valuable object as security",
+      "example": "He left his guitar at the pawnbroker's until payday."
+    },
+    {
+      "term": "antique shop",
+      "definitionPl": "antykwariat / sklep z antykami",
+      "definitionEn": "a shop that sells old, valuable furniture or objects",
+      "example": "The antique shop had a Victorian writing desk."
+    },
+    {
+      "term": "shopping arcade",
+      "definitionPl": "pasaż handlowy",
+      "definitionEn": "a covered passage with small shops on both sides",
+      "example": "The Victorian shopping arcade is cooler in summer."
+    },
+    {
+      "term": "pedestrian precinct",
+      "definitionPl": "deptak, strefa piesza ze sklepami",
+      "definitionEn": "a shopping area closed to cars",
+      "example": "The pedestrian precinct is packed on Saturday afternoon."
+    },
+    {
+      "term": "shop window",
+      "definitionPl": "witryna sklepowa",
+      "definitionEn": "the glass front of a shop where goods are shown",
+      "example": "The shop window was dressed for the winter sale."
+    },
+    {
+      "term": "fitting room",
+      "definitionPl": "przymierzalnia",
+      "definitionEn": "a small room in a clothes shop for trying clothes on",
+      "example": "Take no more than four items into the fitting room."
+    },
+    {
+      "term": "shop assistant",
+      "definitionPl": "sprzedawca, ekspedient",
+      "definitionEn": "a person who helps customers and sells goods in a shop",
+      "example": "The shop assistant folded the jumper carefully."
+    },
+    {
+      "term": "shopkeeper",
+      "definitionPl": "sklepikarz",
+      "definitionEn": "a person who owns or runs a small shop",
+      "example": "The shopkeeper knows most of his regulars by name."
+    },
+    {
+      "term": "cashier",
+      "definitionPl": "kasjer",
+      "definitionEn": "the person who takes payment at a till",
+      "example": "The cashier asked if I wanted cashback."
+    },
+    {
+      "term": "opening hours",
+      "definitionPl": "godziny otwarcia",
+      "definitionEn": "the times when a shop or office is open to the public",
+      "example": "Check the opening hours before you drive into town."
+    },
+    {
+      "term": "browse",
+      "definitionPl": "przeglądać towary",
+      "definitionEn": "to look at goods in a shop without a plan to buy at once",
+      "example": "You are welcome to browse; there is no pressure to buy."
+    },
+    {
+      "term": "shop around",
+      "definitionPl": "porównywać oferty w sklepach",
+      "definitionEn": "to compare prices in different shops before you buy",
+      "example": "Shop around before you buy a laptop."
+    },
+    {
+      "term": "in stock",
+      "definitionPl": "dostępny na stanie",
+      "definitionEn": "available to buy now in the shop or warehouse",
+      "example": "Is the navy jacket in stock in size twelve?"
+    },
+    {
+      "term": "out of stock",
+      "definitionPl": "niedostępny, wyprzedany",
+      "definitionEn": "not available to buy at the moment",
+      "example": "That printer ink is out of stock until Thursday."
+    },
+    {
+      "term": "sold out",
+      "definitionPl": "wyprzedany do końca",
+      "definitionEn": "with no items left to sell",
+      "example": "The limited-edition trainers are sold out online."
+    },
+    {
+      "term": "window display",
+      "definitionPl": "wystawa sklepowa",
+      "definitionEn": "the arrangement of goods shown in a shop window",
+      "example": "The Christmas window display attracted a crowd."
+    },
+    {
+      "term": "stockroom",
+      "definitionPl": "magazyn sklepowy",
+      "definitionEn": "the room where a shop keeps extra goods",
+      "example": "She went to the stockroom to look for another size."
+    },
+    {
+      "term": "self-checkout",
+      "definitionPl": "kasa samoobsługowa",
+      "definitionEn": "a machine where you scan goods and pay without a cashier",
+      "example": "Self-checkout is faster if you have only a few items."
+    },
+    {
+      "term": "till",
+      "definitionPl": "kasa (aparat w sklepie)",
+      "definitionEn": "the machine in a shop that records sales and holds money",
+      "example": "Please pay at the till near the door."
+    },
+    {
+      "term": "barcode",
+      "definitionPl": "kod kreskowy",
+      "definitionEn": "the pattern of lines a scanner reads to identify a product",
+      "example": "The barcode on the tin will not scan."
+    },
+    {
+      "term": "price tag",
+      "definitionPl": "metka z ceną",
+      "definitionEn": "a small label showing how much something costs",
+      "example": "The price tag is still on the sleeve of the jacket."
+    },
+    {
+      "term": "loyalty card",
+      "definitionPl": "karta stałego klienta",
+      "definitionEn": "a shop card that collects points or gives discounts",
+      "example": "Swipe your loyalty card to collect points."
+    },
+    {
+      "term": "gift voucher",
+      "definitionPl": "bon podarunkowy",
+      "definitionEn": "a ticket with a value that can be spent in a shop",
+      "example": "Grandma sent a gift voucher for the bookshop."
+    },
+    {
+      "term": "carrier bag",
+      "definitionPl": "reklamówka",
+      "definitionEn": "a bag from a shop, often paper or plastic, for carrying goods",
+      "example": "Bring a cloth bag instead of a carrier bag."
+    },
+    {
+      "term": "receipt",
+      "definitionPl": "paragon",
+      "definitionEn": "a piece of paper that proves you paid for goods",
+      "example": "Keep the receipt if you might return the headphones."
+    },
+    {
+      "term": "instalment",
+      "definitionPl": "rata",
+      "definitionEn": "one of several payments for goods bought over time",
+      "example": "The last instalment on the sofa is due in June."
+    },
+    {
+      "term": "interest rate",
+      "definitionPl": "oprocentowanie, stopa procentowa",
+      "definitionEn": "the extra percentage a bank charges or pays on money",
+      "example": "The interest rate on the loan is higher than last year."
+    },
+    {
+      "term": "overdraft",
+      "definitionPl": "debet, limit debetowy",
+      "definitionEn": "an arrangement to spend more money than is in your account",
+      "example": "An unauthorised overdraft can be very expensive."
+    },
+    {
+      "term": "contactless",
+      "definitionPl": "płatność zbliżeniowa",
+      "definitionEn": "paying by tapping a card or phone without entering a PIN",
+      "example": "Contactless is quicker in a long queue at the café."
+    },
+    {
+      "term": "counterfeit",
+      "definitionPl": "podrobiony, fałszywy",
+      "definitionEn": "made as a copy of something valuable in order to deceive",
+      "example": "The police seized a box of counterfeit watches."
+    },
+    {
+      "term": "hire purchase",
+      "definitionPl": "zakup na raty (z własnością po spłacie)",
+      "definitionEn": "a system of paying in instalments and owning the goods at the end",
+      "example": "They bought the washing machine on hire purchase."
+    },
+    {
+      "term": "pay a deposit",
+      "definitionPl": "wpłacić zaliczkę",
+      "definitionEn": "to pay a first sum to reserve goods or a service",
+      "example": "You must pay a deposit of fifty pounds to order the sofa."
+    },
+    {
+      "term": "advance payment",
+      "definitionPl": "wpłata z góry, przedpłata",
+      "definitionEn": "money paid before goods are delivered or work is finished",
+      "example": "The tailor asked for an advance payment before starting the suit."
+    },
+    {
+      "term": "current account",
+      "definitionPl": "konto bieżące",
+      "definitionEn": "a bank account for everyday spending and receiving pay",
+      "example": "Your salary is paid into a current account."
+    },
+    {
+      "term": "savings account",
+      "definitionPl": "konto oszczędnościowe",
+      "definitionEn": "a bank account for money you do not spend at once",
+      "example": "Interest on a savings account is still quite low."
+    },
+    {
+      "term": "debit card",
+      "definitionPl": "karta debetowa",
+      "definitionEn": "a card that takes money straight from your bank account",
+      "example": "I prefer a debit card because I cannot spend money I do not have."
+    },
+    {
+      "term": "credit limit",
+      "definitionPl": "limit kredytowy",
+      "definitionEn": "the maximum amount you may spend on a credit card",
+      "example": "Do not go over your credit limit or fees will follow."
+    },
+    {
+      "term": "interest-free",
+      "definitionPl": "nieoprocentowany",
+      "definitionEn": "with no extra percentage charged if you pay on time",
+      "example": "The shop offered interest-free credit for six months."
+    },
+    {
+      "term": "bank charges",
+      "definitionPl": "opłaty bankowe",
+      "definitionEn": "fees a bank takes for services or for going into the red",
+      "example": "Read the leaflet about bank charges before you sign."
+    },
+    {
+      "term": "direct debit",
+      "definitionPl": "polecenie zapłaty",
+      "definitionEn": "an instruction that lets a company take money from your account",
+      "example": "The energy bill is paid by direct debit each month."
+    },
+    {
+      "term": "standing order",
+      "definitionPl": "zlecenie stałe",
+      "definitionEn": "an instruction to send a fixed sum from your account on set dates",
+      "example": "Set up a standing order for the rent on the first of the month."
+    },
+    {
+      "term": "bank transfer",
+      "definitionPl": "przelew bankowy",
+      "definitionEn": "sending money from one account to another electronically",
+      "example": "Pay the invoice by bank transfer, not in cash."
+    },
+    {
+      "term": "chip and PIN",
+      "definitionPl": "karta z chipem i kodem PIN",
+      "definitionEn": "paying by putting a card in a machine and typing a secret number",
+      "example": "Chip and PIN is safer than signing a slip."
+    },
+    {
+      "term": "digital wallet",
+      "definitionPl": "portfel cyfrowy",
+      "definitionEn": "an app that stores card details so you can pay with a phone",
+      "example": "I pay with a digital wallet at the self-checkout."
+    },
+    {
+      "term": "invoice",
+      "definitionPl": "faktura",
+      "definitionEn": "a document that lists goods or services and the money owed",
+      "example": "The garage sent an invoice for the repair."
+    },
+    {
+      "term": "VAT",
+      "definitionPl": "VAT, podatek od towarów i usług",
+      "definitionEn": "a tax added to the price of many goods and services",
+      "example": "The price on the shelf already includes VAT."
+    },
+    {
+      "term": "proof of purchase",
+      "definitionPl": "dowód zakupu",
+      "definitionEn": "a receipt or document that shows you bought something",
+      "example": "You need proof of purchase to get a refund."
+    },
+    {
+      "term": "transaction",
+      "definitionPl": "transakcja",
+      "definitionEn": "an act of buying, selling or moving money",
+      "example": "The last transaction on the statement was in Leeds."
+    },
+    {
+      "term": "bank statement",
+      "definitionPl": "wyciąg bankowy",
+      "definitionEn": "a list of money going in and out of your account",
+      "example": "Check your bank statement for unknown payments."
+    },
+    {
+      "term": "overdrawn",
+      "definitionPl": "na minusie (o koncie)",
+      "definitionEn": "having spent more than is in your bank account",
+      "example": "The account was overdrawn after the holiday."
+    },
+    {
+      "term": "in the red",
+      "definitionPl": "na minusie, zadłużony",
+      "definitionEn": "owing money to the bank; having a negative balance",
+      "example": "The café has been in the red since the rent went up."
+    },
+    {
+      "term": "in the black",
+      "definitionPl": "na plusie, z zyskiem",
+      "definitionEn": "having money left; not owing the bank",
+      "example": "After a good quarter the shop is in the black again."
+    },
+    {
+      "term": "debt",
+      "definitionPl": "dług",
+      "definitionEn": "money that you owe to a person or a bank",
+      "example": "Student debt can take years to clear."
+    },
+    {
+      "term": "run up a debt",
+      "definitionPl": "narobić długów",
+      "definitionEn": "to gradually owe more and more money",
+      "example": "It is easy to run up a debt if you only pay the minimum."
+    },
+    {
+      "term": "pay off",
+      "definitionPl": "spłacić (dług)",
+      "definitionEn": "to finish paying all the money you owe",
+      "example": "She wants to pay off the credit card before she travels."
+    },
+    {
+      "term": "exchange rate",
+      "definitionPl": "kurs wymiany",
+      "definitionEn": "how much one currency is worth in another",
+      "example": "The exchange rate is better at the bank than at the airport."
+    },
+    {
+      "term": "exchange commission",
+      "definitionPl": "prowizja przy wymianie walut",
+      "definitionEn": "a fee charged for changing one currency into another",
+      "example": "The airport kiosk takes a high exchange commission."
+    },
+    {
+      "term": "cashpoint",
+      "definitionPl": "bankomat",
+      "definitionEn": "a machine in a wall that gives you cash from your account",
+      "example": "The cashpoint on the high street is out of order."
+    },
+    {
+      "term": "building society",
+      "definitionPl": "kasa mieszkaniowa, towarzystwo budowlane",
+      "definitionEn": "a financial organisation that offers savings accounts and mortgages",
+      "example": "She opened an account at the building society near the station."
+    },
+    {
+      "term": "lump sum",
+      "definitionPl": "kwota jednorazowa",
+      "definitionEn": "an amount of money paid all at once, not in parts",
+      "example": "You can settle the bill in a lump sum or in instalments."
+    },
+    {
+      "term": "surcharge",
+      "definitionPl": "dopłata, opłata dodatkowa",
+      "definitionEn": "an extra amount added to a price for a particular reason",
+      "example": "There is a surcharge for paying by credit card."
+    },
+    {
+      "term": "handling fee",
+      "definitionPl": "opłata manipulacyjna",
+      "definitionEn": "a small extra charge for processing an order or payment",
+      "example": "The ticket site adds a handling fee at checkout."
+    },
+    {
+      "term": "postage and packing",
+      "definitionPl": "koszt wysyłki i pakowania",
+      "definitionEn": "the extra you pay for wrapping and sending goods",
+      "example": "Postage and packing is free on orders over forty pounds."
+    },
+    {
+      "term": "cashback",
+      "definitionPl": "zwrot części wydatków; wypłata przy kasie",
+      "definitionEn": "money returned as a reward, or extra cash taken at a shop till",
+      "example": "The supermarket offers cashback if you pay by debit card."
+    },
+    {
+      "term": "online banking",
+      "definitionPl": "bankowość internetowa",
+      "definitionEn": "managing your bank account through a website",
+      "example": "Online banking lets you pay bills from home."
+    },
+    {
+      "term": "mobile banking",
+      "definitionPl": "bankowość mobilna",
+      "definitionEn": "managing your bank account on a smartphone app",
+      "example": "Mobile banking sends an alert after every payment."
+    },
+    {
+      "term": "credit rating",
+      "definitionPl": "zdolność kredytowa, ocena kredytowa",
+      "definitionEn": "a judgement of how likely you are to repay borrowed money",
+      "example": "A poor credit rating can stop you getting a phone contract."
+    },
+    {
+      "term": "card fraud",
+      "definitionPl": "oszustwo na karcie płatniczej",
+      "definitionEn": "crime that uses stolen card details to buy goods or take money",
+      "example": "Card fraud rose after the data leak at the online shop."
+    },
+    {
+      "term": "withdraw cash",
+      "definitionPl": "wypłacać gotówkę",
+      "definitionEn": "to take money out of a bank account as notes",
+      "example": "You can withdraw cash at any cashpoint in the network."
+    },
+    {
+      "term": "bank balance",
+      "definitionPl": "saldo konta",
+      "definitionEn": "the amount of money in an account at a given time",
+      "example": "Check your bank balance before you book the tickets."
+    },
+    {
+      "term": "overspend",
+      "definitionPl": "przekroczyć budżet, wydać za dużo",
+      "definitionEn": "to spend more money than you planned or can afford",
+      "example": "It is easy to overspend in the January sales."
+    },
+    {
+      "term": "keep to a budget",
+      "definitionPl": "trzymać się budżetu",
+      "definitionEn": "to spend only the amount of money you have planned",
+      "example": "Students must keep to a budget if rent is high."
+    },
+    {
+      "term": "disposable income",
+      "definitionPl": "dochód rozporządzalny",
+      "definitionEn": "money left after tax and essential bills, for spending or saving",
+      "example": "Rising rents leave little disposable income for hobbies."
+    },
+    {
+      "term": "go bust",
+      "definitionPl": "zbankrutować, paść (o firmie)",
+      "definitionEn": "to fail financially and close a business (informal)",
+      "example": "The corner café will go bust if the rent rises again."
+    },
+    {
+      "term": "creditworthy",
+      "definitionPl": "wiarygodny kredytowo",
+      "definitionEn": "judged likely to repay a loan on time",
+      "example": "Young people with no history may not look creditworthy."
+    },
+    {
+      "term": "haggle",
+      "definitionPl": "targować się",
+      "definitionEn": "to argue about the price in order to pay less",
+      "example": "You can haggle at the market, but not in the supermarket."
+    },
+    {
+      "term": "extortionate",
+      "definitionPl": "wygórowany, zdzierczy (o cenie)",
+      "definitionEn": "far too expensive; unreasonably high in price",
+      "example": "The airport sandwiches are extortionate."
+    },
+    {
+      "term": "guarantee",
+      "definitionPl": "gwarancja (obietnica naprawy)",
+      "definitionEn": "a promise to repair or replace goods if they fail within a period",
+      "example": "The kettle comes with a two-year guarantee."
+    },
+    {
+      "term": "live on a shoestring",
+      "definitionPl": "żyć bardzo oszczędnie, za grosze",
+      "definitionEn": "to live on very little money",
+      "example": "Students often live on a shoestring until the grant arrives."
+    },
+    {
+      "term": "tighten one's belt",
+      "definitionPl": "zacisnąć pasa",
+      "definitionEn": "to spend less because money is short",
+      "example": "When bills rise, many families tighten one's belt."
+    },
+    {
+      "term": "endorsement",
+      "definitionPl": "poparcie reklamowe, endorsement",
+      "definitionEn": "public support for a product, often by a well-known person",
+      "example": "The footballer's endorsement of the drink boosted sales."
+    },
+    {
+      "term": "target audience",
+      "definitionPl": "grupa docelowa",
+      "definitionEn": "the group of people an advert is designed to reach",
+      "example": "The target audience for this cream is women over forty."
+    },
+    {
+      "term": "misleading advert",
+      "definitionPl": "reklama wprowadzająca w błąd",
+      "definitionEn": "an advertisement that gives a false or unclear impression",
+      "example": "A misleading advert can be reported to the watchdog."
+    },
+    {
+      "term": "commercial",
+      "definitionPl": "reklama (w TV lub radiu)",
+      "definitionEn": "an advertisement on television or radio",
+      "example": "The commercial lasted thirty seconds before the film returned."
+    },
+    {
+      "term": "billboard",
+      "definitionPl": "billboard, tablica reklamowa",
+      "definitionEn": "a large outdoor board used to advertise a product",
+      "example": "A huge billboard by the motorway advertised the new car."
+    },
+    {
+      "term": "flyer",
+      "definitionPl": "ulotka reklamowa",
+      "definitionEn": "a small sheet of paper advertising an event or product",
+      "example": "Someone handed me a flyer for a pizza restaurant."
+    },
+    {
+      "term": "slogan",
+      "definitionPl": "slogan reklamowy",
+      "definitionEn": "a short, memorable phrase used in advertising",
+      "example": "A good slogan is easy to remember and repeat."
+    },
+    {
+      "term": "jingle",
+      "definitionPl": "dżingiel reklamowy",
+      "definitionEn": "a short, catchy tune used in a radio or TV advert",
+      "example": "Children still sing that cereal jingle years later."
+    },
+    {
+      "term": "brand awareness",
+      "definitionPl": "rozpoznawalność marki",
+      "definitionEn": "how well people recognise and remember a brand",
+      "example": "Free samples can raise brand awareness among students."
+    },
+    {
+      "term": "product placement",
+      "definitionPl": "lokowanie produktu",
+      "definitionEn": "showing a branded product in a film or programme as advertising",
+      "example": "The film used product placement for a popular smartphone."
+    },
+    {
+      "term": "celebrity endorsement",
+      "definitionPl": "reklama z udziałem gwiazdy",
+      "definitionEn": "when a famous person is paid to recommend a product",
+      "example": "Celebrity endorsement does not prove that a cream works."
+    },
+    {
+      "term": "junk mail",
+      "definitionPl": "reklamy w skrzynce, spam pocztowy",
+      "definitionEn": "unwanted advertising letters sent to your home",
+      "example": "Most junk mail goes straight into the recycling bin."
+    },
+    {
+      "term": "pop-up advert",
+      "definitionPl": "wyskakująca reklama internetowa",
+      "definitionEn": "an advert that appears suddenly on a website or app",
+      "example": "A pop-up advert blocked the article I was reading."
+    },
+    {
+      "term": "classified ad",
+      "definitionPl": "ogłoszenie drobne",
+      "definitionEn": "a short advertisement in a newspaper or website, often for jobs or goods",
+      "example": "She found a second-hand bike through a classified ad."
+    },
+    {
+      "term": "mailshot",
+      "definitionPl": "masowa wysyłka reklam",
+      "definitionEn": "a large number of advertising letters sent at the same time",
+      "example": "The charity sent a mailshot to every household in the postcode."
+    },
+    {
+      "term": "cold calling",
+      "definitionPl": "akwizycja telefoniczna",
+      "definitionEn": "phoning people you do not know in order to sell something",
+      "example": "Cold calling at dinner time annoys most customers."
+    },
+    {
+      "term": "hard sell",
+      "definitionPl": "agresywna sprzedaż",
+      "definitionEn": "an aggressive way of trying to make someone buy at once",
+      "example": "I left the shop because of the hard sell on extra insurance."
+    },
+    {
+      "term": "selling point",
+      "definitionPl": "atut oferty",
+      "definitionEn": "a feature that makes people want to buy one product rather than another",
+      "example": "Free next-day delivery is their main selling point."
+    },
+    {
+      "term": "word of mouth",
+      "definitionPl": "reklama szeptana, polecenie znajomych",
+      "definitionEn": "people recommending a product by talking about it",
+      "example": "The bakery grew through word of mouth, not through adverts."
+    },
+    {
+      "term": "viral marketing",
+      "definitionPl": "marketing wirusowy",
+      "definitionEn": "advertising designed to be shared quickly online",
+      "example": "The funny clip was a piece of viral marketing for the trainers."
+    },
+    {
+      "term": "sponsored post",
+      "definitionPl": "post sponsorowany",
+      "definitionEn": "a social-media message that a company has paid to promote",
+      "example": "The influencer marked the photo as a sponsored post."
+    },
+    {
+      "term": "banner ad",
+      "definitionPl": "baner reklamowy",
+      "definitionEn": "a rectangular advert across a website",
+      "example": "I closed the banner ad so I could read the article."
+    },
+    {
+      "term": "catalogue",
+      "definitionPl": "katalog (sklepowy)",
+      "definitionEn": "a booklet or site listing goods you can order",
+      "example": "The spring catalogue arrived with the weekend papers."
+    },
+    {
+      "term": "leaflet",
+      "definitionPl": "ulotka informacyjna",
+      "definitionEn": "a folded sheet of paper with information or advertising",
+      "example": "They put a leaflet about the sale through every letter box."
+    },
+    {
+      "term": "advertising campaign",
+      "definitionPl": "kampania reklamowa",
+      "definitionEn": "a planned series of adverts for one product or cause",
+      "example": "The advertising campaign ran on TV and on the underground."
+    },
+    {
+      "term": "brand image",
+      "definitionPl": "wizerunek marki",
+      "definitionEn": "the idea people have of a company and its products",
+      "example": "Cheap materials can damage a luxury brand image."
+    },
+    {
+      "term": "small print",
+      "definitionPl": "drobny druk (w umowie)",
+      "definitionEn": "the detailed conditions, often in tiny letters, at the bottom of a contract",
+      "example": "Always read the small print before you sign a phone contract."
+    },
+    {
+      "term": "free sample",
+      "definitionPl": "darmowa próbka",
+      "definitionEn": "a small amount of a product given away so you can try it",
+      "example": "They handed out a free sample of the new yoghurt."
+    },
+    {
+      "term": "promotional offer",
+      "definitionPl": "oferta promocyjna",
+      "definitionEn": "a special deal used to attract customers for a limited time",
+      "example": "The promotional offer ends on Sunday at midnight."
+    },
+    {
+      "term": "customer",
+      "definitionPl": "klient",
+      "definitionEn": "a person who buys goods or services from a shop or company",
+      "example": "A polite customer still has the right to a refund."
+    },
+    {
+      "term": "refund",
+      "definitionPl": "zwrot pieniędzy",
+      "definitionEn": "money you get back when you return goods or cancel a service",
+      "example": "They gave me a full refund because the toaster was broken."
+    },
+    {
+      "term": "warranty",
+      "definitionPl": "gwarancja (na sprzęt)",
+      "definitionEn": "a written promise that a product will work for a stated period",
+      "example": "The warranty does not cover accidental damage."
+    },
+    {
+      "term": "faulty",
+      "definitionPl": "wadliwy",
+      "definitionEn": "not working correctly because of a defect",
+      "example": "This charger is faulty — it gets dangerously hot."
+    },
+    {
+      "term": "ombudsman",
+      "definitionPl": "rzecznik praw (konsumenta)",
+      "definitionEn": "an official who investigates complaints against companies or services",
+      "example": "If the bank ignores you, take the case to the ombudsman."
+    },
+    {
+      "term": "after-sales service",
+      "definitionPl": "serwis posprzedażny",
+      "definitionEn": "help, repairs and advice after you have bought a product",
+      "example": "Good after-sales service is why we stay with this brand."
+    },
+    {
+      "term": "return policy",
+      "definitionPl": "zasady zwrotów",
+      "definitionEn": "the shop's rules about bringing goods back",
+      "example": "The return policy allows fourteen days for unused clothes."
+    },
+    {
+      "term": "money-back guarantee",
+      "definitionPl": "gwarancja zwrotu pieniędzy",
+      "definitionEn": "a promise that you will get your money back if you are not satisfied",
+      "example": "The course comes with a thirty-day money-back guarantee."
+    },
+    {
+      "term": "replacement",
+      "definitionPl": "wymiana towaru",
+      "definitionEn": "a new item given instead of one that is faulty or unsuitable",
+      "example": "They sent a replacement because the first kettle leaked."
+    },
+    {
+      "term": "compensation",
+      "definitionPl": "odszkodowanie, rekompensata",
+      "definitionEn": "money paid because goods or a service caused loss or harm",
+      "example": "We asked for compensation for the ruined weekend."
+    },
+    {
+      "term": "cooling-off period",
+      "definitionPl": "okres na odstąpienie od umowy",
+      "definitionEn": "a set time after a sale when you may cancel without a penalty",
+      "example": "Online shoppers have a cooling-off period of fourteen days."
+    },
+    {
+      "term": "consumer rights",
+      "definitionPl": "prawa konsumenta",
+      "definitionEn": "the legal protections a buyer has when purchasing goods or services",
+      "example": "Know your consumer rights before you accept a store credit."
+    },
+    {
+      "term": "consumer protection",
+      "definitionPl": "ochrona konsumentów",
+      "definitionEn": "laws and bodies that stop shops and advertisers treating buyers unfairly",
+      "example": "Consumer protection law bans misleading adverts."
+    },
+    {
+      "term": "small claims court",
+      "definitionPl": "sąd ds. drobnych roszczeń",
+      "definitionEn": "a court that deals with modest money disputes without a full trial",
+      "example": "She took the builder to the small claims court."
+    },
+    {
+      "term": "Trading Standards",
+      "definitionPl": "inspekcja handlowa (UK)",
+      "definitionEn": "the official service that checks shops follow consumer law",
+      "example": "Report fake goods to Trading Standards, not only to the shop."
+    },
+    {
+      "term": "not fit for purpose",
+      "definitionPl": "nieprzydatny do zamierzonego użytku",
+      "definitionEn": "unsuitable for the use the seller said it was for",
+      "example": "A waterproof coat that leaks is not fit for purpose."
+    },
+    {
+      "term": "as described",
+      "definitionPl": "zgodny z opisem",
+      "definitionEn": "matching the details the seller gave before you bought it",
+      "example": "The sofa was not as described — the fabric was thinner."
+    },
+    {
+      "term": "ordinary wear",
+      "definitionPl": "zwykłe zużycie",
+      "definitionEn": "the normal damage that happens when something is used as intended",
+      "example": "The warranty does not cover ordinary wear of the sole."
+    },
+    {
+      "term": "product recall",
+      "definitionPl": "wycofanie produktu z rynku",
+      "definitionEn": "when a company asks customers to return a dangerous or faulty product",
+      "example": "There was a product recall after the batteries overheated."
+    },
+    {
+      "term": "malfunction",
+      "definitionPl": "awaria, nieprawidłowe działanie",
+      "definitionEn": "to stop working correctly",
+      "example": "The till may malfunction if the software is outdated."
+    },
+    {
+      "term": "damaged goods",
+      "definitionPl": "towar uszkodzony",
+      "definitionEn": "items that are broken, stained or spoiled when they arrive",
+      "example": "Photograph damaged goods before you send them back."
+    },
+    {
+      "term": "late delivery",
+      "definitionPl": "spóźniona dostawa",
+      "definitionEn": "goods arriving after the date that was promised",
+      "example": "We received a voucher because of the late delivery."
+    },
+    {
+      "term": "tracking number",
+      "definitionPl": "numer przesyłki do śledzenia",
+      "definitionEn": "a code that lets you follow a parcel on its journey",
+      "example": "Enter the tracking number on the courier's website."
+    },
+    {
+      "term": "dispatch",
+      "definitionPl": "wysłać (towar)",
+      "definitionEn": "to send goods from a warehouse to a customer",
+      "example": "They will dispatch the order within twenty-four hours."
+    },
+    {
+      "term": "make a complaint",
+      "definitionPl": "złożyć reklamację",
+      "definitionEn": "to formally say that you are not satisfied with goods or a service",
+      "example": "I want to make a complaint about this noisy fridge."
+    },
+    {
+      "term": "extended warranty",
+      "definitionPl": "przedłużona gwarancja",
+      "definitionEn": "extra cover, often paid for, after the free guarantee ends",
+      "example": "An extended warranty on a cheap toaster is rarely worth it."
+    },
+    {
+      "term": "plumber",
+      "definitionPl": "hydraulik",
+      "definitionEn": "a person whose job is to fit and repair water pipes and toilets",
+      "example": "Call a plumber if the tap will not stop dripping."
+    },
+    {
+      "term": "electrician",
+      "definitionPl": "elektryk",
+      "definitionEn": "a person whose job is to fit and repair electrical systems",
+      "example": "Only a qualified electrician should replace the fuse box."
+    },
+    {
+      "term": "locksmith",
+      "definitionPl": "ślusarz (od zamków)",
+      "definitionEn": "a person who fits, opens and repairs locks",
+      "example": "We had to call a locksmith when the key snapped."
+    },
+    {
+      "term": "mechanic",
+      "definitionPl": "mechanik (samochodowy)",
+      "definitionEn": "a person who repairs engines and vehicles",
+      "example": "The mechanic said the brakes needed new pads."
+    },
+    {
+      "term": "dry-cleaner's",
+      "definitionPl": "pralnia chemiczna",
+      "definitionEn": "a shop that cleans clothes you cannot wash at home",
+      "example": "Take the wool coat to the dry-cleaner's, not the washing machine."
+    },
+    {
+      "term": "beautician",
+      "definitionPl": "kosmetyczka",
+      "definitionEn": "a person who gives beauty treatments such as facials and nails",
+      "example": "I have an appointment with the beautician on Friday."
+    },
+    {
+      "term": "call-out charge",
+      "definitionPl": "opłata za dojazd fachowca",
+      "definitionEn": "a fee for a worker to come to your home, before any repair",
+      "example": "The plumber's call-out charge is fifty pounds in the evening."
+    },
+    {
+      "term": "hourly rate",
+      "definitionPl": "stawka godzinowa",
+      "definitionEn": "the amount a worker charges for each hour of work",
+      "example": "Ask for the hourly rate before the electrician starts."
+    },
+    {
+      "term": "quote",
+      "definitionPl": "wycena, kosztorys",
+      "definitionEn": "a written price offered for a job before the work begins",
+      "example": "Get a quote from two builders before you decide."
+    },
+    {
+      "term": "gratuity",
+      "definitionPl": "napiwek, gratyfikacja",
+      "definitionEn": "money given to staff for good service, sometimes added to a bill",
+      "example": "A ten percent gratuity was already added to the bill."
+    },
+    {
+      "term": "tradesperson",
+      "definitionPl": "fachowiec (rzemieślnik)",
+      "definitionEn": "a skilled worker such as a plumber, electrician or carpenter",
+      "example": "Hire a qualified tradesperson, not a cheap untrained neighbour."
+    },
+    {
+      "term": "boycott",
+      "definitionPl": "bojkot",
+      "definitionEn": "refusing to buy from a company as a protest",
+      "example": "Shoppers began a boycott after the factory scandal."
+    },
+    {
+      "term": "impulse buy",
+      "definitionPl": "zakup pod wpływem impulsu",
+      "definitionEn": "something you buy suddenly without planning",
+      "example": "Chocolate at the till is a classic impulse buy."
+    },
+    {
+      "term": "planned obsolescence",
+      "definitionPl": "planowane postarzanie produktu",
+      "definitionEn": "designing goods to wear out or go out of date so people buy again",
+      "example": "Critics say cheap phones use planned obsolescence to boost sales."
+    },
+    {
+      "term": "ethical shopping",
+      "definitionPl": "zakupy etyczne",
+      "definitionEn": "choosing goods made without harm to people, animals or the planet",
+      "example": "Ethical shopping often means paying a little more for clothes."
+    },
+    {
+      "term": "ethically sourced",
+      "definitionPl": "pochodzący z etycznego źródła",
+      "definitionEn": "obtained in a way that treats workers and producers fairly",
+      "example": "The café uses ethically sourced cocoa in its brownies."
+    },
+    {
+      "term": "sweatshop",
+      "definitionPl": "sweatshop, zakład wyzyskujący pracowników",
+      "definitionEn": "a factory with very poor pay and conditions",
+      "example": "The documentary showed a sweatshop behind a famous label."
+    },
+    {
+      "term": "shopaholic",
+      "definitionPl": "osoba uzależniona od zakupów",
+      "definitionEn": "a person who cannot stop buying things, even if they do not need them",
+      "example": "A shopaholic may hide bags from the family."
+    },
+    {
+      "term": "retail therapy",
+      "definitionPl": "terapia zakupami",
+      "definitionEn": "buying things in order to cheer yourself up",
+      "example": "Retail therapy will not solve exam stress."
+    },
+    {
+      "term": "designer label",
+      "definitionPl": "marka projektancka",
+      "definitionEn": "clothes or goods with a famous fashion designer's name",
+      "example": "A designer label on a bag can double the price."
+    },
+    {
+      "term": "own-brand",
+      "definitionPl": "marka własna sieci",
+      "definitionEn": "a product sold under the supermarket's own name, usually cheaper",
+      "example": "Own-brand cereal often tastes as good as the famous box."
+    },
+    {
+      "term": "upmarket",
+      "definitionPl": "ekskluzywny, z wyższej półki",
+      "definitionEn": "intended for richer customers; high quality and expensive",
+      "example": "They moved the shop to a more upmarket street."
+    },
+    {
+      "term": "mass-produced",
+      "definitionPl": "masowo produkowany",
+      "definitionEn": "made in large numbers by machines, not by hand",
+      "example": "Mass-produced furniture is cheaper but less original."
+    },
+    {
+      "term": "throwaway society",
+      "definitionPl": "społeczeństwo jednorazowych produktów",
+      "definitionEn": "a culture that throws things away instead of repairing them",
+      "example": "A throwaway society fills landfills with last year's gadgets."
+    },
+    {
+      "term": "consumerism",
+      "definitionPl": "konsumpcjonizm",
+      "definitionEn": "the idea that buying more and more goods is a good way to live",
+      "example": "Some essays criticise consumerism as empty and wasteful."
+    }
+  ]
+}

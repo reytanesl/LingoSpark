@@ -1,0 +1,1108 @@
+{
+  "id": "matura-pr-sport",
+  "sku": "LS-PR-SPORT",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Sport",
+  "topicEn": "Sport",
+  "titlePl": "Matura PR: Sport — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Sport — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Sport na maturę rozszerzoną: dyscypliny, obiekty, zawody, trening i problemy sportu. Fiszki ENG–PL.",
+  "blurbEn": "Extended-level Sport vocabulary for the Polish Matura: disciplines, venues, events, training and sporting issues. ENG–PL flashcards.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura",
+    "rozszerzona",
+    "sport",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "Polish exam"
+  ],
+  "items": [
+    {
+      "term": "athletics",
+      "definitionPl": "lekkoatletyka",
+      "definitionEn": "track and field sports such as running, jumping and throwing",
+      "example": "School sports day includes athletics events from the 100 metres to the shot put."
+    },
+    {
+      "term": "gymnastics",
+      "definitionPl": "gimnastyka sportowa",
+      "definitionEn": "a sport of exercises on the floor and apparatus that need strength, balance and control",
+      "example": "Gymnastics training at this club starts at six in the morning."
+    },
+    {
+      "term": "martial arts",
+      "definitionPl": "sztuki walki",
+      "definitionEn": "combat sports such as judo, karate or taekwondo",
+      "example": "She took up martial arts after a self-defence course at school."
+    },
+    {
+      "term": "extreme sports",
+      "definitionPl": "sporty ekstremalne",
+      "definitionEn": "sports with a high level of danger or adrenaline, such as climbing or rafting",
+      "example": "Insurers charge more if you regularly do extreme sports."
+    },
+    {
+      "term": "motorsport",
+      "definitionPl": "sporty motorowe",
+      "definitionEn": "competitive racing in cars, motorbikes or similar vehicles",
+      "example": "Motorsport on public roads is illegal without a special permit."
+    },
+    {
+      "term": "triathlon",
+      "definitionPl": "triatlon",
+      "definitionEn": "a race combining swimming, cycling and running",
+      "example": "The triathlon starts with a 750-metre swim in the lake."
+    },
+    {
+      "term": "pentathlon",
+      "definitionPl": "pięciobój",
+      "definitionEn": "a contest of five events, in the modern form including fencing and riding",
+      "example": "The modern pentathlon still includes a show-jumping round."
+    },
+    {
+      "term": "weightlifting",
+      "definitionPl": "podnoszenie ciężarów",
+      "definitionEn": "a sport of lifting a loaded bar from the ground to above the head",
+      "example": "Weightlifting at junior level is carefully supervised."
+    },
+    {
+      "term": "archery",
+      "definitionPl": "łucznictwo",
+      "definitionEn": "the sport of shooting arrows at a target with a bow",
+      "example": "Archery requires a quiet hand and a lot of patience."
+    },
+    {
+      "term": "fencing",
+      "definitionPl": "szermierka",
+      "definitionEn": "a combat sport using a foil, épée or sabre",
+      "example": "Fencing masks protect the face from a stray blade."
+    },
+    {
+      "term": "rowing",
+      "definitionPl": "wioślarstwo",
+      "definitionEn": "the sport of racing boats that are moved with oars",
+      "example": "Rowing on the river starts at dawn when the water is calm."
+    },
+    {
+      "term": "canoeing",
+      "definitionPl": "kajakarstwo (canoe)",
+      "definitionEn": "paddling a canoe, often as a race or on fast water",
+      "example": "Canoeing on that stretch of river needs a helmet."
+    },
+    {
+      "term": "windsurfing",
+      "definitionPl": "windsurfing",
+      "definitionEn": "riding a board with a sail, using the wind on water",
+      "example": "Windsurfing is easier on a lake than on a choppy sea."
+    },
+    {
+      "term": "scuba diving",
+      "definitionPl": "nurkowanie z akwalungiem",
+      "definitionEn": "swimming underwater with a tank of compressed air",
+      "example": "Scuba diving around the wreck is only for certified divers."
+    },
+    {
+      "term": "rock climbing",
+      "definitionPl": "wspinaczka skałkowa",
+      "definitionEn": "climbing natural rock faces using hands, feet and safety gear",
+      "example": "Indoor walls are a safer way to start rock climbing."
+    },
+    {
+      "term": "mountaineering",
+      "definitionPl": "alpinizm, himalaizm",
+      "definitionEn": "climbing high mountains, often with ice, snow and altitude",
+      "example": "Mountaineering in the Tatras in winter needs avalanche training."
+    },
+    {
+      "term": "bouldering",
+      "definitionPl": "bouldering",
+      "definitionEn": "climbing short, difficult routes without a rope, using crash mats",
+      "example": "Bouldering builds finger strength faster than long routes."
+    },
+    {
+      "term": "parkour",
+      "definitionPl": "parkour",
+      "definitionEn": "moving through a city or course by jumping, climbing and vaulting",
+      "example": "Parkour in the shopping centre is against the rules."
+    },
+    {
+      "term": "figure skating",
+      "definitionPl": "łyżwiarstwo figurowe",
+      "definitionEn": "ice skating that combines jumps, spins and dance steps",
+      "example": "Figure skating scores both technical elements and artistic impression."
+    },
+    {
+      "term": "biathlon",
+      "definitionPl": "biathlon",
+      "definitionEn": "a winter sport combining cross-country skiing and rifle shooting",
+      "example": "A missed target in the biathlon means extra penalty loops."
+    },
+    {
+      "term": "ski jumping",
+      "definitionPl": "skoki narciarskie",
+      "definitionEn": "skiing down a ramp and jumping as far as possible",
+      "example": "Ski jumping in Zakopane draws huge television audiences in Poland."
+    },
+    {
+      "term": "curling",
+      "definitionPl": "curling",
+      "definitionEn": "a sport on ice in which teams slide stones towards a target",
+      "example": "Curling looks gentle until you try to sweep the ice at full speed."
+    },
+    {
+      "term": "water polo",
+      "definitionPl": "piłka wodna",
+      "definitionEn": "a team ball game played in a pool, similar to handball in water",
+      "example": "Water polo players need huge lung capacity and thick skin."
+    },
+    {
+      "term": "synchronised swimming",
+      "definitionPl": "pływanie synchroniczne",
+      "definitionEn": "a sport in which swimmers perform a routine of movements to music",
+      "example": "Synchronised swimming looks graceful but requires intense strength."
+    },
+    {
+      "term": "orienteering",
+      "definitionPl": "bieg na orientację",
+      "definitionEn": "finding your way across country with a map and compass against the clock",
+      "example": "Orienteering in the forest is harder when the paths look the same."
+    },
+    {
+      "term": "show jumping",
+      "definitionPl": "skoki przez przeszkody (jeździectwo)",
+      "definitionEn": "a riding event in which horse and rider jump a course of fences",
+      "example": "A pole down in show jumping adds four faults to the score."
+    },
+    {
+      "term": "snooker",
+      "definitionPl": "snooker",
+      "definitionEn": "a cue sport played with 21 balls on a large table, popular in Britain",
+      "example": "A maximum break in snooker is 147 points."
+    },
+    {
+      "term": "netball",
+      "definitionPl": "netball",
+      "definitionEn": "a team game similar to basketball, widely played in British schools",
+      "example": "Netball is still more common than basketball in many girls' PE lessons."
+    },
+    {
+      "term": "field hockey",
+      "definitionPl": "hokej na trawie",
+      "definitionEn": "a team game played with sticks and a ball on grass or artificial turf",
+      "example": "Field hockey at this level is extremely fast and physical."
+    },
+    {
+      "term": "rugby union",
+      "definitionPl": "rugby union",
+      "definitionEn": "a 15-a-side rugby code with scrums, lineouts and tries worth five points",
+      "example": "Rugby union at school is optional because of the injury risk."
+    },
+    {
+      "term": "stadium",
+      "definitionPl": "stadion",
+      "definitionEn": "a large sports ground with seats around the playing area",
+      "example": "The new stadium holds forty thousand spectators."
+    },
+    {
+      "term": "pitch",
+      "definitionPl": "boisko (trawiaste)",
+      "definitionEn": "the marked grass or turf area where football or rugby is played",
+      "example": "Heavy rain left the pitch unfit for a Friday night fixture."
+    },
+    {
+      "term": "court",
+      "definitionPl": "kort, boisko twarde",
+      "definitionEn": "the marked area for tennis, basketball, volleyball or squash",
+      "example": "We booked an indoor court because the wind was too strong."
+    },
+    {
+      "term": "athletics track",
+      "definitionPl": "bieżnia lekkoatletyczna",
+      "definitionEn": "the oval running surface used for track events",
+      "example": "Six schools shared the athletics track on Wednesday afternoon."
+    },
+    {
+      "term": "arena",
+      "definitionPl": "arena, hala widowiskowo-sportowa",
+      "definitionEn": "a large indoor venue for sport or entertainment",
+      "example": "The basketball final was played in a packed indoor arena."
+    },
+    {
+      "term": "velodrome",
+      "definitionPl": "welodrom",
+      "definitionEn": "a track, often banked, designed for cycle racing",
+      "example": "The national velodrome is open to amateur clubs on Sunday mornings."
+    },
+    {
+      "term": "ice rink",
+      "definitionPl": "lodowisko",
+      "definitionEn": "an ice surface for skating, ice hockey or curling",
+      "example": "The ice rink closes in April and becomes a concert hall."
+    },
+    {
+      "term": "ski slope",
+      "definitionPl": "stok narciarski",
+      "definitionEn": "a prepared hillside used for skiing or snowboarding",
+      "example": "The ski slope is floodlit until nine in the evening."
+    },
+    {
+      "term": "golf course",
+      "definitionPl": "pole golfowe",
+      "definitionEn": "an area of land with numbered holes for playing golf",
+      "example": "The municipal golf course is cheaper than the private club."
+    },
+    {
+      "term": "sports hall",
+      "definitionPl": "hala sportowa",
+      "definitionEn": "an indoor hall marked for several sports, often at a school",
+      "example": "PE moves to the sports hall when the field is frozen."
+    },
+    {
+      "term": "changing room",
+      "definitionPl": "szatnia sportowa",
+      "definitionEn": "a room where players change clothes before and after sport",
+      "example": "Leave boots outside the changing room so the floor stays dry."
+    },
+    {
+      "term": "dugout",
+      "definitionPl": "ławka trenerska, dugout",
+      "definitionEn": "the shelter beside the pitch where the coach and substitutes sit",
+      "example": "The manager stayed in the dugout until the equaliser."
+    },
+    {
+      "term": "grandstand",
+      "definitionPl": "trybuna główna",
+      "definitionEn": "the main, often covered, stand with the best seats",
+      "example": "Season-ticket holders sit in the grandstand above the halfway line."
+    },
+    {
+      "term": "floodlights",
+      "definitionPl": "sztuczne oświetlenie boiska",
+      "definitionEn": "powerful lights that allow sport to be played after dark",
+      "example": "The floodlights failed, so the second half was delayed."
+    },
+    {
+      "term": "sports venue",
+      "definitionPl": "obiekt sportowy",
+      "definitionEn": "a place designed for sport, such as a stadium, pool or hall",
+      "example": "Every sports venue at the championships is accessible by tram."
+    },
+    {
+      "term": "gym",
+      "definitionPl": "siłownia; sala gimnastyczna",
+      "definitionEn": "a place with equipment for physical training",
+      "example": "The gym is packed after work, so she trains at seven in the morning."
+    },
+    {
+      "term": "racket",
+      "definitionPl": "rakieta (tenis, badminton)",
+      "definitionEn": "the strung implement used to hit the ball or shuttlecock",
+      "example": "A broken string in her racket cost her the second set."
+    },
+    {
+      "term": "helmet",
+      "definitionPl": "kask",
+      "definitionEn": "a hard hat that protects the head in cycling, skating or riding",
+      "example": "A cycle helmet is compulsory in this race series."
+    },
+    {
+      "term": "shin pads",
+      "definitionPl": "ochraniacze na piszczele",
+      "definitionEn": "guards worn on the lower legs, especially in football",
+      "example": "The referee will not let you play without shin pads."
+    },
+    {
+      "term": "gumshield",
+      "definitionPl": "ochraniacz na zęby",
+      "definitionEn": "a plastic guard worn in the mouth to protect the teeth",
+      "example": "Rugby players must wear a gumshield in every match."
+    },
+    {
+      "term": "goggles",
+      "definitionPl": "gogle",
+      "definitionEn": "protective glasses for swimming, skiing or cycling",
+      "example": "Anti-fog goggles make the last length of the race easier."
+    },
+    {
+      "term": "wetsuit",
+      "definitionPl": "pianka (do sportów wodnych)",
+      "definitionEn": "a close-fitting rubber suit that keeps you warm in cold water",
+      "example": "A winter wetsuit is essential for open-water swimming in March."
+    },
+    {
+      "term": "trainers",
+      "definitionPl": "buty sportowe",
+      "definitionEn": "comfortable sports shoes for running or the gym",
+      "example": "Do not wear fashion trainers on the indoor athletics track."
+    },
+    {
+      "term": "football boots",
+      "definitionPl": "korki, buty piłkarskie",
+      "definitionEn": "studded shoes designed for football or rugby on grass",
+      "example": "Muddy football boots are not allowed in the school corridor."
+    },
+    {
+      "term": "spikes",
+      "definitionPl": "kolce (buty lekkoatletyczne)",
+      "definitionEn": "running shoes with metal points for grip on a track",
+      "example": "Borrow a pair of spikes if you are running the 400 metres."
+    },
+    {
+      "term": "stopwatch",
+      "definitionPl": "stoper",
+      "definitionEn": "a watch used to measure exact times in training or races",
+      "example": "The coach clicked the stopwatch as she crossed the line."
+    },
+    {
+      "term": "scoreboard",
+      "definitionPl": "tablica wyników",
+      "definitionEn": "a board that displays the score and sometimes the time",
+      "example": "The scoreboard still showed 0–0 after forty minutes."
+    },
+    {
+      "term": "goalposts",
+      "definitionPl": "słupki bramki",
+      "definitionEn": "the two upright posts, and usually a bar, that form a goal",
+      "example": "The shot hit the goalposts and bounced back into play."
+    },
+    {
+      "term": "shuttlecock",
+      "definitionPl": "lotka (do badmintona)",
+      "definitionEn": "the feathered or plastic object hit in badminton",
+      "example": "A slow shuttlecock is easier for beginners to control."
+    },
+    {
+      "term": "puck",
+      "definitionPl": "krążek (hokejowy)",
+      "definitionEn": "the hard rubber disc used in ice hockey",
+      "example": "The puck went in off a skate and the goal stood."
+    },
+    {
+      "term": "barbell",
+      "definitionPl": "sztanga",
+      "definitionEn": "a long bar with weights at each end, used for lifting",
+      "example": "Never lift a loaded barbell without a spotter."
+    },
+    {
+      "term": "dumbbells",
+      "definitionPl": "hantle",
+      "definitionEn": "short bars with weights, held in each hand",
+      "example": "Start with light dumbbells until your technique is clean."
+    },
+    {
+      "term": "treadmill",
+      "definitionPl": "bieżnia (treningowa)",
+      "definitionEn": "a machine with a moving belt that you run or walk on",
+      "example": "Twenty minutes on the treadmill is her recovery session."
+    },
+    {
+      "term": "harness",
+      "definitionPl": "uprząż (wspinaczkowa)",
+      "definitionEn": "straps worn around the body and attached to a rope for safety",
+      "example": "Check your harness twice before you leave the ground."
+    },
+    {
+      "term": "oar",
+      "definitionPl": "wiosło (do łodzi wioślarskiej)",
+      "definitionEn": "a long pole with a blade, used to row a boat",
+      "example": "She snapped an oar in the last 200 metres of the race."
+    },
+    {
+      "term": "ski poles",
+      "definitionPl": "kije narciarskie",
+      "definitionEn": "poles used for balance and push on skis",
+      "example": "Adjust the straps on your ski poles before the first descent."
+    },
+    {
+      "term": "fixture",
+      "definitionPl": "mecz w terminarzu",
+      "definitionEn": "a scheduled match in a competition",
+      "example": "Saturday's fixture was postponed because of a frozen pitch."
+    },
+    {
+      "term": "tournament",
+      "definitionPl": "turniej",
+      "definitionEn": "a series of games that continue until there is a winner",
+      "example": "The junior tennis tournament lasts four days."
+    },
+    {
+      "term": "championship",
+      "definitionPl": "mistrzostwa",
+      "definitionEn": "a competition to decide the best team or player in a sport",
+      "example": "She won the national swimming championship in the 200 metres."
+    },
+    {
+      "term": "qualifying round",
+      "definitionPl": "runda kwalifikacyjna",
+      "definitionEn": "an early stage that decides who reaches the main competition",
+      "example": "He failed to get through the qualifying round by two seconds."
+    },
+    {
+      "term": "league",
+      "definitionPl": "liga",
+      "definitionEn": "a group of clubs that play one another over a season",
+      "example": "Our club was promoted to a higher league last May."
+    },
+    {
+      "term": "cup tie",
+      "definitionPl": "mecz pucharowy",
+      "definitionEn": "a match in a knockout cup competition",
+      "example": "A cup tie against a Premier League side is a huge occasion."
+    },
+    {
+      "term": "quarter-final",
+      "definitionPl": "ćwierćfinał",
+      "definitionEn": "a match whose winner reaches the last four",
+      "example": "They have never gone beyond the quarter-final of this event."
+    },
+    {
+      "term": "semi-final",
+      "definitionPl": "półfinał",
+      "definitionEn": "a match whose winner goes through to the final",
+      "example": "A late penalty sent them out in the semi-final."
+    },
+    {
+      "term": "play-off",
+      "definitionPl": "baraż",
+      "definitionEn": "an extra match or series to decide promotion, qualification or a title",
+      "example": "The play-off will be over two legs, home and away."
+    },
+    {
+      "term": "derby",
+      "definitionPl": "derby, mecz lokalnych rywali",
+      "definitionEn": "a match between two clubs from the same city or region",
+      "example": "The Kraków derby always sells out within hours."
+    },
+    {
+      "term": "friendly",
+      "definitionPl": "mecz towarzyski",
+      "definitionEn": "a match that does not count in a league or cup",
+      "example": "The friendly against Wales is a chance to try a new formation."
+    },
+    {
+      "term": "extra time",
+      "definitionPl": "dogrywka",
+      "definitionEn": "additional playing time when a knockout match is still a draw",
+      "example": "They scored two minutes into extra time."
+    },
+    {
+      "term": "penalty shoot-out",
+      "definitionPl": "seria rzutów karnych",
+      "definitionEn": "taking turns at penalties to decide a drawn knockout match",
+      "example": "We lost on a penalty shoot-out after a goalless draw."
+    },
+    {
+      "term": "Olympic Games",
+      "definitionPl": "igrzyska olimpijskie",
+      "definitionEn": "the world's largest multi-sport event, held every four years",
+      "example": "Hosting the Olympic Games can transform a city's transport."
+    },
+    {
+      "term": "Paralympic Games",
+      "definitionPl": "igrzyska paraolimpijskie",
+      "definitionEn": "the major international multi-sport event for athletes with disabilities",
+      "example": "Coverage of the Paralympic Games is far better than a decade ago."
+    },
+    {
+      "term": "Grand Slam",
+      "definitionPl": "Wielki Szlem (tenis)",
+      "definitionEn": "one of the four major tennis tournaments, or winning all four in a year",
+      "example": "Winning a Grand Slam is still the peak of a tennis career."
+    },
+    {
+      "term": "world record",
+      "definitionPl": "rekord świata",
+      "definitionEn": "the best official result ever achieved in an event",
+      "example": "The world record in the marathon has fallen several times this decade."
+    },
+    {
+      "term": "knockout stage",
+      "definitionPl": "faza pucharowa",
+      "definitionEn": "the part of a tournament in which losing means elimination",
+      "example": "Two draws in the group still put them into the knockout stage."
+    },
+    {
+      "term": "group stage",
+      "definitionPl": "faza grupowa",
+      "definitionEn": "the opening round in which teams play in small groups",
+      "example": "A defeat in the group stage does not always mean going home."
+    },
+    {
+      "term": "opening ceremony",
+      "definitionPl": "ceremonia otwarcia",
+      "definitionEn": "the official show that starts a major championship or Games",
+      "example": "The opening ceremony featured dancers from every host region."
+    },
+    {
+      "term": "medal ceremony",
+      "definitionPl": "ceremonia medalowa",
+      "definitionEn": "the official presentation of medals after an event",
+      "example": "Tears at the medal ceremony are part of the television ritual."
+    },
+    {
+      "term": "seeded player",
+      "definitionPl": "zawodnik rozstawiony",
+      "definitionEn": "a highly ranked competitor given a favourable place in the draw",
+      "example": "A seeded player can still go out in the first round on a bad day."
+    },
+    {
+      "term": "heat",
+      "definitionPl": "bieg eliminacyjny",
+      "definitionEn": "an early race that decides who reaches the next round",
+      "example": "She won her heat comfortably and saved energy for the final."
+    },
+    {
+      "term": "kick-off",
+      "definitionPl": "rozpoczęcie meczu",
+      "definitionEn": "the first kick that starts a football match; the scheduled start time",
+      "example": "Kick-off has been moved to midday because of the heat."
+    },
+    {
+      "term": "referee",
+      "definitionPl": "sędzia (np. piłka nożna, rugby)",
+      "definitionEn": "the official who controls a football, rugby or boxing contest",
+      "example": "The referee added five minutes for time-wasting."
+    },
+    {
+      "term": "umpire",
+      "definitionPl": "sędzia (tenis, krykiet, siatkówka)",
+      "definitionEn": "the official who controls tennis, cricket, volleyball or badminton",
+      "example": "The umpire overruled the line judge after a challenge."
+    },
+    {
+      "term": "assistant referee",
+      "definitionPl": "sędzia asystent, linia",
+      "definitionEn": "an official who helps the referee, especially with offside and throw-ins",
+      "example": "The assistant referee raised the flag a moment too late."
+    },
+    {
+      "term": "substitute",
+      "definitionPl": "rezerwowy, zmiennik",
+      "definitionEn": "a player who comes on in place of a teammate",
+      "example": "The substitute scored with his first touch of the ball."
+    },
+    {
+      "term": "spectator",
+      "definitionPl": "widz na zawodach",
+      "definitionEn": "a person who watches a sports event in person",
+      "example": "Every spectator was asked not to use a laser pointer."
+    },
+    {
+      "term": "hooligan",
+      "definitionPl": "chuligan stadionowy",
+      "definitionEn": "a person who causes violence or damage in connection with sport",
+      "example": "A known hooligan was banned from every ground in the league."
+    },
+    {
+      "term": "coach",
+      "definitionPl": "trener",
+      "definitionEn": "a person who trains a team or athlete",
+      "example": "The coach changed the formation at half-time."
+    },
+    {
+      "term": "manager",
+      "definitionPl": "trener prowadzący drużynę (BrE, piłka)",
+      "definitionEn": "the person in charge of a football club's team affairs",
+      "example": "The manager refused to criticise the referee after the defeat."
+    },
+    {
+      "term": "captain",
+      "definitionPl": "kapitan drużyny",
+      "definitionEn": "the player who leads the team on the field",
+      "example": "The captain asked the umpire to check the ball."
+    },
+    {
+      "term": "goalkeeper",
+      "definitionPl": "bramkarz",
+      "definitionEn": "the player whose job is to stop the ball going into the goal",
+      "example": "The goalkeeper saved the last penalty of the shoot-out."
+    },
+    {
+      "term": "striker",
+      "definitionPl": "napastnik",
+      "definitionEn": "a forward whose main job is to score goals",
+      "example": "The young striker has eight goals in ten league matches."
+    },
+    {
+      "term": "defender",
+      "definitionPl": "obrońca",
+      "definitionEn": "a player whose main job is to stop the other team scoring",
+      "example": "The defender cleared the ball off the line."
+    },
+    {
+      "term": "midfielder",
+      "definitionPl": "pomocnik",
+      "definitionEn": "a player who links defence and attack in the middle of the pitch",
+      "example": "The midfielder covered more ground than anyone else on the field."
+    },
+    {
+      "term": "sports commentator",
+      "definitionPl": "komentator sportowy",
+      "definitionEn": "a person who describes a match live on television or radio",
+      "example": "The sports commentator apologised for shouting during the goal."
+    },
+    {
+      "term": "pundit",
+      "definitionPl": "ekspert telewizyjny, analityk",
+      "definitionEn": "a former player or expert who analyses sport on television",
+      "example": "The studio pundit predicted a draw and was proved wrong."
+    },
+    {
+      "term": "scout",
+      "definitionPl": "skaut, łowca talentów",
+      "definitionEn": "a person who watches players to find talent for a club",
+      "example": "A scout from a German club sat in the stand with a notebook."
+    },
+    {
+      "term": "physio",
+      "definitionPl": "fizjoterapeuta sportowy",
+      "definitionEn": "a physiotherapist who treats sports injuries",
+      "example": "The physio signalled that the winger could not continue."
+    },
+    {
+      "term": "steward",
+      "definitionPl": "steward stadionowy, porządkowy",
+      "definitionEn": "a person who helps with safety and crowd control at a venue",
+      "example": "A steward asked him to take off the large flag on a pole."
+    },
+    {
+      "term": "supporter",
+      "definitionPl": "kibic",
+      "definitionEn": "a person who regularly follows and backs a particular team",
+      "example": "The away supporter was held in the station for an hour after the match."
+    },
+    {
+      "term": "sports agent",
+      "definitionPl": "menedżer sportowy, agent",
+      "definitionEn": "a person who represents an athlete in contracts and transfers",
+      "example": "The sports agent negotiated a clause about image rights."
+    },
+    {
+      "term": "amateur",
+      "definitionPl": "amator, zawodnik nieprofesjonalny",
+      "definitionEn": "a person who plays sport without being paid as a professional",
+      "example": "He remains an amateur while he finishes university."
+    },
+    {
+      "term": "professional",
+      "definitionPl": "zawodowiec, sportowiec profesjonalny",
+      "definitionEn": "a person who is paid to play sport as their job",
+      "example": "Very few junior players become a full-time professional."
+    },
+    {
+      "term": "stamina",
+      "definitionPl": "wytrzymałość",
+      "definitionEn": "the ability to keep exercising hard for a long time",
+      "example": "Long Sunday runs are how she builds stamina for the marathon."
+    },
+    {
+      "term": "personal best",
+      "definitionPl": "rekord życiowy, życiówka",
+      "definitionEn": "your own fastest or best result in an event",
+      "example": "She ran a personal best but still finished fourth."
+    },
+    {
+      "term": "warm-up",
+      "definitionPl": "rozgrzewka",
+      "definitionEn": "gentle exercise done before a hard session or match",
+      "example": "A proper warm-up reduces the risk of a pulled muscle."
+    },
+    {
+      "term": "cool-down",
+      "definitionPl": "uspokojenie po wysiłku, schłodzenie",
+      "definitionEn": "gentle exercise after sport so the body recovers gradually",
+      "example": "Skip the cool-down and you will be stiff tomorrow."
+    },
+    {
+      "term": "circuit training",
+      "definitionPl": "trening obwodowy",
+      "definitionEn": "a session of short exercises done one after another at stations",
+      "example": "Circuit training twice a week improved his general fitness."
+    },
+    {
+      "term": "interval training",
+      "definitionPl": "trening interwałowy",
+      "definitionEn": "alternating bursts of hard effort with recovery periods",
+      "example": "Interval training on the track is tougher than a steady jog."
+    },
+    {
+      "term": "weight training",
+      "definitionPl": "trening siłowy",
+      "definitionEn": "exercise using weights to build strength",
+      "example": "Sprinters use weight training to improve their start."
+    },
+    {
+      "term": "endurance",
+      "definitionPl": "wytrzymałość długodystansowa",
+      "definitionEn": "the ability to keep going in long-lasting physical effort",
+      "example": "Cycling to school every day builds endurance without a gym."
+    },
+    {
+      "term": "agility",
+      "definitionPl": "zwinność",
+      "definitionEn": "the ability to change direction quickly and under control",
+      "example": "Ladder drills are meant to improve agility, not just look busy."
+    },
+    {
+      "term": "coordination",
+      "definitionPl": "koordynacja",
+      "definitionEn": "the ability to use different parts of the body together smoothly",
+      "example": "Juggling tennis balls can actually help hand-eye coordination."
+    },
+    {
+      "term": "flexibility",
+      "definitionPl": "gibkość, elastyczność",
+      "definitionEn": "how far your joints and muscles can stretch",
+      "example": "Gymnasts need exceptional flexibility in the spine and hips."
+    },
+    {
+      "term": "recovery",
+      "definitionPl": "regeneracja",
+      "definitionEn": "the process of the body repairing itself after training",
+      "example": "Sleep is a bigger part of recovery than any protein bar."
+    },
+    {
+      "term": "overtraining",
+      "definitionPl": "przetrenowanie",
+      "definitionEn": "training so hard or so often that performance and health get worse",
+      "example": "Irritability and a resting pulse that will not drop can signal overtraining."
+    },
+    {
+      "term": "carbohydrate loading",
+      "definitionPl": "ładowanie węglowodanami",
+      "definitionEn": "eating extra carbohydrates before a long event to store energy",
+      "example": "Carbohydrate loading is useful before a marathon, not before a 100-metre sprint."
+    },
+    {
+      "term": "energy drink",
+      "definitionPl": "napój energetyczny",
+      "definitionEn": "a drink with caffeine and sugar, marketed to boost alertness or performance",
+      "example": "An energy drink is not a substitute for water during training."
+    },
+    {
+      "term": "hydration",
+      "definitionPl": "nawodnienie",
+      "definitionEn": "keeping enough fluid in the body during exercise",
+      "example": "Hydration matters more in a long match than in a short race."
+    },
+    {
+      "term": "tapering",
+      "definitionPl": "schodzenie z obciążeń przed startem",
+      "definitionEn": "reducing training load shortly before a competition so you arrive fresh",
+      "example": "Tapering in the last ten days made her legs feel light on race morning."
+    },
+    {
+      "term": "cross-training",
+      "definitionPl": "trening uzupełniający",
+      "definitionEn": "doing a different sport to support your main one and reduce injury",
+      "example": "Swimming is her cross-training on days when her knees hurt."
+    },
+    {
+      "term": "personal trainer",
+      "definitionPl": "trener personalny",
+      "definitionEn": "a coach who designs and supervises exercise for an individual",
+      "example": "A personal trainer corrected her squat before it damaged her back."
+    },
+    {
+      "term": "training camp",
+      "definitionPl": "zgrupowanie treningowe",
+      "definitionEn": "a period when athletes live and train together, often away from home",
+      "example": "The national team holds a training camp in Spain every January."
+    },
+    {
+      "term": "pre-season",
+      "definitionPl": "okres przygotowawczy, preseason",
+      "definitionEn": "the training period before the competitive season starts",
+      "example": "Pre-season is when fitness is rebuilt after the summer break."
+    },
+    {
+      "term": "off-season",
+      "definitionPl": "okres przejściowy, poza sezonem",
+      "definitionEn": "the period when there is no official competition",
+      "example": "In the off-season he works on strength rather than match fitness."
+    },
+    {
+      "term": "peak fitness",
+      "definitionPl": "szczytowa forma",
+      "definitionEn": "the highest level of condition an athlete can reach for a target event",
+      "example": "She timed her peak fitness for the Olympic trials, not the winter races."
+    },
+    {
+      "term": "blood doping",
+      "definitionPl": "doping krwią",
+      "definitionEn": "illegally boosting performance by manipulating blood or red cells",
+      "example": "Blood doping is harder to detect than some tablets, but it is still cheating."
+    },
+    {
+      "term": "doping",
+      "definitionPl": "doping",
+      "definitionEn": "using banned substances or methods to improve sporting results",
+      "example": "Doping scandals have damaged public trust in cycling."
+    },
+    {
+      "term": "match-fixing",
+      "definitionPl": "ustawianie meczów",
+      "definitionEn": "illegally arranging the result or events of a match, often for betting",
+      "example": "Three players were banned for life after a match-fixing inquiry."
+    },
+    {
+      "term": "equal pay in sport",
+      "definitionPl": "równe płace w sporcie",
+      "definitionEn": "the principle that women and men should receive comparable pay and prizes",
+      "example": "The campaign for equal pay in sport grew after the World Cup win."
+    },
+    {
+      "term": "sportsmanship",
+      "definitionPl": "postawa sportowa, duch fair play",
+      "definitionEn": "fair, respectful behaviour towards opponents and officials",
+      "example": "Lending a spare wheel to a rival is still remembered as sportsmanship."
+    },
+    {
+      "term": "sports scholarship",
+      "definitionPl": "stypendium sportowe",
+      "definitionEn": "money given to a student because of athletic ability",
+      "example": "A sports scholarship allowed him to train and study at the same time."
+    },
+    {
+      "term": "fair play",
+      "definitionPl": "fair play, uczciwa gra",
+      "definitionEn": "playing by the rules and showing respect, even when it costs you",
+      "example": "Kicking the ball out when a player is down is basic fair play."
+    },
+    {
+      "term": "banned substance",
+      "definitionPl": "środek zakazany",
+      "definitionEn": "a drug or chemical that athletes are not allowed to use",
+      "example": "Even a cold remedy can contain a banned substance."
+    },
+    {
+      "term": "performance-enhancing drug",
+      "definitionPl": "środek dopingujący",
+      "definitionEn": "a drug taken to improve strength, speed, endurance or recovery",
+      "example": "A performance-enhancing drug can destroy a career after one positive test."
+    },
+    {
+      "term": "drug test",
+      "definitionPl": "kontrola antydopingowa",
+      "definitionEn": "an official check of blood or urine for banned substances",
+      "example": "Athletes can be asked for a drug test at home, not only after races."
+    },
+    {
+      "term": "life ban",
+      "definitionPl": "dożywotnia dyskwalifikacja",
+      "definitionEn": "a punishment that stops someone competing for the rest of their life",
+      "example": "Match officials received a life ban after the bribery case."
+    },
+    {
+      "term": "hooliganism",
+      "definitionPl": "chuligaństwo stadionowe",
+      "definitionEn": "organised or spontaneous violence by fans around sports events",
+      "example": "Hooliganism in the 1980s led to fences and ID schemes."
+    },
+    {
+      "term": "racism in sport",
+      "definitionPl": "rasizm w sporcie",
+      "definitionEn": "unfair treatment or abuse of people because of race in a sporting context",
+      "example": "Players walked off the pitch in protest against racism in sport."
+    },
+    {
+      "term": "concussion",
+      "definitionPl": "wstrząśnienie mózgu",
+      "definitionEn": "a brain injury from a blow to the head, common in contact sport",
+      "example": "Any suspicion of concussion means the player must leave the field."
+    },
+    {
+      "term": "rehabilitation",
+      "definitionPl": "rehabilitacja (po kontuzji)",
+      "definitionEn": "the process of recovering fitness and skill after injury",
+      "example": "Rehabilitation after the knee operation lasted nine months."
+    },
+    {
+      "term": "VAR",
+      "definitionPl": "VAR, wideoasystent sędziego",
+      "definitionEn": "video technology that helps football referees review key decisions",
+      "example": "VAR disallowed the goal for a narrow offside."
+    },
+    {
+      "term": "yellow card",
+      "definitionPl": "żółta kartka",
+      "definitionEn": "a caution from the referee for unsporting behaviour or a foul",
+      "example": "A second yellow card in the tournament means a one-match ban."
+    },
+    {
+      "term": "red card",
+      "definitionPl": "czerwona kartka",
+      "definitionEn": "a sending-off, leaving the team with one fewer player",
+      "example": "A red card in the first half made the comeback almost impossible."
+    },
+    {
+      "term": "sending-off",
+      "definitionPl": "wykluczenie z gry",
+      "definitionEn": "the act of dismissing a player from the match",
+      "example": "The sending-off was for violent conduct, not a tactical foul."
+    },
+    {
+      "term": "gamesmanship",
+      "definitionPl": "przebiegłość na granicy regulaminu",
+      "definitionEn": "using legal but unsporting tricks to gain an advantage",
+      "example": "Time-wasting is gamesmanship, not the same as breaking the rules."
+    },
+    {
+      "term": "time-wasting",
+      "definitionPl": "przeciąganie czasu",
+      "definitionEn": "deliberately slowing the game to protect a lead",
+      "example": "The referee booked the goalkeeper for obvious time-wasting."
+    },
+    {
+      "term": "diving",
+      "definitionPl": "symulowanie faulu, padanie",
+      "definitionEn": "pretending to be fouled in order to win a free kick or penalty",
+      "example": "Diving in the box can now be punished with a yellow card."
+    },
+    {
+      "term": "transfer fee",
+      "definitionPl": "kwota transferu",
+      "definitionEn": "the money one club pays another to sign a player under contract",
+      "example": "The transfer fee broke the club's previous record."
+    },
+    {
+      "term": "grassroots sport",
+      "definitionPl": "sport powszechny, sport u podstaw",
+      "definitionEn": "local, amateur sport that develops participation rather than elite results",
+      "example": "Cuts to playing fields hurt grassroots sport more than the professional game."
+    },
+    {
+      "term": "elite sport",
+      "definitionPl": "sport wyczynowy, sport elitarny",
+      "definitionEn": "sport at the highest competitive level, usually professional",
+      "example": "Funding for elite sport is easier to justify when medals come in."
+    },
+    {
+      "term": "adrenaline rush",
+      "definitionPl": "zastrzyk adrenaliny",
+      "definitionEn": "a sudden feeling of excitement caused by danger or intense effort",
+      "example": "The adrenaline rush after a bungee jump lasts only a minute."
+    },
+    {
+      "term": "skydiving",
+      "definitionPl": "skoki spadochronowe",
+      "definitionEn": "jumping from an aircraft and falling before opening a parachute",
+      "example": "Tandem skydiving is how most beginners make a first jump."
+    },
+    {
+      "term": "white-water rafting",
+      "definitionPl": "rafting na bystrzynach",
+      "definitionEn": "riding an inflatable raft down fast, rough river water",
+      "example": "White-water rafting on that river is closed when the level is too high."
+    },
+    {
+      "term": "bungee jumping",
+      "definitionPl": "bungee jumping, skoki na bungee",
+      "definitionEn": "jumping from a height with an elastic cord attached to the body",
+      "example": "Bungee jumping from the bridge is banned in high wind."
+    },
+    {
+      "term": "base jumping",
+      "definitionPl": "base jumping",
+      "definitionEn": "parachuting from a fixed object such as a cliff or building",
+      "example": "Base jumping is illegal in many national parks."
+    },
+    {
+      "term": "semi-professional",
+      "definitionPl": "półzawodowy",
+      "definitionEn": "paid something to play, but not enough to live on as a full-time job",
+      "example": "Most players in the third division are still semi-professional."
+    },
+    {
+      "term": "first team",
+      "definitionPl": "pierwsza drużyna",
+      "definitionEn": "the club's main senior side, not the reserves or youth team",
+      "example": "He trained with the first team for two weeks before debuting."
+    },
+    {
+      "term": "youth academy",
+      "definitionPl": "akademia młodzieżowa",
+      "definitionEn": "a club's system for training talented young players",
+      "example": "Leaving the youth academy at sixteen is a huge risk."
+    },
+    {
+      "term": "wheelchair basketball",
+      "definitionPl": "koszykówka na wózkach",
+      "definitionEn": "basketball played in sports wheelchairs, including at Paralympic level",
+      "example": "Wheelchair basketball is one of the fastest Paralympic team sports."
+    },
+    {
+      "term": "Paralympic sport",
+      "definitionPl": "sport paraolimpijski",
+      "definitionEn": "sport organised for athletes with disabilities at elite international level",
+      "example": "Classification is a constant debate in Paralympic sport."
+    },
+    {
+      "term": "season ticket",
+      "definitionPl": "karnet (na mecze)",
+      "definitionEn": "a ticket that covers all of a team's home matches in a season",
+      "example": "A season ticket in the main stand costs more than a holiday."
+    },
+    {
+      "term": "home advantage",
+      "definitionPl": "przewaga własnego boiska",
+      "definitionEn": "the benefit a team gets from playing at its own ground",
+      "example": "Noise from the home crowd is part of home advantage."
+    },
+    {
+      "term": "away fixture",
+      "definitionPl": "mecz wyjazdowy",
+      "definitionEn": "a match played at the opponent's ground",
+      "example": "The away fixture in Gdańsk means a six-hour bus trip."
+    },
+    {
+      "term": "league table",
+      "definitionPl": "tabela ligowa",
+      "definitionEn": "the ranking of clubs by points during a league season",
+      "example": "Goal difference could decide the league table on the last day."
+    },
+    {
+      "term": "hat-trick",
+      "definitionPl": "hat-trick, trzy gole jednego zawodnika",
+      "definitionEn": "three goals scored by the same player in one match",
+      "example": "Her hat-trick came from a header, a tap-in and a penalty."
+    },
+    {
+      "term": "own goal",
+      "definitionPl": "gol samobójczy",
+      "definitionEn": "a goal accidentally scored in your own team's net",
+      "example": "An own goal in the ninety-fourth minute ended the unbeaten run."
+    },
+    {
+      "term": "offside",
+      "definitionPl": "spalony",
+      "definitionEn": "a rule that a player is too far forward when the ball is played",
+      "example": "The goal was ruled out for offside after a VAR review."
+    },
+    {
+      "term": "sports psychology",
+      "definitionPl": "psychologia sportu",
+      "definitionEn": "the study and practice of the mental side of sporting performance",
+      "example": "Sports psychology helped him deal with the fear of a second injury."
+    },
+    {
+      "term": "sports injury",
+      "definitionPl": "kontuzja sportowa",
+      "definitionEn": "physical damage caused by training or competition",
+      "example": "A sports injury at eighteen ended her hopes of a professional contract."
+    },
+    {
+      "term": "inclusion in sport",
+      "definitionPl": "włączanie / dostępność sportu",
+      "definitionEn": "making sport open and fair for people of different abilities, genders and backgrounds",
+      "example": "Inclusion in sport means ramps at the pool, not only slogans on shirts."
+    }
+  ]
+}

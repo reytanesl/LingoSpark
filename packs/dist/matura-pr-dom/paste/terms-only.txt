@@ -1,0 +1,180 @@
+tenement
+penthouse
+council housing
+studio flat
+bedsit
+high-rise block
+tower block
+maisonette
+loft conversion
+converted warehouse
+period property
+thatched cottage
+farmhouse
+hall of residence
+shared accommodation
+sheltered housing
+mobile home
+prefabricated house
+newly built property
+second home
+buy-to-let property
+gated community
+housing estate
+brownfield site
+greenfield site
+terraced housing
+detached property
+purpose-built flat
+mixed-use development
+residential development
+co-housing scheme
+granny flat
+basement flat
+attic flat
+garden flat
+housing cooperative
+open-plan
+underfloor heating
+fitted kitchen
+built-in wardrobe
+ensuite bathroom
+walk-in wardrobe
+conservatory
+cellar
+pantry
+mezzanine
+skylight
+bay window
+double glazing
+insulation
+boiler
+fuse box
+extractor fan
+smoke detector
+burglar alarm
+intercom
+parquet flooring
+laminate flooring
+period features
+exposed brickwork
+power shower
+storage space
+communal staircase
+fire escape
+communal garden
+smart meter
+heat pump
+broadband connection
+damp-proof course
+cavity wall insulation
+airing cupboard
+breakfast bar
+kitchen island
+fitted appliances
+walk-in shower
+wet room
+amenities
+local amenities
+within walking distance
+well-connected
+poorly served by public transport
+green space
+high street
+cul-de-sac
+traffic congestion
+cycle lane
+pedestrianised zone
+refuse collection
+commuter belt
+dormitory town
+inner city
+leafy suburb
+rundown area
+up-and-coming area
+rural idyll
+urban lifestyle
+pace of life
+sense of community
+neighbourhood watch
+next-door neighbour
+keep yourself to yourself
+transport links
+catchment area
+shopping precinct
+street lighting
+isolated hamlet
+recreation ground
+park-and-ride
+ring road
+convivial neighbourhood
+cultural facilities
+healthcare facilities
+overcrowding
+gentrification
+homelessness
+urban sprawl
+commuting from the suburbs
+housing shortage
+soaring property prices
+unaffordable housing
+substandard housing
+rising damp
+mould
+infestation
+noise pollution
+communal bin store
+vandalism
+antisocial behaviour
+derelict building
+vacant property
+eviction
+housing bubble
+negative equity
+fuel poverty
+sleeping rough
+sofa-surfing
+housing waiting list
+deprived area
+sink estate
+urban decay
+regeneration
+lack of privacy
+thin walls
+noisy neighbours
+planning permission
+nimbyism
+boundary dispute
+house in multiple occupation
+mortgage
+deposit
+landlord
+tenant
+landlady
+letting agency
+estate agent
+tenancy agreement
+notice to quit
+sitting tenant
+rent arrears
+bills included
+council tax
+stamp duty
+conveyancing
+freehold
+leasehold
+ground rent
+service lift
+rent
+remortgage
+equity
+first-time buyer
+joint tenancy
+guarantor
+inventory
+wear and tear
+housing association
+sublet
+lodger
+break clause
+energy performance certificate

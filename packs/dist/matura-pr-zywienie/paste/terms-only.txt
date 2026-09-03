@@ -1,0 +1,180 @@
+savoury
+bland
+stale
+perishable
+pungent
+tangy
+succulent
+palatable
+unpalatable
+mouth-watering
+appetising
+rancid
+soggy
+crunchy
+tender
+tough
+lean meat
+wholesome
+nutritious
+moreish
+sickly-sweet
+piping hot
+tepid
+seasoning
+garnish
+condiment
+marinade
+pulses
+staple food
+wholegrain
+saturated fat
+dietary fibre
+additive
+preservative
+flavour enhancer
+gluten
+lactose
+fortified
+skimmed milk
+full-fat
+gone off
+use-by date
+best-before date
+shelf life
+food poisoning
+contamination
+cross-contamination
+simmer
+roast
+ferment
+sauté
+stew
+braise
+poach
+blanch
+pickle
+cure
+marinate
+knead
+whisk
+fold in
+carve
+mince
+drizzle
+stir-fry
+deep-fry
+casserole
+stock
+gravy
+batter
+dough
+yeast
+sourdough
+prove
+glaze
+caramelise
+reduce
+thicken
+infuse
+balanced diet
+vegan
+pescatarian
+flexitarian
+intolerance
+nutrient
+malnutrition
+undernourished
+obesity
+calorie intake
+empty calories
+crash diet
+fad diet
+yo-yo dieting
+portion control
+fasting
+intermittent fasting
+supplement
+antioxidant
+probiotic
+fluid intake
+dehydrated
+plant-based
+dairy-free
+high-protein
+low-carb
+sugar-free
+wholefood
+eating disorder
+binge
+comfort food
+emotional eating
+foodie
+gourmet
+nutritionist
+dietitian
+fussy eater
+tip
+reservation
+Michelin star
+à la carte
+set menu
+tasting menu
+sommelier
+service charge
+cover charge
+table manners
+aperitif
+mocktail
+fully booked
+walk-in
+fine dining
+street food
+food truck
+sharing platter
+overpriced
+value for money
+food critic
+signature dish
+chef's special
+dietary requirement
+allergen
+halal
+kosher
+corkage
+house wine
+processed food
+food waste
+organic
+fair trade
+food security
+food miles
+factory farming
+farm-to-table
+battery farming
+free-range
+animal welfare
+livestock
+genetically modified
+food additive
+superfood
+sustainable farming
+sustainable seafood
+seasonal produce
+locally sourced
+food labelling
+traceability
+supply chain
+supermarket chain
+food shortage
+food desert
+food bank
+food poverty
+ultra-processed
+convenience food
+ready meal
+trans fat
+cholesterol
+sugar tax
+compostable packaging
+artificial sweetener

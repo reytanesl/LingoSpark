@@ -1,0 +1,1107 @@
+{
+  "id": "matura-pr-praca",
+  "sku": "LS-PR-WORK",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Praca",
+  "topicEn": "Work and employment",
+  "titlePl": "Matura PR: Praca — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Work — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Praca na maturę rozszerzoną: rynek pracy, umowy, kariera i prawa pracownika. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura Work: labour market, contracts, careers and workers' rights.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "praca",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "white-collar",
+      "definitionPl": "umysłowy, biały kołnierzyk",
+      "definitionEn": "relating to office or professional work rather than manual labour",
+      "example": "White-collar roles in finance still cluster in the capital."
+    },
+    {
+      "term": "blue-collar",
+      "definitionPl": "fizyczny, niebieski kołnierzyk",
+      "definitionEn": "relating to manual or industrial work, often paid by the hour",
+      "example": "Blue-collar jobs in the shipyard vanished within a decade."
+    },
+    {
+      "term": "public sector",
+      "definitionPl": "sektor publiczny",
+      "definitionEn": "the part of the economy run by government, such as schools and hospitals",
+      "example": "Pay in the public sector lagged behind prices for three years."
+    },
+    {
+      "term": "private sector",
+      "definitionPl": "sektor prywatny",
+      "definitionEn": "businesses owned by individuals or companies, not by the state",
+      "example": "She left teaching for a private sector consultancy."
+    },
+    {
+      "term": "third sector",
+      "definitionPl": "trzeci sektor, organizacje pozarządowe",
+      "definitionEn": "charities, social enterprises and other not-for-profit organisations",
+      "example": "The third sector relies on short grants and tired volunteers."
+    },
+    {
+      "term": "government official",
+      "definitionPl": "urzędnik państwowy",
+      "definitionEn": "a person employed by the state to run public administration",
+      "example": "A government official must remain politically impartial at work."
+    },
+    {
+      "term": "knowledge worker",
+      "definitionPl": "pracownik wiedzy",
+      "definitionEn": "someone whose main capital is expertise, analysis or design rather than physical labour",
+      "example": "The knowledge worker can often work from anywhere with a laptop."
+    },
+    {
+      "term": "manufacturing industry",
+      "definitionPl": "przemysł wytwórczy",
+      "definitionEn": "the sector that makes physical goods in factories",
+      "example": "The manufacturing industry still employs thousands in Silesia."
+    },
+    {
+      "term": "service industry",
+      "definitionPl": "sektor usług",
+      "definitionEn": "the sector that provides services rather than goods, such as retail or hospitality",
+      "example": "The service industry recovered faster than heavy industry."
+    },
+    {
+      "term": "gig economy",
+      "definitionPl": "gospodarka fuch / platformowa",
+      "definitionEn": "work sold in short tasks via apps, with little job security",
+      "example": "The gig economy offers flexibility and almost no sick pay."
+    },
+    {
+      "term": "labour market",
+      "definitionPl": "rynek pracy",
+      "definitionEn": "the supply of and demand for paid work in an economy",
+      "example": "A tight labour market pushed starting salaries up."
+    },
+    {
+      "term": "workforce",
+      "definitionPl": "siła robocza, kadra",
+      "definitionEn": "all the people available for or engaged in work in a place",
+      "example": "An ageing workforce means more people will retire together."
+    },
+    {
+      "term": "skilled labour",
+      "definitionPl": "wykwalifikowana siła robocza",
+      "definitionEn": "workers trained in a trade or technical craft",
+      "example": "Skilled labour is scarce in heating and ventilation."
+    },
+    {
+      "term": "unskilled work",
+      "definitionPl": "praca niewykwalifikowana",
+      "definitionEn": "jobs that need little formal training on day one",
+      "example": "Unskilled work is often the first to be automated."
+    },
+    {
+      "term": "manual labour",
+      "definitionPl": "praca fizyczna",
+      "definitionEn": "work done mainly with the hands and body",
+      "example": "Years of manual labour left him with a damaged back."
+    },
+    {
+      "term": "clerical job",
+      "definitionPl": "praca administracyjno-biurowa",
+      "definitionEn": "office work such as filing, data entry and correspondence",
+      "example": "A clerical job was the stepping stone to office management."
+    },
+    {
+      "term": "middle management",
+      "definitionPl": "średnia kadra kierownicza",
+      "definitionEn": "managers between senior leaders and front-line staff",
+      "example": "Middle management was the first layer cut in the merger."
+    },
+    {
+      "term": "senior management",
+      "definitionPl": "wyższa kadra zarządzająca",
+      "definitionEn": "the group of directors and heads who set strategy",
+      "example": "Senior management froze recruitment until spring."
+    },
+    {
+      "term": "board of directors",
+      "definitionPl": "rada dyrektorów, zarząd",
+      "definitionEn": "the group legally responsible for governing a company",
+      "example": "The board of directors rejected the takeover bid."
+    },
+    {
+      "term": "chief executive",
+      "definitionPl": "dyrektor generalny, prezes zarządu",
+      "definitionEn": "the highest-ranking manager running a company day to day",
+      "example": "The chief executive resigned after the safety inquiry."
+    },
+    {
+      "term": "line manager",
+      "definitionPl": "bezpośredni przełożony",
+      "definitionEn": "the person you report to in the everyday hierarchy",
+      "example": "Raise the problem with your line manager before you escalate it."
+    },
+    {
+      "term": "human resources",
+      "definitionPl": "kadry, dział HR",
+      "definitionEn": "the department that hires, pays and supports staff",
+      "example": "Human resources sent a revised handbook in January."
+    },
+    {
+      "term": "professional body",
+      "definitionPl": "samorząd zawodowy, izba zawodowa",
+      "definitionEn": "an organisation that sets standards and entry rules for a profession",
+      "example": "The professional body can strike a doctor off the register."
+    },
+    {
+      "term": "skilled trade",
+      "definitionPl": "zawód rzemieślniczy / techniczny",
+      "definitionEn": "a practical occupation learnt through apprenticeship, such as plumbing",
+      "example": "A skilled trade can pay more than some graduate office posts."
+    },
+    {
+      "term": "shortlist",
+      "definitionPl": "krótka lista kandydatów",
+      "definitionEn": "the small group of applicants chosen for the last stage of recruitment",
+      "example": "Only four names made the shortlist for the editorship."
+    },
+    {
+      "term": "headhunter",
+      "definitionPl": "łowca głów, rekruter executive",
+      "definitionEn": "a recruiter paid to approach people already in work for a vacancy",
+      "example": "A headhunter rang her about a role she had not seen advertised."
+    },
+    {
+      "term": "probation period",
+      "definitionPl": "okres próbny",
+      "definitionEn": "the first months in a job when either side may end it more easily",
+      "example": "The probation period lasts six months in this firm."
+    },
+    {
+      "term": "job description",
+      "definitionPl": "zakres obowiązków, opis stanowiska",
+      "definitionEn": "an official outline of duties, seniority and working conditions",
+      "example": "The job description said nothing about weekend work."
+    },
+    {
+      "term": "person specification",
+      "definitionPl": "profil kandydata",
+      "definitionEn": "the skills, qualifications and traits an employer says it wants",
+      "example": "Match your evidence to every point on the person specification."
+    },
+    {
+      "term": "aptitude test",
+      "definitionPl": "test predyspozycji",
+      "definitionEn": "a timed test of reasoning, numbers or language used in recruitment",
+      "example": "The aptitude test eliminated half the applicants before interview."
+    },
+    {
+      "term": "psychometric testing",
+      "definitionPl": "testy psychometryczne",
+      "definitionEn": "questionnaires that claim to measure personality or ability for hiring",
+      "example": "Psychometric testing should never be the only selection tool."
+    },
+    {
+      "term": "assessment centre",
+      "definitionPl": "sesja assessment centre",
+      "definitionEn": "a recruitment day of tasks, tests and interviews used to compare candidates",
+      "example": "The assessment centre included a group negotiation and a case study."
+    },
+    {
+      "term": "panel interview",
+      "definitionPl": "rozmowa z komisją",
+      "definitionEn": "an interview conducted by several people at once",
+      "example": "A panel interview feels formal, so prepare a concise opening."
+    },
+    {
+      "term": "competency-based interview",
+      "definitionPl": "rozmowa oparta na kompetencjach",
+      "definitionEn": "an interview that asks for evidence of skills through past examples",
+      "example": "In a competency-based interview, use a clear situation-action-result story."
+    },
+    {
+      "term": "background check",
+      "definitionPl": "weryfikacja kandydata",
+      "definitionEn": "enquiries into identity, qualifications or criminal record before hiring",
+      "example": "The background check delayed her start date by a fortnight."
+    },
+    {
+      "term": "work permit",
+      "definitionPl": "zezwolenie na pracę",
+      "definitionEn": "official permission for a foreign national to take a job",
+      "example": "Without a work permit he could not take the laboratory post."
+    },
+    {
+      "term": "job offer",
+      "definitionPl": "oferta pracy",
+      "definitionEn": "a formal proposal of employment, usually in writing",
+      "example": "Read the job offer twice before you sign."
+    },
+    {
+      "term": "turn down an offer",
+      "definitionPl": "odrzucić ofertę",
+      "definitionEn": "to refuse a job or contract that has been proposed",
+      "example": "She had to turn down an offer that clashed with her studies."
+    },
+    {
+      "term": "recruitment agency",
+      "definitionPl": "agencja rekrutacyjna",
+      "definitionEn": "a firm paid to find candidates for employers",
+      "example": "The recruitment agency took a fee from the employer, not from her."
+    },
+    {
+      "term": "speculative application",
+      "definitionPl": "aplikacja z własnej inicjatywy",
+      "definitionEn": "contacting an employer who has not advertised a vacancy",
+      "example": "A speculative application led to a two-month trial."
+    },
+    {
+      "term": "networking",
+      "definitionPl": "budowanie sieci kontaktów zawodowych",
+      "definitionEn": "building professional contacts who may share information or openings",
+      "example": "Networking at the conference mattered more than the keynote."
+    },
+    {
+      "term": "transferable skills",
+      "definitionPl": "umiejętności uniwersalne, przenośne",
+      "definitionEn": "abilities useful in more than one job or sector",
+      "example": "Teaching gave her transferable skills in presentation and planning."
+    },
+    {
+      "term": "soft skills",
+      "definitionPl": "kompetencje miękkie",
+      "definitionEn": "interpersonal abilities such as communication, teamwork and empathy",
+      "example": "Soft skills decide who is trusted with clients."
+    },
+    {
+      "term": "hard skills",
+      "definitionPl": "kompetencje twarde",
+      "definitionEn": "teachable technical abilities such as coding, accounting or welding",
+      "example": "Hard skills can be certified; judgement still comes with practice."
+    },
+    {
+      "term": "onboarding",
+      "definitionPl": "wdrożenie nowego pracownika",
+      "definitionEn": "the structured process of settling a new employee into the organisation",
+      "example": "Onboarding lasted a week and still missed the software passwords."
+    },
+    {
+      "term": "induction programme",
+      "definitionPl": "program wdrożeniowy",
+      "definitionEn": "a planned introduction to rules, people and systems at the start of a job",
+      "example": "The induction programme includes a fire walk and data-protection training."
+    },
+    {
+      "term": "job shadowing",
+      "definitionPl": "obserwacja pracy na stanowisku",
+      "definitionEn": "following an experienced worker to learn what the role involves",
+      "example": "A day of job shadowing put her off warehouse management."
+    },
+    {
+      "term": "graduate scheme",
+      "definitionPl": "program dla absolwentów",
+      "definitionEn": "a structured traineeship for people with degrees, rotating through departments",
+      "example": "The graduate scheme rotates through three countries in two years."
+    },
+    {
+      "term": "internship",
+      "definitionPl": "staż (często studencki)",
+      "definitionEn": "a short period of work, paid or unpaid, to gain experience",
+      "example": "The summer internship led to a graduate post."
+    },
+    {
+      "term": "secondment",
+      "definitionPl": "oddelegowanie, czasowe przeniesienie",
+      "definitionEn": "a temporary move to another team or organisation while remaining employed",
+      "example": "A six-month secondment to Brussels changed her career plans."
+    },
+    {
+      "term": "permanent contract",
+      "definitionPl": "umowa na czas nieokreślony",
+      "definitionEn": "an employment contract with no planned end date",
+      "example": "She waited two years for a permanent contract after a chain of temp posts."
+    },
+    {
+      "term": "freelance",
+      "definitionPl": "pracować na zlecenie; wolny strzelec",
+      "definitionEn": "working for several clients rather than as a single company's employee",
+      "example": "He went freelance after the agency cut his hours."
+    },
+    {
+      "term": "zero-hours contract",
+      "definitionPl": "umowa zerogodzinowa",
+      "definitionEn": "a contract with no guaranteed hours, called in only when needed",
+      "example": "A zero-hours contract makes rent almost impossible to plan."
+    },
+    {
+      "term": "fixed-term contract",
+      "definitionPl": "umowa na czas określony",
+      "definitionEn": "a contract that ends on a stated date unless renewed",
+      "example": "The fixed-term contract runs until the grant expires in March."
+    },
+    {
+      "term": "casual work",
+      "definitionPl": "praca dorywcza / okazjonalna",
+      "definitionEn": "irregular paid work with no expectation of ongoing hours",
+      "example": "Casual work in hospitality filled the summer but not the winter."
+    },
+    {
+      "term": "employment contract",
+      "definitionPl": "umowa o pracę",
+      "definitionEn": "the legal agreement setting out pay, duties and conditions of a job",
+      "example": "Do not start until the employment contract is signed."
+    },
+    {
+      "term": "contractual terms",
+      "definitionPl": "warunki umowy o pracę",
+      "definitionEn": "the detailed rules of an employment contract, including pay, hours and notice",
+      "example": "Hidden contractual terms allowed unpaid weekend duty."
+    },
+    {
+      "term": "notice period",
+      "definitionPl": "okres wypowiedzenia",
+      "definitionEn": "the time you or the employer must give before the job ends",
+      "example": "The notice period is three months for managers."
+    },
+    {
+      "term": "garden leave",
+      "definitionPl": "urlop na wypowiedzeniu (garden leave)",
+      "definitionEn": "remaining employed and paid while being kept away from work during notice",
+      "example": "Garden leave stopped him taking clients to a rival firm."
+    },
+    {
+      "term": "non-compete clause",
+      "definitionPl": "klauzula o zakazie konkurencji",
+      "definitionEn": "a contract term restricting work for rivals after you leave",
+      "example": "The non-compete clause was too broad to enforce."
+    },
+    {
+      "term": "confidentiality clause",
+      "definitionPl": "klauzula poufności",
+      "definitionEn": "a term forbidding the sharing of the employer's private information",
+      "example": "The confidentiality clause survives after you resign."
+    },
+    {
+      "term": "job-sharing",
+      "definitionPl": "dzielenie etatu",
+      "definitionEn": "two people splitting the duties and hours of one full-time post",
+      "example": "Job-sharing let both parents collect children from school."
+    },
+    {
+      "term": "compressed hours",
+      "definitionPl": "skompresowany czas pracy",
+      "definitionEn": "working a full week's hours in fewer, longer days",
+      "example": "Compressed hours give her a regular weekday off."
+    },
+    {
+      "term": "annualised hours",
+      "definitionPl": "roczny wymiar godzin",
+      "definitionEn": "a contract that sets hours for the year, with busy and quiet periods",
+      "example": "Annualised hours suit a hotel that is full only in summer."
+    },
+    {
+      "term": "remote working",
+      "definitionPl": "praca zdalna",
+      "definitionEn": "doing your job away from the employer's premises, usually from home",
+      "example": "Remote working saved her three hours of commuting a day."
+    },
+    {
+      "term": "hybrid working",
+      "definitionPl": "praca hybrydowa",
+      "definitionEn": "a mix of days in the workplace and days working remotely",
+      "example": "Hybrid working still requires two core days in the office."
+    },
+    {
+      "term": "hot-desking",
+      "definitionPl": "hot-desking, brak stałego biurka",
+      "definitionEn": "sharing desks as they become free rather than having a personal one",
+      "example": "Hot-desking made confidential calls almost impossible."
+    },
+    {
+      "term": "outsourcing",
+      "definitionPl": "outsourcing, zlecanie na zewnątrz",
+      "definitionEn": "paying another firm to do work previously done in-house",
+      "example": "Outsourcing cleaning cut costs and loyalty in one stroke."
+    },
+    {
+      "term": "offshoring",
+      "definitionPl": "offshoring, przenoszenie za granicę",
+      "definitionEn": "moving work to another country, usually to reduce costs",
+      "example": "Offshoring the call centre sparked a local campaign."
+    },
+    {
+      "term": "minimum wage",
+      "definitionPl": "płaca minimalna",
+      "definitionEn": "the lowest hourly pay the law allows for most workers",
+      "example": "The minimum wage rise still left rent out of reach in the city."
+    },
+    {
+      "term": "living wage",
+      "definitionPl": "płaca wystarczająca na życie",
+      "definitionEn": "an hourly rate set higher than the legal minimum, meant to cover basic costs",
+      "example": "The café pays the living wage and still cannot fill weekend shifts."
+    },
+    {
+      "term": "glass ceiling",
+      "definitionPl": "szklany sufit",
+      "definitionEn": "an invisible barrier that stops certain groups reaching top posts",
+      "example": "The glass ceiling is still visible in the partnership figures."
+    },
+    {
+      "term": "glass cliff",
+      "definitionPl": "szklany klif",
+      "definitionEn": "the pattern of appointing women to leadership only when an organisation is already in crisis",
+      "example": "She recognised a glass cliff when they offered her the failing unit."
+    },
+    {
+      "term": "burnout",
+      "definitionPl": "wypalenie zawodowe",
+      "definitionEn": "exhaustion and loss of motivation after prolonged workplace stress",
+      "example": "Burnout pushed him to a four-day week."
+    },
+    {
+      "term": "work-life balance",
+      "definitionPl": "równowaga między pracą a życiem prywatnym",
+      "definitionEn": "a sustainable division of time and energy between job and private life",
+      "example": "A sixty-hour week destroyed her work-life balance."
+    },
+    {
+      "term": "occupational hazard",
+      "definitionPl": "zagrożenie zawodowe",
+      "definitionEn": "a risk that comes with a particular job",
+      "example": "Hearing loss is an occupational hazard in some workshops."
+    },
+    {
+      "term": "severance pay",
+      "definitionPl": "odprawa",
+      "definitionEn": "money paid to an employee when a job ends, especially in redundancy",
+      "example": "Severance pay covered three months while she retrained."
+    },
+    {
+      "term": "statutory sick pay",
+      "definitionPl": "ustawowe wynagrodzenie chorobowe",
+      "definitionEn": "the legal minimum an employer must pay when you are off work because of illness",
+      "example": "Statutory sick pay is far below her usual monthly income."
+    },
+    {
+      "term": "maternity leave",
+      "definitionPl": "urlop macierzyński",
+      "definitionEn": "time off work around the birth of a child for the mother",
+      "example": "Maternity leave can be shared in part with the other parent."
+    },
+    {
+      "term": "paternity leave",
+      "definitionPl": "urlop ojcowski",
+      "definitionEn": "time off work for a father or partner around a child's birth",
+      "example": "Two weeks of paternity leave is still the legal minimum."
+    },
+    {
+      "term": "parental leave",
+      "definitionPl": "urlop rodzicielski",
+      "definitionEn": "unpaid or paid time off to care for a child, available to eligible parents",
+      "example": "Parental leave must be requested well before the intended dates."
+    },
+    {
+      "term": "unpaid leave",
+      "definitionPl": "urlop bezpłatny",
+      "definitionEn": "time away from work that is agreed but not paid",
+      "example": "She took unpaid leave to finish the language course."
+    },
+    {
+      "term": "annual leave",
+      "definitionPl": "urlop wypoczynkowy",
+      "definitionEn": "paid holiday entitlement for a year of work",
+      "example": "Book annual leave before the school holidays fill up."
+    },
+    {
+      "term": "workplace pension",
+      "definitionPl": "pracowniczy program emerytalny",
+      "definitionEn": "a retirement savings scheme arranged through the employer",
+      "example": "Enrolment in the workplace pension is automatic unless you opt out."
+    },
+    {
+      "term": "fringe benefits",
+      "definitionPl": "świadczenia dodatkowe",
+      "definitionEn": "extras besides wages, such as meals, insurance or a travel card",
+      "example": "Fringe benefits made up for a modest basic salary."
+    },
+    {
+      "term": "perks of the job",
+      "definitionPl": "dodatki, przywileje stanowiska",
+      "definitionEn": "informal extras that come with a particular role",
+      "example": "Free rail travel is one of the perks of the job."
+    },
+    {
+      "term": "performance-related pay",
+      "definitionPl": "płaca uzależniona od wyników",
+      "definitionEn": "pay that rises or falls with measured results",
+      "example": "Performance-related pay can pit colleagues against one another."
+    },
+    {
+      "term": "sales commission",
+      "definitionPl": "prowizja od sprzedaży",
+      "definitionEn": "pay calculated as a percentage of sales or deals",
+      "example": "Half her income is sales commission, so a quiet month hurts."
+    },
+    {
+      "term": "take-home pay",
+      "definitionPl": "pensja na rękę",
+      "definitionEn": "what you actually receive after tax and other deductions",
+      "example": "Take-home pay barely covers the commute and lunch."
+    },
+    {
+      "term": "pay rise",
+      "definitionPl": "podwyżka",
+      "definitionEn": "an increase in wages or salary",
+      "example": "The union asked for a pay rise matching inflation."
+    },
+    {
+      "term": "pay freeze",
+      "definitionPl": "zamrożenie płac",
+      "definitionEn": "a period when wages are not increased",
+      "example": "A two-year pay freeze felt like a cut in real terms."
+    },
+    {
+      "term": "gender pay gap",
+      "definitionPl": "luka płacowa ze względu na płeć",
+      "definitionEn": "the difference between average pay of men and women in an organisation or economy",
+      "example": "The gender pay gap widened among part-time staff."
+    },
+    {
+      "term": "equal pay",
+      "definitionPl": "równa płaca za tę samą pracę",
+      "definitionEn": "the principle that people doing the same work should receive the same pay",
+      "example": "Equal pay claims forced the council to review job grades."
+    },
+    {
+      "term": "time off in lieu",
+      "definitionPl": "odbiór godzin (TOIL)",
+      "definitionEn": "free time given instead of extra pay for additional hours worked",
+      "example": "Weekend duty is compensated with time off in lieu, not cash."
+    },
+    {
+      "term": "workload",
+      "definitionPl": "obciążenie pracą",
+      "definitionEn": "the amount of work a person or team is expected to complete",
+      "example": "An impossible workload is a health-and-safety issue, not a badge of honour."
+    },
+    {
+      "term": "anti-social hours",
+      "definitionPl": "godziny pracy kolidujące z życiem społecznym",
+      "definitionEn": "working times that clash with evenings, nights or weekends",
+      "example": "Anti-social hours in hospitals are paid at a higher rate."
+    },
+    {
+      "term": "on call",
+      "definitionPl": "na dyżurze pod telefonem",
+      "definitionEn": "available to work if needed, often outside normal hours",
+      "example": "Doctors who are on call may still be woken twice a night."
+    },
+    {
+      "term": "occupational stress",
+      "definitionPl": "stres zawodowy",
+      "definitionEn": "harmful pressure caused by the demands of a job",
+      "example": "Occupational stress is a recognised cause of long-term sick leave."
+    },
+    {
+      "term": "repetitive strain injury",
+      "definitionPl": "uraz z przeciążenia (RSI)",
+      "definitionEn": "pain or damage from repeating the same movement at work",
+      "example": "Repetitive strain injury from typing forced her to change role."
+    },
+    {
+      "term": "health and safety",
+      "definitionPl": "bhp, bezpieczeństwo i higiena pracy",
+      "definitionEn": "rules and practices that protect people from harm at work",
+      "example": "Health and safety training is compulsory before you enter the warehouse."
+    },
+    {
+      "term": "protective equipment",
+      "definitionPl": "środki ochrony indywidualnej",
+      "definitionEn": "clothing or gear worn to reduce workplace injury, such as helmets or goggles",
+      "example": "Protective equipment is useless if staff are not trained to use it."
+    },
+    {
+      "term": "workplace bullying",
+      "definitionPl": "mobbing, nękanie w pracy",
+      "definitionEn": "repeated hostile behaviour towards someone at work",
+      "example": "Workplace bullying thrives where managers look away."
+    },
+    {
+      "term": "constructive dismissal",
+      "definitionPl": "wymuszone odejście z pracy",
+      "definitionEn": "resigning because the employer has made staying intolerable, treated in law as a dismissal",
+      "example": "A sudden pay cut can amount to constructive dismissal."
+    },
+    {
+      "term": "unfair dismissal",
+      "definitionPl": "nieuzasadnione zwolnienie",
+      "definitionEn": "being sacked without a fair reason or a fair procedure",
+      "example": "Unfair dismissal claims go to an employment tribunal."
+    },
+    {
+      "term": "grievance procedure",
+      "definitionPl": "procedura skargowa",
+      "definitionEn": "the official steps for raising a complaint at work",
+      "example": "Use the grievance procedure in writing and keep copies."
+    },
+    {
+      "term": "disciplinary procedure",
+      "definitionPl": "postępowanie dyscyplinarne",
+      "definitionEn": "the official steps an employer follows when alleging misconduct",
+      "example": "The disciplinary procedure allows a colleague to accompany you."
+    },
+    {
+      "term": "whistleblower",
+      "definitionPl": "sygnalista",
+      "definitionEn": "a person who reports serious wrongdoing in an organisation",
+      "example": "The whistleblower was later protected by statute."
+    },
+    {
+      "term": "harassment",
+      "definitionPl": "nękanie, molestowanie",
+      "definitionEn": "unwanted conduct that violates dignity or creates a hostile environment",
+      "example": "Harassment includes comments as well as physical behaviour."
+    },
+    {
+      "term": "discrimination at work",
+      "definitionPl": "dyskryminacja w miejscu pracy",
+      "definitionEn": "unfair treatment because of a protected characteristic such as age or disability",
+      "example": "Discrimination at work can be subtle in promotion decisions."
+    },
+    {
+      "term": "workplace equality",
+      "definitionPl": "równość w miejscu pracy",
+      "definitionEn": "fair treatment in hiring, pay and advancement regardless of personal characteristics",
+      "example": "Workplace equality training is mandatory for anyone on a panel."
+    },
+    {
+      "term": "reasonable adjustments",
+      "definitionPl": "racjonalne usprawnienia",
+      "definitionEn": "practical changes an employer must consider so a disabled person can work",
+      "example": "Reasonable adjustments included a quieter desk and flexible start times."
+    },
+    {
+      "term": "resign",
+      "definitionPl": "złożyć wypowiedzenie, odejść z pracy",
+      "definitionEn": "to leave a job by your own decision",
+      "example": "She will resign once the project is handed over."
+    },
+    {
+      "term": "make redundant",
+      "definitionPl": "zwolnić z powodu redukcji etatów",
+      "definitionEn": "to end someone's job because the role is no longer needed",
+      "example": "The plant will make redundant eighty night-shift staff."
+    },
+    {
+      "term": "retire",
+      "definitionPl": "przejść na emeryturę",
+      "definitionEn": "to stop working, usually because of age or a pension",
+      "example": "He plans to retire at sixty-five and tutor part-time."
+    },
+    {
+      "term": "redundancy package",
+      "definitionPl": "pakiet odpraw przy zwolnieniach grupowych",
+      "definitionEn": "the pay and support offered when posts are abolished",
+      "example": "The redundancy package included retraining and outplacement."
+    },
+    {
+      "term": "voluntary redundancy",
+      "definitionPl": "dobrowolne odejście przy redukcji",
+      "definitionEn": "choosing to leave in a round of job cuts, usually with extra pay",
+      "example": "Older staff took voluntary redundancy rather than relocate."
+    },
+    {
+      "term": "early retirement",
+      "definitionPl": "wcześniejsza emerytura",
+      "definitionEn": "leaving work before the usual pension age, sometimes with a reduced pension",
+      "example": "Early retirement was offered to anyone over fifty-eight."
+    },
+    {
+      "term": "career break",
+      "definitionPl": "przerwa w karierze",
+      "definitionEn": "an agreed period away from paid work, often to care for family or retrain",
+      "example": "A career break to raise children need not end a profession."
+    },
+    {
+      "term": "sabbatical",
+      "definitionPl": "sabbatical, urlop naukowy / kreatywny",
+      "definitionEn": "an extended period of leave, often unpaid, for study or rest, then a return to the same employer",
+      "example": "A six-month sabbatical let her finish the language diploma."
+    },
+    {
+      "term": "hand in your notice",
+      "definitionPl": "złożyć wypowiedzenie",
+      "definitionEn": "to formally tell your employer you are leaving",
+      "example": "Hand in your notice only after the new contract is signed."
+    },
+    {
+      "term": "exit interview",
+      "definitionPl": "rozmowa końcowa przy odejściu",
+      "definitionEn": "a meeting when you leave, used to hear why you are going",
+      "example": "In the exit interview she named the impossible targets."
+    },
+    {
+      "term": "golden handshake",
+      "definitionPl": "złoty uścisk dłoni, hojna odprawa",
+      "definitionEn": "a large payment to someone leaving a senior post",
+      "example": "The golden handshake caused anger while junior staff faced cuts."
+    },
+    {
+      "term": "outplacement",
+      "definitionPl": "outplacement, pomoc w znalezieniu nowej pracy",
+      "definitionEn": "support from the old employer to help redundant staff find new work",
+      "example": "Outplacement included CV workshops and interview practice."
+    },
+    {
+      "term": "redeployment",
+      "definitionPl": "przeniesienie na inne stanowisko",
+      "definitionEn": "moving staff to another job in the same organisation instead of dismissing them",
+      "example": "Redeployment saved some warehouse roles after automation."
+    },
+    {
+      "term": "downsizing",
+      "definitionPl": "redukcja zatrudnienia, downsizing",
+      "definitionEn": "reducing the number of staff to cut costs",
+      "example": "Downsizing was announced as a 'restructuring' in the same email."
+    },
+    {
+      "term": "dismiss",
+      "definitionPl": "zwolnić dyscyplinarnie / wypowiedzieć umowę",
+      "definitionEn": "to end someone's employment, typically for conduct or capability",
+      "example": "The firm may dismiss an employee only after a fair hearing."
+    },
+    {
+      "term": "trade union",
+      "definitionPl": "związek zawodowy",
+      "definitionEn": "an organisation of workers that bargains over pay and conditions",
+      "example": "Join a trade union before you need it, not after a dispute starts."
+    },
+    {
+      "term": "go on strike",
+      "definitionPl": "strajkować",
+      "definitionEn": "to stop work collectively as a protest over pay or conditions",
+      "example": "Nurses voted to go on strike after talks collapsed."
+    },
+    {
+      "term": "picket line",
+      "definitionPl": "pikieta, linia strajkowa",
+      "definitionEn": "a line of striking workers outside a workplace, asking others not to enter",
+      "example": "Deliveries turned away at the picket line."
+    },
+    {
+      "term": "industrial action",
+      "definitionPl": "akcja protestacyjna (strajk itp.)",
+      "definitionEn": "collective measures by workers, including strikes and work-to-rule",
+      "example": "Industrial action delayed trains for a fortnight."
+    },
+    {
+      "term": "collective bargaining",
+      "definitionPl": "negocjacje zbiorowe",
+      "definitionEn": "negotiations between unions and employers over pay and conditions for a group",
+      "example": "Collective bargaining set the pay scale for the whole plant."
+    },
+    {
+      "term": "shop steward",
+      "definitionPl": "mąż zaufania, przedstawiciel związku w zakładzie",
+      "definitionEn": "a union representative elected by workers in a particular workplace",
+      "example": "The shop steward sat in on the disciplinary meeting."
+    },
+    {
+      "term": "lockout",
+      "definitionPl": "lokaut",
+      "definitionEn": "when an employer stops workers from entering until a dispute is settled",
+      "example": "The lockout lasted ten days before talks resumed."
+    },
+    {
+      "term": "arbitration",
+      "definitionPl": "arbitraż",
+      "definitionEn": "a binding decision on a dispute by an independent third party",
+      "example": "Both sides agreed to arbitration rather than another strike."
+    },
+    {
+      "term": "work-to-rule",
+      "definitionPl": "strajk włoski",
+      "definitionEn": "doing only what the contract strictly requires, as a form of protest",
+      "example": "A work-to-rule slowed the airport to a crawl."
+    },
+    {
+      "term": "overtime ban",
+      "definitionPl": "zakaz nadgodzin (akcja związkowa)",
+      "definitionEn": "a union instruction not to work extra hours as a form of protest",
+      "example": "The overtime ban left shelves empty by Sunday."
+    },
+    {
+      "term": "labour dispute",
+      "definitionPl": "spór zbiorowy, konflikt pracowniczy",
+      "definitionEn": "a serious disagreement between workers and employers over work",
+      "example": "The labour dispute began with unpaid weekend shifts."
+    },
+    {
+      "term": "union representative",
+      "definitionPl": "przedstawiciel związku zawodowego",
+      "definitionEn": "a person chosen to speak for union members in talks with management",
+      "example": "Ask a union representative to read the new contract."
+    },
+    {
+      "term": "strike ballot",
+      "definitionPl": "głosowanie strajkowe",
+      "definitionEn": "a vote among members on whether to take strike action",
+      "example": "The strike ballot passed the legal turnout threshold."
+    },
+    {
+      "term": "entrepreneurship",
+      "definitionPl": "przedsiębiorczość",
+      "definitionEn": "the activity of starting and running businesses, taking on financial risk",
+      "example": "The school now teaches entrepreneurship alongside accountancy."
+    },
+    {
+      "term": "start-up",
+      "definitionPl": "start-up, młoda firma",
+      "definitionEn": "a newly founded company, often in technology, still finding its market",
+      "example": "The start-up ran out of cash before the product launched."
+    },
+    {
+      "term": "entrepreneur",
+      "definitionPl": "przedsiębiorca",
+      "definitionEn": "a person who sets up a business and takes on its risks",
+      "example": "The entrepreneur sold the firm after five years."
+    },
+    {
+      "term": "business plan",
+      "definitionPl": "biznesplan",
+      "definitionEn": "a written outline of how a venture will work, cost and earn money",
+      "example": "The bank refused a loan without a business plan."
+    },
+    {
+      "term": "venture capital",
+      "definitionPl": "kapitał wysokiego ryzyka",
+      "definitionEn": "investment in young companies in return for a share of ownership",
+      "example": "Venture capital came with a seat on the board."
+    },
+    {
+      "term": "seed funding",
+      "definitionPl": "finansowanie zalążkowe",
+      "definitionEn": "the first money used to start a company, often from founders or angels",
+      "example": "Seed funding paid for the prototype and six months' rent."
+    },
+    {
+      "term": "sole trader",
+      "definitionPl": "jednoosobowa działalność gospodarcza",
+      "definitionEn": "a person who runs a business as an individual, fully liable for debts",
+      "example": "As a sole trader she pays tax on profits, not through PAYE."
+    },
+    {
+      "term": "limited company",
+      "definitionPl": "spółka z o.o. (model brytyjski)",
+      "definitionEn": "a firm whose owners' liability is limited to what they invested",
+      "example": "They formed a limited company before taking on staff."
+    },
+    {
+      "term": "partnership",
+      "definitionPl": "spółka cywilna / partnerska",
+      "definitionEn": "a business owned by two or more people who share profits and liability",
+      "example": "The partnership broke up when one partner emigrated."
+    },
+    {
+      "term": "franchising",
+      "definitionPl": "franczyza (model biznesowy)",
+      "definitionEn": "running outlets under another company's brand, following its rules, in return for fees",
+      "example": "Franchising is expensive to buy into and tightly controlled."
+    },
+    {
+      "term": "turn a profit",
+      "definitionPl": "wyjść na zysk",
+      "definitionEn": "to earn more money than you spend in a period",
+      "example": "The shop did not turn a profit until the second summer."
+    },
+    {
+      "term": "break even",
+      "definitionPl": "osiągnąć próg rentowności",
+      "definitionEn": "to make neither a loss nor a profit",
+      "example": "The café should break even within eighteen months."
+    },
+    {
+      "term": "cash flow",
+      "definitionPl": "przepływ środków pieniężnych",
+      "definitionEn": "the movement of money in and out of a business",
+      "example": "Poor cash flow, not a lack of orders, sank the workshop."
+    },
+    {
+      "term": "overheads",
+      "definitionPl": "koszty stałe",
+      "definitionEn": "regular costs of running a business, such as rent and utilities",
+      "example": "High overheads in the old town killed the bookshop."
+    },
+    {
+      "term": "niche market",
+      "definitionPl": "nisza rynkowa",
+      "definitionEn": "a small, specialised group of customers",
+      "example": "They survived by serving a niche market of vintage-camera buyers."
+    },
+    {
+      "term": "market research",
+      "definitionPl": "badanie rynku",
+      "definitionEn": "gathering information about customers and competitors before you sell",
+      "example": "Market research showed the app had no paying audience."
+    },
+    {
+      "term": "competitive advantage",
+      "definitionPl": "przewaga konkurencyjna",
+      "definitionEn": "a feature that lets a business outperform rivals in a market",
+      "example": "Same-day repairs became their competitive advantage."
+    },
+    {
+      "term": "sales pitch",
+      "definitionPl": "prezentacja sprzedażowa, pitch",
+      "definitionEn": "a short persuasive talk aimed at winning a customer or investor",
+      "example": "The sales pitch lasted three minutes and no longer."
+    },
+    {
+      "term": "scale up",
+      "definitionPl": "skalować działalność",
+      "definitionEn": "to grow a business in size while keeping the model working",
+      "example": "They could not scale up without a second warehouse."
+    },
+    {
+      "term": "file for bankruptcy",
+      "definitionPl": "złożyć wniosek o upadłość",
+      "definitionEn": "to start the legal process of being declared unable to pay your debts",
+      "example": "If the loan is refused they will file for bankruptcy by winter."
+    },
+    {
+      "term": "insolvency",
+      "definitionPl": "niewypłacalność",
+      "definitionEn": "the state of being unable to pay debts as they fall due",
+      "example": "Insolvency advisers were called in before Christmas."
+    },
+    {
+      "term": "stakeholder",
+      "definitionPl": "interesariusz",
+      "definitionEn": "anyone with an interest in an organisation, including staff, customers and neighbours",
+      "example": "Residents are a stakeholder in the factory's night-shift plans."
+    },
+    {
+      "term": "shareholder",
+      "definitionPl": "akcjonariusz, udziałowiec",
+      "definitionEn": "a person or body that owns shares in a company",
+      "example": "Each shareholder received a letter about the dividend."
+    },
+    {
+      "term": "return on investment",
+      "definitionPl": "zwrot z inwestycji",
+      "definitionEn": "the profit from money put into a venture, relative to what was spent",
+      "example": "The return on investment was lower than a savings account."
+    },
+    {
+      "term": "side hustle",
+      "definitionPl": "dodatkowe źródło dochodu, fucha",
+      "definitionEn": "paid work done besides a main job",
+      "example": "Her side hustle in evening tutoring paid the energy bills."
+    },
+    {
+      "term": "portfolio career",
+      "definitionPl": "kariera portfelowa",
+      "definitionEn": "earning a living from several part-time roles or clients at once",
+      "example": "A portfolio career mixed teaching, translating and examining."
+    },
+    {
+      "term": "coworking space",
+      "definitionPl": "przestrzeń coworkingowa",
+      "definitionEn": "a shared office rented by freelancers and small firms",
+      "example": "The coworking space was cheaper than a private office."
+    },
+    {
+      "term": "staggered hours",
+      "definitionPl": "rozłożone godziny pracy",
+      "definitionEn": "a system in which staff start and finish at different times to spread demand",
+      "example": "Staggered hours eased crowding on the morning trains."
+    },
+    {
+      "term": "long-term unemployment",
+      "definitionPl": "długotrwałe bezrobocie",
+      "definitionEn": "being out of work and looking for a job for a year or more",
+      "example": "Long-term unemployment is hardest on people over fifty."
+    },
+    {
+      "term": "jobseeker",
+      "definitionPl": "osoba poszukująca pracy",
+      "definitionEn": "a person who is looking for paid work",
+      "example": "Each jobseeker must show evidence of applications."
+    },
+    {
+      "term": "underemployment",
+      "definitionPl": "niedostateczne zatrudnienie",
+      "definitionEn": "having a job that uses too few hours or too little of your skill",
+      "example": "Underemployment among graduates is as painful as open unemployment."
+    },
+    {
+      "term": "job security",
+      "definitionPl": "stabilność zatrudnienia",
+      "definitionEn": "how safe your post is from sudden loss",
+      "example": "Job security vanished when the plant went onto rolling contracts."
+    },
+    {
+      "term": "precarious work",
+      "definitionPl": "praca niepewna, prekarna",
+      "definitionEn": "insecure employment with unstable hours, pay or rights",
+      "example": "Precarious work has spread from hospitality into teaching."
+    },
+    {
+      "term": "career ladder",
+      "definitionPl": "drabina awansów",
+      "definitionEn": "the sequence of more senior posts in a field",
+      "example": "The career ladder in nursing is clearer than in publishing."
+    },
+    {
+      "term": "dead-end job",
+      "definitionPl": "praca bez perspektyw",
+      "definitionEn": "a post with no real chance of progress or skill growth",
+      "example": "He left a dead-end job to train as an electrician."
+    },
+    {
+      "term": "clock off",
+      "definitionPl": "zbić kartę wyjścia",
+      "definitionEn": "to record the time you finish work, often on a machine",
+      "example": "Staff must not clock off until the handover is complete."
+    },
+    {
+      "term": "core hours",
+      "definitionPl": "godziny obowiązkowej obecności",
+      "definitionEn": "the part of the day when flexitime staff must be at work",
+      "example": "Core hours are ten until three in this office."
+    },
+    {
+      "term": "employment tribunal",
+      "definitionPl": "sąd pracy",
+      "definitionEn": "a specialist court that hears disputes about work rights",
+      "example": "She took the case to an employment tribunal and won compensation."
+    },
+    {
+      "term": "upskilling",
+      "definitionPl": "podnoszenie kwalifikacji",
+      "definitionEn": "training existing staff in additional skills for current or future tasks",
+      "example": "Upskilling the warehouse team reduced the need for agency staff."
+    },
+    {
+      "term": "reskilling",
+      "definitionPl": "przekwalifikowanie",
+      "definitionEn": "training people for a different kind of work after their old role disappears",
+      "example": "Reskilling coal workers for renewable energy is slow and expensive."
+    },
+    {
+      "term": "on-the-job training",
+      "definitionPl": "szkolenie na stanowisku pracy",
+      "definitionEn": "learning a role by doing it under supervision, rather than in a classroom",
+      "example": "On-the-job training covered the till on the first morning."
+    }
+  ]
+}

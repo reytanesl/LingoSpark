@@ -1,0 +1,180 @@
+well-being
+quality of life
+life expectancy
+public health
+health literacy
+health inequality
+preventive care
+risk factor
+underlying condition
+immune system
+health promotion
+screening programme
+early detection
+preventable disease
+universal healthcare
+private healthcare
+medical ethics
+informed consent
+patient confidentiality
+chronic illness
+acute illness
+infectious disease
+non-communicable disease
+contagious
+outbreak
+epidemic
+pandemic
+immunity
+herd immunity
+antibody
+vaccination
+booster dose
+vaccine hesitancy
+immunisation
+quarantine
+self-isolation
+inflammation
+autoimmune disease
+cardiovascular disease
+respiratory disease
+heart attack
+stroke
+hypertension
+type 2 diabetes
+tumour
+cancer treatment
+terminal illness
+remission
+relapse
+complication
+prognosis
+diagnosis
+fracture
+traumatic brain injury
+chronic pain
+occupational disease
+anaphylaxis
+antibiotic resistance
+sexually transmitted infection
+antibiotic
+prescription
+generic drug
+over-the-counter medicine
+recommended dose
+side effect
+clinical trial
+placebo
+surgery
+keyhole surgery
+organ transplant
+organ donor
+blood transfusion
+physiotherapy
+occupational therapy
+alternative medicine
+acupuncture
+medical rehabilitation
+palliative care
+hospice
+pain management
+treatment plan
+follow-up appointment
+medical history
+anaesthetic
+MRI scan
+operating theatre
+biopsy
+GP
+the NHS
+A&E
+waiting list
+health insurance
+GP surgery
+referral
+consultant
+outpatient
+inpatient
+discharge
+medical records
+second opinion
+healthcare system
+primary care
+secondary care
+paramedic
+midwife
+paediatrician
+anaesthetist
+pharmacist
+telemedicine
+walk-in centre
+out-of-hours service
+medical negligence
+mental health
+anxiety disorder
+counselling
+stigma
+depression
+bipolar disorder
+anorexia nervosa
+post-traumatic stress disorder
+emotional exhaustion
+talking therapy
+cognitive behavioural therapy
+psychiatrist
+psychologist
+counsellor
+panic attack
+insomnia
+coping strategy
+support group
+self-harm
+mental-health crisis
+addiction
+substance abuse
+alcoholism
+nicotine addiction
+withdrawal symptoms
+harm reduction
+binge drinking
+passive smoking
+vaping
+gambling addiction
+rehab clinic
+addictive substance
+healthy lifestyle
+sedentary lifestyle
+childhood obesity
+undernutrition
+sleep deprivation
+mindfulness
+physical inactivity
+disability
+accessibility
+reasonable adjustment
+wheelchair access
+sign language
+visually impaired
+hearing impairment
+learning disability
+neurodiversity
+mobility aid
+guide dog
+Braille
+carer
+long-term care
+step-free access
+first aid
+recovery position
+CPR
+defibrillator
+abdominal thrusts
+triage
+medical emergency
+emergency services
+adrenaline auto-injector
+blood donation
+donor card
+euthanasia
+medical certificate
+vital signs

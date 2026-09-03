@@ -1,0 +1,1107 @@
+{
+  "id": "matura-pr-edukacja",
+  "sku": "LS-PR-SCHOOL",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Edukacja",
+  "topicEn": "Education",
+  "titlePl": "Matura PR: Edukacja — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Education — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Edukacja na maturę rozszerzoną: system oświaty, studia, ocenianie i uczenie się przez całe życie. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura Education: school systems, university, assessment and lifelong learning.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "edukacja",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "state school",
+      "definitionPl": "szkoła państwowa",
+      "definitionEn": "a school funded by the government rather than by fees",
+      "example": "Most pupils in England attend a state school near home."
+    },
+    {
+      "term": "independent school",
+      "definitionPl": "szkoła niezależna, prywatna",
+      "definitionEn": "a school funded by fees, not by the local authority",
+      "example": "An independent school can set its own entrance exam."
+    },
+    {
+      "term": "public school",
+      "definitionPl": "elitarna szkoła prywatna (UK)",
+      "definitionEn": "in Britain, an old, expensive independent school",
+      "example": "Eton is a famous public school, despite the confusing name."
+    },
+    {
+      "term": "grammar school",
+      "definitionPl": "liceum z egzaminem wstępnym",
+      "definitionEn": "a state secondary school that selects pupils by exam",
+      "example": "She sat the eleven-plus to enter a grammar school."
+    },
+    {
+      "term": "comprehensive school",
+      "definitionPl": "szkoła ogólnodostępna",
+      "definitionEn": "a state secondary school that takes pupils of all abilities",
+      "example": "The local comprehensive school does not select by test score."
+    },
+    {
+      "term": "boarding school",
+      "definitionPl": "szkoła z internatem",
+      "definitionEn": "a school where pupils live during term time",
+      "example": "He boarded at a boarding school from the age of thirteen."
+    },
+    {
+      "term": "single-sex school",
+      "definitionPl": "szkoła jednopłciowa",
+      "definitionEn": "a school for only boys or only girls",
+      "example": "Her parents chose a single-sex school for the sixth form."
+    },
+    {
+      "term": "co-educational school",
+      "definitionPl": "szkoła koedukacyjna",
+      "definitionEn": "a school that teaches boys and girls together",
+      "example": "The old boys' college became a co-educational school in 1998."
+    },
+    {
+      "term": "faith school",
+      "definitionPl": "szkoła wyznaniowa",
+      "definitionEn": "a school linked to a religion and its values",
+      "example": "The faith school requires a letter from the parish priest."
+    },
+    {
+      "term": "special school",
+      "definitionPl": "szkoła specjalna",
+      "definitionEn": "a school for pupils with significant additional needs",
+      "example": "The special school has small classes and specialist staff."
+    },
+    {
+      "term": "vocational college",
+      "definitionPl": "szkoła / college zawodowy",
+      "definitionEn": "a college that trains students for a trade or practical career",
+      "example": "He left the liceum for a vocational college in catering."
+    },
+    {
+      "term": "sixth form",
+      "definitionPl": "klasy 16–18 (sixth form)",
+      "definitionEn": "the last two years of secondary school, often for A-levels",
+      "example": "She stayed on in the sixth form to sit three A-levels."
+    },
+    {
+      "term": "further education",
+      "definitionPl": "kształcenie policealne (FE)",
+      "definitionEn": "study after secondary school that is not a full university degree",
+      "example": "Further education colleges offer BTECs as well as A-levels."
+    },
+    {
+      "term": "academy school",
+      "definitionPl": "akademia (szkoła poza samorządem)",
+      "definitionEn": "a state-funded school in England that is independent of the local council",
+      "example": "The failing comprehensive was turned into an academy school."
+    },
+    {
+      "term": "mixed-ability teaching",
+      "definitionPl": "nauczanie w klasach zróżnicowanych",
+      "definitionEn": "teaching pupils of different levels in the same class",
+      "example": "Mixed-ability teaching can stretch stronger pupils if tasks are well designed."
+    },
+    {
+      "term": "academic streaming",
+      "definitionPl": "podział na poziomy (streaming)",
+      "definitionEn": "putting pupils into classes by overall academic ability",
+      "example": "Critics say academic streaming labels children too early."
+    },
+    {
+      "term": "school catchment area",
+      "definitionPl": "rejonizacja szkolna",
+      "definitionEn": "the neighbourhood from which a school normally takes pupils",
+      "example": "We moved house to get into a better school catchment area."
+    },
+    {
+      "term": "school fees",
+      "definitionPl": "czesne szkolne",
+      "definitionEn": "money paid to attend a private or independent school",
+      "example": "School fees rose again above inflation this year."
+    },
+    {
+      "term": "selective school",
+      "definitionPl": "szkoła z rekrutacją selekcyjną",
+      "definitionEn": "a school that admits pupils by exam, interview or talent",
+      "example": "Places at the selective school are fiercely competitive."
+    },
+    {
+      "term": "compulsory education",
+      "definitionPl": "obowiązek szkolny / obowiązkowa edukacja",
+      "definitionEn": "the years when the law requires children to be in education",
+      "example": "Compulsory education in Poland lasts until eighteen."
+    },
+    {
+      "term": "technical school",
+      "definitionPl": "technikum, szkoła techniczna",
+      "definitionEn": "a secondary school that combines general study with a trade",
+      "example": "The technical school partners with local engineering firms."
+    },
+    {
+      "term": "humanities",
+      "definitionPl": "nauki humanistyczne",
+      "definitionEn": "subjects such as literature, history, philosophy and languages",
+      "example": "She wants to study humanities rather than natural sciences."
+    },
+    {
+      "term": "social sciences",
+      "definitionPl": "nauki społeczne",
+      "definitionEn": "subjects that study people and society, such as sociology or economics",
+      "example": "Psychology sits between the social sciences and biology."
+    },
+    {
+      "term": "natural sciences",
+      "definitionPl": "nauki przyrodnicze",
+      "definitionEn": "subjects such as physics, chemistry and biology",
+      "example": "The faculty of natural sciences has a new laboratory wing."
+    },
+    {
+      "term": "faculty",
+      "definitionPl": "wydział (uczelni)",
+      "definitionEn": "a large division of a university grouping related departments",
+      "example": "He applied to the faculty of law, not medicine."
+    },
+    {
+      "term": "academic department",
+      "definitionPl": "katedra, zakład na uczelni",
+      "definitionEn": "a university unit that teaches and researches one subject",
+      "example": "The academic department of chemistry runs evening lectures."
+    },
+    {
+      "term": "syllabus",
+      "definitionPl": "sylabus, szczegółowy program zajęć",
+      "definitionEn": "an outline of topics, texts and assessment for a course",
+      "example": "Check the syllabus before you buy the set texts."
+    },
+    {
+      "term": "national curriculum",
+      "definitionPl": "podstawa programowa",
+      "definitionEn": "the official programme of study that state schools must follow",
+      "example": "Citizenship was added to the national curriculum in the 2000s."
+    },
+    {
+      "term": "core subject",
+      "definitionPl": "przedmiot obowiązkowy, rdzeniowy",
+      "definitionEn": "a subject all pupils must study, such as maths or the language of instruction",
+      "example": "English remains a core subject until the end of secondary school."
+    },
+    {
+      "term": "lecture",
+      "definitionPl": "wykład",
+      "definitionEn": "a formal talk teaching a group, typical at university",
+      "example": "The Monday lecture on ethics is always crowded."
+    },
+    {
+      "term": "seminar",
+      "definitionPl": "seminarium",
+      "definitionEn": "a small class for discussion of a topic or text",
+      "example": "Read the article before the seminar on Friday."
+    },
+    {
+      "term": "tutorial",
+      "definitionPl": "konwersatorium, tutorial",
+      "definitionEn": "a very small teaching session, often with one tutor and a few students",
+      "example": "Bring a draft essay to your tutorial."
+    },
+    {
+      "term": "laboratory work",
+      "definitionPl": "zajęcia laboratoryjne",
+      "definitionEn": "practical experiments done in a science lab as part of a course",
+      "example": "Twenty per cent of the mark comes from laboratory work."
+    },
+    {
+      "term": "geography fieldwork",
+      "definitionPl": "badania terenowe (geografia)",
+      "definitionEn": "research or practical study done outside the classroom, especially in geography",
+      "example": "Geography fieldwork will take place on the coast in May."
+    },
+    {
+      "term": "extra-curricular activity",
+      "definitionPl": "zajęcie pozalekcyjne",
+      "definitionEn": "a club or pursuit organised by the school but outside lessons",
+      "example": "Debating is the extra-curricular activity that stretched her most."
+    },
+    {
+      "term": "vocational training",
+      "definitionPl": "kształcenie zawodowe",
+      "definitionEn": "practical preparation for a specific job or trade",
+      "example": "Vocational training can lead to a skilled job without a degree."
+    },
+    {
+      "term": "interdisciplinary course",
+      "definitionPl": "kurs interdyscyplinarny",
+      "definitionEn": "a course that combines methods from more than one subject",
+      "example": "The interdisciplinary course links ethics with computer science."
+    },
+    {
+      "term": "foundation course",
+      "definitionPl": "kurs przygotowawczy / zerowy",
+      "definitionEn": "a preparatory year before a full degree, often for a change of field",
+      "example": "Art students without A-levels take a foundation course first."
+    },
+    {
+      "term": "A-level",
+      "definitionPl": "egzamin A-level",
+      "definitionEn": "a British subject exam usually taken at eighteen for university entry",
+      "example": "She needs AAB at A-level to keep her offer."
+    },
+    {
+      "term": "GCSE",
+      "definitionPl": "egzamin GCSE",
+      "definitionEn": "a British subject exam usually taken at sixteen",
+      "example": "Most pupils sit GCSE maths and English."
+    },
+    {
+      "term": "International Baccalaureate",
+      "definitionPl": "matura międzynarodowa (IB)",
+      "definitionEn": "a two-year diploma programme recognised by universities worldwide",
+      "example": "The International Baccalaureate includes a core essay and community work."
+    },
+    {
+      "term": "literacy",
+      "definitionPl": "umiejętność czytania i pisania; alfabetyzacja",
+      "definitionEn": "the ability to read and write at a functional level",
+      "example": "Adult literacy classes run at the local library."
+    },
+    {
+      "term": "numeracy",
+      "definitionPl": "umiejętność liczenia",
+      "definitionEn": "the ability to use numbers in everyday and work situations",
+      "example": "Poor numeracy holds people back in the labour market."
+    },
+    {
+      "term": "information literacy",
+      "definitionPl": "kompetencje informacyjne",
+      "definitionEn": "the skills needed to find, judge and use information, including online",
+      "example": "Information literacy is now taught from the early years."
+    },
+    {
+      "term": "admission requirements",
+      "definitionPl": "wymagania rekrutacyjne",
+      "definitionEn": "the grades or qualifications needed to join a course",
+      "example": "The admission requirements include chemistry at a high grade."
+    },
+    {
+      "term": "mock exam",
+      "definitionPl": "egzamin próbny",
+      "definitionEn": "a practice exam taken under real conditions before the official one",
+      "example": "The mock exam showed she was weak on listening."
+    },
+    {
+      "term": "resit",
+      "definitionPl": "poprawka, ponowne podejście do egzaminu",
+      "definitionEn": "a second attempt at an exam after a fail or a low grade",
+      "example": "He has a resit in August if he misses the pass mark."
+    },
+    {
+      "term": "coursework",
+      "definitionPl": "praca zaliczeniowa w ciągu roku",
+      "definitionEn": "assessed work completed during a course rather than in a final exam",
+      "example": "The project counts as coursework and cannot be done overnight."
+    },
+    {
+      "term": "oral exam",
+      "definitionPl": "egzamin ustny",
+      "definitionEn": "a spoken test of knowledge or language",
+      "example": "The oral exam lasts twelve minutes with two examiners."
+    },
+    {
+      "term": "written examination",
+      "definitionPl": "egzamin pisemny",
+      "definitionEn": "a formal test answered on paper or on screen",
+      "example": "Mobile phones are forbidden in the written examination."
+    },
+    {
+      "term": "continuous assessment",
+      "definitionPl": "ocenianie ciągłe",
+      "definitionEn": "grading based on work throughout the course, not one final paper",
+      "example": "Continuous assessment rewards steady effort rather than last-minute cramming."
+    },
+    {
+      "term": "formative assessment",
+      "definitionPl": "ocenianie kształtujące",
+      "definitionEn": "checking progress to improve learning, often without a final grade",
+      "example": "A quiz used as formative assessment need not go on the report."
+    },
+    {
+      "term": "summative assessment",
+      "definitionPl": "ocenianie podsumowujące",
+      "definitionEn": "a test or task that measures what has been learnt at the end of a unit",
+      "example": "The June paper is the main summative assessment for the module."
+    },
+    {
+      "term": "pass mark",
+      "definitionPl": "próg zaliczenia",
+      "definitionEn": "the lowest score needed to succeed in a test",
+      "example": "The pass mark was raised to fifty-five per cent."
+    },
+    {
+      "term": "grade boundary",
+      "definitionPl": "próg punktowy oceny",
+      "definitionEn": "the score at which one grade changes to the next",
+      "example": "The grade boundary for an A shifted after the paper proved hard."
+    },
+    {
+      "term": "academic transcript",
+      "definitionPl": "wykaz ocen, suplement do dyplomu",
+      "definitionEn": "an official record of modules and grades from an institution",
+      "example": "Attach your academic transcript to the master's application."
+    },
+    {
+      "term": "credit points",
+      "definitionPl": "punkty zaliczeniowe (np. ECTS)",
+      "definitionEn": "units that measure the workload of a course or module",
+      "example": "You need 180 credit points to complete the bachelor's programme."
+    },
+    {
+      "term": "invigilator",
+      "definitionPl": "osoba pilnująca przebiegu egzaminu",
+      "definitionEn": "a person who supervises an exam to prevent cheating",
+      "example": "The invigilator walked between the desks throughout the paper."
+    },
+    {
+      "term": "exam board",
+      "definitionPl": "komisja / instytucja egzaminacyjna",
+      "definitionEn": "the organisation that sets and marks a public exam",
+      "example": "Each exam board publishes its own past papers."
+    },
+    {
+      "term": "marking criteria",
+      "definitionPl": "kryteria oceniania",
+      "definitionEn": "the stated standards used to award marks",
+      "example": "Read the marking criteria before you write the essay."
+    },
+    {
+      "term": "peer assessment",
+      "definitionPl": "ocena koleżeńska",
+      "definitionEn": "students judging one another's work against shared criteria",
+      "example": "Peer assessment works only if the checklist is clear."
+    },
+    {
+      "term": "self-assessment",
+      "definitionPl": "samoocena",
+      "definitionEn": "judging your own work or skills against a standard",
+      "example": "Self-assessment at the end of the unit showed gaps in grammar."
+    },
+    {
+      "term": "open-book exam",
+      "definitionPl": "egzamin z otwartymi materiałami",
+      "definitionEn": "a test in which you may use notes or textbooks",
+      "example": "An open-book exam still rewards those who have organised their notes."
+    },
+    {
+      "term": "sit an exam",
+      "definitionPl": "przystąpić do egzaminu",
+      "definitionEn": "to take a formal test",
+      "example": "Candidates sit an exam in the sports hall in May."
+    },
+    {
+      "term": "distinction",
+      "definitionPl": "ocena celująca; dyplom z wyróżnieniem",
+      "definitionEn": "the highest pass band on some courses and vocational awards",
+      "example": "She completed the diploma with distinction."
+    },
+    {
+      "term": "merit",
+      "definitionPl": "ocena bardzo dobra (merit)",
+      "definitionEn": "a high pass band below distinction on some awards",
+      "example": "A merit is enough to progress to the next year."
+    },
+    {
+      "term": "appeal a grade",
+      "definitionPl": "odwołać się od oceny",
+      "definitionEn": "to formally ask for a mark to be reviewed",
+      "example": "You may appeal a grade only on procedural grounds."
+    },
+    {
+      "term": "predicted grade",
+      "definitionPl": "przewidywana ocena",
+      "definitionEn": "the result a teacher expects you to achieve in a public exam",
+      "example": "Her predicted grade in biology is an A."
+    },
+    {
+      "term": "school league table",
+      "definitionPl": "ranking szkół",
+      "definitionEn": "a published ranking of schools by exam results",
+      "example": "Parents still hunt for the top of the school league table."
+    },
+    {
+      "term": "standardised test",
+      "definitionPl": "test standaryzowany",
+      "definitionEn": "an exam given in the same way so scores can be compared",
+      "example": "A standardised test cannot capture every kind of talent."
+    },
+    {
+      "term": "oral presentation",
+      "definitionPl": "prezentacja ustna",
+      "definitionEn": "a short spoken report, often with slides, assessed for content and delivery",
+      "example": "The oral presentation is worth ten per cent of the module."
+    },
+    {
+      "term": "fail a module",
+      "definitionPl": "oblać przedmiot / moduł",
+      "definitionEn": "to not reach the pass mark for a unit of a course",
+      "example": "If you fail a module twice, you may have to leave the programme."
+    },
+    {
+      "term": "conditional offer",
+      "definitionPl": "oferta warunkowa (uczelni)",
+      "definitionEn": "a university place that depends on achieving set exam grades",
+      "example": "His conditional offer requires AAB including chemistry."
+    },
+    {
+      "term": "clearing",
+      "definitionPl": "dodatkowa rekrutacja (clearing)",
+      "definitionEn": "the British process matching leftover university places to students after results",
+      "example": "She found a linguistics place through clearing."
+    },
+    {
+      "term": "tuition fees",
+      "definitionPl": "czesne (uczelniane)",
+      "definitionEn": "the money charged by a university for teaching",
+      "example": "Tuition fees have made some graduates wary of a master's."
+    },
+    {
+      "term": "scholarship",
+      "definitionPl": "stypendium",
+      "definitionEn": "money given to a student on merit or need to help pay for study",
+      "example": "The scholarship covers accommodation as well as books."
+    },
+    {
+      "term": "campus",
+      "definitionPl": "kampus",
+      "definitionEn": "the grounds and buildings of a university or college",
+      "example": "Most first-years live on campus in the first term."
+    },
+    {
+      "term": "undergraduate",
+      "definitionPl": "student studiów I stopnia; licencjacki",
+      "definitionEn": "a student studying for a first degree, or that level of study",
+      "example": "Undergraduate numbers rose after the new campus opened."
+    },
+    {
+      "term": "postgraduate",
+      "definitionPl": "student studiów II/III stopnia; podyplomowy",
+      "definitionEn": "a student studying after a first degree, or that level of study",
+      "example": "Postgraduate seminars meet in the research centre."
+    },
+    {
+      "term": "dissertation",
+      "definitionPl": "praca dyplomowa (dłuższa)",
+      "definitionEn": "a long piece of original written work at the end of a degree",
+      "example": "Her dissertation examines dialect change in Silesia."
+    },
+    {
+      "term": "thesis",
+      "definitionPl": "rozprawa magisterska lub doktorska",
+      "definitionEn": "an extended research text, especially for a master's or doctorate",
+      "example": "He defended his thesis after three years of archival work."
+    },
+    {
+      "term": "bachelor's degree",
+      "definitionPl": "licencjat, tytuł bakałarza",
+      "definitionEn": "a first academic degree, typically after three or four years",
+      "example": "A bachelor's degree in engineering is the usual route into the firm."
+    },
+    {
+      "term": "master's degree",
+      "definitionPl": "magisterium, studia II stopnia",
+      "definitionEn": "a higher degree taken after a bachelor's, often one or two years",
+      "example": "She funded the master's degree with a research bursary."
+    },
+    {
+      "term": "PhD",
+      "definitionPl": "doktorat",
+      "definitionEn": "the highest university degree, awarded for original research",
+      "example": "She is doing a PhD on bilingual education."
+    },
+    {
+      "term": "fresher",
+      "definitionPl": "student pierwszego roku (UK)",
+      "definitionEn": "a first-year university student in Britain",
+      "example": "Every fresher is assigned a personal tutor in week one."
+    },
+    {
+      "term": "halls of residence",
+      "definitionPl": "akademik, dom studencki",
+      "definitionEn": "university buildings where students live, often in the first year",
+      "example": "Noise in the halls of residence peaks at the weekend."
+    },
+    {
+      "term": "student loan",
+      "definitionPl": "kredyt studencki",
+      "definitionEn": "money borrowed to pay fees or living costs while studying",
+      "example": "A student loan is repaid only above a set income."
+    },
+    {
+      "term": "maintenance grant",
+      "definitionPl": "stypendium na utrzymanie",
+      "definitionEn": "non-repayable help towards a student's living costs",
+      "example": "The maintenance grant was means-tested and later cut."
+    },
+    {
+      "term": "bursary",
+      "definitionPl": "stypendium socjalne / zapomoga uczelniana",
+      "definitionEn": "money given by a school or university, often according to need",
+      "example": "The college bursary paid for her rail season ticket."
+    },
+    {
+      "term": "mature student",
+      "definitionPl": "student dorosły / dojrzały",
+      "definitionEn": "a student who begins higher education later than the usual school-leaver age",
+      "example": "As a mature student he brought ten years of workplace experience."
+    },
+    {
+      "term": "distance learning",
+      "definitionPl": "nauczanie na odległość",
+      "definitionEn": "study done away from campus, typically online or by post",
+      "example": "Distance learning let her finish the degree while working nights."
+    },
+    {
+      "term": "blended learning",
+      "definitionPl": "nauczanie hybrydowe",
+      "definitionEn": "a mix of face-to-face teaching and online study",
+      "example": "Blended learning reduced crowding in the lecture theatre."
+    },
+    {
+      "term": "open day",
+      "definitionPl": "dzień otwarty (uczelni/szkoły)",
+      "definitionEn": "an event when prospective students visit and ask questions",
+      "example": "Go to an open day before you accept an offer."
+    },
+    {
+      "term": "prospectus",
+      "definitionPl": "informator rekrutacyjny",
+      "definitionEn": "a brochure or site describing courses, facilities and entry rules",
+      "example": "The prospectus lists optional modules for year two."
+    },
+    {
+      "term": "enrol",
+      "definitionPl": "zapisać się, immatrykulować się",
+      "definitionEn": "to officially register on a course or at an institution",
+      "example": "You must enrol in person before the first lecture."
+    },
+    {
+      "term": "lecture theatre",
+      "definitionPl": "aula wykładowa",
+      "definitionEn": "a large sloping room designed for lectures",
+      "example": "The lecture theatre holds four hundred students."
+    },
+    {
+      "term": "academic year",
+      "definitionPl": "rok akademicki",
+      "definitionEn": "the teaching year at a school or university, not the calendar year",
+      "example": "The academic year starts in October at this university."
+    },
+    {
+      "term": "sandwich course",
+      "definitionPl": "studia z praktyką (sandwich)",
+      "definitionEn": "a degree that includes a year of work in industry",
+      "example": "The sandwich course placed him in a design studio for a year."
+    },
+    {
+      "term": "exchange programme",
+      "definitionPl": "program wymiany",
+      "definitionEn": "an arrangement to study for a time at a partner institution abroad",
+      "example": "The exchange programme lasts one semester in Spain."
+    },
+    {
+      "term": "vice-chancellor",
+      "definitionPl": "rektor (tytuł brytyjski)",
+      "definitionEn": "the academic head of a British university",
+      "example": "The vice-chancellor spoke at the graduation ceremony."
+    },
+    {
+      "term": "dean",
+      "definitionPl": "dziekan",
+      "definitionEn": "the head of a faculty or a senior college officer",
+      "example": "The dean approved her request to interrupt studies."
+    },
+    {
+      "term": "academic staff",
+      "definitionPl": "kadra akademicka",
+      "definitionEn": "the lecturers, professors and researchers employed by a university",
+      "example": "Academic staff went on a marking boycott last spring."
+    },
+    {
+      "term": "research paper",
+      "definitionPl": "artykuł naukowy",
+      "definitionEn": "a formal article presenting original findings",
+      "example": "Cite the research paper, not the newspaper summary."
+    },
+    {
+      "term": "in-text citation",
+      "definitionPl": "cytowanie w tekście",
+      "definitionEn": "a brief reference in the body of a text pointing to a source",
+      "example": "Every in-text citation must match an entry in the bibliography."
+    },
+    {
+      "term": "bibliography",
+      "definitionPl": "bibliografia",
+      "definitionEn": "the list of sources used in a piece of academic work",
+      "example": "Put the bibliography on a separate page."
+    },
+    {
+      "term": "first-class honours",
+      "definitionPl": "dyplom z najwyższym wyróżnieniem (first)",
+      "definitionEn": "the highest UK bachelor's classification",
+      "example": "First-class honours is rare in this department."
+    },
+    {
+      "term": "joint honours",
+      "definitionPl": "studia dwukierunkowe",
+      "definitionEn": "a degree that splits study equally between two subjects",
+      "example": "Joint honours in history and politics kept both options open."
+    },
+    {
+      "term": "foundation year",
+      "definitionPl": "rok zerowy",
+      "definitionEn": "an extra preparatory year built into a degree for some students",
+      "example": "The foundation year covers maths missing from her school course."
+    },
+    {
+      "term": "alumni",
+      "definitionPl": "absolwenci",
+      "definitionEn": "former students of a school or university",
+      "example": "Alumni fund a hardship grant for current students."
+    },
+    {
+      "term": "graduation ceremony",
+      "definitionPl": "promocja, rozdanie dyplomów",
+      "definitionEn": "the formal event at which degrees are conferred",
+      "example": "Families travel far for the graduation ceremony."
+    },
+    {
+      "term": "students' union",
+      "definitionPl": "samorząd / związek studentów",
+      "definitionEn": "the organisation that represents students and runs campus services",
+      "example": "The students' union advised her during the appeal."
+    },
+    {
+      "term": "personal tutor",
+      "definitionPl": "opiekun roku / tutor akademicki",
+      "definitionEn": "a member of staff assigned to support a student's academic progress",
+      "example": "Email your personal tutor if you cannot submit on time."
+    },
+    {
+      "term": "reading list",
+      "definitionPl": "lista lektur",
+      "definitionEn": "the books and articles a tutor expects you to study",
+      "example": "Start the reading list in the summer, not the night before."
+    },
+    {
+      "term": "office hours",
+      "definitionPl": "dyżur wykładowcy, godziny konsultacji",
+      "definitionEn": "published times when a lecturer is available to students",
+      "example": "Office hours are Tuesdays from ten until twelve."
+    },
+    {
+      "term": "academic supervisor",
+      "definitionPl": "promotor, opiekun naukowy",
+      "definitionEn": "the staff member who guides a dissertation or research project",
+      "example": "Meet your academic supervisor before you lock the title."
+    },
+    {
+      "term": "viva voce",
+      "definitionPl": "egzamin ustny (obrona)",
+      "definitionEn": "an oral examination, especially of a thesis",
+      "example": "The viva voce lasted ninety minutes with two external examiners."
+    },
+    {
+      "term": "work placement",
+      "definitionPl": "praktyka zawodowa (w toku nauki)",
+      "definitionEn": "a period of supervised work that counts towards a course",
+      "example": "The work placement is assessed by both the firm and the tutor."
+    },
+    {
+      "term": "UCAS",
+      "definitionPl": "system rekrutacji na uczelnie brytyjskie",
+      "definitionEn": "the central service through which students apply to UK universities",
+      "example": "You submit one personal statement through UCAS."
+    },
+    {
+      "term": "cram",
+      "definitionPl": "wkuwać na ostatnią chwilę",
+      "definitionEn": "to study intensively in a short time before a test",
+      "example": "Do not cram the night before a language oral."
+    },
+    {
+      "term": "rote learning",
+      "definitionPl": "nauka na pamięć bez zrozumienia",
+      "definitionEn": "memorising facts by repetition rather than by understanding",
+      "example": "Rote learning will not help you in an unseen essay."
+    },
+    {
+      "term": "critical thinking",
+      "definitionPl": "myślenie krytyczne",
+      "definitionEn": "the skill of analysing arguments and evidence rather than accepting them",
+      "example": "Critical thinking is assessed in every humanities paper."
+    },
+    {
+      "term": "plagiarism",
+      "definitionPl": "plagiat",
+      "definitionEn": "using someone else's words or ideas as if they were your own",
+      "example": "Plagiarism can mean failing the whole module."
+    },
+    {
+      "term": "gap year",
+      "definitionPl": "rok przerwy (przed studiami lub w trakcie)",
+      "definitionEn": "a year out of formal study, often used to travel or work",
+      "example": "She took a gap year to work in a language school."
+    },
+    {
+      "term": "drop out",
+      "definitionPl": "rzucić szkołę lub studia",
+      "definitionEn": "to leave a course before finishing it",
+      "example": "Money worries made him drop out after the first term."
+    },
+    {
+      "term": "skip classes",
+      "definitionPl": "wagarować, opuszczać zajęcia",
+      "definitionEn": "to miss lessons without permission",
+      "example": "Students who skip classes fall behind within weeks."
+    },
+    {
+      "term": "brush up on",
+      "definitionPl": "odświeżyć (wiedzę, język)",
+      "definitionEn": "to improve knowledge of something you used to know better",
+      "example": "Brush up on your tenses before the oral exam."
+    },
+    {
+      "term": "fall behind",
+      "definitionPl": "zostać w tyle",
+      "definitionEn": "to progress more slowly than the course or your peers",
+      "example": "Miss two seminars and you will fall behind."
+    },
+    {
+      "term": "catch up",
+      "definitionPl": "nadrobić zaległości",
+      "definitionEn": "to reach the required level after being behind",
+      "example": "She used the Easter break to catch up on labs."
+    },
+    {
+      "term": "knuckle down",
+      "definitionPl": "zabrać się ostro do pracy / nauki",
+      "definitionEn": "to start working seriously and with discipline",
+      "example": "After the mock results he had to knuckle down."
+    },
+    {
+      "term": "skim-read",
+      "definitionPl": "czytać pobieżnie, przeglądać",
+      "definitionEn": "to read quickly for the main points rather than every word",
+      "example": "Skim-read the chapter first, then take notes."
+    },
+    {
+      "term": "mind map",
+      "definitionPl": "mapa myśli",
+      "definitionEn": "a diagram of ideas branching from a central topic",
+      "example": "A mind map helped her plan the argument."
+    },
+    {
+      "term": "autonomous learner",
+      "definitionPl": "uczeń samodzielny",
+      "definitionEn": "a student who can plan, monitor and evaluate their own study",
+      "example": "An autonomous learner does not wait to be told what to revise."
+    },
+    {
+      "term": "constructive feedback",
+      "definitionPl": "konstruktywna informacja zwrotna",
+      "definitionEn": "comments that explain how work can be improved, not only what is wrong",
+      "example": "Constructive feedback on the draft saved the final mark."
+    },
+    {
+      "term": "time management",
+      "definitionPl": "zarządzanie czasem",
+      "definitionEn": "planning study and rest so deadlines are met without last-minute panic",
+      "example": "Poor time management, not ability, sank the project."
+    },
+    {
+      "term": "procrastinate",
+      "definitionPl": "odkładać na później",
+      "definitionEn": "to delay work that should be done now",
+      "example": "If you procrastinate until Sunday night, the essay will suffer."
+    },
+    {
+      "term": "study group",
+      "definitionPl": "grupa naukowa, wspólna nauka",
+      "definitionEn": "a small set of students who revise or solve problems together",
+      "example": "The study group meets in the library every Thursday."
+    },
+    {
+      "term": "past paper",
+      "definitionPl": "arkusz z poprzednich lat",
+      "definitionEn": "an exam paper from a previous session, used for practice",
+      "example": "Work through a past paper under timed conditions."
+    },
+    {
+      "term": "academic integrity",
+      "definitionPl": "rzetelność akademicka",
+      "definitionEn": "honesty in study, including proper citation and no cheating",
+      "example": "Academic integrity rules cover collusion as well as copying."
+    },
+    {
+      "term": "cite sources",
+      "definitionPl": "cytować źródła",
+      "definitionEn": "to name the works you have used in academic writing",
+      "example": "Always cite sources, even when you paraphrase."
+    },
+    {
+      "term": "paraphrase",
+      "definitionPl": "parafrazować",
+      "definitionEn": "to rewrite an idea in your own words while keeping the meaning",
+      "example": "Paraphrase the critic, then add your own judgement."
+    },
+    {
+      "term": "proofread",
+      "definitionPl": "zrobić korektę tekstu",
+      "definitionEn": "to check a text for errors before submitting it",
+      "example": "Proofread on paper; screens hide typos."
+    },
+    {
+      "term": "word limit",
+      "definitionPl": "limit słów",
+      "definitionEn": "the maximum (and sometimes minimum) number of words allowed",
+      "example": "The word limit is 1,500, not counting the bibliography."
+    },
+    {
+      "term": "abstract",
+      "definitionPl": "abstrakt, streszczenie naukowe",
+      "definitionEn": "a short summary of a paper or dissertation placed at the start",
+      "example": "Write the abstract last, when the argument is stable."
+    },
+    {
+      "term": "special educational needs",
+      "definitionPl": "specjalne potrzeby edukacyjne",
+      "definitionEn": "learning difficulties or disabilities that require extra support in school",
+      "example": "Special educational needs support can include extra time in exams."
+    },
+    {
+      "term": "dyslexia",
+      "definitionPl": "dysleksja",
+      "definitionEn": "a difficulty with reading and spelling that is not due to low intelligence",
+      "example": "Dyslexia need not bar anyone from a literature degree."
+    },
+    {
+      "term": "gifted pupil",
+      "definitionPl": "uczeń wybitnie zdolny",
+      "definitionEn": "a school student whose ability is well above the typical level",
+      "example": "A gifted pupil still needs challenge, not only extra worksheets."
+    },
+    {
+      "term": "underachieve",
+      "definitionPl": "osiągać wyniki poniżej możliwości",
+      "definitionEn": "to do less well than your ability suggests",
+      "example": "Able students underachieve when they are bored or anxious."
+    },
+    {
+      "term": "inclusive education",
+      "definitionPl": "edukacja włączająca",
+      "definitionEn": "schooling that educates pupils with diverse needs in ordinary settings where possible",
+      "example": "Inclusive education depends on trained staff, not slogans."
+    },
+    {
+      "term": "mainstream school",
+      "definitionPl": "szkoła ogólnodostępna (mainstream)",
+      "definitionEn": "an ordinary school, as opposed to a specialist separate setting",
+      "example": "Many deaf children now attend a mainstream school with support."
+    },
+    {
+      "term": "truancy",
+      "definitionPl": "wagary (jako zjawisko)",
+      "definitionEn": "the habit of staying away from school without permission",
+      "example": "Persistent truancy triggers a meeting with the family."
+    },
+    {
+      "term": "learning outcomes",
+      "definitionPl": "efekty uczenia się",
+      "definitionEn": "the knowledge and skills a course claims students will gain",
+      "example": "Check the learning outcomes before you choose an optional module."
+    },
+    {
+      "term": "scaffolding",
+      "definitionPl": "wsparcie dydaktyczne (scaffolding)",
+      "definitionEn": "temporary help that is withdrawn as the learner becomes able to work alone",
+      "example": "Scaffolding for the essay included a model paragraph and a checklist."
+    },
+    {
+      "term": "supply teacher",
+      "definitionPl": "nauczyciel na zastępstwie",
+      "definitionEn": "a teacher who covers classes when the regular teacher is absent",
+      "example": "A supply teacher cannot be expected to know every pupil's target."
+    },
+    {
+      "term": "teaching assistant",
+      "definitionPl": "asystent nauczyciela",
+      "definitionEn": "a member of staff who supports the teacher and individual pupils",
+      "example": "The teaching assistant sat with the group that needed extra reading help."
+    },
+    {
+      "term": "head of department",
+      "definitionPl": "kierownik zespołu przedmiotowego",
+      "definitionEn": "the teacher in charge of a subject area in a school",
+      "example": "The head of department moderated the coursework marks."
+    },
+    {
+      "term": "newly qualified teacher",
+      "definitionPl": "nauczyciel na stażu / po kwalifikacji",
+      "definitionEn": "a teacher in the first year after gaining qualified teacher status",
+      "example": "A newly qualified teacher has a reduced timetable and a mentor."
+    },
+    {
+      "term": "classroom management",
+      "definitionPl": "prowadzenie klasy, dyscyplina na lekcji",
+      "definitionEn": "the skills of organising behaviour and attention so that teaching can happen",
+      "example": "Classroom management is as demanding as subject knowledge."
+    },
+    {
+      "term": "permanent exclusion",
+      "definitionPl": "wydalenie ze szkoły na stałe",
+      "definitionEn": "removing a pupil from the school roll as a last disciplinary step",
+      "example": "Permanent exclusion should be rare and carefully documented."
+    },
+    {
+      "term": "suspension",
+      "definitionPl": "zawieszenie w prawach ucznia",
+      "definitionEn": "a temporary ban from attending school as a punishment",
+      "example": "A five-day suspension followed the fight in the corridor."
+    },
+    {
+      "term": "education reform",
+      "definitionPl": "reforma oświaty",
+      "definitionEn": "a planned change to how schools, exams or funding work",
+      "example": "Each education reform promised less paperwork and delivered more."
+    },
+    {
+      "term": "teacher shortage",
+      "definitionPl": "niedobór nauczycieli",
+      "definitionEn": "a lack of qualified staff to fill teaching posts",
+      "example": "The teacher shortage is worst in physics and modern languages."
+    },
+    {
+      "term": "class size",
+      "definitionPl": "liczebność klasy",
+      "definitionEn": "the number of pupils taught together in one group",
+      "example": "Class size rose after two posts were left unfilled."
+    },
+    {
+      "term": "flipped classroom",
+      "definitionPl": "odwrócona klasa",
+      "definitionEn": "a method where students study content at home and practise in class",
+      "example": "In a flipped classroom the lecture is a video watched beforehand."
+    },
+    {
+      "term": "inquiry-based learning",
+      "definitionPl": "nauczanie przez dociekanie / odkrywanie",
+      "definitionEn": "a method in which pupils investigate questions rather than only receiving facts",
+      "example": "Inquiry-based learning still needs a knowledgeable teacher."
+    },
+    {
+      "term": "e-learning",
+      "definitionPl": "e-learning, nauczanie elektroniczne",
+      "definitionEn": "study that uses digital platforms as the main medium",
+      "example": "E-learning failed some pupils who had no quiet place to work."
+    },
+    {
+      "term": "MOOC",
+      "definitionPl": "masowy otwarty kurs online",
+      "definitionEn": "a free or low-cost online course open to very large numbers of learners",
+      "example": "He completed a MOOC on statistics before applying for the MSc."
+    },
+    {
+      "term": "lifelong learning",
+      "definitionPl": "uczenie się przez całe życie",
+      "definitionEn": "continuing to study and retrain throughout adult life",
+      "example": "Lifelong learning is no longer a slogan in a changing labour market."
+    },
+    {
+      "term": "adult education",
+      "definitionPl": "edukacja dorosłych",
+      "definitionEn": "organised learning for people who have left full-time school",
+      "example": "Adult education classes in evening Polish fill every autumn."
+    },
+    {
+      "term": "continuing professional development",
+      "definitionPl": "doskonalenie zawodowe (nauczycieli)",
+      "definitionEn": "ongoing training that keeps practitioners' skills up to date",
+      "example": "Continuing professional development this year focuses on assessment."
+    },
+    {
+      "term": "learner-centred",
+      "definitionPl": "zorientowany na ucznia",
+      "definitionEn": "designed around students' needs and activity rather than only the teacher's talk",
+      "example": "A learner-centred lesson still has clear goals."
+    },
+    {
+      "term": "educational inequality",
+      "definitionPl": "nierówności edukacyjne",
+      "definitionEn": "unfair differences in access, quality or outcomes of schooling",
+      "example": "Educational inequality tracks family income more closely than talent."
+    },
+    {
+      "term": "attainment gap",
+      "definitionPl": "luka w wynikach nauczania",
+      "definitionEn": "the difference in exam results between groups of pupils",
+      "example": "The attainment gap widened after lengthy school closures."
+    },
+    {
+      "term": "homework gap",
+      "definitionPl": "luka w dostępie do nauki w domu",
+      "definitionEn": "unequal ability to study at home because of missing devices, internet or space",
+      "example": "The homework gap showed up the first week of remote lessons."
+    },
+    {
+      "term": "disadvantaged background",
+      "definitionPl": "środowisko defaworyzowane",
+      "definitionEn": "growing up with fewer financial, educational or social resources",
+      "example": "Outreach schemes target applicants from a disadvantaged background."
+    },
+    {
+      "term": "elite education",
+      "definitionPl": "edukacja elitarna",
+      "definitionEn": "schooling that is highly selective, expensive or socially exclusive",
+      "example": "Elite education still opens doors that grades alone do not."
+    },
+    {
+      "term": "school funding",
+      "definitionPl": "finansowanie szkół",
+      "definitionEn": "the money provided to run schools, from the state or other sources",
+      "example": "School funding per pupil has not kept pace with costs."
+    },
+    {
+      "term": "widening participation",
+      "definitionPl": "poszerzanie dostępu do studiów",
+      "definitionEn": "policies that help under-represented groups enter higher education",
+      "example": "Widening participation is a condition of the university's public grant."
+    },
+    {
+      "term": "private tuition",
+      "definitionPl": "korepetycje prywatne",
+      "definitionEn": "paid one-to-one or small-group teaching outside school",
+      "example": "Private tuition in maths has become a hidden school fee."
+    },
+    {
+      "term": "dropout rate",
+      "definitionPl": "wskaźnik rezygnacji ze studiów / szkoły",
+      "definitionEn": "the share of students who leave a course before finishing",
+      "example": "The dropout rate is highest in the first undergraduate year."
+    },
+    {
+      "term": "pupil premium",
+      "definitionPl": "dodatek na uczniów z trudniejszego środowiska",
+      "definitionEn": "extra state money in England for schools with disadvantaged pupils",
+      "example": "The pupil premium paid for a breakfast club and extra tutoring."
+    }
+  ]
+}

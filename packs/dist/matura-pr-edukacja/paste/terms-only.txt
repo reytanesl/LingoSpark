@@ -1,0 +1,180 @@
+state school
+independent school
+public school
+grammar school
+comprehensive school
+boarding school
+single-sex school
+co-educational school
+faith school
+special school
+vocational college
+sixth form
+further education
+academy school
+mixed-ability teaching
+academic streaming
+school catchment area
+school fees
+selective school
+compulsory education
+technical school
+humanities
+social sciences
+natural sciences
+faculty
+academic department
+syllabus
+national curriculum
+core subject
+lecture
+seminar
+tutorial
+laboratory work
+geography fieldwork
+extra-curricular activity
+vocational training
+interdisciplinary course
+foundation course
+A-level
+GCSE
+International Baccalaureate
+literacy
+numeracy
+information literacy
+admission requirements
+mock exam
+resit
+coursework
+oral exam
+written examination
+continuous assessment
+formative assessment
+summative assessment
+pass mark
+grade boundary
+academic transcript
+credit points
+invigilator
+exam board
+marking criteria
+peer assessment
+self-assessment
+open-book exam
+sit an exam
+distinction
+merit
+appeal a grade
+predicted grade
+school league table
+standardised test
+oral presentation
+fail a module
+conditional offer
+clearing
+tuition fees
+scholarship
+campus
+undergraduate
+postgraduate
+dissertation
+thesis
+bachelor's degree
+master's degree
+PhD
+fresher
+halls of residence
+student loan
+maintenance grant
+bursary
+mature student
+distance learning
+blended learning
+open day
+prospectus
+enrol
+lecture theatre
+academic year
+sandwich course
+exchange programme
+vice-chancellor
+dean
+academic staff
+research paper
+in-text citation
+bibliography
+first-class honours
+joint honours
+foundation year
+alumni
+graduation ceremony
+students' union
+personal tutor
+reading list
+office hours
+academic supervisor
+viva voce
+work placement
+UCAS
+cram
+rote learning
+critical thinking
+plagiarism
+gap year
+drop out
+skip classes
+brush up on
+fall behind
+catch up
+knuckle down
+skim-read
+mind map
+autonomous learner
+constructive feedback
+time management
+procrastinate
+study group
+past paper
+academic integrity
+cite sources
+paraphrase
+proofread
+word limit
+abstract
+special educational needs
+dyslexia
+gifted pupil
+underachieve
+inclusive education
+mainstream school
+truancy
+learning outcomes
+scaffolding
+supply teacher
+teaching assistant
+head of department
+newly qualified teacher
+classroom management
+permanent exclusion
+suspension
+education reform
+teacher shortage
+class size
+flipped classroom
+inquiry-based learning
+e-learning
+MOOC
+lifelong learning
+adult education
+continuing professional development
+learner-centred
+educational inequality
+attainment gap
+homework gap
+disadvantaged background
+elite education
+school funding
+widening participation
+private tuition
+dropout rate
+pupil premium

@@ -1,0 +1,1107 @@
+{
+  "id": "matura-pr-panstwo-spoleczenstwo",
+  "sku": "LS-PR-STATE",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Państwo i społeczeństwo",
+  "topicEn": "The state and society",
+  "titlePl": "Matura PR: Państwo i społeczeństwo — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: The State and Society — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Państwo i społeczeństwo na maturę rozszerzoną: ustrój, polityka, prawo, gospodarka i kwestie społeczne. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura State and society module: institutions, politics, law, the economy and social issues. ENG–PL flashcards.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "państwo i społeczeństwo",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "constitution",
+      "definitionPl": "konstytucja",
+      "definitionEn": "the basic set of laws that says how a country is governed",
+      "example": "Freedom of assembly is guaranteed in the constitution."
+    },
+    {
+      "term": "parliament",
+      "definitionPl": "parlament",
+      "definitionEn": "the elected body that makes a country's laws",
+      "example": "The new budget must be approved by parliament before April."
+    },
+    {
+      "term": "local government",
+      "definitionPl": "samorząd terytorialny",
+      "definitionEn": "the councils and officials who run towns, cities and regions",
+      "example": "Bin collections and schools are the responsibility of local government."
+    },
+    {
+      "term": "judiciary",
+      "definitionPl": "sądownictwo, władza sądownicza",
+      "definitionEn": "the system of courts and judges in a country",
+      "example": "An independent judiciary is essential in a democracy."
+    },
+    {
+      "term": "legislature",
+      "definitionPl": "władza ustawodawcza",
+      "definitionEn": "the branch of government that writes and passes laws",
+      "example": "The legislature spent months debating the climate bill."
+    },
+    {
+      "term": "executive power",
+      "definitionPl": "władza wykonawcza",
+      "definitionEn": "the branch of government that puts laws into practice",
+      "example": "In a parliamentary system, executive power lies mainly with the cabinet."
+    },
+    {
+      "term": "head of state",
+      "definitionPl": "głowa państwa",
+      "definitionEn": "the official who represents a country, such as a president or monarch",
+      "example": "The president is the head of state, while the prime minister leads the government."
+    },
+    {
+      "term": "cabinet",
+      "definitionPl": "rada ministrów, gabinet",
+      "definitionEn": "the group of senior ministers who run government departments",
+      "example": "The cabinet met late into the night before the vote."
+    },
+    {
+      "term": "civil service",
+      "definitionPl": "służba cywilna",
+      "definitionEn": "the professional officials who administer the state, not elected politicians",
+      "example": "A politically neutral civil service should serve any elected government."
+    },
+    {
+      "term": "civil servant",
+      "definitionPl": "urzędnik służby cywilnej",
+      "definitionEn": "a person employed by the state to run public administration",
+      "example": "A senior civil servant briefed ministers on the cost of the reform."
+    },
+    {
+      "term": "pass a bill",
+      "definitionPl": "uchwalić ustawę",
+      "definitionEn": "to approve a proposed law in parliament",
+      "example": "MPs are expected to pass a bill on housing this autumn."
+    },
+    {
+      "term": "amendment",
+      "definitionPl": "poprawka (do ustawy)",
+      "definitionEn": "a change made to a law or a proposed law",
+      "example": "The opposition tabled an amendment to weaken the surveillance clause."
+    },
+    {
+      "term": "rule of law",
+      "definitionPl": "rządy prawa",
+      "definitionEn": "the principle that everyone, including the government, is bound by the law",
+      "example": "Corruption flourishes where the rule of law is weak."
+    },
+    {
+      "term": "separation of powers",
+      "definitionPl": "trójpodział władzy",
+      "definitionEn": "dividing state power between legislature, executive and judiciary",
+      "example": "The constitution is based on a clear separation of powers."
+    },
+    {
+      "term": "democracy",
+      "definitionPl": "demokracja",
+      "definitionEn": "a system in which citizens choose their leaders in free elections",
+      "example": "A healthy democracy needs an independent press as well as elections."
+    },
+    {
+      "term": "dictatorship",
+      "definitionPl": "dyktatura",
+      "definitionEn": "rule by one person or group who hold power by force, not free choice",
+      "example": "In a dictatorship, criticism of the leader can be treated as a crime."
+    },
+    {
+      "term": "authoritarian regime",
+      "definitionPl": "reżim autorytarny",
+      "definitionEn": "a government that demands obedience and limits political freedom",
+      "example": "An authoritarian regime often censors the internet and the press."
+    },
+    {
+      "term": "constitutional monarchy",
+      "definitionPl": "monarchia konstytucyjna",
+      "definitionEn": "a system with a king or queen whose powers are limited by law",
+      "example": "The United Kingdom is a constitutional monarchy with a parliamentary government."
+    },
+    {
+      "term": "republic",
+      "definitionPl": "republika",
+      "definitionEn": "a state whose head is elected or appointed, not a hereditary monarch",
+      "example": "Poland is a republic with a president as head of state."
+    },
+    {
+      "term": "sovereignty",
+      "definitionPl": "suwerenność",
+      "definitionEn": "the right of a state to govern itself without outside control",
+      "example": "Joining a treaty can mean sharing a degree of sovereignty with other countries."
+    },
+    {
+      "term": "constituency",
+      "definitionPl": "okręg wyborczy",
+      "definitionEn": "a district whose voters elect a representative",
+      "example": "Each constituency elects one member of parliament."
+    },
+    {
+      "term": "member of parliament",
+      "definitionPl": "poseł / członek parlamentu",
+      "definitionEn": "a person elected to sit in parliament",
+      "example": "Write to your member of parliament if you want the bus route saved."
+    },
+    {
+      "term": "upper house",
+      "definitionPl": "izba wyższa",
+      "definitionEn": "the second chamber of a parliament, such as a senate",
+      "example": "The upper house can delay a bill but not always block it forever."
+    },
+    {
+      "term": "lower house",
+      "definitionPl": "izba niższa",
+      "definitionEn": "the main elected chamber of a parliament",
+      "example": "Most laws originate in the lower house."
+    },
+    {
+      "term": "municipality",
+      "definitionPl": "gmina; samorząd miejski",
+      "definitionEn": "a town or district with its own local government",
+      "example": "The municipality opened a new library in the old post office."
+    },
+    {
+      "term": "councillor",
+      "definitionPl": "radny",
+      "definitionEn": "an elected member of a local council",
+      "example": "A local councillor held a meeting about the planned bypass."
+    },
+    {
+      "term": "bureaucracy",
+      "definitionPl": "biurokracja",
+      "definitionEn": "a system of administration with many official rules and procedures",
+      "example": "Small firms complain that bureaucracy slows down every permit."
+    },
+    {
+      "term": "red tape",
+      "definitionPl": "papierkologia, zbędna biurokracja",
+      "definitionEn": "official rules that seem unnecessary and delay action",
+      "example": "Teachers say red tape leaves them too little time for actual teaching."
+    },
+    {
+      "term": "watchdog organisation",
+      "definitionPl": "organizacja strażnicza",
+      "definitionEn": "a body that monitors institutions and reports abuse",
+      "example": "An independent watchdog organisation published a report on prisons."
+    },
+    {
+      "term": "public administration",
+      "definitionPl": "administracja publiczna",
+      "definitionEn": "the organisation and work of government offices and services",
+      "example": "She studied public administration and now works at the regional office."
+    },
+    {
+      "term": "checks and balances",
+      "definitionPl": "mechanizmy wzajemnej kontroli władz",
+      "definitionEn": "rules that stop any one branch of government becoming too powerful",
+      "example": "A free press is one of the informal checks and balances in a democracy."
+    },
+    {
+      "term": "act of parliament",
+      "definitionPl": "ustawa sejmowa / akt parlamentu",
+      "definitionEn": "a law that has been passed by parliament and come into force",
+      "example": "The smoking ban was introduced by an act of parliament."
+    },
+    {
+      "term": "electorate",
+      "definitionPl": "elektorat",
+      "definitionEn": "all the people who are entitled to vote",
+      "example": "The party is trying to win back the rural electorate."
+    },
+    {
+      "term": "turnout",
+      "definitionPl": "frekwencja wyborcza",
+      "definitionEn": "the percentage of eligible voters who actually vote",
+      "example": "Turnout was highest among older voters and lowest among students."
+    },
+    {
+      "term": "coalition",
+      "definitionPl": "koalicja",
+      "definitionEn": "an alliance of parties that govern together",
+      "example": "No party won a majority, so a coalition was formed after weeks of talks."
+    },
+    {
+      "term": "referendum",
+      "definitionPl": "referendum",
+      "definitionEn": "a nationwide vote in which citizens decide a specific question",
+      "example": "The government promised a referendum on the constitutional change."
+    },
+    {
+      "term": "lobbying",
+      "definitionPl": "lobbing",
+      "definitionEn": "trying to influence politicians and officials on behalf of a group",
+      "example": "Strict rules on lobbying are meant to make politics more transparent."
+    },
+    {
+      "term": "left-wing",
+      "definitionPl": "lewicowy",
+      "definitionEn": "supporting greater social equality and a larger role for the state",
+      "example": "Left-wing parties usually favour higher public spending on welfare."
+    },
+    {
+      "term": "right-wing",
+      "definitionPl": "prawicowy",
+      "definitionEn": "supporting tradition, lower taxes or a smaller role for the state",
+      "example": "Right-wing voters in this region often prioritise law and order."
+    },
+    {
+      "term": "centre-ground",
+      "definitionPl": "centrum sceny politycznej",
+      "definitionEn": "moderate political positions between left and right",
+      "example": "The party moved towards the centre-ground to attract swing voters."
+    },
+    {
+      "term": "general election",
+      "definitionPl": "wybory powszechne",
+      "definitionEn": "a nationwide election to choose a new parliament",
+      "example": "The prime minister called a general election two years early."
+    },
+    {
+      "term": "proportional representation",
+      "definitionPl": "ordynacja proporcjonalna",
+      "definitionEn": "an electoral system in which seats match the share of votes",
+      "example": "Smaller parties prefer proportional representation to first-past-the-post."
+    },
+    {
+      "term": "manifesto",
+      "definitionPl": "program wyborczy",
+      "definitionEn": "a public statement of a party's policies before an election",
+      "example": "The manifesto promised cheaper public transport and more teachers."
+    },
+    {
+      "term": "populism",
+      "definitionPl": "populizm",
+      "definitionEn": "politics that claims to speak for ordinary people against elites",
+      "example": "Critics say populism oversimplifies complex economic problems."
+    },
+    {
+      "term": "nationalism",
+      "definitionPl": "nacjonalizm",
+      "definitionEn": "a political belief that puts one's nation first, sometimes at others' expense",
+      "example": "Economic nationalism can lead to higher tariffs on imports."
+    },
+    {
+      "term": "swing voter",
+      "definitionPl": "niezdecydowany wyborca",
+      "definitionEn": "a voter who is not loyal to one party and can decide an election",
+      "example": "The campaign targeted the swing voter in suburban towns."
+    },
+    {
+      "term": "secret ballot",
+      "definitionPl": "tajne głosowanie",
+      "definitionEn": "a vote in which nobody can see how you chose",
+      "example": "A secret ballot protects voters from pressure and intimidation."
+    },
+    {
+      "term": "hung parliament",
+      "definitionPl": "parlament bez większości",
+      "definitionEn": "a parliament in which no party has an overall majority",
+      "example": "A hung parliament usually leads to coalition talks."
+    },
+    {
+      "term": "opposition",
+      "definitionPl": "opozycja",
+      "definitionEn": "the parties not in government, who criticise those in power",
+      "example": "The opposition accused ministers of hiding the true cost of the plan."
+    },
+    {
+      "term": "minority government",
+      "definitionPl": "rząd mniejszościowy",
+      "definitionEn": "a government that does not have a majority of seats",
+      "example": "A minority government must bargain for every vote in parliament."
+    },
+    {
+      "term": "vote of no confidence",
+      "definitionPl": "wotum nieufności",
+      "definitionEn": "a parliamentary vote to remove the government from office",
+      "example": "The prime minister survived a vote of no confidence by three votes."
+    },
+    {
+      "term": "grassroots",
+      "definitionPl": "oddolny; ruchy oddolne",
+      "definitionEn": "ordinary members of a party or movement, not its leaders",
+      "example": "The reform began as a grassroots campaign in small towns."
+    },
+    {
+      "term": "political spectrum",
+      "definitionPl": "spektrum polityczne",
+      "definitionEn": "the range of political views from left to right",
+      "example": "Most voters place themselves in the middle of the political spectrum."
+    },
+    {
+      "term": "incumbent",
+      "definitionPl": "urzędujący (kandydat / partia)",
+      "definitionEn": "the person or party currently holding office",
+      "example": "The incumbent mayor was defeated after three terms."
+    },
+    {
+      "term": "suffrage",
+      "definitionPl": "prawo wyborcze",
+      "definitionEn": "the right to vote in elections",
+      "example": "Women in Poland gained suffrage in 1918."
+    },
+    {
+      "term": "disenfranchised",
+      "definitionPl": "pozbawiony praw wyborczych",
+      "definitionEn": "deprived of the right to vote",
+      "example": "Prisoners in some countries remain disenfranchised until they are released."
+    },
+    {
+      "term": "opinion poll",
+      "definitionPl": "sondaż opinii publicznej",
+      "definitionEn": "a survey of people's views, often on parties or policies",
+      "example": "The latest opinion poll put the two main parties neck and neck."
+    },
+    {
+      "term": "landslide victory",
+      "definitionPl": "miażdżące zwycięstwo wyborcze",
+      "definitionEn": "an election win by a very large margin",
+      "example": "The party claimed a landslide victory and a clear mandate for reform."
+    },
+    {
+      "term": "abstain",
+      "definitionPl": "wstrzymać się od głosu",
+      "definitionEn": "to formally decline to vote for or against a motion",
+      "example": "Several rebels decided to abstain rather than vote with the government."
+    },
+    {
+      "term": "electoral fraud",
+      "definitionPl": "oszustwo wyborcze",
+      "definitionEn": "illegal interference with the process of an election",
+      "example": "Observers reported possible electoral fraud at two polling stations."
+    },
+    {
+      "term": "accountability",
+      "definitionPl": "odpowiedzialność (władzy przed obywatelami)",
+      "definitionEn": "the duty of those in power to explain and justify their actions",
+      "example": "A free press is vital for the accountability of public officials."
+    },
+    {
+      "term": "corruption",
+      "definitionPl": "korupcja",
+      "definitionEn": "dishonest use of power for private gain, such as taking bribes",
+      "example": "A corruption scandal forced the minister to resign."
+    },
+    {
+      "term": "bribery",
+      "definitionPl": "łapownictwo",
+      "definitionEn": "offering or taking money or gifts to influence an official decision",
+      "example": "The contractor was charged with bribery of a city official."
+    },
+    {
+      "term": "nepotism",
+      "definitionPl": "nepotyzm",
+      "definitionEn": "giving jobs or favours to relatives rather than on merit",
+      "example": "Appointing your cousin to the board looks like nepotism."
+    },
+    {
+      "term": "freedom of information",
+      "definitionPl": "dostęp do informacji publicznej",
+      "definitionEn": "the right to see official documents held by the state",
+      "example": "Journalists used freedom of information requests to check spending."
+    },
+    {
+      "term": "propaganda",
+      "definitionPl": "propaganda",
+      "definitionEn": "information spread to promote a political cause, often one-sided",
+      "example": "State television was accused of broadcasting propaganda before the vote."
+    },
+    {
+      "term": "prosecute",
+      "definitionPl": "ścigać sądownie, oskarżać",
+      "definitionEn": "to bring a criminal case against someone in court",
+      "example": "Prosecutors decided to prosecute the company for dumping waste."
+    },
+    {
+      "term": "defendant",
+      "definitionPl": "oskarżony; pozwany",
+      "definitionEn": "the person accused of a crime or sued in a civil case",
+      "example": "The defendant denied all the charges and pleaded not guilty."
+    },
+    {
+      "term": "community service",
+      "definitionPl": "prace społeczne (jako kara)",
+      "definitionEn": "unpaid work for the community, given as a punishment",
+      "example": "Instead of a fine, the court ordered 80 hours of community service."
+    },
+    {
+      "term": "petty crime",
+      "definitionPl": "drobna przestępczość",
+      "definitionEn": "relatively minor offences such as shoplifting or vandalism",
+      "example": "The neighbourhood has a problem with petty crime, not with violent gangs."
+    },
+    {
+      "term": "organised crime",
+      "definitionPl": "przestępczość zorganizowana",
+      "definitionEn": "crime planned and carried out by structured groups",
+      "example": "Europol coordinates action against organised crime across the EU."
+    },
+    {
+      "term": "prosecutor",
+      "definitionPl": "prokurator",
+      "definitionEn": "the lawyer who presents the case against the accused",
+      "example": "The prosecutor argued that the evidence left no reasonable doubt."
+    },
+    {
+      "term": "defence lawyer",
+      "definitionPl": "obrońca, adwokat oskarżonego",
+      "definitionEn": "the lawyer who represents the person accused of a crime",
+      "example": "The defence lawyer questioned whether the witness could have seen the incident."
+    },
+    {
+      "term": "jury",
+      "definitionPl": "ława przysięgłych",
+      "definitionEn": "a group of citizens who decide if the accused is guilty",
+      "example": "The jury took two days to reach a unanimous verdict."
+    },
+    {
+      "term": "verdict",
+      "definitionPl": "wyrok, werdykt",
+      "definitionEn": "the decision of a jury or court at the end of a trial",
+      "example": "Families waited outside for the verdict to be read."
+    },
+    {
+      "term": "acquit",
+      "definitionPl": "uniewinnić",
+      "definitionEn": "to formally find that someone is not guilty",
+      "example": "The jury voted to acquit her after the key witness changed his story."
+    },
+    {
+      "term": "convict",
+      "definitionPl": "uznać za winnego; skazany",
+      "definitionEn": "to find someone guilty of a crime",
+      "example": "It took the jury four hours to convict the two men of fraud."
+    },
+    {
+      "term": "life imprisonment",
+      "definitionPl": "kara dożywotniego pozbawienia wolności",
+      "definitionEn": "a prison sentence for the rest of a person's life",
+      "example": "The judge imposed life imprisonment for the murder."
+    },
+    {
+      "term": "probation",
+      "definitionPl": "dozór kuratora; okres próby",
+      "definitionEn": "a sentence served in the community under supervision instead of prison",
+      "example": "He was placed on probation and ordered to attend a rehabilitation course."
+    },
+    {
+      "term": "parole",
+      "definitionPl": "zwolnienie warunkowe",
+      "definitionEn": "early release from prison under conditions",
+      "example": "She was granted parole after serving two thirds of the sentence."
+    },
+    {
+      "term": "bail",
+      "definitionPl": "kaucja",
+      "definitionEn": "money paid as a guarantee that an accused person will return to court",
+      "example": "The judge refused bail because the suspect was likely to flee."
+    },
+    {
+      "term": "warrant",
+      "definitionPl": "nakaz (aresztowania, przeszukania)",
+      "definitionEn": "an official document allowing the police to arrest someone or search a place",
+      "example": "Officers waited for a warrant before they searched the flat."
+    },
+    {
+      "term": "testimony",
+      "definitionPl": "zeznanie (w sądzie)",
+      "definitionEn": "a formal statement given as evidence in court",
+      "example": "Her testimony contradicted the official police report."
+    },
+    {
+      "term": "presumption of innocence",
+      "definitionPl": "domniemanie niewinności",
+      "definitionEn": "the principle that a person is innocent until proved guilty",
+      "example": "The presumption of innocence is a cornerstone of a fair trial."
+    },
+    {
+      "term": "fair trial",
+      "definitionPl": "rzetelny proces sądowy",
+      "definitionEn": "a hearing that is independent, public and respects the rights of both sides",
+      "example": "Every defendant has the right to a fair trial, however unpopular they are."
+    },
+    {
+      "term": "appeal",
+      "definitionPl": "apelacja",
+      "definitionEn": "a request to a higher court to review a decision",
+      "example": "His lawyers filed an appeal within a week of the sentence."
+    },
+    {
+      "term": "white-collar crime",
+      "definitionPl": "przestępczość białych kołnierzyków",
+      "definitionEn": "non-violent crime committed by people in business or public office",
+      "example": "Tax fraud is a typical form of white-collar crime."
+    },
+    {
+      "term": "money laundering",
+      "definitionPl": "pranie pieniędzy",
+      "definitionEn": "hiding the origin of money obtained from crime",
+      "example": "The bank was fined for failing to stop money laundering."
+    },
+    {
+      "term": "embezzlement",
+      "definitionPl": "sprzeniewierzenie, defraudacja",
+      "definitionEn": "stealing money that you were trusted to look after",
+      "example": "The treasurer was charged with embezzlement of club funds."
+    },
+    {
+      "term": "human trafficking",
+      "definitionPl": "handel ludźmi",
+      "definitionEn": "the illegal trade in people for exploitation",
+      "example": "The police unit specialises in cases of human trafficking."
+    },
+    {
+      "term": "manslaughter",
+      "definitionPl": "nieumyślne spowodowanie śmierci",
+      "definitionEn": "killing someone without the intent required for murder",
+      "example": "He was convicted of manslaughter, not murder, because he had not planned the death."
+    },
+    {
+      "term": "arson",
+      "definitionPl": "podpalenie",
+      "definitionEn": "the crime of deliberately setting fire to property",
+      "example": "Investigators treated the warehouse fire as arson."
+    },
+    {
+      "term": "perjury",
+      "definitionPl": "krzywoprzysięstwo",
+      "definitionEn": "the crime of lying in court after swearing to tell the truth",
+      "example": "She was later charged with perjury over her original statement."
+    },
+    {
+      "term": "rehabilitation of offenders",
+      "definitionPl": "resocjalizacja skazanych",
+      "definitionEn": "helping people who have committed crimes to return to honest life",
+      "example": "The charity focuses on rehabilitation of offenders through training and housing."
+    },
+    {
+      "term": "recidivism",
+      "definitionPl": "recydywa",
+      "definitionEn": "the tendency of former prisoners to commit further crimes",
+      "example": "Education in prison is one way to reduce recidivism."
+    },
+    {
+      "term": "miscarriage of justice",
+      "definitionPl": "pomyłka sądowa",
+      "definitionEn": "a serious failure of the legal system, such as convicting an innocent person",
+      "example": "New DNA evidence revealed a miscarriage of justice after twenty years."
+    },
+    {
+      "term": "deterrent",
+      "definitionPl": "środek odstraszający",
+      "definitionEn": "something that discourages people from committing a crime",
+      "example": "Campaigners doubt that longer sentences are an effective deterrent."
+    },
+    {
+      "term": "law enforcement",
+      "definitionPl": "organy ścigania; egzekwowanie prawa",
+      "definitionEn": "the police and other agencies that make sure laws are obeyed",
+      "example": "Cross-border law enforcement is essential against smuggling gangs."
+    },
+    {
+      "term": "inflation",
+      "definitionPl": "inflacja",
+      "definitionEn": "a general rise in prices that reduces the value of money",
+      "example": "High inflation has eroded the real value of wages."
+    },
+    {
+      "term": "recession",
+      "definitionPl": "recesja",
+      "definitionEn": "a period when the economy shrinks for a significant time",
+      "example": "Unemployment usually rises during a recession."
+    },
+    {
+      "term": "GDP",
+      "definitionPl": "PKB, produkt krajowy brutto",
+      "definitionEn": "the total value of goods and services produced in a country",
+      "example": "Poland's GDP grew faster than the EU average last year."
+    },
+    {
+      "term": "welfare state",
+      "definitionPl": "państwo opiekuńcze",
+      "definitionEn": "a system in which the state provides healthcare, education and support for those in need",
+      "example": "The welfare state was expanded after the Second World War."
+    },
+    {
+      "term": "tax evasion",
+      "definitionPl": "uchylanie się od opodatkowania",
+      "definitionEn": "illegally hiding income or profits to avoid paying tax",
+      "example": "Offshore accounts were used for tax evasion on a huge scale."
+    },
+    {
+      "term": "tax avoidance",
+      "definitionPl": "unikanie opodatkowania",
+      "definitionEn": "using legal loopholes to pay as little tax as possible",
+      "example": "Aggressive tax avoidance by large firms is legal but widely criticised."
+    },
+    {
+      "term": "income tax",
+      "definitionPl": "podatek dochodowy",
+      "definitionEn": "a tax paid on money you earn from work or investments",
+      "example": "The government raised income tax for the highest earners."
+    },
+    {
+      "term": "public spending",
+      "definitionPl": "wydatki publiczne",
+      "definitionEn": "money the government spends on services and investment",
+      "example": "Cuts in public spending have hit local libraries and sports centres."
+    },
+    {
+      "term": "budget deficit",
+      "definitionPl": "deficyt budżetowy",
+      "definitionEn": "the amount by which government spending exceeds income",
+      "example": "A large budget deficit may force the state to borrow more."
+    },
+    {
+      "term": "national debt",
+      "definitionPl": "dług publiczny",
+      "definitionEn": "the total amount a government owes",
+      "example": "Servicing the national debt already takes a slice of every budget."
+    },
+    {
+      "term": "austerity",
+      "definitionPl": "polityka oszczędnościowa",
+      "definitionEn": "government policy of cutting spending to reduce debt",
+      "example": "Years of austerity left public services understaffed."
+    },
+    {
+      "term": "unemployment rate",
+      "definitionPl": "stopa bezrobocia",
+      "definitionEn": "the percentage of the workforce without a job and seeking one",
+      "example": "The unemployment rate fell to its lowest level in a decade."
+    },
+    {
+      "term": "means-tested benefit",
+      "definitionPl": "świadczenie uzależnione od dochodu",
+      "definitionEn": "state help given only if your income is below a limit",
+      "example": "Housing support is a means-tested benefit in many countries."
+    },
+    {
+      "term": "income inequality",
+      "definitionPl": "nierówności dochodowe",
+      "definitionEn": "large gaps between what rich and poor people earn",
+      "example": "Income inequality has widened in several European countries."
+    },
+    {
+      "term": "universal basic income",
+      "definitionPl": "gwarantowany dochód podstawowy",
+      "definitionEn": "a regular sum paid by the state to every citizen",
+      "example": "Some parties support a trial of universal basic income."
+    },
+    {
+      "term": "unemployment benefit",
+      "definitionPl": "zasiłek dla bezrobotnych",
+      "definitionEn": "money paid by the state to people who have lost their jobs",
+      "example": "She claimed unemployment benefit while looking for a new post."
+    },
+    {
+      "term": "means-tested",
+      "definitionPl": "uzależniony od kryterium dochodowego",
+      "definitionEn": "available only if your income and savings are below a set level",
+      "example": "The housing allowance is means-tested, so higher earners do not receive it."
+    },
+    {
+      "term": "privatisation",
+      "definitionPl": "prywatyzacja",
+      "definitionEn": "selling a state-owned company or service to private owners",
+      "example": "Privatisation of the energy company was deeply unpopular."
+    },
+    {
+      "term": "nationalisation",
+      "definitionPl": "nacjonalizacja",
+      "definitionEn": "bringing a private company or sector under state ownership",
+      "example": "The party called for nationalisation of the railways."
+    },
+    {
+      "term": "austerity measures",
+      "definitionPl": "środki oszczędnościowe państwa",
+      "definitionEn": "government cuts in spending to reduce a budget deficit",
+      "example": "Austerity measures closed several community centres in the town."
+    },
+    {
+      "term": "state-owned",
+      "definitionPl": "państwowy, należący do skarbu państwa",
+      "definitionEn": "owned and controlled by the government",
+      "example": "The railway remained state-owned after the failed privatisation."
+    },
+    {
+      "term": "subsidy",
+      "definitionPl": "dotacja, subwencja",
+      "definitionEn": "money given by the state to keep prices down or support an industry",
+      "example": "Farmers receive a subsidy to keep food production in remote areas."
+    },
+    {
+      "term": "cost of living",
+      "definitionPl": "koszty utrzymania",
+      "definitionEn": "the amount of money needed for basic everyday expenses",
+      "example": "The cost of living crisis has made heating bills a political issue."
+    },
+    {
+      "term": "economic growth",
+      "definitionPl": "wzrost gospodarczy",
+      "definitionEn": "an increase in the amount of goods and services an economy produces",
+      "example": "Stable economic growth is easier when inflation stays low."
+    },
+    {
+      "term": "black market",
+      "definitionPl": "czarny rynek",
+      "definitionEn": "illegal trade in goods or currencies that are banned or rationed",
+      "example": "Cigarettes are still sold on the black market to avoid tax."
+    },
+    {
+      "term": "fiscal policy",
+      "definitionPl": "polityka fiskalna",
+      "definitionEn": "government decisions on tax and public spending",
+      "example": "The budget is the main tool of fiscal policy."
+    },
+    {
+      "term": "monetary policy",
+      "definitionPl": "polityka pieniężna",
+      "definitionEn": "how a central bank controls money supply and borrowing costs",
+      "example": "Tight monetary policy is used to slow inflation."
+    },
+    {
+      "term": "secular",
+      "definitionPl": "świecki",
+      "definitionEn": "not connected with religion; keeping religion out of public institutions",
+      "example": "State schools in Poland are officially secular, even if religion is taught as an optional subject."
+    },
+    {
+      "term": "poverty",
+      "definitionPl": "ubóstwo, bieda",
+      "definitionEn": "the state of not having enough money for a decent standard of living",
+      "example": "Child poverty rose when benefits were frozen."
+    },
+    {
+      "term": "inequality",
+      "definitionPl": "nierówność (społeczna / dochodowa)",
+      "definitionEn": "an unfair difference in wealth, rights or opportunities",
+      "example": "Income inequality has widened between the capital and smaller towns."
+    },
+    {
+      "term": "discrimination",
+      "definitionPl": "dyskryminacja",
+      "definitionEn": "unfair treatment of people because of who they are",
+      "example": "Discrimination at work on grounds of age is against the law."
+    },
+    {
+      "term": "civil rights",
+      "definitionPl": "prawa obywatelskie",
+      "definitionEn": "the rights of citizens to political and social freedom and equality",
+      "example": "The march was held to defend civil rights and equal treatment before the law."
+    },
+    {
+      "term": "NGO",
+      "definitionPl": "organizacja pozarządowa",
+      "definitionEn": "a non-governmental organisation that works independently of the state",
+      "example": "The NGO provides free legal advice to people facing eviction."
+    },
+    {
+      "term": "volunteering",
+      "definitionPl": "wolontariat",
+      "definitionEn": "giving your time unpaid to help other people or a cause",
+      "example": "Volunteering at the food bank taught her more about poverty than any textbook."
+    },
+    {
+      "term": "charity",
+      "definitionPl": "organizacja charytatywna; dobroczynność",
+      "definitionEn": "an organisation that helps people in need; the act of giving that help",
+      "example": "The charity runs shelters and job-training programmes for young people."
+    },
+    {
+      "term": "social exclusion",
+      "definitionPl": "wykluczenie społeczne",
+      "definitionEn": "being shut out of the opportunities most people take for granted",
+      "example": "Long-term unemployment often leads to social exclusion."
+    },
+    {
+      "term": "social mobility",
+      "definitionPl": "mobilność społeczna",
+      "definitionEn": "the ability to move up (or down) the income and class scale",
+      "example": "Affordable higher education is a key driver of social mobility."
+    },
+    {
+      "term": "gender equality",
+      "definitionPl": "równość płci",
+      "definitionEn": "equal rights and opportunities for women and men",
+      "example": "The report measures gender equality in pay, politics and education."
+    },
+    {
+      "term": "equal opportunities",
+      "definitionPl": "równe szanse",
+      "definitionEn": "the principle that people should compete on a fair basis, without bias",
+      "example": "The school has an equal opportunities policy for staff recruitment."
+    },
+    {
+      "term": "hate crime",
+      "definitionPl": "przestępstwo z nienawiści",
+      "definitionEn": "a crime motivated by hostility towards a person's identity",
+      "example": "The attack was recorded as a hate crime because of the slogans used."
+    },
+    {
+      "term": "xenophobia",
+      "definitionPl": "ksenofobia",
+      "definitionEn": "dislike or fear of people from other countries",
+      "example": "Politicians were criticised for language that fuelled xenophobia."
+    },
+    {
+      "term": "social cohesion",
+      "definitionPl": "spójność społeczna",
+      "definitionEn": "the sense of solidarity and trust that holds a community together",
+      "example": "Shared public spaces can strengthen social cohesion in mixed neighbourhoods."
+    },
+    {
+      "term": "ageing population",
+      "definitionPl": "starzejące się społeczeństwo",
+      "definitionEn": "a situation in which the average age of people in a country is rising",
+      "example": "An ageing population puts pressure on pensions and healthcare."
+    },
+    {
+      "term": "birth rate",
+      "definitionPl": "wskaźnik urodzeń",
+      "definitionEn": "the number of live births per thousand people in a year",
+      "example": "The birth rate has fallen below replacement level."
+    },
+    {
+      "term": "demographic change",
+      "definitionPl": "zmiana demograficzna",
+      "definitionEn": "a shift in the size or structure of a population",
+      "example": "Demographic change will shrink the workforce unless immigration rises."
+    },
+    {
+      "term": "brain drain",
+      "definitionPl": "drenaż mózgów",
+      "definitionEn": "the emigration of highly skilled people to other countries",
+      "example": "Low salaries in research have caused a brain drain of young scientists."
+    },
+    {
+      "term": "wealth gap",
+      "definitionPl": "przepaść majątkowa",
+      "definitionEn": "the difference between the richest and the poorest in a society",
+      "example": "The wealth gap is visible in housing, education and life expectancy."
+    },
+    {
+      "term": "underprivileged",
+      "definitionPl": "upośledzony społecznie, ubogi",
+      "definitionEn": "not enjoying the standard of living or rights that most people have",
+      "example": "The scholarship is aimed at underprivileged students from rural schools."
+    },
+    {
+      "term": "marginalised",
+      "definitionPl": "zmarginalizowany",
+      "definitionEn": "pushed to the edge of society and ignored by those in power",
+      "example": "The report looks at how disabled people are still marginalised in the labour market."
+    },
+    {
+      "term": "civil society",
+      "definitionPl": "społeczeństwo obywatelskie",
+      "definitionEn": "organisations and citizens acting independently of the state and the market",
+      "example": "A lively civil society can hold governments to account between elections."
+    },
+    {
+      "term": "religious minority",
+      "definitionPl": "mniejszość religijna",
+      "definitionEn": "a faith group that is smaller than the main religion in a country",
+      "example": "The constitution protects every religious minority against discrimination."
+    },
+    {
+      "term": "interfaith",
+      "definitionPl": "międzywyznaniowy",
+      "definitionEn": "involving people of different religions working or talking together",
+      "example": "An interfaith forum was set up after tensions in the neighbourhood."
+    },
+    {
+      "term": "civic engagement",
+      "definitionPl": "zaangażowanie obywatelskie",
+      "definitionEn": "citizens taking part in public life, from voting to volunteering",
+      "example": "Schools try to encourage civic engagement through student councils and debates."
+    },
+    {
+      "term": "civil disobedience",
+      "definitionPl": "obywatelskie nieposłuszeństwo",
+      "definitionEn": "deliberately breaking a law, peacefully, to protest against it",
+      "example": "The activists chose civil disobedience and blocked the road without violence."
+    },
+    {
+      "term": "grass-roots movement",
+      "definitionPl": "ruch oddolny",
+      "definitionEn": "a campaign started by ordinary people, not by parties or companies",
+      "example": "A grass-roots movement collected signatures for a local referendum."
+    },
+    {
+      "term": "solidarity",
+      "definitionPl": "solidarność",
+      "definitionEn": "unity and mutual support among people with a shared goal",
+      "example": "Unions called for solidarity with the striking nurses."
+    },
+    {
+      "term": "social justice",
+      "definitionPl": "sprawiedliwość społeczna",
+      "definitionEn": "the idea that society should be fair in how it shares rights and resources",
+      "example": "The essay asked whether tax policy can promote social justice."
+    },
+    {
+      "term": "positive discrimination",
+      "definitionPl": "dyskryminacja pozytywna",
+      "definitionEn": "giving extra help to a disadvantaged group to make opportunities fairer",
+      "example": "The university's positive discrimination scheme reserves some places for rural applicants."
+    },
+    {
+      "term": "congregation",
+      "definitionPl": "wspólnota religijna; zgromadzenie wiernych",
+      "definitionEn": "a group of people who regularly worship together",
+      "example": "The congregation collected food and clothes for the shelter."
+    },
+    {
+      "term": "multiculturalism",
+      "definitionPl": "wielokulturowość",
+      "definitionEn": "the view that different cultures can live together and keep their identities",
+      "example": "Supporters of multiculturalism argue that diversity strengthens a society."
+    },
+    {
+      "term": "UN",
+      "definitionPl": "ONZ, Organizacja Narodów Zjednoczonych",
+      "definitionEn": "the United Nations, an international organisation for peace and cooperation",
+      "example": "The UN sent observers to monitor the ceasefire."
+    },
+    {
+      "term": "EU",
+      "definitionPl": "UE, Unia Europejska",
+      "definitionEn": "the European Union, a political and economic union of European states",
+      "example": "Poland has been a member of the EU since 2004."
+    },
+    {
+      "term": "NATO",
+      "definitionPl": "NATO, Sojusz Północnoatlantycki",
+      "definitionEn": "a military alliance of North American and European countries",
+      "example": "NATO members are committed to defending one another if one is attacked."
+    },
+    {
+      "term": "humanitarian aid",
+      "definitionPl": "pomoc humanitarna",
+      "definitionEn": "food, medicine and shelter given to people in a crisis",
+      "example": "Planes delivered humanitarian aid after the earthquake."
+    },
+    {
+      "term": "sanctions",
+      "definitionPl": "sankcje",
+      "definitionEn": "penalties, often economic, imposed on a country to change its behaviour",
+      "example": "The EU imposed sanctions on exports of luxury goods."
+    },
+    {
+      "term": "asylum seeker",
+      "definitionPl": "osoba ubiegająca się o azyl",
+      "definitionEn": "a person who has applied for protection in another country and is waiting for a decision",
+      "example": "An asylum seeker has the right to a fair hearing of their claim."
+    },
+    {
+      "term": "refugee",
+      "definitionPl": "uchodźca",
+      "definitionEn": "a person who has fled their country because of war or persecution and been granted protection",
+      "example": "A refugee is entitled to international protection under the 1951 Convention."
+    },
+    {
+      "term": "member state",
+      "definitionPl": "państwo członkowskie",
+      "definitionEn": "a country that belongs to an international organisation such as the EU",
+      "example": "Each member state sends ministers to meetings of the Council."
+    },
+    {
+      "term": "diplomatic relations",
+      "definitionPl": "stosunki dyplomatyczne",
+      "definitionEn": "official political relations between countries",
+      "example": "The two countries restored diplomatic relations after a decade of silence."
+    },
+    {
+      "term": "consular assistance",
+      "definitionPl": "pomoc konsularna",
+      "definitionEn": "official help a country gives its citizens abroad",
+      "example": "After the passport was stolen they asked for consular assistance."
+    },
+    {
+      "term": "ambassador",
+      "definitionPl": "ambasador",
+      "definitionEn": "the senior diplomat who represents a country abroad",
+      "example": "The ambassador was summoned to explain the remarks."
+    },
+    {
+      "term": "peacekeeping",
+      "definitionPl": "utrzymywanie pokoju (misje ONZ)",
+      "definitionEn": "international military or civilian operations that help keep a ceasefire",
+      "example": "Polish troops have taken part in UN peacekeeping missions."
+    },
+    {
+      "term": "ceasefire",
+      "definitionPl": "zawieszenie broni",
+      "definitionEn": "an agreement to stop fighting for a period of time",
+      "example": "Neither side fully respected the ceasefire overnight."
+    },
+    {
+      "term": "economic migrant",
+      "definitionPl": "migrant ekonomiczny",
+      "definitionEn": "a person who moves to another country mainly to work and improve their living standard",
+      "example": "An economic migrant is not the same as a refugee fleeing persecution."
+    },
+    {
+      "term": "displaced person",
+      "definitionPl": "osoba przesiedlona",
+      "definitionEn": "someone forced to leave their home, often still inside their own country",
+      "example": "Camps were set up for every displaced person who fled the fighting."
+    },
+    {
+      "term": "deportation",
+      "definitionPl": "deportacja, wydalenie z kraju",
+      "definitionEn": "forcing a person to leave a country by official order",
+      "example": "Lawyers are appealing against the deportation of the family."
+    },
+    {
+      "term": "development aid",
+      "definitionPl": "pomoc rozwojowa",
+      "definitionEn": "money and expertise given to poorer countries to support long-term progress",
+      "example": "Development aid is meant to build schools and clinics, not only to send food."
+    },
+    {
+      "term": "developing country",
+      "definitionPl": "kraj rozwijający się",
+      "definitionEn": "a country with a lower average income and less industrialised economy",
+      "example": "Debt relief can free money for schools in a developing country."
+    },
+    {
+      "term": "international law",
+      "definitionPl": "prawo międzynarodowe",
+      "definitionEn": "rules that states have agreed should govern relations between them",
+      "example": "The annexation was condemned as a breach of international law."
+    },
+    {
+      "term": "freedom of religion",
+      "definitionPl": "wolność religii",
+      "definitionEn": "the right to hold, change or practise a faith, or to have none",
+      "example": "Freedom of religion includes the right not to believe."
+    },
+    {
+      "term": "place of worship",
+      "definitionPl": "miejsce kultu",
+      "definitionEn": "a building or site used for religious practice, such as a church, mosque or synagogue",
+      "example": "The listed barn was converted into a place of worship for the local community."
+    },
+    {
+      "term": "separation of church and state",
+      "definitionPl": "rozdział Kościoła od państwa",
+      "definitionEn": "the principle that religious institutions should not run the government, and vice versa",
+      "example": "Supporters of a strict separation of church and state oppose religion lessons in public schools."
+    }
+  ]
+}

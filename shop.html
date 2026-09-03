@@ -483,7 +483,8 @@
 
         function examShort(exam) {
             if (exam === 'Egzamin ósmoklasisty') return 'E8';
-            if (exam === 'Matura podstawowa') return lang === 'en' ? 'Matura' : 'Matura';
+            if (exam === 'Matura podstawowa') return 'Matura PP';
+            if (exam === 'Matura rozszerzona') return 'Matura PR';
             return exam || '';
         }
 
@@ -570,6 +571,7 @@
                 { id: 'study-plan', label: t('examStudyPlan') },
                 { id: 'Egzamin ósmoklasisty', label: t('examE8') },
                 { id: 'Matura podstawowa', label: t('examMatura') },
+                { id: 'Matura rozszerzona', label: t('examMaturaPR') },
             ];
 
             examEl.innerHTML = examFilters.map((item) => `

@@ -1,0 +1,1107 @@
+{
+  "id": "matura-pr-czlowiek",
+  "sku": "LS-PR-PERSON",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Człowiek",
+  "topicEn": "People and identity",
+  "titlePl": "Matura PR: Człowiek — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: People — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Człowiek na maturę rozszerzoną: tożsamość, charakter, emocje, wartości i dylematy etyczne. Fiszki ENG–PL do wklejenia w LingoSpark.",
+  "blurbEn": "Extended Matura People module: identity, character, emotions, values and ethical dilemmas. ENG–PL flashcards for LingoSpark.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "człowiek",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "ancestral roots",
+      "definitionPl": "korzenie przodków",
+      "definitionEn": "the origins of your family in earlier generations",
+      "example": "Many teenagers start tracing their ancestral roots after a history project."
+    },
+    {
+      "term": "cultural roots",
+      "definitionPl": "korzenie kulturowe",
+      "definitionEn": "the traditions and history that shape who you are",
+      "example": "She explored her cultural roots through language classes and family stories."
+    },
+    {
+      "term": "social standing",
+      "definitionPl": "pozycja społeczna",
+      "definitionEn": "a person's rank or status in society",
+      "example": "Social standing should not decide who gets extra help at school."
+    },
+    {
+      "term": "national identity",
+      "definitionPl": "tożsamość narodowa",
+      "definitionEn": "the feeling of belonging to a particular nation",
+      "example": "Sporting events often strengthen a sense of national identity among young people."
+    },
+    {
+      "term": "sense of belonging",
+      "definitionPl": "poczucie przynależności",
+      "definitionEn": "the feeling that you are accepted as part of a group",
+      "example": "A welcoming school can give newcomers a genuine sense of belonging."
+    },
+    {
+      "term": "dual nationality",
+      "definitionPl": "podwójne obywatelstwo",
+      "definitionEn": "the legal status of being a citizen of two countries",
+      "example": "Dual nationality can make it easier to study and work abroad."
+    },
+    {
+      "term": "overprotective parent",
+      "definitionPl": "nadopiekuńczy rodzic",
+      "definitionEn": "a mother or father who tries to remove every risk from a child's life",
+      "example": "An overprotective parent may delay a teenager learning to travel alone."
+    },
+    {
+      "term": "self-discovery",
+      "definitionPl": "odkrywanie siebie",
+      "definitionEn": "the process of learning what kind of person you are",
+      "example": "Travel can speed up self-discovery after secondary school."
+    },
+    {
+      "term": "generation gap",
+      "definitionPl": "przepaść pokoleniowa",
+      "definitionEn": "a difference in attitudes between younger and older people",
+      "example": "Arguments about phones often reveal a generation gap at home."
+    },
+    {
+      "term": "extended family",
+      "definitionPl": "rodzina wielopokoleniowa / dalsza",
+      "definitionEn": "relatives beyond parents and children, such as aunts and grandparents",
+      "example": "In an extended family, childcare is often shared among relatives."
+    },
+    {
+      "term": "only child",
+      "definitionPl": "jedynak / jedynaczka",
+      "definitionEn": "a person with no brothers or sisters",
+      "example": "Being an only child can mean more attention but also more pressure."
+    },
+    {
+      "term": "country of origin",
+      "definitionPl": "kraj pochodzenia",
+      "definitionEn": "the country where a person or their family comes from",
+      "example": "Refugees are not defined only by their country of origin."
+    },
+    {
+      "term": "mother tongue",
+      "definitionPl": "język ojczysty",
+      "definitionEn": "the first language a person learns at home",
+      "example": "Writing an essay in your mother tongue feels easier than in a foreign language."
+    },
+    {
+      "term": "bilingual",
+      "definitionPl": "dwujęzyczny",
+      "definitionEn": "able to speak two languages fluently",
+      "example": "A bilingual upbringing can be an advantage on the job market."
+    },
+    {
+      "term": "lineage",
+      "definitionPl": "ród, pochodzenie rodowe",
+      "definitionEn": "direct descent from a particular ancestor or family",
+      "example": "She researched her lineage for a school project on local history."
+    },
+    {
+      "term": "forebear",
+      "definitionPl": "przodek",
+      "definitionEn": "a person from whom you are descended",
+      "example": "One forebear of his served as a teacher in the same village."
+    },
+    {
+      "term": "chosen family",
+      "definitionPl": "rodzina z wyboru",
+      "definitionEn": "people who are not relatives but give you the support of a family",
+      "example": "For some students a chosen family of friends matters more than relatives."
+    },
+    {
+      "term": "adopted child",
+      "definitionPl": "dziecko przysposobione / adoptowane",
+      "definitionEn": "a child legally taken into a family that is not biologically their own",
+      "example": "An adopted child has the same rights as any other member of the family."
+    },
+    {
+      "term": "biological parent",
+      "definitionPl": "rodzic biologiczny",
+      "definitionEn": "the mother or father related to a child by birth",
+      "example": "Some adopted teenagers later search for a biological parent."
+    },
+    {
+      "term": "single-parent household",
+      "definitionPl": "gospodarstwo domowe z jednym rodzicem",
+      "definitionEn": "a home in which one parent raises the children",
+      "example": "A single-parent household should not be treated as automatically disadvantaged."
+    },
+    {
+      "term": "core beliefs",
+      "definitionPl": "przekonania zasadnicze",
+      "definitionEn": "the deepest ideas that shape how you judge right and wrong",
+      "example": "Travel made her question some of the core beliefs she grew up with."
+    },
+    {
+      "term": "social background",
+      "definitionPl": "pochodzenie społeczne",
+      "definitionEn": "the class, education and circumstances you grow up in",
+      "example": "Talent should matter more than social background in university admissions."
+    },
+    {
+      "term": "privileged upbringing",
+      "definitionPl": "uprzywilejowane wychowanie",
+      "definitionEn": "a childhood with wealth, connections or other advantages",
+      "example": "A privileged upbringing does not guarantee maturity or empathy."
+    },
+    {
+      "term": "humble origins",
+      "definitionPl": "skromne pochodzenie",
+      "definitionEn": "a family background with little money or status",
+      "example": "The writer often mentions her humble origins in interviews."
+    },
+    {
+      "term": "role model",
+      "definitionPl": "wzór do naśladowania",
+      "definitionEn": "a person whose behaviour others want to copy",
+      "example": "Young people need a role model who shows honesty, not only success."
+    },
+    {
+      "term": "peer group",
+      "definitionPl": "grupa rówieśnicza",
+      "definitionEn": "people of a similar age who influence one another",
+      "example": "A peer group can shape fashion choices more than parents do."
+    },
+    {
+      "term": "maiden name",
+      "definitionPl": "nazwisko panieńskie",
+      "definitionEn": "a woman's surname before marriage",
+      "example": "Some graduates keep their maiden name for professional publications."
+    },
+    {
+      "term": "place of origin",
+      "definitionPl": "miejsce pochodzenia",
+      "definitionEn": "the town, region or country you come from",
+      "example": "On the form she wrote her place of origin as a village near Lublin."
+    },
+    {
+      "term": "emotional intelligence",
+      "definitionPl": "inteligencja emocjonalna",
+      "definitionEn": "the ability to understand and manage feelings",
+      "example": "Emotional intelligence matters as much as exam grades in later life."
+    },
+    {
+      "term": "formative years",
+      "definitionPl": "lata kształtujące osobowość",
+      "definitionEn": "the period of youth that strongly shapes character",
+      "example": "Travel in your formative years can change how you see your own culture."
+    },
+    {
+      "term": "complexion",
+      "definitionPl": "cera, karnacja",
+      "definitionEn": "the natural colour and quality of the skin on the face",
+      "example": "A pale complexion is not a sign of poor health in every climate."
+    },
+    {
+      "term": "sallow complexion",
+      "definitionPl": "ziemista cera",
+      "definitionEn": "skin that looks yellowish and unhealthy",
+      "example": "Exam stress left him with a sallow complexion and dark circles."
+    },
+    {
+      "term": "weathered skin",
+      "definitionPl": "skóra naznaczona pogodą / wiekiem",
+      "definitionEn": "skin that looks rough from age, sun or outdoor work",
+      "example": "Fishermen often have weathered skin after decades at sea."
+    },
+    {
+      "term": "youthful appearance",
+      "definitionPl": "młodzieńczy wygląd",
+      "definitionEn": "looking younger than your actual age",
+      "example": "Regular sleep can do more for a youthful appearance than expensive creams."
+    },
+    {
+      "term": "premature ageing",
+      "definitionPl": "przedwczesne starzenie się",
+      "definitionEn": "looking or becoming old earlier than is typical",
+      "example": "Smoking is a well-known cause of premature ageing."
+    },
+    {
+      "term": "well-groomed",
+      "definitionPl": "zadbane (o wygląd)",
+      "definitionEn": "clean, neat and carefully looked after in appearance",
+      "example": "A well-groomed appearance still matters at a formal interview."
+    },
+    {
+      "term": "unkempt",
+      "definitionPl": "zaniedbany, rozczochrany",
+      "definitionEn": "untidy; not looked after, especially hair or clothes",
+      "example": "An unkempt look can be a fashion choice, not only neglect."
+    },
+    {
+      "term": "striking features",
+      "definitionPl": "wyraziste rysy twarzy",
+      "definitionEn": "facial characteristics that immediately attract attention",
+      "example": "The actress is known less for beauty than for striking features."
+    },
+    {
+      "term": "distinctive features",
+      "definitionPl": "charakterystyczne rysy",
+      "definitionEn": "unusual or easily recognised parts of someone's appearance",
+      "example": "His distinctive features made him easy to spot in a crowd."
+    },
+    {
+      "term": "athletic build",
+      "definitionPl": "atletyczna budowa ciała",
+      "definitionEn": "a body shape that looks fit and strong from sport",
+      "example": "An athletic build does not always mean someone trains every day."
+    },
+    {
+      "term": "slender figure",
+      "definitionPl": "szczupła, smukła sylwetka",
+      "definitionEn": "a thin, graceful body shape",
+      "example": "The dancer kept a slender figure through years of rehearsal."
+    },
+    {
+      "term": "petite",
+      "definitionPl": "drobna (o budowie)",
+      "definitionEn": "small and slim, usually used of a woman",
+      "example": "Clothes designed for petite women are still hard to find in many shops."
+    },
+    {
+      "term": "burly",
+      "definitionPl": "barczysty, krępy i silny",
+      "definitionEn": "large, strong and heavily built",
+      "example": "A burly security guard stood at the school-gate protest."
+    },
+    {
+      "term": "gaunt",
+      "definitionPl": "wychudzony, zapadnięty",
+      "definitionEn": "very thin, especially in the face, often from illness or stress",
+      "example": "After the illness he looked gaunt and tired."
+    },
+    {
+      "term": "frail",
+      "definitionPl": "wątły, słabowity",
+      "definitionEn": "physically weak, often because of age or illness",
+      "example": "The frail pensioner needed a ground-floor flat with no stairs."
+    },
+    {
+      "term": "receding hairline",
+      "definitionPl": "cofająca się linia włosów",
+      "definitionEn": "hair that is gradually disappearing from the forehead",
+      "example": "A receding hairline bothered him more than it bothered anyone else."
+    },
+    {
+      "term": "greying temples",
+      "definitionPl": "siwiejące skronie",
+      "definitionEn": "grey hair appearing at the sides of the forehead",
+      "example": "Greying temples made the young teacher look older than she was."
+    },
+    {
+      "term": "stubble",
+      "definitionPl": "kilkudniowy zarost",
+      "definitionEn": "very short beard hair that has not been shaved for a day or two",
+      "example": "He arrived at the oral exam with stubble and an unironed shirt."
+    },
+    {
+      "term": "clean-shaven",
+      "definitionPl": "gładko ogolony",
+      "definitionEn": "with no beard or moustache",
+      "example": "The school photograph required a clean-shaven look."
+    },
+    {
+      "term": "posture",
+      "definitionPl": "postawa ciała",
+      "definitionEn": "the way you hold your back and shoulders when sitting or standing",
+      "example": "Hours at a laptop can ruin your posture before you notice."
+    },
+    {
+      "term": "gait",
+      "definitionPl": "chód, sposób chodzenia",
+      "definitionEn": "the particular way a person walks",
+      "example": "A confident gait can change how interviewers perceive you."
+    },
+    {
+      "term": "bear a resemblance to",
+      "definitionPl": "być podobnym do",
+      "definitionEn": "to look similar to another person",
+      "example": "Twins often bear a resemblance to each other even in old age."
+    },
+    {
+      "term": "inherit a trait",
+      "definitionPl": "odziedziczyć cechę",
+      "definitionEn": "to get a quality from a parent through genes or example",
+      "example": "You can inherit a trait such as stubbornness without noticing it."
+    },
+    {
+      "term": "cosmetic surgery",
+      "definitionPl": "chirurgia plastyczna (zabiegi upiększające)",
+      "definitionEn": "medical operations intended to change appearance rather than treat illness",
+      "example": "Teenagers should not treat cosmetic surgery as a shortcut to self-esteem."
+    },
+    {
+      "term": "makeover",
+      "definitionPl": "metamorfoza wyglądu",
+      "definitionEn": "a complete change of hairstyle, clothes or appearance",
+      "example": "A makeover may boost confidence, but it rarely solves an identity crisis."
+    },
+    {
+      "term": "body image",
+      "definitionPl": "obraz własnego ciała",
+      "definitionEn": "how you see and feel about the way your body looks",
+      "example": "Social media can distort body image in adolescence."
+    },
+    {
+      "term": "self-conscious",
+      "definitionPl": "skrępowany, nadmiernie świadomy siebie",
+      "definitionEn": "too aware of yourself and worried about being judged",
+      "example": "He felt self-conscious about his accent during the presentation."
+    },
+    {
+      "term": "ageing gracefully",
+      "definitionPl": "starzenie się z godnością",
+      "definitionEn": "growing older without desperately hiding the signs of age",
+      "example": "Ageing gracefully is presented in the essay as a form of self-acceptance."
+    },
+    {
+      "term": "facial hair",
+      "definitionPl": "zarost na twarzy",
+      "definitionEn": "hair growing on the face, such as a beard or stubble",
+      "example": "Some workplaces still ban facial hair for hygiene reasons."
+    },
+    {
+      "term": "personal grooming",
+      "definitionPl": "dbanie o higienę i wygląd",
+      "definitionEn": "the habits of keeping yourself clean and tidy",
+      "example": "Personal grooming is a matter of respect in shared accommodation."
+    },
+    {
+      "term": "conscientious",
+      "definitionPl": "sumienny",
+      "definitionEn": "careful to do your work thoroughly and honestly",
+      "example": "A conscientious student double-checks sources before quoting them."
+    },
+    {
+      "term": "absent-minded",
+      "definitionPl": "roztargniony",
+      "definitionEn": "often forgetting things because your mind is on something else",
+      "example": "Even an absent-minded genius still has to meet essay deadlines."
+    },
+    {
+      "term": "open-minded",
+      "definitionPl": "otwarty (na nowe idee)",
+      "definitionEn": "willing to consider new ideas and other people's views",
+      "example": "An open-minded listener is more persuasive in a debate than a shouter."
+    },
+    {
+      "term": "narrow-minded",
+      "definitionPl": "ograniczony, ciasny umysłowo",
+      "definitionEn": "unwilling to accept ideas or behaviour different from your own",
+      "example": "A narrow-minded attitude towards other cultures weakens any argument."
+    },
+    {
+      "term": "tactful",
+      "definitionPl": "taktowny",
+      "definitionEn": "careful not to say things that will upset or embarrass others",
+      "example": "A tactful comment can criticise an idea without humiliating the speaker."
+    },
+    {
+      "term": "tactless",
+      "definitionPl": "nietaktowny",
+      "definitionEn": "likely to say things that upset people, without intending to",
+      "example": "A tactless joke about someone's family background can ruin a friendship."
+    },
+    {
+      "term": "assertive",
+      "definitionPl": "asertywny",
+      "definitionEn": "confident in stating your opinions without being aggressive",
+      "example": "It is possible to be assertive without interrupting others."
+    },
+    {
+      "term": "submissive",
+      "definitionPl": "uległy, pokorny",
+      "definitionEn": "too ready to obey others and not express your own views",
+      "example": "A submissive classmate may never challenge an unfair group decision."
+    },
+    {
+      "term": "stubborn",
+      "definitionPl": "uparty",
+      "definitionEn": "determined not to change your mind, even when you should",
+      "example": "Being stubborn about a first draft rarely improves an essay."
+    },
+    {
+      "term": "determined",
+      "definitionPl": "zdeterminowany, stanowczy",
+      "definitionEn": "having a strong desire to succeed and not giving up easily",
+      "example": "She was determined to pass the oral exam on the first attempt."
+    },
+    {
+      "term": "resourceful",
+      "definitionPl": "zaradny",
+      "definitionEn": "good at finding practical solutions with limited means",
+      "example": "A resourceful teenager can revise effectively without expensive courses."
+    },
+    {
+      "term": "impulsive",
+      "definitionPl": "impulsywny",
+      "definitionEn": "acting suddenly without thinking about the consequences",
+      "example": "An impulsive comment on social media can cause lasting humiliation."
+    },
+    {
+      "term": "level-headed",
+      "definitionPl": "opanowany, trzeźwo myślący",
+      "definitionEn": "calm and sensible, even in a difficult situation",
+      "example": "A level-headed friend is invaluable during an identity crisis."
+    },
+    {
+      "term": "hot-tempered",
+      "definitionPl": "porywczy, wybuchowy",
+      "definitionEn": "becoming angry quickly and easily",
+      "example": "A hot-tempered reply in a debate scores no points with examiners."
+    },
+    {
+      "term": "easy-going",
+      "definitionPl": "wyluzowany, pogodny",
+      "definitionEn": "relaxed and not easily upset or worried",
+      "example": "An easy-going roommate makes shared housing far less stressful."
+    },
+    {
+      "term": "outgoing",
+      "definitionPl": "towarzyski, otwarty na ludzi",
+      "definitionEn": "friendly and enjoying the company of other people",
+      "example": "Outgoing students often find it easier to start a conversation with strangers."
+    },
+    {
+      "term": "withdrawn",
+      "definitionPl": "zamknięty w sobie",
+      "definitionEn": "very quiet and not wanting to communicate with others",
+      "example": "A withdrawn pupil may be struggling with self-doubt rather than boredom."
+    },
+    {
+      "term": "reserved",
+      "definitionPl": "powściągliwy, małomówny",
+      "definitionEn": "slow to show feelings or opinions",
+      "example": "A reserved manner is sometimes mistaken for arrogance."
+    },
+    {
+      "term": "two-faced",
+      "definitionPl": "obłudny, nieszczery",
+      "definitionEn": "nice to someone in public but unkind or dishonest behind their back",
+      "example": "A two-faced classmate will praise you and then gossip in the group chat."
+    },
+    {
+      "term": "trustworthy",
+      "definitionPl": "godny zaufania",
+      "definitionEn": "able to be relied on to be honest and keep secrets",
+      "example": "A trustworthy friend does not forward private messages."
+    },
+    {
+      "term": "deceitful",
+      "definitionPl": "oszukujący, nieszczery",
+      "definitionEn": "behaving in a dishonest way in order to trick people",
+      "example": "Deceitful behaviour destroys trust faster than a single argument."
+    },
+    {
+      "term": "conceited",
+      "definitionPl": "zarozumiały",
+      "definitionEn": "too proud of your abilities or appearance",
+      "example": "A conceited winner rarely keeps the respect of the team."
+    },
+    {
+      "term": "humble",
+      "definitionPl": "skromny",
+      "definitionEn": "not proud; not thinking you are better than others",
+      "example": "A humble apology after a tactless remark can repair a relationship."
+    },
+    {
+      "term": "considerate",
+      "definitionPl": "względny, myślący o innych",
+      "definitionEn": "careful not to cause inconvenience or hurt to others",
+      "example": "A considerate neighbour keeps the volume down after ten."
+    },
+    {
+      "term": "charismatic",
+      "definitionPl": "charyzmatyczny",
+      "definitionEn": "having a personality that attracts and influences others",
+      "example": "A charismatic speaker can still be wrong on the facts."
+    },
+    {
+      "term": "timid",
+      "definitionPl": "nieśmiały, bojaźliwy",
+      "definitionEn": "shy and easily frightened; lacking confidence",
+      "example": "A timid student may know the answer but never raise a hand."
+    },
+    {
+      "term": "resilient",
+      "definitionPl": "odporny psychicznie, prężny",
+      "definitionEn": "able to recover quickly from difficulties",
+      "example": "Resilient teenagers treat a failed mock exam as information, not a verdict."
+    },
+    {
+      "term": "witty",
+      "definitionPl": "błyskotliwy, dowcipny",
+      "definitionEn": "able to say clever, amusing things quickly",
+      "example": "A witty remark can defuse tension if it is not sarcastic."
+    },
+    {
+      "term": "inquisitive",
+      "definitionPl": "ciekawski, dociekliwy",
+      "definitionEn": "eager to find out about things; asking many questions",
+      "example": "An inquisitive mind is an asset in an extended essay, not a nuisance."
+    },
+    {
+      "term": "aloof",
+      "definitionPl": "dystansujący się, chłodny",
+      "definitionEn": "not friendly or willing to take part; emotionally distant",
+      "example": "Teachers who seem aloof may simply be trying to stay professional."
+    },
+    {
+      "term": "resentment",
+      "definitionPl": "żal, uraza",
+      "definitionEn": "a bitter feeling that you have been treated unfairly",
+      "example": "Long-term resentment towards a sibling often starts with unequal attention."
+    },
+    {
+      "term": "elation",
+      "definitionPl": "euforia, uniesienie",
+      "definitionEn": "a feeling of great happiness and excitement",
+      "example": "Elation after results day can turn into pressure before the next exam."
+    },
+    {
+      "term": "humiliation",
+      "definitionPl": "upokorzenie",
+      "definitionEn": "a strong feeling of shame after being made to look foolish",
+      "example": "Public humiliation is a poor teaching method and a common essay topic."
+    },
+    {
+      "term": "anguish",
+      "definitionPl": "udręka, rozpacz",
+      "definitionEn": "severe mental or emotional pain",
+      "example": "The letter described the anguish of waiting for a medical diagnosis."
+    },
+    {
+      "term": "despair",
+      "definitionPl": "rozpacz, beznadzieja",
+      "definitionEn": "the complete loss of hope",
+      "example": "Despair after a failed exam is understandable, but it need not last."
+    },
+    {
+      "term": "contentment",
+      "definitionPl": "zadowolenie, spokojne szczęście",
+      "definitionEn": "quiet happiness with what you have",
+      "example": "Contentment is harder to advertise than luxury, yet it appears in many rozprawki."
+    },
+    {
+      "term": "nostalgia",
+      "definitionPl": "nostalgia, tęsknota za przeszłością",
+      "definitionEn": "a bittersweet longing for a time in the past",
+      "example": "Nostalgia for childhood can hide how difficult those years actually were."
+    },
+    {
+      "term": "remorse",
+      "definitionPl": "skrucha, żal za winy",
+      "definitionEn": "deep regret for something wrong you have done",
+      "example": "Genuine remorse includes changing your behaviour, not only apologising."
+    },
+    {
+      "term": "envy",
+      "definitionPl": "zazdrość o czyjeś powodzenie",
+      "definitionEn": "the unhappy feeling of wanting what someone else has",
+      "example": "Envy of a classmate's marks can either motivate you or poison a friendship."
+    },
+    {
+      "term": "contempt",
+      "definitionPl": "pogarda",
+      "definitionEn": "the feeling that someone or something is worthless",
+      "example": "Contempt for people with less education is a form of prejudice."
+    },
+    {
+      "term": "indignation",
+      "definitionPl": "oburzenie",
+      "definitionEn": "anger because something seems unfair or wrong",
+      "example": "Indignation at online hate speech should lead to action, not only comments."
+    },
+    {
+      "term": "apprehension",
+      "definitionPl": "obawa, lękliwe wyczekiwanie",
+      "definitionEn": "anxiety about something that may happen",
+      "example": "Apprehension before an oral exam is normal; panic is not inevitable."
+    },
+    {
+      "term": "exhilaration",
+      "definitionPl": "podniecenie, radosne pobudzenie",
+      "definitionEn": "a feeling of excitement and energy",
+      "example": "The exhilaration of performing on stage can surprise even a timid student."
+    },
+    {
+      "term": "grief",
+      "definitionPl": "żałoba, głęboki smutek po stracie",
+      "definitionEn": "intense sorrow, especially after a death or serious loss",
+      "example": "Schools should allow time for grief rather than demanding instant recovery."
+    },
+    {
+      "term": "relief",
+      "definitionPl": "ulga",
+      "definitionEn": "the comfortable feeling when something unpleasant stops or does not happen",
+      "example": "There was audible relief in the hall when the exam paper looked familiar."
+    },
+    {
+      "term": "frustration",
+      "definitionPl": "frustracja",
+      "definitionEn": "annoyed disappointment because you cannot achieve something",
+      "example": "Frustration with a language plateau is common at B2."
+    },
+    {
+      "term": "disappointment",
+      "definitionPl": "rozczarowanie",
+      "definitionEn": "sadness because something was not as good as you hoped",
+      "example": "Disappointment after a mock exam can still be useful feedback."
+    },
+    {
+      "term": "embarrassment",
+      "definitionPl": "zażenowanie, zakłopotanie",
+      "definitionEn": "a feeling of awkward shame in front of others",
+      "example": "Embarrassment about an accent often disappears after a month abroad."
+    },
+    {
+      "term": "astonishment",
+      "definitionPl": "zdumienie",
+      "definitionEn": "great surprise",
+      "example": "The class listened in astonishment when the quietest pupil won the debate."
+    },
+    {
+      "term": "bitterness",
+      "definitionPl": "gorycz, rozgoryczenie",
+      "definitionEn": "lasting anger and disappointment about unfair treatment",
+      "example": "Bitterness about a lost opportunity can freeze personal growth."
+    },
+    {
+      "term": "longing",
+      "definitionPl": "tęsknota, pragnienie",
+      "definitionEn": "a strong wish for someone or something you do not have",
+      "example": "A longing for independence often clashes with family ties."
+    },
+    {
+      "term": "dread",
+      "definitionPl": "trwoga, przerażenie na myśl o czymś",
+      "definitionEn": "great fear about something that will happen",
+      "example": "Sunday-evening dread before school is more common than students admit."
+    },
+    {
+      "term": "mixed feelings",
+      "definitionPl": "mieszane uczucia",
+      "definitionEn": "both positive and negative emotions about the same thing",
+      "example": "Leavers often have mixed feelings about leaving a familiar school."
+    },
+    {
+      "term": "come to terms with",
+      "definitionPl": "pogodzić się z (czymś trudnym)",
+      "definitionEn": "to accept a difficult situation and learn to live with it",
+      "example": "It took him a year to come to terms with moving to another city."
+    },
+    {
+      "term": "bottle up",
+      "definitionPl": "tłumić (emocje)",
+      "definitionEn": "to hide your feelings instead of expressing them",
+      "example": "People who bottle up anger often explode over a trivial remark."
+    },
+    {
+      "term": "take something to heart",
+      "definitionPl": "brać coś do siebie",
+      "definitionEn": "to be deeply affected by criticism or a remark",
+      "example": "Try not to take something to heart if the comment was never about you."
+    },
+    {
+      "term": "lose your temper",
+      "definitionPl": "stracić panowanie nad sobą",
+      "definitionEn": "to become suddenly very angry",
+      "example": "If you lose your temper in a discussion, you usually lose the argument too."
+    },
+    {
+      "term": "keep your composure",
+      "definitionPl": "zachować spokój / opanowanie",
+      "definitionEn": "to stay calm and in control of your behaviour",
+      "example": "If you keep your composure during follow-up questions, examiners notice."
+    },
+    {
+      "term": "overwhelmed",
+      "definitionPl": "przytłoczony",
+      "definitionEn": "feeling unable to cope because there is too much to deal with",
+      "example": "First-year students often feel overwhelmed by conflicting expectations."
+    },
+    {
+      "term": "guilt-ridden",
+      "definitionPl": "nękany poczuciem winy",
+      "definitionEn": "feeling guilty to an extreme, constant degree",
+      "example": "A guilt-ridden apology is still empty if the behaviour does not change."
+    },
+    {
+      "term": "self-esteem",
+      "definitionPl": "poczucie własnej wartości",
+      "definitionEn": "confidence in your own worth and abilities",
+      "example": "Constant comparison on social media can damage self-esteem."
+    },
+    {
+      "term": "self-worth",
+      "definitionPl": "poczucie własnej godności / wartości",
+      "definitionEn": "the sense that you deserve respect, independent of success",
+      "example": "Grades should not be the only measure of self-worth."
+    },
+    {
+      "term": "identity crisis",
+      "definitionPl": "kryzys tożsamości",
+      "definitionEn": "a period of confusion about who you are and what you want",
+      "example": "An identity crisis in late adolescence is more common than textbooks admit."
+    },
+    {
+      "term": "self-awareness",
+      "definitionPl": "samoświadomość",
+      "definitionEn": "knowledge of your own character, feelings and motives",
+      "example": "Self-awareness helps you notice when prejudice is shaping a first impression."
+    },
+    {
+      "term": "self-acceptance",
+      "definitionPl": "akceptacja siebie",
+      "definitionEn": "the ability to recognise your flaws without hating yourself",
+      "example": "Self-acceptance is not the same as refusing to change."
+    },
+    {
+      "term": "self-doubt",
+      "definitionPl": "zwątpienie w siebie",
+      "definitionEn": "the feeling that you are not good enough or may fail",
+      "example": "A little self-doubt can improve an essay; too much can freeze it."
+    },
+    {
+      "term": "inferiority complex",
+      "definitionPl": "kompleks niższości",
+      "definitionEn": "a lasting belief that you are less valuable than others",
+      "example": "An inferiority complex can hide behind jokes and arrogance."
+    },
+    {
+      "term": "midlife crisis",
+      "definitionPl": "kryzys wieku średniego",
+      "definitionEn": "anxiety about identity and purpose in middle age",
+      "example": "The novel treats a midlife crisis as a chance to reinvent yourself, not a joke."
+    },
+    {
+      "term": "come out of your shell",
+      "definitionPl": "przełamać nieśmiałość, otworzyć się",
+      "definitionEn": "to become less shy and more willing to talk to people",
+      "example": "Drama club can help you come out of your shell before the oral exam."
+    },
+    {
+      "term": "reinvent yourself",
+      "definitionPl": "odnaleźć się na nowo, zmienić swoje życie",
+      "definitionEn": "to change your image, habits or career in a significant way",
+      "example": "University is often the first chance to reinvent yourself away from home."
+    },
+    {
+      "term": "personal growth",
+      "definitionPl": "rozwój osobisty",
+      "definitionEn": "the process of improving your character, skills or self-knowledge",
+      "example": "Travel can support personal growth if you do more than collect photos."
+    },
+    {
+      "term": "inner conflict",
+      "definitionPl": "konflikt wewnętrzny",
+      "definitionEn": "a struggle between two feelings, values or desires inside you",
+      "example": "Inner conflict between loyalty and honesty is a classic rozprawka theme."
+    },
+    {
+      "term": "self-discipline",
+      "definitionPl": "samodyscyplina",
+      "definitionEn": "the ability to make yourself work or behave well without being forced",
+      "example": "Self-discipline matters more in revision than last-minute panic."
+    },
+    {
+      "term": "self-reliance",
+      "definitionPl": "samodzielność, poleganie na sobie",
+      "definitionEn": "the ability to depend on your own efforts rather than on others",
+      "example": "Self-reliance should not mean refusing every offer of help."
+    },
+    {
+      "term": "lack of confidence",
+      "definitionPl": "brak pewności siebie",
+      "definitionEn": "not believing in your own abilities",
+      "example": "A lack of confidence can look like laziness to an impatient teacher."
+    },
+    {
+      "term": "impostor syndrome",
+      "definitionPl": "syndrom oszusta",
+      "definitionEn": "the feeling that your success is undeserved and you will be found out",
+      "example": "Impostor syndrome is common among high-achieving students."
+    },
+    {
+      "term": "soul-searching",
+      "definitionPl": "rachunek sumienia, głębokie zastanowienie nad sobą",
+      "definitionEn": "careful, honest thinking about your motives and values",
+      "example": "A year of soul-searching followed her decision to change schools."
+    },
+    {
+      "term": "sense of purpose",
+      "definitionPl": "poczucie sensu / celu w życiu",
+      "definitionEn": "the feeling that your life has a meaningful direction",
+      "example": "Volunteering gave him a sense of purpose after a period of self-doubt."
+    },
+    {
+      "term": "fulfil your potential",
+      "definitionPl": "wykorzystać swój potencjał",
+      "definitionEn": "to achieve as much as you are capable of",
+      "example": "A good teacher helps you fulfil your potential instead of chasing rankings."
+    },
+    {
+      "term": "live up to expectations",
+      "definitionPl": "sprostać oczekiwaniom",
+      "definitionEn": "to be as good as people hoped or demanded",
+      "example": "Some teenagers refuse to live up to expectations that were never theirs."
+    },
+    {
+      "term": "be true to yourself",
+      "definitionPl": "być wiernym sobie",
+      "definitionEn": "to act according to your own values rather than other people's wishes",
+      "example": "It is hard to be true to yourself in a peer group that rewards conformity."
+    },
+    {
+      "term": "peer pressure",
+      "definitionPl": "presja rówieśnicza",
+      "definitionEn": "the influence of people your age to behave in a certain way",
+      "example": "Peer pressure can push someone into cruelty they would never choose alone."
+    },
+    {
+      "term": "people-pleaser",
+      "definitionPl": "osoba, która za wszelką cenę chce się przypodobać",
+      "definitionEn": "someone who tries too hard to make others like them, often at a cost to themselves",
+      "example": "A people-pleaser rarely states an unpopular but honest opinion."
+    },
+    {
+      "term": "comfort zone",
+      "definitionPl": "strefa komfortu",
+      "definitionEn": "a situation in which you feel safe and unchallenged",
+      "example": "Language learning starts when you leave your comfort zone."
+    },
+    {
+      "term": "self-image",
+      "definitionPl": "obraz samej/samego siebie",
+      "definitionEn": "the idea you have of your own character and appearance",
+      "example": "A distorted self-image can survive even after compliments."
+    },
+    {
+      "term": "self-respect",
+      "definitionPl": "szacunek do samego siebie",
+      "definitionEn": "pride in yourself that stops you accepting bad treatment",
+      "example": "Self-respect means walking away from a friendship based on humiliation."
+    },
+    {
+      "term": "insecurity",
+      "definitionPl": "niepewność siebie, kompleksy",
+      "definitionEn": "a lack of confidence about yourself or your relationships",
+      "example": "Insecurity about looks is heavily marketed to teenagers."
+    },
+    {
+      "term": "vulnerability",
+      "definitionPl": "wrażliwość, bezbronność emocjonalna",
+      "definitionEn": "the state of being open to emotional hurt",
+      "example": "Showing vulnerability can deepen a friendship instead of weakening it."
+    },
+    {
+      "term": "self-pity",
+      "definitionPl": "uleganie żalowi nad sobą",
+      "definitionEn": "the habit of feeling sorry for yourself in an unhelpful way",
+      "example": "Self-pity after one bad mark can become an excuse to stop trying."
+    },
+    {
+      "term": "bounce back",
+      "definitionPl": "podnieść się po porażce",
+      "definitionEn": "to recover quickly after a setback",
+      "example": "The ability to bounce back after rejection is a form of resilience."
+    },
+    {
+      "term": "integrity",
+      "definitionPl": "prawość, uczciwość zasad",
+      "definitionEn": "the quality of being honest and sticking to your moral principles",
+      "example": "Integrity means citing sources even when nobody is checking."
+    },
+    {
+      "term": "prejudice",
+      "definitionPl": "uprzedzenie",
+      "definitionEn": "an unfair opinion formed without enough knowledge or experience",
+      "example": "Prejudice against an accent is still prejudice, even if it is unspoken."
+    },
+    {
+      "term": "empathy",
+      "definitionPl": "empatia",
+      "definitionEn": "the ability to understand and share another person's feelings",
+      "example": "Empathy is a skill that can be practised, not only a personality trait."
+    },
+    {
+      "term": "stereotype",
+      "definitionPl": "stereotyp",
+      "definitionEn": "an oversimplified idea about a whole group of people",
+      "example": "A stereotype about only children is a weak foundation for an essay."
+    },
+    {
+      "term": "tolerance",
+      "definitionPl": "tolerancja",
+      "definitionEn": "willingness to accept behaviour and beliefs different from your own",
+      "example": "Tolerance does not require you to agree; it requires you not to humiliate."
+    },
+    {
+      "term": "bigotry",
+      "definitionPl": "zaślepiona nietolerancja",
+      "definitionEn": "stubborn and unfair dislike of people who are different",
+      "example": "The article condemned bigotry in online comments."
+    },
+    {
+      "term": "unconscious bias",
+      "definitionPl": "uprzedzenie nieuświadomione",
+      "definitionEn": "a hidden preference that affects judgement without you noticing",
+      "example": "Unconscious bias can influence who gets chosen as class representative."
+    },
+    {
+      "term": "double standard",
+      "definitionPl": "podwójna moralność, dwa mierniki",
+      "definitionEn": "a rule applied more strictly to one group than to another",
+      "example": "A double standard about emotions still tells boys not to show grief."
+    },
+    {
+      "term": "moral dilemma",
+      "definitionPl": "dylemat moralny",
+      "definitionEn": "a situation in which two ethical principles clash and both choices hurt someone",
+      "example": "Reporting a friend for cheating is a classic moral dilemma in school essays."
+    },
+    {
+      "term": "ethical dilemma",
+      "definitionPl": "dylemat etyczny",
+      "definitionEn": "a difficult choice between two courses of action that both have moral costs",
+      "example": "An ethical dilemma about telling the truth appears in many matura prompts."
+    },
+    {
+      "term": "conscience",
+      "definitionPl": "sumienie",
+      "definitionEn": "the inner sense of what is right and wrong",
+      "example": "A guilty conscience after a lie is a sign that your values still work."
+    },
+    {
+      "term": "hypocrisy",
+      "definitionPl": "hipokryzja, obłuda",
+      "definitionEn": "claiming high moral standards while doing the opposite",
+      "example": "Hypocrisy is easy to spot when a campaigner for kindness is cruel online."
+    },
+    {
+      "term": "altruism",
+      "definitionPl": "altruizm",
+      "definitionEn": "unselfish concern for other people's welfare",
+      "example": "Altruism in a peer group can be as contagious as mockery."
+    },
+    {
+      "term": "civic duty",
+      "definitionPl": "obowiązek obywatelski",
+      "definitionEn": "a responsibility you have as a member of society",
+      "example": "Voting can be seen as a civic duty rather than a personal hobby."
+    },
+    {
+      "term": "human dignity",
+      "definitionPl": "godność ludzka",
+      "definitionEn": "the idea that every person deserves respect simply for being human",
+      "example": "Poverty should never be treated as a reason to deny someone human dignity."
+    },
+    {
+      "term": "stigmatise",
+      "definitionPl": "stygmatyzować, napiętnować",
+      "definitionEn": "to treat a person or group as shameful or unworthy",
+      "example": "Schools must not stigmatise pupils who receive extra learning support."
+    },
+    {
+      "term": "stand up for",
+      "definitionPl": "stanąć w obronie",
+      "definitionEn": "to defend a person, idea or right, especially when it is unpopular",
+      "example": "It takes moral courage to stand up for a classmate others mock."
+    },
+    {
+      "term": "look down on",
+      "definitionPl": "spoglądać z góry, pogardzać",
+      "definitionEn": "to think you are better than someone else",
+      "example": "It is easy to look down on people whose upbringing was poorer than yours."
+    },
+    {
+      "term": "turn a blind eye",
+      "definitionPl": "przymykać oko, udawać, że się nie widzi",
+      "definitionEn": "to ignore something wrong that you know is happening",
+      "example": "Teachers who turn a blind eye to mockery teach that cruelty is acceptable."
+    },
+    {
+      "term": "take a stand",
+      "definitionPl": "zająć stanowisko, wystąpić przeciwko czemuś",
+      "definitionEn": "to state your position clearly and refuse to stay neutral",
+      "example": "At some point you have to take a stand instead of collecting likes."
+    },
+    {
+      "term": "common ground",
+      "definitionPl": "płaszczyzna porozumienia",
+      "definitionEn": "shared opinions or interests that make agreement possible",
+      "example": "A good debate finds common ground before it lists disagreements."
+    },
+    {
+      "term": "moral courage",
+      "definitionPl": "odwaga cywilna",
+      "definitionEn": "the bravery to do what is right despite criticism or risk",
+      "example": "Moral courage is quieter than heroism and more useful in everyday life."
+    },
+    {
+      "term": "compromise your principles",
+      "definitionPl": "sprzeniewierzyć się zasadom",
+      "definitionEn": "to act against your own moral beliefs for an advantage",
+      "example": "Do not compromise your principles for a higher mark or a louder peer group."
+    },
+    {
+      "term": "hold a grudge",
+      "definitionPl": "żywić urazę",
+      "definitionEn": "to keep feeling angry with someone for a long time after they hurt you",
+      "example": "People who hold a grudge rarely notice how much it costs them."
+    },
+    {
+      "term": "put yourself in someone else's shoes",
+      "definitionPl": "wczuć się w czyjąś sytuację",
+      "definitionEn": "to imagine how another person feels in their situation",
+      "example": "Before you judge, try to put yourself in someone else's shoes."
+    },
+    {
+      "term": "personal values",
+      "definitionPl": "wartości osobiste",
+      "definitionEn": "the principles that guide your own choices and behaviour",
+      "example": "A gap year can test whether your personal values survive outside school."
+    },
+    {
+      "term": "conflicting loyalties",
+      "definitionPl": "sprzeczne lojalności",
+      "definitionEn": "a situation in which two people or groups you care about want opposite things",
+      "example": "Conflicting loyalties between friends and family appear in many oral-exam stories."
+    },
+    {
+      "term": "bystander effect",
+      "definitionPl": "efekt świadka",
+      "definitionEn": "the tendency not to help because you assume someone else will",
+      "example": "The bystander effect explains why a whole corridor can ignore humiliation."
+    },
+    {
+      "term": "social stigma",
+      "definitionPl": "piętno społeczne",
+      "definitionEn": "strong public disapproval attached to a person, condition or group",
+      "example": "The social stigma around mental-health struggles still silences teenagers."
+    },
+    {
+      "term": "treat others with respect",
+      "definitionPl": "traktować innych z szacunkiem",
+      "definitionEn": "to behave towards people in a way that recognises their worth",
+      "example": "The simplest ethical rule in a classroom is to treat others with respect."
+    }
+  ]
+}

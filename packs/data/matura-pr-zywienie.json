@@ -1,0 +1,1107 @@
+{
+  "id": "matura-pr-zywienie",
+  "sku": "LS-PR-FOOD",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Żywienie",
+  "topicEn": "Food and nutrition",
+  "titlePl": "Matura PR: Żywienie — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Food — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Żywienie na maturę rozszerzoną: dieta, przemysł spożywczy i jedzenie poza domem. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura food and nutrition: diet, the food industry and eating out.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "żywienie",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "savoury",
+      "definitionPl": "słony, pikantny (nie na słodko)",
+      "definitionEn": "having a salty or spicy flavour rather than a sweet one",
+      "example": "I prefer a savoury breakfast to cakes and jam."
+    },
+    {
+      "term": "bland",
+      "definitionPl": "mdły, bez smaku",
+      "definitionEn": "with very little flavour",
+      "example": "Without herbs the soup tastes bland."
+    },
+    {
+      "term": "stale",
+      "definitionPl": "czerstwy, nieświeży",
+      "definitionEn": "no longer fresh, especially bread or biscuits",
+      "example": "Throw the stale bread to the birds, not in the bin."
+    },
+    {
+      "term": "perishable",
+      "definitionPl": "łatwo psujący się",
+      "definitionEn": "likely to go bad quickly if not kept cold",
+      "example": "Put perishable goods in the fridge as soon as you return."
+    },
+    {
+      "term": "pungent",
+      "definitionPl": "ostry, przenikliwy (o zapachu lub smaku)",
+      "definitionEn": "having a very strong smell or taste",
+      "example": "Blue cheese has a pungent smell that not everyone likes."
+    },
+    {
+      "term": "tangy",
+      "definitionPl": "kwaskowaty, wyrazisty",
+      "definitionEn": "having a sharp, pleasant taste, often of citrus or yoghurt",
+      "example": "The dressing is tangy because of the lemon juice."
+    },
+    {
+      "term": "succulent",
+      "definitionPl": "soczysty (o mięsie lub owocu)",
+      "definitionEn": "tender and full of juice",
+      "example": "The peaches were succulent after a week of sun."
+    },
+    {
+      "term": "palatable",
+      "definitionPl": "smaczny, do przyjęcia w smaku",
+      "definitionEn": "pleasant enough to eat or drink",
+      "example": "School stew is palatable if you add pepper."
+    },
+    {
+      "term": "unpalatable",
+      "definitionPl": "niesmaczny, trudny do przełknięcia",
+      "definitionEn": "unpleasant to eat; hard to accept",
+      "example": "Cold tinned tomatoes are unpalatable on their own."
+    },
+    {
+      "term": "mouth-watering",
+      "definitionPl": "obiecujący pyszny smak",
+      "definitionEn": "looking or smelling so good that you want to eat it",
+      "example": "The bakery window was full of mouth-watering pastries."
+    },
+    {
+      "term": "appetising",
+      "definitionPl": "zachęcający do jedzenia",
+      "definitionEn": "making you want to eat because of how it looks or smells",
+      "example": "A colourful salad looks more appetising than grey mash."
+    },
+    {
+      "term": "rancid",
+      "definitionPl": "zjełczały",
+      "definitionEn": "smelling or tasting unpleasant because fat has gone bad",
+      "example": "The oil in the cupboard had turned rancid."
+    },
+    {
+      "term": "soggy",
+      "definitionPl": "rozmokły, papkowaty",
+      "definitionEn": "unpleasantly wet and soft",
+      "example": "Nobody wants soggy chips at the end of a long queue."
+    },
+    {
+      "term": "crunchy",
+      "definitionPl": "chrupiący",
+      "definitionEn": "firm and making a sharp sound when you bite",
+      "example": "Add crunchy nuts just before you serve the salad."
+    },
+    {
+      "term": "tender",
+      "definitionPl": "kruchy, miękki (o mięsie)",
+      "definitionEn": "soft and easy to cut or chew",
+      "example": "Slow cooking made the lamb tender."
+    },
+    {
+      "term": "tough",
+      "definitionPl": "twardy, łykowaty (o mięsie)",
+      "definitionEn": "difficult to chew because the meat is hard",
+      "example": "The steak was too tough to enjoy."
+    },
+    {
+      "term": "lean meat",
+      "definitionPl": "chude mięso",
+      "definitionEn": "meat with little fat",
+      "example": "Choose lean meat if you are watching saturated fat."
+    },
+    {
+      "term": "wholesome",
+      "definitionPl": "pożywny, zdrowy",
+      "definitionEn": "good for your health; made from simple, decent ingredients",
+      "example": "A wholesome packed lunch beats a chocolate bar."
+    },
+    {
+      "term": "nutritious",
+      "definitionPl": "odżywczy",
+      "definitionEn": "containing substances the body needs to stay healthy",
+      "example": "Lentils are a nutritious source of protein."
+    },
+    {
+      "term": "moreish",
+      "definitionPl": "taki, że chce się jeść więcej",
+      "definitionEn": "so pleasant that you want another mouthful",
+      "example": "Those olives are moreish, so put the jar away."
+    },
+    {
+      "term": "sickly-sweet",
+      "definitionPl": "mdło słodki",
+      "definitionEn": "too sweet in an unpleasant way",
+      "example": "The dessert was sickly-sweet after two spoons."
+    },
+    {
+      "term": "piping hot",
+      "definitionPl": "wrząco gorący",
+      "definitionEn": "very hot, especially of food just served",
+      "example": "Serve the soup piping hot with crusty bread."
+    },
+    {
+      "term": "tepid",
+      "definitionPl": "letni",
+      "definitionEn": "only slightly warm, often when it should be hotter",
+      "example": "A cup of tepid tea is a disappointing end to breakfast."
+    },
+    {
+      "term": "seasoning",
+      "definitionPl": "przyprawianie; przyprawy",
+      "definitionEn": "salt, pepper or spices added to improve flavour",
+      "example": "Taste the stew before you add more seasoning."
+    },
+    {
+      "term": "garnish",
+      "definitionPl": "dekoracja dania; udekorować",
+      "definitionEn": "a small amount of food used to decorate a dish",
+      "example": "A garnish of parsley makes the plate look finished."
+    },
+    {
+      "term": "condiment",
+      "definitionPl": "dodatek smakowy (sos, przyprawa)",
+      "definitionEn": "a sauce or seasoning eaten with food, such as mustard",
+      "example": "Mustard is the condiment I always keep on the table."
+    },
+    {
+      "term": "marinade",
+      "definitionPl": "marynata",
+      "definitionEn": "a flavoured liquid in which you soak food before cooking",
+      "example": "Leave the chicken in the marinade overnight."
+    },
+    {
+      "term": "pulses",
+      "definitionPl": "nasiona roślin strączkowych",
+      "definitionEn": "dried seeds such as beans, lentils and peas used as food",
+      "example": "Dried pulses are cheap, filling and rich in protein."
+    },
+    {
+      "term": "staple food",
+      "definitionPl": "podstawowy produkt żywnościowy",
+      "definitionEn": "a basic food that a population eats regularly",
+      "example": "Bread is still a staple food in many European homes."
+    },
+    {
+      "term": "wholegrain",
+      "definitionPl": "pełnoziarnisty",
+      "definitionEn": "made from the complete grain, not only the refined part",
+      "example": "A bowl of wholegrain pasta keeps you full for longer."
+    },
+    {
+      "term": "saturated fat",
+      "definitionPl": "tłuszcz nasycony",
+      "definitionEn": "a type of fat, often from animals, that should be eaten in limited amounts",
+      "example": "Butter is high in saturated fat."
+    },
+    {
+      "term": "dietary fibre",
+      "definitionPl": "błonnik pokarmowy",
+      "definitionEn": "the part of plants that helps digestion and is not fully absorbed",
+      "example": "Oats and beans are rich in dietary fibre."
+    },
+    {
+      "term": "additive",
+      "definitionPl": "dodatek do żywności",
+      "definitionEn": "a substance added to food to colour, preserve or flavour it",
+      "example": "Read the label if you want to avoid a controversial additive."
+    },
+    {
+      "term": "preservative",
+      "definitionPl": "konserwant",
+      "definitionEn": "a substance added so that food lasts longer",
+      "example": "Some juices use lemon juice as a natural preservative."
+    },
+    {
+      "term": "flavour enhancer",
+      "definitionPl": "wzmacniacz smaku",
+      "definitionEn": "a substance added to make food taste stronger",
+      "example": "A flavour enhancer can make soup taste meatier than it is."
+    },
+    {
+      "term": "gluten",
+      "definitionPl": "gluten",
+      "definitionEn": "a protein in wheat and some other grains that some people cannot eat",
+      "example": "Bread without gluten needs a different kind of flour."
+    },
+    {
+      "term": "lactose",
+      "definitionPl": "laktoza",
+      "definitionEn": "the natural sugar found in milk",
+      "example": "People who cannot digest lactose often choose oat drinks."
+    },
+    {
+      "term": "fortified",
+      "definitionPl": "wzbogacony (o witaminy lub składniki)",
+      "definitionEn": "having extra vitamins or minerals added",
+      "example": "Some plant drinks are fortified with calcium."
+    },
+    {
+      "term": "skimmed milk",
+      "definitionPl": "mleko odtłuszczone",
+      "definitionEn": "milk from which almost all the fat has been removed",
+      "example": "She switched to skimmed milk to cut calories."
+    },
+    {
+      "term": "full-fat",
+      "definitionPl": "pełnotłusty",
+      "definitionEn": "containing all the natural fat, not reduced",
+      "example": "A pot of full-fat yoghurt tastes creamier than the low-fat sort."
+    },
+    {
+      "term": "gone off",
+      "definitionPl": "zepsuć się (o jedzeniu)",
+      "definitionEn": "no longer safe or pleasant to eat because it is too old",
+      "example": "The milk has gone off — do not pour it on cereal."
+    },
+    {
+      "term": "use-by date",
+      "definitionPl": "data przydatności do spożycia",
+      "definitionEn": "the last date a perishable food should be eaten for safety",
+      "example": "Chicken must not be cooked after the use-by date."
+    },
+    {
+      "term": "best-before date",
+      "definitionPl": "data minimalnej trwałości",
+      "definitionEn": "the date until which a food is at its best quality",
+      "example": "Biscuits after the best-before date may taste dull but are often still edible."
+    },
+    {
+      "term": "shelf life",
+      "definitionPl": "trwałość produktu",
+      "definitionEn": "how long a food stays good to eat under proper storage",
+      "example": "Dried beans have a long shelf life in a cool cupboard."
+    },
+    {
+      "term": "food poisoning",
+      "definitionPl": "zatrucie pokarmowe",
+      "definitionEn": "an illness caused by eating contaminated food",
+      "example": "Warm rice left on the table can cause food poisoning."
+    },
+    {
+      "term": "contamination",
+      "definitionPl": "skażenie (żywności)",
+      "definitionEn": "the presence of harmful bacteria or substances in food",
+      "example": "Raw chicken can cause contamination if it touches salad."
+    },
+    {
+      "term": "cross-contamination",
+      "definitionPl": "zanieczyszczenie krzyżowe",
+      "definitionEn": "the spread of harmful bacteria from one food or surface to another",
+      "example": "Use separate boards to avoid cross-contamination."
+    },
+    {
+      "term": "simmer",
+      "definitionPl": "gotować na wolnym ogniu",
+      "definitionEn": "to cook just below boiling point, with small bubbles",
+      "example": "Let the sauce simmer for twenty minutes."
+    },
+    {
+      "term": "roast",
+      "definitionPl": "piec (w piekarniku, z tłuszczem)",
+      "definitionEn": "to cook food in an oven with fat, often meat or vegetables",
+      "example": "We roast root vegetables with a little oil on Sundays."
+    },
+    {
+      "term": "ferment",
+      "definitionPl": "fermentować",
+      "definitionEn": "to change food through the action of yeast or bacteria",
+      "example": "Cabbage can ferment into sauerkraut in a jar."
+    },
+    {
+      "term": "sauté",
+      "definitionPl": "smażyć krótko na małej ilości tłuszczu",
+      "definitionEn": "to fry quickly in a small amount of fat",
+      "example": "Cooks sauté the onions until they turn golden."
+    },
+    {
+      "term": "stew",
+      "definitionPl": "dusić (potrawę); gulasz",
+      "definitionEn": "to cook slowly in liquid; a dish cooked that way",
+      "example": "You can stew cheaper cuts of meat until they soften."
+    },
+    {
+      "term": "braise",
+      "definitionPl": "dusić po obsmażeniu",
+      "definitionEn": "to fry food briefly and then cook it slowly in a little liquid",
+      "example": "Chefs braise the beef with stock and onions."
+    },
+    {
+      "term": "poach",
+      "definitionPl": "gotować w wodzie tuż poniżej wrzenia",
+      "definitionEn": "to cook gently in water or another liquid that is not quite boiling",
+      "example": "You can poach the eggs for three minutes."
+    },
+    {
+      "term": "blanch",
+      "definitionPl": "blanszować",
+      "definitionEn": "to put food briefly into boiling water, then often into cold water",
+      "example": "You should blanch the green beans before you freeze them."
+    },
+    {
+      "term": "pickle",
+      "definitionPl": "kisić, marynować",
+      "definitionEn": "to preserve food in vinegar or salt water",
+      "example": "They pickle cucumbers every autumn."
+    },
+    {
+      "term": "cure",
+      "definitionPl": "peklować, wędzić solą (o mięsie)",
+      "definitionEn": "to preserve meat or fish with salt, smoke or both",
+      "example": "They cure the ham with salt for several weeks."
+    },
+    {
+      "term": "marinate",
+      "definitionPl": "marynować",
+      "definitionEn": "to leave food in a flavoured liquid so it absorbs taste",
+      "example": "You should marinate the tofu for at least an hour."
+    },
+    {
+      "term": "knead",
+      "definitionPl": "wyrabiać (ciasto)",
+      "definitionEn": "to press and fold dough with your hands",
+      "example": "You must knead the dough until it feels smooth and elastic."
+    },
+    {
+      "term": "whisk",
+      "definitionPl": "ubijać (trzepaczką)",
+      "definitionEn": "to beat eggs or cream quickly until light",
+      "example": "You should whisk the eggs until they look pale and thick."
+    },
+    {
+      "term": "fold in",
+      "definitionPl": "delikatnie wmieszać",
+      "definitionEn": "to mix a light ingredient into a heavier one with gentle movements",
+      "example": "Gently fold in the egg whites so the mixture stays airy."
+    },
+    {
+      "term": "carve",
+      "definitionPl": "krajać (pieczeń)",
+      "definitionEn": "to cut cooked meat into slices for serving",
+      "example": "Dad will carve the chicken at the table."
+    },
+    {
+      "term": "mince",
+      "definitionPl": "mielić (mięso)",
+      "definitionEn": "to cut or grind meat into very small pieces",
+      "example": "Cooks mince the leftover roast for cottage pie."
+    },
+    {
+      "term": "drizzle",
+      "definitionPl": "skropić, polać cienkim strumieniem",
+      "definitionEn": "to pour a thin stream of liquid over food",
+      "example": "Waiters drizzle olive oil over the tomatoes."
+    },
+    {
+      "term": "stir-fry",
+      "definitionPl": "smażyć szybko mieszając",
+      "definitionEn": "to cook small pieces of food quickly in a little oil while stirring",
+      "example": "You can stir-fry the vegetables so they stay crisp."
+    },
+    {
+      "term": "deep-fry",
+      "definitionPl": "smażyć w głębokim tłuszczu",
+      "definitionEn": "to cook food by covering it in hot oil",
+      "example": "If you deep-fry too often, meals become heavy."
+    },
+    {
+      "term": "casserole",
+      "definitionPl": "zapiekanka / potrawa duszona w naczyniu",
+      "definitionEn": "a dish of meat or vegetables cooked slowly in liquid in the oven",
+      "example": "A winter casserole can feed the whole family."
+    },
+    {
+      "term": "stock",
+      "definitionPl": "wywar, bulion",
+      "definitionEn": "a flavoured liquid made by cooking bones, meat or vegetables in water",
+      "example": "Make stock from leftover bones and vegetables."
+    },
+    {
+      "term": "gravy",
+      "definitionPl": "sos pieczeniowy",
+      "definitionEn": "a sauce made from meat juices, often served with a roast",
+      "example": "Pour gravy over the potatoes, not over the salad."
+    },
+    {
+      "term": "batter",
+      "definitionPl": "ciasto naleśnikowe / panierka płynna",
+      "definitionEn": "a mixture of flour, egg and liquid used to coat food or make pancakes",
+      "example": "Dip the fish in batter before you fry it."
+    },
+    {
+      "term": "dough",
+      "definitionPl": "ciasto (do pieczenia chleba lub pizzy)",
+      "definitionEn": "a thick mixture of flour and liquid that is baked",
+      "example": "Leave the dough in a warm place to rise."
+    },
+    {
+      "term": "yeast",
+      "definitionPl": "drożdże",
+      "definitionEn": "a microscopic fungus used to make bread rise",
+      "example": "Without yeast the loaf will stay flat."
+    },
+    {
+      "term": "sourdough",
+      "definitionPl": "zakwas; chleb na zakwasie",
+      "definitionEn": "bread made with a fermented starter rather than commercial yeast",
+      "example": "A loaf of sourdough needs time, not just a packet of yeast."
+    },
+    {
+      "term": "prove",
+      "definitionPl": "wyrośnieć (o cieście)",
+      "definitionEn": "to leave dough in a warm place so that it rises before baking",
+      "example": "Cover the tin and prove the dough for forty minutes."
+    },
+    {
+      "term": "glaze",
+      "definitionPl": "polać glazurą; błyszcząca polewa",
+      "definitionEn": "to brush food with egg, sugar or jelly so it shines",
+      "example": "Bakers glaze the tart with warmed apricot jam."
+    },
+    {
+      "term": "caramelise",
+      "definitionPl": "karmelizować",
+      "definitionEn": "to heat sugar or vegetables until they brown and sweeten",
+      "example": "Cooks caramelise the onions slowly so they do not burn."
+    },
+    {
+      "term": "reduce",
+      "definitionPl": "zredukować (sos, odparować)",
+      "definitionEn": "to boil a liquid so that some water evaporates and the flavour strengthens",
+      "example": "You should reduce the sauce until it coats the back of a spoon."
+    },
+    {
+      "term": "thicken",
+      "definitionPl": "zagęścić",
+      "definitionEn": "to make a sauce or soup less watery",
+      "example": "You can thicken the soup with a spoon of mashed potato."
+    },
+    {
+      "term": "infuse",
+      "definitionPl": "naparzać, aromatyzować",
+      "definitionEn": "to leave a flavouring in a liquid so the taste passes into it",
+      "example": "Cooks infuse the milk with vanilla before they make custard."
+    },
+    {
+      "term": "balanced diet",
+      "definitionPl": "zrównoważona dieta",
+      "definitionEn": "a way of eating that includes a healthy mix of food groups",
+      "example": "A balanced diet includes vegetables, protein and some wholegrain starch."
+    },
+    {
+      "term": "vegan",
+      "definitionPl": "weganin; wegański",
+      "definitionEn": "eating no animal products, including milk, eggs and honey",
+      "example": "The café labels every vegan soup clearly."
+    },
+    {
+      "term": "pescatarian",
+      "definitionPl": "peskatarianin",
+      "definitionEn": "a person who does not eat meat but does eat fish",
+      "example": "A pescatarian can still order the salmon."
+    },
+    {
+      "term": "flexitarian",
+      "definitionPl": "fleksitarianin",
+      "definitionEn": "a person who mainly eats plant food but occasionally eats meat",
+      "example": "A flexitarian week might include one chicken dinner."
+    },
+    {
+      "term": "intolerance",
+      "definitionPl": "nietolerancja (pokarmowa)",
+      "definitionEn": "difficulty digesting a food, causing discomfort but not a full allergy",
+      "example": "A lactose intolerance is not the same as a milk allergy."
+    },
+    {
+      "term": "nutrient",
+      "definitionPl": "składnik odżywczy",
+      "definitionEn": "a substance in food that the body needs, such as a vitamin or protein",
+      "example": "Spinach provides more than one nutrient, including iron."
+    },
+    {
+      "term": "malnutrition",
+      "definitionPl": "niedożywienie",
+      "definitionEn": "poor health caused by not having enough of the right foods",
+      "example": "Hidden malnutrition can occur even when calorie intake looks high."
+    },
+    {
+      "term": "undernourished",
+      "definitionPl": "niedostatecznie odżywiony",
+      "definitionEn": "not getting enough food or nutrients to stay healthy",
+      "example": "An undernourished child may feel tired in every lesson."
+    },
+    {
+      "term": "obesity",
+      "definitionPl": "otyłość",
+      "definitionEn": "the state of having so much body fat that it harms health",
+      "example": "Childhood obesity is discussed in biology and in form time."
+    },
+    {
+      "term": "calorie intake",
+      "definitionPl": "spożycie kalorii",
+      "definitionEn": "the amount of energy you get from food and drink",
+      "example": "Athletes raise their calorie intake during hard training."
+    },
+    {
+      "term": "empty calories",
+      "definitionPl": "puste kalorie",
+      "definitionEn": "energy from food that offers little nutritional value",
+      "example": "Fizzy drinks are a classic source of empty calories."
+    },
+    {
+      "term": "crash diet",
+      "definitionPl": "drastyczna, krótka dieta",
+      "definitionEn": "a very strict, short-term eating plan that cuts food severely",
+      "example": "A crash diet often fails as soon as ordinary meals return."
+    },
+    {
+      "term": "fad diet",
+      "definitionPl": "modna, krótkotrwała dieta",
+      "definitionEn": "a fashionable eating plan that promises fast results with little evidence",
+      "example": "A fad diet that bans whole food groups is rarely sustainable."
+    },
+    {
+      "term": "yo-yo dieting",
+      "definitionPl": "efekt jo-jo",
+      "definitionEn": "repeatedly losing weight and then gaining it again",
+      "example": "Repeated yo-yo dieting can leave people tired and discouraged."
+    },
+    {
+      "term": "portion control",
+      "definitionPl": "kontrola wielkości porcji",
+      "definitionEn": "choosing sensible amounts of food rather than eating until the plate is empty",
+      "example": "Good portion control is easier if you use a smaller plate."
+    },
+    {
+      "term": "fasting",
+      "definitionPl": "post",
+      "definitionEn": "going without food for a set time, often for health or religion",
+      "example": "Medical advice should come before fasting for several days."
+    },
+    {
+      "term": "intermittent fasting",
+      "definitionPl": "post przerywany",
+      "definitionEn": "an eating pattern with regular periods of not eating",
+      "example": "Doctors say intermittent fasting does not suit everyone, especially teenagers."
+    },
+    {
+      "term": "supplement",
+      "definitionPl": "suplement diety",
+      "definitionEn": "a pill or powder taken to add nutrients to your diet",
+      "example": "A supplement cannot replace vegetables and sleep."
+    },
+    {
+      "term": "antioxidant",
+      "definitionPl": "przeciwutleniacz",
+      "definitionEn": "a substance in some foods thought to protect cells from damage",
+      "example": "Berries are often mentioned as a source of antioxidant compounds."
+    },
+    {
+      "term": "probiotic",
+      "definitionPl": "probiotyk",
+      "definitionEn": "a food or drink containing live bacteria that may help the gut",
+      "example": "A probiotic yoghurt is not a cure for every stomach ache."
+    },
+    {
+      "term": "fluid intake",
+      "definitionPl": "spożycie płynów",
+      "definitionEn": "the amount of liquid you drink",
+      "example": "Doctors remind patients to increase fluid intake during a fever."
+    },
+    {
+      "term": "dehydrated",
+      "definitionPl": "odwodniony",
+      "definitionEn": "lacking enough water in the body",
+      "example": "After the match he felt dizzy and dehydrated."
+    },
+    {
+      "term": "plant-based",
+      "definitionPl": "roślinny (o diecie lub produkcie)",
+      "definitionEn": "made mainly or entirely from plants rather than animals",
+      "example": "A plant-based burger should still list its ingredients clearly."
+    },
+    {
+      "term": "dairy-free",
+      "definitionPl": "bez nabiału",
+      "definitionEn": "containing no milk or products made from milk",
+      "example": "The muffin is dairy-free but it still contains eggs."
+    },
+    {
+      "term": "high-protein",
+      "definitionPl": "wysokobiałkowy",
+      "definitionEn": "containing a large amount of protein",
+      "example": "A high-protein breakfast can be eggs on wholegrain toast."
+    },
+    {
+      "term": "low-carb",
+      "definitionPl": "niskowęglowodanowy",
+      "definitionEn": "containing little starch or sugar",
+      "example": "A low-carb supper might skip the rice and add extra salad."
+    },
+    {
+      "term": "sugar-free",
+      "definitionPl": "bez cukru",
+      "definitionEn": "containing no added sugar",
+      "example": "A packet of sugar-free gum is not a substitute for brushing your teeth."
+    },
+    {
+      "term": "wholefood",
+      "definitionPl": "żywność nieprzetworzona",
+      "definitionEn": "food that is as close as possible to its natural state",
+      "example": "A wholefood lunch might be beans, rice and raw vegetables."
+    },
+    {
+      "term": "eating disorder",
+      "definitionPl": "zaburzenie odżywiania",
+      "definitionEn": "a serious mental health condition involving harmful eating patterns",
+      "example": "If you worry about an eating disorder, speak to a doctor or a trusted adult."
+    },
+    {
+      "term": "binge",
+      "definitionPl": "napad objadania się",
+      "definitionEn": "an episode of eating a very large amount of food in a short time",
+      "example": "A leaflet may mention a binge as one sign of an eating disorder."
+    },
+    {
+      "term": "comfort food",
+      "definitionPl": "jedzenie pocieszające",
+      "definitionEn": "food you eat because it makes you feel emotionally better",
+      "example": "Toast and soup is comfort food on a grey afternoon."
+    },
+    {
+      "term": "emotional eating",
+      "definitionPl": "jedzenie pod wpływem emocji",
+      "definitionEn": "eating in response to feelings rather than hunger",
+      "example": "Late-night emotional eating after an argument does not solve the argument."
+    },
+    {
+      "term": "foodie",
+      "definitionPl": "osoba zakręcona na punkcie jedzenia",
+      "definitionEn": "a person who is very interested in cooking and trying dishes",
+      "example": "A foodie will queue for a new bakery without complaining."
+    },
+    {
+      "term": "gourmet",
+      "definitionPl": "wykwintny; smakosz",
+      "definitionEn": "connected with high-quality, carefully prepared food",
+      "example": "A gourmet menu can still start with a simple seasonal soup."
+    },
+    {
+      "term": "nutritionist",
+      "definitionPl": "specjalista ds. żywienia",
+      "definitionEn": "a person who advises on food and nutrients, not always a regulated doctor",
+      "example": "Ask whether the nutritionist has recognised qualifications."
+    },
+    {
+      "term": "dietitian",
+      "definitionPl": "dietetyk (z uprawnieniami klinicznymi)",
+      "definitionEn": "a qualified health professional who gives evidence-based diet advice",
+      "example": "A hospital dietitian can plan meals after an operation."
+    },
+    {
+      "term": "fussy eater",
+      "definitionPl": "niejadek; wybredny w jedzeniu",
+      "definitionEn": "a person who refuses many foods and accepts only a few",
+      "example": "A fussy eater may still learn to like new flavours slowly."
+    },
+    {
+      "term": "tip",
+      "definitionPl": "napiwek",
+      "definitionEn": "extra money left for waiting staff for their service",
+      "example": "In Britain people often leave a ten percent tip."
+    },
+    {
+      "term": "reservation",
+      "definitionPl": "rezerwacja (stolika)",
+      "definitionEn": "an arrangement to have a table kept for you at a set time",
+      "example": "Friday night requires a reservation at that bistro."
+    },
+    {
+      "term": "Michelin star",
+      "definitionPl": "gwiazdka Michelin",
+      "definitionEn": "a mark of excellence given to a restaurant by the Michelin guide",
+      "example": "The bistro earned a Michelin star for its seasonal cooking."
+    },
+    {
+      "term": "à la carte",
+      "definitionPl": "à la carte; z karty",
+      "definitionEn": "ordered as individual dishes from a menu, not as a fixed set",
+      "example": "I ordered à la carte rather than the set lunch."
+    },
+    {
+      "term": "set menu",
+      "definitionPl": "menu dnia / zestaw",
+      "definitionEn": "a limited list of dishes offered at a fixed price",
+      "example": "The weekday set menu is cheaper than ordering separately."
+    },
+    {
+      "term": "tasting menu",
+      "definitionPl": "menu degustacyjne",
+      "definitionEn": "a sequence of small dishes chosen by the chef",
+      "example": "A tasting menu can last two hours and many courses."
+    },
+    {
+      "term": "sommelier",
+      "definitionPl": "sommelier",
+      "definitionEn": "a restaurant specialist who advises on wine",
+      "example": "Ask the sommelier if you do not know the wine list."
+    },
+    {
+      "term": "service charge",
+      "definitionPl": "opłata za obsługę",
+      "definitionEn": "an extra percentage added to a restaurant bill for staff",
+      "example": "Check whether a service charge is already included."
+    },
+    {
+      "term": "cover charge",
+      "definitionPl": "couvert; opłata za nakrycie",
+      "definitionEn": "a fixed fee some restaurants add per person before food",
+      "example": "The cover charge paid for bread and olives."
+    },
+    {
+      "term": "table manners",
+      "definitionPl": "savoir-vivre przy stole",
+      "definitionEn": "the polite way of eating and behaving during a meal",
+      "example": "Good table manners include not talking with your mouth full."
+    },
+    {
+      "term": "aperitif",
+      "definitionPl": "aperitif",
+      "definitionEn": "a drink taken before a meal to stimulate the appetite",
+      "example": "They offered a small aperitif while we read the menu."
+    },
+    {
+      "term": "mocktail",
+      "definitionPl": "drink bezalkoholowy",
+      "definitionEn": "a mixed drink without alcohol",
+      "example": "She ordered a mocktail so she could drive home."
+    },
+    {
+      "term": "fully booked",
+      "definitionPl": "komplet rezerwacji",
+      "definitionEn": "having no free tables left",
+      "example": "The restaurant was fully booked until half past nine."
+    },
+    {
+      "term": "walk-in",
+      "definitionPl": "gość z ulicy (bez rezerwacji)",
+      "definitionEn": "a customer who arrives without a reservation",
+      "example": "A walk-in might still get a seat at the bar."
+    },
+    {
+      "term": "fine dining",
+      "definitionPl": "wykwintna restauracja / kuchnia",
+      "definitionEn": "formal, high-quality restaurant food and service",
+      "example": "A night of fine dining is a rare treat, not a weekly habit."
+    },
+    {
+      "term": "street food",
+      "definitionPl": "jedzenie uliczne",
+      "definitionEn": "ready-to-eat food sold from stalls or carts",
+      "example": "The street food at the market included falafel and warm pretzels."
+    },
+    {
+      "term": "food truck",
+      "definitionPl": "food truck; przyczepa z jedzeniem",
+      "definitionEn": "a vehicle from which cooked food is sold",
+      "example": "The food truck sells grilled cheese at lunchtime."
+    },
+    {
+      "term": "sharing platter",
+      "definitionPl": "półmisek do dzielenia się",
+      "definitionEn": "a large plate of food designed for several people to share",
+      "example": "We ordered a sharing platter instead of three starters."
+    },
+    {
+      "term": "overpriced",
+      "definitionPl": "zbyt drogi; z zawyżoną ceną",
+      "definitionEn": "costing more than it is worth",
+      "example": "The mineral water was overpriced for a small bottle."
+    },
+    {
+      "term": "value for money",
+      "definitionPl": "dobry stosunek jakości do ceny",
+      "definitionEn": "worth the price you pay because of quality or quantity",
+      "example": "The lunch deal offers real value for money."
+    },
+    {
+      "term": "food critic",
+      "definitionPl": "krytyk kulinarny",
+      "definitionEn": "a journalist who reviews restaurants and dishes",
+      "example": "A food critic should pay the bill like any other guest."
+    },
+    {
+      "term": "signature dish",
+      "definitionPl": "danie firmowe",
+      "definitionEn": "the recipe a cook or restaurant is best known for",
+      "example": "The signature dish is beetroot risotto with goat's cheese."
+    },
+    {
+      "term": "chef's special",
+      "definitionPl": "specjalność szefa kuchni",
+      "definitionEn": "a dish recommended or created by the chef that day",
+      "example": "Ask what the chef's special is before you order."
+    },
+    {
+      "term": "dietary requirement",
+      "definitionPl": "wymaganie dietetyczne",
+      "definitionEn": "a need to avoid or include certain foods for health or belief",
+      "example": "Tell the waiter about any dietary requirement when you book."
+    },
+    {
+      "term": "allergen",
+      "definitionPl": "alergen",
+      "definitionEn": "a substance that can cause an allergic reaction",
+      "example": "Menus must highlight a major allergen such as peanuts."
+    },
+    {
+      "term": "halal",
+      "definitionPl": "halal",
+      "definitionEn": "prepared according to Islamic rules, especially of meat",
+      "example": "The canteen offers a halal chicken option."
+    },
+    {
+      "term": "kosher",
+      "definitionPl": "koszerny",
+      "definitionEn": "prepared according to Jewish dietary law",
+      "example": "A kosher kitchen keeps meat and dairy strictly apart."
+    },
+    {
+      "term": "corkage",
+      "definitionPl": "opłata za własną butelkę wina",
+      "definitionEn": "a fee for bringing your own wine into a restaurant",
+      "example": "The corkage was ten pounds per bottle."
+    },
+    {
+      "term": "house wine",
+      "definitionPl": "wino firmowe / wino domu",
+      "definitionEn": "the restaurant's ordinary, usually cheaper wine",
+      "example": "A glass of house wine was enough with the pasta."
+    },
+    {
+      "term": "processed food",
+      "definitionPl": "żywność przetworzona",
+      "definitionEn": "food that has been changed from its natural state, often with additives",
+      "example": "A diet of processed food tends to be high in salt and sugar."
+    },
+    {
+      "term": "food waste",
+      "definitionPl": "marnowanie żywności",
+      "definitionEn": "edible food that is thrown away instead of being eaten",
+      "example": "Planning meals is a simple way to cut food waste."
+    },
+    {
+      "term": "organic",
+      "definitionPl": "ekologiczny (o żywności)",
+      "definitionEn": "produced without synthetic pesticides or fertilisers",
+      "example": "Some organic vegetables cost more but shoppers still choose them."
+    },
+    {
+      "term": "fair trade",
+      "definitionPl": "fair trade; sprawiedliwy handel",
+      "definitionEn": "a system that aims to pay producers in poorer countries a fairer price",
+      "example": "I buy fair trade coffee to support the growers."
+    },
+    {
+      "term": "food security",
+      "definitionPl": "bezpieczeństwo żywnościowe",
+      "definitionEn": "reliable access to enough safe, nutritious food",
+      "example": "Droughts threaten food security in several regions."
+    },
+    {
+      "term": "food miles",
+      "definitionPl": "kilometry żywności",
+      "definitionEn": "the distance food travels from where it is produced to where it is eaten",
+      "example": "Local apples have fewer food miles than fruit flown in winter."
+    },
+    {
+      "term": "factory farming",
+      "definitionPl": "hodowla przemysłowa",
+      "definitionEn": "keeping large numbers of animals in intensive conditions for cheap meat or eggs",
+      "example": "Many consumers now question factory farming."
+    },
+    {
+      "term": "farm-to-table",
+      "definitionPl": "prosto z gospodarstwa na stół",
+      "definitionEn": "food served soon after it is grown, with few middlemen",
+      "example": "The bistro advertises a farm-to-table menu in summer."
+    },
+    {
+      "term": "battery farming",
+      "definitionPl": "chów klatkowy",
+      "definitionEn": "keeping hens in small cages to produce eggs cheaply",
+      "example": "The law restricts battery farming of hens in the United Kingdom."
+    },
+    {
+      "term": "free-range",
+      "definitionPl": "z wolnego wybiegu",
+      "definitionEn": "allowed to move outdoors, especially of hens or their eggs",
+      "example": "She pays extra for free-range eggs."
+    },
+    {
+      "term": "animal welfare",
+      "definitionPl": "dobrostan zwierząt",
+      "definitionEn": "the health and living conditions of animals kept by humans",
+      "example": "Labels now mention animal welfare more often than ten years ago."
+    },
+    {
+      "term": "livestock",
+      "definitionPl": "żywy inwentarz",
+      "definitionEn": "farm animals such as cattle, sheep and pigs",
+      "example": "The farm keeps livestock on the higher fields."
+    },
+    {
+      "term": "genetically modified",
+      "definitionPl": "genetycznie modyfikowany",
+      "definitionEn": "having genes changed in a laboratory to give a plant or animal new traits",
+      "example": "Some shoppers avoid genetically modified soya."
+    },
+    {
+      "term": "food additive",
+      "definitionPl": "dodatek do żywności",
+      "definitionEn": "a substance put in food to colour, preserve or flavour it",
+      "example": "Some people avoid products with a long list of food additive codes."
+    },
+    {
+      "term": "superfood",
+      "definitionPl": "superżywność (modny produkt o wysokiej wartości odżywczej)",
+      "definitionEn": "a food marketed as especially rich in nutrients",
+      "example": "Blueberries are often labelled a superfood in magazine articles."
+    },
+    {
+      "term": "sustainable farming",
+      "definitionPl": "rolnictwo zrównoważone",
+      "definitionEn": "growing food in a way that can continue without ruining soil, water or wildlife",
+      "example": "Supporters of sustainable farming try to protect the land for the next harvest."
+    },
+    {
+      "term": "sustainable seafood",
+      "definitionPl": "owoce morza z zrównoważonych połowów",
+      "definitionEn": "fish caught or farmed in a way that does not empty the oceans",
+      "example": "The restaurant switched to sustainable seafood certified by a label."
+    },
+    {
+      "term": "seasonal produce",
+      "definitionPl": "produkty sezonowe",
+      "definitionEn": "fruit and vegetables harvested at the natural time of year",
+      "example": "A market stall full of seasonal produce is cheaper in autumn."
+    },
+    {
+      "term": "locally sourced",
+      "definitionPl": "pochodzący z lokalnych upraw lub hodowli",
+      "definitionEn": "obtained from nearby farms or producers",
+      "example": "The menu says the cheese is locally sourced."
+    },
+    {
+      "term": "food labelling",
+      "definitionPl": "znakowanie żywności",
+      "definitionEn": "the information printed on packaging about ingredients and nutrition",
+      "example": "Clear food labelling helps people with allergies."
+    },
+    {
+      "term": "traceability",
+      "definitionPl": "identyfikowalność (pochodzenia żywności)",
+      "definitionEn": "the ability to follow a food back to where it was produced",
+      "example": "Good traceability matters when a batch has to be withdrawn."
+    },
+    {
+      "term": "supply chain",
+      "definitionPl": "łańcuch dostaw",
+      "definitionEn": "the sequence of steps that takes food from farm to shop",
+      "example": "A broken supply chain can empty supermarket shelves."
+    },
+    {
+      "term": "supermarket chain",
+      "definitionPl": "sieć supermarketów",
+      "definitionEn": "a company that owns many large food shops",
+      "example": "A supermarket chain can push prices down for farmers."
+    },
+    {
+      "term": "food shortage",
+      "definitionPl": "niedobór żywności",
+      "definitionEn": "a situation in which there is not enough food available",
+      "example": "Floods caused a food shortage of fresh vegetables."
+    },
+    {
+      "term": "food desert",
+      "definitionPl": "obszar bez dostępu do zdrowej żywności",
+      "definitionEn": "a neighbourhood with few shops selling fresh, healthy food",
+      "example": "Living in a food desert makes a balanced diet more expensive."
+    },
+    {
+      "term": "food bank",
+      "definitionPl": "bank żywności",
+      "definitionEn": "a charity that gives donated food to people who cannot afford it",
+      "example": "The food bank needs tins and long-life milk this month."
+    },
+    {
+      "term": "food poverty",
+      "definitionPl": "ubóstwo żywnościowe",
+      "definitionEn": "not being able to afford enough healthy food",
+      "example": "Hidden food poverty can exist next door to a full supermarket."
+    },
+    {
+      "term": "ultra-processed",
+      "definitionPl": "ultraprzetworzony",
+      "definitionEn": "made mostly from industrial ingredients rather than whole foods",
+      "example": "An ultra-processed snack often lists a dozen additives."
+    },
+    {
+      "term": "convenience food",
+      "definitionPl": "żywność wygodna / gotowe dania",
+      "definitionEn": "food that is quick to prepare, often packaged or ready-made",
+      "example": "A frozen convenience food helps on late nights, but not every night."
+    },
+    {
+      "term": "ready meal",
+      "definitionPl": "danie gotowe do podgrzania",
+      "definitionEn": "a complete dish sold cooked, which you only need to heat",
+      "example": "A ready meal is useful when the cooker is broken."
+    },
+    {
+      "term": "trans fat",
+      "definitionPl": "tłuszcz trans",
+      "definitionEn": "an industrial fat, now widely restricted, that harms heart health",
+      "example": "Many countries have banned trans fat in supermarket food."
+    },
+    {
+      "term": "cholesterol",
+      "definitionPl": "cholesterol",
+      "definitionEn": "a fatty substance in blood; some foods can affect its level",
+      "example": "Eggs are no longer treated as a simple cholesterol villain."
+    },
+    {
+      "term": "sugar tax",
+      "definitionPl": "podatek cukrowy",
+      "definitionEn": "a government charge on drinks with a lot of added sugar",
+      "example": "The sugar tax pushed some brands to use less sugar."
+    },
+    {
+      "term": "compostable packaging",
+      "definitionPl": "opakowanie nadające się na kompost",
+      "definitionEn": "wrapping that can break down into soil in a compost bin",
+      "example": "The takeaway switched to compostable packaging last year."
+    },
+    {
+      "term": "artificial sweetener",
+      "definitionPl": "sztuczny słodzik",
+      "definitionEn": "a chemical used instead of sugar to make food taste sweet",
+      "example": "An artificial sweetener can leave a bitter aftertaste."
+    }
+  ]
+}

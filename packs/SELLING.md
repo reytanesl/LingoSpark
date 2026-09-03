@@ -8,6 +8,8 @@ Suggested prices (raise later if they sell):
 |---------|-----|----------------------|
 | One E8 pack (~120 terms) | **$3** | **12 zł** |
 | E8 complete (14 modules) | **$29** | **99 zł** |
+| One Matura PR pack (180 B2 terms) | **$4** | **16 zł** |
+| Matura PR complete (14 modules) | **$39** | **149 zł** |
 | Matura PP pack | **$3** | **12 zł** |
 | Matura PP pair (Work + Health) | **$5** | **20 zł** |
 

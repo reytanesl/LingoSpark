@@ -1,0 +1,1111 @@
+{
+  "id": "matura-pr-nauka-technika",
+  "sku": "LS-PR-TECH",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Nauka i technika",
+  "topicEn": "Science and technology",
+  "titlePl": "Matura PR: Nauka i technika — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Science and technology — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Nauka i technika na maturę rozszerzoną: badania naukowe, ICT, kosmos, sztuczna inteligencja i zagrożenia cyfrowe. Fiszki ENG–PL.",
+  "blurbEn": "Extended-level Matura Science and technology vocabulary: research, ICT, space, AI and digital risks. ENG–PL flashcards for LingoSpark games.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura",
+    "rozszerzona",
+    "nauka",
+    "technika",
+    "science",
+    "technology",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "Polish exam"
+  ],
+  "items": [
+    {
+      "term": "physics",
+      "definitionPl": "fizyka",
+      "definitionEn": "the science of matter, energy, force and motion",
+      "example": "Physics explains why satellites stay in orbit."
+    },
+    {
+      "term": "chemistry",
+      "definitionPl": "chemia",
+      "definitionEn": "the science of substances, their structure and how they react",
+      "example": "Chemistry in the lab requires goggles, not just curiosity."
+    },
+    {
+      "term": "molecular biology",
+      "definitionPl": "biologia molekularna",
+      "definitionEn": "the study of living things at the level of DNA, proteins and cells",
+      "example": "Molecular biology underpins modern genetic tests."
+    },
+    {
+      "term": "astronomy",
+      "definitionPl": "astronomia",
+      "definitionEn": "the scientific study of stars, planets and other objects in space",
+      "example": "Astronomy is a science; astrology is not."
+    },
+    {
+      "term": "astrophysics",
+      "definitionPl": "astrofizyka",
+      "definitionEn": "the branch of physics that explains how objects in space behave",
+      "example": "Astrophysics uses both telescopes and computer models."
+    },
+    {
+      "term": "genetics",
+      "definitionPl": "genetyka",
+      "definitionEn": "the science of genes, heredity and variation in living things",
+      "example": "Genetics can explain why some diseases run in families."
+    },
+    {
+      "term": "biotechnology",
+      "definitionPl": "biotechnologia",
+      "definitionEn": "the use of living cells or organisms to make products or solve problems",
+      "example": "Biotechnology produces insulin that used to come only from animals."
+    },
+    {
+      "term": "nanotechnology",
+      "definitionPl": "nanotechnologia",
+      "definitionEn": "engineering of materials and devices at an extremely small, atomic scale",
+      "example": "Nanotechnology is used in some medical tests and new materials."
+    },
+    {
+      "term": "robotics",
+      "definitionPl": "robotyka",
+      "definitionEn": "the design and use of robots to do tasks",
+      "example": "Robotics in factories has changed the skills employers look for."
+    },
+    {
+      "term": "neuroscience",
+      "definitionPl": "neurobiologia, neuronauka",
+      "definitionEn": "the scientific study of the brain and nervous system",
+      "example": "Neuroscience is still far from a full map of human memory."
+    },
+    {
+      "term": "microbiology",
+      "definitionPl": "mikrobiologia",
+      "definitionEn": "the study of microscopic organisms such as bacteria and viruses",
+      "example": "Microbiology showed how quickly a strain can become resistant."
+    },
+    {
+      "term": "biochemistry",
+      "definitionPl": "biochemia",
+      "definitionEn": "the chemistry of processes inside living organisms",
+      "example": "Biochemistry explains how enzymes speed up reactions in cells."
+    },
+    {
+      "term": "computer science",
+      "definitionPl": "informatyka",
+      "definitionEn": "the study of computation, algorithms and how computers are designed and used",
+      "example": "Computer science is more than learning to use an office program."
+    },
+    {
+      "term": "materials science",
+      "definitionPl": "nauka o materiałach",
+      "definitionEn": "the study of the properties and uses of metals, plastics, ceramics and similar substances",
+      "example": "Materials science helped create lighter batteries for electric cars."
+    },
+    {
+      "term": "quantum physics",
+      "definitionPl": "fizyka kwantowa",
+      "definitionEn": "the physics of the very small, where particles do not behave like everyday objects",
+      "example": "Quantum physics is the basis of some new types of computer."
+    },
+    {
+      "term": "nuclear physics",
+      "definitionPl": "fizyka jądrowa",
+      "definitionEn": "the physics of the nucleus of the atom, including fission and fusion",
+      "example": "Nuclear physics is used in medicine as well as in power stations."
+    },
+    {
+      "term": "engineering",
+      "definitionPl": "inżynieria",
+      "definitionEn": "the practical use of science to design machines, structures and systems",
+      "example": "Engineering turns a laboratory idea into something that can be built safely."
+    },
+    {
+      "term": "applied science",
+      "definitionPl": "nauki stosowane",
+      "definitionEn": "scientific work aimed at solving a practical problem, not only at theory",
+      "example": "Applied science links university labs with industry."
+    },
+    {
+      "term": "life sciences",
+      "definitionPl": "nauki o życiu",
+      "definitionEn": "the group of sciences that study living organisms, including biology and medicine",
+      "example": "Careers in the life sciences range from lab work to public policy."
+    },
+    {
+      "term": "theoretical research",
+      "definitionPl": "badania teoretyczne",
+      "definitionEn": "scientific work based on models and reasoning rather than a new experiment",
+      "example": "Theoretical research can predict a particle years before it is found."
+    },
+    {
+      "term": "hypothesis",
+      "definitionPl": "hipoteza",
+      "definitionEn": "a testable idea that an experiment is designed to support or reject",
+      "example": "A hypothesis must be specific enough to be proved wrong."
+    },
+    {
+      "term": "peer review",
+      "definitionPl": "recenzja naukowa, recenzja środowiskowa",
+      "definitionEn": "checking a study by other experts before it is published",
+      "example": "Peer review does not make a paper perfect, but it catches many errors."
+    },
+    {
+      "term": "breakthrough",
+      "definitionPl": "przełom (naukowy lub techniczny)",
+      "definitionEn": "an important discovery or invention that changes what is possible",
+      "example": "The breakthrough in battery chemistry cut charging times in half."
+    },
+    {
+      "term": "control group",
+      "definitionPl": "grupa kontrolna",
+      "definitionEn": "the group in a study that does not receive the new treatment, used for comparison",
+      "example": "Without a control group you cannot tell if the drug really worked."
+    },
+    {
+      "term": "double-blind study",
+      "definitionPl": "badanie podwójnie ślepe",
+      "definitionEn": "a trial in which neither the patient nor the researcher knows who got the real treatment",
+      "example": "A double-blind study reduces bias in both volunteers and doctors."
+    },
+    {
+      "term": "research grant",
+      "definitionPl": "grant badawczy",
+      "definitionEn": "money given to fund a scientific project, usually after a competition",
+      "example": "The research grant will pay for equipment and two years of staff time."
+    },
+    {
+      "term": "scientific journal",
+      "definitionPl": "czasopismo naukowe",
+      "definitionEn": "a periodical that publishes research papers after expert checks",
+      "example": "A post on social media is not the same as a paper in a scientific journal."
+    },
+    {
+      "term": "scholarly reference",
+      "definitionPl": "odniesienie do publikacji naukowej",
+      "definitionEn": "a formal mention of another piece of research in a paper",
+      "example": "Every claim in the report needs a scholarly reference, not a vague “scientists say”."
+    },
+    {
+      "term": "methodology",
+      "definitionPl": "metodyka, metodologia badań",
+      "definitionEn": "the system of methods used in a particular study",
+      "example": "Weak methodology can make even a large study unreliable."
+    },
+    {
+      "term": "replicate an experiment",
+      "definitionPl": "powtórzyć eksperyment",
+      "definitionEn": "to repeat a test to see if the same results appear",
+      "example": "Other labs could not replicate an experiment, so the claim was withdrawn."
+    },
+    {
+      "term": "correlation",
+      "definitionPl": "korelacja",
+      "definitionEn": "a statistical link between two things that does not by itself prove cause",
+      "example": "There is a correlation between ice-cream sales and drowning — heat explains both."
+    },
+    {
+      "term": "causation",
+      "definitionPl": "związek przyczynowy",
+      "definitionEn": "a relationship in which one thing actually makes another happen",
+      "example": "Journalists often confuse correlation with causation."
+    },
+    {
+      "term": "statistical significance",
+      "definitionPl": "istotność statystyczna",
+      "definitionEn": "a measure of whether a result is likely to be a real effect, not chance",
+      "example": "Statistical significance is not the same as a result that matters in real life."
+    },
+    {
+      "term": "sample size",
+      "definitionPl": "wielkość próby",
+      "definitionEn": "the number of people or items included in a study",
+      "example": "A sample size of twelve is too small for a national claim."
+    },
+    {
+      "term": "field research",
+      "definitionPl": "badania terenowe",
+      "definitionEn": "research done outside the laboratory, in the real environment",
+      "example": "Geologists still need field research, not only satellite photos."
+    },
+    {
+      "term": "prototype",
+      "definitionPl": "prototyp",
+      "definitionEn": "the first working model of a new machine or product",
+      "example": "The prototype was ugly, but it proved the idea could fly."
+    },
+    {
+      "term": "patent",
+      "definitionPl": "patent",
+      "definitionEn": "a legal right that stops others copying an invention for a limited time",
+      "example": "The company filed a patent before it showed the device at the fair."
+    },
+    {
+      "term": "technology transfer",
+      "definitionPl": "transfer technologii",
+      "definitionEn": "moving an invention from a laboratory into commercial or public use",
+      "example": "Universities now fight over technology transfer from jointly funded labs."
+    },
+    {
+      "term": "research ethics",
+      "definitionPl": "etyka badań naukowych",
+      "definitionEn": "rules that protect people, animals and honesty in scientific work",
+      "example": "Research ethics forbid hiding data that weaken your favourite theory."
+    },
+    {
+      "term": "animal testing",
+      "definitionPl": "testy na zwierzętach",
+      "definitionEn": "using animals in experiments, especially to check safety of drugs or products",
+      "example": "Many voters want stricter limits on animal testing."
+    },
+    {
+      "term": "evidence-based",
+      "definitionPl": "oparty na dowodach",
+      "definitionEn": "based on systematic research rather than opinion or tradition",
+      "example": "Ministers promised an evidence-based policy on screen use in schools."
+    },
+    {
+      "term": "scientific community",
+      "definitionPl": "środowisko naukowe",
+      "definitionEn": "researchers as a group who share methods, journals and criticism",
+      "example": "The scientific community corrected the error in a later paper."
+    },
+    {
+      "term": "variable",
+      "definitionPl": "zmienna (w eksperymencie)",
+      "definitionEn": "a factor that can change in an experiment and may affect the result",
+      "example": "Change only one variable at a time if you want a fair test."
+    },
+    {
+      "term": "finding",
+      "definitionPl": "wynik badań, ustalenie",
+      "definitionEn": "a result or conclusion that comes out of a study",
+      "example": "The main finding was unexpected and needs a larger trial."
+    },
+    {
+      "term": "groundbreaking",
+      "definitionPl": "przełomowy, pionierski",
+      "definitionEn": "so new that it changes a field of study or practice",
+      "example": "A groundbreaking paper forced textbooks to be rewritten."
+    },
+    {
+      "term": "cutting-edge",
+      "definitionPl": "najnowocześniejszy, czołowy",
+      "definitionEn": "using the newest ideas or technology in a field",
+      "example": "The hospital bought cutting-edge scanning equipment."
+    },
+    {
+      "term": "state-of-the-art",
+      "definitionPl": "najnowocześniejszy (o sprzęcie lub metodzie)",
+      "definitionEn": "the best and most modern available at the present time",
+      "example": "The lab has state-of-the-art equipment but too few technicians."
+    },
+    {
+      "term": "innovation",
+      "definitionPl": "innowacja",
+      "definitionEn": "a new idea, method or product that is put into use",
+      "example": "Innovation fails if nobody can afford to buy the new tool."
+    },
+    {
+      "term": "pioneer",
+      "definitionPl": "pionier; być pionierem",
+      "definitionEn": "a person who is among the first to develop a new idea or method",
+      "example": "She was a pioneer of wireless communication in rural areas."
+    },
+    {
+      "term": "obsolete",
+      "definitionPl": "przestarzały",
+      "definitionEn": "no longer used because something newer and better exists",
+      "example": "Floppy disks are obsolete, yet some factories still depend on them."
+    },
+    {
+      "term": "trial and error",
+      "definitionPl": "metoda prób i błędów",
+      "definitionEn": "learning by trying different methods until one works",
+      "example": "Early inventors relied on trial and error more than on theory."
+    },
+    {
+      "term": "broadband",
+      "definitionPl": "szerokopasmowy internet",
+      "definitionEn": "a fast, always-on internet connection to a home, school or office",
+      "example": "Rural broadband is still slower than the service in the city."
+    },
+    {
+      "term": "encryption",
+      "definitionPl": "szyfrowanie",
+      "definitionEn": "turning data into a code so that only authorised people can read it",
+      "example": "Encryption protects messages if a phone is stolen."
+    },
+    {
+      "term": "algorithm",
+      "definitionPl": "algorytm",
+      "definitionEn": "a set of rules a computer follows to solve a problem or make a decision",
+      "example": "The recommendation algorithm keeps showing the same type of video."
+    },
+    {
+      "term": "cybersecurity",
+      "definitionPl": "cyberbezpieczeństwo",
+      "definitionEn": "protecting computers, networks and data from attack or unauthorised access",
+      "example": "Cybersecurity is now part of every company’s basic running costs."
+    },
+    {
+      "term": "digital footprint",
+      "definitionPl": "ślad cyfrowy",
+      "definitionEn": "the trail of data you leave through online activity",
+      "example": "A careless digital footprint can still appear in a job search years later."
+    },
+    {
+      "term": "cloud computing",
+      "definitionPl": "chmura obliczeniowa",
+      "definitionEn": "using remote servers on the internet to store data and run programs",
+      "example": "Cloud computing lets a small firm use huge processing power for a few hours."
+    },
+    {
+      "term": "database",
+      "definitionPl": "baza danych",
+      "definitionEn": "an organised collection of information that a computer can search quickly",
+      "example": "The hospital database was offline for six hours after the attack."
+    },
+    {
+      "term": "user interface",
+      "definitionPl": "interfejs użytkownika",
+      "definitionEn": "the screens, buttons and menus through which a person controls a program",
+      "example": "A confusing user interface causes errors even when the software is powerful."
+    },
+    {
+      "term": "bandwidth",
+      "definitionPl": "przepustowość łącza",
+      "definitionEn": "the amount of data that can be sent over a connection in a given time",
+      "example": "Video lessons collapse when bandwidth is shared by a whole tower block."
+    },
+    {
+      "term": "fibre-optic cable",
+      "definitionPl": "kabel światłowodowy",
+      "definitionEn": "a cable that carries data as pulses of light",
+      "example": "A fibre-optic cable can bring gigabit speeds to a village if someone pays to lay it."
+    },
+    {
+      "term": "firewall",
+      "definitionPl": "zapora sieciowa",
+      "definitionEn": "software or hardware that blocks unauthorised traffic in or out of a network",
+      "example": "The school firewall stops some homework sites as well as games."
+    },
+    {
+      "term": "two-factor authentication",
+      "definitionPl": "uwierzytelnianie dwuskładnikowe",
+      "definitionEn": "a login method that needs a password plus a second check, such as a code on a phone",
+      "example": "Two-factor authentication stops many stolen passwords from being enough."
+    },
+    {
+      "term": "malware",
+      "definitionPl": "złośliwe oprogramowanie",
+      "definitionEn": "software designed to damage a device or steal data",
+      "example": "Malware often arrives as an attachment that looks like an invoice."
+    },
+    {
+      "term": "ransomware",
+      "definitionPl": "ransomware, oprogramowanie szantażujące",
+      "definitionEn": "malware that locks files and demands money to unlock them",
+      "example": "Ransomware closed the council’s email for a fortnight."
+    },
+    {
+      "term": "data breach",
+      "definitionPl": "wyciek danych",
+      "definitionEn": "an incident in which private information is copied or seen without permission",
+      "example": "Customers were told to change passwords after the data breach."
+    },
+    {
+      "term": "computer virus",
+      "definitionPl": "wirus komputerowy",
+      "definitionEn": "harmful software that copies itself and can damage files or steal data",
+      "example": "A computer virus spread through a shared USB stick."
+    },
+    {
+      "term": "phishing",
+      "definitionPl": "phishing, wyłudzanie danych",
+      "definitionEn": "tricking someone into giving passwords or money through a fake message or site",
+      "example": "The phishing email copied the bank’s logo almost perfectly."
+    },
+    {
+      "term": "operating system",
+      "definitionPl": "system operacyjny",
+      "definitionEn": "the main software that runs a computer and other programs",
+      "example": "The operating system will not support this laptop after next year."
+    },
+    {
+      "term": "programming language",
+      "definitionPl": "język programowania",
+      "definitionEn": "a formal language used to write instructions for a computer",
+      "example": "Python is a popular first programming language in schools."
+    },
+    {
+      "term": "source code",
+      "definitionPl": "kod źródłowy",
+      "definitionEn": "the human-readable instructions that make up a program",
+      "example": "Open-source projects publish their source code so others can check it."
+    },
+    {
+      "term": "open source",
+      "definitionPl": "otwarte oprogramowanie, open source",
+      "definitionEn": "software whose code can be viewed, changed and shared by others",
+      "example": "Open source tools power much of the internet, often unpaid."
+    },
+    {
+      "term": "software update",
+      "definitionPl": "aktualizacja oprogramowania",
+      "definitionEn": "a new version of a program that fixes problems or adds features",
+      "example": "A software update closed the security hole within days."
+    },
+    {
+      "term": "server",
+      "definitionPl": "serwer",
+      "definitionEn": "a computer that stores data or runs services for other computers",
+      "example": "If the server fails, the whole office loses email."
+    },
+    {
+      "term": "wireless network",
+      "definitionPl": "sieć bezprzewodowa",
+      "definitionEn": "a network that connects devices without cables, usually by radio",
+      "example": "The café wireless network is public, so do not type bank details."
+    },
+    {
+      "term": "microchip",
+      "definitionPl": "mikroprocesor, układ scalony",
+      "definitionEn": "a tiny electronic circuit that processes or stores information",
+      "example": "A shortage of microchip supplies delayed car production."
+    },
+    {
+      "term": "semiconductor",
+      "definitionPl": "półprzewodnik",
+      "definitionEn": "a material used to make chips, able to conduct electricity under some conditions",
+      "example": "Taiwan makes a large share of the world’s semiconductor products."
+    },
+    {
+      "term": "cloud storage",
+      "definitionPl": "przechowywanie w chmurze",
+      "definitionEn": "keeping files on remote internet servers rather than only on your own device",
+      "example": "Cloud storage is convenient, but you depend on the company’s rules."
+    },
+    {
+      "term": "system outage",
+      "definitionPl": "awaria systemu, przestój",
+      "definitionEn": "a period when a computer service is unavailable",
+      "example": "The airline system outage left thousands of passengers in queues."
+    },
+    {
+      "term": "video streaming",
+      "definitionPl": "streaming wideo",
+      "definitionEn": "watching video over the internet without downloading the whole file first",
+      "example": "Video streaming uses far more data than sending a message."
+    },
+    {
+      "term": "search algorithm",
+      "definitionPl": "algorytm wyszukiwania",
+      "definitionEn": "the set of rules a search engine uses to rank pages",
+      "example": "A change in the search algorithm can destroy a small site’s traffic overnight."
+    },
+    {
+      "term": "browser extension",
+      "definitionPl": "rozszerzenie przeglądarki",
+      "definitionEn": "a small add-on that changes how a web browser works",
+      "example": "A malicious browser extension can read everything you type."
+    },
+    {
+      "term": "cookies",
+      "definitionPl": "ciasteczka (pliki cookies)",
+      "definitionEn": "small files a site stores on your device to remember you or track visits",
+      "example": "Rejecting extra cookies still lets the site work; it just tracks you less."
+    },
+    {
+      "term": "user agreement",
+      "definitionPl": "umowa z użytkownikiem, regulamin serwisu",
+      "definitionEn": "the legal rules you accept when you use a digital service",
+      "example": "Nobody reads the user agreement, which is why companies hide fees there."
+    },
+    {
+      "term": "digital exclusion",
+      "definitionPl": "wykluczenie cyfrowe",
+      "definitionEn": "being left out of work or study because of poor access to digital technology",
+      "example": "Digital exclusion grew when lessons moved online and some pupils had no laptop."
+    },
+    {
+      "term": "e-waste",
+      "definitionPl": "elektroodpady",
+      "definitionEn": "discarded electronic devices that can leak toxic materials if dumped",
+      "example": "Cheap phones create mountains of e-waste unless they are recycled properly."
+    },
+    {
+      "term": "coding",
+      "definitionPl": "programowanie, kodowanie",
+      "definitionEn": "writing instructions that a computer can follow",
+      "example": "Coding in class is a way to think clearly, not only a path to a tech job."
+    },
+    {
+      "term": "processor speed",
+      "definitionPl": "szybkość procesora",
+      "definitionEn": "how quickly a computer’s central chip can carry out instructions",
+      "example": "Processor speed matters less for writing essays than for editing film."
+    },
+    {
+      "term": "Bluetooth connection",
+      "definitionPl": "połączenie Bluetooth",
+      "definitionEn": "a short-range wireless link between nearby devices",
+      "example": "A Bluetooth connection can leak audio if you pair in a public place without checking the name."
+    },
+    {
+      "term": "GPS tracking",
+      "definitionPl": "śledzenie GPS",
+      "definitionEn": "using satellite signals to follow the location of a person or object",
+      "example": "GPS tracking of a phone helps find a stolen bike, but it also raises privacy questions."
+    },
+    {
+      "term": "artificial intelligence",
+      "definitionPl": "sztuczna inteligencja",
+      "definitionEn": "computer systems that perform tasks that usually need human thinking",
+      "example": "Artificial intelligence can draft a text, but a person must still check the facts."
+    },
+    {
+      "term": "machine learning",
+      "definitionPl": "uczenie maszynowe",
+      "definitionEn": "a method in which computers improve at a task by finding patterns in data",
+      "example": "Machine learning is only as fair as the data it is trained on."
+    },
+    {
+      "term": "neural network",
+      "definitionPl": "sieć neuronowa",
+      "definitionEn": "a computing model loosely inspired by the brain, used in many AI systems",
+      "example": "A neural network can recognise faces, but it cannot explain its guess in human terms."
+    },
+    {
+      "term": "chatbot",
+      "definitionPl": "chatbot",
+      "definitionEn": "a program that answers questions in written or spoken conversation",
+      "example": "The bank chatbot kept repeating the same three answers."
+    },
+    {
+      "term": "automation",
+      "definitionPl": "automatyzacja",
+      "definitionEn": "using machines or software to do work with little human control",
+      "example": "Automation in warehouses cut some jobs and created others in maintenance."
+    },
+    {
+      "term": "autonomous vehicle",
+      "definitionPl": "pojazd autonomiczny",
+      "definitionEn": "a car or other vehicle that can drive itself in some or all conditions",
+      "example": "An autonomous vehicle still needs a legal driver in many countries."
+    },
+    {
+      "term": "AI bias",
+      "definitionPl": "stronniczość sztucznej inteligencji",
+      "definitionEn": "unfair results from an AI system because of skewed data or design",
+      "example": "AI bias in recruitment tools can copy old discrimination at a larger scale."
+    },
+    {
+      "term": "deepfake",
+      "definitionPl": "deepfake, sfałszowane nagranie AI",
+      "definitionEn": "a video or audio clip that uses AI to make someone appear to say or do things they did not",
+      "example": "A deepfake of a politician can spread faster than a correction."
+    },
+    {
+      "term": "natural language processing",
+      "definitionPl": "przetwarzanie języka naturalnego",
+      "definitionEn": "AI methods that let computers work with human speech and writing",
+      "example": "Natural language processing powers translation apps and voice assistants."
+    },
+    {
+      "term": "facial recognition",
+      "definitionPl": "rozpoznawanie twarzy",
+      "definitionEn": "technology that identifies people by analysing images of their faces",
+      "example": "Facial recognition in shops is sold as security and criticised as mass tracking."
+    },
+    {
+      "term": "3D printing",
+      "definitionPl": "druk 3D",
+      "definitionEn": "making a solid object from a digital design, layer by layer",
+      "example": "3D printing can produce spare parts that factories no longer stock."
+    },
+    {
+      "term": "virtual reality",
+      "definitionPl": "wirtualna rzeczywistość",
+      "definitionEn": "a computer-generated world experienced through a headset",
+      "example": "Virtual reality is used in training surgeons as well as in games."
+    },
+    {
+      "term": "augmented reality",
+      "definitionPl": "rzeczywistość rozszerzona",
+      "definitionEn": "technology that adds computer images or information to the real world you see",
+      "example": "Augmented reality can show a visitor the inside of a machine without opening it."
+    },
+    {
+      "term": "wearable technology",
+      "definitionPl": "elektronika noszona",
+      "definitionEn": "electronic devices designed to be worn, such as watches or fitness bands",
+      "example": "Wearable technology collects heart-rate data that insurers would love to buy."
+    },
+    {
+      "term": "humanoid robot",
+      "definitionPl": "robot humanoidalny",
+      "definitionEn": "a robot built to look or move somewhat like a person",
+      "example": "A humanoid robot makes a good photo, but a wheeled machine may do the job better."
+    },
+    {
+      "term": "job displacement",
+      "definitionPl": "utrata miejsc pracy (przez technologię)",
+      "definitionEn": "workers losing posts because machines or software take over the tasks",
+      "example": "Job displacement from automation hits routine work first, not only factories."
+    },
+    {
+      "term": "dual-use technology",
+      "definitionPl": "technologia podwójnego zastosowania",
+      "definitionEn": "a tool or invention that can serve both civilian and harmful military purposes",
+      "example": "A self-driving crash is one debate; dual-use technology in drones is another."
+    },
+    {
+      "term": "voice assistant",
+      "definitionPl": "asystent głosowy",
+      "definitionEn": "software that answers spoken commands on a phone or speaker",
+      "example": "A voice assistant in the kitchen is always listening for its wake word."
+    },
+    {
+      "term": "general AI",
+      "definitionPl": "sztuczna inteligencja ogólna",
+      "definitionEn": "a still-hypothetical system that could match or exceed human thinking across many tasks",
+      "example": "General AI is a research goal, not a product you can buy this year."
+    },
+    {
+      "term": "genetic engineering",
+      "definitionPl": "inżynieria genetyczna",
+      "definitionEn": "changing the genes of an organism in a planned way",
+      "example": "Genetic engineering of crops is tightly regulated in the European Union."
+    },
+    {
+      "term": "genetically modified organism",
+      "definitionPl": "organizm genetycznie zmodyfikowany, GMO",
+      "definitionEn": "a living thing whose DNA has been altered by genetic engineering",
+      "example": "A genetically modified organism must be labelled in many food shops."
+    },
+    {
+      "term": "cloning",
+      "definitionPl": "klonowanie",
+      "definitionEn": "making a genetically identical copy of an organism or cell",
+      "example": "Cloning a pet is possible in some countries, but it raises welfare questions."
+    },
+    {
+      "term": "genome",
+      "definitionPl": "genom",
+      "definitionEn": "the complete set of genetic material of an organism",
+      "example": "Mapping a genome is cheaper now than it was twenty years ago."
+    },
+    {
+      "term": "DNA sequencing",
+      "definitionPl": "sekwencjonowanie DNA",
+      "definitionEn": "reading the order of chemical letters in a piece of DNA",
+      "example": "DNA sequencing helped track how the virus changed over time."
+    },
+    {
+      "term": "stem-cell research",
+      "definitionPl": "badania nad komórkami macierzystymi",
+      "definitionEn": "scientific work on cells that can develop into many types of body tissue",
+      "example": "Stem-cell research is promising and ethically contested at the same time."
+    },
+    {
+      "term": "gene therapy",
+      "definitionPl": "terapia genowa",
+      "definitionEn": "treatment that tries to cure disease by altering or replacing a gene",
+      "example": "Gene therapy is still rare and extremely expensive."
+    },
+    {
+      "term": "gene editing",
+      "definitionPl": "edycja genów",
+      "definitionEn": "precise techniques for changing DNA at a chosen place",
+      "example": "Gene editing of human embryos is banned or strictly limited in most countries."
+    },
+    {
+      "term": "designer baby",
+      "definitionPl": "dziecko „projektowane” genetycznie",
+      "definitionEn": "an informal name for a child whose genes have been chosen or changed before birth",
+      "example": "The phrase designer baby turns a complex ethical debate into a headline."
+    },
+    {
+      "term": "space exploration",
+      "definitionPl": "eksploracja kosmosu",
+      "definitionEn": "the investigation of space using telescopes, probes and crewed missions",
+      "example": "Space exploration is costly, so countries often share the bill."
+    },
+    {
+      "term": "spacecraft",
+      "definitionPl": "statek kosmiczny",
+      "definitionEn": "a vehicle designed to travel in space",
+      "example": "The spacecraft sent photos for twelve years before contact was lost."
+    },
+    {
+      "term": "space station",
+      "definitionPl": "stacja kosmiczna",
+      "definitionEn": "a large structure in orbit where astronauts live and work",
+      "example": "Experiments on the space station need weightlessness that Earth labs cannot copy."
+    },
+    {
+      "term": "orbit",
+      "definitionPl": "orbita; krążyć po orbicie",
+      "definitionEn": "the curved path of an object around a planet or star",
+      "example": "A satellite in low Earth orbit completes a circuit in about ninety minutes."
+    },
+    {
+      "term": "astronaut",
+      "definitionPl": "astronauta",
+      "definitionEn": "a person trained to travel and work in space",
+      "example": "The astronaut described how Earth looks from the window."
+    },
+    {
+      "term": "telescope",
+      "definitionPl": "teleskop",
+      "definitionEn": "an instrument that makes distant objects in space appear closer or clearer",
+      "example": "A space telescope avoids the blurring caused by Earth’s atmosphere."
+    },
+    {
+      "term": "black hole",
+      "definitionPl": "czarna dziura",
+      "definitionEn": "a region in space with gravity so strong that not even light can escape",
+      "example": "A black hole is not an empty hole; it is collapsed mass."
+    },
+    {
+      "term": "the Big Bang",
+      "definitionPl": "Wielki Wybuch",
+      "definitionEn": "the leading scientific explanation of how the universe began from an extremely hot, dense state",
+      "example": "Evidence for the Big Bang includes the leftover microwave glow in the sky."
+    },
+    {
+      "term": "space probe",
+      "definitionPl": "sonda kosmiczna",
+      "definitionEn": "an uncrewed craft sent to study a planet, moon or other object",
+      "example": "The space probe flew past Jupiter and on towards the outer planets."
+    },
+    {
+      "term": "zero gravity",
+      "definitionPl": "nieważkość",
+      "definitionEn": "the floating condition in orbit where people and objects appear weightless",
+      "example": "Nausea in zero gravity is a common problem in the first days."
+    },
+    {
+      "term": "rocket launch",
+      "definitionPl": "start rakiety",
+      "definitionEn": "the event of sending a rocket from Earth into the sky or space",
+      "example": "A rocket launch can be delayed by high wind at the pad."
+    },
+    {
+      "term": "asteroid",
+      "definitionPl": "asteroida",
+      "definitionEn": "a small rocky body that orbits the sun, mostly between Mars and Jupiter",
+      "example": "An asteroid the size of a city would be a global disaster if it hit Earth."
+    },
+    {
+      "term": "Mars mission",
+      "definitionPl": "misja na Marsa",
+      "definitionEn": "a project to send a craft or people to Mars",
+      "example": "A crewed Mars mission would last years, not weeks."
+    },
+    {
+      "term": "space debris",
+      "definitionPl": "śmieci kosmiczne",
+      "definitionEn": "dead satellites, fragments and other human-made junk in orbit",
+      "example": "Space debris already threatens working satellites."
+    },
+    {
+      "term": "lunar landing",
+      "definitionPl": "lądowanie na Księżycu",
+      "definitionEn": "the arrival of a craft on the surface of the Moon",
+      "example": "The first lunar landing in 1969 is still a reference point in debates about cost."
+    },
+    {
+      "term": "crewed mission",
+      "definitionPl": "misja załogowa",
+      "definitionEn": "a space flight that carries people, not only instruments",
+      "example": "A crewed mission needs life support that a robot does not."
+    },
+    {
+      "term": "extraterrestrial",
+      "definitionPl": "pozaziemski",
+      "definitionEn": "coming from outside the Earth or its atmosphere",
+      "example": "No confirmed extraterrestrial life has been found, despite decades of searching."
+    },
+    {
+      "term": "satellite launch",
+      "definitionPl": "wyniesienie satelity",
+      "definitionEn": "sending a satellite into orbit, usually on a rocket",
+      "example": "A failed satellite launch can cost hundreds of millions."
+    },
+    {
+      "term": "screen addiction",
+      "definitionPl": "uzależnienie od ekranów",
+      "definitionEn": "an inability to control time spent on phones, games or social media despite harm",
+      "example": "Screen addiction is discussed in schools as seriously as smoking once was."
+    },
+    {
+      "term": "online misinformation",
+      "definitionPl": "fałszywe informacje w sieci",
+      "definitionEn": "false or inaccurate information spread on the internet, often without the aim of causing harm",
+      "example": "Online misinformation about vaccines often starts as a misunderstanding, then spreads."
+    },
+    {
+      "term": "disinformation",
+      "definitionPl": "dezinformacja celowa",
+      "definitionEn": "false information created or shared on purpose to deceive",
+      "example": "State disinformation during an election is a security issue, not only a media one."
+    },
+    {
+      "term": "online echo chamber",
+      "definitionPl": "informacyjna komora pogłosowa w sieci",
+      "definitionEn": "an online space where you mainly see views you already agree with",
+      "example": "An online echo chamber makes extreme opinions feel like common sense."
+    },
+    {
+      "term": "filter bubble",
+      "definitionPl": "bańka filtrująca",
+      "definitionEn": "personalised results that hide opposing information from you",
+      "example": "A filter bubble can hide a whole news story from your feed."
+    },
+    {
+      "term": "data privacy",
+      "definitionPl": "prywatność danych",
+      "definitionEn": "control over how your personal information is collected, stored and shared",
+      "example": "Data privacy laws in Europe give you the right to see what a firm holds on you."
+    },
+    {
+      "term": "surveillance",
+      "definitionPl": "inwigilacja, nadzór",
+      "definitionEn": "close watching of people, often with cameras or digital tracking",
+      "example": "Workplace surveillance of keystrokes is legal in some firms and banned in others."
+    },
+    {
+      "term": "mass surveillance",
+      "definitionPl": "masowa inwigilacja",
+      "definitionEn": "watching large numbers of people, usually by a state or a huge platform",
+      "example": "Mass surveillance is defended as safety and attacked as a threat to democracy."
+    },
+    {
+      "term": "CCTV",
+      "definitionPl": "monitoring wizyjny, kamery CCTV",
+      "definitionEn": "cameras used to watch public or private spaces",
+      "example": "CCTV on every corner has not ended street crime, but it helps after the fact."
+    },
+    {
+      "term": "identity fraud",
+      "definitionPl": "oszustwo na kradzież tożsamości",
+      "definitionEn": "using someone else’s personal details to steal money or services",
+      "example": "Identity fraud often starts with a leaked password and a reused login."
+    },
+    {
+      "term": "cyberbullying",
+      "definitionPl": "cyberprzemoc, nękanie w sieci",
+      "definitionEn": "using digital messages or posts to frighten, shame or harass someone",
+      "example": "Cyberbullying follows a pupil home in a way that playground insults did not."
+    },
+    {
+      "term": "clickbait headline",
+      "definitionPl": "clickbaitowy nagłówek",
+      "definitionEn": "a title designed to make you open a page, often by exaggeration",
+      "example": "A clickbait headline trains people to distrust all news."
+    },
+    {
+      "term": "doomscrolling",
+      "definitionPl": "doomscrolling, bezendne przewijanie złych wiadomości",
+      "definitionEn": "continuing to scroll through bad news even though it makes you feel worse",
+      "example": "Doomscrolling at midnight is a fast way to ruin the next day’s focus."
+    },
+    {
+      "term": "digital wellbeing",
+      "definitionPl": "dobrostan cyfrowy",
+      "definitionEn": "using technology in a way that protects mental health and attention",
+      "example": "Digital wellbeing tools on a phone are easy to switch off, which is the problem."
+    },
+    {
+      "term": "excessive screen use",
+      "definitionPl": "nadmierne korzystanie z ekranów",
+      "definitionEn": "spending so much time on phones or computers that sleep, school or health suffers",
+      "example": "Parents argue about excessive screen use more than about books."
+    },
+    {
+      "term": "privacy settings",
+      "definitionPl": "ustawienia prywatności",
+      "definitionEn": "options that control who can see your information or activity",
+      "example": "Check privacy settings after every app update; they tend to reset towards sharing."
+    },
+    {
+      "term": "end-to-end encryption",
+      "definitionPl": "szyfrowanie end-to-end",
+      "definitionEn": "a method in which only the sender and receiver can read a message, not the service in between",
+      "example": "End-to-end encryption protects journalists and criminals, which is why states fight it."
+    },
+    {
+      "term": "data protection law",
+      "definitionPl": "prawo ochrony danych osobowych",
+      "definitionEn": "legislation that limits how organisations may collect and use personal information",
+      "example": "A data protection law can fine a company that sells addresses without consent."
+    },
+    {
+      "term": "fact-checking",
+      "definitionPl": "weryfikacja faktów",
+      "definitionEn": "checking claims against reliable evidence before sharing them",
+      "example": "Fact-checking is slower than a rumour, which is why rumours win the first hour."
+    },
+    {
+      "term": "viral content",
+      "definitionPl": "treść wirusowa, viral",
+      "definitionEn": "a post or video that is shared by huge numbers of people in a short time",
+      "example": "Viral content is not the same as true content."
+    },
+    {
+      "term": "internet troll",
+      "definitionPl": "hejter internetowy, troll",
+      "definitionEn": "a person who posts to upset, provoke or derail discussion",
+      "example": "An internet troll wants a reaction; silence is often the only useful reply."
+    },
+    {
+      "term": "addictive design",
+      "definitionPl": "projektowanie uzależniające",
+      "definitionEn": "product features meant to keep you using an app longer than you intended",
+      "example": "Infinite scroll is a classic example of addictive design."
+    },
+    {
+      "term": "online source evaluation",
+      "definitionPl": "ocena wiarygodności źródeł internetowych",
+      "definitionEn": "the skill of judging whether an online text is accurate, biased or fake",
+      "example": "Online source evaluation now includes spotting a deepfake, not only sending an email."
+    },
+    {
+      "term": "online harassment",
+      "definitionPl": "nękanie w internecie",
+      "definitionEn": "repeated hostile behaviour towards someone through digital channels",
+      "example": "Online harassment of researchers has made some delete their accounts."
+    },
+    {
+      "term": "location tracking",
+      "definitionPl": "śledzenie lokalizacji",
+      "definitionEn": "recording where a device, and therefore a person, goes",
+      "example": "Location tracking on a shared app can be useful and coercive at the same time."
+    },
+    {
+      "term": "data mining",
+      "definitionPl": "eksploracja danych, data mining",
+      "definitionEn": "searching large sets of data for patterns, often for profit or prediction",
+      "example": "Data mining of shopping habits is how supermarkets decide what to put on offer."
+    },
+    {
+      "term": "biometric data",
+      "definitionPl": "dane biometryczne",
+      "definitionEn": "information from the body used to identify a person, such as a face, fingerprint or iris",
+      "example": "Biometric data cannot be changed like a password if it leaks."
+    },
+    {
+      "term": "smart grid",
+      "definitionPl": "inteligentna sieć energetyczna",
+      "definitionEn": "an electricity network that adjusts supply using digital data",
+      "example": "A smart grid can reduce blackouts during peak evening demand."
+    },
+    {
+      "term": "fusion research",
+      "definitionPl": "badania nad fuzją jądrową",
+      "definitionEn": "scientific work on joining atomic nuclei to produce energy",
+      "example": "Fusion research aims to copy the process that powers the sun."
+    },
+    {
+      "term": "inventor",
+      "definitionPl": "wynalazca",
+      "definitionEn": "a person who creates a new device, process or product",
+      "example": "The inventor spent years on a prototype that nobody wanted to fund."
+    },
+    {
+      "term": "scientific method",
+      "definitionPl": "metoda naukowa",
+      "definitionEn": "a way of testing ideas through observation, experiment and revision",
+      "example": "The scientific method demands that you drop a theory when the evidence contradicts it."
+    },
+    {
+      "term": "researcher",
+      "definitionPl": "badacz, naukowiec prowadzący badania",
+      "definitionEn": "a person whose job is to carry out systematic study in a field",
+      "example": "The researcher refused to publish until another lab had checked the data."
+    },
+    {
+      "term": "laboratory",
+      "definitionPl": "laboratorium",
+      "definitionEn": "a room or building equipped for scientific experiments",
+      "example": "Samples must be labelled before they leave the laboratory."
+    },
+    {
+      "term": "open access",
+      "definitionPl": "otwarty dostęp (do publikacji)",
+      "definitionEn": "research papers that anyone can read without paying a subscription",
+      "example": "Open access matters in countries that cannot afford journal fees."
+    },
+    {
+      "term": "quantum computer",
+      "definitionPl": "komputer kwantowy",
+      "definitionEn": "a machine that uses quantum states to perform certain calculations far faster than ordinary computers",
+      "example": "A practical quantum computer could break some of today’s encryption."
+    },
+    {
+      "term": "Internet of Things",
+      "definitionPl": "internet rzeczy",
+      "definitionEn": "everyday objects that connect to the internet and share data",
+      "example": "The Internet of Things turns a fridge into a device that can be hacked."
+    },
+    {
+      "term": "5G network",
+      "definitionPl": "sieć 5G",
+      "definitionEn": "a fifth-generation mobile network designed for higher speed and more devices",
+      "example": "A 5G network can support more sensors in a factory, not only faster phones."
+    },
+    {
+      "term": "smart device",
+      "definitionPl": "inteligentne urządzenie",
+      "definitionEn": "an electronic object that connects to a network and can be controlled by software",
+      "example": "A smart device in the bedroom may record audio unless you switch the microphone off."
+    },
+    {
+      "term": "supercomputer",
+      "definitionPl": "superkomputer",
+      "definitionEn": "an extremely powerful computer used for complex scientific calculations",
+      "example": "A supercomputer models weather in ways a laptop cannot."
+    },
+    {
+      "term": "radio telescope",
+      "definitionPl": "radioteleskop",
+      "definitionEn": "an instrument that collects radio waves from space rather than visible light",
+      "example": "A radio telescope can observe objects hidden by dust clouds."
+    },
+    {
+      "term": "exoplanet",
+      "definitionPl": "egzoplaneta, planeta pozasłoneczna",
+      "definitionEn": "a planet that orbits a star other than the Sun",
+      "example": "An exoplanet in the habitable zone still may have no atmosphere we could breathe."
+    },
+    {
+      "term": "mission control",
+      "definitionPl": "centrum kontroli lotów",
+      "definitionEn": "the ground centre that directs a space flight",
+      "example": "Mission control delayed the spacewalk because of a fault in the suit."
+    },
+    {
+      "term": "particle accelerator",
+      "definitionPl": "akcelerator cząstek",
+      "definitionEn": "a machine that speeds up particles and smashes them together to study matter",
+      "example": "A particle accelerator is a tool of physics, not a weapon."
+    },
+    {
+      "term": "metadata",
+      "definitionPl": "metadane",
+      "definitionEn": "data that describe other data, such as when a photo was taken or who sent an email",
+      "example": "Metadata can reveal your movements even when the message itself is encrypted."
+    }
+  ]
+}

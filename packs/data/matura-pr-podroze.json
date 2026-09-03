@@ -1,0 +1,1109 @@
+{
+  "id": "matura-pr-podroze",
+  "sku": "LS-PR-TRAVEL",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Podróżowanie i turystyka",
+  "topicEn": "Travel and tourism",
+  "titlePl": "Matura PR: Podróże — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Travel — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Podróżowanie i turystyka na maturę rozszerzoną: transport, noclegi, zwiedzanie, problemy w podróży. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura travel: transport, accommodation, sightseeing and travel problems.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura",
+    "podróże",
+    "travel",
+    "tourism",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "Polish exam"
+  ],
+  "items": [
+    {
+      "term": "long-haul",
+      "definitionPl": "dalekodystansowy (o locie)",
+      "definitionEn": "travelling a very long distance by air, often between continents",
+      "example": "A long-haul flight to Australia takes over twenty hours."
+    },
+    {
+      "term": "layover",
+      "definitionPl": "przesiadka, międzylądowanie",
+      "definitionEn": "a wait at an airport between two parts of a journey",
+      "example": "We have a three-hour layover in Frankfurt."
+    },
+    {
+      "term": "turbulence",
+      "definitionPl": "turbulencje",
+      "definitionEn": "sudden rough movement of a plane caused by air currents",
+      "example": "The captain warned us about turbulence over the mountains."
+    },
+    {
+      "term": "rush hour",
+      "definitionPl": "godzina szczytu",
+      "definitionEn": "the busy time of day when many people travel to or from work",
+      "example": "Avoid the city centre during rush hour if you can."
+    },
+    {
+      "term": "connecting flight",
+      "definitionPl": "lot łączony, przesiadkowy",
+      "definitionEn": "a second flight that you take after changing planes",
+      "example": "If the first plane is late, you may miss the connecting flight."
+    },
+    {
+      "term": "charter flight",
+      "definitionPl": "lot czarterowy",
+      "definitionEn": "a flight hired for a tour group, not a regular scheduled service",
+      "example": "The charter flight left at dawn from a small airport."
+    },
+    {
+      "term": "low-cost airline",
+      "definitionPl": "tanie linie lotnicze",
+      "definitionEn": "an airline that sells cheap tickets and charges extra for many services",
+      "example": "A low-cost airline may charge for cabin bags and seat choice."
+    },
+    {
+      "term": "boarding gate",
+      "definitionPl": "bramka odlotowa",
+      "definitionEn": "the door and waiting area where you enter the plane",
+      "example": "The boarding gate closes twenty minutes before departure."
+    },
+    {
+      "term": "cabin baggage",
+      "definitionPl": "bagaż kabinowy",
+      "definitionEn": "bags you take into the cabin rather than putting in the hold",
+      "example": "Cabin baggage must fit in the overhead locker."
+    },
+    {
+      "term": "excess baggage",
+      "definitionPl": "nadbagaż",
+      "definitionEn": "luggage heavier or larger than the airline's free limit, charged extra",
+      "example": "You will pay for excess baggage if the suitcase is overweight."
+    },
+    {
+      "term": "baggage allowance",
+      "definitionPl": "limit bagażu",
+      "definitionEn": "the weight or number of bags you may take without extra fees",
+      "example": "Check the baggage allowance before you pack winter boots."
+    },
+    {
+      "term": "overhead locker",
+      "definitionPl": "schowek nad fotelem",
+      "definitionEn": "the compartment above the seats for cabin bags",
+      "example": "Put the rucksack in the overhead locker, not in the aisle."
+    },
+    {
+      "term": "frequent-flyer programme",
+      "definitionPl": "program lojalnościowy linii lotniczych",
+      "definitionEn": "a scheme that gives points or upgrades to regular passengers",
+      "example": "Join the frequent-flyer programme if you travel every month."
+    },
+    {
+      "term": "upgrade",
+      "definitionPl": "podwyższenie klasy podróży",
+      "definitionEn": "a move to a more comfortable class of seat, sometimes free",
+      "example": "They offered an upgrade to business class at the gate."
+    },
+    {
+      "term": "economy class",
+      "definitionPl": "klasa ekonomiczna",
+      "definitionEn": "the cheapest, most basic seats on a plane",
+      "example": "Most students fly economy class to save money."
+    },
+    {
+      "term": "business class",
+      "definitionPl": "klasa biznes",
+      "definitionEn": "a more expensive cabin with extra space and service",
+      "example": "Business class is quieter, but the ticket costs a fortune."
+    },
+    {
+      "term": "red-eye flight",
+      "definitionPl": "lot nocny (przylot o świcie)",
+      "definitionEn": "an overnight flight that arrives early in the morning",
+      "example": "The red-eye flight landed at five, and everyone looked exhausted."
+    },
+    {
+      "term": "missed connection",
+      "definitionPl": "przeoczona przesiadka",
+      "definitionEn": "failing to catch the next plane, train or bus in time",
+      "example": "A missed connection left us in the airport until midnight."
+    },
+    {
+      "term": "airbridge",
+      "definitionPl": "rękaw lotniczy",
+      "definitionEn": "a movable corridor that connects the terminal to the aircraft door",
+      "example": "We boarded through the airbridge instead of a bus on the tarmac."
+    },
+    {
+      "term": "in-flight service",
+      "definitionPl": "obsługa pokładowa",
+      "definitionEn": "food, drink and help offered by cabin crew during a flight",
+      "example": "In-flight service begins after the seat-belt sign goes off."
+    },
+    {
+      "term": "duty-free",
+      "definitionPl": "sklep / towary wolnocłowe",
+      "definitionEn": "goods sold without tax at airports or on planes and ships",
+      "example": "She bought perfume in duty-free after passport control."
+    },
+    {
+      "term": "departure board",
+      "definitionPl": "tablica odlotów",
+      "definitionEn": "the screen listing times and gates for leaving flights or trains",
+      "example": "Check the departure board; the gate has changed."
+    },
+    {
+      "term": "check-in desk",
+      "definitionPl": "stanowisko odprawy",
+      "definitionEn": "the counter where you show your ticket and leave hold luggage",
+      "example": "The check-in desk opens three hours before a long-haul departure."
+    },
+    {
+      "term": "e-ticket",
+      "definitionPl": "bilet elektroniczny",
+      "definitionEn": "a ticket stored on a phone or in an email, not printed on thick card",
+      "example": "Show the e-ticket barcode at the gate."
+    },
+    {
+      "term": "off-peak",
+      "definitionPl": "poza godzinami szczytu",
+      "definitionEn": "at a less busy and often cheaper time to travel",
+      "example": "Off-peak train tickets are cheaper after 9.30."
+    },
+    {
+      "term": "congestion charge",
+      "definitionPl": "opłata za wjazd do centrum",
+      "definitionEn": "a fee for driving into a crowded city centre at busy times",
+      "example": "London's congestion charge is payable on weekdays."
+    },
+    {
+      "term": "tailback",
+      "definitionPl": "korek (sznur stojących aut)",
+      "definitionEn": "a long line of slow or stopped traffic",
+      "example": "There is a tailback on the motorway after the accident."
+    },
+    {
+      "term": "roadworks",
+      "definitionPl": "roboty drogowe",
+      "definitionEn": "repairs or building work on a road that slow traffic",
+      "example": "Allow extra time; there are roadworks on the ring road."
+    },
+    {
+      "term": "diversion",
+      "definitionPl": "objazd",
+      "definitionEn": "a different route you must take because a road is closed",
+      "example": "Follow the diversion signs around the closed bridge."
+    },
+    {
+      "term": "toll road",
+      "definitionPl": "droga płatna",
+      "definitionEn": "a road you pay to drive on",
+      "example": "The toll road is faster but costs eight pounds."
+    },
+    {
+      "term": "dual carriageway",
+      "definitionPl": "droga dwujezdniowa",
+      "definitionEn": "a fast road with a strip of land between the two directions",
+      "example": "Overtake only on a dual carriageway when it is safe."
+    },
+    {
+      "term": "hard shoulder",
+      "definitionPl": "pas awaryjny",
+      "definitionEn": "the strip at the edge of a motorway for stopping in an emergency",
+      "example": "Do not walk on the hard shoulder unless the car has broken down."
+    },
+    {
+      "term": "bypass",
+      "definitionPl": "obwodnica, obejście miasta",
+      "definitionEn": "a road that takes traffic around a town instead of through the centre",
+      "example": "Take the bypass if you do not need the town centre."
+    },
+    {
+      "term": "slip road",
+      "definitionPl": "wjazd / zjazd z autostrady",
+      "definitionEn": "a short road that joins or leaves a motorway",
+      "example": "Indicate early when you join from the slip road."
+    },
+    {
+      "term": "satnav",
+      "definitionPl": "nawigacja satelitarna",
+      "definitionEn": "a device or app that gives driving directions using satellites",
+      "example": "The satnav sent us down a narrow farm track by mistake."
+    },
+    {
+      "term": "breakdown cover",
+      "definitionPl": "assistance, ubezpieczenie od awarii",
+      "definitionEn": "insurance that sends help if your car stops working",
+      "example": "Breakdown cover is wise before a long drive abroad."
+    },
+    {
+      "term": "puncture",
+      "definitionPl": "przebita opona",
+      "definitionEn": "a hole in a tyre that lets the air out",
+      "example": "We had a puncture on the motorway and changed the wheel."
+    },
+    {
+      "term": "spare tyre",
+      "definitionPl": "koło zapasowe",
+      "definitionEn": "an extra tyre carried in a vehicle in case one fails",
+      "example": "Check that the spare tyre has enough air before you leave."
+    },
+    {
+      "term": "car hire",
+      "definitionPl": "wynajem samochodu",
+      "definitionEn": "paying to use a car for a short period",
+      "example": "Car hire at the airport is cheaper if you book in advance."
+    },
+    {
+      "term": "international driving permit",
+      "definitionPl": "międzynarodowe prawo jazdy",
+      "definitionEn": "an extra document that translates your licence for use abroad",
+      "example": "Some countries ask for an international driving permit as well as your licence."
+    },
+    {
+      "term": "ferry crossing",
+      "definitionPl": "przeprawa promowa",
+      "definitionEn": "a journey by boat that carries people and often cars across water",
+      "example": "The ferry crossing from Dover to Calais takes about ninety minutes."
+    },
+    {
+      "term": "shuttle bus",
+      "definitionPl": "autobus wahadłowy",
+      "definitionEn": "a bus that runs back and forth between two points, such as a hotel and an airport",
+      "example": "A free shuttle bus links the terminal and the car park."
+    },
+    {
+      "term": "park and ride",
+      "definitionPl": "parking przesiadkowy",
+      "definitionEn": "a car park outside a city with a bus into the centre",
+      "example": "Use park and ride to avoid paying for a city-centre space."
+    },
+    {
+      "term": "high-speed rail",
+      "definitionPl": "kolej dużych prędkości",
+      "definitionEn": "trains that travel much faster than ordinary services",
+      "example": "High-speed rail from London to Paris beats most flights door to door."
+    },
+    {
+      "term": "sleeper train",
+      "definitionPl": "pociąg sypialny",
+      "definitionEn": "a night train with beds so you travel while you sleep",
+      "example": "The sleeper train saved us a hotel night and an early flight."
+    },
+    {
+      "term": "buffet car",
+      "definitionPl": "wagon barowy",
+      "definitionEn": "the carriage on a train where you can buy drinks and snacks",
+      "example": "The buffet car closes after ten o'clock."
+    },
+    {
+      "term": "hitchhiking",
+      "definitionPl": "podróż autostopem",
+      "definitionEn": "travelling by asking drivers to take you for free",
+      "example": "Hitchhiking alone at night is not a safe idea."
+    },
+    {
+      "term": "car sharing",
+      "definitionPl": "wspólne przejazdy samochodem",
+      "definitionEn": "several people travelling in one car to cut cost and traffic",
+      "example": "Car sharing to the festival filled every seat."
+    },
+    {
+      "term": "express coach",
+      "definitionPl": "autokar pospieszny",
+      "definitionEn": "a long-distance bus that makes few stops",
+      "example": "The express coach from Birmingham arrives before noon."
+    },
+    {
+      "term": "cycle path",
+      "definitionPl": "ścieżka rowerowa",
+      "definitionEn": "a route for bicycles, often separated from cars",
+      "example": "The new cycle path runs beside the river into town."
+    },
+    {
+      "term": "B&B",
+      "definitionPl": "nocleg ze śniadaniem",
+      "definitionEn": "a small guesthouse that includes breakfast in the price",
+      "example": "We booked a quiet B&B on the edge of the village."
+    },
+    {
+      "term": "self-catering",
+      "definitionPl": "z wyżywieniem we własnym zakresie",
+      "definitionEn": "accommodation with a kitchen so you cook your own meals",
+      "example": "A self-catering flat is cheaper for a family of four."
+    },
+    {
+      "term": "overbooking",
+      "definitionPl": "nadkomplet rezerwacji",
+      "definitionEn": "accepting more reservations than there are rooms or seats",
+      "example": "Overbooking meant two families were sent to another hotel."
+    },
+    {
+      "term": "half board",
+      "definitionPl": "wyżywienie dwa posiłki (śniadanie i obiadokolacja)",
+      "definitionEn": "a hotel deal that includes breakfast and one other meal",
+      "example": "Half board suited us because we ate lunch in town."
+    },
+    {
+      "term": "full board",
+      "definitionPl": "pełne wyżywienie",
+      "definitionEn": "a hotel deal that includes breakfast, lunch and dinner",
+      "example": "Full board is handy if there are no restaurants nearby."
+    },
+    {
+      "term": "en suite",
+      "definitionPl": "z łazienką w pokoju",
+      "definitionEn": "a bedroom with its own private bathroom attached",
+      "example": "Every twin room is en suite, so you need not share a shower."
+    },
+    {
+      "term": "boutique hotel",
+      "definitionPl": "hotel butikowy",
+      "definitionEn": "a small, stylish hotel, often with an individual design",
+      "example": "The boutique hotel in the old town has only twelve rooms."
+    },
+    {
+      "term": "holiday let",
+      "definitionPl": "wynajem na wakacje (apartament/dom)",
+      "definitionEn": "a flat or house rented to tourists for a short stay",
+      "example": "The holiday let includes a kitchen and a washing machine."
+    },
+    {
+      "term": "timeshare",
+      "definitionPl": "timeshare, udział w nieruchomości wakacyjnej",
+      "definitionEn": "a scheme where you buy the right to use a holiday property for a set week each year",
+      "example": "They regretted the timeshare when the annual fees rose."
+    },
+    {
+      "term": "glamping",
+      "definitionPl": "glamping, luksusowe kempingowanie",
+      "definitionEn": "camping with extra comfort, such as a proper bed or a cabin",
+      "example": "Glamping still means being outdoors, but you sleep on a mattress."
+    },
+    {
+      "term": "chalet",
+      "definitionPl": "domek górski, chalet",
+      "definitionEn": "a wooden house, often in the mountains, used as holiday accommodation",
+      "example": "The ski chalet sleeps eight and has a drying room."
+    },
+    {
+      "term": "villa",
+      "definitionPl": "willa (wakacyjna)",
+      "definitionEn": "a large, often detached holiday house, typically in a warm country",
+      "example": "The villa has a private pool and a shaded terrace."
+    },
+    {
+      "term": "cottage",
+      "definitionPl": "chatka, domek wiejski",
+      "definitionEn": "a small house in the countryside, often rented to visitors",
+      "example": "We rented a stone cottage in the Lake District."
+    },
+    {
+      "term": "caravan",
+      "definitionPl": "przyczepa kempingowa",
+      "definitionEn": "a home on wheels that a car can pull, used for holidays",
+      "example": "They towed the caravan to a site near the coast."
+    },
+    {
+      "term": "camper van",
+      "definitionPl": "kamper",
+      "definitionEn": "a van fitted with beds and a small kitchen for travelling",
+      "example": "A camper van lets you stop overnight in scenic car parks."
+    },
+    {
+      "term": "concierge",
+      "definitionPl": "konsjerż, portier hotelowy",
+      "definitionEn": "a hotel employee who helps guests with bookings, tickets and local advice",
+      "example": "Ask the concierge to book a table at the harbour restaurant."
+    },
+    {
+      "term": "housekeeping",
+      "definitionPl": "obsługa pięter, sprzątanie hotelowe",
+      "definitionEn": "the staff or service that cleans hotel rooms",
+      "example": "Housekeeping left fresh towels and a bottle of water."
+    },
+    {
+      "term": "minibar",
+      "definitionPl": "minibar",
+      "definitionEn": "a small fridge in a hotel room with drinks and snacks for sale",
+      "example": "The minibar prices are higher than the shop downstairs."
+    },
+    {
+      "term": "late checkout",
+      "definitionPl": "późne wymeldowanie",
+      "definitionEn": "permission to leave a hotel room later than the usual time",
+      "example": "Late checkout until two o'clock costs an extra twenty pounds."
+    },
+    {
+      "term": "early check-in",
+      "definitionPl": "wczesne zameldowanie",
+      "definitionEn": "being allowed to take a room before the usual arrival time",
+      "example": "Early check-in is useful after a night flight."
+    },
+    {
+      "term": "no-show",
+      "definitionPl": "niestawienie się (gość/pasażer)",
+      "definitionEn": "a person who has a booking but does not arrive",
+      "example": "The hotel still charged a fee for the no-show."
+    },
+    {
+      "term": "non-refundable",
+      "definitionPl": "bezzwrotny",
+      "definitionEn": "a booking you cannot cancel in order to get your money back",
+      "example": "The cheapest fare is non-refundable if your plans change."
+    },
+    {
+      "term": "cancellation policy",
+      "definitionPl": "zasady odwoływania rezerwacji",
+      "definitionEn": "the rules about whether you get money back if you cancel",
+      "example": "Read the cancellation policy before you pay the deposit."
+    },
+    {
+      "term": "booking confirmation",
+      "definitionPl": "potwierdzenie rezerwacji",
+      "definitionEn": "a message or document that proves your reservation is accepted",
+      "example": "Show the booking confirmation at reception."
+    },
+    {
+      "term": "room rate",
+      "definitionPl": "cena pokoju",
+      "definitionEn": "the price charged for a hotel room for a night",
+      "example": "The room rate is lower if you stay midweek."
+    },
+    {
+      "term": "tourist tax",
+      "definitionPl": "opłata klimatyczna / turystyczna",
+      "definitionEn": "a small local charge added to a hotel bill per person or night",
+      "example": "The city adds a tourist tax of two euros a night."
+    },
+    {
+      "term": "key card",
+      "definitionPl": "karta-klucz",
+      "definitionEn": "a plastic card that opens a hotel room instead of a metal key",
+      "example": "The key card stops working if you keep it next to your phone."
+    },
+    {
+      "term": "wake-up call",
+      "definitionPl": "pobudka telefoniczna z recepcji",
+      "definitionEn": "a phone call from the hotel to wake you at a chosen time",
+      "example": "Ask reception for a wake-up call at six."
+    },
+    {
+      "term": "hotel chain",
+      "definitionPl": "sieć hotelowa",
+      "definitionEn": "a group of hotels with the same brand in many places",
+      "example": "A hotel chain offers predictable standards, but less character."
+    },
+    {
+      "term": "occupancy",
+      "definitionPl": "obłożenie (hotelu)",
+      "definitionEn": "how full a hotel is; the number of rooms in use",
+      "example": "Summer occupancy is close to one hundred percent."
+    },
+    {
+      "term": "itinerary",
+      "definitionPl": "plan podróży, program wycieczki",
+      "definitionEn": "a detailed list of places, times and transport for a trip",
+      "example": "The itinerary includes a morning in the old town and an afternoon cruise."
+    },
+    {
+      "term": "sightseeing",
+      "definitionPl": "zwiedzanie",
+      "definitionEn": "visiting famous buildings and places as a tourist",
+      "example": "We spent the morning sightseeing and the afternoon in a café."
+    },
+    {
+      "term": "package holiday",
+      "definitionPl": "wczasy zorganizowane",
+      "definitionEn": "a holiday in which flights and accommodation are booked together",
+      "example": "A package holiday is easier if you do not like planning."
+    },
+    {
+      "term": "all-inclusive",
+      "definitionPl": "all inclusive, wszystko w cenie",
+      "definitionEn": "a holiday price that covers meals, drinks and many activities",
+      "example": "The all-inclusive resort includes buffet meals and soft drinks."
+    },
+    {
+      "term": "backpacking",
+      "definitionPl": "podróżowanie z plecakiem",
+      "definitionEn": "travelling cheaply with a rucksack, often for a long period",
+      "example": "Backpacking around south-east Asia taught her to budget."
+    },
+    {
+      "term": "off the beaten track",
+      "definitionPl": "z dala od utartych szlaków",
+      "definitionEn": "in places that few tourists visit",
+      "example": "They looked for villages off the beaten track, not the resort strip."
+    },
+    {
+      "term": "eco-tourism",
+      "definitionPl": "ekoturystyka",
+      "definitionEn": "tourism designed to protect nature and support local people",
+      "example": "Eco-tourism in the wetlands funds bird protection."
+    },
+    {
+      "term": "carbon offset",
+      "definitionPl": "kompensacja emisji (offset)",
+      "definitionEn": "a payment meant to balance the emissions from a journey, for example by planting trees",
+      "example": "Some airlines let you buy a carbon offset when you book."
+    },
+    {
+      "term": "sustainable tourism",
+      "definitionPl": "turystyka zrównoważona",
+      "definitionEn": "travel that tries not to harm the environment or local communities",
+      "example": "Sustainable tourism limits visitor numbers in fragile areas."
+    },
+    {
+      "term": "overtourism",
+      "definitionPl": "nadmiar turystów, overtourism",
+      "definitionEn": "when too many visitors damage a place or make life hard for residents",
+      "example": "Overtourism has pushed up rents in the historic centre."
+    },
+    {
+      "term": "mass tourism",
+      "definitionPl": "turystyka masowa",
+      "definitionEn": "large numbers of people visiting the same popular places",
+      "example": "Mass tourism filled the beach with identical hotels."
+    },
+    {
+      "term": "cultural tourism",
+      "definitionPl": "turystyka kulturowa",
+      "definitionEn": "travel focused on history, art, festivals and local traditions",
+      "example": "Cultural tourism in Kraków includes museums and folk concerts."
+    },
+    {
+      "term": "adventure tourism",
+      "definitionPl": "turystyka przygodowa",
+      "definitionEn": "holidays based on physical challenge, such as trekking or rafting",
+      "example": "Adventure tourism in the Tatras includes guided ridge walks."
+    },
+    {
+      "term": "agritourism",
+      "definitionPl": "agroturystyka",
+      "definitionEn": "holidays on working farms, often with local food and rural tasks",
+      "example": "Agritourism let the children collect eggs and see the orchard."
+    },
+    {
+      "term": "city break",
+      "definitionPl": "krótki wypad do miasta",
+      "definitionEn": "a short holiday in a city, often a weekend",
+      "example": "A city break in Lisbon is easy by train from Porto."
+    },
+    {
+      "term": "guided tour",
+      "definitionPl": "wycieczka z przewodnikiem",
+      "definitionEn": "a visit around a place with someone who explains what you see",
+      "example": "The guided tour of the castle lasts ninety minutes."
+    },
+    {
+      "term": "excursion",
+      "definitionPl": "wycieczka fakultatywna / krótka",
+      "definitionEn": "a short trip, often from a hotel or cruise, to see a nearby place",
+      "example": "The hotel sells an excursion to the salt mine."
+    },
+    {
+      "term": "cruise",
+      "definitionPl": "rejs wycieczkowy",
+      "definitionEn": "a holiday on a large ship that visits several ports",
+      "example": "The Mediterranean cruise called at four different cities."
+    },
+    {
+      "term": "tour operator",
+      "definitionPl": "touroperator, organizator wycieczek",
+      "definitionEn": "a company that designs and sells complete holidays",
+      "example": "The tour operator changed the hotel two weeks before departure."
+    },
+    {
+      "term": "travel agent's",
+      "definitionPl": "biuro podróży",
+      "definitionEn": "a shop that advises on and books holidays and tickets",
+      "example": "Book the insurance at the travel agent's when you pay for the trip."
+    },
+    {
+      "term": "holiday rep",
+      "definitionPl": "rezydent biura podróży",
+      "definitionEn": "a person employed by a tour company to look after guests at a resort",
+      "example": "The holiday rep met us in the lobby and handed out wristbands."
+    },
+    {
+      "term": "single supplement",
+      "definitionPl": "dopłata za osobę podróżującą samotnie",
+      "definitionEn": "extra money charged when one person occupies a room meant for two",
+      "example": "The single supplement made the trip expensive for solo travellers."
+    },
+    {
+      "term": "peak season",
+      "definitionPl": "sezon szczytowy",
+      "definitionEn": "the most popular, usually most expensive, time to visit a place",
+      "example": "Hotel prices double in peak season on the coast."
+    },
+    {
+      "term": "out of season",
+      "definitionPl": "poza sezonem",
+      "definitionEn": "at the time of year when a destination is quiet and often cheaper",
+      "example": "Hotels are cheaper if you travel out of season."
+    },
+    {
+      "term": "high season",
+      "definitionPl": "wysoki sezon",
+      "definitionEn": "the busiest holiday period, when prices and crowds are at their height",
+      "example": "Flights are scarce in high season unless you book early."
+    },
+    {
+      "term": "low season",
+      "definitionPl": "niski sezon",
+      "definitionEn": "the least busy period, when prices tend to fall",
+      "example": "Low season in Greece is milder and far quieter."
+    },
+    {
+      "term": "last-minute deal",
+      "definitionPl": "last minute, oferta na ostatnią chwilę",
+      "definitionEn": "a cheap holiday sold shortly before departure",
+      "example": "A last-minute deal sent us to Crete with two days' notice."
+    },
+    {
+      "term": "tourist trap",
+      "definitionPl": "pułapka na turystów",
+      "definitionEn": "a place that charges too much because visitors do not know better",
+      "example": "The café by the cathedral is a tourist trap with weak coffee."
+    },
+    {
+      "term": "tourist attraction",
+      "definitionPl": "atrakcja turystyczna",
+      "definitionEn": "a place that visitors come to see",
+      "example": "The castle is the main tourist attraction in the valley."
+    },
+    {
+      "term": "heritage site",
+      "definitionPl": "zabytek / obiekt dziedzictwa",
+      "definitionEn": "a place protected because of its historical or cultural importance",
+      "example": "The old shipyard is now a heritage site with a museum."
+    },
+    {
+      "term": "hidden gem",
+      "definitionPl": "mało znana perełka",
+      "definitionEn": "an excellent place that few tourists have discovered",
+      "example": "The guidebook called the hillside chapel a hidden gem."
+    },
+    {
+      "term": "unspoilt",
+      "definitionPl": "nieskażony, nietknięty (o miejscu)",
+      "definitionEn": "not damaged or made ugly by development or crowds",
+      "example": "The western coves are still unspoilt and quiet."
+    },
+    {
+      "term": "picturesque",
+      "definitionPl": "malowniczy",
+      "definitionEn": "attractive in a way that looks like a painting",
+      "example": "We walked through a picturesque harbour with painted boats."
+    },
+    {
+      "term": "hop-on hop-off",
+      "definitionPl": "autobus hop-on hop-off (wsiadasz i wysiadasz)",
+      "definitionEn": "a tourist bus you can leave and rejoin at many stops with one ticket",
+      "example": "A hop-on hop-off ticket is handy on the first day in a new city."
+    },
+    {
+      "term": "audio guide",
+      "definitionPl": "audioprzewodnik",
+      "definitionEn": "a recorded commentary you listen to while visiting a museum or site",
+      "example": "The audio guide is included in the ticket price."
+    },
+    {
+      "term": "admission fee",
+      "definitionPl": "opłata za wstęp",
+      "definitionEn": "the money you pay to enter a museum, park or attraction",
+      "example": "The admission fee is lower with a student card."
+    },
+    {
+      "term": "skip-the-line",
+      "definitionPl": "bilet bez kolejki",
+      "definitionEn": "a ticket that lets you enter without waiting in the ordinary queue",
+      "example": "A skip-the-line pass is worth it at the palace in August."
+    },
+    {
+      "term": "backpacker",
+      "definitionPl": "backpacker, podróżnik z plecakiem",
+      "definitionEn": "a person who travels cheaply with a rucksack, often staying in hostels",
+      "example": "The hostel kitchen was full of backpacker groups cooking pasta."
+    },
+    {
+      "term": "working holiday",
+      "definitionPl": "wakacje połączone z pracą za granicą",
+      "definitionEn": "a trip abroad in which you work for part of the time, often on a special visa",
+      "example": "A working holiday in New Zealand paid for the rest of her travels."
+    },
+    {
+      "term": "travel brochure",
+      "definitionPl": "katalog / broszura turystyczna",
+      "definitionEn": "a colourful booklet advertising holidays and destinations",
+      "example": "The travel brochure made the resort look larger than it was."
+    },
+    {
+      "term": "tourist information centre",
+      "definitionPl": "centrum informacji turystycznej",
+      "definitionEn": "an office that gives maps, advice and tickets to visitors",
+      "example": "Pick up a free map at the tourist information centre."
+    },
+    {
+      "term": "optional extra",
+      "definitionPl": "atrakcja dodatkowo płatna",
+      "definitionEn": "an activity or service not included in the basic holiday price",
+      "example": "The dolphin trip is an optional extra, not part of the package."
+    },
+    {
+      "term": "shoulder season",
+      "definitionPl": "sezon przejściowy",
+      "definitionEn": "the weeks just before or after high season, often quieter and cheaper",
+      "example": "May is shoulder season: warm enough to swim, but not packed."
+    },
+    {
+      "term": "touristy",
+      "definitionPl": "turystyczny (zbyt nastawiony na turystów)",
+      "definitionEn": "full of visitors and souvenir shops; not very local or authentic",
+      "example": "We left the touristy square and ate where residents eat."
+    },
+    {
+      "term": "overcrowded",
+      "definitionPl": "przeludniony, zatłoczony",
+      "definitionEn": "with far too many people in a place",
+      "example": "The viewpoint is overcrowded at sunset in July."
+    },
+    {
+      "term": "breathtaking",
+      "definitionPl": "zapierający dech",
+      "definitionEn": "extremely impressive or beautiful",
+      "example": "The ridge walk ends with a breathtaking view of the lake."
+    },
+    {
+      "term": "old town",
+      "definitionPl": "stare miasto",
+      "definitionEn": "the historic central district of a city, often with old streets",
+      "example": "Cafés in the old town charge more than those two streets away."
+    },
+    {
+      "term": "viewpoint",
+      "definitionPl": "punkt widokowy",
+      "definitionEn": "a place from which you can see a wide or famous view",
+      "example": "The bus stops below the viewpoint; the last bit is on foot."
+    },
+    {
+      "term": "waymarked",
+      "definitionPl": "oznakowany (o szlaku)",
+      "definitionEn": "a path marked with signs or coloured flashes so walkers do not get lost",
+      "example": "Follow the waymarked route to the waterfall."
+    },
+    {
+      "term": "authentic",
+      "definitionPl": "autentyczny",
+      "definitionEn": "real and typical of a place, not invented only for tourists",
+      "example": "We wanted authentic street food, not a themed restaurant."
+    },
+    {
+      "term": "jet lag",
+      "definitionPl": "jet lag, rozstrój po zmianie strefy czasowej",
+      "definitionEn": "tiredness and confusion after a long flight across time zones",
+      "example": "Jet lag made it hard to stay awake at lunchtime."
+    },
+    {
+      "term": "lost luggage",
+      "definitionPl": "zagubiony bagaż",
+      "definitionEn": "bags that the airline cannot find after a flight",
+      "example": "We reported lost luggage and were given a small overnight kit."
+    },
+    {
+      "term": "travel insurance",
+      "definitionPl": "ubezpieczenie podróżne",
+      "definitionEn": "a policy that pays if you fall ill, cancel, or lose bags abroad",
+      "example": "Buy travel insurance before you pay for the flights."
+    },
+    {
+      "term": "delay",
+      "definitionPl": "opóźnienie",
+      "definitionEn": "a situation in which a plane, train or bus leaves or arrives later than planned",
+      "example": "There was a two-hour delay because of thunderstorms."
+    },
+    {
+      "term": "cancelled flight",
+      "definitionPl": "odwołany lot",
+      "definitionEn": "a flight that will not operate as planned",
+      "example": "The cancelled flight meant we slept on the terminal floor."
+    },
+    {
+      "term": "transport strike",
+      "definitionPl": "strajk komunikacji",
+      "definitionEn": "when transport workers stop work, so trains, buses or planes do not run normally",
+      "example": "A transport strike blocked the metro for a whole morning."
+    },
+    {
+      "term": "lost passport",
+      "definitionPl": "zgubiony paszport",
+      "definitionEn": "a passport that you cannot find while you are travelling",
+      "example": "A lost passport means a trip to the embassy before you can fly home."
+    },
+    {
+      "term": "pickpocket",
+      "definitionPl": "kieszonkowiec",
+      "definitionEn": "a thief who steals from bags or pockets in crowds",
+      "example": "A pickpocket took her phone on the crowded tram."
+    },
+    {
+      "term": "embassy",
+      "definitionPl": "ambasada",
+      "definitionEn": "the office of one country in another that helps its citizens and represents its government",
+      "example": "The embassy issued an emergency travel document the next day."
+    },
+    {
+      "term": "consulate",
+      "definitionPl": "konsulat",
+      "definitionEn": "a smaller official office abroad that helps travellers with documents and emergencies",
+      "example": "The consulate can replace some papers if your wallet is stolen."
+    },
+    {
+      "term": "visa",
+      "definitionPl": "wiza",
+      "definitionEn": "an official permission, often a stamp or document, to enter a country",
+      "example": "You need a visa to stay longer than ninety days."
+    },
+    {
+      "term": "transit visa",
+      "definitionPl": "wiza tranzytowa",
+      "definitionEn": "permission to pass through a country on the way to another destination",
+      "example": "Check whether you need a transit visa for the layover in Istanbul."
+    },
+    {
+      "term": "e-visa",
+      "definitionPl": "wiza elektroniczna",
+      "definitionEn": "a visa you apply for and receive online rather than in a passport sticker",
+      "example": "Apply for an e-visa at least three days before you fly."
+    },
+    {
+      "term": "biometric passport",
+      "definitionPl": "paszport biometryczny",
+      "definitionEn": "a passport with a chip storing a photograph and other identity data",
+      "example": "A biometric passport speeds up the gates at some airports."
+    },
+    {
+      "term": "customs declaration",
+      "definitionPl": "deklaracja celna",
+      "definitionEn": "a form stating what goods you are bringing into a country",
+      "example": "Fill in the customs declaration if you have gifts above the limit."
+    },
+    {
+      "term": "confiscate",
+      "definitionPl": "skonfiskować",
+      "definitionEn": "to officially take something away, for example at security or customs",
+      "example": "Officers may confiscate unlabelled food at the border."
+    },
+    {
+      "term": "insurance claim",
+      "definitionPl": "roszczenie ubezpieczeniowe",
+      "definitionEn": "a formal request for an insurer to pay for a loss",
+      "example": "File an insurance claim as soon as you have the police report."
+    },
+    {
+      "term": "excess",
+      "definitionPl": "udział własny (w ubezpieczeniu)",
+      "definitionEn": "the first amount of a loss that you pay yourself under an insurance policy",
+      "example": "The policy has a one-hundred-pound excess on luggage claims."
+    },
+    {
+      "term": "flight compensation",
+      "definitionPl": "odszkodowanie za lot",
+      "definitionEn": "money an airline may owe you after a long delay or cancellation",
+      "example": "EU rules on flight compensation apply to many delayed departures."
+    },
+    {
+      "term": "diverted",
+      "definitionPl": "przekierowany (o locie)",
+      "definitionEn": "sent to a different airport than the one on the ticket",
+      "example": "The plane was diverted to Manchester because of fog in London."
+    },
+    {
+      "term": "stranded",
+      "definitionPl": "uwięziony, bez możliwości dalszej podróży",
+      "definitionEn": "unable to continue a journey, often because of cancelled transport",
+      "example": "Hundreds of passengers were stranded when the airline collapsed."
+    },
+    {
+      "term": "tourist scam",
+      "definitionPl": "oszustwo na turystów",
+      "definitionEn": "a trick designed to take money from visitors who do not know local prices or rules",
+      "example": "A common tourist scam is an unmetered taxi from the airport."
+    },
+    {
+      "term": "unlicensed taxi",
+      "definitionPl": "taksówka bez licencji",
+      "definitionEn": "a private car that offers rides without official permission",
+      "example": "Never get into an unlicensed taxi outside arrivals."
+    },
+    {
+      "term": "seasickness",
+      "definitionPl": "choroba morska",
+      "definitionEn": "feeling ill because of the movement of a boat",
+      "example": "Seasickness tablets helped on the choppy ferry."
+    },
+    {
+      "term": "airsickness",
+      "definitionPl": "choroba lotnicza",
+      "definitionEn": "feeling ill because of the movement of a plane",
+      "example": "Airsickness is worse over turbulence if you look at a screen."
+    },
+    {
+      "term": "foreign currency",
+      "definitionPl": "waluta obca",
+      "definitionEn": "the money used in another country",
+      "example": "Order foreign currency from the bank a week before you fly."
+    },
+    {
+      "term": "bureau de change",
+      "definitionPl": "kantor wymiany walut",
+      "definitionEn": "an office that exchanges one currency for another",
+      "example": "The bureau de change at the station charges a high commission."
+    },
+    {
+      "term": "traveller's cheques",
+      "definitionPl": "czeki podróżne",
+      "definitionEn": "paper cheques bought in advance that can be cashed abroad",
+      "example": "Traveller's cheques are rare now, but some guides still mention them."
+    },
+    {
+      "term": "prepaid card",
+      "definitionPl": "karta przedpłacona",
+      "definitionEn": "a card you load with money before you travel, then spend abroad",
+      "example": "A prepaid card can cap what you lose if it is stolen."
+    },
+    {
+      "term": "travel adapter",
+      "definitionPl": "przejściówka do gniazdka",
+      "definitionEn": "a plug that lets you use electrical devices in another country's sockets",
+      "example": "Pack a travel adapter; UK plugs will not fit in France."
+    },
+    {
+      "term": "luggage tag",
+      "definitionPl": "identyfikator bagażu",
+      "definitionEn": "a label on a suitcase with your name and contact details",
+      "example": "Put a luggage tag on the handle in case the sticker comes off."
+    },
+    {
+      "term": "money belt",
+      "definitionPl": "nerka / pas na pieniądze pod ubraniem",
+      "definitionEn": "a hidden pouch worn under clothes to keep cash and documents safe",
+      "example": "Keep the spare card in a money belt, not in the daypack."
+    },
+    {
+      "term": "boarding pass",
+      "definitionPl": "karta pokładowa",
+      "definitionEn": "the document you show to get on a plane",
+      "example": "Keep your boarding pass until you leave the arrivals hall."
+    },
+    {
+      "term": "passport",
+      "definitionPl": "paszport",
+      "definitionEn": "an official document that identifies you and lets you travel abroad",
+      "example": "Your passport must be valid for three months after you return."
+    },
+    {
+      "term": "visa application",
+      "definitionPl": "wniosek wizowy",
+      "definitionEn": "the form and process of asking a country for permission to enter",
+      "example": "A visa application can take several weeks in the busy season."
+    },
+    {
+      "term": "border requirements",
+      "definitionPl": "wymogi na granicy",
+      "definitionEn": "the documents and rules you must meet to cross into a country",
+      "example": "Check the border requirements, including how long your passport must remain valid."
+    },
+    {
+      "term": "travel documents",
+      "definitionPl": "dokumenty podróży",
+      "definitionEn": "the papers you need for a trip, such as a passport, visa and tickets",
+      "example": "Keep copies of your travel documents separate from the originals."
+    },
+    {
+      "term": "travel advisory",
+      "definitionPl": "ostrzeżenie dla podróżnych",
+      "definitionEn": "official government advice about safety in a country",
+      "example": "The travel advisory warned of protests in the capital."
+    },
+    {
+      "term": "weather disruption",
+      "definitionPl": "zakłócenia spowodowane pogodą",
+      "definitionEn": "delays or cancellations caused by storms, snow, fog or heat",
+      "example": "Weather disruption closed the runway until noon."
+    },
+    {
+      "term": "delayed baggage",
+      "definitionPl": "opóźniony bagaż",
+      "definitionEn": "suitcases that arrive later than the passenger",
+      "example": "The airline delivered the delayed baggage the following evening."
+    },
+    {
+      "term": "damaged suitcase",
+      "definitionPl": "uszkodzona walizka",
+      "definitionEn": "a bag that has been broken or torn during a journey",
+      "example": "Photograph the damaged suitcase before you leave the carousel."
+    },
+    {
+      "term": "rerouted",
+      "definitionPl": "skierowany inną trasą",
+      "definitionEn": "sent on a different path or via different cities than planned",
+      "example": "We were rerouted via Vienna after the original hub closed."
+    },
+    {
+      "term": "Schengen visa",
+      "definitionPl": "wiza Schengen",
+      "definitionEn": "a visa that allows short stays in the group of European countries that share open borders",
+      "example": "A Schengen visa is not needed for many short tourist visits, but rules change."
+    },
+    {
+      "term": "emergency passport",
+      "definitionPl": "paszport tymczasowy / awaryjny",
+      "definitionEn": "a temporary travel document issued when your passport is lost or stolen",
+      "example": "The emergency passport was valid only for the journey home."
+    },
+    {
+      "term": "time zone",
+      "definitionPl": "strefa czasowa",
+      "definitionEn": "a region of the world that uses the same clock time",
+      "example": "New York is in a time zone five hours behind Britain in winter."
+    },
+    {
+      "term": "passport validity",
+      "definitionPl": "ważność paszportu",
+      "definitionEn": "how much time is left before a passport expires",
+      "example": "Some countries demand six months of passport validity."
+    },
+    {
+      "term": "hold luggage",
+      "definitionPl": "bagaż rejestrowany",
+      "definitionEn": "suitcases put in the aircraft hold, not carried into the cabin",
+      "example": "Liquids in hold luggage are not limited like cabin bottles."
+    },
+    {
+      "term": "liquid restrictions",
+      "definitionPl": "ograniczenia dotyczące płynów",
+      "definitionEn": "airport security rules that limit how much liquid you may take into the cabin",
+      "example": "Liquid restrictions still apply to bottles larger than 100 millilitres."
+    },
+    {
+      "term": "priority boarding",
+      "definitionPl": "pierwszeństwo wejścia na pokład",
+      "definitionEn": "the right to get on the plane before other passengers",
+      "example": "Priority boarding is sold as an extra on many cheap airlines."
+    },
+    {
+      "term": "denied boarding",
+      "definitionPl": "odmowa wejścia na pokład",
+      "definitionEn": "not being allowed on a plane, often because it is overbooked",
+      "example": "Denied boarding can entitle you to meals, a hotel and compensation."
+    }
+  ]
+}

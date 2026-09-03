@@ -1,0 +1,1108 @@
+{
+  "id": "matura-pr-przyroda",
+  "sku": "LS-PR-NATURE",
+  "exam": "Matura rozszerzona",
+  "examEn": "Polish Matura (extended level)",
+  "level": "B2",
+  "topicPl": "Świat przyrody",
+  "topicEn": "The natural world",
+  "titlePl": "Matura PR: Świat przyrody — 180 haseł do gier LingoSpark",
+  "titleEn": "Matura Extended: Nature — 180 terms for LingoSpark games",
+  "blurbPl": "Dział Świat przyrody na maturę rozszerzoną: klimat, ekosystemy, klęski żywiołowe i ochrona środowiska. Fiszki ENG–PL.",
+  "blurbEn": "Extended Matura Natural world module: climate, ecosystems, natural disasters and environmental protection. ENG–PL flashcards.",
+  "priceHint": {
+    "tptUsd": 4,
+    "pln": 16
+  },
+  "tags": [
+    "matura rozszerzona",
+    "przyroda",
+    "świat przyrody",
+    "B2",
+    "ESL",
+    "LingoSpark",
+    "CKE"
+  ],
+  "items": [
+    {
+      "term": "heatwave",
+      "definitionPl": "fala upałów",
+      "definitionEn": "a period of unusually hot weather lasting several days",
+      "example": "A long heatwave dried up rivers and reservoirs across the country."
+    },
+    {
+      "term": "drought",
+      "definitionPl": "susza",
+      "definitionEn": "a long period with far too little rain",
+      "example": "Crops failed after a summer of drought in the south."
+    },
+    {
+      "term": "precipitation",
+      "definitionPl": "opady atmosferyczne",
+      "definitionEn": "rain, snow, sleet or hail that falls from the sky",
+      "example": "Annual precipitation is much higher in the mountains than on the coast."
+    },
+    {
+      "term": "humidity",
+      "definitionPl": "wilgotność powietrza",
+      "definitionEn": "the amount of water vapour in the air",
+      "example": "High humidity makes hot weather even harder to bear."
+    },
+    {
+      "term": "torrential rain",
+      "definitionPl": "ulewny deszcz",
+      "definitionEn": "extremely heavy rain that falls very fast",
+      "example": "Torrential rain flooded the underpass within minutes."
+    },
+    {
+      "term": "downpour",
+      "definitionPl": "ulewa",
+      "definitionEn": "a sudden, heavy fall of rain",
+      "example": "We waited under a bus shelter until the downpour stopped."
+    },
+    {
+      "term": "unseasonable weather",
+      "definitionPl": "pogoda nietypowa jak na porę roku",
+      "definitionEn": "weather that is unusual for that time of year",
+      "example": "Unseasonable weather in April brought snow to the lowlands."
+    },
+    {
+      "term": "mild winter",
+      "definitionPl": "łagodna zima",
+      "definitionEn": "a winter that is warmer than usual",
+      "example": "A mild winter meant that some plants never fully went dormant."
+    },
+    {
+      "term": "temperate climate",
+      "definitionPl": "klimat umiarkowany",
+      "definitionEn": "a climate that is neither extremely hot nor extremely cold",
+      "example": "Poland has a temperate climate with four distinct seasons."
+    },
+    {
+      "term": "arid climate",
+      "definitionPl": "klimat suchy, jałowy",
+      "definitionEn": "a climate with very little rainfall",
+      "example": "Few crops can grow without irrigation in an arid climate."
+    },
+    {
+      "term": "microclimate",
+      "definitionPl": "mikroklimat",
+      "definitionEn": "the distinctive climate of a small area",
+      "example": "The valley has a warmer microclimate than the surrounding hills."
+    },
+    {
+      "term": "prevailing wind",
+      "definitionPl": "wiatr panujący",
+      "definitionEn": "the wind that most often blows in a particular region",
+      "example": "The prevailing wind from the west brings wet weather from the Atlantic."
+    },
+    {
+      "term": "atmospheric pressure",
+      "definitionPl": "ciśnienie atmosferyczne",
+      "definitionEn": "the weight of the air pressing down on the Earth",
+      "example": "Falling atmospheric pressure often means that a storm is approaching."
+    },
+    {
+      "term": "climate change",
+      "definitionPl": "zmiana klimatu",
+      "definitionEn": "long-term shifts in temperature and weather patterns, largely caused by human activity",
+      "example": "Scientists warn that climate change will make droughts more frequent."
+    },
+    {
+      "term": "global warming",
+      "definitionPl": "globalne ocieplenie",
+      "definitionEn": "the rise in the Earth's average temperature",
+      "example": "Global warming is melting ice in the polar regions."
+    },
+    {
+      "term": "greenhouse effect",
+      "definitionPl": "efekt cieplarniany",
+      "definitionEn": "the way certain gases trap heat in the atmosphere",
+      "example": "The greenhouse effect is essential for life, but extra gases make it dangerously strong."
+    },
+    {
+      "term": "greenhouse gas",
+      "definitionPl": "gaz cieplarniany",
+      "definitionEn": "a gas such as carbon dioxide that traps heat in the atmosphere",
+      "example": "Methane is a greenhouse gas far more potent than carbon dioxide in the short term."
+    },
+    {
+      "term": "carbon dioxide",
+      "definitionPl": "dwutlenek węgla",
+      "definitionEn": "a greenhouse gas produced by burning fossil fuels and by breathing",
+      "example": "Power stations release huge amounts of carbon dioxide into the air."
+    },
+    {
+      "term": "carbon footprint",
+      "definitionPl": "ślad węglowy",
+      "definitionEn": "the amount of greenhouse gas produced by a person, product or activity",
+      "example": "Flying frequently increases your carbon footprint more than taking the train."
+    },
+    {
+      "term": "ecological footprint",
+      "definitionPl": "ślad ekologiczny",
+      "definitionEn": "the amount of land and resources needed to support a lifestyle",
+      "example": "A diet rich in meat has a larger ecological footprint than a plant-based one."
+    },
+    {
+      "term": "ozone layer",
+      "definitionPl": "warstwa ozonowa",
+      "definitionEn": "a layer of gas in the upper atmosphere that blocks harmful ultraviolet rays",
+      "example": "Chemicals once used in fridges damaged the ozone layer."
+    },
+    {
+      "term": "ozone depletion",
+      "definitionPl": "ubywanie ozonu",
+      "definitionEn": "the thinning of the ozone layer caused by certain chemicals",
+      "example": "International bans on CFCs have slowed ozone depletion."
+    },
+    {
+      "term": "climate crisis",
+      "definitionPl": "kryzys klimatyczny",
+      "definitionEn": "the urgent, large-scale threat posed by rapid climate change",
+      "example": "Young people marched to demand action on the climate crisis."
+    },
+    {
+      "term": "extreme weather",
+      "definitionPl": "ekstremalne zjawiska pogodowe",
+      "definitionEn": "weather that is unusually severe, such as violent storms or record heat",
+      "example": "Insurance costs are rising because of more extreme weather."
+    },
+    {
+      "term": "sea-level rise",
+      "definitionPl": "wzrost poziomu mórz",
+      "definitionEn": "the increase in the height of the world's oceans",
+      "example": "Low-lying islands are already threatened by sea-level rise."
+    },
+    {
+      "term": "ice cap",
+      "definitionPl": "czapa lodowa",
+      "definitionEn": "a thick layer of ice covering a large area, especially at the poles",
+      "example": "The polar ice cap has shrunk dramatically in recent decades."
+    },
+    {
+      "term": "glacier",
+      "definitionPl": "lodowiec",
+      "definitionEn": "a huge, slow-moving mass of ice in mountains or polar regions",
+      "example": "Hikers can still see a glacier in the Tatras, but it is retreating."
+    },
+    {
+      "term": "permafrost",
+      "definitionPl": "wieczna zmarzlina",
+      "definitionEn": "ground that stays frozen all year in polar regions",
+      "example": "Roads built on permafrost crack when the ice beneath them thaws."
+    },
+    {
+      "term": "desertification",
+      "definitionPl": "pustynnienie",
+      "definitionEn": "the process by which fertile land becomes dry and desert-like",
+      "example": "Overgrazing can speed up desertification in dry regions."
+    },
+    {
+      "term": "monsoon",
+      "definitionPl": "monsun",
+      "definitionEn": "a seasonal wind that brings heavy rain, especially in South Asia",
+      "example": "The monsoon is vital for rice harvests in the region."
+    },
+    {
+      "term": "smog",
+      "definitionPl": "smog",
+      "definitionEn": "dirty air caused by smoke, exhaust fumes and fog mixing",
+      "example": "Winter smog in the city often exceeds safe limits."
+    },
+    {
+      "term": "acid rain",
+      "definitionPl": "kwaśny deszcz",
+      "definitionEn": "rain made acidic by pollution, which damages forests and lakes",
+      "example": "Acid rain damaged spruce forests in the mountains in the 1980s."
+    },
+    {
+      "term": "coastline",
+      "definitionPl": "linia brzegowa",
+      "definitionEn": "the edge of the land where it meets the sea",
+      "example": "Erosion is changing the coastline by several metres a year."
+    },
+    {
+      "term": "wetland",
+      "definitionPl": "mokradła, tereny podmokłe",
+      "definitionEn": "land that is covered with water for much of the year",
+      "example": "The wetland is a stopover for thousands of migrating birds."
+    },
+    {
+      "term": "marshland",
+      "definitionPl": "bagna, tereny bagienne",
+      "definitionEn": "low, wet land that is often flooded",
+      "example": "Draining marshland destroyed the habitat of rare frogs."
+    },
+    {
+      "term": "peat bog",
+      "definitionPl": "torfowisko",
+      "definitionEn": "a wet area of land made of decaying plants, used as a carbon store",
+      "example": "Digging up a peat bog releases carbon that was locked away for centuries."
+    },
+    {
+      "term": "estuary",
+      "definitionPl": "estuarium, ujście rzeki",
+      "definitionEn": "the wide tidal mouth of a river where it meets the sea",
+      "example": "Wading birds feed on the mudflats of the estuary at low tide."
+    },
+    {
+      "term": "river delta",
+      "definitionPl": "delta rzeki",
+      "definitionEn": "flat land formed where a river splits into branches before the sea",
+      "example": "The river delta is fertile but vulnerable to flooding."
+    },
+    {
+      "term": "tributary",
+      "definitionPl": "dopływ (rzeki)",
+      "definitionEn": "a smaller river that flows into a larger one",
+      "example": "Pollution in a tributary can contaminate the whole river system."
+    },
+    {
+      "term": "floodplain",
+      "definitionPl": "terasa zalewowa",
+      "definitionEn": "flat land beside a river that floods in heavy rain",
+      "example": "Building on a floodplain puts homes at unnecessary risk."
+    },
+    {
+      "term": "groundwater",
+      "definitionPl": "wody gruntowe",
+      "definitionEn": "water stored under the ground in soil and rock",
+      "example": "Intensive farming can pollute groundwater with fertilisers."
+    },
+    {
+      "term": "aquifer",
+      "definitionPl": "warstwa wodonośna",
+      "definitionEn": "an underground layer of rock that holds water",
+      "example": "The city draws drinking water from a deep aquifer."
+    },
+    {
+      "term": "fertile soil",
+      "definitionPl": "żyzna gleba",
+      "definitionEn": "soil that is rich in nutrients and good for growing crops",
+      "example": "The valley is famous for its fertile soil and vegetable farms."
+    },
+    {
+      "term": "soil erosion",
+      "definitionPl": "erozja gleby",
+      "definitionEn": "the wearing away of topsoil by wind or water",
+      "example": "Bare fields after harvest are especially prone to soil erosion."
+    },
+    {
+      "term": "weathering",
+      "definitionPl": "wietrzenie (skał)",
+      "definitionEn": "the slow breaking down of rock by weather, water or plants",
+      "example": "Frost weathering has split the cliff face into loose slabs."
+    },
+    {
+      "term": "coral reef",
+      "definitionPl": "rafa koralowa",
+      "definitionEn": "an underwater structure built by corals, rich in marine life",
+      "example": "Tourists were banned from the coral reef to let it recover."
+    },
+    {
+      "term": "mangrove forest",
+      "definitionPl": "las namorzynowy",
+      "definitionEn": "trees that grow in salty coastal water and protect the shore",
+      "example": "A mangrove forest shields the village from storm surges."
+    },
+    {
+      "term": "tundra",
+      "definitionPl": "tundra",
+      "definitionEn": "a cold, treeless region with a short growing season",
+      "example": "Only mosses and low shrubs survive on the tundra."
+    },
+    {
+      "term": "savannah",
+      "definitionPl": "sawanna",
+      "definitionEn": "a grassy plain with scattered trees in a hot climate",
+      "example": "Herds of antelope graze on the African savannah."
+    },
+    {
+      "term": "woodland",
+      "definitionPl": "teren leśny, zagajnik",
+      "definitionEn": "land covered with trees, often smaller than a forest",
+      "example": "Ancient woodland supports more species than a newly planted forest."
+    },
+    {
+      "term": "forest canopy",
+      "definitionPl": "korony drzew, piętro koron",
+      "definitionEn": "the upper layer of leaves and branches in a forest",
+      "example": "Birds nest high in the forest canopy, out of reach of foxes."
+    },
+    {
+      "term": "undergrowth",
+      "definitionPl": "poszycie, runo leśne",
+      "definitionEn": "bushes and plants growing beneath the trees",
+      "example": "Deer disappeared into the undergrowth at the first sound of voices."
+    },
+    {
+      "term": "peninsula",
+      "definitionPl": "półwysep",
+      "definitionEn": "a piece of land almost surrounded by water",
+      "example": "The Hel peninsula is a narrow strip of land in the Baltic."
+    },
+    {
+      "term": "archipelago",
+      "definitionPl": "archipelag",
+      "definitionEn": "a group of islands",
+      "example": "The archipelago is a national park with strict landing rules."
+    },
+    {
+      "term": "plateau",
+      "definitionPl": "płaskowyż",
+      "definitionEn": "a large area of high, fairly flat land",
+      "example": "Villages on the plateau have cooler summers than the coast."
+    },
+    {
+      "term": "terrain",
+      "definitionPl": "ukształtowanie terenu",
+      "definitionEn": "the physical features of an area of land",
+      "example": "Rescue teams struggled because the terrain was steep and rocky."
+    },
+    {
+      "term": "endangered species",
+      "definitionPl": "gatunek zagrożony",
+      "definitionEn": "a type of animal or plant at serious risk of dying out",
+      "example": "The lynx is an endangered species in this part of Europe."
+    },
+    {
+      "term": "habitat",
+      "definitionPl": "siedlisko",
+      "definitionEn": "the natural environment where a plant or animal lives",
+      "example": "Wetland drainage has destroyed the habitat of many wading birds."
+    },
+    {
+      "term": "predator",
+      "definitionPl": "drapieżnik",
+      "definitionEn": "an animal that hunts and kills other animals for food",
+      "example": "The wolf is a predator that keeps deer numbers in check."
+    },
+    {
+      "term": "prey",
+      "definitionPl": "ofiara (drapieżnika)",
+      "definitionEn": "an animal that is hunted by another animal",
+      "example": "Owls hunt small mammals, which are their main prey."
+    },
+    {
+      "term": "food chain",
+      "definitionPl": "łańcuch pokarmowy",
+      "definitionEn": "a series of living things in which each is eaten by the next",
+      "example": "If insects disappear, the whole food chain above them is at risk."
+    },
+    {
+      "term": "ecosystem",
+      "definitionPl": "ekosystem",
+      "definitionEn": "a community of living things and their physical environment",
+      "example": "A coral reef is a fragile ecosystem that is easily damaged."
+    },
+    {
+      "term": "biodiversity",
+      "definitionPl": "bioróżnorodność",
+      "definitionEn": "the variety of plant and animal species in an area",
+      "example": "Tropical rainforests contain more biodiversity than any other land habitat."
+    },
+    {
+      "term": "flora",
+      "definitionPl": "flora, roślinność",
+      "definitionEn": "the plants of a particular region or period",
+      "example": "The alpine flora includes many species found nowhere else."
+    },
+    {
+      "term": "fauna",
+      "definitionPl": "fauna, zwierzęta danego obszaru",
+      "definitionEn": "the animals of a particular region or period",
+      "example": "The island's fauna has evolved in isolation for millions of years."
+    },
+    {
+      "term": "mammal",
+      "definitionPl": "ssak",
+      "definitionEn": "a warm-blooded animal that feeds its young on milk",
+      "example": "A bat is the only mammal that can truly fly."
+    },
+    {
+      "term": "amphibian",
+      "definitionPl": "płaz",
+      "definitionEn": "an animal such as a frog that lives both in water and on land",
+      "example": "The pond is an important breeding site for every local amphibian."
+    },
+    {
+      "term": "reptile",
+      "definitionPl": "gad",
+      "definitionEn": "a cold-blooded animal such as a snake, lizard or turtle",
+      "example": "The sand lizard is a reptile that needs sunny, dry slopes."
+    },
+    {
+      "term": "invertebrate",
+      "definitionPl": "bezkręgowiec",
+      "definitionEn": "an animal without a backbone, such as an insect or worm",
+      "example": "Soil health depends on invertebrate species that break down dead plants."
+    },
+    {
+      "term": "pollinator",
+      "definitionPl": "zapylacz",
+      "definitionEn": "an animal, often an insect, that carries pollen from one flower to another",
+      "example": "The bee is the most important pollinator of fruit trees."
+    },
+    {
+      "term": "scavenger",
+      "definitionPl": "padlinożerca",
+      "definitionEn": "an animal that feeds on dead animals or waste",
+      "example": "The vulture is a scavenger that helps keep the savannah clean."
+    },
+    {
+      "term": "herbivore",
+      "definitionPl": "roślinożerca",
+      "definitionEn": "an animal that eats only plants",
+      "example": "An elephant is a herbivore that can strip bark from trees."
+    },
+    {
+      "term": "carnivore",
+      "definitionPl": "mięsożerca",
+      "definitionEn": "an animal that eats other animals",
+      "example": "The lynx is a carnivore that hunts mainly deer."
+    },
+    {
+      "term": "apex predator",
+      "definitionPl": "drapieżnik szczytowy",
+      "definitionEn": "a predator at the top of the food chain, with no natural enemies",
+      "example": "The shark is an apex predator in many ocean ecosystems."
+    },
+    {
+      "term": "keystone species",
+      "definitionPl": "gatunek zwornikowy",
+      "definitionEn": "a species whose presence keeps a whole ecosystem in balance",
+      "example": "Beavers are a keystone species because their dams create wetlands."
+    },
+    {
+      "term": "invasive species",
+      "definitionPl": "gatunek inwazyjny",
+      "definitionEn": "a plant or animal brought in from elsewhere that harms local wildlife",
+      "example": "An invasive species of crayfish is spreading through Polish rivers."
+    },
+    {
+      "term": "native species",
+      "definitionPl": "gatunek rodzimy",
+      "definitionEn": "a plant or animal that naturally belongs in a particular place",
+      "example": "Gardeners are encouraged to plant native species that support insects."
+    },
+    {
+      "term": "extinction",
+      "definitionPl": "wymarcie, wyginięcie",
+      "definitionEn": "the complete disappearance of a species from the Earth",
+      "example": "Hunting and habitat loss drove the species to extinction."
+    },
+    {
+      "term": "critically endangered",
+      "definitionPl": "krytycznie zagrożony",
+      "definitionEn": "at extremely high risk of extinction in the wild",
+      "example": "The species is listed as critically endangered on the international Red List."
+    },
+    {
+      "term": "breeding ground",
+      "definitionPl": "miejsce rozrodu",
+      "definitionEn": "a place where animals regularly gather to produce young",
+      "example": "The lagoon is a breeding ground for seals in spring."
+    },
+    {
+      "term": "wildlife corridor",
+      "definitionPl": "korytarz ekologiczny",
+      "definitionEn": "a strip of habitat that lets animals move safely between areas",
+      "example": "A motorway without a wildlife corridor can split a forest population in two."
+    },
+    {
+      "term": "habitat loss",
+      "definitionPl": "utrata siedlisk",
+      "definitionEn": "the destruction of the natural places where species live",
+      "example": "Habitat loss is now a greater threat to wildlife than hunting."
+    },
+    {
+      "term": "habitat fragmentation",
+      "definitionPl": "fragmentacja siedlisk",
+      "definitionEn": "the splitting of a habitat into smaller, isolated pieces",
+      "example": "Roads cause habitat fragmentation that isolates animal populations."
+    },
+    {
+      "term": "overfishing",
+      "definitionPl": "nadmierne połowy",
+      "definitionEn": "catching so many fish that stocks cannot recover",
+      "example": "Overfishing has emptied some North Sea stocks of cod."
+    },
+    {
+      "term": "poaching",
+      "definitionPl": "kłusownictwo",
+      "definitionEn": "the illegal hunting or catching of wild animals",
+      "example": "Rangers risk their lives to stop poaching of elephants for ivory."
+    },
+    {
+      "term": "wildlife trafficking",
+      "definitionPl": "nielegalny handel dzikimi zwierzętami",
+      "definitionEn": "the illegal trade in wild animals or their body parts",
+      "example": "Wildlife trafficking is a serious organised crime as well as a conservation issue."
+    },
+    {
+      "term": "captive breeding",
+      "definitionPl": "hodowla w niewoli",
+      "definitionEn": "breeding endangered animals in zoos or centres to save the species",
+      "example": "Captive breeding brought the European bison back from the brink."
+    },
+    {
+      "term": "camouflage",
+      "definitionPl": "kamuflaż, maskowanie",
+      "definitionEn": "colouring or shape that helps an animal hide in its surroundings",
+      "example": "The moth's camouflage makes it almost invisible on tree bark."
+    },
+    {
+      "term": "adaptation",
+      "definitionPl": "przystosowanie",
+      "definitionEn": "a feature that helps a living thing survive in its environment",
+      "example": "Thick fur is an adaptation to life in a cold climate."
+    },
+    {
+      "term": "hibernation",
+      "definitionPl": "sen zimowy, hibernacja",
+      "definitionEn": "a long, deep sleep through winter to save energy",
+      "example": "Hedgehogs survive the cold months through hibernation."
+    },
+    {
+      "term": "migration",
+      "definitionPl": "migracja (zwierząt)",
+      "definitionEn": "the regular, long-distance movement of animals, usually seasonally",
+      "example": "The autumn migration of storks is a familiar sight in Polish villages."
+    },
+    {
+      "term": "vegetation",
+      "definitionPl": "roślinność",
+      "definitionEn": "the plants growing in a particular area",
+      "example": "Fire destroyed the vegetation on the hillside, leaving bare soil."
+    },
+    {
+      "term": "deciduous forest",
+      "definitionPl": "las liściasty",
+      "definitionEn": "a forest of trees that shed their leaves in autumn",
+      "example": "A deciduous forest lets more light reach the ground in spring."
+    },
+    {
+      "term": "evergreen",
+      "definitionPl": "zawsze zielony; drzewo iglaste",
+      "definitionEn": "a plant that keeps its leaves all year",
+      "example": "Pine is evergreen, so the forest stays green even in January."
+    },
+    {
+      "term": "decomposer",
+      "definitionPl": "destruent, organizm rozkładający",
+      "definitionEn": "an organism that breaks down dead plants and animals",
+      "example": "Fungi act as a decomposer and return nutrients to the soil."
+    },
+    {
+      "term": "genetic diversity",
+      "definitionPl": "różnorodność genetyczna",
+      "definitionEn": "variety in the genes of a species, which helps it survive change",
+      "example": "A tiny population has little genetic diversity and is vulnerable to disease."
+    },
+    {
+      "term": "earthquake",
+      "definitionPl": "trzęsienie ziemi",
+      "definitionEn": "a sudden, violent shaking of the ground",
+      "example": "The earthquake brought down buildings that had not been reinforced."
+    },
+    {
+      "term": "flood",
+      "definitionPl": "powódź",
+      "definitionEn": "water covering land that is normally dry",
+      "example": "After days of rain the river burst its banks and caused a flood."
+    },
+    {
+      "term": "wildfire",
+      "definitionPl": "pożar lasu / pożar w terenie otwartym",
+      "definitionEn": "a large, uncontrolled fire in countryside or forest",
+      "example": "A wildfire spread through the dry pine forest in hours."
+    },
+    {
+      "term": "landslide",
+      "definitionPl": "osuwisko",
+      "definitionEn": "a sudden fall of rock or earth down a slope",
+      "example": "Heavy rain triggered a landslide that blocked the mountain road."
+    },
+    {
+      "term": "avalanche",
+      "definitionPl": "lawina",
+      "definitionEn": "a large mass of snow falling rapidly down a mountain",
+      "example": "Skiers were warned not to leave the marked routes because of avalanche risk."
+    },
+    {
+      "term": "tsunami",
+      "definitionPl": "tsunami",
+      "definitionEn": "a huge sea wave caused by an underwater earthquake or eruption",
+      "example": "Coastal towns had only minutes to flee after the tsunami warning."
+    },
+    {
+      "term": "volcanic eruption",
+      "definitionPl": "wybuch wulkanu",
+      "definitionEn": "when a volcano throws out lava, ash and gas",
+      "example": "Ash from the volcanic eruption closed airports across the region."
+    },
+    {
+      "term": "hurricane",
+      "definitionPl": "huragan",
+      "definitionEn": "a very powerful tropical storm with extremely strong winds",
+      "example": "A hurricane tore roofs off houses along the coast."
+    },
+    {
+      "term": "tornado",
+      "definitionPl": "tornado, trąba powietrzna",
+      "definitionEn": "a violent, spinning column of air that touches the ground",
+      "example": "The tornado flattened barns in a narrow strip across the fields."
+    },
+    {
+      "term": "cyclone",
+      "definitionPl": "cyklon",
+      "definitionEn": "a large, rotating storm system, often over tropical seas",
+      "example": "The cyclone brought destructive winds and a dangerous storm surge."
+    },
+    {
+      "term": "aftershock",
+      "definitionPl": "wstrząs wtórny",
+      "definitionEn": "a smaller earthquake that follows a larger one",
+      "example": "An aftershock overnight made residents afraid to sleep indoors."
+    },
+    {
+      "term": "epicentre",
+      "definitionPl": "epicentrum",
+      "definitionEn": "the point on the Earth's surface above where an earthquake starts",
+      "example": "The epicentre of the quake was just offshore."
+    },
+    {
+      "term": "magnitude",
+      "definitionPl": "magnituda",
+      "definitionEn": "a number that measures the strength of an earthquake",
+      "example": "The quake had a magnitude of 6.2 and was felt in several countries."
+    },
+    {
+      "term": "seismic activity",
+      "definitionPl": "aktywność sejsmiczna",
+      "definitionEn": "earthquakes and other vibrations in the Earth's crust",
+      "example": "Scientists recorded unusual seismic activity under the volcano."
+    },
+    {
+      "term": "flash flood",
+      "definitionPl": "powódź błyskawiczna",
+      "definitionEn": "a sudden flood after extremely heavy rain",
+      "example": "A flash flood swept cars off the road in the narrow valley."
+    },
+    {
+      "term": "storm surge",
+      "definitionPl": "wezbranie sztormowe",
+      "definitionEn": "a rise in sea level driven onshore by a storm",
+      "example": "The storm surge overtopped the sea wall and flooded the harbour."
+    },
+    {
+      "term": "mudslide",
+      "definitionPl": "lawina błotna",
+      "definitionEn": "a rapid flow of wet earth down a slope",
+      "example": "Deforestation on the hillside made a mudslide more likely after rain."
+    },
+    {
+      "term": "natural disaster",
+      "definitionPl": "klęska żywiołowa",
+      "definitionEn": "a sudden natural event that causes serious damage and loss of life",
+      "example": "The region is still recovering from last year's natural disaster."
+    },
+    {
+      "term": "evacuate",
+      "definitionPl": "ewakuować",
+      "definitionEn": "to move people from a dangerous place to safety",
+      "example": "The mayor ordered residents to evacuate before the river rose further."
+    },
+    {
+      "term": "early-warning system",
+      "definitionPl": "system wczesnego ostrzegania",
+      "definitionEn": "technology and procedures that alert people before a disaster hits",
+      "example": "An early-warning system gave the town twenty minutes to reach higher ground."
+    },
+    {
+      "term": "disaster relief",
+      "definitionPl": "pomoc poszkodowanym w klęsce żywiołowej",
+      "definitionEn": "practical help given after a flood, quake or similar event",
+      "example": "Charities flew in tents and drinking water as disaster relief."
+    },
+    {
+      "term": "flood defences",
+      "definitionPl": "zabezpieczenia przeciwpowodziowe",
+      "definitionEn": "walls, barriers and other structures built to keep floodwater out",
+      "example": "The city invested in flood defences after two devastating winters."
+    },
+    {
+      "term": "famine",
+      "definitionPl": "głód (klęska głodu)",
+      "definitionEn": "an extreme shortage of food affecting a whole region",
+      "example": "Crop failure and conflict together produced a famine."
+    },
+    {
+      "term": "crop failure",
+      "definitionPl": "nieurodzaj, klęska nieurodzaju",
+      "definitionEn": "a situation in which harvests are much smaller than expected",
+      "example": "A crop failure after the drought pushed food prices sharply up."
+    },
+    {
+      "term": "deforestation",
+      "definitionPl": "wylesianie",
+      "definitionEn": "the large-scale cutting down of forests",
+      "example": "Deforestation in the Amazon is driven partly by cattle ranching."
+    },
+    {
+      "term": "pollution",
+      "definitionPl": "zanieczyszczenie",
+      "definitionEn": "harmful substances that make air, water or land dirty",
+      "example": "Factory pollution has made the river unsafe for swimming."
+    },
+    {
+      "term": "recycling",
+      "definitionPl": "recykling, przetwarzanie odpadów",
+      "definitionEn": "processing used materials so they can be made into new products",
+      "example": "The town raised its recycling rate by introducing doorstep collections."
+    },
+    {
+      "term": "landfill",
+      "definitionPl": "wysypisko śmieci",
+      "definitionEn": "a site where rubbish is buried in the ground",
+      "example": "Most plastic packaging still ends up in landfill."
+    },
+    {
+      "term": "fossil fuels",
+      "definitionPl": "paliwa kopalne",
+      "definitionEn": "coal, oil and gas formed from ancient plants and animals",
+      "example": "Burning fossil fuels is the main source of extra carbon dioxide."
+    },
+    {
+      "term": "renewable energy",
+      "definitionPl": "energia odnawialna",
+      "definitionEn": "power from sources that will not run out, such as wind or sun",
+      "example": "The country aims to produce half its electricity from renewable energy."
+    },
+    {
+      "term": "sustainability",
+      "definitionPl": "zrównoważony rozwój; trwałość ekologiczna",
+      "definitionEn": "using resources in a way that does not damage the future",
+      "example": "True sustainability means living within the limits of the planet."
+    },
+    {
+      "term": "conservation",
+      "definitionPl": "ochrona przyrody",
+      "definitionEn": "the protection of animals, plants and natural places",
+      "example": "Marine conservation includes limits on fishing in coastal waters."
+    },
+    {
+      "term": "carbon emissions",
+      "definitionPl": "emisje dwutlenku węgla",
+      "definitionEn": "the release of carbon dioxide into the atmosphere",
+      "example": "The factory cut its carbon emissions by switching to cleaner fuel."
+    },
+    {
+      "term": "exhaust fumes",
+      "definitionPl": "spaliny",
+      "definitionEn": "gases produced by engines, especially in vehicles",
+      "example": "Rush-hour exhaust fumes make the air quality in the centre unhealthy."
+    },
+    {
+      "term": "air quality",
+      "definitionPl": "jakość powietrza",
+      "definitionEn": "how clean or polluted the air is in a place",
+      "example": "Schools close outdoor PE when air quality falls below a safe level."
+    },
+    {
+      "term": "water contamination",
+      "definitionPl": "skażenie wody",
+      "definitionEn": "the presence of harmful substances in water",
+      "example": "Chemical water contamination forced the village to use bottled supplies."
+    },
+    {
+      "term": "industrial waste",
+      "definitionPl": "odpady przemysłowe",
+      "definitionEn": "unwanted material produced by factories and industry",
+      "example": "Illegal dumping of industrial waste poisoned the stream."
+    },
+    {
+      "term": "toxic waste",
+      "definitionPl": "odpady toksyczne",
+      "definitionEn": "rubbish that is poisonous and dangerous to living things",
+      "example": "The old plant left barrels of toxic waste buried on the site."
+    },
+    {
+      "term": "sewage",
+      "definitionPl": "ścieki",
+      "definitionEn": "waste water from homes and toilets",
+      "example": "Untreated sewage was discharged into the sea after the storm."
+    },
+    {
+      "term": "incineration",
+      "definitionPl": "spalanie odpadów",
+      "definitionEn": "the burning of waste at high temperatures",
+      "example": "Incineration reduces the volume of rubbish but can release fumes."
+    },
+    {
+      "term": "single-use plastic",
+      "definitionPl": "plastik jednorazowego użytku",
+      "definitionEn": "plastic items designed to be thrown away after one use",
+      "example": "The café no longer gives out single-use plastic cutlery."
+    },
+    {
+      "term": "biodegradable",
+      "definitionPl": "biodegradowalny",
+      "definitionEn": "able to be broken down naturally by bacteria or fungi",
+      "example": "The packaging is biodegradable and should rot in compost within weeks."
+    },
+    {
+      "term": "composting",
+      "definitionPl": "kompostowanie",
+      "definitionEn": "turning kitchen and garden waste into soil improver",
+      "example": "Composting food scraps cuts the amount of rubbish sent to landfill."
+    },
+    {
+      "term": "solar power",
+      "definitionPl": "energia słoneczna",
+      "definitionEn": "electricity generated from sunlight",
+      "example": "The school roof now produces solar power for the sports hall."
+    },
+    {
+      "term": "wind farm",
+      "definitionPl": "farma wiatrowa",
+      "definitionEn": "a group of wind turbines that generate electricity",
+      "example": "A new wind farm is planned off the Baltic coast."
+    },
+    {
+      "term": "hydropower",
+      "definitionPl": "hydroenergia",
+      "definitionEn": "electricity generated from moving water",
+      "example": "The dam produces hydropower but has changed the river's ecosystem."
+    },
+    {
+      "term": "geothermal energy",
+      "definitionPl": "energia geotermalna",
+      "definitionEn": "heat from inside the Earth used to make power or warm buildings",
+      "example": "Iceland uses geothermal energy to heat homes and swimming pools."
+    },
+    {
+      "term": "nuclear power",
+      "definitionPl": "energia jądrowa",
+      "definitionEn": "electricity produced by splitting atoms in a reactor",
+      "example": "Supporters argue that nuclear power can cut carbon emissions quickly."
+    },
+    {
+      "term": "oil spill",
+      "definitionPl": "wyciek ropy",
+      "definitionEn": "an accidental release of oil into the sea or onto land",
+      "example": "The oil spill killed seabirds along fifty kilometres of coast."
+    },
+    {
+      "term": "fracking",
+      "definitionPl": "szczelinowanie hydrauliczne",
+      "definitionEn": "extracting gas or oil by injecting liquid into rock at high pressure",
+      "example": "Campaigners say fracking risks polluting groundwater."
+    },
+    {
+      "term": "overgrazing",
+      "definitionPl": "nadmierny wypas",
+      "definitionEn": "allowing too many animals to feed on land, so plants cannot recover",
+      "example": "Overgrazing left the hillside bare and prone to erosion."
+    },
+    {
+      "term": "sustainable development",
+      "definitionPl": "zrównoważony rozwój",
+      "definitionEn": "economic progress that does not destroy the environment or future resources",
+      "example": "Sustainable development tries to balance jobs with protection of nature."
+    },
+    {
+      "term": "eco-friendly",
+      "definitionPl": "przyjazny dla środowiska",
+      "definitionEn": "designed to cause little harm to the environment",
+      "example": "The shop switched to eco-friendly packaging made from recycled paper."
+    },
+    {
+      "term": "greenwashing",
+      "definitionPl": "ekościema, greenwashing",
+      "definitionEn": "making a product or company look more environmentally friendly than it is",
+      "example": "The advert was accused of greenwashing because the brand still relies on coal."
+    },
+    {
+      "term": "carbon-neutral",
+      "definitionPl": "neutralny węglowo",
+      "definitionEn": "balancing the carbon you produce by saving the same amount elsewhere",
+      "example": "The festival claims to be carbon-neutral after planting thousands of trees."
+    },
+    {
+      "term": "net zero",
+      "definitionPl": "zerowa emisja netto",
+      "definitionEn": "cutting emissions and offsetting the rest so the total is zero",
+      "example": "The government pledged to reach net zero by 2050."
+    },
+    {
+      "term": "reforestation",
+      "definitionPl": "ponowne zalesianie",
+      "definitionEn": "planting trees again where forest has been cut down",
+      "example": "Reforestation of the valley began five years after the fire."
+    },
+    {
+      "term": "afforestation",
+      "definitionPl": "zalesianie (nowych terenów)",
+      "definitionEn": "planting trees on land that was not recently forest",
+      "example": "Afforestation of former farmland can store carbon but may reduce biodiversity if only one species is used."
+    },
+    {
+      "term": "rewilding",
+      "definitionPl": "renaturalizacja, przywracanie dzikiej przyrody",
+      "definitionEn": "restoring land so that natural processes and wildlife can return",
+      "example": "Rewilding of the former airfield brought back wetlands and nesting birds."
+    },
+    {
+      "term": "nature reserve",
+      "definitionPl": "rezerwat przyrody",
+      "definitionEn": "an area of land protected for wildlife and habitats",
+      "example": "Dogs must be kept on a lead in the nature reserve."
+    },
+    {
+      "term": "marine protected area",
+      "definitionPl": "morski obszar chroniony",
+      "definitionEn": "a part of the sea where fishing and other damage are limited",
+      "example": "Trawling is banned inside the marine protected area."
+    },
+    {
+      "term": "conservationist",
+      "definitionPl": "obrońca przyrody, konserwator przyrody",
+      "definitionEn": "a person who works to protect animals, plants and habitats",
+      "example": "A conservationist spoke to the class about restoring peat bogs."
+    },
+    {
+      "term": "environmentalist",
+      "definitionPl": "ekolog, obrońca środowiska",
+      "definitionEn": "a person who campaigns to protect the natural environment",
+      "example": "The environmentalist argued that new roads would fragment the forest."
+    },
+    {
+      "term": "Paris Agreement",
+      "definitionPl": "porozumienie paryskie",
+      "definitionEn": "the 2015 international treaty to limit global warming",
+      "example": "Signatories to the Paris Agreement promised to cut greenhouse gases."
+    },
+    {
+      "term": "methane",
+      "definitionPl": "metan",
+      "definitionEn": "a powerful greenhouse gas produced by livestock, waste and leaks",
+      "example": "Cattle farming is a major source of methane emissions."
+    },
+    {
+      "term": "energy efficiency",
+      "definitionPl": "efektywność energetyczna",
+      "definitionEn": "using less energy to do the same job",
+      "example": "Better insulation is a cheap way to improve energy efficiency at home."
+    },
+    {
+      "term": "fly-tipping",
+      "definitionPl": "nielegalne wysypywanie śmieci",
+      "definitionEn": "illegally dumping rubbish in the countryside or on waste ground",
+      "example": "Cameras were installed to catch fly-tipping on the forest track."
+    },
+    {
+      "term": "waste sorting",
+      "definitionPl": "segregacja odpadów",
+      "definitionEn": "separating rubbish into types such as paper, glass and bio-waste",
+      "example": "Waste sorting at home only works if collection lorries keep the streams separate."
+    },
+    {
+      "term": "circular economy",
+      "definitionPl": "gospodarka o obiegu zamkniętym",
+      "definitionEn": "an economic model that reuses and recycles instead of throwing away",
+      "example": "A circular economy treats yesterday's packaging as tomorrow's raw material."
+    },
+    {
+      "term": "finite resources",
+      "definitionPl": "zasoby ograniczone / nieodnawialne",
+      "definitionEn": "materials that will eventually run out",
+      "example": "Oil and gas are finite resources, unlike wind and sunlight."
+    },
+    {
+      "term": "deplete",
+      "definitionPl": "wyczerpywać, uszczuplać",
+      "definitionEn": "to reduce something until little remains",
+      "example": "Intensive fishing can deplete stocks faster than they can recover."
+    },
+    {
+      "term": "water scarcity",
+      "definitionPl": "niedobór wody",
+      "definitionEn": "a serious shortage of fresh water",
+      "example": "Water scarcity already forces some cities to ration supplies in summer."
+    },
+    {
+      "term": "pesticide",
+      "definitionPl": "pestycyd, środek owadobójczy",
+      "definitionEn": "a chemical used to kill insects that damage crops",
+      "example": "Overuse of pesticide is one reason bee numbers have fallen."
+    },
+    {
+      "term": "fertiliser",
+      "definitionPl": "nawóz",
+      "definitionEn": "a substance added to soil to help plants grow",
+      "example": "Rain washed fertiliser from the fields into the lake, causing algal blooms."
+    },
+    {
+      "term": "intensive farming",
+      "definitionPl": "rolnictwo intensywne",
+      "definitionEn": "producing as much food as possible from the land, often with chemicals",
+      "example": "Intensive farming can exhaust the soil if fields are never left to rest."
+    },
+    {
+      "term": "organic farming",
+      "definitionPl": "rolnictwo ekologiczne",
+      "definitionEn": "growing food without most synthetic chemicals",
+      "example": "Organic farming usually yields less but can support more wildlife."
+    },
+    {
+      "term": "monoculture",
+      "definitionPl": "monokultura",
+      "definitionEn": "growing only one crop over a large area",
+      "example": "Monoculture of maize leaves fields vulnerable to a single pest."
+    },
+    {
+      "term": "soil degradation",
+      "definitionPl": "degradacja gleby",
+      "definitionEn": "the decline in soil quality so that it grows less food",
+      "example": "Soil degradation is a hidden threat to long-term food security."
+    },
+    {
+      "term": "irrigation",
+      "definitionPl": "nawadnianie",
+      "definitionEn": "supplying water to land so that crops can grow",
+      "example": "Irrigation from the river has turned dry plains into farmland."
+    },
+    {
+      "term": "microplastics",
+      "definitionPl": "mikroplastik",
+      "definitionEn": "tiny pieces of plastic that pollute soil, water and living things",
+      "example": "Fish in the lagoon now contain microplastics in their stomachs."
+    },
+    {
+      "term": "ocean acidification",
+      "definitionPl": "zakwaszenie oceanów",
+      "definitionEn": "the sea becoming more acidic as it absorbs extra carbon dioxide",
+      "example": "Ocean acidification makes it harder for shellfish to build their shells."
+    },
+    {
+      "term": "coral bleaching",
+      "definitionPl": "bielenie korali",
+      "definitionEn": "corals turning white and often dying when seas become too warm",
+      "example": "A marine heatwave caused coral bleaching across the reef."
+    },
+    {
+      "term": "illegal logging",
+      "definitionPl": "nielegalna wycinka drzew",
+      "definitionEn": "cutting down trees in breach of the law",
+      "example": "Satellite images are used to detect illegal logging in remote forests."
+    },
+    {
+      "term": "slash-and-burn",
+      "definitionPl": "gospodarka żarowa",
+      "definitionEn": "clearing land by cutting and burning vegetation, often for farming",
+      "example": "Slash-and-burn agriculture is still used to clear rainforest for crops."
+    }
+  ]
+}

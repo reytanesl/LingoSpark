@@ -25,6 +25,27 @@ E8 lists follow the 14 CKE thematic modules. They are **not** the free Matura �
 
 Complete E8 zip: `packs/dist/LingoSpark-LS-8-COMPLETE.zip` (listing: `BUNDLE-LISTING-E8.txt`).
 
+## Matura rozszerzona (all 14 CKE modules, B2)
+
+| Pack | Topic | SKU |
+|------|--------|-----|
+| `matura-pr-czlowiek` | 1. Człowiek | LS-PR-PERSON |
+| `matura-pr-dom` | 2. Miejsce zamieszkania | LS-PR-HOME |
+| `matura-pr-edukacja` | 3. Edukacja | LS-PR-SCHOOL |
+| `matura-pr-praca` | 4. Praca | LS-PR-WORK |
+| `matura-pr-zycie-prywatne` | 5. Życie prywatne | LS-PR-LIFE |
+| `matura-pr-zywienie` | 6. Żywienie | LS-PR-FOOD |
+| `matura-pr-zakupy` | 7. Zakupy i usługi | LS-PR-SHOP |
+| `matura-pr-podroze` | 8. Podróżowanie i turystyka | LS-PR-TRAVEL |
+| `matura-pr-kultura` | 9. Kultura | LS-PR-CULTURE |
+| `matura-pr-sport` | 10. Sport | LS-PR-SPORT |
+| `matura-pr-zdrowie` | 11. Zdrowie | LS-PR-HEALTH |
+| `matura-pr-nauka-technika` | 12. Nauka i technika | LS-PR-TECH |
+| `matura-pr-przyroda` | 13. Świat przyrody | LS-PR-NATURE |
+| `matura-pr-panstwo-spoleczenstwo` | 14. Państwo i społeczeństwo | LS-PR-STATE |
+
+Complete PR zip: `packs/dist/LingoSpark-LS-PR-COMPLETE.zip` (listing: `BUNDLE-LISTING-MATURA-PR.txt`).
+
 ## Matura podstawowa
 
 | Pack | Topic | SKU |
@@ -33,6 +54,8 @@ Complete E8 zip: `packs/dist/LingoSpark-LS-8-COMPLETE.zip` (listing: `BUNDLE-LIS
 | `matura-pp-zdrowie` | Zdrowie | LS-MAT-HEALTH |
 
 Each **E8** pack: **100–150** genuine exam-level terms (no repeats across the 14 modules), split into sets of 20 for ~6 × 45-minute lessons, PL and EN glosses, a full-list file, terms-only for Primary English, matching / gap-fill / mini-quiz, answer key.
+
+Each **Matura PR** pack: **150–200** B2 terms (180 in the current lists), no repeats across the 14 CKE modules. Paste format ENG–PL (`term = polska definicja`) for Flashcards and the other vocab games.
 
 Each **Matura PP** pack: 36 terms, Set A + Set B (same worksheet types). Extra E8 items live in `packs/data/extra/` and are merged at build time.
 
@@ -54,6 +77,6 @@ See [SELLING.md](SELLING.md). Use `LISTING.txt` inside each pack, or `packs/dist
 
 1. Copy a JSON file in `packs/data/`.
 2. Keep `term`, `definitionPl`, `definitionEn`, `example` (the example must contain the term as a whole phrase).
-3. E8 packs must total **100–150** items after extras merge; Matura packs stay at 36. Extra arrays go in `packs/data/extra/<same-filename>.json`.
-4. Do not paste E8 lists into `demo-sets.js`.
+3. E8 packs must total **100–150** items after extras merge; Matura PR packs **150–200**; Matura PP packs stay at 36. Extra arrays go in `packs/data/extra/<same-filename>.json`.
+4. Do not paste E8 or Matura PR lists into `demo-sets.js`.
 5. Run `npm run packs`.
