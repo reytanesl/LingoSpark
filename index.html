@@ -3619,14 +3619,23 @@
                             goToSetup(arg);
                             return;
                         }
+                        const reviseGames = ['phrase', 'category', 'gapfill', 'revise'];
+                        if (reviseGames.includes(arg)) {
+                            const VR = window.VocabRevise;
+                            if (!VR) {
+                                goToSetup(arg);
+                                return;
+                            }
+                            if (arg === 'phrase') VR.initPhraseBuilder();
+                            else if (arg === 'category') VR.initCategorySort();
+                            else if (arg === 'gapfill') VR.initGapFill();
+                            else if (arg === 'revise') VR.initRevisionPath();
+                            return;
+                        }
                         showScreen(arg);
                         if (arg === 'bomb') initBombDefusal();
                         if (arg === 'grid') initGridTerritory();
                         if (arg === 'flashcard') initFlashcards(fcGetLaunchRevisionMode());
-                        if (arg === 'phrase') window.VocabRevise?.initPhraseBuilder();
-                        if (arg === 'category') window.VocabRevise?.initCategorySort();
-                        if (arg === 'gapfill') window.VocabRevise?.initGapFill();
-                        if (arg === 'revise') window.VocabRevise?.initRevisionPath();
                         if (arg === 'odyssey') initOdyssey();
                     } else {
                         activeGame = arg;
@@ -4988,6 +4997,7 @@
         function launchSelectedGame() {
             const vocabGames = ['flashcard', 'bomb', 'grid', 'phrase', 'category', 'gapfill', 'revise'];
             const hybridGames = ['odyssey'];
+            const reviseGames = ['phrase', 'category', 'gapfill', 'revise'];
             
             if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
                 if(!parseGlossary()) return;
@@ -4996,16 +5006,25 @@
             if (activeGame === 'mission') {
                 if (!resolveSelectedMission()) return;
             }
+
+            if (reviseGames.includes(activeGame)) {
+                const VR = window.VocabRevise;
+                if (!VR) {
+                    appAlert('Vocab revise games failed to load. Refresh the page and try again.');
+                    return;
+                }
+                if (activeGame === 'phrase') VR.initPhraseBuilder();
+                else if (activeGame === 'category') VR.initCategorySort();
+                else if (activeGame === 'gapfill') VR.initGapFill();
+                else if (activeGame === 'revise') VR.initRevisionPath();
+                return;
+            }
             
             showScreen(activeGame);
             
             if(activeGame === 'bomb') initBombDefusal();
             if(activeGame === 'grid') initGridTerritory();
             if(activeGame === 'flashcard') initFlashcards(fcGetLaunchRevisionMode());
-            if(activeGame === 'phrase') window.VocabRevise?.initPhraseBuilder();
-            if(activeGame === 'category') window.VocabRevise?.initCategorySort();
-            if(activeGame === 'gapfill') window.VocabRevise?.initGapFill();
-            if(activeGame === 'revise') window.VocabRevise?.initRevisionPath();
             
             if(activeGame === 'frank') initFrankenstein();
             if(activeGame === 'trans') initTransitions();
@@ -7996,7 +8015,12 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         // VOCAB REVIEW: ENGINE CORE
         // ==========================================
         let vocabulary = [];
-        
+        window.getLingoVocabulary = () => vocabulary;
+        window.setLingoVocabulary = (list) => {
+            vocabulary = Array.isArray(list) ? list : [];
+            return vocabulary;
+        };
+
         function parseGlossary() {
             const raw = document.getElementById('glossary-input').value;
             const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
@@ -8037,7 +8061,7 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                 return false;
             }
 
-            const testDir = document.querySelector('input[name="test-dir"]:checked').value; 
+            const testDir = document.querySelector('input[name="test-dir"]:checked')?.value || 'def'; 
             vocabulary = uniqueList.map(item => {
                 const base = { rawTerm: item.term, rawDef: item.def, originalTerm: item.term };
                 if (testDir === 'term') return { ...base, prompt: item.term, answer: item.def.toLowerCase() };

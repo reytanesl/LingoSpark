@@ -43,14 +43,53 @@
         return document.getElementById(id);
     }
 
+    function getVocabList() {
+        if (typeof window.getLingoVocabulary === 'function') {
+            const list = window.getLingoVocabulary();
+            if (Array.isArray(list) && list.length) return list;
+        }
+        if (Array.isArray(window.vocabulary) && window.vocabulary.length) return window.vocabulary;
+        return [];
+    }
+
     function baseTerms() {
-        return (window.vocabulary || []).map((v) => ({
-            term: v.rawTerm || v.originalTerm || '',
-            definition: v.rawDef || '',
-            prompt: v.prompt,
-            answer: v.answer,
-            card: v,
-        })).filter((t) => t.term && t.definition);
+        return getVocabList().map((v) => {
+            const term = String(v.rawTerm || v.originalTerm || '').trim();
+            let definition = String(v.rawDef || '').trim();
+            // Recover if only prompt/answer exist (older sessions / odd shapes)
+            if (!definition && v.prompt && v.answer) {
+                const ans = String(v.answer);
+                const prompt = String(v.prompt);
+                // Default test direction: prompt=definition, answer=term
+                if (term && prompt.toLowerCase() !== term.toLowerCase()) definition = prompt;
+                else definition = ans;
+            }
+            if (!term && v.answer) {
+                return {
+                    term: String(v.answer).trim(),
+                    definition: String(v.prompt || v.rawDef || '').trim(),
+                    prompt: v.prompt,
+                    answer: v.answer,
+                    card: v,
+                };
+            }
+            return {
+                term,
+                definition,
+                prompt: v.prompt,
+                answer: v.answer,
+                card: v,
+            };
+        }).filter((t) => t.term && t.definition);
+    }
+
+    function ensureGlossaryLoaded() {
+        if (baseTerms().length >= 4) return true;
+        if (typeof window.parseGlossary === 'function') {
+            if (!window.parseGlossary()) return false;
+            return baseTerms().length >= 4;
+        }
+        return false;
     }
 
     async function fetchDict(term) {
@@ -174,7 +213,7 @@
 
     // ——— Phrase Builder ———
     async function initPhraseBuilder() {
-        if (!window.vocabulary?.length && typeof parseGlossary === 'function' && !parseGlossary()) return;
+        if (!ensureGlossaryLoaded()) return;
         const terms = shuffle(baseTerms());
         if (terms.length < 4) {
             appAlert('Please provide at least 4 unique word/definition pairs to play.');
@@ -321,8 +360,12 @@
 
         // Fallback: POS buckets via dictionary API
         if (items.length < 4) {
-            if (!window.vocabulary?.length && typeof parseGlossary === 'function' && !parseGlossary()) return;
+            if (!ensureGlossaryLoaded()) return;
             const terms = baseTerms();
+            if (terms.length < 4) {
+                appAlert('Please provide at least 4 unique word/definition pairs to play.');
+                return;
+            }
             setStatus('category-status', 'No category headers found — sorting by part of speech (online)…');
             showScreen('category');
             $('vr-finish').hidden = true;
@@ -460,7 +503,7 @@
 
     // ——— Gap Fill ———
     async function initGapFill() {
-        if (!window.vocabulary?.length && typeof parseGlossary === 'function' && !parseGlossary()) return;
+        if (!ensureGlossaryLoaded()) return;
         const terms = shuffle(baseTerms());
         if (terms.length < 4) {
             appAlert('Please provide at least 4 unique word/definition pairs to play.');
@@ -549,7 +592,7 @@
     }
 
     async function initRevisionPath() {
-        if (!window.vocabulary?.length && typeof parseGlossary === 'function' && !parseGlossary()) return;
+        if (!ensureGlossaryLoaded()) return;
         const terms = baseTerms();
         if (terms.length < 4) {
             appAlert('Please provide at least 4 unique word/definition pairs to play.');
