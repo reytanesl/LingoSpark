@@ -23,7 +23,6 @@
     <script src="pe-line-up.js"></script>
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="live-game-client.js" defer></script>
-    <script src="vocab-revise.js" defer></script>
     
     <style>
         /* British Style, Bright Theme & Custom Fonts */
@@ -1412,85 +1411,6 @@
         }
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 
-        /* Vocab Revise games */
-        .vr-screen-title {
-            margin: 0; color: var(--royal-blue); font-family: var(--font-primary); font-size: 1.2rem;
-        }
-        .vr-hud {
-            display: flex; justify-content: space-between; align-items: center;
-            max-width: 640px; margin: 0 auto 0.5rem; font-weight: 700; color: var(--royal-blue);
-        }
-        .vr-bar {
-            max-width: 640px; margin: 0 auto 1rem; height: 8px; background: var(--border-light);
-            border-radius: 999px; overflow: hidden;
-        }
-        .vr-bar-fill { height: 100%; width: 0; background: var(--royal-blue); transition: width 0.3s ease; }
-        .vr-label { max-width: 640px; margin: 0.5rem auto 0.25rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
-        .vr-hint { max-width: 640px; margin: 0.35rem auto 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.92rem; }
-        .vr-prompt-sm { font-size: 1.1rem !important; min-height: auto; }
-        .vr-status { max-width: 640px; margin: 0.75rem auto; text-align: center; font-weight: 600; min-height: 1.4em; }
-        .vr-status.ok { color: var(--success-green); }
-        .vr-status.bad { color: var(--pillarbox-red); }
-        .vr-build-tray, .vr-chip-bank {
-            max-width: 640px; margin: 0.5rem auto; min-height: 3rem; display: flex; flex-wrap: wrap;
-            gap: 0.45rem; justify-content: center; align-items: center;
-            padding: 0.75rem; border: 1px dashed var(--border-light); border-radius: 12px; background: rgba(255,255,255,0.7);
-        }
-        .vr-build-tray { border-style: solid; border-color: rgba(1,33,105,0.2); min-height: 4rem; }
-        .vr-chip {
-            font-family: var(--font-primary); font-weight: 600; font-size: 0.95rem;
-            padding: 0.45rem 0.75rem; border-radius: 8px; border: 1px solid rgba(1,33,105,0.2);
-            background: #fff; color: var(--royal-blue); cursor: pointer;
-        }
-        .vr-chip:hover { background: rgba(1,33,105,0.06); }
-        .vr-chip--built { background: rgba(1,33,105,0.08); }
-        .vr-placeholder { color: var(--text-muted); font-size: 0.9rem; }
-        .vr-buckets {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 0.75rem; max-width: 800px; margin: 0.75rem auto;
-        }
-        .vr-bucket {
-            background: #fff; border: 1px solid var(--border-light); border-radius: 12px;
-            padding: 0.65rem; min-height: 120px; cursor: pointer;
-        }
-        .vr-bucket:hover { border-color: var(--royal-blue); }
-        .vr-bucket h3 {
-            font-family: var(--font-primary); font-size: 0.95rem; color: var(--royal-blue);
-            margin: 0 0 0.45rem; text-align: center;
-        }
-        .vr-bucket-drop { display: flex; flex-wrap: wrap; gap: 0.35rem; min-height: 2.5rem; }
-        .vr-pool {
-            display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
-            max-width: 800px; margin: 0.5rem auto 1rem;
-        }
-        .vr-sort-card {
-            text-align: left; max-width: 220px; padding: 0.55rem 0.7rem; border-radius: 10px;
-            border: 1px solid var(--border-light); background: #fff; cursor: pointer;
-            font-family: var(--font-secondary);
-        }
-        .vr-sort-card strong { display: block; color: var(--royal-blue); font-family: var(--font-primary); }
-        .vr-sort-card span { display: block; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
-        .vr-sort-card.selected { border-color: var(--royal-blue); box-shadow: 0 0 0 2px rgba(1,33,105,0.15); }
-        .vr-sort-card--placed { max-width: none; padding: 0.3rem 0.55rem; font-size: 0.85rem; font-weight: 700; color: var(--royal-blue); }
-        .vr-sort-card--placed.ok { border-color: var(--success-green); background: rgba(0,130,59,0.08); }
-        .vr-sort-card--placed.bad { border-color: var(--pillarbox-red); background: rgba(200,16,46,0.08); }
-        .vr-mode-badge {
-            margin: 0 auto 0.75rem; padding: 0.25rem 0.7rem;
-            border-radius: 999px; background: rgba(1,33,105,0.08); color: var(--royal-blue);
-            font-size: 0.82rem; font-weight: 700; text-align: center; width: fit-content;
-            display: block;
-        }
-        .vr-finish {
-            position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.45);
-            display: flex; align-items: center; justify-content: center; padding: 1rem;
-        }
-        .vr-finish[hidden] { display: none !important; }
-        .vr-finish-card {
-            background: #fff; border-radius: 14px; padding: 1.5rem 1.75rem; max-width: 420px;
-            width: 100%; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.2);
-        }
-        .vr-finish-card h2 { color: var(--royal-blue); margin-bottom: 0.5rem; }
-
         /* Auth bar + paywall modal */
         .auth-bar {
             display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: 1200px;
@@ -2102,7 +2022,7 @@
             <p>LingoSpark is a growing collection of interactive ESL tools designed to make learning English fun, fast, and engaging. I build small, practical apps for teachers and learners—vocab games, writing challenges, team activities, and creative practice tools that turn everyday lessons into something students actually enjoy.</p>
             <p>What I am really proud of is the Writing Suite, the feature that allows students to practice their writing skills and expand their glossaries individually and at their own pace. It can also be used by teachers as support for their writing classes.</p>
             <p>More new activities coming soon!</p>
-            <p><strong>Vocab games stay free forever.</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction, Phrase Builder, Category Sort, Gap Fill, Revision Path, Team Challenge, and Live Game never need a plan.</p>
+            <p><strong>Vocab games stay free forever.</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction, Team Challenge, and Live Game never need a plan.</p>
             <p>Writing Suite and Primary English need paid access so the AI tools can stay online. <strong>Buying access is the best way to support LingoSpark</strong> — you unlock premium games for yourself or your students, and help cover running costs.</p>
             <div class="about-pricing">
                 <p style="margin-bottom:0.4rem;"><strong>Writing Suite — 40 zł / month</strong> <span style="font-weight:600;color:var(--text-muted);">($10)</span></p>
@@ -2124,10 +2044,6 @@
                 <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
                 <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
-                <div class="guide-item"><strong>Phrase Builder</strong><p>Rebuild a short phrase from an online example sentence by tapping word chips in the right order. Falls back to a practice phrase if no example is found.</p></div>
-                <div class="guide-item"><strong>Category Sort</strong><p>Sort terms into buckets. Add headers like <code>[Jobs]</code> or <code>## Food</code> above word pairs — or let the game auto-group by part of speech via the dictionary API.</p></div>
-                <div class="guide-item"><strong>Gap Fill</strong><p>Fill the blank in a real example sentence from the Free Dictionary API. Type the missing term.</p></div>
-                <div class="guide-item"><strong>Revision Path</strong><p>Twelve mixed steps (definition→term, term→definition, gap fill). Prioritises words you missed most in Classic Flashcards.</p></div>
 
                 <h3>Live Game</h3>
                 <div class="guide-item"><strong>Live Vocab Quiz</strong><p>Teachers sign in and host a live classroom race. At least 2 players join with a room code and nickname. Each player must type the matching word for 12 definitions in a row — answers are not case-sensitive. One wrong answer sends that player back to the start. First to finish all 12 wins!</p></div>
@@ -2171,7 +2087,7 @@
                 <a href="#/vocab" class="hub-square">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
                     <span class="hub-title">Vocab Review</span>
-                    <span class="hub-sub">Flashcards, Bomb, Grid, Auction &amp; revise games — free forever</span>
+                    <span class="hub-sub">Flashcards, Bomb, Grid &amp; Auction — free forever</span>
                 </a>
                 <a href="#/team" class="hub-square team">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
@@ -2233,10 +2149,6 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word or phrase that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own list.</p><a href="#/auction" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Phrase Builder</h2><p>Rebuild short phrases from real example sentences — type-free chip order practice.</p><a href="#/setup/phrase" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-folder-tree"></i></div><h2>Category Sort</h2><p>Sort words into topic buckets. Use [Category] headers in your list, or auto-sort by part of speech.</p><a href="#/setup/category" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-text-slash"></i></div><h2>Gap Fill</h2><p>Complete authentic example sentences fetched from an online dictionary API.</p><a href="#/setup/gapfill" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-route"></i></div><h2>Revision Path</h2><p>A 12-step mix of type-in, reverse, and gap tasks — weakest words from your flashcard history first.</p><a href="#/setup/revise" class="btn btn-outline">Play Now</a></div>
                 </div>
             </div>
 
@@ -2358,8 +2270,7 @@
                 <p style="margin-bottom: 0.5rem; color: var(--text-dark);"><strong>Paste your vocabulary list below.</strong></p>
                 <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
                     Supported formats: <code>Term = Definition</code> | <code>Term - Definition</code> | <code>Term : Definition</code><br>
-                    Or just paste the <strong>Term</strong> on one line, and the <strong>Definition</strong> on the next line.<br>
-                    <span style="opacity:0.9;">Category Sort: optional headers like <code>[Jobs]</code> or <code>## Food</code> above each group.</span>
+                    Or just paste the <strong>Term</strong> on one line, and the <strong>Definition</strong> on the next line.
                 </p>
                 <textarea id="glossary-input" placeholder="Example formatting:&#10;Apple = A red fruit&#10;House - A place to live"></textarea>
                 
@@ -2406,19 +2317,6 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline" style="margin-top: 0.75rem;" onclick="openFcStatsFromSetup()"><i class="fa-solid fa-chart-bar"></i> View word stats</button>
-                </div>
-
-                <div class="form-group" id="category-setup-note" style="display: none; background: rgba(1,33,105,0.04); border-left-color: var(--royal-blue);">
-                    <label><i class="fa-solid fa-folder-tree"></i> Category Sort tip</label>
-                    <p style="font-size: 0.88rem; margin: 0; color: var(--text-muted);">Optional: group your list with headers like <code>[Jobs]</code> or <code>## Food</code> above each block of <code>term = definition</code> lines. Without headers, the game sorts by part of speech using an online dictionary.</p>
-                </div>
-                <div class="form-group" id="gapfill-setup-note" style="display: none; background: rgba(0,130,59,0.08); border-left-color: var(--success-green);">
-                    <label style="color: var(--success-green);"><i class="fa-solid fa-text-slash"></i> Gap Fill &amp; Phrase Builder</label>
-                    <p style="font-size: 0.88rem; margin: 0; color: var(--text-muted);">Example sentences are fetched from a free online dictionary API. Works best with common English headwords. If no example is found, the game uses a simple practice prompt.</p>
-                </div>
-                <div class="form-group" id="revise-setup-note" style="display: none; background: rgba(200,16,46,0.06); border-left-color: var(--pillarbox-red);">
-                    <label style="color: var(--pillarbox-red);"><i class="fa-solid fa-route"></i> Revision Path</label>
-                    <p style="font-size: 0.88rem; margin: 0; color: var(--text-muted);">Builds a 12-step path from your pasted list, prioritising words you marked “Don’t know” most often in Classic Flashcards (saved in this browser).</p>
                 </div>
             </div>
 
@@ -3055,76 +2953,6 @@
             </div>
         </div>
 
-        <!-- VOCAB REVISE: PHRASE BUILDER -->
-        <div id="screen-phrase" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <h2 class="vr-screen-title"><i class="fa-solid fa-puzzle-piece"></i> Phrase Builder</h2>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
-            </div>
-            <div class="vr-hud"><span id="phrase-progress">1 / 12</span><span id="phrase-score">Score: 0</span></div>
-            <div class="vr-bar"><div class="vr-bar-fill" id="phrase-bar-fill"></div></div>
-            <p class="vr-label">Definition</p>
-            <div class="word-prompt" id="phrase-def">…</div>
-            <p class="vr-hint" id="phrase-hint">Rebuild the phrase — tap words in order.</p>
-            <div class="vr-build-tray" id="phrase-build"></div>
-            <div class="vr-chip-bank" id="phrase-bank"></div>
-            <div class="vr-status" id="phrase-status"></div>
-            <div class="btn-group"><button type="button" class="btn btn-blue" id="phrase-check-btn">Check phrase</button></div>
-        </div>
-
-        <!-- VOCAB REVISE: CATEGORY SORT -->
-        <div id="screen-category" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <h2 class="vr-screen-title"><i class="fa-solid fa-folder-tree"></i> Category Sort</h2>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
-            </div>
-            <div class="vr-hud"><span id="category-progress">0 / 0</span><span id="category-score">Score: 0</span></div>
-            <div class="vr-bar"><div class="vr-bar-fill" id="category-bar-fill"></div></div>
-            <div class="vr-status" id="category-status"></div>
-            <div class="vr-buckets" id="category-buckets"></div>
-            <p class="vr-label">Word pool</p>
-            <div class="vr-pool" id="category-pool"></div>
-            <div class="btn-group"><button type="button" class="btn btn-blue" id="category-check-btn" disabled>Check answers</button></div>
-        </div>
-
-        <!-- VOCAB REVISE: GAP FILL -->
-        <div id="screen-gapfill" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <h2 class="vr-screen-title"><i class="fa-solid fa-text-slash"></i> Gap Fill</h2>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
-            </div>
-            <div class="vr-hud"><span id="gapfill-progress">1 / 12</span><span id="gapfill-score">Score: 0</span></div>
-            <div class="vr-bar"><div class="vr-bar-fill" id="gapfill-bar-fill"></div></div>
-            <p class="vr-label">Your definition</p>
-            <div class="word-prompt vr-prompt-sm" id="gapfill-def">…</div>
-            <p class="vr-label">Example sentence</p>
-            <div class="word-prompt" id="gapfill-sentence">…</div>
-            <input type="text" id="gapfill-answer" class="game-input" placeholder="Type the missing word" autocomplete="off">
-            <div class="vr-status" id="gapfill-status"></div>
-            <div class="btn-group"><button type="button" class="btn btn-blue" id="gapfill-check-btn">Check</button></div>
-        </div>
-
-        <!-- VOCAB REVISE: REVISION PATH -->
-        <div id="screen-revise" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <h2 class="vr-screen-title"><i class="fa-solid fa-route"></i> Revision Path</h2>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
-            </div>
-            <div class="vr-hud"><span id="revise-progress">1 / 12</span><span id="revise-score">Score: 0</span></div>
-            <div class="vr-bar"><div class="vr-bar-fill" id="revise-bar-fill"></div></div>
-            <div class="vr-mode-badge" id="revise-mode">Definition → term</div>
-            <div class="word-prompt" id="revise-prompt">…</div>
-            <input type="text" id="revise-answer" class="game-input" placeholder="Type your answer" autocomplete="off">
-            <div class="vr-status" id="revise-status"></div>
-            <div class="btn-group"><button type="button" class="btn btn-blue" id="revise-check-btn">Check</button></div>
-        </div>
-
-        <div id="vr-finish" class="vr-finish" hidden></div>
-
         <!-- CORE VOCAB: VOCAB AUCTION -->
         <div id="screen-auction" class="screen engine-container auction-screen">
             <div class="top-bar">
@@ -3539,7 +3367,7 @@
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
         const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
-        const VOCAB_GAMES = new Set(['flashcard', 'bomb', 'grid', 'phrase', 'category', 'gapfill', 'revise']);
+        const VOCAB_GAMES = new Set(['flashcard', 'bomb', 'grid']);
 
         function routePath(hash) {
             return decodeURIComponent(String(hash || '').replace(/^#\/?/, '') || 'home');
@@ -3617,19 +3445,6 @@
                         activeGame = arg;
                         if (!parseGlossary()) {
                             goToSetup(arg);
-                            return;
-                        }
-                        const reviseGames = ['phrase', 'category', 'gapfill', 'revise'];
-                        if (reviseGames.includes(arg)) {
-                            const VR = window.VocabRevise;
-                            if (!VR) {
-                                goToSetup(arg);
-                                return;
-                            }
-                            if (arg === 'phrase') VR.initPhraseBuilder();
-                            else if (arg === 'category') VR.initCategorySort();
-                            else if (arg === 'gapfill') VR.initGapFill();
-                            else if (arg === 'revise') VR.initRevisionPath();
                             return;
                         }
                         showScreen(arg);
@@ -4915,7 +4730,7 @@
             activeGame = gameType;
             document.getElementById('setup-title').innerText = 'Game Setup';
             
-            const vocabGames = ['flashcard', 'bomb', 'grid', 'phrase', 'category', 'gapfill', 'revise'];
+            const vocabGames = ['flashcard', 'bomb', 'grid'];
             const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
             const hybridGames = ['odyssey'];
             
@@ -4923,9 +4738,6 @@
             document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
             document.getElementById('grid-settings').style.display = (gameType === 'grid') ? 'block' : 'none';
             document.getElementById('flashcard-settings').style.display = (gameType === 'flashcard') ? 'block' : 'none';
-            document.getElementById('category-setup-note').style.display = (gameType === 'category') ? 'block' : 'none';
-            document.getElementById('gapfill-setup-note').style.display = (gameType === 'gapfill' || gameType === 'phrase') ? 'block' : 'none';
-            document.getElementById('revise-setup-note').style.display = (gameType === 'revise') ? 'block' : 'none';
             document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
             document.getElementById('mission-settings').style.display = (gameType === 'mission') ? 'block' : 'none';
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
@@ -4995,9 +4807,8 @@
         });
 
         function launchSelectedGame() {
-            const vocabGames = ['flashcard', 'bomb', 'grid', 'phrase', 'category', 'gapfill', 'revise'];
+            const vocabGames = ['flashcard', 'bomb', 'grid'];
             const hybridGames = ['odyssey'];
-            const reviseGames = ['phrase', 'category', 'gapfill', 'revise'];
             
             if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
                 if(!parseGlossary()) return;
@@ -5005,19 +4816,6 @@
 
             if (activeGame === 'mission') {
                 if (!resolveSelectedMission()) return;
-            }
-
-            if (reviseGames.includes(activeGame)) {
-                const VR = window.VocabRevise;
-                if (!VR) {
-                    appAlert('Vocab revise games failed to load. Refresh the page and try again.');
-                    return;
-                }
-                if (activeGame === 'phrase') VR.initPhraseBuilder();
-                else if (activeGame === 'category') VR.initCategorySort();
-                else if (activeGame === 'gapfill') VR.initGapFill();
-                else if (activeGame === 'revise') VR.initRevisionPath();
-                return;
             }
             
             showScreen(activeGame);
@@ -8015,22 +7813,13 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         // VOCAB REVIEW: ENGINE CORE
         // ==========================================
         let vocabulary = [];
-        window.getLingoVocabulary = () => vocabulary;
-        window.setLingoVocabulary = (list) => {
-            vocabulary = Array.isArray(list) ? list : [];
-            return vocabulary;
-        };
-
+        
         function parseGlossary() {
             const raw = document.getElementById('glossary-input').value;
             const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
             const parsedList = [];
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                // Skip category headers used by Category Sort: [Jobs], ## Food, Category: Travel
-                if (/^#{1,3}\s+\S/.test(line) || /^\[.+\]$/.test(line) || /^Category:\s*.+/i.test(line)) {
-                    continue;
-                }
                 let separatorMatch = line.match(/(=|-|:|\t)/);
                 if (separatorMatch) {
                     let sep = separatorMatch[0];
@@ -8040,11 +7829,7 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                     parsedList.push({ term, def });
                 } else {
                     if (i + 1 < lines.length) {
-                        const next = lines[i + 1];
-                        if (/^#{1,3}\s+\S/.test(next) || /^\[.+\]$/.test(next) || /^Category:\s*.+/i.test(next)) {
-                            continue;
-                        }
-                        parsedList.push({ term: line, def: next }); i++; 
+                        parsedList.push({ term: line, def: lines[i+1] }); i++; 
                     }
                 }
             }
@@ -8061,7 +7846,7 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                 return false;
             }
 
-            const testDir = document.querySelector('input[name="test-dir"]:checked')?.value || 'def'; 
+            const testDir = document.querySelector('input[name="test-dir"]:checked').value; 
             vocabulary = uniqueList.map(item => {
                 const base = { rawTerm: item.term, rawDef: item.def, originalTerm: item.term };
                 if (testDir === 'term') return { ...base, prompt: item.term, answer: item.def.toLowerCase() };
