@@ -826,6 +826,86 @@ app.get('/api/health', (_req, res) => {
         });
     });
 
+    /** Free Dictionary API proxy — examples & POS for Gap Fill / Phrase Builder / Category Sort. */
+    const dictionaryCache = new Map();
+
+    async function fetchTatoebaExamples(word) {
+        try {
+            const url = `https://tatoeba.org/en/api_v0/search?from=eng&query=${encodeURIComponent(word)}&orphans=no&unapproved=no&sort=relevance`;
+            const res = await fetch(url, {
+                headers: { Accept: 'application/json' },
+                signal: AbortSignal.timeout(8000),
+            });
+            if (!res.ok) return [];
+            const data = await res.json();
+            const results = Array.isArray(data?.results) ? data.results : [];
+            const t = word.toLowerCase();
+            const sentences = [];
+            for (const row of results) {
+                const text = String(row?.text || '').trim();
+                if (!text || text.length > 140) continue;
+                if (!new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(text)) continue;
+                sentences.push(text);
+                if (sentences.length >= 5) break;
+            }
+            // Prefer sentences that contain the word as a whole token
+            return sentences.filter((s) => s.toLowerCase().includes(t));
+        } catch {
+            return [];
+        }
+    }
+
+    app.get('/api/dictionary/:word', async (req, res) => {
+        try {
+            const word = String(req.params.word || '').trim().toLowerCase();
+            if (!word || word.length > 64 || !/^[a-z][a-z0-9' -]*$/i.test(word)) {
+                return res.status(400).json({ error: 'Invalid word.' });
+            }
+            if (dictionaryCache.has(word)) {
+                return res.json(dictionaryCache.get(word));
+            }
+            const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
+            let examples = [];
+            let partOfSpeech = null;
+            let found = false;
+            try {
+                const upstream = await fetch(url, { signal: AbortSignal.timeout(8000) });
+                if (upstream.ok) {
+                    const data = await upstream.json();
+                    const entry = Array.isArray(data) ? data[0] : null;
+                    found = Boolean(entry);
+                    for (const m of entry?.meanings || []) {
+                        if (!partOfSpeech && m.partOfSpeech) partOfSpeech = m.partOfSpeech;
+                        for (const d of m.definitions || []) {
+                            if (d.example) examples.push(String(d.example).trim());
+                        }
+                    }
+                }
+            } catch { /* try Tatoeba below */ }
+
+            if (!examples.length) {
+                const tatoeba = await fetchTatoebaExamples(word);
+                examples = tatoeba;
+                if (tatoeba.length) found = true;
+            }
+
+            const payload = {
+                word,
+                examples: [...new Set(examples)].slice(0, 8),
+                partOfSpeech,
+                found,
+            };
+            dictionaryCache.set(word, payload);
+            if (dictionaryCache.size > 500) {
+                const first = dictionaryCache.keys().next().value;
+                dictionaryCache.delete(first);
+            }
+            res.json(payload);
+        } catch (err) {
+            res.status(502).json({ error: 'Dictionary lookup failed.', detail: err.message });
+        }
+    });
+
     app.use('/packs', (_req, res) => {
         res.status(404).type('text/plain').send('Not found');
     });
