@@ -55,6 +55,7 @@ import {
     joinRoom,
     broadcastLobbyUpdate,
     publicRoomSnapshot,
+    destroyRoom,
 } from './live-game.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 
@@ -530,6 +531,7 @@ async function start() {
                 teamAssignment: req.body?.teamAssignment,
             });
 
+            const joinUrl = `${APP_BASE_URL}/#/live/join?code=${encodeURIComponent(room.code)}`;
             res.json({
                 code: room.code,
                 hostToken: room.hostToken,
@@ -538,10 +540,22 @@ async function start() {
                 answerMode: room.answerMode,
                 gameFormat: room.gameFormat,
                 teamAssignment: room.teamAssignment,
-                joinUrl: `${APP_BASE_URL}/#/live/join?code=${room.code}`,
+                joinUrl,
             });
         } catch (err) {
             res.status(400).json({ error: err.message || 'Could not create room.' });
+        }
+    });
+
+    app.post('/api/live/destroy', requireLogin, async (req, res) => {
+        try {
+            const { code, hostToken } = req.body || {};
+            if (!code || !hostToken) return res.status(400).json({ error: 'code and hostToken required.' });
+            const room = destroyRoom(code, hostToken);
+            if (!room) return res.status(404).json({ error: 'Room not found.' });
+            res.json({ ok: true });
+        } catch (err) {
+            res.status(400).json({ error: err.message || 'Could not close room.' });
         }
     });
 

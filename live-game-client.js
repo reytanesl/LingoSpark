@@ -262,9 +262,12 @@
         content.innerHTML = `
             <h2>🏆 Champion!</h2>
             <p><strong>${esc(winnerNickname)}</strong> completed all 12 terms first!${youMsg}</p>
-            <button type="button" class="btn btn-blue" id="live-winner-dismiss" style="padding:0.75rem 2rem;">Continue</button>`;
+            <button type="button" class="btn btn-blue" id="live-winner-dismiss" style="padding:0.75rem 2rem;">See ranking</button>`;
         screen.hidden = false;
-        $('live-winner-dismiss')?.addEventListener('click', hideLiveWinnerScreen, { once: true });
+        $('live-winner-dismiss')?.addEventListener('click', () => {
+            hideLiveWinnerScreen();
+            showLiveRankingScreen(options.ranking || [], options.winnerId);
+        }, { once: true });
     }
 
     function hideLiveWinnerScreen() {
@@ -278,6 +281,44 @@
         }
         if (confettiAnim) cancelAnimationFrame(confettiAnim);
         confettiAnim = null;
+    }
+
+    function showLiveRankingScreen(players, winnerId) {
+        const screen = $('live-ranking-screen');
+        const list = $('live-ranking-list');
+        if (!screen || !list) return;
+        const ranked = [...(players || [])].sort((a, b) => (b.progress || 0) - (a.progress || 0) || String(a.nickname || '').localeCompare(String(b.nickname || '')));
+        list.innerHTML = ranked.length
+            ? ranked.map((p, i) => `
+                <li>
+                    <span><span class="live-rank-pos">${i + 1}.</span> ${esc(p.nickname)}${p.id === winnerId ? ' 🏆' : ''}</span>
+                    <span>${p.progress || 0}/${p.termsToWin || TERMS_TO_WIN}</span>
+                </li>`).join('')
+            : '<li><span>No ranking data</span></li>';
+        screen.hidden = false;
+        const dismiss = $('live-ranking-dismiss');
+        if (dismiss) {
+            dismiss.onclick = () => { screen.hidden = true; };
+        }
+    }
+
+    function buildJoinUrl(code) {
+        return `${location.origin}/#/live/join?code=${encodeURIComponent(String(code || '').toUpperCase())}`;
+    }
+
+    function setHostJoinArtifacts(code, joinUrl) {
+        const url = joinUrl || buildJoinUrl(code);
+        const linkEl = $('live-host-join-link');
+        if (linkEl) {
+            linkEl.href = url;
+            linkEl.textContent = url.replace(/^https?:\/\//, '');
+        }
+        const qr = $('live-host-qr');
+        if (qr) {
+            qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(url)}`;
+            qr.hidden = false;
+            qr.alt = 'Scan to join Live Spark';
+        }
     }
 
     function applyGlossaryPrefill() {
@@ -454,25 +495,32 @@
         }
         let html = '<div class="live-team-lobby">';
         for (const team of teams) {
-            const members = team.memberNicknames?.length
-                ? esc(team.memberNicknames.join(', '))
-                : '<em>No members yet</em>';
+            const members = (team.memberIds || []).map((id, idx) => {
+                const nick = team.memberNicknames?.[idx] || 'Player';
+                return `<div class="live-team-member-row" data-player-id="${esc(id)}">
+                    <span>${esc(nick)}</span>
+                    <span style="display:inline-flex;gap:0.25rem;">
+                        <button type="button" class="live-remove-player-btn" data-unassign-player="${esc(id)}" title="Remove from team" aria-label="Remove ${esc(nick)} from team"><i class="fa-solid fa-user-minus"></i></button>
+                        <button type="button" class="live-remove-player-btn" data-remove-player="${esc(id)}" title="Remove from room" aria-label="Remove ${esc(nick)} from room"><i class="fa-solid fa-xmark"></i></button>
+                    </span>
+                </div>`;
+            }).join('');
             html += `<div class="live-team-card">
                 <div class="live-team-card-head">
                     <span class="live-team-card-name">${esc(team.name)}</span>
                     <span class="live-muted">${team.memberCount || 0}/${maxMembers}</span>
                 </div>
-                <div class="live-team-card-members">${members}</div>
+                <div class="live-team-card-members">${members || '<em>No members yet</em>'}</div>
             </div>`;
         }
         html += '</div>';
         if (unassigned.length) {
-            html += `<p class="live-team-unassigned"><strong>Waiting for a team:</strong> ${unassigned.map((p) => esc(p.nickname)).join(', ')}</p>`;
+            html += `<p class="live-team-unassigned"><strong>Waiting for a team:</strong></p>`;
             html += unassigned.map((p) => {
                 const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
                 return `<div class="live-lobby-player-row" data-player-id="${esc(p.id)}">
                     <span class="live-lobby-player-name"><strong>${esc(p.nickname)}</strong>${offline}</span>
-                    <button type="button" class="live-remove-player-btn btn btn-grey" data-remove-player="${esc(p.id)}">Remove</button>
+                    <button type="button" class="live-remove-player-btn" data-remove-player="${esc(p.id)}" title="Remove from room" aria-label="Remove ${esc(p.nickname)}"><i class="fa-solid fa-xmark"></i></button>
                 </div>`;
             }).join('');
         }
@@ -500,7 +548,7 @@
             const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
             return `<div class="live-lobby-player-row" data-player-id="${esc(p.id)}">
                 <span class="live-lobby-player-name"><strong>${esc(p.nickname)}</strong>${offline}</span>
-                <button type="button" class="live-remove-player-btn btn btn-grey" data-remove-player="${esc(p.id)}">Remove</button>
+                <button type="button" class="live-remove-player-btn" data-remove-player="${esc(p.id)}" title="Remove from room" aria-label="Remove ${esc(p.nickname)}"><i class="fa-solid fa-xmark"></i></button>
             </div>`;
         }).join('');
     }
@@ -757,8 +805,15 @@
         if (!board || board._removeBound) return;
         board._removeBound = true;
         board.addEventListener('click', (e) => {
+            if (hostState?.phase !== 'lobby') return;
+            const unassignBtn = e.target.closest('[data-unassign-player]');
+            if (unassignBtn) {
+                const playerId = unassignBtn.getAttribute('data-unassign-player');
+                if (playerId) hostUnassignPlayer(playerId);
+                return;
+            }
             const btn = e.target.closest('[data-remove-player]');
-            if (!btn || hostState?.phase !== 'lobby') return;
+            if (!btn) return;
             const playerId = btn.getAttribute('data-remove-player');
             if (playerId) hostRemovePlayer(playerId);
         });
@@ -767,6 +822,11 @@
     function hostRemovePlayer(playerId) {
         if (!hostState || hostState.phase !== 'lobby') return;
         emitWhenConnected('live:remove-player', { playerId });
+    }
+
+    function hostUnassignPlayer(playerId) {
+        if (!hostState || hostState.phase !== 'lobby') return;
+        emitWhenConnected('live:unassign-player', { playerId });
     }
 
     function renderProgressBar(player, { flashReset = false, isWinner = false } = {}) {
@@ -956,7 +1016,7 @@
     function bindHostSocket() {
         const s = ensureSocket();
         bindSocketReconnect('host');
-        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
@@ -970,7 +1030,7 @@
             hostState.teamAssignment = data.snapshot?.teamAssignment || hostState?.teamAssignment || 'random';
             if (data.snapshot?.phase === 'playing') {
                 setHostRaceMode(true);
-                renderHostRaceBoard(data.snapshot?.players || data.progress?.players || []);
+                renderHostRaceBoard(data.progress?.players || []);
             } else {
                 setHostRaceMode(false);
                 renderHostLobbyFromSnapshot(data.snapshot);
@@ -990,11 +1050,15 @@
             hostState.canStart = snap.canStart;
             hostState.gameFormat = snap.gameFormat || hostState?.gameFormat || 'race';
             hostState.teamAssignment = snap.teamAssignment || hostState?.teamAssignment || 'random';
+            hostState.phase = snap.phase || hostState?.phase || 'lobby';
             if (hostState?.phase === 'playing') {
-                renderHostRaceBoard(snap.players || []);
-            } else {
-                renderHostLobbyFromSnapshot(snap);
+                // Race board is driven by progress-update (teams/players as race entities).
+                // Do not re-render from room-state.players (always individuals) — that flashes team → solo.
+                updateHostStartButton(snap);
+                return;
             }
+            setHostRaceMode(false);
+            renderHostLobbyFromSnapshot(snap);
             updateHostStartButton(snap);
         });
 
@@ -1078,9 +1142,33 @@
             if (data.winnerNickname) {
                 showLiveWinnerScreen(data.winnerNickname, false, {
                     teamMode: hostState?.gameFormat === 'captain-crew',
+                    ranking: data.players || [],
+                    winnerId: data.winnerId,
                 });
             }
             updateHostStartButton({ phase: 'finished' });
+            const playAgain = $('live-host-play-again');
+            if (playAgain) playAgain.hidden = false;
+            const startBtn = $('live-host-start');
+            if (startBtn) startBtn.hidden = true;
+        });
+
+        s.on('live:lobby-reset', (data) => {
+            hostState.phase = 'lobby';
+            hostPendingChallenges = new Map();
+            renderHostChallengePanel();
+            setHostRaceMode(false);
+            hideLiveWinnerScreen();
+            const ranking = $('live-ranking-screen');
+            if (ranking) ranking.hidden = true;
+            renderHostLobbyFromSnapshot(data.snapshot);
+            updateHostStartButton(data.snapshot);
+            const playAgain = $('live-host-play-again');
+            if (playAgain) playAgain.hidden = true;
+            const startBtn = $('live-host-start');
+            if (startBtn) startBtn.hidden = false;
+            LiveAudio.startLobby();
+            startHostLobbyPoll(hostState?.code);
         });
 
         s.on('live:error', (data) => handleHostSocketError(data.error));
@@ -1089,7 +1177,7 @@
     function bindPlayerSocket() {
         const s = ensureSocket();
         bindSocketReconnect('player');
-        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:player-removed', 'live:challenge-submitted', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:lobby-reset', 'live:player-removed', 'live:challenge-submitted', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:player-joined', (data) => {
             showLiveError('');
@@ -1224,12 +1312,31 @@
             if (data.winnerNickname) {
                 showLiveWinnerScreen(data.winnerNickname, isWinner, {
                     teamMode: isCaptainCrewMode(),
+                    ranking: data.players || [],
+                    winnerId: data.winnerId,
                 });
             }
             renderProgressBoard($('live-play-progress-board'), data.players || [], { winnerId: data.winnerId });
             const def = $('live-play-definition');
-            if (def) def.textContent = 'Game over!';
+            if (def) def.textContent = 'Game over — wait for the host to play again, or stay for ranking.';
             setAnswerInputsEnabled(false);
+        });
+
+        s.on('live:lobby-reset', (data) => {
+            hideLiveWinnerScreen();
+            const ranking = $('live-ranking-screen');
+            if (ranking) ranking.hidden = true;
+            setLiveGameActive(false);
+            hideCrewPanel();
+            hideChallengeActions();
+            answerPending = false;
+            activeQuestionId = 0;
+            playerState.progress = 0;
+            updateOwnProgress(0, TERMS_TO_WIN);
+            applyPlayerLobbySnapshot(data.snapshot);
+            showPlayerWaiting('Waiting for the host to start…', data.snapshot);
+            LiveAudio.stopGame();
+            LiveAudio.startLobby();
         });
 
         s.on('live:player-removed', (data) => {
@@ -1323,10 +1430,14 @@
         if (submitBtn) {
             submitBtn.hidden = !crew.isCaptain;
             captainSuggestedAnswer = crew.suggestedAnswer || null;
-            if (crew.isCaptain && crew.suggestedAnswer) {
-                submitBtn.textContent = `Submit team answer (${crew.suggestedAnswer})`;
-            } else if (crew.isCaptain) {
-                submitBtn.textContent = 'Submit team answer';
+            if (crew.isCaptain) {
+                submitBtn.textContent = crew.suggestedAnswer
+                    ? `Submit team answer`
+                    : 'Submit team answer';
+                const input = $('live-play-answer');
+                if (input && crew.suggestedAnswer && !input.value.trim() && !input.dataset.captainTouched) {
+                    input.placeholder = `Suggested: ${crew.suggestedAnswer}`;
+                }
             }
         }
 
@@ -1368,12 +1479,17 @@
         const crewVoteBtn = $('live-play-crew-vote-btn');
         const captainSubmit = $('live-play-captain-submit');
 
-        if (typeSection) typeSection.hidden = choiceMode;
+        if (typeSection) {
+            // Captains keep a type box so they can override the suggested crew answer.
+            typeSection.hidden = choiceMode && !(crewMode && q?.isCaptain);
+        }
         if (typeHint) {
-            if (crewMode && !choiceMode) {
-                typeHint.textContent = q?.isCaptain
-                    ? 'Type your answer, or submit the crew majority'
-                    : 'Type your answer, then vote';
+            if (crewMode && q?.isCaptain) {
+                typeHint.textContent = choiceMode
+                    ? 'Type your own answer, or submit the crew suggestion'
+                    : 'Type the team answer (edit suggested text if needed)';
+            } else if (crewMode && !choiceMode) {
+                typeHint.textContent = 'Type your answer, then vote';
             } else {
                 typeHint.textContent = choiceMode ? '' : 'Type the word';
             }
@@ -1444,9 +1560,25 @@
     function submitCaptainAnswer() {
         if (!playerState || answerPending || !playerIsCaptain) return;
         const input = $('live-play-answer');
-        const text = (playerCrewVote || captainSuggestedAnswer || input?.value || '').trim();
+        const typed = (input?.value || '').trim();
+        const text = typed || playerCrewVote || captainSuggestedAnswer || '';
         if (!text) {
-            showLiveError('Wait for crew votes, or enter an answer first.');
+            showLiveError('Type an answer, pick a crew vote, or wait for a suggested answer.');
+            return;
+        }
+        showLiveError('');
+        answerPending = true;
+        setAnswerInputsEnabled(false);
+        ensureSocket().emit('live:submit-answer', { text });
+    }
+
+    function submitPlayerAnswer(choiceText) {
+        if (!playerState || answerPending) return;
+        const input = $('live-play-answer');
+        const fromChoice = typeof choiceText === 'string' ? choiceText.trim() : '';
+        const text = (fromChoice || (input?.value || '')).trim();
+        if (!text) {
+            showLiveError(fromChoice ? 'Choose an answer first.' : 'Type an answer first.');
             return;
         }
         showLiveError('');
@@ -1516,7 +1648,12 @@
             }
         }
         updateOwnProgress(q.progress || 0, q.termsToWin || TERMS_TO_WIN);
-        if (input) input.value = '';
+        if (input) {
+            input.value = '';
+            delete input.dataset.captainTouched;
+            if (captainSuggestedAnswer) input.placeholder = `Suggested: ${captainSuggestedAnswer}`;
+            else input.placeholder = 'Type the word';
+        }
         applyQuestionInputMode(q.inputMode, q);
         if (choiceMode) {
             renderChoiceButtons(q.choices || [], { crewMode });
@@ -1544,37 +1681,87 @@
         $('live-play-result').innerHTML = '';
     }
 
-    function submitPlayerAnswer(choiceText) {
-        if (!playerState || answerPending) return;
-        const input = $('live-play-answer');
-        const text = (choiceText != null ? String(choiceText) : (input?.value || '')).trim();
-        if (!text) {
-            showLiveError(choiceText != null ? 'Choose an answer first.' : 'Type an answer first.');
-            return;
-        }
-        showLiveError('');
-        answerPending = true;
-        setAnswerInputsEnabled(false);
-        ensureSocket().emit('live:submit-answer', { text });
-    }
-
     async function loadWordSetsForHost() {
         const sel = $('live-host-wordset');
         if (!sel) return;
+        const previous = sel.value;
         sel.innerHTML = '<option value="">— Select a saved set —</option>';
-        if (!isHostSignedIn()) { sel.disabled = true; return; }
+        if (!isHostSignedIn()) {
+            sel.disabled = true;
+            const hint = $('live-host-wordset-hint');
+            if (hint) { hint.hidden = false; hint.textContent = 'Sign in to load your saved word sets.'; }
+            return;
+        }
         sel.disabled = false;
         try {
-            const res = await fetch('/api/word-sets', { credentials: 'include' });
-            if (!res.ok) return;
+            const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
+            if (!res.ok) {
+                const hint = $('live-host-wordset-hint');
+                if (hint) { hint.hidden = false; hint.textContent = 'Could not load word sets. Try signing in again.'; }
+                return;
+            }
             const data = await res.json();
-            for (const s of data.sets || []) {
+            const sets = data.sets || [];
+            if (!sets.length) {
+                const hint = $('live-host-wordset-hint');
+                if (hint) { hint.hidden = false; hint.textContent = 'No saved sets yet — create one in Word Sets, or paste a glossary.'; }
+            } else {
+                const hint = $('live-host-wordset-hint');
+                if (hint) hint.hidden = true;
+            }
+            for (const s of sets) {
                 const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.textContent = `${s.name} (${s.item_count || 0})`;
+                opt.value = String(s.id);
+                const meta = [s.category, s.class_name].filter(Boolean).join(' · ');
+                opt.textContent = meta
+                    ? `${s.name} (${s.item_count || 0}) — ${meta}`
+                    : `${s.name} (${s.item_count || 0})`;
                 sel.appendChild(opt);
             }
-        } catch { /* ignore */ }
+            if (previous && [...sel.options].some((o) => o.value === previous)) {
+                sel.value = previous;
+            }
+        } catch {
+            const hint = $('live-host-wordset-hint');
+            if (hint) { hint.hidden = false; hint.textContent = 'Could not load word sets.'; }
+        }
+    }
+
+    async function onHostWordSetSelected() {
+        const setId = $('live-host-wordset')?.value;
+        const hint = $('live-host-wordset-hint');
+        const paste = $('live-host-glossary');
+        if (!setId) {
+            if (hint) hint.hidden = true;
+            return;
+        }
+        try {
+            const res = await fetch(`/api/word-sets/${encodeURIComponent(setId)}`, { credentials: 'same-origin' });
+            const data = await res.json();
+            if (!res.ok || !data.set) {
+                if (hint) { hint.hidden = false; hint.textContent = data.error || 'Could not open that word set.'; }
+                return;
+            }
+            const items = data.set.items || [];
+            const lines = items
+                .map((i) => {
+                    const term = String(i.term || '').trim();
+                    const def = String(i.definition || i.def || '').trim();
+                    if (!term) return '';
+                    return def ? `${term} = ${def}` : term;
+                })
+                .filter(Boolean);
+            const withDefs = items.filter((i) => String(i.term || '').trim() && String(i.definition || i.def || '').trim()).length;
+            if (paste) paste.value = lines.join('\n');
+            if (hint) {
+                hint.hidden = false;
+                hint.textContent = withDefs >= 12
+                    ? `Loaded ${withDefs} term/definition pairs — ready to create the room.`
+                    : `This set has ${withDefs} pairs with definitions (need 12+). Edit in Paste glossary or pick another set.`;
+            }
+        } catch {
+            if (hint) { hint.hidden = false; hint.textContent = 'Failed to load that word set.'; }
+        }
     }
 
     function updateHostAuthUI() {
@@ -1587,15 +1774,51 @@
         if (isHostSignedIn()) loadWordSetsForHost();
     }
 
+    async function closePreviousHostRoom() {
+        const code = sessionStorage.getItem('ls_live_host_code');
+        const hostToken = sessionStorage.getItem('ls_live_host_token');
+        if (!code || !hostToken) {
+            clearStoredHostRoom();
+            hostState = null;
+            return;
+        }
+        try {
+            if (socket?.connected && hostState?.code === code) {
+                await new Promise((resolve) => {
+                    const done = () => resolve();
+                    socket.once('live:room-closed', done);
+                    socket.emit('live:close-room');
+                    setTimeout(done, 800);
+                });
+            } else {
+                await fetch('/api/live/destroy', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, hostToken }),
+                });
+            }
+        } catch { /* ignore */ }
+        clearStoredHostRoom();
+        hostState = null;
+        stopHostLobbyPoll();
+        setHostRaceMode(false);
+        hideLiveWinnerScreen();
+        const ranking = $('live-ranking-screen');
+        if (ranking) ranking.hidden = true;
+    }
+
     async function createHostRoom() {
         showLiveError('');
         await ensureAuthLoaded();
         updateHostAuthUI();
         if (!isHostSignedIn()) {
-            showLiveError('Sign in to host a live game.');
+            showLiveError('Sign in to host Live Spark.');
             if (typeof openAuthModal === 'function') openAuthModal('login');
             return;
         }
+        await closePreviousHostRoom();
+
         const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
         const level = $('live-host-level')?.value || 'intermediate';
         const gameFormat = document.querySelector('input[name="live-game-format"]:checked')?.value || 'race';
@@ -1606,6 +1829,13 @@
             const setId = $('live-host-wordset')?.value;
             if (!setId) { showLiveError('Choose a Word Set.'); return; }
             body.setId = Number(setId);
+            // Prefer pasted/edited glossary from the selected set when present (lets teachers fix missing defs).
+            const pasted = ($('live-host-glossary')?.value || '').trim();
+            if (pasted) {
+                body.source = 'paste';
+                body.terms = pasted;
+                delete body.setId;
+            }
         } else if (source === 'paste') {
             body.terms = $('live-host-glossary')?.value || '';
         }
@@ -1615,7 +1845,7 @@
         try {
             const res = await fetch('/api/live/create', {
                 method: 'POST',
-                credentials: 'include',
+                credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
@@ -1642,17 +1872,14 @@
                     ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)}`
                     : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
             }
-            const joinUrl = data.joinUrl || `${location.origin}${location.pathname}#/live/join?code=${data.code}`;
-            const linkEl = $('live-host-join-link');
-            if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }
-            const qr = $('live-host-qr');
-            if (qr) {
-                qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(joinUrl)}`;
-                qr.hidden = false;
-            }
+            setHostJoinArtifacts(data.code, buildJoinUrl(data.code));
 
             $('live-host-setup-form').hidden = true;
             $('live-host-room-panel').hidden = false;
+            const playAgain = $('live-host-play-again');
+            if (playAgain) playAgain.hidden = true;
+            const startBtn = $('live-host-start');
+            if (startBtn) startBtn.hidden = false;
 
             bindHostSocket();
             emitHostJoin();
@@ -1694,14 +1921,8 @@
                     ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)}`
                     : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
             }
-            const joinUrl = `${location.origin}${location.pathname}#/live/join?code=${code}`;
-            const linkEl = $('live-host-join-link');
-            if (linkEl) { linkEl.href = joinUrl; linkEl.textContent = joinUrl.replace(/^https?:\/\//, ''); }
-            const qr = $('live-host-qr');
-            if (qr) {
-                qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(joinUrl)}`;
-                qr.hidden = false;
-            }
+            const joinUrl = buildJoinUrl(code);
+            setHostJoinArtifacts(code, joinUrl);
             $('live-host-setup-form').hidden = true;
             $('live-host-room-panel').hidden = false;
             bindHostSocket();
@@ -1715,7 +1936,8 @@
         }
     }
 
-    async function openHost() {
+    async function openHost(options = {}) {
+        const fresh = Boolean(options.fresh);
         showLiveError('');
         LiveAudio.stopAll();
         if ($('live-host-setup-form')) $('live-host-setup-form').hidden = true;
@@ -1732,18 +1954,26 @@
             return;
         }
 
-        const resumed = await resumeHostRoomAsync();
-        if (!resumed) {
+        if (fresh) {
+            await closePreviousHostRoom();
             $('live-host-room-panel').hidden = true;
             $('live-host-setup-form').hidden = false;
             applyGlossaryPrefill();
+        } else {
+            const resumed = await resumeHostRoomAsync();
+            if (!resumed) {
+                $('live-host-room-panel').hidden = true;
+                $('live-host-setup-form').hidden = false;
+                applyGlossaryPrefill();
+            }
         }
         if (typeof showScreen === 'function') showScreen('live-host');
+        if (typeof setAppHash === 'function') setAppHash('live/host');
     }
 
-    async function openHostWithGlossary(terms) {
+    async function openHostWithGlossary(terms, options = {}) {
         if (terms) sessionStorage.setItem('ls_live_prefill_glossary', terms);
-        await openHost();
+        await openHost({ ...options, fresh: options.fresh !== false });
     }
 
     async function joinRoom() {
@@ -1831,11 +2061,18 @@
         ensureSocket().emit('live:end-game');
     }
 
+    function hostPlayAgain() {
+        if (!hostState || hostState.phase !== 'finished') return;
+        emitWhenConnected('live:play-again');
+    }
+
     function toggleLiveSourcePanels() {
         const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
         $('live-host-level-row').hidden = source !== 'builtin';
         $('live-host-wordset-row').hidden = source !== 'wordset';
-        $('live-host-paste-row').hidden = source !== 'paste';
+        // Keep paste visible for wordset so loaded lists can be reviewed/edited.
+        $('live-host-paste-row').hidden = source !== 'paste' && source !== 'wordset';
+        if (source === 'wordset') loadWordSetsForHost();
     }
 
     function toggleLiveFormatPanels() {
@@ -1849,24 +2086,28 @@
         document.querySelectorAll('input[name="live-game-format"]').forEach((el) => {
             el.addEventListener('change', toggleLiveFormatPanels);
         });
+        $('live-host-wordset')?.addEventListener('change', onHostWordSetSelected);
         $('live-host-create-btn')?.addEventListener('click', createHostRoom);
         $('live-join-btn')?.addEventListener('click', joinRoom);
         $('live-host-start')?.addEventListener('click', hostStartGame);
+        $('live-host-play-again')?.addEventListener('click', hostPlayAgain);
         $('live-host-end')?.addEventListener('click', hostEnd);
         $('live-host-race-end')?.addEventListener('click', hostEnd);
         bindHostLobbyBoard();
-        $('live-play-submit')?.addEventListener('click', submitPlayerAnswer);
+        $('live-play-submit')?.addEventListener('click', () => submitPlayerAnswer());
         $('live-play-captain-submit')?.addEventListener('click', submitCaptainAnswer);
         $('live-play-crew-vote-btn')?.addEventListener('click', submitCrewVoteFromInput);
         $('live-play-create-team')?.addEventListener('click', () => ensureSocket().emit('live:create-team'));
+        $('live-play-answer')?.addEventListener('input', () => {
+            const input = $('live-play-answer');
+            if (input) input.dataset.captainTouched = input.value.trim() ? '1' : '';
+        });
         $('live-play-answer')?.addEventListener('keydown', (e) => {
             if (e.key !== 'Enter') return;
             e.preventDefault();
             const crewVoteBtn = $('live-play-crew-vote-btn');
             const captainBtn = $('live-play-captain-submit');
             if (playerIsCaptain && captainBtn && !captainBtn.hidden) {
-                const input = $('live-play-answer');
-                if (input?.value?.trim()) playerCrewVote = input.value.trim();
                 submitCaptainAnswer();
             } else if (crewVoteBtn && !crewVoteBtn.hidden) submitCrewVoteFromInput();
             else submitPlayerAnswer();

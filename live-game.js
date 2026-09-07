@@ -989,6 +989,60 @@ export function removePlayer(room, playerId) {
     return player;
 }
 
+export function hostUnassignPlayer(room, playerId) {
+    if (room.phase !== 'lobby') {
+        throw new Error('Teams can only be changed before the game starts.');
+    }
+    if (room.teamAssignment !== 'pick') {
+        throw new Error('This room uses random team assignment.');
+    }
+    const player = room.players.get(playerId);
+    if (!player) throw new Error('Player not found.');
+    leaveTeam(room, playerId, { skipBroadcast: true });
+    touchRoom(room);
+    return player;
+}
+
+export function resetRoomToLobby(room) {
+    room.phase = 'lobby';
+    room.winnerId = null;
+    room.winnerNickname = null;
+    room.startedAt = null;
+    room.finishedAt = null;
+    room.challenges = new Map();
+    for (const player of room.players.values()) {
+        player.termIndex = 0;
+        player.terms = [];
+        player.finished = false;
+        player.pendingChallenge = null;
+        clearPlayerQuestionState(player);
+        if (room.teamAssignment === 'random') {
+            player.teamId = null;
+        }
+    }
+    if (room.teamAssignment === 'random') {
+        room.teams = new Map();
+    } else {
+        for (const team of room.teams.values()) {
+            team.termIndex = 0;
+            team.terms = [];
+            team.finished = false;
+            team.pendingChallenge = null;
+            clearTeamQuestionState(team);
+        }
+    }
+    touchRoom(room);
+    return room;
+}
+
+export function destroyRoom(code, hostToken) {
+    const room = getRoom(code);
+    if (!room) return null;
+    if (hostToken && room.hostToken !== hostToken) return null;
+    rooms.delete(room.code);
+    return room;
+}
+
 function leaveTeam(room, playerId, { skipBroadcast = false } = {}) {
     const player = room.players.get(playerId);
     if (!player?.teamId) return null;
@@ -1326,6 +1380,41 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
         });
 
+        socket.on('live:unassign-player', ({ playerId }) => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            try {
+                hostUnassignPlayer(room, playerId);
+                broadcastLobbyUpdate(room.code);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:play-again', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            try {
+                if (room.phase !== 'finished') {
+                    throw new Error('Play again is only available after a game ends.');
+                }
+                resetRoomToLobby(room);
+                io.to(`room:${room.code}`).emit('live:lobby-reset', {
+                    snapshot: publicRoomSnapshot(room),
+                    progress: progressSnapshot(room),
+                });
+                broadcastLobbyUpdate(room.code);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
         socket.on('live:join-team', ({ teamId }) => {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'player') {
@@ -1511,6 +1600,28 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             endGame(room);
             io.to(`room:${room.code}`).emit('live:game-finished', gameFinishedPayload(room));
             if (onGameEnd) onGameEnd(room);
+        });
+
+        socket.on('live:close-room', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            for (const player of room.players.values()) {
+                if (!player.socketId) continue;
+                io.to(player.socketId).emit('live:player-removed', {
+                    message: 'The host started a new Live Spark room.',
+                });
+                const playerSocket = io.sockets.sockets.get(player.socketId);
+                if (playerSocket) {
+                    playerSocket.leave(`room:${room.code}`);
+                    playerSocket.data.liveRole = null;
+                    playerSocket.data.playerId = null;
+                }
+            }
+            destroyRoom(room.code, room.hostToken);
+            socket.emit('live:room-closed', { ok: true });
         });
 
         socket.on('disconnect', () => {

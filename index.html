@@ -195,10 +195,11 @@
             .home-hub-wrap { padding: 0 1rem; margin: 1.5rem auto 2rem; }
         }
         .hub-live-quiz-circle {
-            display: flex; align-items: center; justify-content: center;
+            display: inline-flex; align-items: center; justify-content: center;
             flex-shrink: 0;
-            width: clamp(74px, 20vw, 98px); height: clamp(74px, 20vw, 98px);
-            border-radius: 50%; margin: 0;
+            min-height: 44px;
+            padding: 0.55rem 1.2rem;
+            border-radius: 30px; margin: 0;
             background: rgba(212, 160, 23, 0.48);
             border: 2px solid rgba(255, 255, 255, 0.65);
             box-shadow: 0 6px 16px rgba(212, 160, 23, 0.28);
@@ -210,9 +211,10 @@
         }
         .hub-live-quiz-text {
             color: #fff; font-family: var(--font-primary); font-weight: 800;
-            font-size: clamp(0.58rem, 2.4vw, 0.76rem); line-height: 1.12;
-            text-align: center; letter-spacing: 0.06em;
+            font-size: clamp(0.78rem, 2.6vw, 0.95rem); line-height: 1;
+            text-align: center; letter-spacing: 0.04em;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+            white-space: nowrap;
         }
         .hub-bar {
             display: flex; align-items: center; gap: 1rem;
@@ -294,8 +296,44 @@
         .live-lobby-player-row:last-child { border-bottom: none; }
         .live-lobby-player-name strong { color: var(--royal-blue); }
         .live-remove-player-btn {
-            flex-shrink: 0; font-size: 0.78rem; padding: 0.28rem 0.65rem;
+            flex-shrink: 0;
+            width: 28px; height: 28px; min-width: 28px; padding: 0;
+            border-radius: 50%; border: none;
+            background: rgba(200, 16, 46, 0.12); color: var(--pillarbox-red);
+            font-size: 0.85rem; line-height: 1;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: background 0.15s ease, transform 0.15s ease;
         }
+        .live-remove-player-btn:hover {
+            background: rgba(200, 16, 46, 0.22);
+            transform: scale(1.06);
+        }
+        .live-team-member-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+            padding: 0.25rem 0;
+        }
+        .live-ranking-screen {
+            position: fixed; inset: 0; z-index: 620; display: flex; align-items: center; justify-content: center;
+            background: rgba(1, 33, 105, 0.55); padding: 1.25rem;
+        }
+        .live-ranking-screen[hidden] { display: none !important; }
+        .live-ranking-card {
+            background: var(--bright-white); border-radius: 16px; padding: 1.5rem 1.35rem;
+            width: min(420px, 100%); max-height: min(80vh, 640px); overflow: auto;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.22); text-align: center;
+        }
+        .live-ranking-card h2 {
+            margin: 0 0 1rem; font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.5rem;
+        }
+        .live-ranking-list { list-style: none; margin: 0 0 1.25rem; padding: 0; text-align: left; }
+        .live-ranking-list li {
+            display: flex; justify-content: space-between; gap: 0.75rem;
+            padding: 0.55rem 0.35rem; border-bottom: 1px solid var(--border-light);
+            font-weight: 600;
+        }
+        .live-ranking-list li:first-child { color: var(--royal-blue); }
+        .live-ranking-list .live-rank-pos { color: var(--text-muted); min-width: 1.5rem; }
+        .live-host-wordset-hint { font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0; }
         .live-progress-track { height: 24px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
         .live-progress-fill { height: 100%; background: linear-gradient(90deg, var(--royal-blue), #3d7be8); transition: width 0.35s ease; border-radius: 999px; }
         .live-progress-fill.winner { background: linear-gradient(90deg, #d4a017, #f0c040); }
@@ -2041,8 +2079,8 @@
     <header>
         <div class="header-inner">
             <div class="header-side header-side--left">
-                <a href="#/live" class="hub-live-quiz-circle" aria-label="Live Quiz">
-                    <span class="hub-live-quiz-text">LIVE<br>QUIZ</span>
+                <a href="#/live/host" class="hub-live-quiz-circle" aria-label="Live Spark" onclick="return window.LiveGame ? (LiveGame.openHost({ fresh: true }), false) : true">
+                    <span class="hub-live-quiz-text">Live Spark</span>
                 </a>
             </div>
             <div class="main-logo-container">
@@ -2076,7 +2114,7 @@
             <p>LingoSpark is a growing collection of interactive ESL tools designed to make learning English fun, fast, and engaging. I build small, practical apps for teachers and learners—vocab games, writing challenges, team activities, and creative practice tools that turn everyday lessons into something students actually enjoy.</p>
             <p>What I am really proud of is the Writing Suite, the feature that allows students to practice their writing skills and expand their glossaries individually and at their own pace. It can also be used by teachers as support for their writing classes.</p>
             <p>More new activities coming soon!</p>
-            <p><strong>Vocab games stay free forever.</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction, Team Challenge, and Live Game never need a plan.</p>
+            <p><strong>Vocab games stay free forever.</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction, Team Challenge, and Live Spark never need a plan.</p>
             <p>Writing Suite and Primary English need paid access so the AI tools can stay online. <strong>Buying access is the best way to support LingoSpark</strong> — you unlock premium games for yourself or your students, and help cover running costs.</p>
             <div class="about-pricing">
                 <p style="margin-bottom:0.4rem;"><strong>Writing Suite — 40 zł / month</strong> <span style="font-weight:600;color:var(--text-muted);">($10)</span></p>
@@ -2084,7 +2122,7 @@
                 <p style="margin-bottom:0;font-size:0.88rem;">Checkout is in USD on Buy Me a Coffee (same email as your LingoSpark account). PLN is the local price at about 4 zł per $1 — card billing in złoty comes later.</p>
             </div>
             <p><a href="https://buymeacoffee.com/lingospark/extras" id="about-premium-link" target="_blank" rel="noopener">Go Premium — open the shop</a></p>
-            <p>Teachers: exam vocab packs (ósmoklasista / Matura) with paste-ready lists for Bomb Defusal, Flashcards, Auction and Live Quiz — email <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a> for the ZIP.</p>
+            <p>Teachers: exam vocab packs (ósmoklasista / Matura) with paste-ready lists for Bomb Defusal, Flashcards, Auction and Live Spark — email <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a> for the ZIP.</p>
             <p>For any questions, email me: <a href="mailto:karolsenk@gmail.com">karolsenk@gmail.com</a></p>
         </div>
 
@@ -2099,8 +2137,8 @@
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
                 <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
 
-                <h3>Live Game</h3>
-                <div class="guide-item"><strong>Live Vocab Quiz</strong><p>Teachers sign in and host a live classroom race. At least 2 players join with a room code and nickname. Each player must type the matching word for 12 definitions in a row — answers are not case-sensitive. One wrong answer sends that player back to the start. First to finish all 12 wins!</p></div>
+                <h3>Live Spark</h3>
+                <div class="guide-item"><strong>Live Spark</strong><p>Teachers sign in and host a live classroom race. At least 2 players join with a room code and nickname. Each player must type the matching word for 12 definitions in a row — answers are not case-sensitive. One wrong answer sends that player back to the start. First to finish all 12 wins!</p></div>
 
                 <h3>Team Challenge</h3>
                 <div class="guide-item"><strong>Sentence Scramble</strong><p>Race to rebuild correct sentences from scrambled words. Great on a classroom projector.</p></div>
@@ -2240,19 +2278,19 @@
                     <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 </div>
                 <div class="category-header">
-                    <i class="fa-solid fa-bolt cat-icon"></i><h2>Live Game</h2>
+                    <i class="fa-solid fa-bolt cat-icon"></i><h2>Live Spark</h2>
                 </div>
                 <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Race to complete 12 definitions in a row. Type the matching term — not case-sensitive. One mistake sends you back to the start. Minimum 2 players.</p>
                 <div class="grid">
                     <div class="card">
                         <div class="icon-container"><i class="fa-solid fa-chalkboard-user"></i></div>
-                        <h2>Host Live Game</h2>
+                        <h2>Host Live Spark</h2>
                         <p>Sign in, pick a word list, and share the room code with your class. Control rounds from your screen.</p>
-                        <a href="#/live/host" class="btn btn-blue">Host a Game</a>
+                        <a href="#/live/host" class="btn btn-blue" onclick="return window.LiveGame ? (LiveGame.openHost({ fresh: true }), false) : true">Host Live Spark</a>
                     </div>
                     <div class="card">
                         <div class="icon-container"><i class="fa-solid fa-mobile-screen"></i></div>
-                        <h2>Join a Game</h2>
+                        <h2>Join Live Spark</h2>
                         <p>Enter the room code from your teacher and pick a nickname. No account needed.</p>
                         <a href="#/live/join" class="btn btn-outline">Join with Code</a>
                     </div>
@@ -2465,7 +2503,7 @@
 
             <div style="text-align: center; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.65rem; align-items: center;">
                 <button class="btn btn-blue" style="font-size: 1.2rem; padding: 1rem 3rem;" onclick="launchSelectedGame()">Launch Game <i class="fa-solid fa-rocket"></i></button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" id="vocab-setup-live-btn" onclick="hostLiveQuizFromVocab()" style="padding: 0.65rem 1.25rem;"><i class="fa-solid fa-bolt"></i> Host Live Quiz with this list</button>
+                <button type="button" class="btn btn-outline live-vocab-live-btn" id="vocab-setup-live-btn" onclick="hostLiveQuizFromVocab()" style="padding: 0.65rem 1.25rem;"><i class="fa-solid fa-bolt"></i> Host Live Spark with this list</button>
             </div>
         </div>
 
@@ -2991,7 +3029,7 @@
         <div id="screen-bomb" class="screen engine-container">
             <div class="top-bar">
                 <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
+                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
             </div>
             <i id="bomb-icon" class="fa-solid fa-bomb bomb-icon pulse"></i>
             <div id="timer-display">60</div>
@@ -3007,7 +3045,7 @@
         <div id="screen-grid" class="screen engine-container">
             <div class="top-bar">
                 <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
+                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
                 <button class="btn btn-outline" onclick="initGridTerritory()"><i class="fa-solid fa-rotate-right"></i> Reset Board</button>
             </div>
             <div id="turn-display" class="turn-indicator turn-blue">Team 1's Turn (X)</div>
@@ -3018,7 +3056,7 @@
         <div id="screen-flashcard" class="screen engine-container">
             <div class="top-bar">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
+                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
                 <button type="button" class="btn btn-outline" onclick="showFcStatsModal()"><i class="fa-solid fa-chart-bar"></i> Stats</button>
             </div>
             <div class="fc-counter" id="fc-counter">Cards left in deck: 0</div>
@@ -3050,7 +3088,7 @@
         <div id="screen-live-host" class="screen engine-container">
             <div class="top-bar">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-                <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-chalkboard-user"></i> Host Live Game</h2>
+                <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-chalkboard-user"></i> Host Live Spark</h2>
                 <div style="width:80px;"></div>
             </div>
             <div id="live-error-banner" hidden></div>
@@ -3090,6 +3128,7 @@
                 <div id="live-host-wordset-row" class="live-setup-field" hidden>
                     <label for="live-host-wordset"><i class="fa-solid fa-folder-open"></i> Word Set</label>
                     <select id="live-host-wordset" class="live-setup-select"></select>
+                    <p id="live-host-wordset-hint" class="live-host-wordset-hint" hidden></p>
                 </div>
                 <div id="live-host-paste-row" class="live-setup-field" hidden>
                     <label for="live-host-glossary"><i class="fa-solid fa-paste"></i> Glossary</label>
@@ -3169,6 +3208,7 @@
                         <div id="live-host-progress-board" style="margin-top:1rem;"></div>
                         <div class="btn-group" style="margin-top:1.25rem;">
                             <button type="button" id="live-host-start" class="btn btn-blue" disabled>Start game (need 2+ players)</button>
+                            <button type="button" id="live-host-play-again" class="btn btn-blue" hidden>Play again</button>
                             <button type="button" id="live-host-end" class="btn btn-grey">End game</button>
                         </div>
                     </div>
@@ -3201,7 +3241,7 @@
             </div>
             <div class="live-mobile-join" style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:520px;margin:0 auto;width:100%;">
                 <div id="live-join-error" class="live-player-error" hidden></div>
-                <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Quiz</h2>
+                <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Spark</h2>
                 <div class="live-join-split">
                     <div class="live-join-code-col">
                         <label for="live-join-code" style="font-weight:600;">Room code</label>
@@ -3272,6 +3312,13 @@
     <div id="live-winner-screen" class="live-winner-screen" hidden>
         <div class="live-winner-cup" aria-hidden="true">🏆</div>
         <div id="live-winner-content" class="live-winner-content"></div>
+    </div>
+    <div id="live-ranking-screen" class="live-ranking-screen" hidden>
+        <div class="live-ranking-card">
+            <h2>Final ranking</h2>
+            <ol id="live-ranking-list" class="live-ranking-list"></ol>
+            <button type="button" class="btn btn-blue" id="live-ranking-dismiss">Continue</button>
+        </div>
     </div>
     <img src="Projekt bez nazwy.png" alt="" class="live-game-logo" id="live-game-logo" aria-hidden="true">
 
@@ -4426,7 +4473,7 @@
                         flashcards: 'Flashcards', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
-                        live_host: 'Live Game (host)'
+                        live_host: 'Live Spark (host)'
                     };
                     for (const t of data.gameTotals) {
                         html += `<div class="progress-tile"><h4>${gameNames[t.game_key] || t.game_key}</h4><div class="pt-val">${t.sessions_count}</div><div class="pt-label">sessions · ${t.total_points} pts · best ${t.best_score}</div></div>`;
@@ -4460,7 +4507,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Game (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -8238,11 +8285,11 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
                 return def ? `${term} = ${def}` : term;
             }).filter(Boolean).join('\n');
             if (!terms) {
-                appAlert('Add at least 4 word/definition pairs before hosting Live Quiz.');
+                appAlert('Add at least 4 word/definition pairs before hosting Live Spark.');
                 return;
             }
             if (window.LiveGame?.openHostWithGlossary) {
-                await window.LiveGame.openHostWithGlossary(terms);
+                await window.LiveGame.openHostWithGlossary(terms, { fresh: true });
             } else {
                 sessionStorage.setItem('ls_live_prefill_glossary', terms);
                 location.hash = '#/live/host';
