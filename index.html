@@ -1735,6 +1735,25 @@
             padding: 0.85rem 0 0.35rem;
         }
         .ws-editor-actions .btn { pointer-events: auto; box-shadow: 0 8px 22px rgba(1, 33, 105, 0.22); }
+        .ws-paste-panel {
+            background: rgba(1, 33, 105, 0.04); border: 2px solid var(--border-light);
+            border-left: 4px solid var(--royal-blue); border-radius: 10px;
+            padding: 1rem 1.1rem; margin: 0 0 1.15rem;
+        }
+        .ws-paste-panel > label {
+            display: block; font-weight: 700; color: var(--royal-blue); margin-bottom: 0.35rem;
+        }
+        .ws-paste-panel p {
+            font-size: 0.88rem; color: var(--text-muted); margin: 0 0 0.65rem; line-height: 1.45;
+        }
+        .ws-paste-panel textarea {
+            width: 100%; min-height: 140px; padding: 0.75rem 0.85rem;
+            border: 2px solid var(--border-light); border-radius: 8px;
+            font-family: var(--font-secondary); font-size: 0.98rem; resize: vertical;
+            background: #fff; color: var(--text-dark); margin-bottom: 0.65rem;
+        }
+        .ws-paste-panel textarea:focus { outline: none; border-color: var(--royal-blue); }
+        .ws-paste-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
         @media (max-width: 700px) {
             .ws-edit-fields { grid-template-columns: 1fr; gap: 0.95rem; }
             .ws-editor-name { font-size: 1.2rem; }
@@ -4053,7 +4072,8 @@
                 items: normaliseWsItems(items),
                 isDemo: !!isDemo,
                 category: String(category || '').trim(),
-                className: String(className || '').trim()
+                className: String(className || '').trim(),
+                pasteDraft: ''
             };
             if (!wsEditor.items.length) wsEditor.items.push({ id: null, term: '', definition: '' });
             showWordSetEditorPane(true);
@@ -4083,12 +4103,87 @@
             if (catEl) wsEditor.category = catEl.value;
             const classEl = document.getElementById('ws-editor-class');
             if (classEl) wsEditor.className = classEl.value;
+            const pasteEl = document.getElementById('ws-editor-paste');
+            if (pasteEl) wsEditor.pasteDraft = pasteEl.value;
             const rows = document.querySelectorAll('#ws-editor .ws-edit-row');
             wsEditor.items = Array.from(rows).map((row) => ({
                 id: Number(row.getAttribute('data-item-id')) || null,
                 term: (row.querySelector('[data-ws="term"]')?.value || '').trimStart(),
                 definition: row.querySelector('[data-ws="def"]')?.value || ''
             }));
+        }
+
+        function parseGlossaryRaw(raw) {
+            const lines = String(raw || '').split('\n').map((l) => l.trim()).filter((l) => l !== '');
+            const parsedList = [];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const separatorMatch = line.match(/(=|-|:|\t)/);
+                if (separatorMatch) {
+                    const sep = separatorMatch[0];
+                    const parts = line.split(sep);
+                    const term = parts[0].trim();
+                    const definition = parts.slice(1).join(sep).trim();
+                    if (term) parsedList.push({ term, definition });
+                } else if (i + 1 < lines.length) {
+                    parsedList.push({ term: line, definition: lines[i + 1] });
+                    i++;
+                } else {
+                    parsedList.push({ term: line, definition: '' });
+                }
+            }
+            const uniqueMap = new Map();
+            parsedList.forEach((item) => {
+                const key = String(item.term || '').toLowerCase();
+                if (!key || uniqueMap.has(key)) return;
+                uniqueMap.set(key, {
+                    id: null,
+                    term: String(item.term || '').trim().slice(0, 200),
+                    definition: String(item.definition || '').trim().slice(0, 500)
+                });
+            });
+            return Array.from(uniqueMap.values());
+        }
+
+        async function wsEditorApplyPaste(mode) {
+            if (!wsEditor) return;
+            syncWsEditorFromDom();
+            const raw = String(wsEditor.pasteDraft || '').trim();
+            if (!raw) {
+                appAlert('Paste a vocabulary list first (Term = Definition, one pair per line).');
+                return;
+            }
+            const imported = parseGlossaryRaw(raw);
+            if (!imported.length) {
+                appAlert('No valid words found in the pasted list.');
+                return;
+            }
+            if (imported.length > 500) {
+                appAlert('A set can have at most 500 words.');
+                return;
+            }
+            const existingFilled = (wsEditor.items || []).filter((item) => String(item.term || '').trim());
+            if (mode === 'replace' && existingFilled.length) {
+                const ok = await appConfirm(`Replace the current ${existingFilled.length} card(s) with ${imported.length} pasted word(s)?`);
+                if (!ok) return;
+            }
+            if (mode === 'append') {
+                const seen = new Set(existingFilled.map((item) => String(item.term || '').toLowerCase()));
+                const toAdd = imported.filter((item) => !seen.has(String(item.term || '').toLowerCase()));
+                if (!toAdd.length) {
+                    appAlert('All pasted words are already in this list.');
+                    return;
+                }
+                if (existingFilled.length + toAdd.length > 500) {
+                    appAlert('A set can have at most 500 words.');
+                    return;
+                }
+                wsEditor.items = [...existingFilled, ...toAdd];
+            } else {
+                wsEditor.items = imported;
+            }
+            wsEditor.pasteDraft = '';
+            renderWordSetEditor();
         }
 
         function growWsEditorFields(host) {
@@ -4108,7 +4203,7 @@
             const filled = wsEditor.items.filter((item) => String(item.term || '').trim()).length;
             const note = wsEditor.isDemo
                 ? 'This is a demo set. Saving creates your own copy — the shared demo stays unchanged.'
-                : 'Change the name, category, class, or any word below. Removing a word also clears its flashcard progress.';
+                : 'Paste a full list below, or edit cards one by one. You can also set category and class for classroom organisation.';
             const rows = wsEditor.items.map((item, i) => `
                 <div class="ws-edit-row" data-item-id="${item.id || ''}">
                     <div class="ws-edit-card-top">
@@ -4147,6 +4242,15 @@
                     <label>Class
                         <input type="text" id="ws-editor-class" list="ws-class-suggestions" maxlength="80" placeholder="e.g. 8A, Matura PR" value="${esc(wsEditor.className || '')}">
                     </label>
+                </div>
+                <div class="ws-paste-panel">
+                    <label><i class="fa-solid fa-paste"></i> Paste a vocabulary list</label>
+                    <p>Same formats as Vocab Review: <code>Term = Definition</code> | <code>Term - Definition</code> | <code>Term : Definition</code>. Or put the term on one line and the definition on the next.</p>
+                    <textarea id="ws-editor-paste" placeholder="Example:&#10;Apple = A red fruit&#10;House - A place to live">${esc(wsEditor.pasteDraft || '')}</textarea>
+                    <div class="ws-paste-actions">
+                        <button type="button" class="btn btn-blue" onclick="wsEditorApplyPaste('replace')"><i class="fa-solid fa-file-import"></i> Import pasted list</button>
+                        <button type="button" class="btn btn-outline" onclick="wsEditorApplyPaste('append')"><i class="fa-solid fa-plus"></i> Add to existing cards</button>
+                    </div>
                 </div>
                 <div id="ws-editor-rows">${rows}</div>
                 <button type="button" class="ws-add-card" onclick="wsEditorAddRow()"><i class="fa-solid fa-plus"></i> Add a card</button>
@@ -4289,13 +4393,7 @@
             if (!raw.trim()) { appAlert('Paste a glossary first in Vocab Review.'); return; }
             const category = (document.getElementById('mysets-save-category')?.value || '').trim().slice(0, 80);
             const className = (document.getElementById('mysets-save-class')?.value || '').trim().slice(0, 80);
-            const lines = raw.trim().split(/\n+/);
-            const items = [];
-            for (const line of lines) {
-                const sep = line.match(/^(.+?)\s*[=\-:]\s*(.+)$/);
-                if (sep) items.push({ term: sep[1].trim(), definition: sep[2].trim() });
-                else items.push({ term: line.trim(), definition: '' });
-            }
+            const items = parseGlossaryRaw(raw);
             if (items.length < 1) { appAlert('No valid items found.'); return; }
             try {
                 const res = await fetch('/api/word-sets', {
