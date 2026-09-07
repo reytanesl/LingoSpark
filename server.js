@@ -412,11 +412,11 @@ async function start() {
 
     app.post('/api/word-sets', requireLogin, async (req, res) => {
         try {
-            const { name, setType, testDirection, items } = req.body;
+            const { name, setType, testDirection, items, category, className } = req.body;
             if (!name || !items || !Array.isArray(items) || items.length < 1) {
                 return res.status(400).json({ error: 'Name and at least 1 item required' });
             }
-            const ws = await createWordSet(req.user.id, { name, setType, testDirection, items });
+            const ws = await createWordSet(req.user.id, { name, setType, testDirection, items, category, className });
             res.json({ set: ws });
         } catch (err) { res.status(400).json({ error: err.message }); }
     });
@@ -442,8 +442,8 @@ async function start() {
 
     app.put('/api/word-sets/:id', requireLogin, async (req, res) => {
         try {
-            const { name, testDirection, items } = req.body;
-            const ws = await updateWordSet(Number(req.params.id), req.user.id, { name, testDirection, items });
+            const { name, testDirection, items, category, className } = req.body;
+            const ws = await updateWordSet(Number(req.params.id), req.user.id, { name, testDirection, items, category, className });
             if (!ws) return res.status(404).json({ error: 'Not found' });
             res.json({ set: ws });
         } catch (err) { res.status(400).json({ error: err.message }); }

@@ -111,6 +111,10 @@ export async function initDb() {
         );
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_word_sets_user ON word_sets (user_id)`);
+    await db.query(`ALTER TABLE word_sets ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT ''`);
+    await db.query(`ALTER TABLE word_sets ADD COLUMN IF NOT EXISTS class_name TEXT NOT NULL DEFAULT ''`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_word_sets_user_cat ON word_sets (user_id, category)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_word_sets_user_class ON word_sets (user_id, class_name)`);
 
     await db.query(`
         CREATE TABLE IF NOT EXISTS word_set_items (
@@ -574,16 +578,18 @@ export async function endAnalyticsVisit({ visitId, visitorSessionId, durationMs 
 // WORD SETS CRUD
 // ==========================================
 
-export async function createWordSet(userId, { name, setType = 'vocab', testDirection = 'def', items = [] }) {
+export async function createWordSet(userId, { name, setType = 'vocab', testDirection = 'def', items = [], category = '', className = '' }) {
     const db = getPool();
     const trimName = (name || '').trim().slice(0, 80);
     if (!trimName) throw new Error('Set name is required');
     if (items.length > 500) throw new Error('Max 500 items per set');
+    const cat = String(category || '').trim().slice(0, 80);
+    const cls = String(className || '').trim().slice(0, 80);
 
     const setResult = await db.query(
-        `INSERT INTO word_sets (user_id, name, set_type, test_direction, item_count)
-         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [userId, trimName, setType === 'pe_terms' ? 'pe_terms' : 'vocab', testDirection === 'term' ? 'term' : 'def', items.length]
+        `INSERT INTO word_sets (user_id, name, set_type, test_direction, item_count, category, class_name)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [userId, trimName, setType === 'pe_terms' ? 'pe_terms' : 'vocab', testDirection === 'term' ? 'term' : 'def', items.length, cat, cls]
     );
     const ws = setResult.rows[0];
 
@@ -634,7 +640,7 @@ export async function getWordSet(setId, userId) {
     return { ...ws, items: itemsResult.rows };
 }
 
-export async function updateWordSet(setId, userId, { name, testDirection, items }) {
+export async function updateWordSet(setId, userId, { name, testDirection, items, category, className }) {
     const db = getPool();
     const client = await db.connect();
     try {
@@ -660,6 +666,14 @@ export async function updateWordSet(setId, userId, { name, testDirection, items 
         if (testDirection !== undefined) {
             updates.push(`test_direction = $${idx++}`);
             vals.push(testDirection === 'term' ? 'term' : 'def');
+        }
+        if (category !== undefined) {
+            updates.push(`category = $${idx++}`);
+            vals.push(String(category || '').trim().slice(0, 80));
+        }
+        if (className !== undefined) {
+            updates.push(`class_name = $${idx++}`);
+            vals.push(String(className || '').trim().slice(0, 80));
         }
 
         if (items !== undefined) {

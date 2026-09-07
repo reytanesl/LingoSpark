@@ -92,7 +92,15 @@
             align-items: center; 
             justify-content: center; 
         }
-        
+        .main-logo-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 0;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .main-logo-link:hover { opacity: 0.92; }
         .main-logo-container img { 
             width: auto; 
             max-width: 100%; 
@@ -1628,6 +1636,31 @@
         .ws-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
         .ws-card-header h3 { margin: 0; font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.05rem; }
         .ws-card-meta { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+        .ws-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.15rem 0 0.55rem; }
+        .ws-badge {
+            display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em;
+            padding: 0.18rem 0.5rem; border-radius: 999px; background: rgba(1,33,105,0.08); color: var(--royal-blue);
+        }
+        .ws-badge--class { background: rgba(200,16,46,0.08); color: var(--pillarbox-red); }
+        .ws-filters {
+            display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: flex-end;
+            max-width: 860px; margin: 0 auto 1rem; text-align: left;
+        }
+        .ws-filters label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); flex: 1 1 160px; }
+        .ws-filters select, .ws-meta-fields input {
+            padding: 0.45rem 0.6rem; border: 2px solid var(--border-light); border-radius: 8px;
+            font-size: 0.95rem; font-family: var(--font-secondary); background: #fff;
+        }
+        .ws-meta-fields {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin: 0.75rem 0 1rem;
+        }
+        .ws-meta-fields label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
+        @media (max-width: 640px) { .ws-meta-fields { grid-template-columns: 1fr; } }
+        .vocab-sets-toolbar {
+            display: flex; flex-wrap: wrap; gap: 0.65rem; justify-content: center; align-items: center;
+            margin: 0 auto 1.5rem; max-width: 720px;
+        }
+        .vocab-sets-toolbar .btn { min-height: 44px; }
         .ws-card-bar { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; margin-bottom: 0.6rem; }
         .ws-card-bar-fill { height: 100%; background: var(--success-green); border-radius: 3px; transition: width 0.3s; }
         .ws-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
@@ -1994,7 +2027,9 @@
                 </a>
             </div>
             <div class="main-logo-container">
-                <img src="Projekt bez nazwy.png" alt="LingoSpark Logo">
+                <a href="#/home" class="main-logo-link" onclick="return goHome(event)" aria-label="LingoSpark home">
+                    <img src="Projekt bez nazwy.png" alt="LingoSpark Logo">
+                </a>
             </div>
             <div class="header-side header-side--right" aria-hidden="true"></div>
         </div>
@@ -2104,19 +2139,44 @@
 
         <div id="section-mysets" class="home-section">
             <div class="section-back-row">
-                <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
             </div>
             <div class="category-header">
                 <i class="fa-solid fa-book cat-icon"></i><h2>Word Sets</h2>
             </div>
-            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — including informal → formal pairs from Vocabulary Upgrade — and track mastery. Open <strong>Edit</strong> on any list to rename it and change each word or phrase.</p>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — organise them by <strong>category</strong> and <strong>class</strong>. Open <strong>Edit</strong> on any list to rename it and change each word or phrase.</p>
             <div id="ws-editor" class="ws-editor" hidden></div>
             <div id="mysets-browse">
+            <div style="text-align:center; margin-bottom: 1rem;">
+                <button type="button" class="btn btn-blue" onclick="createWordSetFromVocab()"><i class="fa-solid fa-plus"></i> Create word set</button>
+            </div>
+            <div class="ws-filters" id="ws-filters" hidden>
+                <label>Category
+                    <select id="ws-filter-category" onchange="renderSavedWordSets()">
+                        <option value="">All categories</option>
+                    </select>
+                </label>
+                <label>Class
+                    <select id="ws-filter-class" onchange="renderSavedWordSets()">
+                        <option value="">All classes</option>
+                    </select>
+                </label>
+            </div>
             <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue); max-width: 640px; margin-left: auto; margin-right: auto;">
                 <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
                 <input type="text" id="mysets-save-name" placeholder="Set name..." maxlength="80" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border-light); border-radius: 6px; margin-bottom: 0.5rem;">
+                <div class="ws-meta-fields" style="margin:0 0 0.5rem;">
+                    <label>Category
+                        <input type="text" id="mysets-save-category" list="ws-category-suggestions" placeholder="e.g. Jobs, Food" maxlength="80">
+                    </label>
+                    <label>Class
+                        <input type="text" id="mysets-save-class" list="ws-class-suggestions" placeholder="e.g. 8A, Matura PR" maxlength="80">
+                    </label>
+                </div>
                 <button class="btn btn-blue" style="width: 100%;" onclick="saveCurrentGlossary()">Save</button>
             </div>
+            <datalist id="ws-category-suggestions"></datalist>
+            <datalist id="ws-class-suggestions"></datalist>
             <div id="mysets-list" style="min-height: 60px;">
                 <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
             </div>
@@ -2125,7 +2185,7 @@
 
         <div id="section-progress" class="home-section">
             <div class="section-back-row">
-                <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
             </div>
             <div class="category-header">
                 <i class="fa-solid fa-chart-line cat-icon"></i><h2>My Progress</h2>
@@ -2138,12 +2198,16 @@
 
             <div id="section-vocab" class="home-section">
                 <div class="section-back-row">
-                    <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+                    <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 </div>
                 <div class="category-header">
                     <i class="fa-solid fa-book-open cat-icon"></i><h2>Vocab Review</h2>
                 </div>
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Paste your own vocabulary lists to play — or jump into Vocab Auction with built-in word pools.</p>
+                <p style="text-align: center; margin-bottom: 1.25rem; color: var(--text-muted);">Paste your own vocabulary lists to play — or jump into Vocab Auction with built-in word pools.</p>
+                <div class="vocab-sets-toolbar">
+                    <button type="button" class="btn btn-blue" onclick="createWordSetFromVocab()"><i class="fa-solid fa-plus"></i> Create word set</button>
+                    <button type="button" class="btn btn-outline" onclick="openWordSets()"><i class="fa-solid fa-book"></i> Manage word sets</button>
+                </div>
                 <div class="grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
@@ -2154,7 +2218,7 @@
 
             <div id="section-live" class="home-section">
                 <div class="section-back-row">
-                    <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+                    <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 </div>
                 <div class="category-header">
                     <i class="fa-solid fa-bolt cat-icon"></i><h2>Live Game</h2>
@@ -2178,7 +2242,7 @@
 
             <div id="section-team" class="home-section">
                 <div class="section-back-row">
-                    <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+                    <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 </div>
                 <div class="category-header">
                     <i class="fa-solid fa-users cat-icon"></i><h2>Team Challenge</h2>
@@ -2195,7 +2259,7 @@
 
             <div id="section-writing" class="home-section">
                 <div class="section-back-row">
-                    <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back to menu</a>
+                    <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 </div>
                 <div class="category-header">
                     <i class="fa-solid fa-pen-nib cat-icon"></i><h2>Writing Suite</h2>
@@ -2255,7 +2319,7 @@
         <!-- SETUP SCREEN -->
         <div id="screen-setup" class="screen engine-container">
             <div class="top-bar">
-                <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 <h2 style="margin:0; color: var(--royal-blue); font-family: var(--font-primary);" id="setup-title">Game Setup</h2>
                 <div style="width: 80px;"></div>
             </div>
@@ -2389,7 +2453,7 @@
         <!-- WRITING SUITE: FRANKENSTEIN BUILDER -->
         <div id="screen-frank" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
             </div>
             <div class="game-header">
                 <h2 id="frank-title">Frankenstein Builder</h2>
@@ -2412,7 +2476,7 @@
         <!-- WRITING SUITE: TRANSITION MATCHER -->
         <div id="screen-trans" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
             </div>
             <div class="game-header"><h2 id="trans-title">Transition Matcher <span class="live-badge">Cursor AI</span></h2></div>
             <p class="game-desc">Select the ideal logical discourse marker to bridge the two generated sentences.</p>
@@ -2430,7 +2494,7 @@
         <!-- WRITING SUITE: DEVIL'S ADVOCATE -->
         <div id="screen-devil" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
             </div>
             <div class="game-header">
                 <h2 id="devil-title">The Devil's Advocate <span class="live-badge">Cursor AI</span></h2>
@@ -2452,7 +2516,7 @@
         <!-- WRITING SUITE: BLOAT SLASHER -->
         <div id="screen-bloat" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
             </div>
             <div class="game-header">
                 <h2 id="bloat-title">Bloat Slasher <span class="live-badge">Cursor AI</span></h2>
@@ -2476,7 +2540,7 @@
         <!-- WRITING SUITE: VOCAB UPGRADE -->
         <div id="screen-vocab" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
             </div>
             <div class="game-header">
                 <h2 id="vocab-title">Vocabulary Upgrade <span class="live-badge">Cursor AI</span></h2>
@@ -2495,7 +2559,7 @@
         <!-- WRITING SUITE: WORD-FORGED ODYSSEY -->
         <div id="screen-odyssey" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <button class="btn btn-outline" onclick="initOdyssey()" id="odyssey-btn"><i class="fa-solid fa-rotate"></i> New Adventure</button>
             </div>
             <div class="game-header">
@@ -2539,7 +2603,7 @@
         <!-- WRITING SUITE: MISSION CHAT -->
         <div id="screen-mission" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <button class="btn btn-outline" onclick="initMissionChat()" id="mission-btn"><i class="fa-solid fa-rotate"></i> Restart Mission</button>
             </div>
             <div class="game-header">
@@ -2609,7 +2673,7 @@
         <!-- WRITING SUITE: MATURA WRITING ASSESSMENT -->
         <div id="screen-matura" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <button class="btn btn-outline" onclick="resetMaturaAssessment()" id="matura-btn"><i class="fa-solid fa-rotate"></i> New Assessment</button>
             </div>
             <div class="game-header">
@@ -2710,7 +2774,7 @@
         <!-- PRIMARY ENGLISH: BORING TO BRILLIANT -->
         <div id="screen-pe-boring" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <span class="pe-points">Points: <span id="pe-points-boring">0</span></span>
             </div>
             <div class="game-header">
@@ -2737,7 +2801,7 @@
         <!-- PRIMARY ENGLISH: DETAIL DETECTIVE -->
         <div id="screen-pe-detail" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <span class="pe-points">Points: <span id="pe-points-detail">0</span></span>
             </div>
             <div class="game-header">
@@ -2776,7 +2840,7 @@
         <!-- PRIMARY ENGLISH: LINK MASTER -->
         <div id="screen-pe-link" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <span class="pe-points">Points: <span id="pe-points-link">0</span></span>
             </div>
             <div class="game-header">
@@ -2803,7 +2867,7 @@
         <!-- PRIMARY ENGLISH: EXAM SIMULATOR -->
         <div id="screen-pe-exam" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <span class="pe-points">Points: <span id="pe-points-exam">0</span></span>
             </div>
             <div class="game-header">
@@ -2832,7 +2896,7 @@
         <!-- PRIMARY ENGLISH: DICTATION -->
         <div id="screen-pe-dictation" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <span class="pe-points">Points: <span id="pe-points-dictation">0</span></span>
             </div>
             <div class="game-header">
@@ -2886,7 +2950,7 @@
         <!-- PRIMARY ENGLISH: COLOUR BLOCKS -->
         <div id="screen-pe-colour" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <span class="pe-points">Points: <span id="pe-points-colour">0</span></span>
             </div>
             <div class="game-header">
@@ -2907,7 +2971,7 @@
         <!-- CORE VOCAB: BOMB DEFUSAL -->
         <div id="screen-bomb" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
             </div>
             <i id="bomb-icon" class="fa-solid fa-bomb bomb-icon pulse"></i>
@@ -2923,7 +2987,7 @@
         <!-- CORE VOCAB: GRID TERRITORY -->
         <div id="screen-grid" class="screen engine-container">
             <div class="top-bar">
-                <button class="btn btn-grey" onclick="showScreen('home')"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
                 <button class="btn btn-outline" onclick="initGridTerritory()"><i class="fa-solid fa-rotate-right"></i> Reset Board</button>
             </div>
@@ -2934,7 +2998,7 @@
         <!-- CORE VOCAB: FLASHCARDS -->
         <div id="screen-flashcard" class="screen engine-container">
             <div class="top-bar">
-                <a href="#/home" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Exit</a>
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Quiz</button>
                 <button type="button" class="btn btn-outline" onclick="showFcStatsModal()"><i class="fa-solid fa-chart-bar"></i> Stats</button>
             </div>
@@ -2966,7 +3030,7 @@
         <!-- LIVE GAME: HOST -->
         <div id="screen-live-host" class="screen engine-container">
             <div class="top-bar">
-                <a href="#/live" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-chalkboard-user"></i> Host Live Game</h2>
                 <div style="width:80px;"></div>
             </div>
@@ -3112,7 +3176,7 @@
         <!-- LIVE GAME: JOIN -->
         <div id="screen-live-join" class="screen engine-container">
             <div class="top-bar live-desktop-only">
-                <a href="#/live" class="btn btn-grey"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-mobile-screen"></i> Join Game</h2>
                 <div style="width:80px;"></div>
             </div>
@@ -3377,6 +3441,103 @@
             const next = '#/' + String(path).replace(/^#?\/?/, '');
             if (location.hash === next) return;
             history.pushState(null, '', next);
+        }
+
+        function goHome(event) {
+            if (event && typeof event.preventDefault === 'function') event.preventDefault();
+            if (document.body.classList.contains('auction-active')) {
+                document.body.classList.remove('auction-active');
+                const frame = document.getElementById('auction-frame');
+                if (frame) {
+                    frame.onload = null;
+                    frame.src = 'about:blank';
+                }
+            }
+            showScreen('home');
+            closeHomeSection();
+            return false;
+        }
+
+        function goBack() {
+            if (wsEditor && document.getElementById('section-mysets')?.classList.contains('active')) {
+                closeWordSetEditor();
+                return;
+            }
+
+            const path = routePath(location.hash);
+            const parts = path.split('/').filter(Boolean);
+            const root = parts[0] || 'home';
+            const arg = parts[1] || '';
+
+            const openSectionForGame = (gameId) => {
+                showScreen('home');
+                if (VOCAB_GAMES.has(gameId) || gameId === 'odyssey' || gameId === 'auction') openHomeSection('vocab');
+                else if (WRITING_GAMES.has(gameId) || PE_GAMES.has(gameId)) openHomeSection('writing');
+                else closeHomeSection();
+            };
+
+            const backToSetup = (gameId) => {
+                if (!gameId) {
+                    goHome();
+                    return;
+                }
+                if (PE_GAMES.has(gameId)) goToPeGame(gameId);
+                else if (WRITING_GAMES.has(gameId)) goToWritingSetup(gameId);
+                else goToSetup(gameId);
+            };
+
+            if (root === 'game' && arg) {
+                if (arg === 'auction') {
+                    exitAuction();
+                    return;
+                }
+                backToSetup(arg);
+                return;
+            }
+
+            if (root === 'setup' && arg) {
+                openSectionForGame(arg);
+                return;
+            }
+
+            if (root === 'auction') {
+                exitAuction();
+                return;
+            }
+
+            if (root === 'live' && (arg === 'host' || arg === 'join' || arg === 'play')) {
+                showScreen('home');
+                openHomeSection('live');
+                return;
+            }
+
+            if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'live' || root === 'mysets' || root === 'progress') {
+                showScreen('home');
+                closeHomeSection();
+                return;
+            }
+
+            const active = document.querySelector('.screen.active');
+            const screenId = active ? active.id.replace(/^screen-/, '') : 'home';
+            if (screenId === 'setup') {
+                openSectionForGame(activeGame || 'flashcard');
+                return;
+            }
+            if (screenId === 'auction') {
+                exitAuction();
+                return;
+            }
+            if (screenId === 'live-host' || screenId === 'live-join' || screenId === 'live-play') {
+                showScreen('home');
+                openHomeSection('live');
+                return;
+            }
+            if (screenId !== 'home' && (VOCAB_GAMES.has(screenId) || WRITING_GAMES.has(screenId) || PE_GAMES.has(screenId) || screenId === 'odyssey')) {
+                backToSetup(screenId);
+                return;
+            }
+
+            goHome();
         }
 
         function syncHashForScreen(screenId) {
@@ -3744,42 +3905,124 @@
             `).join('');
         }
 
-        async function loadMySets() {
+        let cachedWordSets = [];
+        const DEFAULT_WS_CATEGORIES = ['Food', 'Jobs', 'Travel', 'Health', 'Exam', 'Custom'];
+
+        function createWordSetFromVocab() {
+            if (!isLoggedIn()) { openAuthModal('login'); return; }
+            showScreen('home');
+            openHomeSection('mysets');
+            openWordSetEditor({ id: null, name: '', items: [], category: '', className: '' });
+        }
+
+        function wsMetaValue(set, key) {
+            if (!set) return '';
+            if (key === 'category') return String(set.category || '').trim();
+            return String(set.class_name || set.className || '').trim();
+        }
+
+        function wsBadgesHtml(set) {
+            const cat = wsMetaValue(set, 'category');
+            const cls = wsMetaValue(set, 'class');
+            if (!cat && !cls) return '';
+            return `<div class="ws-badges">${cat ? `<span class="ws-badge">${esc(cat)}</span>` : ''}${cls ? `<span class="ws-badge ws-badge--class">${esc(cls)}</span>` : ''}</div>`;
+        }
+
+        function fillDatalist(id, values) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const unique = [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            el.innerHTML = unique.map((v) => `<option value="${esc(v)}"></option>`).join('');
+        }
+
+        function updateWordSetFilters(sets) {
+            const catSel = document.getElementById('ws-filter-category');
+            const classSel = document.getElementById('ws-filter-class');
+            const filters = document.getElementById('ws-filters');
+            const prevCat = catSel?.value || '';
+            const prevClass = classSel?.value || '';
+            const cats = [...new Set([
+                ...DEFAULT_WS_CATEGORIES,
+                ...(sets || []).map((s) => wsMetaValue(s, 'category')).filter(Boolean)
+            ])].sort((a, b) => a.localeCompare(b));
+            const classes = [...new Set((sets || []).map((s) => wsMetaValue(s, 'class')).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b));
+            if (catSel) {
+                catSel.innerHTML = '<option value="">All categories</option>' +
+                    cats.map((c) => `<option value="${esc(c)}"${c === prevCat ? ' selected' : ''}>${esc(c)}</option>`).join('');
+            }
+            if (classSel) {
+                classSel.innerHTML = '<option value="">All classes</option>' +
+                    classes.map((c) => `<option value="${esc(c)}"${c === prevClass ? ' selected' : ''}>${esc(c)}</option>`).join('');
+            }
+            if (filters) filters.hidden = !(sets && sets.length);
+            fillDatalist('ws-category-suggestions', cats);
+            fillDatalist('ws-class-suggestions', classes);
+        }
+
+        function renderSavedWordSets() {
             const container = document.getElementById('mysets-list');
+            if (!container) return;
             let html = '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.6rem;font-size:1rem;">Demo sets</h3>';
             html += renderDemoSetCardsHtml() || '<p style="color:var(--text-muted);">No demo sets available.</p>';
 
             if (!isLoggedIn()) {
                 html += '<p style="text-align:center;color:var(--text-muted);padding:1.2rem 0.5rem;">Sign in to save your own word sets and track mastery.</p>';
                 container.innerHTML = html;
+                const filters = document.getElementById('ws-filters');
+                if (filters) filters.hidden = true;
                 return;
             }
 
             html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;font-size:1rem;">Your saved sets</h3>';
+            const catFilter = document.getElementById('ws-filter-category')?.value || '';
+            const classFilter = document.getElementById('ws-filter-class')?.value || '';
+            const filtered = (cachedWordSets || []).filter((s) => {
+                if (catFilter && wsMetaValue(s, 'category') !== catFilter) return false;
+                if (classFilter && wsMetaValue(s, 'class') !== classFilter) return false;
+                return true;
+            });
+            if (!cachedWordSets.length) {
+                html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No saved sets yet. Use <strong>Create word set</strong> or paste a glossary in Vocab Review and save it here.</p>';
+            } else if (!filtered.length) {
+                html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No sets match these filters.</p>';
+            } else {
+                html += filtered.map((s) => {
+                    const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
+                    return `<div class="ws-card">
+                        <div class="ws-card-header"><h3>${esc(s.name)}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
+                        ${wsBadgesHtml(s)}
+                        <div class="ws-card-meta">${s.set_type === 'pe_terms' ? 'Primary English' : 'Vocab'} · ${pct}% mastered</div>
+                        <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
+                        <div class="ws-card-actions">
+                            <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
+                            <button class="btn btn-outline" onclick="editWordSet(${s.id})"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn btn-grey" onclick="deleteWordSet(${s.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            container.innerHTML = html;
+        }
+
+        async function loadMySets() {
+            const container = document.getElementById('mysets-list');
+            if (!container) return;
+            cachedWordSets = [];
+            if (!isLoggedIn()) {
+                updateWordSetFilters([]);
+                renderSavedWordSets();
+                return;
+            }
+            container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>';
             try {
                 const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
                 const data = await res.json();
-                if (!data.sets || data.sets.length === 0) {
-                    html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No saved sets yet. Play Vocabulary Upgrade to collect informal/formal pairs, or paste a glossary in Vocab Review and save it here.</p>';
-                } else {
-                    html += data.sets.map(s => {
-                        const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
-                        return `<div class="ws-card">
-                            <div class="ws-card-header"><h3>${esc(s.name)}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
-                            <div class="ws-card-meta">${s.set_type === 'pe_terms' ? 'Primary English' : 'Vocab'} · ${pct}% mastered</div>
-                            <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
-                            <div class="ws-card-actions">
-                                <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
-                                <button class="btn btn-outline" onclick="editWordSet(${s.id})"><i class="fa-solid fa-pen"></i> Edit</button>
-                                <button class="btn btn-grey" onclick="deleteWordSet(${s.id})"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-                container.innerHTML = html;
+                cachedWordSets = Array.isArray(data.sets) ? data.sets : [];
+                updateWordSetFilters(cachedWordSets);
+                renderSavedWordSets();
             } catch (e) {
-                html += '<p style="color:var(--pillarbox-red);">Failed to load your saved sets.</p>';
-                container.innerHTML = html;
+                container.innerHTML = '<p style="color:var(--pillarbox-red);">Failed to load your saved sets.</p>';
             }
         }
 
@@ -3803,12 +4046,14 @@
             }));
         }
 
-        function openWordSetEditor({ id, name, items, isDemo }) {
+        function openWordSetEditor({ id, name, items, isDemo, category, className }) {
             wsEditor = {
                 id: id || null,
                 name: name || '',
                 items: normaliseWsItems(items),
-                isDemo: !!isDemo
+                isDemo: !!isDemo,
+                category: String(category || '').trim(),
+                className: String(className || '').trim()
             };
             if (!wsEditor.items.length) wsEditor.items.push({ id: null, term: '', definition: '' });
             showWordSetEditorPane(true);
@@ -3834,6 +4079,10 @@
             if (!wsEditor) return;
             const nameEl = document.getElementById('ws-editor-name');
             if (nameEl) wsEditor.name = nameEl.value;
+            const catEl = document.getElementById('ws-editor-category');
+            if (catEl) wsEditor.category = catEl.value;
+            const classEl = document.getElementById('ws-editor-class');
+            if (classEl) wsEditor.className = classEl.value;
             const rows = document.querySelectorAll('#ws-editor .ws-edit-row');
             wsEditor.items = Array.from(rows).map((row) => ({
                 id: Number(row.getAttribute('data-item-id')) || null,
@@ -3859,7 +4108,7 @@
             const filled = wsEditor.items.filter((item) => String(item.term || '').trim()).length;
             const note = wsEditor.isDemo
                 ? 'This is a demo set. Saving creates your own copy — the shared demo stays unchanged.'
-                : 'Change the name or any word below. Removing a word also clears its flashcard progress.';
+                : 'Change the name, category, class, or any word below. Removing a word also clears its flashcard progress.';
             const rows = wsEditor.items.map((item, i) => `
                 <div class="ws-edit-row" data-item-id="${item.id || ''}">
                     <div class="ws-edit-card-top">
@@ -3881,7 +4130,7 @@
             host.innerHTML = `
                 <div class="ws-editor-head">
                     <div>
-                        <h3>${wsEditor.id ? 'Edit word list' : (wsEditor.isDemo ? 'Edit demo copy' : 'Edit word list')}</h3>
+                        <h3>${wsEditor.id ? 'Edit word list' : (wsEditor.isDemo ? 'Edit demo copy' : 'New word list')}</h3>
                         <p class="ws-editor-count">${filled} ${filled === 1 ? 'word' : 'words'}</p>
                     </div>
                     <button type="button" class="btn btn-grey" onclick="closeWordSetEditor()"><i class="fa-solid fa-arrow-left"></i> Back to lists</button>
@@ -3890,6 +4139,14 @@
                 <div class="ws-title-card">
                     <input type="text" id="ws-editor-name" class="ws-editor-name" maxlength="80" value="${esc(wsEditor.name)}" placeholder="Enter a title" aria-label="List name">
                     <span class="ws-field-label">Title</span>
+                </div>
+                <div class="ws-meta-fields">
+                    <label>Category
+                        <input type="text" id="ws-editor-category" list="ws-category-suggestions" maxlength="80" placeholder="e.g. Jobs, Food" value="${esc(wsEditor.category || '')}">
+                    </label>
+                    <label>Class
+                        <input type="text" id="ws-editor-class" list="ws-class-suggestions" maxlength="80" placeholder="e.g. 8A, Matura PR" value="${esc(wsEditor.className || '')}">
+                    </label>
                 </div>
                 <div id="ws-editor-rows">${rows}</div>
                 <button type="button" class="ws-add-card" onclick="wsEditorAddRow()"><i class="fa-solid fa-plus"></i> Add a card</button>
@@ -3936,7 +4193,13 @@
                 const res = await fetch(`/api/word-sets/${id}`, { credentials: 'same-origin' });
                 const data = await res.json();
                 if (!res.ok || !data.set) { appAlert(data.error || 'Could not open this set.'); return; }
-                openWordSetEditor({ id: data.set.id, name: data.set.name, items: data.set.items || [] });
+                openWordSetEditor({
+                    id: data.set.id,
+                    name: data.set.name,
+                    items: data.set.items || [],
+                    category: data.set.category || '',
+                    className: data.set.class_name || data.set.className || ''
+                });
             } catch (e) {
                 appAlert('Failed to load set for editing.');
             }
@@ -3949,7 +4212,9 @@
                 id: null,
                 name: set.name,
                 items: set.items || [],
-                isDemo: true
+                isDemo: true,
+                category: set.category || '',
+                className: set.className || set.class_name || ''
             });
         }
 
@@ -3964,6 +4229,8 @@
                 openAuthModal('login');
                 return;
             }
+            const category = String(wsEditor.category || '').trim().slice(0, 80);
+            const className = String(wsEditor.className || '').trim().slice(0, 80);
             wsEditorBusy = true;
             const saveBtn = document.getElementById('ws-editor-save');
             if (saveBtn) saveBtn.disabled = true;
@@ -3974,8 +4241,8 @@
                     credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(isNew
-                        ? { name, setType: 'vocab', testDirection: 'def', items }
-                        : { name, items })
+                        ? { name, setType: 'vocab', testDirection: 'def', items, category, className }
+                        : { name, items, category, className })
                 });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) { appAlert(data.error || 'Save failed'); return; }
@@ -4020,6 +4287,8 @@
             if (!name) { appAlert('Enter a name for this set.'); return; }
             const raw = document.getElementById('glossary-input')?.value || '';
             if (!raw.trim()) { appAlert('Paste a glossary first in Vocab Review.'); return; }
+            const category = (document.getElementById('mysets-save-category')?.value || '').trim().slice(0, 80);
+            const className = (document.getElementById('mysets-save-class')?.value || '').trim().slice(0, 80);
             const lines = raw.trim().split(/\n+/);
             const items = [];
             for (const line of lines) {
@@ -4032,10 +4301,14 @@
                 const res = await fetch('/api/word-sets', {
                     method: 'POST', credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, setType: 'vocab', testDirection: 'def', items })
+                    body: JSON.stringify({ name, setType: 'vocab', testDirection: 'def', items, category, className })
                 });
                 if (!res.ok) { const d = await res.json(); appAlert(d.error || 'Save failed'); return; }
                 nameInput.value = '';
+                const catInput = document.getElementById('mysets-save-category');
+                const classInput = document.getElementById('mysets-save-class');
+                if (catInput) catInput.value = '';
+                if (classInput) classInput.value = '';
                 loadMySets();
             } catch (e) { appAlert('Failed to save set.'); }
         }
@@ -4797,6 +5070,7 @@
             frame.onload = null;
             frame.src = 'about:blank';
             showScreen('home');
+            openHomeSection('vocab');
         }
 
         refreshAuth().then(() => {
