@@ -46,6 +46,19 @@ export function loadBuiltinDeck(level = 'intermediate') {
     return rowsToDeck(rows);
 }
 
+export function splitGlossaryPair(line) {
+    const text = String(line || '').trim();
+    if (!text) return null;
+    // Hyphen only separates when spaced ("term - definition").
+    // Compounds like "well-built" stay as one term.
+    const m = text.match(/^(.+?)(?:\t+|\s*=\s*|\s*:\s*|\s+-\s+)(.+)$/);
+    if (!m) return null;
+    const term = m[1].trim();
+    const definition = m[2].trim();
+    if (!term) return null;
+    return { term, definition };
+}
+
 export function parseGlossaryTerms(text) {
     const lines = String(text || '')
         .split('\n')
@@ -54,13 +67,9 @@ export function parseGlossaryTerms(text) {
     const parsed = [];
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const sepMatch = line.match(/(=|-|:|\t)/);
-        if (sepMatch) {
-            const sep = sepMatch[0];
-            const parts = line.split(sep);
-            const term = parts[0].trim();
-            const definition = parts.slice(1).join(sep).trim();
-            if (term && definition) parsed.push({ term, definition });
+        const pair = splitGlossaryPair(line);
+        if (pair && pair.definition) {
+            parsed.push(pair);
         } else if (i + 1 < lines.length) {
             parsed.push({ term: line, definition: lines[i + 1].trim() });
             i++;

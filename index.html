@@ -2407,8 +2407,8 @@
                 </div>
                 <p style="margin-bottom: 0.5rem; color: var(--text-dark);"><strong>Paste your vocabulary list below.</strong></p>
                 <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
-                    Supported formats: <code>Term = Definition</code> | <code>Term - Definition</code> | <code>Term : Definition</code><br>
-                    Or just paste the <strong>Term</strong> on one line, and the <strong>Definition</strong> on the next line.
+                    Supported formats: <code>Term = Definition</code> | <code>Term - Definition</code> (spaces around the dash) | <code>Term : Definition</code><br>
+                    Hyphens inside words stay intact (e.g. <code>well-built</code>). Or paste the <strong>Term</strong> on one line and the <strong>Definition</strong> on the next.
                 </p>
                 <textarea id="glossary-input" placeholder="Example formatting:&#10;Apple = A red fruit&#10;House - A place to live"></textarea>
                 
@@ -4177,18 +4177,27 @@
             }));
         }
 
+        function splitGlossaryPair(line) {
+            const text = String(line || '').trim();
+            if (!text) return null;
+            // Hyphen only separates when spaced ("term - definition").
+            // Compounds like "well-built" stay as one term.
+            const m = text.match(/^(.+?)(?:\t+|\s*=\s*|\s*:\s*|\s+-\s+)(.+)$/);
+            if (!m) return null;
+            const term = m[1].trim();
+            const definition = m[2].trim();
+            if (!term) return null;
+            return { term, definition };
+        }
+
         function parseGlossaryRaw(raw) {
             const lines = String(raw || '').split('\n').map((l) => l.trim()).filter((l) => l !== '');
             const parsedList = [];
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
-                const separatorMatch = line.match(/(=|-|:|\t)/);
-                if (separatorMatch) {
-                    const sep = separatorMatch[0];
-                    const parts = line.split(sep);
-                    const term = parts[0].trim();
-                    const definition = parts.slice(1).join(sep).trim();
-                    if (term) parsedList.push({ term, definition });
+                const pair = splitGlossaryPair(line);
+                if (pair) {
+                    parsedList.push(pair);
                 } else if (i + 1 < lines.length) {
                     parsedList.push({ term: line, definition: lines[i + 1] });
                     i++;
@@ -4309,7 +4318,7 @@
                 </div>
                 <div class="ws-paste-panel">
                     <label><i class="fa-solid fa-paste"></i> Paste a vocabulary list</label>
-                    <p>Same formats as Vocab Review: <code>Term = Definition</code> | <code>Term - Definition</code> | <code>Term : Definition</code>. Or put the term on one line and the definition on the next.</p>
+                    <p>Same formats as Vocab Review: <code>Term = Definition</code> | <code>Term - Definition</code> (spaces around the dash) | <code>Term : Definition</code>. Hyphens in words like <code>well-built</code> are kept. Or put the term on one line and the definition on the next.</p>
                     <textarea id="ws-editor-paste" placeholder="Example:&#10;Apple = A red fruit&#10;House - A place to live">${esc(wsEditor.pasteDraft || '')}</textarea>
                     <div class="ws-paste-actions">
                         <button type="button" class="btn btn-blue" onclick="wsEditorApplyPaste('replace')"><i class="fa-solid fa-file-import"></i> Import pasted list</button>
@@ -4626,12 +4635,9 @@
             const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
             const items = [];
             lines.forEach(line => {
-                const sepMatch = line.match(/(=|-|:|\t)/);
-                if (sepMatch) {
-                    const sep = sepMatch[0];
-                    const parts = line.split(sep);
-                    const term = (parts[0] || '').trim();
-                    if (term) items.push(term);
+                const pair = splitGlossaryPair(line);
+                if (pair) {
+                    items.push(pair.term);
                 } else {
                     line.split(',').map(x => x.trim()).filter(Boolean).forEach(x => items.push(x));
                 }
@@ -8256,13 +8262,9 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             const parsedList = [];
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                let separatorMatch = line.match(/(=|-|:|\t)/);
-                if (separatorMatch) {
-                    let sep = separatorMatch[0];
-                    let parts = line.split(sep);
-                    let term = parts[0].trim();
-                    let def = parts.slice(1).join(sep).trim();
-                    parsedList.push({ term, def });
+                const pair = splitGlossaryPair(line);
+                if (pair) {
+                    parsedList.push({ term: pair.term, def: pair.definition });
                 } else {
                     if (i + 1 < lines.length) {
                         parsedList.push({ term: line, def: lines[i+1] }); i++; 
