@@ -1070,13 +1070,30 @@
             pointer-events: none; z-index: 0;
         }
         .live-winner-content {
-            position: relative; z-index: 1; max-width: 28rem;
+            position: relative; z-index: 1; max-width: min(420px, 100%); width: 100%;
         }
         .live-winner-content h2 {
             margin: 0 0 0.5rem; font-family: var(--font-primary);
             font-size: clamp(1.75rem, 6vw, 2.4rem); color: var(--royal-blue);
         }
-        .live-winner-content p { margin: 0 0 1.25rem; color: var(--text-muted); font-size: 1.05rem; }
+        .live-winner-content p { margin: 0 0 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        .live-winner-scores {
+            list-style: none; margin: 0 0 1.25rem; padding: 0; text-align: left;
+            background: rgba(255,255,255,0.72); border: 1px solid rgba(1,33,105,0.12);
+            border-radius: 12px; overflow: hidden;
+        }
+        .live-winner-scores li {
+            display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+            padding: 0.55rem 0.85rem; border-bottom: 1px solid rgba(1,33,105,0.08);
+            font-weight: 600; color: var(--text-dark);
+        }
+        .live-winner-scores li:last-child { border-bottom: none; }
+        .live-winner-scores li.is-winner { color: var(--royal-blue); background: rgba(1,33,105,0.06); }
+        .live-winner-scores .live-rank-pos { color: var(--text-muted); min-width: 1.4rem; font-weight: 700; }
+        .live-winner-scores .live-rank-score { font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .live-winner-scores .live-rank-members {
+            display: block; font-size: 0.78rem; font-weight: 500; color: var(--text-muted); margin-top: 0.15rem;
+        }
         .live-team-card.joinable {
             cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
         }

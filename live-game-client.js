@@ -19,6 +19,8 @@
     let currentQuestion = null;
     let hostPendingChallenges = new Map();
     let playerChallengePending = false;
+    let hostSelectedWordSetId = '';
+    let hostWordSetsLoadedForUser = null;
 
     const RACE_BAR_COLORS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#9c27b0', '#ff6600', '#06b6d4', '#ec4899'];
     const HOST_POSITIVE_FEEDBACK = ['Way to go!', "That's right!", 'Nice one!', 'Spot on!', 'Keep going!', 'Brilliant!', 'Yes!'];
@@ -252,27 +254,54 @@
         raceBlobAnim.container = null;
     }
 
+    function rankingRowsHtml(players, winnerId, { limit = 0 } = {}) {
+        const ranked = [...(players || [])].sort(
+            (a, b) => (b.progress || 0) - (a.progress || 0) || String(a.nickname || '').localeCompare(String(b.nickname || ''))
+        );
+        const rows = limit > 0 ? ranked.slice(0, limit) : ranked;
+        if (!rows.length) return '<li><span>No scores yet</span></li>';
+        return rows.map((p, i) => {
+            const isWinner = p.id === winnerId;
+            const members = Array.isArray(p.memberNicknames) && p.memberNicknames.length
+                ? `<span class="live-rank-members">${esc(p.memberNicknames.join(', '))}</span>`
+                : '';
+            return `<li class="${isWinner ? 'is-winner' : ''}">
+                <span>
+                    <span class="live-rank-pos">${i + 1}.</span>
+                    ${esc(p.nickname)}${isWinner ? ' 🏆' : ''}
+                    ${members}
+                </span>
+                <span class="live-rank-score">${p.progress || 0}/${p.termsToWin || TERMS_TO_WIN}</span>
+            </li>`;
+        }).join('');
+    }
+
     function showLiveWinnerScreen(winnerNickname, isYou, options = {}) {
         const screen = $('live-winner-screen');
         const content = $('live-winner-content');
         if (!screen || !content || !winnerNickname) return;
         const teamMode = Boolean(options.teamMode);
         const youMsg = isYou ? (teamMode ? " That's your team!" : " That's you!") : '';
+        const ranking = options.ranking || [];
+        LiveAudio.stopAll();
+        LiveAudio.playFanfare();
         launchConfetti(12000);
         content.innerHTML = `
             <h2>🏆 Champion!</h2>
             <p><strong>${esc(winnerNickname)}</strong> completed all 12 terms first!${youMsg}</p>
-            <button type="button" class="btn btn-blue" id="live-winner-dismiss" style="padding:0.75rem 2rem;">See ranking</button>`;
+            <ol class="live-winner-scores" aria-label="${teamMode ? 'Team scores' : 'Player scores'}">${rankingRowsHtml(ranking, options.winnerId)}</ol>
+            <button type="button" class="btn btn-blue" id="live-winner-dismiss" style="padding:0.75rem 2rem;">Continue</button>`;
         screen.hidden = false;
         $('live-winner-dismiss')?.addEventListener('click', () => {
             hideLiveWinnerScreen();
-            showLiveRankingScreen(options.ranking || [], options.winnerId);
+            showLiveRankingScreen(ranking, options.winnerId, { teamMode });
         }, { once: true });
     }
 
     function hideLiveWinnerScreen() {
         const screen = $('live-winner-screen');
         if (screen) screen.hidden = true;
+        LiveAudio.stopFanfare();
         const canvas = $('live-confetti-canvas');
         if (canvas) {
             canvas.classList.remove('active');
@@ -283,18 +312,13 @@
         confettiAnim = null;
     }
 
-    function showLiveRankingScreen(players, winnerId) {
+    function showLiveRankingScreen(players, winnerId, options = {}) {
         const screen = $('live-ranking-screen');
         const list = $('live-ranking-list');
         if (!screen || !list) return;
-        const ranked = [...(players || [])].sort((a, b) => (b.progress || 0) - (a.progress || 0) || String(a.nickname || '').localeCompare(String(b.nickname || '')));
-        list.innerHTML = ranked.length
-            ? ranked.map((p, i) => `
-                <li>
-                    <span><span class="live-rank-pos">${i + 1}.</span> ${esc(p.nickname)}${p.id === winnerId ? ' 🏆' : ''}</span>
-                    <span>${p.progress || 0}/${p.termsToWin || TERMS_TO_WIN}</span>
-                </li>`).join('')
-            : '<li><span>No ranking data</span></li>';
+        const title = screen.querySelector('h2');
+        if (title) title.textContent = options.teamMode ? 'Final team ranking' : 'Final ranking';
+        list.innerHTML = rankingRowsHtml(players, winnerId);
         screen.hidden = false;
         const dismiss = $('live-ranking-dismiss');
         if (dismiss) {
@@ -377,18 +401,20 @@
     const LiveAudio = {
         lobby: null,
         game: null,
+        fanfare: null,
         VOLUME: 0.45,
+        FANFARE_VOLUME: 0.7,
 
-        _track(src) {
+        _track(src, { loop = true } = {}) {
             const a = new Audio(src);
-            a.loop = true;
+            a.loop = loop;
             a.preload = 'auto';
             return a;
         },
 
-        _play(audio) {
+        _play(audio, volume = this.VOLUME) {
             if (!audio) return;
-            audio.volume = this.VOLUME;
+            audio.volume = volume;
             audio.play().catch(() => {});
         },
 
@@ -400,14 +426,28 @@
 
         startLobby() {
             this.stopGame();
+            this.stopFanfare();
             if (!this.lobby) this.lobby = this._track('/audio/live-lobby.mp3');
             this._play(this.lobby);
         },
 
         startGame() {
             this.stopLobby();
+            this.stopFanfare();
             if (!this.game) this.game = this._track('/audio/live-gameplay.mp3');
             this._play(this.game);
+        },
+
+        playFanfare() {
+            this.stopLobby();
+            this.stopGame();
+            if (!this.fanfare) this.fanfare = this._track('/audio/live-champions-fanfare.mp3', { loop: false });
+            try { this.fanfare.currentTime = 0; } catch { /* ignore */ }
+            this._play(this.fanfare, this.FANFARE_VOLUME);
+        },
+
+        stopFanfare() {
+            this._pause(this.fanfare);
         },
 
         stopLobby() {
@@ -421,6 +461,7 @@
         stopAll() {
             this.stopLobby();
             this.stopGame();
+            this.stopFanfare();
         },
     };
 
@@ -1681,17 +1722,30 @@
         $('live-play-result').innerHTML = '';
     }
 
-    async function loadWordSetsForHost() {
+    async function loadWordSetsForHost(options = {}) {
+        const force = Boolean(options.force);
         const sel = $('live-host-wordset');
         if (!sel) return;
-        const previous = sel.value;
-        sel.innerHTML = '<option value="">— Select a saved set —</option>';
         if (!isHostSignedIn()) {
+            hostSelectedWordSetId = '';
+            hostWordSetsLoadedForUser = null;
+            sel.innerHTML = '<option value="">— Select a saved set —</option>';
             sel.disabled = true;
             const hint = $('live-host-wordset-hint');
             if (hint) { hint.hidden = false; hint.textContent = 'Sign in to load your saved word sets.'; }
             return;
         }
+
+        const userId = window.authState?.user?.id;
+        // Avoid wiping a teacher's selection on every auth refresh / Create click.
+        if (!force && hostWordSetsLoadedForUser === userId && sel.options.length > 1) {
+            if (hostSelectedWordSetId) sel.value = hostSelectedWordSetId;
+            sel.disabled = false;
+            return;
+        }
+
+        const previous = hostSelectedWordSetId || sel.value;
+        sel.innerHTML = '<option value="">— Select a saved set —</option>';
         sel.disabled = false;
         try {
             const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
@@ -1707,7 +1761,7 @@
                 if (hint) { hint.hidden = false; hint.textContent = 'No saved sets yet — create one in Word Sets, or paste a glossary.'; }
             } else {
                 const hint = $('live-host-wordset-hint');
-                if (hint) hint.hidden = true;
+                if (hint && !hostSelectedWordSetId) hint.hidden = true;
             }
             for (const s of sets) {
                 const opt = document.createElement('option');
@@ -1718,8 +1772,10 @@
                     : `${s.name} (${s.item_count || 0})`;
                 sel.appendChild(opt);
             }
+            hostWordSetsLoadedForUser = userId;
             if (previous && [...sel.options].some((o) => o.value === previous)) {
                 sel.value = previous;
+                hostSelectedWordSetId = previous;
             }
         } catch {
             const hint = $('live-host-wordset-hint');
@@ -1728,7 +1784,8 @@
     }
 
     async function onHostWordSetSelected() {
-        const setId = $('live-host-wordset')?.value;
+        const setId = String($('live-host-wordset')?.value || '').trim();
+        hostSelectedWordSetId = setId;
         const hint = $('live-host-wordset-hint');
         const paste = $('live-host-glossary');
         if (!setId) {
@@ -1757,11 +1814,22 @@
                 hint.hidden = false;
                 hint.textContent = withDefs >= 12
                     ? `Loaded ${withDefs} term/definition pairs — ready to create the room.`
-                    : `This set has ${withDefs} pairs with definitions (need 12+). Edit in Paste glossary or pick another set.`;
+                    : `This set has ${withDefs} pairs with definitions (need 12+). Edit below or pick another set.`;
             }
         } catch {
             if (hint) { hint.hidden = false; hint.textContent = 'Failed to load that word set.'; }
         }
+    }
+
+    function readHostSetupForm() {
+        const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
+        const level = $('live-host-level')?.value || 'intermediate';
+        const gameFormat = document.querySelector('input[name="live-game-format"]:checked')?.value || 'race';
+        const teamAssignment = document.querySelector('input[name="live-team-assignment"]:checked')?.value || 'random';
+        const answerMode = document.querySelector('input[name="live-answer-mode"]:checked')?.value || 'randomise';
+        const setId = String(hostSelectedWordSetId || $('live-host-wordset')?.value || '').trim();
+        const terms = String($('live-host-glossary')?.value || '');
+        return { source, level, gameFormat, teamAssignment, answerMode, setId, terms };
     }
 
     function updateHostAuthUI() {
@@ -1771,7 +1839,11 @@
 
     function onAuthChanged() {
         updateHostAuthUI();
-        if (isHostSignedIn()) loadWordSetsForHost();
+        if (isHostSignedIn()) loadWordSetsForHost({ force: false });
+        else {
+            hostSelectedWordSetId = '';
+            hostWordSetsLoadedForUser = null;
+        }
     }
 
     async function closePreviousHostRoom() {
@@ -1810,6 +1882,31 @@
 
     async function createHostRoom() {
         showLiveError('');
+        // Snapshot the form BEFORE auth refresh / room teardown — those can rebuild the
+        // word-set <select> and clear the teacher's choice mid-click.
+        const setup = readHostSetupForm();
+        const body = {
+            source: setup.source,
+            level: setup.level,
+            gameFormat: setup.gameFormat,
+            teamAssignment: setup.teamAssignment,
+            answerMode: setup.answerMode,
+        };
+        if (setup.source === 'wordset') {
+            const pasted = setup.terms.trim();
+            if (pasted) {
+                body.source = 'paste';
+                body.terms = pasted;
+            } else if (setup.setId) {
+                body.setId = Number(setup.setId);
+            } else {
+                showLiveError('Choose a Word Set.');
+                return;
+            }
+        } else if (setup.source === 'paste') {
+            body.terms = setup.terms;
+        }
+
         await ensureAuthLoaded();
         updateHostAuthUI();
         if (!isHostSignedIn()) {
@@ -1818,27 +1915,6 @@
             return;
         }
         await closePreviousHostRoom();
-
-        const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
-        const level = $('live-host-level')?.value || 'intermediate';
-        const gameFormat = document.querySelector('input[name="live-game-format"]:checked')?.value || 'race';
-        const teamAssignment = document.querySelector('input[name="live-team-assignment"]:checked')?.value || 'random';
-        const answerMode = document.querySelector('input[name="live-answer-mode"]:checked')?.value || 'randomise';
-        const body = { source, level, gameFormat, teamAssignment, answerMode };
-        if (source === 'wordset') {
-            const setId = $('live-host-wordset')?.value;
-            if (!setId) { showLiveError('Choose a Word Set.'); return; }
-            body.setId = Number(setId);
-            // Prefer pasted/edited glossary from the selected set when present (lets teachers fix missing defs).
-            const pasted = ($('live-host-glossary')?.value || '').trim();
-            if (pasted) {
-                body.source = 'paste';
-                body.terms = pasted;
-                delete body.setId;
-            }
-        } else if (source === 'paste') {
-            body.terms = $('live-host-glossary')?.value || '';
-        }
 
         const btn = $('live-host-create-btn');
         if (btn) btn.disabled = true;
@@ -1856,9 +1932,9 @@
                 code: data.code,
                 hostToken: data.hostToken,
                 phase: 'lobby',
-                answerMode: data.answerMode || answerMode,
-                gameFormat: data.gameFormat || gameFormat,
-                teamAssignment: data.teamAssignment || teamAssignment,
+                answerMode: data.answerMode || setup.answerMode,
+                gameFormat: data.gameFormat || setup.gameFormat,
+                teamAssignment: data.teamAssignment || setup.teamAssignment,
                 minPlayers: data.minPlayers,
             };
             sessionStorage.setItem('ls_live_host_code', data.code);
@@ -1945,7 +2021,6 @@
 
         await ensureAuthLoaded();
         updateHostAuthUI();
-        loadWordSetsForHost();
 
         if (!isHostSignedIn()) {
             clearStoredHostRoom();
@@ -1956,15 +2031,19 @@
 
         if (fresh) {
             await closePreviousHostRoom();
+            hostSelectedWordSetId = '';
+            hostWordSetsLoadedForUser = null;
             $('live-host-room-panel').hidden = true;
             $('live-host-setup-form').hidden = false;
             applyGlossaryPrefill();
+            await loadWordSetsForHost({ force: true });
         } else {
             const resumed = await resumeHostRoomAsync();
             if (!resumed) {
                 $('live-host-room-panel').hidden = true;
                 $('live-host-setup-form').hidden = false;
                 applyGlossaryPrefill();
+                await loadWordSetsForHost({ force: true });
             }
         }
         if (typeof showScreen === 'function') showScreen('live-host');
@@ -2072,7 +2151,7 @@
         $('live-host-wordset-row').hidden = source !== 'wordset';
         // Keep paste visible for wordset so loaded lists can be reviewed/edited.
         $('live-host-paste-row').hidden = source !== 'paste' && source !== 'wordset';
-        if (source === 'wordset') loadWordSetsForHost();
+        if (source === 'wordset') loadWordSetsForHost({ force: false });
     }
 
     function toggleLiveFormatPanels() {
