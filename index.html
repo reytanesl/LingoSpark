@@ -3942,12 +3942,31 @@
             }).filter(Boolean).join('\n');
         }
 
+        /** Push a loaded list into every Vocab Review / Live Spark entry point. */
+        function syncGlossaryAcrossVocabGames(text) {
+            const glossary = String(text || '').trim();
+            const ta = document.getElementById('glossary-input');
+            if (ta) ta.value = glossary;
+            try {
+                if (glossary) {
+                    sessionStorage.setItem('ls_shared_glossary', glossary);
+                    sessionStorage.setItem('ls_auction_prefill_glossary', glossary);
+                    sessionStorage.setItem('ls_live_prefill_glossary', glossary);
+                } else {
+                    sessionStorage.removeItem('ls_shared_glossary');
+                    sessionStorage.removeItem('ls_auction_prefill_glossary');
+                    sessionStorage.removeItem('ls_live_prefill_glossary');
+                }
+            } catch (_) { /* ignore */ }
+            if (typeof activeGame !== 'undefined' && activeGame === 'flashcard') {
+                updateFlashcardSetupUI();
+            }
+        }
+
         function applyDemoWordSet(id, opts = {}) {
             const set = demoSetById(id);
             if (!set) return false;
-            const textarea = document.getElementById('glossary-input');
-            if (!textarea) return false;
-            textarea.value = glossaryTextFromItems(set.items);
+            syncGlossaryAcrossVocabGames(glossaryTextFromItems(set.items));
             currentWordSetId = null; // demo sets are not DB-backed progress sets
             document.querySelectorAll('.demo-set-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.demoId === id);
@@ -3958,7 +3977,6 @@
                 showScreen('home');
                 openHomeSection('vocab');
             }
-            if (activeGame === 'flashcard') updateFlashcardSetupUI();
             return true;
         }
 
@@ -4441,10 +4459,11 @@
                 const data = await res.json();
                 if (!data.items) return;
                 currentWordSetId = id;
-                const textarea = document.getElementById('glossary-input');
-                if (textarea) {
-                    textarea.value = data.items.map(i => i.definition ? `${i.term} = ${i.definition}` : i.term).join('\n');
-                }
+                const text = data.items
+                    .map((i) => (i.definition ? `${i.term} = ${i.definition}` : i.term))
+                    .filter(Boolean)
+                    .join('\n');
+                syncGlossaryAcrossVocabGames(text);
                 showScreen('home');
                 openHomeSection('vocab');
             } catch (e) { appAlert('Failed to load set.'); }
@@ -5210,10 +5229,36 @@
             showScreen('setup');
         }
 
+        function injectAuctionGlossary(doc) {
+            if (!doc) return;
+            const glossary = (
+                document.getElementById('glossary-input')?.value
+                || sessionStorage.getItem('ls_shared_glossary')
+                || sessionStorage.getItem('ls_auction_prefill_glossary')
+                || ''
+            ).trim();
+            if (!glossary) return;
+            const customRadio = doc.querySelector('input[name="level"][value="custom"]');
+            const ta = doc.getElementById('custom-words');
+            const wrap = doc.getElementById('custom-words-wrap');
+            if (!customRadio || !ta) return;
+            customRadio.checked = true;
+            if (wrap) wrap.classList.add('visible');
+            ta.value = glossary;
+            try { customRadio.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) { /* ignore */ }
+        }
+
         /** Vocab Auction has its own in-game menu — skip glossary setup. */
         function goToAuction() {
             activeGame = 'auction';
             document.body.classList.add('auction-active');
+            const shared = (document.getElementById('glossary-input')?.value || '').trim();
+            if (shared) {
+                try {
+                    sessionStorage.setItem('ls_shared_glossary', shared);
+                    sessionStorage.setItem('ls_auction_prefill_glossary', shared);
+                } catch (_) { /* ignore */ }
+            }
             const frame = document.getElementById('auction-frame');
             frame.onload = () => {
                 try {
@@ -5225,6 +5270,7 @@
                     doc.body.style.height = '100%';
                     doc.body.style.overflow = 'hidden';
                     doc.body.style.minHeight = '100%';
+                    injectAuctionGlossary(doc);
                 } catch (_) { /* ignore cross-origin */ }
             };
             frame.src = 'vocab-auction.html?embed=1&t=' + Date.now();
@@ -8960,6 +9006,19 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
         }
 
         document.getElementById('glossary-input')?.addEventListener('input', () => {
+            const raw = document.getElementById('glossary-input')?.value || '';
+            try {
+                const glossary = raw.trim();
+                if (glossary) {
+                    sessionStorage.setItem('ls_shared_glossary', glossary);
+                    sessionStorage.setItem('ls_auction_prefill_glossary', glossary);
+                    sessionStorage.setItem('ls_live_prefill_glossary', glossary);
+                } else {
+                    sessionStorage.removeItem('ls_shared_glossary');
+                    sessionStorage.removeItem('ls_auction_prefill_glossary');
+                    sessionStorage.removeItem('ls_live_prefill_glossary');
+                }
+            } catch (_) { /* ignore */ }
             if (activeGame === 'flashcard') updateFlashcardSetupUI();
         });
         document.querySelectorAll('input[name="test-dir"]').forEach(el => {

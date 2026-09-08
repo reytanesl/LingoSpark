@@ -1128,6 +1128,17 @@ function indexEntries(entries) {
     return { map: map, terms: terms };
 }
 
+/** Split "term = def" or spaced "term - def"; keep hyphens inside words (well-built). */
+function splitCustomPair(line) {
+    const text = String(line || "").trim();
+    if (!text) return null;
+    const m = text.match(/^(.{1,120}?)\s+(?:=|-|–|—)\s+(.+)$/);
+    if (m) return { term: m[1].trim(), definition: m[2].trim() };
+    const eqTight = text.match(/^(.{1,80}?)=(.+)$/);
+    if (eqTight) return { term: eqTight[1].trim(), definition: eqTight[2].trim() };
+    return null;
+}
+
 function parseCustomEntries(raw) {
     const text = String(raw || "").trim();
     if (!text) return [];
@@ -1135,7 +1146,7 @@ function parseCustomEntries(raw) {
     text.split(/[\n;]+/).forEach((line) => {
         line = String(line || "").trim();
         if (!line) return;
-        if (/\s[=:]\s/.test(line) || /^.+?=.+$/.test(line)) {
+        if (splitCustomPair(line) || /\s[=:]\s/.test(line) || /^.+?=.+$/.test(line)) {
             chunks.push(line);
         } else {
             line.split(",").forEach((part) => chunks.push(part));
@@ -1148,11 +1159,11 @@ function parseCustomEntries(raw) {
         if (!chunk) return;
         let term = "";
         let definition = "";
-        const eq = chunk.match(/^(.{1,80}?)\s*=\s+(.+)$/);
+        const pair = splitCustomPair(chunk);
         const colon = chunk.match(/^(.{1,80}?)\s*:\s+(.+)$/);
-        if (eq) {
-            term = eq[1].trim();
-            definition = eq[2].trim();
+        if (pair) {
+            term = pair.term;
+            definition = pair.definition;
         } else if (colon && colon[2].split(/\s+/).length >= 3) {
             term = colon[1].trim();
             definition = colon[2].trim();
@@ -2577,6 +2588,26 @@ if (new URLSearchParams(location.search).get("embed") === "1") {
     document.documentElement.classList.add("embed-root");
     document.body.classList.add("embed");
 }
+
+/** Prefer parent-injected list; also read shared sessionStorage if parent inject raced. */
+(function applyAuctionGlossaryPrefill() {
+    try {
+        const prefill = (
+            sessionStorage.getItem("ls_auction_prefill_glossary")
+            || sessionStorage.getItem("ls_shared_glossary")
+            || ""
+        ).trim();
+        if (!prefill) return;
+        const customRadio = document.querySelector('input[name="level"][value="custom"]');
+        const ta = document.getElementById("custom-words");
+        const wrap = document.getElementById("custom-words-wrap");
+        if (!customRadio || !ta) return;
+        customRadio.checked = true;
+        if (wrap) wrap.classList.add("visible");
+        if (!String(ta.value || "").trim()) ta.value = prefill;
+        sessionStorage.removeItem("ls_auction_prefill_glossary");
+    } catch (_) { /* ignore */ }
+})();
 </script>
 </body>
 </html>

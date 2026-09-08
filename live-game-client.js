@@ -346,7 +346,12 @@
     }
 
     function applyGlossaryPrefill() {
-        const terms = sessionStorage.getItem('ls_live_prefill_glossary');
+        const terms = (
+            sessionStorage.getItem('ls_live_prefill_glossary')
+            || sessionStorage.getItem('ls_shared_glossary')
+            || document.getElementById('glossary-input')?.value
+            || ''
+        ).trim();
         if (!terms) return;
         sessionStorage.removeItem('ls_live_prefill_glossary');
         const pasteRadio = document.querySelector('input[name="live-source"][value="paste"]');
