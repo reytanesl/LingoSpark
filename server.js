@@ -44,6 +44,9 @@ import {
     getMaturaEssayReview,
     deleteMaturaEssayReview,
     getMaturaProgressSummary,
+    getUserById,
+    getMaturaAssessAvailability,
+    recordMaturaAssessUsage,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, checkoutUrls } from './billing.js';
@@ -220,16 +223,25 @@ async function start() {
             try {
                 user = (await expireUserIfNeeded(user)) || user;
                 user = (await applyPendingBmcPayments(user)) || user;
+                // Refresh matura cooldown timestamp from DB (session user can be stale).
+                try {
+                    const fresh = await getUserById(user.id);
+                    if (fresh) user = fresh;
+                } catch {
+                    /* ignore */
+                }
                 req.user = user;
             } catch {
                 /* ignore */
             }
         }
+        const admin = user ? isAdminEmail(user.email) : false;
         res.json({
             user: publicUser(user),
-            isAdmin: user ? isAdminEmail(user.email) : false,
+            isAdmin: admin,
             hasAccess: hasWritingAccess(user),
             status: getAccessStatus(user),
+            maturaAssess: getMaturaAssessAvailability(user, { isAdmin: admin }),
             googleConfigured: googleReady,
             localAuthEnabled: dbReady,
             bmcPaymentUrl: checkoutUrls().extras,
@@ -727,6 +739,32 @@ function extractJson(text) {
             return res.status(400).json({ error: 'Upload at least one image/PDF page or paste the essay text.' });
         }
 
+        let assessUser = req.user;
+        try {
+            const fresh = await getUserById(req.user.id);
+            if (fresh) {
+                assessUser = fresh;
+                req.user = fresh;
+            }
+        } catch {
+            /* use session user */
+        }
+        const admin = isAdminEmail(assessUser?.email);
+        const cooldown = getMaturaAssessAvailability(assessUser, { isAdmin: admin });
+        if (!cooldown.available) {
+            const ms = Math.max(0, cooldown.retryAfterMs || 0);
+            const totalMin = Math.max(1, Math.ceil(ms / 60000));
+            const h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+            let when = `${totalMin} minute${totalMin === 1 ? '' : 's'}`;
+            if (h > 0) when = m === 0 ? `${h} hour${h === 1 ? '' : 's'}` : `${h}h ${m}m`;
+            return res.status(429).json({
+                error: `Matura criteria assessment is available once every 4 hours. Try again in about ${when}.`,
+                code: 'matura_assess_cooldown',
+                maturaAssess: cooldown,
+            });
+        }
+
         const apiKey = process.env.CURSOR_API_KEY;
         if (!apiKey) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
@@ -818,7 +856,17 @@ Return ONLY valid JSON (no markdown fences):
             }
 
             const parsed = extractJson(result.result);
-            res.json(parsed);
+            let maturaAssess = cooldown;
+            if (!admin) {
+                try {
+                    const stamped = await recordMaturaAssessUsage(assessUser.id);
+                    if (stamped) assessUser.matura_assess_last_at = stamped;
+                    maturaAssess = getMaturaAssessAvailability(assessUser, { isAdmin: false });
+                } catch (stampErr) {
+                    console.warn('recordMaturaAssessUsage failed:', stampErr.message);
+                }
+            }
+            res.json({ ...parsed, maturaAssess });
         } catch (error) {
             console.error('Assess-writing error:', error);
             res.status(500).json({ error: error.message || 'Failed to assess writing' });

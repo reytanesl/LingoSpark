@@ -2135,7 +2135,7 @@
             <p>Writing Suite and Primary English need paid access so the AI tools can stay online. <strong>Buying access is the best way to support LingoSpark</strong> — you unlock premium games for yourself or your students, and help cover running costs.</p>
             <div class="about-pricing">
                 <p style="margin-bottom:0.4rem;"><strong>Writing Suite — 40 zł / month</strong> <span style="font-weight:600;color:var(--text-muted);">($10)</span></p>
-                <p style="margin-bottom:0.6rem;">Plans: <strong>12 zł / week</strong> ($3) · <strong>40 zł / month</strong> ($10) · <strong>280 zł / year</strong> ($70, best value). Unlimited Writing Suite and Primary English for the days you paid.</p>
+                <p style="margin-bottom:0.6rem;">Plans: <strong>12 zł / week</strong> ($3) · <strong>40 zł / month</strong> ($10) · <strong>280 zł / year</strong> ($70, best value). Writing Suite and Primary English for the days you paid. Matura criteria assessment: once every 4 hours.</p>
                 <p style="margin-bottom:0;font-size:0.88rem;">Checkout is in USD on Buy Me a Coffee (same email as your LingoSpark account). PLN is the local price at about 4 zł per $1 — card billing in złoty comes later.</p>
             </div>
             <p><a href="https://buymeacoffee.com/lingospark/extras" id="about-premium-link" target="_blank" rel="noopener">Go Premium — open the shop</a></p>
@@ -2793,6 +2793,9 @@
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" id="matura-assess-btn" onclick="runMaturaAssessment()">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Assess with Matura criteria
                 </button>
+                <p id="matura-assess-cooldown-note" style="margin:0.65rem 0 0;font-size:0.85rem;color:var(--text-muted);text-align:center;">
+                    Premium: one Matura criteria assessment every 4 hours.
+                </p>
                 </div>
 
                 <div id="matura-result" style="display:none;margin-top:1.75rem;">
@@ -4901,6 +4904,7 @@
             window.authState = authState;
             renderAuthBar();
             updateAuthBarNav();
+            updateMaturaAssessCooldownUi();
             if (authState.user) {
                 stopGuestLoginReminders();
                 replayPendingSession();
@@ -5083,7 +5087,7 @@
             return `
                 <li><i class="fa-solid fa-check"></i> Writing Suite — essays, vocab upgrade, and AI writing practice</li>
                 <li><i class="fa-solid fa-check"></i> Primary English games beyond free Dictation and Colour Blocks</li>
-                <li><i class="fa-solid fa-check"></i> Unlimited use for the days you paid</li>
+                <li><i class="fa-solid fa-check"></i> Matura criteria assessment once every 4 hours</li>
                 <li><i class="fa-solid fa-check"></i> Vocab Review stays free forever</li>
             `;
         }
@@ -6661,6 +6665,66 @@ Return ONLY JSON:
         let maturaHistory = [];
         let maturaProgress = null;
         let maturaViewingId = null;
+        let maturaCooldownTimer = null;
+        let maturaAssessBusy = false;
+
+        function formatMaturaCooldownRemaining(ms) {
+            const totalMin = Math.max(1, Math.ceil(Math.max(0, ms) / 60000));
+            const h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+            if (h <= 0) return `${totalMin} minute${totalMin === 1 ? '' : 's'}`;
+            if (m === 0) return `${h} hour${h === 1 ? '' : 's'}`;
+            return `${h}h ${m}m`;
+        }
+
+        function getMaturaAssessState() {
+            return authState?.maturaAssess || null;
+        }
+
+        function applyMaturaAssessState(state) {
+            if (!state || typeof state !== 'object') return;
+            authState.maturaAssess = state;
+            if (window.authState) window.authState.maturaAssess = state;
+            updateMaturaAssessCooldownUi();
+        }
+
+        function updateMaturaAssessCooldownUi() {
+            const btn = document.getElementById('matura-assess-btn');
+            const note = document.getElementById('matura-assess-cooldown-note');
+            const state = getMaturaAssessState();
+            if (maturaCooldownTimer) {
+                clearTimeout(maturaCooldownTimer);
+                maturaCooldownTimer = null;
+            }
+
+            if (!state || state.limited === false) {
+                if (note) {
+                    note.textContent = authState?.isAdmin
+                        ? 'Admin: Matura criteria assessment has no cooldown.'
+                        : 'Premium: one Matura criteria assessment every 4 hours.';
+                }
+                if (btn && !maturaAssessBusy) btn.disabled = false;
+                return;
+            }
+
+            if (state.available) {
+                if (note) note.textContent = 'Premium: one Matura criteria assessment every 4 hours.';
+                if (btn && !maturaAssessBusy) btn.disabled = false;
+                return;
+            }
+
+            const remaining = Math.max(0, Number(state.retryAfterMs) || 0);
+            const when = formatMaturaCooldownRemaining(remaining);
+            if (note) {
+                note.textContent = `Next Matura criteria assessment available in about ${when}.`;
+            }
+            if (btn) btn.disabled = true;
+            const wait = Math.min(Math.max(remaining, 15_000), 60_000);
+            maturaCooldownTimer = setTimeout(async () => {
+                try { await refreshAuth(); } catch (_) { /* ignore */ }
+                updateMaturaAssessCooldownUi();
+            }, wait);
+        }
 
         function clearMaturaUploads() {
             maturaImages = [];
@@ -6673,6 +6737,7 @@ Return ONLY JSON:
             resetMaturaAssessment();
             setupMaturaDropzone();
             loadMaturaHistory();
+            updateMaturaAssessCooldownUi();
         }
 
         function resetMaturaAssessment() {
@@ -6692,9 +6757,11 @@ Return ONLY JSON:
             if (inputSec) inputSec.style.display = '';
             if (banner) banner.classList.remove('open');
             setMaturaLoading(false);
+            updateMaturaAssessCooldownUi();
         }
 
         function setMaturaLoading(isLoading) {
+            maturaAssessBusy = Boolean(isLoading);
             const loader = document.getElementById('matura-loading');
             const content = document.getElementById('matura-content');
             const btn = document.getElementById('matura-assess-btn');
@@ -6708,8 +6775,8 @@ Return ONLY JSON:
             } else {
                 loader.style.display = 'none';
                 if (content) content.style.opacity = '1';
-                if (btn) btn.disabled = false;
                 if (newBtn) newBtn.disabled = false;
+                updateMaturaAssessCooldownUi();
             }
         }
 
@@ -6821,6 +6888,16 @@ Return ONLY JSON:
                 return;
             }
 
+            const cooldown = getMaturaAssessState();
+            if (cooldown && cooldown.limited !== false && cooldown.available === false) {
+                const when = formatMaturaCooldownRemaining(cooldown.retryAfterMs || 0);
+                document.getElementById('matura-status').className = 'feedback error';
+                document.getElementById('matura-status').textContent =
+                    `Matura criteria assessment is available once every 4 hours. Try again in about ${when}.`;
+                updateMaturaAssessCooldownUi();
+                return;
+            }
+
             setMaturaLoading(true);
             document.getElementById('matura-status').textContent = '';
             document.getElementById('matura-result').style.display = 'none';
@@ -6838,9 +6915,11 @@ Return ONLY JSON:
                 });
                 const data = await response.json();
                 setMaturaLoading(false);
+                if (data.maturaAssess) applyMaturaAssessState(data.maturaAssess);
                 if (!response.ok) {
                     document.getElementById('matura-status').className = 'feedback error';
                     document.getElementById('matura-status').textContent = data.error || 'Assessment failed.';
+                    updateMaturaAssessCooldownUi();
                     return;
                 }
                 maturaResult = data;

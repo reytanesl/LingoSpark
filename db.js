@@ -40,6 +40,7 @@ export async function initDb() {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS visit_count INTEGER NOT NULL DEFAULT 0`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_visit_at TIMESTAMPTZ`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_last_at TIMESTAMPTZ`);
     await db.query(`
         DO $$ BEGIN
             ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL;
@@ -460,6 +461,69 @@ export function isAdminEmail(email) {
     const admin = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
     if (!admin || !email) return false;
     return email.toLowerCase().trim() === admin;
+}
+
+/** Premium Matura criteria assessments: once every 4 hours (Admin account exempt). */
+export const MATURA_ASSESS_COOLDOWN_MS = 4 * 60 * 60 * 1000;
+
+export function getMaturaAssessAvailability(user, { isAdmin = false } = {}) {
+    if (!user) {
+        return {
+            limited: true,
+            available: false,
+            nextAvailableAt: null,
+            retryAfterMs: 0,
+            cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+        };
+    }
+    if (isAdmin || isAdminEmail(user.email)) {
+        return {
+            limited: false,
+            available: true,
+            nextAvailableAt: null,
+            retryAfterMs: 0,
+            cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+        };
+    }
+    const lastRaw = user.matura_assess_last_at;
+    const lastMs = lastRaw ? new Date(lastRaw).getTime() : 0;
+    if (!lastMs || Number.isNaN(lastMs)) {
+        return {
+            limited: true,
+            available: true,
+            nextAvailableAt: null,
+            retryAfterMs: 0,
+            cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+        };
+    }
+    const nextMs = lastMs + MATURA_ASSESS_COOLDOWN_MS;
+    const retryAfterMs = Math.max(0, nextMs - Date.now());
+    if (retryAfterMs <= 0) {
+        return {
+            limited: true,
+            available: true,
+            nextAvailableAt: null,
+            retryAfterMs: 0,
+            cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+        };
+    }
+    return {
+        limited: true,
+        available: false,
+        nextAvailableAt: new Date(nextMs).toISOString(),
+        retryAfterMs,
+        cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+    };
+}
+
+export async function recordMaturaAssessUsage(userId) {
+    if (!userId) return null;
+    const db = getPool();
+    const result = await db.query(
+        `UPDATE users SET matura_assess_last_at = NOW() WHERE id = $1 RETURNING matura_assess_last_at`,
+        [userId]
+    );
+    return result.rows[0]?.matura_assess_last_at || null;
 }
 
 export function publicUser(user) {
