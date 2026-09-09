@@ -933,7 +933,7 @@ export async function loadWordSetForGame(setId, userId) {
 // ==========================================
 
 const VALID_GAME_KEYS = new Set([
-    'flashcards', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'live_host',
+    'flashcards', 'memory_flip', 'word_repair', 'cloze_climb', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'live_host',
     'pe_boring', 'pe_detail', 'pe_link', 'pe_exam', 'pe_dictation', 'pe_colour', 'pe_line',
     'frank', 'trans', 'devil', 'bloat', 'vocab_upgrade', 'matura',
 ]);
