@@ -11,7 +11,7 @@ import {
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
 export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
-export const LIVE_GAME_FORMATS = ['race', 'captain-crew'];
+export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay'];
 export const LIVE_TEAM_ASSIGNMENT = ['random', 'pick'];
 export const LIVE_TEAM_MIN = 2;
 export const LIVE_TEAM_MAX = 4;
@@ -127,12 +127,16 @@ function teamList(room) {
     return Array.from(room.teams.values()).map((t) => teamProgress(t, room));
 }
 
+function isTeamFormat(room) {
+    return room?.gameFormat === 'captain-crew' || room?.gameFormat === 'hot-spark-relay';
+}
+
 function raceEntities(room) {
-    return isCaptainCrew(room) ? teamList(room) : playerList(room);
+    return isTeamFormat(room) ? teamList(room) : playerList(room);
 }
 
 function minPlayersForRoom(room) {
-    if (isCaptainCrew(room)) return LIVE_CAPTAIN_CREW_MIN_PLAYERS;
+    if (isTeamFormat(room)) return LIVE_CAPTAIN_CREW_MIN_PLAYERS;
     return LIVE_MIN_PLAYERS;
 }
 
@@ -181,6 +185,7 @@ function createEmptyTeam(room, memberIds = []) {
         questionId: 0,
         answerLocked: false,
         crewVotes: new Map(),
+        relayTurnIndex: 0,
     };
     room.teams.set(teamId, team);
     for (const memberId of memberIds) {
@@ -236,7 +241,7 @@ function validateTeamsForStart(room) {
 
 function canStartRoom(room) {
     if (room.phase !== 'lobby') return false;
-    if (!isCaptainCrew(room)) return room.players.size >= LIVE_MIN_PLAYERS;
+    if (!isTeamFormat(room)) return room.players.size >= LIVE_MIN_PLAYERS;
     if (room.teamAssignment === 'pick') return validateTeamsForStart(room).ok;
     return room.players.size >= LIVE_CAPTAIN_CREW_MIN_PLAYERS;
 }
@@ -269,8 +274,8 @@ export function publicRoomSnapshot(room) {
         teamMin: LIVE_TEAM_MIN,
         teamMax: LIVE_TEAM_MAX,
         players: playerList(room),
-        teams: room.phase === 'lobby' && isCaptainCrew(room) ? lobbyTeamsList(room) : teamList(room),
-        unassignedPlayers: room.phase === 'lobby' && isCaptainCrew(room) ? unassignedPlayerList(room) : [],
+        teams: room.phase === 'lobby' && isTeamFormat(room) ? lobbyTeamsList(room) : teamList(room),
+        unassignedPlayers: room.phase === 'lobby' && isTeamFormat(room) ? unassignedPlayerList(room) : [],
     };
 }
 
@@ -286,6 +291,10 @@ function normalizeGameFormat(format) {
 
 function isCaptainCrew(room) {
     return room?.gameFormat === 'captain-crew';
+}
+
+function isHotSparkRelay(room) {
+    return room?.gameFormat === 'hot-spark-relay';
 }
 
 function resolveQuestionInputMode(room) {
@@ -318,6 +327,12 @@ function getPlayerTeam(room, player) {
 function currentCaptainId(team) {
     if (!team?.memberIds?.length) return null;
     const idx = team.termIndex % team.memberIds.length;
+    return team.memberIds[idx];
+}
+
+function currentRelayPlayerId(team) {
+    if (!team?.memberIds?.length) return null;
+    const idx = ((team.relayTurnIndex || 0) % team.memberIds.length + team.memberIds.length) % team.memberIds.length;
     return team.memberIds[idx];
 }
 
@@ -417,6 +432,37 @@ function teamQuestionPayload(team, room, player) {
     };
 }
 
+function teamRelayQuestionPayload(team, room, player) {
+    const entry = ensureTeamQuestionState(team, room);
+    if (!entry) return null;
+    const activePlayerId = currentRelayPlayerId(team);
+    const activeIdx = team.memberIds.indexOf(activePlayerId);
+    const nextPlayerId = activeIdx >= 0
+        ? team.memberIds[(activeIdx + 1) % team.memberIds.length]
+        : null;
+    return {
+        progress: team.termIndex,
+        termsToWin: LIVE_TERMS_TO_WIN,
+        termIndex: team.termIndex,
+        questionId: team.questionId,
+        definition: entry.definition,
+        inputMode: team.questionInputMode,
+        answerMode: room.answerMode,
+        gameFormat: 'hot-spark-relay',
+        caseSensitive: false,
+        teamId: team.id,
+        teamName: team.name,
+        relay: {
+            activePlayerId,
+            activeNickname: room.players.get(activePlayerId)?.nickname || '',
+            isActivePlayer: player.id === activePlayerId,
+            nextPlayerId,
+            nextNickname: room.players.get(nextPlayerId)?.nickname || '',
+        },
+        ...(team.questionInputMode === 'choice' ? { choices: team.questionChoices } : {}),
+    };
+}
+
 function ensurePlayerQuestionState(player, room) {
     const entry = player.terms[player.termIndex];
     if (!entry || !room) return null;
@@ -437,10 +483,11 @@ function ensurePlayerQuestionState(player, room) {
 }
 
 function playerQuestionPayload(player, room) {
-    if (isCaptainCrew(room)) {
+    if (isCaptainCrew(room) || isHotSparkRelay(room)) {
         const team = getPlayerTeam(room, player);
         if (!team) return null;
-        return teamQuestionPayload(team, room, player);
+        if (isCaptainCrew(room)) return teamQuestionPayload(team, room, player);
+        return teamRelayQuestionPayload(team, room, player);
     }
     const entry = ensurePlayerQuestionState(player, room);
     if (!entry) return null;
@@ -625,7 +672,7 @@ function deliverEntityOutcome(io, room, entity, isTeam, result, onGameEnd) {
             if (!member?.socketId) continue;
             io.to(member.socketId).emit('live:challenge-resolved', result);
             if (result.nextQuestion) {
-                const q = teamQuestionPayload(entity, room, member);
+                const q = playerQuestionPayload(member, room);
                 if (q) io.to(member.socketId).emit('live:your-question', q);
             }
         }
@@ -801,7 +848,7 @@ function attachPlayerSocket(socket, room, player) {
 
 function emitPlayerSession(socket, room, player) {
     const team = getPlayerTeam(room, player);
-    const entityProgress = isCaptainCrew(room) && team
+    const entityProgress = isTeamFormat(room) && team
         ? teamProgress(team, room)
         : playerProgress(player);
     const payload = {
@@ -817,7 +864,7 @@ function emitPlayerSession(socket, room, player) {
     };
     let question = null;
     if (room.phase === 'playing') {
-        const entity = isCaptainCrew(room) && team ? team : player;
+        const entity = isTeamFormat(room) && team ? team : player;
         const isTeam = Boolean(isCaptainCrew(room) && team);
         if (entity?.pendingChallenge) {
             payload.awaitingChallenge = true;
@@ -913,7 +960,7 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         level: level || 'intermediate',
         answerMode: normalizeAnswerMode(answerMode),
         gameFormat: normalizedFormat,
-        teamAssignment: normalizedFormat === 'captain-crew' ? normalizeTeamAssignment(teamAssignment) : 'random',
+        teamAssignment: isTeamFormat({ gameFormat: normalizedFormat }) ? normalizeTeamAssignment(teamAssignment) : 'random',
         masterDeck: shuffleDeck(deck, deck.length),
         players: new Map(),
         teams: new Map(),
@@ -1028,6 +1075,7 @@ export function resetRoomToLobby(room) {
             team.terms = [];
             team.finished = false;
             team.pendingChallenge = null;
+            team.relayTurnIndex = 0;
             clearTeamQuestionState(team);
         }
     }
@@ -1103,6 +1151,7 @@ function assignTeamTerms(team, masterDeck) {
     team.terms = shuffleDeck(masterDeck, LIVE_TERMS_TO_WIN);
     team.termIndex = 0;
     team.finished = false;
+    team.relayTurnIndex = 0;
     clearTeamQuestionState(team);
 }
 
@@ -1129,7 +1178,7 @@ function deliverTeamQuestion(io, room, team) {
     for (const memberId of team.memberIds) {
         const member = room.players.get(memberId);
         if (!member?.socketId) continue;
-        const q = teamQuestionPayload(team, room, member);
+        const q = playerQuestionPayload(member, room);
         if (q) io.to(member.socketId).emit('live:your-question', q);
     }
 }
@@ -1141,7 +1190,7 @@ function deliverTeamAnswerResult(io, room, team, result) {
         if (!member?.socketId) continue;
         io.to(member.socketId).emit('live:answer-result', payload);
         if (result.nextQuestion) {
-            const q = teamQuestionPayload(team, room, member);
+            const q = playerQuestionPayload(member, room);
             if (q) io.to(member.socketId).emit('live:your-question', q);
         }
     }
@@ -1206,6 +1255,46 @@ function submitTeamAnswer(room, playerId, rawText) {
     }
 }
 
+function processRelayAnswer(room, team, player, answerText) {
+    if (team.answerLocked) throw new Error('Please wait for the next question.');
+    const activePlayerId = currentRelayPlayerId(team);
+    if (activePlayerId !== player.id) {
+        const activeNickname = room.players.get(activePlayerId)?.nickname || 'your teammate';
+        throw new Error(`Wait for ${activeNickname} — it is their turn.`);
+    }
+
+    const entry = team.terms[team.termIndex];
+    if (!entry) throw new Error('No active question.');
+
+    team.answerLocked = true;
+    try {
+        const correct = matchesTermAnswer(answerText, entry.term);
+        if (correct) {
+            const result = processCorrectAnswerTeam(room, team, entry, answerText);
+            team.relayTurnIndex = (team.relayTurnIndex || 0) + 1;
+            return result;
+        }
+
+        team.relayTurnIndex = (team.relayTurnIndex || 0) + 1;
+        clearTeamQuestionState(team);
+        return {
+            correct: false,
+            reset: false,
+            challengeable: false,
+            progress: team.termIndex,
+            won: false,
+            correctTerm: entry.term,
+            answerText,
+            definition: entry.definition,
+            teamId: team.id,
+            teamName: team.name,
+            nextQuestion: true,
+        };
+    } finally {
+        team.answerLocked = false;
+    }
+}
+
 function startGame(room) {
     if (room.phase === 'finished') throw new Error('Game has ended.');
     if (room.phase === 'playing') throw new Error('Game is already in progress.');
@@ -1213,7 +1302,7 @@ function startGame(room) {
     if (room.players.size < minPlayers) {
         throw new Error(`At least ${minPlayers} players are required to start.`);
     }
-    if (isCaptainCrew(room)) {
+    if (isTeamFormat(room)) {
         if (room.teamAssignment === 'random') {
             buildRandomTeams(room);
         } else {
@@ -1509,6 +1598,24 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     if (!result.challengeable) emitProgress(io, room);
                     return;
                 }
+                if (isHotSparkRelay(room)) {
+                    const team = player ? getPlayerTeam(room, player) : null;
+                    if (!team) throw new Error('You are not on a team.');
+                    const answerText = sanitizeAnswerText(text ?? answer);
+                    if (!answerText) throw new Error('Choose an answer first.');
+                    const result = processRelayAnswer(room, team, player, answerText);
+                    emitHostAnswerFeed(io, room, team, result);
+                    deliverTeamAnswerResult(io, room, team, result);
+
+                    if (result.won) {
+                        const finished = gameFinishedPayload(room);
+                        io.to(`room:${room.code}`).emit('live:game-finished', finished);
+                        if (onGameEnd) onGameEnd(room);
+                        return;
+                    }
+                    emitProgress(io, room);
+                    return;
+                }
 
                 const result = submitAnswer(room, socket.data.playerId, text ?? answer);
                 if (player) emitHostAnswerFeed(io, room, player, result);
@@ -1539,6 +1646,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                if (isHotSparkRelay(room)) throw new Error('Challenges are not used in Hot Spark Relay.');
                 const challenge = submitChallenge(room, socket.data.playerId);
                 emitChallengePending(io, room, challenge);
                 const player = room.players.get(socket.data.playerId);
@@ -1564,6 +1672,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                if (isHotSparkRelay(room)) throw new Error('Challenges are not used in Hot Spark Relay.');
                 const player = room.players.get(socket.data.playerId);
                 const result = skipChallenge(room, socket.data.playerId);
                 if (isCaptainCrew(room)) {

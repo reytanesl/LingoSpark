@@ -548,7 +548,7 @@ async function start() {
                 code: room.code,
                 hostToken: room.hostToken,
                 termsToWin: 12,
-                minPlayers: room.gameFormat === 'captain-crew' ? 4 : 2,
+                minPlayers: (room.gameFormat === 'captain-crew' || room.gameFormat === 'hot-spark-relay') ? 4 : 2,
                 answerMode: room.answerMode,
                 gameFormat: room.gameFormat,
                 teamAssignment: room.teamAssignment,
