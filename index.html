@@ -2152,7 +2152,7 @@
                 <div class="guide-item"><strong>Classic Flashcards</strong><p>Paste a glossary, flip each card, then mark Know / Don’t know. Unknown cards stay in the deck until you master them.</p></div>
                 <div class="guide-item"><strong>Memory Flip</strong><p>Find matching term-definition pairs by flipping two cards at a time. Clear the board in as few attempts as possible.</p></div>
                 <div class="guide-item"><strong>Word Repair</strong><p>You get a definition plus a broken spelling. Type the correct term to repair it and build a streak.</p></div>
-                <div class="guide-item"><strong>Cloze Climb</strong><p>Fill in missing vocab from clue sentences to climb step by step. Wrong answers cost hearts.</p></div>
+                <div class="guide-item"><strong>Speed Match Sprint</strong><p>Race the clock: tap the term that matches each definition. Correct answers add time and streak points; mistakes cost seconds.</p></div>
                 <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
                 <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
@@ -2289,7 +2289,7 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-table-cells-large"></i></div><h2>Memory Flip</h2><p>Flip cards to match terms with definitions. Fewer attempts means a stronger score.</p><a href="#/setup/memory-flip" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-screwdriver-wrench"></i></div><h2>Word Repair</h2><p>Fix broken spellings and rebuild the correct term from the definition clue.</p><a href="#/setup/word-repair" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-mountain"></i></div><h2>Cloze Climb</h2><p>Fill the missing vocab in context clues and climb before your hearts run out.</p><a href="#/setup/cloze-climb" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-gauge-high"></i></div><h2>Speed Match Sprint</h2><p>Tap the matching term as fast as you can. Correct answers add time; mistakes burn the clock.</p><a href="#/setup/speed-match" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word or phrase that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own list.</p><a href="#/auction" class="btn btn-outline">Play Now</a></div>
@@ -3130,21 +3130,18 @@
             <div id="wr-feedback" style="text-align:center;color:var(--text-muted);margin-top:0.8rem;"></div>
         </div>
 
-        <!-- CORE VOCAB: CLOZE CLIMB -->
-        <div id="screen-cloze-climb" class="screen engine-container">
+        <!-- CORE VOCAB: SPEED MATCH SPRINT -->
+        <div id="screen-speed-match" class="screen engine-container">
             <div class="top-bar">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
                 <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
-                <button type="button" class="btn btn-outline" onclick="initClozeClimb()"><i class="fa-solid fa-rotate-right"></i> New Round</button>
+                <button type="button" class="btn btn-outline" onclick="initSpeedMatch()"><i class="fa-solid fa-rotate-right"></i> New Sprint</button>
             </div>
-            <div id="cc-progress" class="turn-indicator turn-blue">Climb: 0 · Hearts: ♥♥♥ · Score: 0</div>
-            <div class="word-prompt" id="cc-clue">Loading...</div>
-            <input type="text" id="cc-answer" class="game-input" placeholder="Fill the blank with the matching term" onkeypress="handleClozeClimbInput(event)" autocomplete="off">
-            <div class="btn-group">
-                <button class="btn btn-blue" onclick="checkClozeClimb()">Check</button>
-                <button class="btn btn-red" onclick="skipClozeClimb()">Skip</button>
-            </div>
-            <div id="cc-feedback" style="text-align:center;color:var(--text-muted);margin-top:0.8rem;"></div>
+            <div id="sm-progress" class="turn-indicator turn-blue">Time: 60s · Score: 0 · Streak: 0</div>
+            <div class="word-prompt" id="sm-clue">Loading...</div>
+            <p style="text-align:center;color:var(--text-muted);margin:-0.35rem 0 0.85rem;font-weight:600;">Tap the matching answer</p>
+            <div id="sm-choices" class="grid" style="grid-template-columns:repeat(2,minmax(140px,1fr));gap:12px;max-width:640px;margin:0 auto;"></div>
+            <div id="sm-feedback" style="text-align:center;color:var(--text-muted);margin-top:0.9rem;"></div>
         </div>
 
         <!-- CORE VOCAB: VOCAB AUCTION -->
@@ -3575,7 +3572,7 @@
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
         const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
-        const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'cloze-climb', 'bomb', 'grid']);
+        const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid']);
 
         function routePath(hash) {
             return decodeURIComponent(String(hash || '').replace(/^#\/?/, '') || 'home');
@@ -3758,7 +3755,7 @@
                         if (arg === 'flashcard') initFlashcards(fcGetLaunchRevisionMode());
                         if (arg === 'memory-flip') initMemoryFlip();
                         if (arg === 'word-repair') initWordRepair();
-                        if (arg === 'cloze-climb') initClozeClimb();
+                        if (arg === 'speed-match') initSpeedMatch();
                         if (arg === 'odyssey') initOdyssey();
                     } else {
                         activeGame = arg;
@@ -4579,7 +4576,7 @@
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin-bottom:0.6rem;">Games Played</h3>';
                     html += '<div class="progress-grid">';
                     const gameNames = {
-                        flashcards: 'Flashcards', memory_flip: 'Memory Flip', word_repair: 'Word Repair', cloze_climb: 'Cloze Climb', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
+                        flashcards: 'Flashcards', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
@@ -4616,7 +4613,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', memory_flip:'Memory Flip', word_repair:'Word Repair', cloze_climb:'Cloze Climb', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -4810,12 +4807,15 @@
             if (screenId !== 'matura' && typeof clearMaturaUploads === 'function') {
                 clearMaturaUploads();
             }
+            if (screenId !== 'speed-match' && typeof stopSpeedMatchTimer === 'function') {
+                stopSpeedMatchTimer();
+            }
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
             document.body.classList.toggle('live-player-mode', screenId === 'live-join' || screenId === 'live-play');
             if (screenId !== 'live-play') document.body.classList.remove('live-game-active');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
-            const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction'];
+            const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match'];
             if (playScreens.includes(screenId) && !isLoggedIn()) startGuestLoginReminders();
             else if (!playScreens.includes(screenId)) stopGuestLoginReminders();
             let pageKey = screenId;
@@ -5255,7 +5255,7 @@
             activeGame = gameType;
             document.getElementById('setup-title').innerText = 'Game Setup';
             
-            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'cloze-climb', 'bomb', 'grid'];
+            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid'];
             const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
             const hybridGames = ['odyssey'];
             
@@ -5292,8 +5292,8 @@
             if (gameType === 'word-repair') {
                 document.getElementById('setup-title').innerText = 'Word Repair Setup';
             }
-            if (gameType === 'cloze-climb') {
-                document.getElementById('setup-title').innerText = 'Cloze Climb Setup';
+            if (gameType === 'speed-match') {
+                document.getElementById('setup-title').innerText = 'Speed Match Sprint Setup';
             }
             if (vocabGames.includes(gameType) || hybridGames.includes(gameType)) {
                 renderDemoSetButtons();
@@ -5369,7 +5369,7 @@
         });
 
         function launchSelectedGame() {
-            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'cloze-climb', 'bomb', 'grid'];
+            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid'];
             const hybridGames = ['odyssey'];
             
             if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
@@ -5387,7 +5387,7 @@
             if(activeGame === 'flashcard') initFlashcards(fcGetLaunchRevisionMode());
             if(activeGame === 'memory-flip') initMemoryFlip();
             if(activeGame === 'word-repair') initWordRepair();
-            if(activeGame === 'cloze-climb') initClozeClimb();
+            if(activeGame === 'speed-match') initSpeedMatch();
             
             if(activeGame === 'frank') initFrankenstein();
             if(activeGame === 'trans') initTransitions();
@@ -8957,79 +8957,143 @@ Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered
             setTimeout(nextWordRepairRound, 650);
         }
 
-        // CLOZE CLIMB
-        let ccState = { rounds: [], index: 0, score: 0, height: 0, lives: 3, streak: 0, current: null };
-        function clozeTemplate(def) {
-            const d = String(def || '').trim();
-            const templates = [
-                `In your notes: "____" means ${d}.`,
-                `Complete the sentence: The word "____" can be defined as ${d}.`,
-                `Fill the blank: We use "____" when we mean ${d}.`,
-            ];
-            return templates[Math.floor(Math.random() * templates.length)];
+        // SPEED MATCH SPRINT
+        let smState = {
+            timeLeft: 60,
+            score: 0,
+            streak: 0,
+            hits: 0,
+            misses: 0,
+            locked: false,
+            finished: false,
+            current: null,
+            timerId: null,
+            promptAt: 0,
+        };
+        function stopSpeedMatchTimer() {
+            if (smState.timerId) {
+                clearInterval(smState.timerId);
+                smState.timerId = null;
+            }
         }
-        function initClozeClimb() {
-            const total = Math.min(12, vocabulary.length);
-            const rounds = [...vocabulary].sort(() => Math.random() - 0.5).slice(0, total).map((v) => ({
-                clue: clozeTemplate(v.rawDef || v.prompt),
-                answer: String(v.rawTerm || '').trim(),
-            }));
-            ccState = { rounds, index: 0, score: 0, height: 0, lives: 3, streak: 0, current: null };
-            nextClozeRound();
+        function updateSpeedMatchHeader() {
+            const el = document.getElementById('sm-progress');
+            if (!el) return;
+            const t = Math.max(0, Math.ceil(smState.timeLeft));
+            el.textContent = `Time: ${t}s · Score: ${smState.score} · Streak: ${smState.streak} · Hits: ${smState.hits}`;
+            el.className = `turn-indicator ${t <= 10 ? 'turn-red' : 'turn-blue'}`;
         }
-        function updateClozeHeader() {
-            const hearts = '♥'.repeat(Math.max(0, ccState.lives)) + '♡'.repeat(Math.max(0, 3 - ccState.lives));
-            document.getElementById('cc-progress').textContent = `Climb: ${ccState.height}/${ccState.rounds.length} · Hearts: ${hearts} · Score: ${ccState.score}`;
-        }
-        function finishClozeClimb() {
-            const won = ccState.height >= ccState.rounds.length;
-            const msg = won ? `Summit reached! Final score: ${ccState.score}` : `Out of hearts. Final score: ${ccState.score}`;
-            document.getElementById('cc-clue').textContent = won ? 'Excellent climb!' : 'Climb ended.';
-            document.getElementById('cc-feedback').textContent = msg;
-            document.getElementById('cc-answer').disabled = true;
+        function finishSpeedMatch() {
+            if (smState.finished) return;
+            smState.finished = true;
+            smState.locked = true;
+            stopSpeedMatchTimer();
+            const clue = document.getElementById('sm-clue');
+            const choices = document.getElementById('sm-choices');
+            const feedback = document.getElementById('sm-feedback');
+            if (clue) clue.textContent = 'Sprint over!';
+            if (choices) choices.innerHTML = '';
+            if (feedback) feedback.textContent = `Final score: ${smState.score} · Hits: ${smState.hits} · Misses: ${smState.misses}`;
+            updateSpeedMatchHeader();
             incrementGameCount();
-            recordGameSessionApi('cloze_climb', { score: ccState.score, pointsEarned: ccState.score, wordsTotal: ccState.rounds.length, result: { completed: won, height: ccState.height } });
+            recordGameSessionApi('speed_match', {
+                score: smState.score,
+                pointsEarned: smState.score,
+                wordsTotal: smState.hits + smState.misses,
+                result: { hits: smState.hits, misses: smState.misses, streakBest: smState.streak },
+            });
         }
-        function nextClozeRound() {
-            updateClozeHeader();
-            if (ccState.lives <= 0 || ccState.index >= ccState.rounds.length) {
-                finishClozeClimb();
+        function pickSpeedMatchRound() {
+            if (!vocabulary.length) return null;
+            const target = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+            const answer = String(target.answer || target.rawTerm || '').trim();
+            const clue = String(target.prompt || target.rawDef || '').trim();
+            if (!answer || !clue) return null;
+            const answerKey = answer.toLowerCase();
+            const distractors = [...vocabulary]
+                .map((v) => String(v.answer || v.rawTerm || '').trim())
+                .filter((t) => t && t.toLowerCase() !== answerKey)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3);
+            while (distractors.length < 3) distractors.push(`Option ${distractors.length + 1}`);
+            const options = [answer, ...distractors].sort(() => Math.random() - 0.5);
+            return { clue, answer, options };
+        }
+        function renderSpeedMatchRound() {
+            const round = pickSpeedMatchRound();
+            if (!round) {
+                finishSpeedMatch();
                 return;
             }
-            ccState.current = ccState.rounds[ccState.index];
-            document.getElementById('cc-answer').disabled = false;
-            document.getElementById('cc-answer').value = '';
-            document.getElementById('cc-answer').focus();
-            document.getElementById('cc-clue').textContent = ccState.current.clue;
-            document.getElementById('cc-feedback').textContent = '';
+            smState.current = round;
+            smState.locked = false;
+            smState.promptAt = performance.now();
+            document.getElementById('sm-clue').textContent = round.clue;
+            document.getElementById('sm-feedback').textContent = '';
+            const box = document.getElementById('sm-choices');
+            box.innerHTML = round.options.map((opt, i) => (
+                `<button type="button" class="btn btn-outline" style="padding:1rem 0.75rem;font-size:1.05rem;min-height:64px;white-space:normal;" onclick="chooseSpeedMatch(${i})">${esc(opt)}</button>`
+            )).join('');
+            updateSpeedMatchHeader();
         }
-        function handleClozeClimbInput(e) { if (e.key === 'Enter') checkClozeClimb(); }
-        function checkClozeClimb() {
-            if (!ccState.current) return;
-            const input = (document.getElementById('cc-answer').value || '').trim().toLowerCase();
-            const expected = ccState.current.answer.toLowerCase();
-            if (vocabMatchesAnswer(input, expected)) {
-                ccState.streak += 1;
-                ccState.height += 1;
-                ccState.score += (12 + Math.min(10, ccState.streak * 2));
-                document.getElementById('cc-feedback').textContent = 'Correct! You climb one step.';
+        function initSpeedMatch() {
+            stopSpeedMatchTimer();
+            smState = {
+                timeLeft: 60,
+                score: 0,
+                streak: 0,
+                hits: 0,
+                misses: 0,
+                locked: false,
+                finished: false,
+                current: null,
+                timerId: null,
+                promptAt: 0,
+            };
+            updateSpeedMatchHeader();
+            renderSpeedMatchRound();
+            smState.timerId = setInterval(() => {
+                if (smState.finished) return;
+                smState.timeLeft -= 0.1;
+                if (smState.timeLeft <= 0) {
+                    smState.timeLeft = 0;
+                    updateSpeedMatchHeader();
+                    finishSpeedMatch();
+                    return;
+                }
+                updateSpeedMatchHeader();
+            }, 100);
+        }
+        function chooseSpeedMatch(index) {
+            if (smState.finished || smState.locked || !smState.current) return;
+            smState.locked = true;
+            const picked = smState.current.options[index];
+            const correct = vocabMatchesAnswer(String(picked || '').toLowerCase(), smState.current.answer.toLowerCase());
+            const elapsed = Math.max(0, (performance.now() - smState.promptAt) / 1000);
+            if (correct) {
+                smState.streak += 1;
+                smState.hits += 1;
+                const speedBonus = Math.max(0, Math.round(8 - elapsed * 2));
+                const streakBonus = Math.min(12, smState.streak * 2);
+                const gained = 10 + speedBonus + streakBonus;
+                smState.score += gained;
+                smState.timeLeft = Math.min(75, smState.timeLeft + 1.5);
+                document.getElementById('sm-feedback').textContent = `Correct! +${gained} · +1.5s`;
             } else {
-                ccState.streak = 0;
-                ccState.lives -= 1;
-                document.getElementById('cc-feedback').textContent = `Wrong. Correct: ${ccState.current.answer}`;
+                smState.streak = 0;
+                smState.misses += 1;
+                smState.timeLeft = Math.max(0, smState.timeLeft - 2.5);
+                document.getElementById('sm-feedback').textContent = `Miss! −2.5s · Answer: ${smState.current.answer}`;
             }
-            ccState.index += 1;
-            updateClozeHeader();
-            setTimeout(nextClozeRound, 700);
-        }
-        function skipClozeClimb() {
-            if (!ccState.current) return;
-            ccState.streak = 0;
-            ccState.lives -= 1;
-            ccState.index += 1;
-            document.getElementById('cc-feedback').textContent = `Skipped. Correct: ${ccState.current.answer}`;
-            updateClozeHeader();
-            setTimeout(nextClozeRound, 700);
+            updateSpeedMatchHeader();
+            if (smState.timeLeft <= 0) {
+                smState.timeLeft = 0;
+                finishSpeedMatch();
+                return;
+            }
+            setTimeout(() => {
+                if (!smState.finished) renderSpeedMatchRound();
+            }, correct ? 280 : 700);
         }
 
         // CLASSIC FLASHCARDS — 12-item batches with spaced review + saved stats
