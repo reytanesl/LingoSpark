@@ -52,7 +52,7 @@ import {
     recordMaturaAssessUsage,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
-import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, checkoutUrls } from './billing.js';
+import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, checkoutUrls } from './billing.js';
 import {
     buildDeckFromRequest,
     createRoom,
@@ -245,6 +245,7 @@ async function start() {
             hasAccess: hasWritingAccess(user),
             status: getAccessStatus(user),
             maturaAssess: getMaturaAssessAvailability(user, { isAdmin: admin }),
+            maturaAssessPack: publicMaturaAssessPack(),
             googleConfigured: googleReady,
             localAuthEnabled: dbReady,
             bmcPaymentUrl: checkoutUrls().extras,
@@ -292,6 +293,7 @@ async function start() {
     app.get('/api/billing/plans', (_req, res) => {
         res.json({
             plans: publicAccessPlans(),
+            maturaAssessPack: publicMaturaAssessPack(),
             checkoutNote: 'Checkout is in USD on Buy Me a Coffee. PLN is the local price (~4 zł / $1). Stripe / Przelewy24 later.',
         });
     });
@@ -798,9 +800,10 @@ function extractJson(text) {
             let when = `${totalMin} minute${totalMin === 1 ? '' : 's'}`;
             if (h > 0) when = m === 0 ? `${h} hour${h === 1 ? '' : 's'}` : `${h}h ${m}m`;
             return res.status(429).json({
-                error: `Matura criteria assessment is available once every 4 hours. Try again in about ${when}.`,
+                error: `Matura criteria assessment is on a 4-hour cooldown. Unlock 4 more assessments for 5 zł / $1, or try again in about ${when}.`,
                 code: 'matura_assess_cooldown',
                 maturaAssess: cooldown,
+                maturaAssessPack: publicMaturaAssessPack(),
             });
         }
 
@@ -899,13 +902,16 @@ Return ONLY valid JSON (no markdown fences):
             if (!admin) {
                 try {
                     const stamped = await recordMaturaAssessUsage(assessUser.id);
-                    if (stamped) assessUser.matura_assess_last_at = stamped;
+                    if (stamped) {
+                        assessUser.matura_assess_last_at = stamped.matura_assess_last_at;
+                        assessUser.matura_assess_credits = stamped.matura_assess_credits;
+                    }
                     maturaAssess = getMaturaAssessAvailability(assessUser, { isAdmin: false });
                 } catch (stampErr) {
                     console.warn('recordMaturaAssessUsage failed:', stampErr.message);
                 }
             }
-            res.json({ ...parsed, maturaAssess });
+            res.json({ ...parsed, maturaAssess, maturaAssessPack: publicMaturaAssessPack() });
         } catch (error) {
             console.error('Assess-writing error:', error);
             res.status(500).json({ error: error.message || 'Failed to assess writing' });

@@ -1,5 +1,10 @@
 import crypto from 'crypto';
-import { grantBmcAccessByEmail, revokeBmcAccessByEmail } from './db.js';
+import {
+    grantBmcAccessByEmail,
+    revokeBmcAccessByEmail,
+    grantMaturaAssessCreditsByEmail,
+    MATURA_ASSESS_PACK_CREDITS,
+} from './db.js';
 
 /** Checkout is still BMC (USD-only). PLN is display-only (~4 zł / $1) until Stripe/Przelewy24. */
 export const WEEK_DAYS = 7;
@@ -8,6 +13,8 @@ export const YEAR_DAYS = 365;
 const WEEK_AMOUNT = 3;
 const MONTH_AMOUNT = 10;
 const YEAR_AMOUNT = 70;
+export const MATURA_PACK_USD = 1;
+export const MATURA_PACK_PLN = 5;
 
 export const ACCESS_PLANS = [
     {
@@ -46,6 +53,7 @@ export function checkoutUrls() {
         week: process.env.BMC_WEEK_URL || extras,
         month: process.env.BMC_MONTH_URL || extras,
         year: process.env.BMC_YEAR_URL || extras,
+        maturaPack: process.env.BMC_MATURA_PACK_URL || extras,
     };
 }
 
@@ -55,6 +63,19 @@ export function publicAccessPlans() {
         ...plan,
         checkoutUrl: urls[plan.id] || urls.extras,
     }));
+}
+
+export function publicMaturaAssessPack() {
+    const urls = checkoutUrls();
+    return {
+        id: 'matura-assess-pack',
+        credits: MATURA_ASSESS_PACK_CREDITS,
+        usd: MATURA_PACK_USD,
+        pln: MATURA_PACK_PLN,
+        label: '4 Matura assessments',
+        description: 'Unlock 4 extra Matura criteria assessments. After the 4th, the usual 4-hour wait returns.',
+        checkoutUrl: urls.maturaPack || urls.extras,
+    };
 }
 
 function payloadRoots(payload) {
@@ -123,6 +144,31 @@ function extractTitle(payload) {
     return '';
 }
 
+/**
+ * Detect the $1 / 5 zł Matura “4 more assessments” pack.
+ * Checked before Writing Suite day grants so $1 is not treated as a week.
+ */
+export function isMaturaAssessPack(payload, eventType = '') {
+    const title = extractTitle(payload).toLowerCase();
+    const amount = extractAmount(payload);
+    const type = String(eventType || '').toLowerCase();
+
+    const titleHit =
+        /matura/.test(title) ||
+        (/assess/.test(title) && /(essay|writing|prac)/.test(title)) ||
+        (/4/.test(title) && /(assess|essay|writing|prac|ocen)/.test(title)) ||
+        /4\s*(more\s+)?(assessments?|essays?|prace?|ocen)/.test(title);
+
+    const amountHit = amount != null && Math.abs(amount - MATURA_PACK_USD) <= 0.51;
+
+    if (titleHit && (amountHit || amount == null || amount < 2.5)) return true;
+    // One-time extras priced at ~$1 without a membership title → treat as Matura pack
+    if (amountHit && (type.includes('extra_purchase') || type.includes('donation'))) {
+        if (!/\b(week|month|year|annual|premium|suite)\b/.test(title)) return true;
+    }
+    return false;
+}
+
 function grantActionName(days) {
     if (days >= YEAR_DAYS) return 'grant_365_days';
     if (days >= MONTH_DAYS) return 'grant_30_days';
@@ -172,11 +218,11 @@ export function resolveAccessDays(payload, eventType = '') {
         if (Math.abs(amount - YEAR_AMOUNT) <= 15 || (amount >= 55 && amount <= 90)) {
             return YEAR_DAYS;
         }
-        // ~$10 → month; ~$3 → week (check month first so $10 is not treated as week)
+        // ~$10 → month; ~$3 → week (do not treat ~$1 Matura packs as a week)
         if (Math.abs(amount - MONTH_AMOUNT) <= 2 || (amount >= 8 && amount <= 15)) {
             return MONTH_DAYS;
         }
-        if (Math.abs(amount - WEEK_AMOUNT) <= 1.5 || (amount >= 1 && amount < 8)) {
+        if (Math.abs(amount - WEEK_AMOUNT) <= 1.5 || (amount >= 2.5 && amount < 8)) {
             return WEEK_DAYS;
         }
     }
@@ -230,6 +276,25 @@ export async function handleBmcWebhook(eventType, payload) {
     }
 
     if (isGrantEvent(type)) {
+        if (isMaturaAssessPack(payload, type)) {
+            const user = await grantMaturaAssessCreditsByEmail(email, {
+                credits: MATURA_ASSESS_PACK_CREDITS,
+                membershipId,
+            });
+            return {
+                ok: true,
+                action: 'grant_matura_assess_pack',
+                credits: MATURA_ASSESS_PACK_CREDITS,
+                amount,
+                user: user?.email || null,
+                pending: !user,
+                creditsRemaining: user ? Number(user.matura_assess_credits || 0) : null,
+                note: user
+                    ? null
+                    : 'No account yet — Matura pack queued and will apply when this email registers or signs in.',
+            };
+        }
+
         const days = resolveAccessDays(payload, type);
         const user = await grantBmcAccessByEmail(email, { membershipId, days });
         return {

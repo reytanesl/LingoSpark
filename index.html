@@ -2135,7 +2135,7 @@
             <p>Writing Suite and Primary English need paid access so the AI tools can stay online. <strong>Buying access is the best way to support LingoSpark</strong> — you unlock premium games for yourself or your students, and help cover running costs.</p>
             <div class="about-pricing">
                 <p style="margin-bottom:0.4rem;"><strong>Writing Suite — 40 zł / month</strong> <span style="font-weight:600;color:var(--text-muted);">($10)</span></p>
-                <p style="margin-bottom:0.6rem;">Plans: <strong>12 zł / week</strong> ($3) · <strong>40 zł / month</strong> ($10) · <strong>280 zł / year</strong> ($70, best value). Writing Suite and Primary English for the days you paid. Matura criteria assessment: once every 4 hours.</p>
+                <p style="margin-bottom:0.6rem;">Plans: <strong>12 zł / week</strong> ($3) · <strong>40 zł / month</strong> ($10) · <strong>280 zł / year</strong> ($70, best value). Writing Suite and Primary English for the days you paid. Matura criteria assessment: once every 4 hours — or unlock <strong>4 more assessments for 5 zł / $1</strong>.</p>
                 <p style="margin-bottom:0;font-size:0.88rem;">Checkout is in USD on Buy Me a Coffee (same email as your LingoSpark account). PLN is the local price at about 4 zł per $1 — card billing in złoty comes later.</p>
             </div>
             <p><a href="https://buymeacoffee.com/lingospark/extras" id="about-premium-link" target="_blank" rel="noopener">Go Premium — open the shop</a></p>
@@ -2185,7 +2185,7 @@
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives. Signed-in players collect each informal → formal pair in a Vocab Upgrade set.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
                 <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
-                <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments.</p></div>
+                <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments. Premium includes one assessment every 4 hours; unlock 4 more for 5 zł / $1 when you need them sooner.</p></div>
             </div>
         </div>
     </div>
@@ -2803,6 +2803,12 @@
                 <p id="matura-assess-cooldown-note" style="margin:0.65rem 0 0;font-size:0.85rem;color:var(--text-muted);text-align:center;">
                     Premium: one Matura criteria assessment every 4 hours.
                 </p>
+                <div id="matura-assess-pack-cta" style="display:none;margin-top:0.75rem;text-align:center;">
+                    <a id="matura-assess-pack-link" class="btn btn-outline" href="https://buymeacoffee.com/lingospark/extras" target="_blank" rel="noopener" style="font-size:0.9rem;">
+                        <i class="fa-solid fa-unlock"></i> Unlock 4 more assessments — 5 zł / $1
+                    </a>
+                    <p style="margin:0.45rem 0 0;font-size:0.8rem;color:var(--text-muted);">Use the same email as your LingoSpark account. After the 4th assessment, the 4-hour wait applies again.</p>
+                </div>
                 </div>
 
                 <div id="matura-result" style="display:none;margin-top:1.75rem;">
@@ -5054,6 +5060,11 @@
             user: null, isAdmin: false, hasAccess: false,
             bmcPaymentUrl: 'https://buymeacoffee.com/lingospark/extras',
             googleConfigured: false, localAuthEnabled: true, accessPlans: DEFAULT_ACCESS_PLANS,
+            maturaAssess: null,
+            maturaAssessPack: {
+                credits: 4, usd: 1, pln: 5,
+                checkoutUrl: 'https://buymeacoffee.com/lingospark/extras',
+            },
         });
         let authState = emptyAuthState();
         window.authState = authState;
@@ -5251,7 +5262,7 @@
             return `
                 <li><i class="fa-solid fa-check"></i> Writing Suite — essays, vocab upgrade, and AI writing practice</li>
                 <li><i class="fa-solid fa-check"></i> Primary English games beyond free Dictation and Colour Blocks</li>
-                <li><i class="fa-solid fa-check"></i> Matura criteria assessment once every 4 hours</li>
+                <li><i class="fa-solid fa-check"></i> Matura criteria assessment once every 4 hours (or buy 4 extra for 5 zł / $1)</li>
                 <li><i class="fa-solid fa-check"></i> Vocab Review stays free forever</li>
             `;
         }
@@ -6864,37 +6875,71 @@ Return ONLY JSON:
             updateMaturaAssessCooldownUi();
         }
 
+        function getMaturaAssessPack() {
+            const pack = authState?.maturaAssessPack;
+            const fallback = 'https://buymeacoffee.com/lingospark/extras';
+            return {
+                credits: Number(pack?.credits) > 0 ? Number(pack.credits) : 4,
+                usd: Number(pack?.usd) > 0 ? Number(pack.usd) : 1,
+                pln: Number(pack?.pln) > 0 ? Number(pack.pln) : 5,
+                checkoutUrl: pack?.checkoutUrl || authState?.bmcPaymentUrl || fallback,
+            };
+        }
+
         function updateMaturaAssessCooldownUi() {
             const btn = document.getElementById('matura-assess-btn');
             const note = document.getElementById('matura-assess-cooldown-note');
+            const cta = document.getElementById('matura-assess-pack-cta');
+            const packLink = document.getElementById('matura-assess-pack-link');
             const state = getMaturaAssessState();
+            const pack = getMaturaAssessPack();
+            if (packLink) {
+                packLink.href = pack.checkoutUrl;
+                packLink.innerHTML = `<i class="fa-solid fa-unlock"></i> Unlock ${pack.credits} more assessments — ${pack.pln} zł / $${pack.usd}`;
+            }
             if (maturaCooldownTimer) {
                 clearTimeout(maturaCooldownTimer);
                 maturaCooldownTimer = null;
             }
 
+            const showPackCta = (visible) => {
+                if (cta) cta.style.display = visible ? 'block' : 'none';
+            };
+            const credits = Math.max(0, Number(state?.creditsRemaining) || 0);
+
             if (!state || state.limited === false) {
                 if (note) {
                     note.textContent = authState?.isAdmin
                         ? 'Admin: Matura criteria assessment has no cooldown.'
-                        : 'Premium: one Matura criteria assessment every 4 hours.';
+                        : 'Premium: one Matura criteria assessment every 4 hours. Need more? Unlock 4 extra for 5 zł / $1.';
                 }
                 if (btn && !maturaAssessBusy) btn.disabled = false;
+                showPackCta(Boolean(state && state.limited !== false && credits <= 0));
                 return;
             }
 
             if (state.available) {
-                if (note) note.textContent = 'Premium: one Matura criteria assessment every 4 hours.';
+                if (note) {
+                    if (state.usingCredits && credits > 0) {
+                        note.textContent = `Bonus pack active: ${credits} assessment${credits === 1 ? '' : 's'} left. After the last one, the 4-hour wait returns.`;
+                    } else if (credits > 0) {
+                        note.textContent = `Premium: free slot available now · ${credits} bonus assessment${credits === 1 ? '' : 's'} in reserve.`;
+                    } else {
+                        note.textContent = 'Premium: one Matura criteria assessment every 4 hours. Need more? Unlock 4 extra for 5 zł / $1.';
+                    }
+                }
                 if (btn && !maturaAssessBusy) btn.disabled = false;
+                showPackCta(credits <= 0);
                 return;
             }
 
-            const remaining = Math.max(0, Number(state.retryAfterMs) || 0);
+            const remaining = Math.max(0, Number(state.retryAfterMs) || Number(state.cooldownRetryAfterMs) || 0);
             const when = formatMaturaCooldownRemaining(remaining);
             if (note) {
-                note.textContent = `Next Matura criteria assessment available in about ${when}.`;
+                note.textContent = `Next free assessment in about ${when}. Or unlock ${pack.credits} more now for ${pack.pln} zł / $${pack.usd}.`;
             }
             if (btn) btn.disabled = true;
+            showPackCta(true);
             const wait = Math.min(Math.max(remaining, 15_000), 60_000);
             maturaCooldownTimer = setTimeout(async () => {
                 try { await refreshAuth(); } catch (_) { /* ignore */ }
@@ -7066,10 +7111,11 @@ Return ONLY JSON:
 
             const cooldown = getMaturaAssessState();
             if (cooldown && cooldown.limited !== false && cooldown.available === false) {
-                const when = formatMaturaCooldownRemaining(cooldown.retryAfterMs || 0);
+                const pack = getMaturaAssessPack();
+                const when = formatMaturaCooldownRemaining(cooldown.retryAfterMs || cooldown.cooldownRetryAfterMs || 0);
                 document.getElementById('matura-status').className = 'feedback error';
                 document.getElementById('matura-status').textContent =
-                    `Matura criteria assessment is available once every 4 hours. Try again in about ${when}.`;
+                    `On a 4-hour cooldown (about ${when} left). Unlock ${pack.credits} more assessments for ${pack.pln} zł / $${pack.usd}, or wait.`;
                 updateMaturaAssessCooldownUi();
                 return;
             }
@@ -7092,6 +7138,7 @@ Return ONLY JSON:
                 const data = await response.json();
                 setMaturaLoading(false);
                 if (data.maturaAssess) applyMaturaAssessState(data.maturaAssess);
+                if (data.maturaAssessPack) authState.maturaAssessPack = data.maturaAssessPack;
                 if (!response.ok) {
                     document.getElementById('matura-status').className = 'feedback error';
                     document.getElementById('matura-status').textContent = data.error || 'Assessment failed.';

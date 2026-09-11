@@ -42,6 +42,7 @@ export async function initDb() {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_visit_at TIMESTAMPTZ`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_last_at TIMESTAMPTZ`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_credits INTEGER NOT NULL DEFAULT 0`);
     await db.query(`
         DO $$ BEGIN
             ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL;
@@ -57,6 +58,7 @@ export async function initDb() {
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
     `);
+    await db.query(`ALTER TABLE pending_bmc_payments ADD COLUMN IF NOT EXISTS matura_credits INTEGER NOT NULL DEFAULT 0`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_pending_bmc_email ON pending_bmc_payments (LOWER(email))`);
     await db.query(`
         CREATE TABLE IF NOT EXISTS app_stats (
@@ -339,13 +341,15 @@ export async function revokeUser(id) {
     return result.rows[0] || null;
 }
 
-async function queuePendingBmcPayment(email, { membershipId = null, days = 7 } = {}) {
+async function queuePendingBmcPayment(email, { membershipId = null, days = 7, maturaCredits = 0 } = {}) {
     const db = getPool();
     const normalized = (email || '').toLowerCase().trim();
-    const grantDays = Number.isFinite(Number(days)) && Number(days) > 0 ? Number(days) : 7;
+    const grantDays = Number.isFinite(Number(days)) && Number(days) > 0 ? Number(days) : 0;
+    const credits = Math.max(0, Math.floor(Number(maturaCredits) || 0));
+    if (grantDays <= 0 && credits <= 0) return;
     await db.query(
-        `INSERT INTO pending_bmc_payments (email, days, membership_id) VALUES ($1, $2, $3)`,
-        [normalized, grantDays, membershipId]
+        `INSERT INTO pending_bmc_payments (email, days, membership_id, matura_credits) VALUES ($1, $2, $3, $4)`,
+        [normalized, grantDays || 0, membershipId, credits]
     );
 }
 
@@ -362,12 +366,24 @@ export async function applyPendingBmcPayments(user) {
 
     let current = user;
     for (const row of pending.rows) {
-        current =
-            (await grantBmcAccessByEmail(normalized, {
-                membershipId: row.membership_id,
-                days: row.days,
-                skipQueue: true,
-            })) || current;
+        const credits = Math.max(0, Math.floor(Number(row.matura_credits) || 0));
+        const days = Math.max(0, Math.floor(Number(row.days) || 0));
+        if (credits > 0) {
+            current =
+                (await grantMaturaAssessCreditsByEmail(normalized, {
+                    credits,
+                    membershipId: row.membership_id,
+                    skipQueue: true,
+                })) || current;
+        }
+        if (days > 0) {
+            current =
+                (await grantBmcAccessByEmail(normalized, {
+                    membershipId: row.membership_id,
+                    days,
+                    skipQueue: true,
+                })) || current;
+        }
     }
     await db.query(`DELETE FROM pending_bmc_payments WHERE LOWER(email) = $1`, [normalized]);
     return current;
@@ -489,8 +505,13 @@ export function isAdminEmail(email) {
     return email.toLowerCase().trim() === admin;
 }
 
-/** Premium Matura criteria assessments: once every 4 hours (Admin account exempt). */
+/** Premium Matura criteria assessments: once every 4 hours, or use paid bonus credits. */
 export const MATURA_ASSESS_COOLDOWN_MS = 4 * 60 * 60 * 1000;
+export const MATURA_ASSESS_PACK_CREDITS = 4;
+
+export function getMaturaAssessCredits(user) {
+    return Math.max(0, Math.floor(Number(user?.matura_assess_credits) || 0));
+}
 
 export function getMaturaAssessAvailability(user, { isAdmin = false } = {}) {
     if (!user) {
@@ -500,6 +521,8 @@ export function getMaturaAssessAvailability(user, { isAdmin = false } = {}) {
             nextAvailableAt: null,
             retryAfterMs: 0,
             cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+            creditsRemaining: 0,
+            usingCredits: false,
         };
     }
     if (isAdmin || isAdminEmail(user.email)) {
@@ -509,47 +532,130 @@ export function getMaturaAssessAvailability(user, { isAdmin = false } = {}) {
             nextAvailableAt: null,
             retryAfterMs: 0,
             cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+            creditsRemaining: getMaturaAssessCredits(user),
+            usingCredits: false,
         };
     }
+
+    const creditsRemaining = getMaturaAssessCredits(user);
     const lastRaw = user.matura_assess_last_at;
     const lastMs = lastRaw ? new Date(lastRaw).getTime() : 0;
-    if (!lastMs || Number.isNaN(lastMs)) {
-        return {
-            limited: true,
-            available: true,
-            nextAvailableAt: null,
-            retryAfterMs: 0,
-            cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
-        };
+    let retryAfterMs = 0;
+    let nextAvailableAt = null;
+    if (lastMs && !Number.isNaN(lastMs)) {
+        const nextMs = lastMs + MATURA_ASSESS_COOLDOWN_MS;
+        retryAfterMs = Math.max(0, nextMs - Date.now());
+        if (retryAfterMs > 0) nextAvailableAt = new Date(nextMs).toISOString();
     }
-    const nextMs = lastMs + MATURA_ASSESS_COOLDOWN_MS;
-    const retryAfterMs = Math.max(0, nextMs - Date.now());
-    if (retryAfterMs <= 0) {
-        return {
-            limited: true,
-            available: true,
-            nextAvailableAt: null,
-            retryAfterMs: 0,
-            cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
-        };
-    }
+    const cooldownOk = retryAfterMs <= 0;
+    const usingCredits = !cooldownOk && creditsRemaining > 0;
+    const available = cooldownOk || creditsRemaining > 0;
+
     return {
         limited: true,
-        available: false,
-        nextAvailableAt: new Date(nextMs).toISOString(),
-        retryAfterMs,
+        available,
+        nextAvailableAt: available ? null : nextAvailableAt,
+        retryAfterMs: available ? 0 : retryAfterMs,
         cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+        creditsRemaining,
+        usingCredits,
+        // When blocked, still expose when free slot returns (for UI countdown + buy CTA)
+        cooldownRetryAfterMs: retryAfterMs,
+        cooldownNextAvailableAt: nextAvailableAt,
     };
 }
 
+/**
+ * Record one Matura assessment use.
+ * Prefers the free cooldown slot when available; otherwise burns a bonus credit.
+ * When the last bonus credit is used, starts a fresh 4-hour cooldown.
+ */
 export async function recordMaturaAssessUsage(userId) {
     if (!userId) return null;
     const db = getPool();
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+        const locked = await client.query(
+            `SELECT id, matura_assess_last_at, matura_assess_credits
+             FROM users WHERE id = $1 FOR UPDATE`,
+            [userId]
+        );
+        const row = locked.rows[0];
+        if (!row) {
+            await client.query('ROLLBACK');
+            return null;
+        }
+
+        const credits = Math.max(0, Math.floor(Number(row.matura_assess_credits) || 0));
+        const lastMs = row.matura_assess_last_at ? new Date(row.matura_assess_last_at).getTime() : 0;
+        const retryAfterMs = lastMs && !Number.isNaN(lastMs)
+            ? Math.max(0, lastMs + MATURA_ASSESS_COOLDOWN_MS - Date.now())
+            : 0;
+        const cooldownOk = retryAfterMs <= 0;
+
+        let result;
+        if (cooldownOk) {
+            result = await client.query(
+                `UPDATE users
+                 SET matura_assess_last_at = NOW()
+                 WHERE id = $1
+                 RETURNING matura_assess_last_at, matura_assess_credits`,
+                [userId]
+            );
+        } else if (credits > 0) {
+            const nextCredits = credits - 1;
+            result = await client.query(
+                `UPDATE users
+                 SET matura_assess_credits = $2,
+                     matura_assess_last_at = CASE WHEN $2 = 0 THEN NOW() ELSE matura_assess_last_at END
+                 WHERE id = $1
+                 RETURNING matura_assess_last_at, matura_assess_credits`,
+                [userId, nextCredits]
+            );
+        } else {
+            await client.query('ROLLBACK');
+            return null;
+        }
+
+        await client.query('COMMIT');
+        return result.rows[0] || null;
+    } catch (err) {
+        try { await client.query('ROLLBACK'); } catch { /* ignore */ }
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+export async function grantMaturaAssessCreditsByEmail(email, {
+    credits = MATURA_ASSESS_PACK_CREDITS,
+    membershipId = null,
+    skipQueue = false,
+} = {}) {
+    const db = getPool();
+    const normalized = (email || '').toLowerCase().trim();
+    if (!normalized) return null;
+    const add = Math.max(0, Math.floor(Number(credits) || 0));
+    if (add <= 0) return null;
+
+    const existing = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalized]);
+    const user = existing.rows[0];
+    if (!user) {
+        if (!skipQueue) {
+            await queuePendingBmcPayment(normalized, { membershipId, days: 0, maturaCredits: add });
+        }
+        return null;
+    }
+
     const result = await db.query(
-        `UPDATE users SET matura_assess_last_at = NOW() WHERE id = $1 RETURNING matura_assess_last_at`,
-        [userId]
+        `UPDATE users
+         SET matura_assess_credits = COALESCE(matura_assess_credits, 0) + $2
+         WHERE id = $1
+         RETURNING *`,
+        [user.id, add]
     );
-    return result.rows[0]?.matura_assess_last_at || null;
+    return result.rows[0] || null;
 }
 
 export function publicUser(user) {
