@@ -93,7 +93,7 @@
             <div class="top">
                 <div>
                     <strong id="admin-label">Loading…</strong>
-                    <div class="muted">Visitors · logged-in accounts · active / requested / expired</div>
+                    <div class="muted">Visitors · logged-in accounts · active / free account / expired</div>
                 </div>
                 <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                     <a class="btn btn-grey" href="/"><i class="fa-solid fa-house"></i> Home</a>
@@ -120,9 +120,9 @@
                     <div class="hint">Premium access now</div>
                 </div>
                 <div class="stat requested">
-                    <div class="label">Requested</div>
+                    <div class="label">Free account</div>
                     <div class="value" id="stat-inactive">—</div>
-                    <div class="hint">Signed in, no premium yet</div>
+                    <div class="hint">Logged in, no premium</div>
                 </div>
                 <div class="stat expired">
                     <div class="label">Expired</div>
@@ -135,7 +135,7 @@
             <div class="filters" id="filters">
                 <button type="button" class="filter-btn active" data-filter="all" onclick="setFilter('all')">All logged in</button>
                 <button type="button" class="filter-btn" data-filter="active" onclick="setFilter('active')">Active</button>
-                <button type="button" class="filter-btn" data-filter="inactive" onclick="setFilter('inactive')">Requested</button>
+                <button type="button" class="filter-btn" data-filter="inactive" onclick="setFilter('inactive')">Free account</button>
                 <button type="button" class="filter-btn" data-filter="expired" onclick="setFilter('expired')">Expired</button>
             </div>
 
@@ -282,8 +282,8 @@
         }
 
         function statusLabel(status) {
-            if (status === 'inactive') return 'requested';
-            return status || 'requested';
+            if (status === 'inactive') return 'free account';
+            return status || 'free account';
         }
 
         function statusBadge(status) {
@@ -325,7 +325,7 @@
                 : allUsers.filter((u) => u.status === currentFilter);
 
             if (!filtered.length) {
-                const emptyLabel = currentFilter === 'inactive' ? 'requested' : currentFilter;
+                const emptyLabel = currentFilter === 'inactive' ? 'free account' : currentFilter;
                 body.innerHTML = `<tr><td colspan="7">No ${currentFilter === 'all' ? 'logged-in ' : emptyLabel + ' '}accounts yet.</td></tr>`;
                 return;
             }
