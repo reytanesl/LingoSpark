@@ -2156,6 +2156,7 @@
                 <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
                 <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
+                <div class="guide-item"><strong>Share a word list</strong><p>In Word Sets, open <strong>Share</strong> on a saved list to copy a link. Students open the link — the glossary loads into Vocab Review without signing in. Use the unlink button to turn sharing off.</p></div>
 
                 <h3>Live Spark</h3>
                 <div class="guide-item"><strong>Live Spark</strong><p>Teachers sign in and host a live classroom race. Choose Solo Race, Captain &amp; Crew, or Hot Spark Relay team mode. At least 2 players join with a room code and nickname (4+ for team modes). First team/player to reach 12 terms wins.</p></div>
@@ -2221,7 +2222,7 @@
             <div class="category-header">
                 <i class="fa-solid fa-book cat-icon"></i><h2>Word Sets</h2>
             </div>
-            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — organise them by <strong>category</strong> and <strong>class</strong>. Open <strong>Edit</strong> on any list to rename it and change each word or phrase.</p>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — organise them by <strong>category</strong> and <strong>class</strong>. Use <strong>Share</strong> to copy a link your students can open (no login needed). Open <strong>Edit</strong> on any list to rename it and change each word or phrase.</p>
             <div id="ws-editor" class="ws-editor" hidden></div>
             <div id="mysets-browse">
             <div style="text-align:center; margin-bottom: 1rem;">
@@ -3731,6 +3732,8 @@
                     }
                 } else if (root === 'auction') {
                     goToAuction();
+                } else if (root === 'set' && arg) {
+                    await openSharedWordSet(arg);
                 } else if (root === 'setup' && arg) {
                     if (arg === 'pe-boring') {
                         setAppHash('writing');
@@ -4152,12 +4155,14 @@
                 html += filtered.map((s) => {
                     const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
                     return `<div class="ws-card">
-                        <div class="ws-card-header"><h3>${esc(s.name)}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
+                        <div class="ws-card-header"><h3>${esc(s.name)}${s.share_token ? ' <span class="ws-demo-badge">Shared</span>' : ''}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
                         ${wsBadgesHtml(s)}
                         <div class="ws-card-meta">${s.set_type === 'pe_terms' ? 'Primary English' : 'Vocab'} · ${pct}% mastered</div>
                         <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
                         <div class="ws-card-actions">
                             <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
+                            <button class="btn btn-outline" onclick="shareWordSet(${s.id})"><i class="fa-solid fa-link"></i> ${s.share_token ? 'Copy link' : 'Share'}</button>
+                            ${s.share_token ? `<button class="btn btn-grey" onclick="unshareWordSet(${s.id})" title="Stop sharing"><i class="fa-solid fa-link-slash"></i></button>` : ''}
                             <button class="btn btn-outline" onclick="editWordSet(${s.id})"><i class="fa-solid fa-pen"></i> Edit</button>
                             <button class="btn btn-grey" onclick="deleteWordSet(${s.id})"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -4528,6 +4533,104 @@
                 showScreen('home');
                 openHomeSection('vocab');
             } catch (e) { appAlert('Failed to load set.'); }
+        }
+
+        async function copyTextToClipboard(text) {
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch (_) { /* fall through */ }
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                return ok;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function shareWordSet(id) {
+            if (!isLoggedIn()) { openAuthModal('login'); return; }
+            try {
+                const res = await fetch(`/api/word-sets/${id}/share`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.url) {
+                    appAlert(data.error || 'Could not create a share link.');
+                    return;
+                }
+                const copied = await copyTextToClipboard(data.url);
+                await appAlert(
+                    copied
+                        ? `Link copied to clipboard.\n\n${data.url}\n\nSend it to your students — they can open it without signing in and the list loads into Vocab Review.`
+                        : `Share this link with your students:\n\n${data.url}\n\nThey can open it without signing in.`,
+                    'Share word list'
+                );
+                loadMySets();
+            } catch (e) {
+                appAlert('Failed to create share link.');
+            }
+        }
+
+        async function unshareWordSet(id) {
+            if (!(await appConfirm('Stop sharing this word list? The old link will stop working.'))) return;
+            try {
+                const res = await fetch(`/api/word-sets/${id}/share`, { method: 'DELETE', credentials: 'same-origin' });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    appAlert(data.error || 'Could not stop sharing.');
+                    return;
+                }
+                loadMySets();
+            } catch (e) {
+                appAlert('Failed to stop sharing.');
+            }
+        }
+
+        async function openSharedWordSet(token) {
+            const clean = String(token || '').trim();
+            if (!clean) {
+                showScreen('home');
+                openHomeSection('vocab');
+                return;
+            }
+            try {
+                const res = await fetch(`/api/shared-sets/${encodeURIComponent(clean)}`);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !Array.isArray(data.items) || !data.items.length) {
+                    await appAlert(data.error || 'This share link is invalid or has been turned off.');
+                    showScreen('home');
+                    openHomeSection('vocab');
+                    return;
+                }
+                currentWordSetId = null;
+                syncGlossaryAcrossVocabGames(glossaryTextFromItems(data.items));
+                showScreen('home');
+                openHomeSection('vocab');
+                try { history.replaceState(null, '', '#/vocab'); } catch (_) { /* ignore */ }
+                const count = data.items.length;
+                await appAlert(
+                    `Loaded “${data.name || 'Shared list'}” (${count} word${count === 1 ? '' : 's'}).\n\nPick a Vocab Review game to practise — Flashcards, Bomb, Grid, and the rest will use this list.`,
+                    'Shared word list'
+                );
+            } catch (e) {
+                await appAlert('Could not load this shared word list.');
+                showScreen('home');
+                openHomeSection('vocab');
+            }
         }
 
         async function deleteWordSet(id) {

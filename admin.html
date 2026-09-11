@@ -71,7 +71,7 @@
         .msg.error { color: var(--pillarbox-red); }
         .user-cell { display: flex; align-items: center; gap: 0.75rem; }
         .user-cell img { width: 36px; height: 36px; border-radius: 50%; }
-        .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
         .muted { color: var(--text-muted); font-size: 0.85rem; }
         h2.section-title { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.1rem; margin-bottom: 0.75rem; }
         .bar-wrap { background: #e8edf5; border-radius: 6px; height: 8px; overflow: hidden; min-width: 80px; }
@@ -82,6 +82,24 @@
             font-family: var(--font-primary); font-weight: 600; padding: 0.45rem 0.75rem;
             border: 2px solid var(--border-light); border-radius: 20px; background: white; color: var(--royal-blue);
         }
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 200; background: rgba(1, 33, 105, 0.45);
+            display: none; align-items: center; justify-content: center; padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-card {
+            background: white; border-radius: 14px; padding: 1.35rem 1.5rem; width: min(420px, 100%);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+        }
+        .modal-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin-bottom: 0.4rem; }
+        .modal-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+        .modal-field { margin-bottom: 0.85rem; }
+        .modal-field label { display: block; font-weight: 700; font-size: 0.8rem; color: var(--royal-blue); margin-bottom: 0.35rem; }
+        .modal-field select, .modal-field input {
+            width: 100%; font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.55rem 0.7rem;
+            border: 2px solid var(--border-light); border-radius: 10px; color: var(--text-dark); background: white;
+        }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; margin-top: 1rem; }
     </style>
 </head>
 <body>
@@ -229,6 +247,33 @@
             </div>
         </div>
     </div>
+    <div id="approve-modal" class="modal-overlay" onclick="if (event.target === this) closeApproveModal()">
+        <div class="modal-card" role="dialog" aria-labelledby="approve-modal-title">
+            <h3 id="approve-modal-title">Grant premium access</h3>
+            <p id="approve-modal-user">Choose how long this account stays premium.</p>
+            <div class="modal-field">
+                <label for="approve-duration">Auto-revoke after</label>
+                <select id="approve-duration" onchange="onApproveDurationChange()">
+                    <option value="">Open-ended (no auto-revoke)</option>
+                    <option value="7">7 days</option>
+                    <option value="30" selected>30 days</option>
+                    <option value="90">90 days</option>
+                    <option value="180">180 days</option>
+                    <option value="365">1 year</option>
+                    <option value="custom">Custom number of days…</option>
+                </select>
+            </div>
+            <div class="modal-field" id="approve-custom-wrap" hidden>
+                <label for="approve-custom-days">Days until revoke</label>
+                <input type="number" id="approve-custom-days" min="1" max="3650" step="1" placeholder="e.g. 14">
+            </div>
+            <p class="muted" id="approve-until-preview" style="margin-bottom:0;"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-grey" onclick="closeApproveModal()">Cancel</button>
+                <button type="button" class="btn btn-green" onclick="confirmApprove()"><i class="fa-solid fa-check"></i> Approve</button>
+            </div>
+        </div>
+    </div>
     <script>
         let allUsers = [];
         let currentFilter = 'all';
@@ -300,9 +345,12 @@
         }
 
         function formatUntil(u) {
-            if (u.accessSource === 'admin') return 'Open';
-            if (!u.accessUntil) return '—';
-            return new Date(u.accessUntil).toLocaleDateString();
+            if (!u.accessUntil) {
+                return u.accessSource === 'admin' ? 'Open' : '—';
+            }
+            const d = new Date(u.accessUntil);
+            if (Number.isNaN(d.getTime())) return '—';
+            return d.toLocaleDateString();
         }
 
         function formatDuration(ms) {
@@ -347,7 +395,7 @@
                     <td><strong>${Number(u.visitCount || 0)}</strong></td>
                     <td class="muted">${formatDate(u.lastVisitAt)}</td>
                     <td class="actions">
-                        <button class="btn btn-green" onclick="approve(${u.id})" ${u.status === 'active' && u.accessSource === 'admin' ? 'disabled' : ''}><i class="fa-solid fa-check"></i> Approve</button>
+                        <button class="btn btn-green" onclick="openApproveModal(${u.id})"><i class="fa-solid fa-check"></i> Approve</button>
                         <button class="btn btn-red" onclick="revoke(${u.id})" ${u.status !== 'active' ? 'disabled' : ''}><i class="fa-solid fa-ban"></i> Revoke</button>
                     </td>
                 </tr>
@@ -491,15 +539,98 @@
             if (ok) await loadGameStats();
         }
 
-        async function approve(id) {
-            await fetch(`/api/admin/users/${id}/approve`, { method: 'POST', credentials: 'include' });
-            loadUsers();
+        let pendingApproveId = null;
+
+        function resolveApproveDays() {
+            const sel = document.getElementById('approve-duration')?.value ?? '';
+            if (sel === '') return null;
+            if (sel === 'custom') {
+                const n = Number(document.getElementById('approve-custom-days')?.value);
+                if (!Number.isFinite(n) || n < 1) return NaN;
+                return Math.min(3650, Math.floor(n));
+            }
+            return Number(sel);
+        }
+
+        function updateApproveUntilPreview() {
+            const el = document.getElementById('approve-until-preview');
+            if (!el) return;
+            const days = resolveApproveDays();
+            if (days === null) {
+                el.textContent = 'Premium stays until you revoke it manually.';
+                return;
+            }
+            if (!Number.isFinite(days)) {
+                el.textContent = 'Enter a valid number of days.';
+                return;
+            }
+            const until = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+            el.textContent = `Auto-revoke on ${until.toLocaleString()}.`;
+        }
+
+        function onApproveDurationChange() {
+            const sel = document.getElementById('approve-duration')?.value;
+            const wrap = document.getElementById('approve-custom-wrap');
+            if (wrap) wrap.hidden = sel !== 'custom';
+            updateApproveUntilPreview();
+        }
+
+        function openApproveModal(id) {
+            pendingApproveId = id;
+            const user = allUsers.find((u) => Number(u.id) === Number(id));
+            const label = document.getElementById('approve-modal-user');
+            if (label) {
+                label.textContent = user
+                    ? `Grant premium to ${user.name || user.email} (${user.email}).`
+                    : 'Choose how long this account stays premium.';
+            }
+            const duration = document.getElementById('approve-duration');
+            if (duration) duration.value = '30';
+            const custom = document.getElementById('approve-custom-days');
+            if (custom) custom.value = '';
+            onApproveDurationChange();
+            document.getElementById('approve-modal')?.classList.add('open');
+        }
+
+        function closeApproveModal() {
+            pendingApproveId = null;
+            document.getElementById('approve-modal')?.classList.remove('open');
+        }
+
+        async function confirmApprove() {
+            const id = pendingApproveId;
+            if (!id) return;
+            const days = resolveApproveDays();
+            if (Number.isNaN(days)) {
+                alert('Enter a valid number of days (1 or more).');
+                return;
+            }
+            const body = days == null ? {} : { days };
+            try {
+                const res = await fetch(`/api/admin/users/${id}/approve`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    alert(data.error || 'Approve failed');
+                    return;
+                }
+                closeApproveModal();
+                loadUsers();
+            } catch (err) {
+                alert(err.message || 'Approve failed');
+            }
         }
 
         async function revoke(id) {
             await fetch(`/api/admin/users/${id}/revoke`, { method: 'POST', credentials: 'include' });
             loadUsers();
         }
+
+        document.getElementById('approve-custom-days')?.addEventListener('input', updateApproveUntilPreview);
 
         async function logout() {
             await fetch('/auth/logout', { method: 'POST', credentials: 'include' });

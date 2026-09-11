@@ -36,6 +36,9 @@ import {
     deleteWordSet,
     appendWordSetItems,
     loadWordSetForGame,
+    enableWordSetShare,
+    revokeWordSetShare,
+    getSharedWordSetByToken,
     recordGameSession,
     updateWordProgress,
     getProgressSummary,
@@ -384,11 +387,17 @@ async function start() {
 
     app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
         try {
-            const user = await approveUser(Number(req.params.id));
+            const daysRaw = req.body?.days;
+            const accessUntilRaw = req.body?.accessUntil;
+            const opts = {};
+            if (accessUntilRaw) opts.accessUntil = accessUntilRaw;
+            else if (daysRaw !== undefined && daysRaw !== null && daysRaw !== '') opts.days = daysRaw;
+            const user = await approveUser(Number(req.params.id), opts);
             if (!user) return res.status(404).json({ error: 'User not found' });
             res.json({ user: publicUser(user), hasAccess: hasWritingAccess(user) });
         } catch (err) {
-            res.status(500).json({ error: err.message });
+            const status = /Invalid|must be|positive/i.test(err.message || '') ? 400 : 500;
+            res.status(status).json({ error: err.message });
         }
     });
 
@@ -474,6 +483,36 @@ async function start() {
         try {
             const data = await loadWordSetForGame(Number(req.params.id), req.user.id);
             if (!data) return res.status(404).json({ error: 'Not found' });
+            res.json(data);
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.post('/api/word-sets/:id/share', requireLogin, async (req, res) => {
+        try {
+            const rotate = Boolean(req.body?.rotate);
+            const ws = await enableWordSetShare(Number(req.params.id), req.user.id, { rotate });
+            if (!ws) return res.status(404).json({ error: 'Not found' });
+            const token = ws.share_token;
+            res.json({
+                set: { id: ws.id, name: ws.name, shareToken: token, itemCount: ws.item_count },
+                url: `${APP_BASE_URL}/#/set/${encodeURIComponent(token)}`,
+            });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.delete('/api/word-sets/:id/share', requireLogin, async (req, res) => {
+        try {
+            const ws = await revokeWordSetShare(Number(req.params.id), req.user.id);
+            if (!ws) return res.status(404).json({ error: 'Not found' });
+            res.json({ revoked: true });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    /** Public: load a shared word list by token (no login). */
+    app.get('/api/shared-sets/:token', async (req, res) => {
+        try {
+            const data = await getSharedWordSetByToken(req.params.token);
+            if (!data) return res.status(404).json({ error: 'This share link is invalid or has been turned off.' });
             res.json(data);
         } catch (err) { res.status(500).json({ error: err.message }); }
     });

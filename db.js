@@ -1,4 +1,5 @@
 import pg from 'pg';
+import crypto from 'crypto';
 
 const { Pool } = pg;
 
@@ -114,8 +115,10 @@ export async function initDb() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_word_sets_user ON word_sets (user_id)`);
     await db.query(`ALTER TABLE word_sets ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT ''`);
     await db.query(`ALTER TABLE word_sets ADD COLUMN IF NOT EXISTS class_name TEXT NOT NULL DEFAULT ''`);
+    await db.query(`ALTER TABLE word_sets ADD COLUMN IF NOT EXISTS share_token TEXT`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_word_sets_user_cat ON word_sets (user_id, category)`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_word_sets_user_class ON word_sets (user_id, class_name)`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_word_sets_share_token ON word_sets (share_token) WHERE share_token IS NOT NULL`);
 
     await db.query(`
         CREATE TABLE IF NOT EXISTS word_set_items (
@@ -191,13 +194,13 @@ export async function initDb() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_matura_reviews_user ON matura_essay_reviews (user_id, created_at DESC)`);
 }
 
-/** Clear BMC source when the paid period has ended (keeps access_until for history). */
+/** Clear timed premium when the paid/admin period has ended (keeps access_until for history). */
 export async function expireStaleAccess() {
     const db = getPool();
     await db.query(`
         UPDATE users
         SET access_source = NULL
-        WHERE access_source = 'bmc'
+        WHERE access_source IN ('bmc', 'admin')
           AND access_until IS NOT NULL
           AND access_until <= NOW()
     `);
@@ -205,8 +208,8 @@ export async function expireStaleAccess() {
 
 export async function expireUserIfNeeded(user) {
     if (!user) return user;
-    if (user.access_source !== 'bmc') return user;
-    if (!user.access_until) return user;
+    if (user.access_source !== 'bmc' && user.access_source !== 'admin') return user;
+    if (!user.access_until) return user; // open-ended admin (or malformed BMC)
     if (new Date(user.access_until) > new Date()) return user;
 
     const db = getPool();
@@ -299,11 +302,30 @@ export async function listUsers() {
     return result.rows;
 }
 
-export async function approveUser(id) {
+/**
+ * Grant premium via admin Approve.
+ * @param {number} id
+ * @param {{ days?: number|null, accessUntil?: string|Date|null }} [opts]
+ *   - omit days / accessUntil → open-ended (no auto-revoke)
+ *   - days > 0 → revoke after that many days from now
+ *   - accessUntil → absolute revoke timestamp
+ */
+export async function approveUser(id, { days = null, accessUntil = null } = {}) {
     const db = getPool();
+    let until = null;
+    if (accessUntil) {
+        const d = new Date(accessUntil);
+        if (Number.isNaN(d.getTime())) throw new Error('Invalid accessUntil date');
+        if (d.getTime() <= Date.now()) throw new Error('Revoke time must be in the future');
+        until = d;
+    } else if (days != null && days !== '') {
+        const n = Number(days);
+        if (!Number.isFinite(n) || n <= 0) throw new Error('Days must be a positive number');
+        until = new Date(Date.now() + n * 24 * 60 * 60 * 1000);
+    }
     const result = await db.query(
-        `UPDATE users SET access_source = 'admin', access_until = NULL WHERE id = $1 RETURNING *`,
-        [id]
+        `UPDATE users SET access_source = 'admin', access_until = $2 WHERE id = $1 RETURNING *`,
+        [id, until]
     );
     return result.rows[0] || null;
 }
@@ -411,7 +433,11 @@ export async function revokeBmcAccessByEmail(email) {
 
 export function hasWritingAccess(user) {
     if (!user) return false;
-    if (user.access_source === 'admin') return true;
+    if (user.access_source === 'admin') {
+        // Open-ended admin grant when access_until is null
+        if (!user.access_until) return true;
+        return new Date(user.access_until) > new Date();
+    }
     if (user.access_source === 'bmc') {
         if (!user.access_until) return false; // timed BMC only — no open-ended BMC
         return new Date(user.access_until) > new Date();
@@ -926,6 +952,82 @@ export async function loadWordSetForGame(setId, userId) {
         'SELECT term, definition FROM word_set_items WHERE set_id = $1 ORDER BY position', [setId]
     );
     return { set: ws.rows[0], items: items.rows };
+}
+
+function newShareToken() {
+    return crypto.randomBytes(18).toString('base64url');
+}
+
+/** Enable or refresh a share link for a set owned by userId. */
+export async function enableWordSetShare(setId, userId, { rotate = false } = {}) {
+    const db = getPool();
+    const existing = await db.query(
+        'SELECT id, share_token FROM word_sets WHERE id = $1 AND user_id = $2',
+        [setId, userId]
+    );
+    const row = existing.rows[0];
+    if (!row) return null;
+    if (row.share_token && !rotate) {
+        return row;
+    }
+    for (let attempt = 0; attempt < 5; attempt++) {
+        const token = newShareToken();
+        try {
+            const result = await db.query(
+                `UPDATE word_sets
+                 SET share_token = $1, updated_at = NOW()
+                 WHERE id = $2 AND user_id = $3
+                 RETURNING id, name, share_token, item_count`,
+                [token, setId, userId]
+            );
+            return result.rows[0] || null;
+        } catch (err) {
+            if (err?.code === '23505') continue; // unique collision — retry
+            throw err;
+        }
+    }
+    throw new Error('Could not create a unique share link');
+}
+
+export async function revokeWordSetShare(setId, userId) {
+    const db = getPool();
+    const result = await db.query(
+        `UPDATE word_sets
+         SET share_token = NULL, updated_at = NOW()
+         WHERE id = $1 AND user_id = $2
+         RETURNING id, name, share_token`,
+        [setId, userId]
+    );
+    return result.rows[0] || null;
+}
+
+/** Public read of a shared set — no owner id or progress. */
+export async function getSharedWordSetByToken(token) {
+    const normalized = String(token || '').trim();
+    if (!normalized || normalized.length > 80) return null;
+    const db = getPool();
+    const setResult = await db.query(
+        `SELECT id, name, item_count, test_direction, set_type
+         FROM word_sets
+         WHERE share_token = $1`,
+        [normalized]
+    );
+    const ws = setResult.rows[0];
+    if (!ws) return null;
+    const items = await db.query(
+        'SELECT term, definition FROM word_set_items WHERE set_id = $1 ORDER BY position',
+        [ws.id]
+    );
+    return {
+        name: ws.name,
+        itemCount: Number(ws.item_count || items.rows.length),
+        testDirection: ws.test_direction,
+        setType: ws.set_type,
+        items: items.rows.map((r) => ({
+            term: r.term,
+            definition: r.definition || '',
+        })),
+    };
 }
 
 // ==========================================
