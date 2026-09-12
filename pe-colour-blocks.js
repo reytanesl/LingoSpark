@@ -535,6 +535,18 @@
     display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; background: #f8fafc; margin-bottom: 0.85rem;
 }
 .cb-chain.empty::after { content: attr(data-empty); color: var(--text-muted); font-size: 0.9rem; padding: 0.4rem; }
+.cb-slot {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 5.6rem; min-height: 3.55rem; max-width: 8.4rem; padding: 0.45rem 0.5rem;
+    border-radius: 12px; border: 3px dashed rgba(15, 23, 42, 0.16);
+    background: transparent; cursor: pointer; flex: 0 0 auto;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.cb-slot:hover { border-color: rgba(15, 23, 42, 0.32); }
+.cb-slot.hinted {
+    border-style: solid;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
 .cb-sheet { margin-bottom: 0.85rem; }
 .cb-sheet-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.7rem; }
 .cb-sheet-bar .btn { padding: 0.28rem 0.7rem; font-size: 0.82rem; }
@@ -1112,6 +1124,11 @@
         return 'border-color:' + c.bg + ';background:' + c.light + ';color:' + c.ink;
     }
 
+    function fadedSlotStyle(family) {
+        const c = COL[family] || COL.noun;
+        return 'border-color:' + c.bg + ';background:' + c.bg + '33';
+    }
+
     function tokHtml(family, text) {
         const c = COL[family] || COL.noun;
         return '<span class="tok" style="background:' + c.bg + '">' + esc(text) + '</span>';
@@ -1188,8 +1205,8 @@
             }
             if (S.buildPrompt && S.ageBand === 'young') {
                 return pl
-                    ? 'Spójrz na obrazek. Każde słowo to osobny kafel — a i an też. Klikaj w kolejności. Możesz przeciągnąć kafel w pasku, jeśli kolejność jest zła.'
-                    : 'Look at the picture. Each word is its own tile — a and an too. Tap them in order. Drag a tile in the strip if the order is wrong.';
+                    ? 'Spójrz na obrazek. Puste miejsca w pasku to ślady kafelków — kliknij puste, by zobaczyć kolor. Każde słowo to osobny kafel — a i an też.'
+                    : 'Look at the picture. Empty spaces in the strip mark where tiles go — tap an empty space for a colour hint. Each word is its own tile — a and an too.';
             }
             return pl
                 ? 'Klikaj kafelki, żeby złożyć zdanie. Przeciągnij kafel w pasku, aby zmienić kolejność. Kliknij, aby go zdjąć.'
@@ -1288,6 +1305,32 @@
         return html;
     }
 
+    function buildChainHtml() {
+        const emptyMsg = L('Tap tiles below…', 'Kliknij kafelki poniżej…');
+        const expected = S.buildPrompt && S.buildPrompt.ids;
+        if (!expected || !expected.length) return chainHtml(S.chain, 'pop', emptyMsg);
+
+        const hints = S.slotHints || {};
+        const tiles = chainTiles(S.chain);
+        let html = '<div class="cb-chain cb-chain-slots" data-empty="' + esc(emptyMsg) + '">';
+        tiles.forEach((t, i) => {
+            html += cardHtml(t, ' in-chain', 'pop')
+                .replace('data-id="' + t.id + '"', 'data-id="' + i + '" data-tid="' + esc(t.id) + '"');
+        });
+        for (let i = tiles.length; i < expected.length; i++) {
+            const exp = byId(expected[i]);
+            const fam = exp ? exp.family : 'noun';
+            const hinted = !!hints[i];
+            const style = hinted ? fadedSlotStyle(fam) : '';
+            html += '<button type="button" class="cb-slot' + (hinted ? ' hinted' : '') + '" data-cb="slot-hint" data-id="' + i + '"' +
+                (style ? ' style="' + style + '"' : '') +
+                ' title="' + esc(L('Tap for a colour hint', 'Kliknij, by zobaczyć kolor')) + '"' +
+                ' aria-label="' + esc(L('Colour hint', 'Podpowiedź koloru')) + '"></button>';
+        }
+        html += '</div>';
+        return html;
+    }
+
     function pictureHtml(prompt) {
         if (!prompt || !prompt.picture) return '';
         return '<div class="cb-picture" aria-label="' + esc(L('Look first', 'Najpierw popatrz')) + '">' + prompt.picture.filter(Boolean).map((p) => '<span>' + pictureMark(p) + '</span>').join('<span style="color:#94a3b8">→</span>') + '</div>';
@@ -1370,7 +1413,7 @@
         const fb = L(S.buildFbEn, S.buildFbPl);
         let html = '';
         if (S.buildPrompt) html += pictureHtml(S.buildPrompt);
-        html += chainHtml(S.chain, 'pop', L('Tap tiles below…', 'Kliknij kafelki poniżej…'));
+        html += buildChainHtml();
         html += sheetsHtml();
         html += '<div class="cb-actions">' +
             '<button type="button" class="btn btn-blue" data-cb="check-build">' + esc(L('Check', 'Sprawdź')) + '</button>' +
@@ -1471,7 +1514,7 @@
             if (a === 'tilepl') { S.tilePl = !S.tilePl; render(); return; }
             if (a === 'pl') { S.polish = !S.polish; render(); return; }
             if (a === 'goal') {
-                S.goal = id; S.chain = [];
+                S.goal = id; S.chain = []; S.slotHints = {};
                 S.buildPrompt = S.ageBand === 'young' ? makeBuildPrompt(id) : null;
                 S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
                 S.sheetsOpen = defaultSheetsOpen();
@@ -1504,6 +1547,13 @@
             if (a === 'noun-pick-box') return;
             if (a === 'noun-pick-cancel') { S.nounPick = null; render(); return; }
             if (a === 'noun-pick') { speakTile(byId(id)); addToChain(id); return; }
+            if (a === 'slot-hint') {
+                const i = Number(id);
+                if (!S.slotHints) S.slotHints = {};
+                S.slotHints[i] = !S.slotHints[i];
+                render();
+                return;
+            }
             if (a === 'pop') {
                 speakTile(chainTiles(S.chain)[Number(id)]);
                 S.chain.splice(Number(id), 1); S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; clearAskWhy(); render(); return;
@@ -1511,9 +1561,9 @@
             if (a === 'check-build') { checkBuild(); return; }
             if (a === 'ask-why') { askWhy(); return; }
             if (a === 'speak-build') { speak(S.buildSpoken || joinSpeak(chainTiles(S.chain))); return; }
-            if (a === 'clear-build') { S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
-            if (a === 'new-prompt') { S.buildPrompt = makeBuildPrompt(S.goal); S.chain = []; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
-            if (a === 'new-goal') { S.goal = null; S.chain = []; S.buildPrompt = null; clearAskWhy(); render(); return; }
+            if (a === 'clear-build') { S.chain = []; S.slotHints = {}; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
+            if (a === 'new-prompt') { S.buildPrompt = makeBuildPrompt(S.goal); S.chain = []; S.slotHints = {}; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
+            if (a === 'new-goal') { S.goal = null; S.chain = []; S.buildPrompt = null; S.slotHints = {}; clearAskWhy(); render(); return; }
             if (a === 'text-kind') { S.textKind = id; loadTextTask(); render(); return; }
             if (a === 'text-next') { loadTextTask(); render(); return; }
             if (a === 'text-check') { checkText(); return; }
@@ -1884,6 +1934,7 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
             nounPick: null,
             goal: null,
             chain: [],
+            slotHints: {},
             buildPrompt: null,
             buildFbEn: '',
             buildFbPl: '',
