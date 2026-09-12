@@ -547,6 +547,12 @@
     border-style: solid;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
+.cb-slot.selected {
+    border-color: var(--royal-blue);
+    box-shadow: 0 0 0 2px rgba(1, 33, 105, 0.22);
+}
+.cb-card.moving { outline: 3px solid var(--royal-blue); outline-offset: 2px; }
+.cb-actions-top { margin: 0.15rem 0 0.85rem; }
 .cb-sheet { margin-bottom: 0.85rem; }
 .cb-sheet-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.7rem; }
 .cb-sheet-bar .btn { padding: 0.28rem 0.7rem; font-size: 0.82rem; }
@@ -721,6 +727,52 @@
 
     function chainTiles(ids) {
         return (ids || []).map(byId).filter(Boolean);
+    }
+
+    function useSlots() {
+        return !!(S && S.buildPrompt && S.buildPrompt.ids && S.buildPrompt.ids.length && S.tab === 'build');
+    }
+
+    function ensureSlots() {
+        if (!useSlots()) return false;
+        const n = S.buildPrompt.ids.length;
+        if (!Array.isArray(S.slots) || S.slots.length !== n) {
+            S.slots = [];
+            for (let i = 0; i < n; i++) S.slots.push(null);
+        }
+        return true;
+    }
+
+    function currentBuildIds() {
+        if (useSlots()) {
+            ensureSlots();
+            return (S.slots || []).slice();
+        }
+        return (S.chain || []).slice();
+    }
+
+    function currentBuildTiles() {
+        if (useSlots()) {
+            ensureSlots();
+            return chainTiles(S.slots);
+        }
+        return chainTiles(S.chain);
+    }
+
+    function resetBuildWorkspace(keepGoal) {
+        S.chain = [];
+        S.slots = null;
+        S.slotHints = {};
+        S.activeSlot = null;
+        S.movingFrom = null;
+        S.buildFbEn = '';
+        S.buildFbPl = '';
+        S.buildOk = false;
+        S.buildSpoken = '';
+        S.buildAwarded = false;
+        S.buildChecking = false;
+        if (!keepGoal) S.buildPrompt = null;
+        clearAskWhy();
     }
 
     function joinSpeak(tiles, question) {
@@ -1175,8 +1227,24 @@
     function addToChain(id) {
         S.nounPick = null;
         clearAskWhy();
-        S.chain.push(id);
         S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
+        if (useSlots()) {
+            ensureSlots();
+            S.movingFrom = null;
+            let i = S.activeSlot;
+            if (i == null || S.slots[i]) i = S.slots.findIndex((x) => !x);
+            if (i < 0) {
+                S.buildFbEn = 'All spaces are full. Tap a tile in the sentence to move or remove it.';
+                S.buildFbPl = 'Wszystkie miejsca są zajęte. Kliknij kafel w zdaniu, by go przenieść lub usunąć.';
+                render();
+                return;
+            }
+            S.slots[i] = id;
+            const next = S.slots.findIndex((x) => !x);
+            S.activeSlot = next < 0 ? null : next;
+        } else {
+            S.chain.push(id);
+        }
         render();
     }
 
@@ -1199,14 +1267,19 @@
                 ? 'Spójrz na obrazki. Przesuń kafelki na ponumerowane okienka, żeby złożyć zdanie. Możesz też stuknąć kafel, a potem okienko.'
                 : 'Look at the pictures. Drag each tile into the right numbered box to make the sentence. You can also tap a tile, then tap a box.';
         }
+        if (S.tab === 'creator') {
+            return pl
+                ? 'Ułóż własne poprawne zdanie z kafelków. Kliknij Sprawdź — AI oceni gramatykę.'
+                : 'Build your own correct sentence with the tiles. Tap Check — AI will judge the grammar.';
+        }
         if (S.tab === 'build') {
             if (!S.goal) {
                 return pl ? 'Co chcesz powiedzieć? Wybierz cel, potem układaj kafelki od lewej.' : 'What do you want to say? Pick a goal, then line the tiles up from the left.';
             }
             if (S.buildPrompt && S.ageBand === 'young') {
                 return pl
-                    ? 'Spójrz na obrazek. Puste miejsca w pasku to ślady kafelków — kliknij puste, by zobaczyć kolor. Każde słowo to osobny kafel — a i an też.'
-                    : 'Look at the picture. Empty spaces in the strip mark where tiles go — tap an empty space for a colour hint. Each word is its own tile — a and an too.';
+                    ? 'Spójrz na obrazek. Kliknij puste miejsce (podpowiedź koloru), potem kafel — albo kliknij kafel w zdaniu i przenieś go w inne puste miejsce.'
+                    : 'Look at the picture. Tap an empty space (colour hint), then a tile — or tap a tile in the sentence and move it into another blank.';
             }
             return pl
                 ? 'Klikaj kafelki, żeby złożyć zdanie. Przeciągnij kafel w pasku, aby zmienić kolejność. Kliknij, aby go zdjąć.'
@@ -1223,9 +1296,10 @@
     function render() {
         const root = rootEl();
         if (!root) return;
-        if (S.tab !== 'build' && S.tab !== 'text' && S.tab !== 'lineup') S.tab = 'build';
+        if (S.tab !== 'build' && S.tab !== 'text' && S.tab !== 'lineup' && S.tab !== 'creator') S.tab = 'build';
         root.innerHTML = legendHtml() + tabsHtml() + coachHtml() +
             (S.tab === 'build' ? buildHtml() : '') +
+            (S.tab === 'creator' ? creatorHtml() : '') +
             (S.tab === 'text' ? textHtml() : '') +
             (S.tab === 'lineup' ? '<div id="cb-lineup-host"></div>' : '') +
             nounPickHtml();
@@ -1253,6 +1327,7 @@
         const t = (id, en, pl) => '<button type="button" class="cb-tab' + (S.tab === id ? ' on' : '') + '" data-cb="tab" data-id="' + id + '">' + esc(L(en, pl)) + '</button>';
         return '<div class="cb-tabs">' +
             t('build', 'Build a sentence', 'Złóż zdanie') +
+            t('creator', 'Creator', 'Twórca') +
             t('text', 'Text tasks', 'Zadania tekstowe') +
             t('lineup', 'Line Up', 'Ułóż zdanie') +
             '</div>';
@@ -1307,25 +1382,31 @@
 
     function buildChainHtml() {
         const emptyMsg = L('Tap tiles below…', 'Kliknij kafelki poniżej…');
-        const expected = S.buildPrompt && S.buildPrompt.ids;
-        if (!expected || !expected.length) return chainHtml(S.chain, 'pop', emptyMsg);
+        if (!useSlots()) return chainHtml(S.chain, 'pop', emptyMsg);
 
+        ensureSlots();
+        const expected = S.buildPrompt.ids;
         const hints = S.slotHints || {};
-        const tiles = chainTiles(S.chain);
         let html = '<div class="cb-chain cb-chain-slots" data-empty="' + esc(emptyMsg) + '">';
-        tiles.forEach((t, i) => {
-            html += cardHtml(t, ' in-chain', 'pop')
-                .replace('data-id="' + t.id + '"', 'data-id="' + i + '" data-tid="' + esc(t.id) + '"');
-        });
-        for (let i = tiles.length; i < expected.length; i++) {
-            const exp = byId(expected[i]);
-            const fam = exp ? exp.family : 'noun';
-            const hinted = !!hints[i];
-            const style = hinted ? fadedSlotStyle(fam) : '';
-            html += '<button type="button" class="cb-slot' + (hinted ? ' hinted' : '') + '" data-cb="slot-hint" data-id="' + i + '"' +
-                (style ? ' style="' + style + '"' : '') +
-                ' title="' + esc(L('Tap for a colour hint', 'Kliknij, by zobaczyć kolor')) + '"' +
-                ' aria-label="' + esc(L('Colour hint', 'Podpowiedź koloru')) + '"></button>';
+        for (let i = 0; i < expected.length; i++) {
+            const tid = S.slots[i];
+            if (tid) {
+                const t = byId(tid);
+                if (!t) continue;
+                const moving = S.movingFrom === i ? ' moving' : '';
+                html += cardHtml(t, ' in-chain' + moving, 'slot-tile')
+                    .replace('data-id="' + t.id + '"', 'data-id="' + i + '" data-tid="' + esc(tid) + '"');
+            } else {
+                const exp = byId(expected[i]);
+                const fam = exp ? exp.family : 'noun';
+                const hinted = !!hints[i];
+                const sel = S.activeSlot === i ? ' selected' : '';
+                const style = hinted ? fadedSlotStyle(fam) : '';
+                html += '<button type="button" class="cb-slot' + (hinted ? ' hinted' : '') + sel + '" data-cb="slot" data-id="' + i + '"' +
+                    (style ? ' style="' + style + '"' : '') +
+                    ' title="' + esc(L('Tap for colour hint, then choose a tile', 'Kliknij podpowiedź koloru, potem wybierz kafel')) + '"' +
+                    ' aria-label="' + esc(L('Empty space', 'Puste miejsce') + ' ' + (i + 1)) + '"></button>';
+            }
         }
         html += '</div>';
         return html;
@@ -1361,6 +1442,11 @@
     function defaultSheetsOpen() {
         const open = {};
         sheetGroups().forEach((g) => { open[g.id] = false; });
+        if (S.tab === 'creator') {
+            open.who = true; open.struct = true; open.art = true; open.grammar = true;
+            open.prep = true; open.food = true; open.furniture = true; open.room = true; open.verb = true;
+            return open;
+        }
         const g = S.goal;
         if (g === 'have') {
             open.who = true; open.grammar = true; open.art = true; open.tech = true; open.toys = true;
@@ -1408,25 +1494,54 @@
         return html;
     }
 
+    function buildActionsHtml(opts) {
+        opts = opts || {};
+        const checkBusy = !!S.buildChecking;
+        const checkLabel = checkBusy
+            ? L('Checking…', 'Sprawdzam…')
+            : L('Check', 'Sprawdź');
+        let html = '<div class="cb-actions cb-actions-top">' +
+            '<button type="button" class="btn btn-blue" data-cb="check-build"' + (checkBusy ? ' disabled' : '') + '>' + esc(checkLabel) + '</button>' +
+            '<button type="button" class="btn btn-outline" data-cb="speak-build"><i class="fa-solid fa-volume-high"></i> ' + esc(L('Say it', 'Powiedz')) + '</button>' +
+            '<button type="button" class="btn btn-outline" data-cb="clear-build">' + esc(L('Clear', 'Wyczyść')) + '</button>';
+        if (opts.newPrompt) {
+            html += '<button type="button" class="btn btn-outline" data-cb="new-prompt">' + esc(L('New picture', 'Nowy obrazek')) + '</button>';
+        }
+        if (opts.newGoal) {
+            html += '<button type="button" class="btn btn-grey" data-cb="new-goal">' + esc(L('Change goal', 'Zmień cel')) + '</button>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function buildFeedbackHtml() {
+        const fb = L(S.buildFbEn, S.buildFbPl);
+        let html = '';
+        if (S.buildSpoken) {
+            html += '<div class="cb-sentence">' + currentBuildTiles().map((t) => tokHtml(t.family, t.text)).join(' ') + '</div>';
+        }
+        html += '<div class="cb-fb' + (S.buildOk ? ' ok' : (fb ? ' bad' : '')) + '">' + esc(fb) + '</div>';
+        html += whyHtml(!S.buildOk && !!fb && !S.buildChecking);
+        return html;
+    }
+
     function buildHtml() {
         if (!S.goal) return goalsHtml();
-        const fb = L(S.buildFbEn, S.buildFbPl);
         let html = '';
         if (S.buildPrompt) html += pictureHtml(S.buildPrompt);
         html += buildChainHtml();
+        html += buildActionsHtml({ newPrompt: true, newGoal: true });
+        html += buildFeedbackHtml();
         html += sheetsHtml();
-        html += '<div class="cb-actions">' +
-            '<button type="button" class="btn btn-blue" data-cb="check-build">' + esc(L('Check', 'Sprawdź')) + '</button>' +
-            '<button type="button" class="btn btn-outline" data-cb="speak-build"><i class="fa-solid fa-volume-high"></i> ' + esc(L('Say it', 'Powiedz')) + '</button>' +
-            '<button type="button" class="btn btn-outline" data-cb="clear-build">' + esc(L('Clear', 'Wyczyść')) + '</button>' +
-            '<button type="button" class="btn btn-outline" data-cb="new-prompt">' + esc(L('New picture', 'Nowy obrazek')) + '</button>' +
-            '<button type="button" class="btn btn-grey" data-cb="new-goal">' + esc(L('Change goal', 'Zmień cel')) + '</button>' +
-            '</div>';
-        if (S.buildSpoken) {
-            html += '<div class="cb-sentence">' + chainTiles(S.chain).map((t) => tokHtml(t.family, t.text)).join(' ') + '</div>';
-        }
-        html += '<div class="cb-fb' + (S.buildOk ? ' ok' : (fb ? ' bad' : '')) + '">' + esc(fb) + '</div>';
-        html += whyHtml(!S.buildOk && !!fb);
+        return html;
+    }
+
+    function creatorHtml() {
+        let html = '';
+        html += chainHtml(S.chain, 'pop', L('Tap tiles below to invent a sentence…', 'Klikaj kafelki poniżej, by wymyślić zdanie…'));
+        html += buildActionsHtml({});
+        html += buildFeedbackHtml();
+        html += sheetsHtml();
         return html;
     }
 
@@ -1507,18 +1622,36 @@
                 clearAskWhy();
                 S.buildFbEn = ''; S.buildFbPl = '';
                 S.textFbEn = ''; S.textFbPl = '';
-                if (changed && id === 'build') S.sheetsOpen = defaultSheetsOpen();
+                S.movingFrom = null;
+                S.activeSlot = null;
+                if (changed && id === 'build') {
+                    if (!S.goal) S.sheetsOpen = null;
+                    else S.sheetsOpen = defaultSheetsOpen();
+                }
+                if (changed && id === 'creator') {
+                    S.goal = null;
+                    S.buildPrompt = null;
+                    S.slots = null;
+                    S.chain = S.chain || [];
+                    S.slotHints = {};
+                    S.sheetsOpen = defaultSheetsOpen();
+                    S.buildOk = false;
+                    S.buildSpoken = '';
+                    S.buildAwarded = false;
+                }
                 render(); return;
             }
             if (a === 'lang') { S.polish = id === 'pl'; render(); return; }
             if (a === 'tilepl') { S.tilePl = !S.tilePl; render(); return; }
             if (a === 'pl') { S.polish = !S.polish; render(); return; }
             if (a === 'goal') {
-                S.goal = id; S.chain = []; S.slotHints = {};
+                resetBuildWorkspace(true);
+                S.goal = id;
                 S.buildPrompt = S.ageBand === 'young' ? makeBuildPrompt(id) : null;
-                S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
+                if (S.buildPrompt && S.buildPrompt.ids) {
+                    S.slots = S.buildPrompt.ids.map(function () { return null; });
+                }
                 S.sheetsOpen = defaultSheetsOpen();
-                clearAskWhy();
                 render(); return;
             }
             if (a === 'sheet') {
@@ -1547,10 +1680,51 @@
             if (a === 'noun-pick-box') return;
             if (a === 'noun-pick-cancel') { S.nounPick = null; render(); return; }
             if (a === 'noun-pick') { speakTile(byId(id)); addToChain(id); return; }
-            if (a === 'slot-hint') {
+            if (a === 'slot') {
                 const i = Number(id);
+                if (!ensureSlots()) return;
+                clearAskWhy();
+                S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
                 if (!S.slotHints) S.slotHints = {};
-                S.slotHints[i] = !S.slotHints[i];
+                S.slotHints[i] = true;
+                if (S.movingFrom != null) {
+                    const from = S.movingFrom;
+                    const tmp = S.slots[i];
+                    S.slots[i] = S.slots[from];
+                    S.slots[from] = tmp;
+                    S.movingFrom = null;
+                    S.activeSlot = S.slots.findIndex((x) => !x);
+                    if (S.activeSlot < 0) S.activeSlot = null;
+                } else {
+                    S.activeSlot = (S.activeSlot === i) ? null : i;
+                }
+                render();
+                return;
+            }
+            if (a === 'slot-tile') {
+                const i = Number(id);
+                if (!ensureSlots()) return;
+                clearAskWhy();
+                S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
+                const tid = S.slots[i];
+                speakTile(byId(tid));
+                if (S.movingFrom === i) {
+                    S.slots[i] = null;
+                    S.movingFrom = null;
+                    S.activeSlot = i;
+                    if (!S.slotHints) S.slotHints = {};
+                    S.slotHints[i] = true;
+                } else if (S.movingFrom != null) {
+                    const from = S.movingFrom;
+                    const tmp = S.slots[i];
+                    S.slots[i] = S.slots[from];
+                    S.slots[from] = tmp;
+                    S.movingFrom = null;
+                    S.activeSlot = null;
+                } else {
+                    S.movingFrom = i;
+                    S.activeSlot = null;
+                }
                 render();
                 return;
             }
@@ -1560,10 +1734,45 @@
             }
             if (a === 'check-build') { checkBuild(); return; }
             if (a === 'ask-why') { askWhy(); return; }
-            if (a === 'speak-build') { speak(S.buildSpoken || joinSpeak(chainTiles(S.chain))); return; }
-            if (a === 'clear-build') { S.chain = []; S.slotHints = {}; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
-            if (a === 'new-prompt') { S.buildPrompt = makeBuildPrompt(S.goal); S.chain = []; S.slotHints = {}; S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false; clearAskWhy(); render(); return; }
-            if (a === 'new-goal') { S.goal = null; S.chain = []; S.buildPrompt = null; S.slotHints = {}; clearAskWhy(); render(); return; }
+            if (a === 'speak-build') {
+                speak(S.buildSpoken || joinSpeak(currentBuildTiles()));
+                return;
+            }
+            if (a === 'clear-build') {
+                if (useSlots()) {
+                    ensureSlots();
+                    S.slots = S.slots.map(function () { return null; });
+                } else {
+                    S.chain = [];
+                }
+                S.slotHints = {};
+                S.activeSlot = null;
+                S.movingFrom = null;
+                S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
+                S.buildChecking = false;
+                clearAskWhy();
+                render();
+                return;
+            }
+            if (a === 'new-prompt') {
+                S.buildPrompt = makeBuildPrompt(S.goal);
+                S.chain = [];
+                S.slots = (S.buildPrompt.ids || []).map(function () { return null; });
+                S.slotHints = {};
+                S.activeSlot = null;
+                S.movingFrom = null;
+                S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
+                clearAskWhy();
+                render();
+                return;
+            }
+            if (a === 'new-goal') {
+                S.goal = null;
+                resetBuildWorkspace(false);
+                S.sheetsOpen = null;
+                render();
+                return;
+            }
             if (a === 'text-kind') { S.textKind = id; loadTextTask(); render(); return; }
             if (a === 'text-next') { loadTextTask(); render(); return; }
             if (a === 'text-check') { checkText(); return; }
@@ -1593,7 +1802,8 @@
 
     function bindChainSort(root) {
         const chain = root.querySelector('.cb-chain');
-        if (!chain || S.tab !== 'build') return;
+        if (!chain || (S.tab !== 'build' && S.tab !== 'creator')) return;
+        if (useSlots()) return;
         let card = null;
         let pointerId = null;
         let startX = 0;
@@ -1701,17 +1911,19 @@
     }
 
     function askWhyContext() {
-        if (S.tab === 'build') {
-            const tiles = chainTiles(S.chain);
+        if (S.tab === 'build' || S.tab === 'creator') {
+            const tiles = currentBuildTiles();
             const attempt = joinSpeak(tiles) || tiles.map((t) => t.text).join(' ');
             const picture = S.buildPrompt && S.buildPrompt.ids
                 ? S.buildPrompt.ids.map((id) => (byId(id) || {}).text || id).join(' ')
                 : '';
             return {
-                task: 'Build a sentence with colour tiles.',
+                task: S.tab === 'creator'
+                    ? 'Creator mode: invent a grammatically correct English sentence with colour tiles.'
+                    : 'Build a sentence with colour tiles.',
                 attempt: attempt,
                 extra: (picture ? 'The picture wanted this order: ' + picture + '. ' : '') +
-                    'Goal: ' + (S.goal || 'any') + '. Short checker note (EN): ' + (S.buildFbEn || '') +
+                    'Goal: ' + (S.goal || 'free creator') + '. Short checker note (EN): ' + (S.buildFbEn || '') +
                     ' / (PL): ' + (S.buildFbPl || '')
             };
         }
@@ -1807,6 +2019,52 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
 
     function checkBuild() {
         clearAskWhy();
+        if (S.tab === 'creator') {
+            checkCreator();
+            return;
+        }
+        if (useSlots()) {
+            ensureSlots();
+            if (S.slots.some((id) => !id)) {
+                S.buildOk = false;
+                S.buildFbEn = 'Fill every space. Tap a blank for a colour hint, then choose a tile.';
+                S.buildFbPl = 'Wypełnij każde miejsce. Kliknij puste pole (podpowiedź koloru), potem wybierz kafel.';
+                S.buildSpoken = '';
+                render();
+                return;
+            }
+            const tiles = chainTiles(S.slots);
+            const v = validateChain(tiles);
+            if (!v.ok) {
+                S.buildOk = false;
+                S.buildFbEn = v.en;
+                S.buildFbPl = v.pl;
+                S.buildSpoken = '';
+                render();
+                return;
+            }
+            if (!promptMatches(tiles, S.buildPrompt)) {
+                S.buildOk = false;
+                S.buildFbEn = 'Almost! Match the picture, tile by tile.';
+                S.buildFbPl = 'Prawie! Ułóż kafelki dokładnie o obrazku, w tej samej kolejności.';
+                S.buildSpoken = '';
+                render();
+                return;
+            }
+            S.buildOk = true;
+            S.buildSpoken = v.sentence;
+            S.buildFbEn = 'Yes! Say the sentence aloud.';
+            S.buildFbPl = 'Tak! Powiedz zdanie na głos.';
+            if (!S.buildAwarded) {
+                S.buildAwarded = true;
+                award(10, { tab: 'build', sentence: v.sentence });
+                rememberColourSentence(v.sentence, polishFromTiles(tiles), tiles);
+            }
+            speak(v.sentence);
+            render();
+            return;
+        }
+
         const tiles = chainTiles(S.chain);
         const v = validateChain(tiles);
         if (!v.ok) {
@@ -1835,6 +2093,85 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
             rememberColourSentence(v.sentence, polishFromTiles(tiles), tiles);
         }
         speak(v.sentence);
+        render();
+    }
+
+    async function checkCreator() {
+        if (S.buildChecking) return;
+        const tiles = chainTiles(S.chain);
+        if (!tiles.length) {
+            S.buildOk = false;
+            S.buildFbEn = 'Make a sentence with the tiles first.';
+            S.buildFbPl = 'Najpierw ułóż zdanie z kafelków.';
+            S.buildSpoken = '';
+            render();
+            return;
+        }
+        const attempt = joinSpeak(tiles) || tiles.map((t) => t.text).join(' ');
+        S.buildChecking = true;
+        S.buildOk = false;
+        S.buildSpoken = '';
+        S.buildFbEn = 'AI is checking your sentence…';
+        S.buildFbPl = 'AI sprawdza Twoje zdanie…';
+        const gen = (S.askWhyGen || 0);
+        render();
+
+        const age = S.ageBand === 'older' ? '10–12' : '8–9';
+        const grammar = S.ageBand === 'older'
+            ? "there is/are, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, place prepositions"
+            : "there is/are, have got, can/can't, like, don't like, a/an, place prepositions";
+        const prompt = `You are a kind English teacher for a Polish child (age ${age}).
+${ageWhyVoice()}
+The child built this sentence with word tiles: "${attempt}"
+Tile words in order: ${tiles.map((t) => t.text).join(' | ')}.
+
+Decide if the sentence is grammatically correct for this age and these patterns: ${grammar}.
+Accept natural capitalisation/punctuation even if tiles omit them.
+Reject nonsense, wrong word order, wrong agreement (is/are, have/has got), or grammar beyond the allowed list.
+
+Return JSON only:
+{ "ok": true/false, "explainEn": "1-3 short lines; if wrong, say what to fix and give ONE corrected example with **bold** English words", "explainPl": "same idea in simple Polish with **bold** English words", "sentence": "clean corrected English sentence if ok or a good fix if not" }`;
+
+        if (typeof global.fetchGenerativeAI !== 'function') {
+            if (S.askWhyGen !== gen) {
+                S.buildChecking = false;
+                return;
+            }
+            S.buildChecking = false;
+            S.buildOk = false;
+            S.buildFbEn = 'AI is not available right now. Try again later.';
+            S.buildFbPl = 'AI jest teraz niedostępne. Spróbuj później.';
+            render();
+            return;
+        }
+
+        const data = await global.fetchGenerativeAI(prompt);
+        if (S.askWhyGen !== gen) {
+            S.buildChecking = false;
+            return;
+        }
+        S.buildChecking = false;
+        if (data && data.__error) {
+            S.buildOk = false;
+            S.buildFbEn = data.__error;
+            S.buildFbPl = data.__error;
+            render();
+            return;
+        }
+
+        const ok = !!(data && data.ok);
+        S.buildOk = ok;
+        S.buildFbEn = (data && (data.explainEn || data.hintEn)) || (ok ? 'Yes! Great sentence.' : 'Not quite. Try again.');
+        S.buildFbPl = (data && (data.explainPl || data.hintPl)) || S.buildFbEn;
+        S.buildSpoken = (data && data.sentence) || attempt;
+        if (ok) {
+            if (!S.buildAwarded) {
+                S.buildAwarded = true;
+                award(10, { tab: 'creator', sentence: S.buildSpoken });
+                rememberColourSentence(S.buildSpoken, polishFromTiles(tiles), tiles);
+            }
+            speak(S.buildSpoken);
+        }
         render();
     }
 
@@ -1934,13 +2271,17 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
             nounPick: null,
             goal: null,
             chain: [],
+            slots: null,
             slotHints: {},
+            activeSlot: null,
+            movingFrom: null,
             buildPrompt: null,
             buildFbEn: '',
             buildFbPl: '',
             buildOk: false,
             buildSpoken: '',
             buildAwarded: false,
+            buildChecking: false,
             textKind: 'gap',
             gap: null,
             gapPick: '',
@@ -1972,7 +2313,8 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
         S.polish = keepPolish;
         S.tilePl = keepTilePl;
         S.sheetsOpen = keepSheets;
-        S.tab = (startTab === 'lineup' || startTab === 'text' || startTab === 'build') ? startTab : 'build';
+        S.tab = (startTab === 'lineup' || startTab === 'text' || startTab === 'build' || startTab === 'creator') ? startTab : 'build';
+        if (S.tab === 'creator') S.sheetsOpen = defaultSheetsOpen();
         const badge = document.getElementById('colour-age-badge');
         if (badge) badge.textContent = S.ageBand === 'older' ? '10–12' : '8–9';
         loadTextTask();

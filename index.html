@@ -2181,7 +2181,7 @@
                 <div class="guide-item"><strong>Frankenstein Builder</strong><p>A paragraph type is named (introduction, body for/against/opinion, or conclusion). Unscramble the sentences into the original order.</p></div>
                 <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
                 <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
-                <div class="guide-item"><strong>Bloat Slasher</strong><p>Tap fluffy / wordy bits to cut them without losing meaning. Aim for a sharper sentence.</p></div>
+                <div class="guide-item"><strong>Bloat Slasher</strong><p>Cut redundant words and phrases without losing meaning. Aim for clear, concise writing.</p></div>
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives. Signed-in players collect each informal → formal pair in a Vocab Upgrade set.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
                 <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
@@ -2387,7 +2387,7 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a ready-made essay paragraph — introduction, body or conclusion — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Cut down a newly generated, excessively wordy sentence without losing meaning.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Slash redundancy in a formal, slightly padded sentence until it is clear and concise.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap everyday words with precise academic terms. Each correct pair is saved to your Vocab Upgrade set.</p><a href="#/setup/vocab" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><a href="#/setup/odyssey" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — get strengths &amp; improvement feedback, then export a PDF.</p><a href="#/setup/mission" class="btn btn-outline">Play Now</a></div>
@@ -5887,17 +5887,32 @@ Return ONLY JSON: {"thesis":"...","cards":[{"text":"...","rebuttal":true},{"text
             toggleLoading('devil', false);
         }
 
-        // 4. BLOAT SLASHER (Updated for Formal, Academic Over-Worded Sentences & UI Constraints)
+        // 4. BLOAT SLASHER — formal, mildly exaggerated sentences packed with removable redundancy
         let bloatWords = [];
         async function initBloat() {
             document.getElementById('bloat-feedback').textContent = '';
             toggleLoading('bloat', true);
 
             const R = wsRandomnessBlock();
-            const prompt = `Write ONE formally written academic sentence (25-35 words) about "${R.topic}" with PERFECT grammar and punctuation.
+            const prompt = `Write ONE formal written sentence (22-32 words) about "${R.topic}" for ESL students practising CONCISENESS.
 LEVEL: ${WS_LEVEL}
-CRITICAL: Grammatically correct and fully meaningful — intentionally over-worded with redundant nominalisations, circumlocution, and unnecessary modifiers.
-ORWELL: if a word can be cut, it should be cuttable by the student while keeping a clear formal message. No slang.
+
+GOAL OF THE GAME: students delete whole words to remove REDUNDANCY — repeated or unnecessary information — while keeping the core meaning clear and complete.
+
+TONE: formal and a little exaggerated / padded, but NOT ridiculous or cartoonish. Sound like a slightly wordy school essay or report, not parody.
+
+FILL THE SENTENCE WITH CUTTABLE REDUNDANCY, for example:
+- pleonasms: "future plans", "unexpected surprise", "end result", "basic fundamentals", "past history", "completely finish", "each and every", "true facts"
+- padded pairs: "first and foremost", "null and void", "various different"
+- empty intensifiers / fillers that can go without changing the claim: "really", "very", "actually", "in order to" → "to", "due to the fact that" → leave a shorter path
+- repeating the same idea in two phrases close together
+
+RULES:
+- Perfect grammar and punctuation. Fully meaningful.
+- Students can ONLY delete whole words (no rewriting). Every redundant bit must be removable by deleting words while leaving a coherent formal sentence.
+- Do NOT make it absurd, slangy, or so over-the-top that meaning is unclear.
+- Prefer clear school/academic topics and vocabulary at ${WS_LEVEL}.
+
 RANDOMISE HARD — seed ${R.seed}. Angle: ${R.angle}. Never repeat a previous sentence.
 Return ONLY JSON: {"sentence":"..."}`;
 
@@ -5947,20 +5962,26 @@ Return ONLY JSON: {"sentence":"..."}`;
 
             if (currCount > targetCount) {
                 feedback.className = "feedback error";
-                feedback.textContent = `⚠️ Still too wordy! Keep slashing to get below ${targetCount} words.`;
+                feedback.textContent = `⚠️ Still too wordy! Keep cutting redundant words to get below ${targetCount}.`;
                 return;
             }
 
             // Verify logic with API
             feedback.className = "feedback neutral";
-            feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing sentence logic and grammar...`;
+            feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Checking conciseness and meaning...`;
             btn.disabled = true;
 
-            const prompt = `A student was asked to reduce the bloat of an over-worded academic sentence using a game UI where they can ONLY click to delete whole words. They CANNOT edit punctuation or capitalisation.
-            The student's sequence of remaining words is: "${cleanedRemainingWordsForAI}"
-            Evaluate this sequence. Does it make logical sense? Did it retain the original core meaning? Does the sequence of words form a coherent academic thought?
-            CRITICAL INSTRUCTION: You MUST COMPLETELY IGNORE any capitalisation errors (like starting with a lowercase letter) and ALL punctuation errors (like stray commas attached to deleted words). Grade them ONLY on whether the sequence of remaining words forms a coherent sentence.
-            Return ONLY a JSON object: {"valid": true/false, "reason": "A short, 1-sentence explanation of why it is good, or specifically what structural/logical error the student created by deleting those words."}`;
+            const prompt = `A student practised CONCISENESS in Bloat Slasher: remove REDUNDANCY (words/phrases that repeat information or add nothing) while keeping meaning clear.
+UI constraint: they can ONLY delete whole words — no rewriting, punctuation edits, or capitalisation fixes.
+
+Original word count: ${origCount}. Remaining sequence: "${cleanedRemainingWordsForAI}"
+
+Evaluate:
+1) Does the remaining sequence still express the original CORE idea clearly and completely?
+2) Is it a coherent formal sentence (ignore capitalisation and stray punctuation from deletions)?
+3) Did they mainly cut redundancy rather than gutting essential meaning?
+
+Return ONLY JSON: {"valid": true/false, "reason": "One short sentence: praise clear concise cuts, or name what meaning/structure broke."}`;
 
             const data = await fetchGenerativeAI(prompt);
             btn.disabled = false;
