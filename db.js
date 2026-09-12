@@ -686,6 +686,7 @@ export const ANALYTICS_PAGE_KEYS = new Set([
     'trans',
     'devil',
     'bloat',
+    'tight',
     'vocab',
     'odyssey',
     'mission',
@@ -1143,7 +1144,7 @@ export async function getSharedWordSetByToken(token) {
 const VALID_GAME_KEYS = new Set([
     'flashcards', 'memory_flip', 'word_repair', 'speed_match', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'live_host',
     'pe_boring', 'pe_detail', 'pe_link', 'pe_exam', 'pe_dictation', 'pe_colour', 'pe_line',
-    'frank', 'trans', 'devil', 'bloat', 'vocab_upgrade', 'matura',
+    'frank', 'trans', 'devil', 'bloat', 'tight', 'vocab_upgrade', 'matura',
 ]);
 
 export async function recordGameSession(userId, { gameKey, wordSetId, score = 0, pointsEarned = 0, durationMs = 0, wordsTotal = 0, wordsMastered = 0, result = null }) {

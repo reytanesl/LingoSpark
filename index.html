@@ -1360,8 +1360,26 @@
         .bloat-container { background: var(--bright-white); border: 2px solid var(--border-light); padding: 1.5rem; border-radius: 12px; line-height: 2.5; margin-bottom: 2rem; }
         .bloat-word { display: inline-block; padding: 2px 8px; margin: 2px; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: 600; }
         .bloat-word:hover { border-color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.05); color: var(--pillarbox-red); }
-        .bloat-word.deleted { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); text-decoration: line-through; border-color: transparent; }
-        .vocab-container { background: var(--light-grey); padding: 2rem; border-radius: 12px; line-height: 2.5; font-size: 1.2rem; margin-bottom: 2rem; }
+.bloat-word.deleted { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); text-decoration: line-through; border-color: transparent; }
+.tight-original {
+    background: var(--bright-white); border: 2px solid var(--border-light); padding: 1.5rem; border-radius: 12px;
+    line-height: 1.7; margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600;
+}
+.tight-stats { display: flex; justify-content: space-around; background: var(--light-grey); padding: 0.85rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; flex-wrap: wrap; gap: 0.5rem; }
+.tight-strategies {
+    background: rgba(1, 33, 105, 0.04); border: 1px solid var(--border-light); border-radius: 10px;
+    padding: 0.9rem 1.1rem; margin: 0 0 1.25rem; font-size: 0.92rem; line-height: 1.55; color: var(--text-dark);
+}
+.tight-strategies strong { color: var(--royal-blue); }
+.tight-strategies ul { margin: 0.45rem 0 0; padding-left: 1.2rem; }
+.tight-strategies li { margin-bottom: 0.2rem; }
+.tight-rewrite {
+    width: 100%; min-height: 7rem; padding: 1rem 1.1rem; border: 2px solid var(--border-light); border-radius: 12px;
+    font-family: var(--font-secondary); font-size: 1.05rem; line-height: 1.6; resize: vertical; margin-bottom: 1rem;
+    box-sizing: border-box;
+}
+.tight-rewrite:focus { outline: none; border-color: var(--royal-blue); }
+.vocab-container { background: var(--light-grey); padding: 2rem; border-radius: 12px; line-height: 2.5; font-size: 1.2rem; margin-bottom: 2rem; }
         .vocab-word.target { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); border: 2px solid rgba(200, 16, 46, 0.3); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .vocab-word.target:hover { background: rgba(1, 33, 105, 0.1); color: var(--royal-blue); border-color: var(--royal-blue); }
         .vocab-word.upgraded { background: rgba(0, 130, 59, 0.1); color: var(--success-green); border-color: rgba(0, 130, 59, 0.3); pointer-events: none; }
@@ -2182,6 +2200,7 @@
                 <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
                 <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Cut redundant words and phrases without losing meaning. Aim for clear, concise writing.</p></div>
+                <div class="guide-item"><strong>Tight Write</strong><p>Rewrite a padded formal sentence using conciseness strategies: cut redundancy, use strong verbs, prefer active voice, drop fillers, shorten phrases, avoid nominalizations, and simplify structure.</p></div>
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives. Signed-in players collect each informal → formal pair in a Vocab Upgrade set.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
                 <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
@@ -2388,6 +2407,7 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Slash redundancy in a formal, slightly padded sentence until it is clear and concise.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-pen-to-square"></i></div><h2>Tight Write</h2><p>Rewrite a wordy formal sentence into a clear, efficient one using full conciseness strategies.</p><a href="#/setup/tight" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap everyday words with precise academic terms. Each correct pair is saved to your Vocab Upgrade set.</p><a href="#/setup/vocab" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><a href="#/setup/odyssey" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — get strengths &amp; improvement feedback, then export a PDF.</p><a href="#/setup/mission" class="btn btn-outline">Play Now</a></div>
@@ -2616,6 +2636,42 @@
                 <button class="btn btn-blue" style="width: 100%; padding: 1rem;" onclick="checkBloat()" id="verify-bloat-btn">Verify Conciseness</button>
             </div>
             <div id="bloat-feedback" class="feedback"></div>
+        </div>
+
+        <!-- WRITING SUITE: TIGHT WRITE -->
+        <div id="screen-tight" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            </div>
+            <div class="game-header">
+                <h2 id="tight-title">Tight Write <span class="live-badge">Cursor AI</span></h2>
+                <button class="btn btn-outline" onclick="initTight()" id="tight-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <p class="game-desc">Rewrite the padded sentence below so it is clear and concise. Keep the meaning; cut the fat.</p>
+            <div class="tight-strategies">
+                <strong>Conciseness strategies</strong>
+                <ul>
+                    <li>Eliminate redundancy (e.g. <em>future plans</em> → <em>plans</em>)</li>
+                    <li>Use strong verbs (e.g. <em>conduct an investigation</em> → <em>investigate</em>)</li>
+                    <li>Prefer active voice</li>
+                    <li>Cut fillers (<em>very</em>, <em>really</em>, <em>in order to</em>, <em>the fact that</em>)</li>
+                    <li>Shorten phrases (<em>at this point in time</em> → <em>now</em>)</li>
+                    <li>Avoid nominalizations (turn noun phrases back into verbs)</li>
+                    <li>Simplify long, complex sentence structure</li>
+                </ul>
+            </div>
+
+            <div id="tight-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="tight-content">
+                <div class="tight-stats">
+                    <div>Original: <span id="tight-orig-count" style="color: var(--text-dark);">0</span></div>
+                    <div>Your rewrite: <span id="tight-curr-count" style="color: var(--royal-blue); font-size: 1.35rem;">0</span></div>
+                </div>
+                <div id="tight-original" class="tight-original" aria-live="polite"></div>
+                <textarea id="tight-rewrite" class="tight-rewrite" placeholder="Rewrite the sentence here…" oninput="updateTightCounts()"></textarea>
+                <button class="btn btn-blue" style="width: 100%; padding: 1rem;" onclick="checkTight()" id="verify-tight-btn">Check rewrite</button>
+            </div>
+            <div id="tight-feedback" class="feedback"></div>
         </div>
 
         <!-- WRITING SUITE: VOCAB UPGRADE -->
@@ -3577,7 +3633,7 @@
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
         const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid']);
 
@@ -3773,6 +3829,7 @@
                         if (arg === 'trans') initTransitions();
                         if (arg === 'devil') initDevil();
                         if (arg === 'bloat') initBloat();
+                        if (arg === 'tight') initTight();
                         if (arg === 'vocab') initVocab();
                         if (arg === 'mission') initMissionChat();
                         if (arg === 'matura') initMaturaAssessment();
@@ -4687,7 +4744,7 @@
                     const gameNames = {
                         flashcards: 'Flashcards', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up',
-                        frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
+                        frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
                     };
                     for (const t of data.gameTotals) {
@@ -4722,7 +4779,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -5370,7 +5427,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -5507,6 +5564,7 @@
             if(activeGame === 'trans') initTransitions();
             if(activeGame === 'devil') initDevil();
             if(activeGame === 'bloat') initBloat();
+            if(activeGame === 'tight') initTight();
             if(activeGame === 'vocab') initVocab();
             if(activeGame === 'odyssey') initOdyssey();
             if(activeGame === 'mission') initMissionChat();
@@ -6000,6 +6058,145 @@ Return ONLY JSON: {"valid": true/false, "reason": "One short sentence: praise cl
             } else {
                 feedback.className = "feedback error";
                 feedback.textContent = `❌ Logic Error: ${data.reason}`;
+            }
+        }
+
+        // 4b. TIGHT WRITE — free rewrite for full conciseness strategies
+        let tightOriginal = '';
+        function tightWordCount(text) {
+            const t = String(text || '').trim();
+            if (!t) return 0;
+            return t.split(/\s+/).filter(Boolean).length;
+        }
+        function normalizeTightText(text) {
+            return String(text || '').toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+        function updateTightCounts() {
+            const origEl = document.getElementById('tight-orig-count');
+            const currEl = document.getElementById('tight-curr-count');
+            if (origEl) origEl.textContent = String(tightWordCount(tightOriginal));
+            if (currEl) currEl.textContent = String(tightWordCount((document.getElementById('tight-rewrite') || {}).value));
+        }
+        async function initTight() {
+            document.getElementById('tight-feedback').textContent = '';
+            document.getElementById('tight-feedback').className = 'feedback';
+            const rewriteEl = document.getElementById('tight-rewrite');
+            if (rewriteEl) rewriteEl.value = '';
+            tightOriginal = '';
+            updateTightCounts();
+            toggleLoading('tight', true);
+
+            const R = wsRandomnessBlock();
+            const prompt = `Write ONE formal written sentence (24-36 words) about "${R.topic}" for ESL students practising TIGHT WRITE (full rewrite for conciseness).
+LEVEL: ${WS_LEVEL}
+
+TONE: formal and a little exaggerated / padded, like a slightly wordy school essay — NOT parody, slang, or absurd.
+
+Embed SEVERAL cuttable problems across these strategies (not only redundancy):
+1) Redundancy / pleonasms (e.g. future plans, unexpected surprise, end result)
+2) Weak verb-noun pairs (e.g. conduct an investigation, provide assistance, make a decision)
+3) Passive voice that can become active
+4) Filler (very, really, actually, basically, in order to, the fact that)
+5) Long phrases (at this point in time, in the event that, due to the fact that)
+6) Nominalizations (the implementation of…, the investigation of…)
+7) One overlong clause that could be simplified
+
+RULES:
+- Perfect grammar and punctuation. Fully meaningful.
+- Student will REWRITE freely (not only delete words). A clear shorter formal sentence must be possible.
+- Prefer clear school/academic topics and vocabulary at ${WS_LEVEL}.
+
+RANDOMISE HARD — seed ${R.seed}. Angle: ${R.angle}. Never repeat a previous sentence.
+Return ONLY JSON: {"sentence":"..."}`;
+
+            const data = await fetchGenerativeAI(prompt);
+
+            if (!data || data.__error || !data.sentence) {
+                toggleLoading('tight', false);
+                document.getElementById('tight-feedback').className = 'feedback error';
+                document.getElementById('tight-feedback').textContent = aiErrorMessage(data);
+                return;
+            }
+
+            tightOriginal = String(data.sentence).trim();
+            document.getElementById('tight-original').textContent = tightOriginal;
+            if (rewriteEl) rewriteEl.value = '';
+            updateTightCounts();
+            toggleLoading('tight', false);
+        }
+
+        async function checkTight() {
+            const feedback = document.getElementById('tight-feedback');
+            const btn = document.getElementById('verify-tight-btn');
+            const rewrite = String((document.getElementById('tight-rewrite') || {}).value || '').trim();
+            const origCount = tightWordCount(tightOriginal);
+            const currCount = tightWordCount(rewrite);
+
+            if (!tightOriginal) {
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Generate a sentence first.';
+                return;
+            }
+            if (!rewrite) {
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Write your tighter version in the box first.';
+                return;
+            }
+            if (normalizeTightText(rewrite) === normalizeTightText(tightOriginal)) {
+                feedback.className = 'feedback error';
+                feedback.textContent = 'That is the same sentence. Rewrite it to be clearer and shorter.';
+                return;
+            }
+            if (currCount >= origCount) {
+                feedback.className = 'feedback error';
+                feedback.textContent = `Still not shorter (${currCount} vs ${origCount} words). Trim more before checking.`;
+                return;
+            }
+
+            feedback.className = 'feedback neutral';
+            feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Checking your rewrite…`;
+            btn.disabled = true;
+
+            const prompt = `You judge a Tight Write exercise for ESL students (${WS_LEVEL}).
+The student rewrote a padded formal sentence to practise conciseness strategies:
+- Eliminate redundancy
+- Use strong verbs (not weak verb-noun pairs)
+- Prefer active voice
+- Cut filler words
+- Shorten wordy phrases
+- Avoid nominalizations
+- Simplify sentence structure
+
+ORIGINAL (${origCount} words): "${tightOriginal}"
+STUDENT REWRITE (${currCount} words): "${rewrite}"
+
+Pass (valid=true) only if:
+1) Core meaning is preserved
+2) Rewrite is noticeably more concise (not a trivial near-paraphrase)
+3) Grammar is acceptable for the level
+4) There is clear evidence of applying some of the strategies (not all seven required)
+
+Fail if meaning is lost, grammar is broken, or bloat largely remains.
+
+Return ONLY JSON: {"valid": true/false, "reason": "1-2 short sentences naming what improved or what still bloats"}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            btn.disabled = false;
+
+            if (!data || data.__error) {
+                feedback.className = 'feedback error';
+                feedback.textContent = aiErrorMessage(data);
+                return;
+            }
+
+            if (data.valid) {
+                feedback.className = 'feedback success';
+                feedback.textContent = `⚡ ${data.reason}`;
+                incrementGameCount();
+                recordGameSessionApi('tight', { score: 100, pointsEarned: 50 });
+            } else {
+                feedback.className = 'feedback error';
+                feedback.textContent = `❌ ${data.reason}`;
             }
         }
 
