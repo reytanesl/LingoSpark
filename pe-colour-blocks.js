@@ -467,7 +467,7 @@
         { words: ['We', 'have got', 'a', 'laptop'], family: 'have' },
         { words: ['You', 'have got', 'a', 'key'], family: 'have' },
         { words: ['They', 'have got', 'a', 'mobile'], family: 'have' },
-        { words: ['Is there', 'a', 'message', 'in', 'the', 'bin'], family: 'is', extra: '?' },
+        { words: ['Is there', 'a', 'message', 'on', 'the', 'desk'], family: 'is', extra: '?' },
         { words: ['I', 'can', 'swim'], family: 'can' },
         { words: ['He', "can't", 'ride', 'a', 'bike'], family: 'can' },
         { words: ['You', 'can', 'draw'], family: 'can' },
@@ -551,7 +551,19 @@
     border-color: var(--royal-blue);
     box-shadow: 0 0 0 2px rgba(1, 33, 105, 0.22);
 }
+.cb-slot.droppable {
+    border-color: var(--royal-blue);
+    border-style: dashed;
+    background: rgba(1, 33, 105, 0.06);
+}
 .cb-card.moving { outline: 3px solid var(--royal-blue); outline-offset: 2px; }
+.cb-holding {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+    margin: 0 0 0.65rem; padding: 0.45rem 0.55rem;
+    border-radius: 12px; border: 2px dashed var(--royal-blue); background: #eff6ff;
+    font-family: var(--font-secondary); font-size: 0.9rem; color: var(--royal-blue);
+}
+.cb-holding .cb-card { cursor: pointer; }
 .cb-actions-top { margin: 0.15rem 0 0.85rem; }
 .cb-sheet { margin-bottom: 0.85rem; }
 .cb-sheet-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.7rem; }
@@ -765,6 +777,7 @@
         S.slotHints = {};
         S.activeSlot = null;
         S.movingFrom = null;
+        S.heldId = null;
         S.buildFbEn = '';
         S.buildFbPl = '';
         S.buildOk = false;
@@ -1041,6 +1054,8 @@
                     if (!has('and')) return { ok: false, en: 'between needs two places with and.', pl: 'between potrzebuje dwóch miejsc i and.' };
                 }
             }
+            const logic = locationLogicIssue(tiles);
+            if (logic) return { ok: false, en: logic.en, pl: logic.pl };
             return { ok: true, sentence: joinSpeak(tiles, first.id === 'is-there' || first.id === 'are-there') };
         }
 
@@ -1094,28 +1109,122 @@
         return got === want;
     }
 
+    // Places and prepositions that sound natural together for primary learners
+    const PREP_FOR_PLACE = {
+        floor: ['on', 'under'],
+        mat: ['on', 'under'],
+        desk: ['on', 'under', 'next-to', 'near', 'behind', 'in-front-of', 'above'],
+        table: ['on', 'under', 'next-to', 'near', 'behind', 'in-front-of'],
+        chair: ['on', 'under', 'next-to', 'near', 'behind', 'in-front-of'],
+        sofa: ['on', 'under', 'next-to', 'near', 'behind', 'in-front-of'],
+        bed: ['on', 'under', 'next-to', 'near', 'behind', 'in-front-of'],
+        shelf: ['on', 'under', 'next-to', 'near', 'above'],
+        bin: ['in', 'next-to', 'near', 'behind', 'in-front-of'],
+        box: ['in', 'on', 'under', 'next-to', 'near'],
+        wardrobe: ['in', 'next-to', 'near', 'behind', 'in-front-of'],
+        fridge: ['in', 'on', 'next-to', 'near'],
+        cooker: ['next-to', 'near', 'on'],
+        sink: ['next-to', 'near', 'under'],
+        noticeboard: ['on', 'next-to', 'near', 'above'],
+        tv: ['next-to', 'near', 'above', 'under', 'behind', 'in-front-of'],
+        plant: ['next-to', 'near', 'behind', 'in-front-of'],
+        door: ['next-to', 'near', 'behind', 'in-front-of'],
+        window: ['next-to', 'near', 'behind', 'in-front-of', 'above'],
+        garden: ['in', 'near'],
+        kitchen: ['in', 'near'],
+        bedroom: ['in', 'near'],
+        bathroom: ['in', 'near'],
+        'living-room': ['in', 'near'],
+        balcony: ['on', 'near']
+    };
+
+    // These work better as places than as the main "thing" in There is / There are
+    const PLACE_ONLY_THINGS = {
+        floor: 1, door: 1, window: 1, garden: 1, kitchen: 1, bedroom: 1,
+        bathroom: 1, 'living-room': 1, balcony: 1, sink: 1, cooker: 1
+    };
+
+    function placeRootId(t) {
+        if (!t) return '';
+        return t.sgId || t.id;
+    }
+
+    function prepFitsPlace(prepId, placeTile) {
+        if (!prepId || !placeTile) return false;
+        if (prepId === 'between' || prepId === 'upstairs' || prepId === 'downstairs' || prepId === 'outside') return false;
+        const allowed = PREP_FOR_PLACE[placeRootId(placeTile)];
+        if (!allowed) return prepId === 'next-to' || prepId === 'near' || prepId === 'on';
+        return allowed.indexOf(prepId) !== -1;
+    }
+
+    function isMovableThing(t) {
+        if (!t || t.kind !== 'noun') return false;
+        if (PLACE_ONLY_THINGS[placeRootId(t)]) return false;
+        return true;
+    }
+
+    function pickLocationTrio(wantPlural) {
+        const things = visibleTiles().filter((t) => {
+            if (t.kind !== 'noun' || !isMovableThing(t)) return false;
+            if (wantPlural) return t.number === 'pl';
+            return t.number === 'sg';
+        });
+        const places = visibleTiles().filter((t) => t.kind === 'noun' && t.place && t.number === 'sg');
+        const preps = visibleTiles().filter((t) => t.kind === 'prep' && !t.adverb && t.id !== 'between');
+        const combos = [];
+        things.forEach((thing) => {
+            places.forEach((place) => {
+                if (placeRootId(thing) === placeRootId(place)) return;
+                preps.forEach((prep) => {
+                    if (prepFitsPlace(prep.id, place)) combos.push({ thing: thing, prep: prep, place: place });
+                });
+            });
+        });
+        return combos.length ? pick(combos) : null;
+    }
+
+    function locationLogicIssue(tiles) {
+        const prep = tiles.find((t) => t.kind === 'prep' && !t.adverb);
+        if (!prep || prep.id === 'between') return null;
+        const prepI = tiles.indexOf(prep);
+        const place = tiles.slice(prepI + 1).find((t) => t.kind === 'noun');
+        if (!place) return null;
+        if (prepFitsPlace(prep.id, place)) return null;
+        const tip = (PREP_FOR_PLACE[placeRootId(place)] || ['on', 'next to']).slice(0, 2).join(' / ');
+        return {
+            en: 'That place word does not fit. Try ' + tip + ' with ' + place.text + '.',
+            pl: 'Ten przyimek nie pasuje. Z ' + place.text + ' spróbuj: ' + tip + '.'
+        };
+    }
+
     function makeBuildPrompt(goal) {
         const g = goal || 'is';
         if (g === 'is') {
-            const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number === 'sg'));
-            const art = n && n.vowel ? 'an' : 'a';
-            const prep = pick(visibleTiles().filter((t) => t.kind === 'prep' && !t.adverb));
-            const place = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.place && t.number === 'sg' && t.id !== (n && n.id)));
-            if (!n || !prep || !place) return { ids: ['there-is', 'a', 'lamp'], picture: [byId('lamp')] };
-            return { ids: ['there-is', art, n.id, prep.id, 'the', place.id], picture: [n, prep, place] };
+            const trio = pickLocationTrio(false);
+            if (!trio) return { ids: ['there-is', 'a', 'lamp', 'on', 'the', 'desk'], picture: [byId('lamp'), byId('on'), byId('desk')] };
+            const art = trio.thing.vowel ? 'an' : 'a';
+            return {
+                ids: ['there-is', art, trio.thing.id, trio.prep.id, 'the', trio.place.id],
+                picture: [trio.thing, trio.prep, trio.place]
+            };
         }
         if (g === 'are') {
-            const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number === 'pl'));
-            const prep = pick(visibleTiles().filter((t) => t.kind === 'prep'));
-            if (!n) return { ids: ['there-are', 'two', 'chair-pl'], picture: [byId('chair')] };
-            if (prep && prep.adverb) return { ids: ['there-are', n.id, prep.id], picture: [n, prep] };
-            const place = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.place && t.number === 'sg'));
-            return { ids: ['there-are', n.id, (prep && prep.id) || 'on', 'the', (place && place.id) || 'sofa'], picture: [n, prep, place] };
+            if (Math.random() < 0.25) {
+                const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number === 'pl' && isMovableThing(t)));
+                const adv = pick(visibleTiles().filter((t) => t.kind === 'prep' && t.adverb));
+                if (n && adv) return { ids: ['there-are', n.id, adv.id], picture: [n, adv] };
+            }
+            const trio = pickLocationTrio(true);
+            if (!trio) return { ids: ['there-are', 'two', 'chair-pl', 'next-to', 'the', 'sofa'], picture: [byId('chair'), byId('next-to'), byId('sofa')] };
+            return {
+                ids: ['there-are', trio.thing.id, trio.prep.id, 'the', trio.place.id],
+                picture: [trio.thing, trio.prep, trio.place]
+            };
         }
         if (g === 'have') {
             const p = pickPerson();
             const got = gotTile(p.id);
-            const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number === 'sg' && t.goals && t.goals.indexOf('have') !== -1));
+            const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number === 'sg' && t.goals && t.goals.indexOf('have') !== -1 && isMovableThing(t)));
             const art = n && n.vowel ? 'an' : 'a';
             return { ids: [p.id, got, art, n ? n.id : 'key'], picture: [byId(p.id), byId(got), n || byId('key')] };
         }
@@ -1144,7 +1253,7 @@
             const ids = neg ? [p.id, 'dont', 'have-to', v ? v.id : 'run'] : [p.id, 'have-to', v ? v.id : 'tidy'];
             return { ids: ids, picture: [byId(p.id), byId(neg ? 'dont' : 'have-to'), v || byId('tidy')] };
         }
-        return { ids: ['there-is', 'a', 'lamp'], picture: [byId('lamp')] };
+        return { ids: ['there-is', 'a', 'lamp', 'on', 'the', 'desk'], picture: [byId('lamp'), byId('on'), byId('desk')] };
     }
 
     function speak(text) {
@@ -1231,6 +1340,22 @@
         if (useSlots()) {
             ensureSlots();
             S.movingFrom = null;
+            if (S.heldId) {
+                // Place the picked-up tile into the chosen / first empty blank
+                let i = S.activeSlot;
+                if (i == null || S.slots[i]) i = S.slots.findIndex((x) => !x);
+                if (i < 0) {
+                    S.buildFbEn = 'All spaces are full. Place the held tile first, or clear a space.';
+                    S.buildFbPl = 'Wszystkie miejsca są zajęte. Najpierw połóż trzymany kafel albo zwolnij miejsce.';
+                    render();
+                    return;
+                }
+                placeHeldInSlot(i);
+                const next = S.slots.findIndex((x) => !x);
+                S.activeSlot = next < 0 ? null : next;
+                render();
+                return;
+            }
             let i = S.activeSlot;
             if (i == null || S.slots[i]) i = S.slots.findIndex((x) => !x);
             if (i < 0) {
@@ -1278,8 +1403,8 @@
             }
             if (S.buildPrompt && S.ageBand === 'young') {
                 return pl
-                    ? 'Spójrz na obrazek. Kliknij puste miejsce (podpowiedź koloru), potem kafel — albo kliknij kafel w zdaniu i przenieś go w inne puste miejsce.'
-                    : 'Look at the picture. Tap an empty space (colour hint), then a tile — or tap a tile in the sentence and move it into another blank.';
+                    ? 'Spójrz na obrazek. Kliknij kafel w zdaniu, żeby go podnieść, potem kliknij dowolne puste miejsce (nawet puste na końcu), by go tam położyć. Puste miejsce bez kafelka pokazuje też podpowiedź koloru.'
+                    : 'Look at the picture. Tap a tile in the sentence to pick it up, then tap any blank space (including empty ones) to put it there. An empty space also shows a colour hint.';
             }
             return pl
                 ? 'Klikaj kafelki, żeby złożyć zdanie. Przeciągnij kafel w pasku, aby zmienić kolejność. Kliknij, aby go zdjąć.'
@@ -1380,6 +1505,38 @@
         return html;
     }
 
+    function moveTileToSlot(fromIndex, toIndex) {
+        if (!ensureSlots()) return false;
+        if (fromIndex == null || toIndex == null) return false;
+        if (fromIndex === toIndex) return false;
+        if (fromIndex < 0 || toIndex < 0 || fromIndex >= S.slots.length || toIndex >= S.slots.length) return false;
+        const moving = S.slots[fromIndex];
+        if (!moving) return false;
+        const dest = S.slots[toIndex];
+        S.slots[toIndex] = moving;
+        S.slots[fromIndex] = dest || null;
+        return true;
+    }
+
+    function placeHeldInSlot(toIndex) {
+        if (!ensureSlots() || !S.heldId) return false;
+        if (toIndex == null || toIndex < 0 || toIndex >= S.slots.length) return false;
+        const dest = S.slots[toIndex];
+        S.slots[toIndex] = S.heldId;
+        S.heldId = dest || null;
+        return true;
+    }
+
+    function holdingHtml() {
+        if (!S.heldId) return '';
+        const t = byId(S.heldId);
+        if (!t) return '';
+        return '<div class="cb-holding">' +
+            '<span>' + esc(L('Holding — tap any blank to place:', 'Trzymasz — kliknij puste miejsce:')) + '</span>' +
+            cardHtml(t, ' moving', 'held-cancel') +
+            '</div>';
+    }
+
     function buildChainHtml() {
         const emptyMsg = L('Tap tiles below…', 'Kliknij kafelki poniżej…');
         if (!useSlots()) return chainHtml(S.chain, 'pop', emptyMsg);
@@ -1387,12 +1544,23 @@
         ensureSlots();
         const expected = S.buildPrompt.ids;
         const hints = S.slotHints || {};
-        let html = '<div class="cb-chain cb-chain-slots" data-empty="' + esc(emptyMsg) + '">';
+        const canDrop = !!(S.heldId || (S.movingFrom != null));
+        let html = holdingHtml();
+        html += '<div class="cb-chain cb-chain-slots" data-empty="' + esc(emptyMsg) + '">';
         for (let i = 0; i < expected.length; i++) {
             const tid = S.slots[i];
             if (tid) {
                 const t = byId(tid);
-                if (!t) continue;
+                if (!t) {
+                    // keep the empty slot so indices stay aligned
+                    const exp = byId(expected[i]);
+                    const fam = exp ? exp.family : 'noun';
+                    const hinted = !!hints[i];
+                    const style = hinted ? fadedSlotStyle(fam) : '';
+                    html += '<button type="button" class="cb-slot' + (hinted ? ' hinted' : '') + (canDrop ? ' droppable' : '') + '" data-cb="slot" data-id="' + i + '"' +
+                        (style ? ' style="' + style + '"' : '') + '></button>';
+                    continue;
+                }
                 const moving = S.movingFrom === i ? ' moving' : '';
                 html += cardHtml(t, ' in-chain' + moving, 'slot-tile')
                     .replace('data-id="' + t.id + '"', 'data-id="' + i + '" data-tid="' + esc(tid) + '"');
@@ -1401,10 +1569,13 @@
                 const fam = exp ? exp.family : 'noun';
                 const hinted = !!hints[i];
                 const sel = S.activeSlot === i ? ' selected' : '';
+                const drop = canDrop ? ' droppable' : '';
                 const style = hinted ? fadedSlotStyle(fam) : '';
-                html += '<button type="button" class="cb-slot' + (hinted ? ' hinted' : '') + sel + '" data-cb="slot" data-id="' + i + '"' +
+                html += '<button type="button" class="cb-slot' + (hinted ? ' hinted' : '') + sel + drop + '" data-cb="slot" data-id="' + i + '"' +
                     (style ? ' style="' + style + '"' : '') +
-                    ' title="' + esc(L('Tap for colour hint, then choose a tile', 'Kliknij podpowiedź koloru, potem wybierz kafel')) + '"' +
+                    ' title="' + esc(canDrop
+                        ? L('Tap to place the tile here', 'Kliknij, by położyć tu kafel')
+                        : L('Tap for colour hint, then choose a tile', 'Kliknij podpowiedź koloru, potem wybierz kafel')) + '"' +
                     ' aria-label="' + esc(L('Empty space', 'Puste miejsce') + ' ' + (i + 1)) + '"></button>';
             }
         }
@@ -1624,6 +1795,7 @@
                 S.textFbEn = ''; S.textFbPl = '';
                 S.movingFrom = null;
                 S.activeSlot = null;
+                S.heldId = null;
                 if (changed && id === 'build') {
                     if (!S.goal) S.sheetsOpen = null;
                     else S.sheetsOpen = defaultSheetsOpen();
@@ -1634,6 +1806,7 @@
                     S.slots = null;
                     S.chain = S.chain || [];
                     S.slotHints = {};
+                    S.heldId = null;
                     S.sheetsOpen = defaultSheetsOpen();
                     S.buildOk = false;
                     S.buildSpoken = '';
@@ -1680,6 +1853,24 @@
             if (a === 'noun-pick-box') return;
             if (a === 'noun-pick-cancel') { S.nounPick = null; render(); return; }
             if (a === 'noun-pick') { speakTile(byId(id)); addToChain(id); return; }
+            if (a === 'held-cancel') {
+                // Put held tile back into the first empty blank (or cancel into hand only)
+                if (!ensureSlots() || !S.heldId) return;
+                let i = S.slots.findIndex((x) => !x);
+                if (i < 0) {
+                    S.buildFbEn = 'No empty space — tap a blank after clearing one.';
+                    S.buildFbPl = 'Brak pustego miejsca — najpierw zwolnij jedno.';
+                    render();
+                    return;
+                }
+                placeHeldInSlot(i);
+                S.movingFrom = null;
+                S.activeSlot = null;
+                clearAskWhy();
+                S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
+                render();
+                return;
+            }
             if (a === 'slot') {
                 const i = Number(id);
                 if (!ensureSlots()) return;
@@ -1687,11 +1878,13 @@
                 S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
                 if (!S.slotHints) S.slotHints = {};
                 S.slotHints[i] = true;
-                if (S.movingFrom != null) {
-                    const from = S.movingFrom;
-                    const tmp = S.slots[i];
-                    S.slots[i] = S.slots[from];
-                    S.slots[from] = tmp;
+                if (S.heldId) {
+                    placeHeldInSlot(i);
+                    S.movingFrom = null;
+                    S.activeSlot = S.slots.findIndex((x) => !x);
+                    if (S.activeSlot < 0) S.activeSlot = null;
+                } else if (S.movingFrom != null) {
+                    moveTileToSlot(S.movingFrom, i);
                     S.movingFrom = null;
                     S.activeSlot = S.slots.findIndex((x) => !x);
                     if (S.activeSlot < 0) S.activeSlot = null;
@@ -1708,22 +1901,25 @@
                 S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = '';
                 const tid = S.slots[i];
                 speakTile(byId(tid));
-                if (S.movingFrom === i) {
+                if (S.heldId) {
+                    // Swap held tile with this one
+                    placeHeldInSlot(i);
+                    S.movingFrom = null;
+                    S.activeSlot = null;
+                } else if (S.activeSlot != null && !S.slots[S.activeSlot] && S.activeSlot !== i) {
+                    // Blank was pre-selected — move this tile into that blank
+                    moveTileToSlot(i, S.activeSlot);
+                    S.movingFrom = null;
+                    S.activeSlot = S.slots.findIndex((x) => !x);
+                    if (S.activeSlot < 0) S.activeSlot = null;
+                } else {
+                    // Pick up: lift out so every blank (including this space) can receive it
+                    S.heldId = S.slots[i];
                     S.slots[i] = null;
                     S.movingFrom = null;
-                    S.activeSlot = i;
+                    S.activeSlot = null;
                     if (!S.slotHints) S.slotHints = {};
                     S.slotHints[i] = true;
-                } else if (S.movingFrom != null) {
-                    const from = S.movingFrom;
-                    const tmp = S.slots[i];
-                    S.slots[i] = S.slots[from];
-                    S.slots[from] = tmp;
-                    S.movingFrom = null;
-                    S.activeSlot = null;
-                } else {
-                    S.movingFrom = i;
-                    S.activeSlot = null;
                 }
                 render();
                 return;
@@ -1748,6 +1944,7 @@
                 S.slotHints = {};
                 S.activeSlot = null;
                 S.movingFrom = null;
+                S.heldId = null;
                 S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
                 S.buildChecking = false;
                 clearAskWhy();
@@ -1761,6 +1958,7 @@
                 S.slotHints = {};
                 S.activeSlot = null;
                 S.movingFrom = null;
+                S.heldId = null;
                 S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
                 clearAskWhy();
                 render();
@@ -2275,6 +2473,7 @@ Return JSON only:
             slotHints: {},
             activeSlot: null,
             movingFrom: null,
+            heldId: null,
             buildPrompt: null,
             buildFbEn: '',
             buildFbPl: '',
