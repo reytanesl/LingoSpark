@@ -1379,6 +1379,14 @@
     box-sizing: border-box;
 }
 .tight-rewrite:focus { outline: none; border-color: var(--royal-blue); }
+.tight-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.75rem; }
+.tight-actions .btn { flex: 1 1 12rem; padding: 0.95rem 1rem; }
+.tight-hintbox {
+    background: #fffbeb; border-left: 4px solid #ca8a04; border-radius: 8px;
+    padding: 0.75rem 1rem; margin: 0 0 1rem; font-weight: 500; line-height: 1.55;
+    color: var(--text-dark); display: none;
+}
+.tight-hintbox.show { display: block; }
 .vocab-container { background: var(--light-grey); padding: 2rem; border-radius: 12px; line-height: 2.5; font-size: 1.2rem; margin-bottom: 2rem; }
         .vocab-word.target { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); border: 2px solid rgba(200, 16, 46, 0.3); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .vocab-word.target:hover { background: rgba(1, 33, 105, 0.1); color: var(--royal-blue); border-color: var(--royal-blue); }
@@ -2669,7 +2677,11 @@
                 </div>
                 <div id="tight-original" class="tight-original" aria-live="polite"></div>
                 <textarea id="tight-rewrite" class="tight-rewrite" placeholder="Rewrite the sentence here…" oninput="updateTightCounts()"></textarea>
-                <button class="btn btn-blue" style="width: 100%; padding: 1rem;" onclick="checkTight()" id="verify-tight-btn">Check rewrite</button>
+                <div class="tight-actions">
+                    <button class="btn btn-blue" onclick="checkTight()" id="verify-tight-btn">Check rewrite</button>
+                    <button class="btn btn-outline" onclick="hintTight()" id="hint-tight-btn"><i class="fa-solid fa-lightbulb"></i> Hint</button>
+                </div>
+                <div id="tight-hintbox" class="tight-hintbox" aria-live="polite"></div>
             </div>
             <div id="tight-feedback" class="feedback"></div>
         </div>
@@ -6063,6 +6075,7 @@ Return ONLY JSON: {"valid": true/false, "reason": "One short sentence: praise cl
 
         // 4b. TIGHT WRITE — free rewrite for full conciseness strategies
         let tightOriginal = '';
+        let tightHintBusy = false;
         function tightWordCount(text) {
             const t = String(text || '').trim();
             if (!t) return 0;
@@ -6077,9 +6090,22 @@ Return ONLY JSON: {"valid": true/false, "reason": "One short sentence: praise cl
             if (origEl) origEl.textContent = String(tightWordCount(tightOriginal));
             if (currEl) currEl.textContent = String(tightWordCount((document.getElementById('tight-rewrite') || {}).value));
         }
+        function clearTightHint() {
+            const box = document.getElementById('tight-hintbox');
+            if (!box) return;
+            box.textContent = '';
+            box.classList.remove('show');
+        }
+        function showTightHint(text) {
+            const box = document.getElementById('tight-hintbox');
+            if (!box) return;
+            box.textContent = text || '';
+            box.classList.toggle('show', !!text);
+        }
         async function initTight() {
             document.getElementById('tight-feedback').textContent = '';
             document.getElementById('tight-feedback').className = 'feedback';
+            clearTightHint();
             const rewriteEl = document.getElementById('tight-rewrite');
             if (rewriteEl) rewriteEl.value = '';
             tightOriginal = '';
@@ -6087,23 +6113,26 @@ Return ONLY JSON: {"valid": true/false, "reason": "One short sentence: praise cl
             toggleLoading('tight', true);
 
             const R = wsRandomnessBlock();
-            const prompt = `Write ONE formal written sentence (24-36 words) about "${R.topic}" for ESL students practising TIGHT WRITE (full rewrite for conciseness).
+            const prompt = `Write ONE formal written sentence (22-32 words) about "${R.topic}" for ESL students practising TIGHT WRITE (full rewrite for conciseness).
 LEVEL: ${WS_LEVEL}
 
-TONE: formal and a little exaggerated / padded, like a slightly wordy school essay — NOT parody, slang, or absurd.
+GOAL: a sentence that is a bit wordy so students can practise rewriting it more tightly — same spirit as Bloat Slasher.
 
-Embed SEVERAL cuttable problems across these strategies (not only redundancy):
+TONE: formal and a little exaggerated / padded, but NOT ridiculous or cartoonish. Sound like a slightly wordy school essay or report, not parody.
+Do NOT pile on dramatic, flowery, or over-the-top language. Keep it believable classroom English.
+
+Include a FEW clear cuttable problems (about 2–4), drawn from these strategies — not all at once:
 1) Redundancy / pleonasms (e.g. future plans, unexpected surprise, end result)
-2) Weak verb-noun pairs (e.g. conduct an investigation, provide assistance, make a decision)
+2) Weak verb-noun pairs (e.g. conduct an investigation, provide assistance)
 3) Passive voice that can become active
-4) Filler (very, really, actually, basically, in order to, the fact that)
-5) Long phrases (at this point in time, in the event that, due to the fact that)
-6) Nominalizations (the implementation of…, the investigation of…)
-7) One overlong clause that could be simplified
+4) Filler (very, really, actually, in order to, the fact that)
+5) Long phrases (at this point in time, in the event that)
+6) Nominalizations (the implementation of…)
+7) One slightly overlong clause
 
 RULES:
 - Perfect grammar and punctuation. Fully meaningful.
-- Student will REWRITE freely (not only delete words). A clear shorter formal sentence must be possible.
+- Student will REWRITE freely. A clear shorter formal sentence must be possible.
 - Prefer clear school/academic topics and vocabulary at ${WS_LEVEL}.
 
 RANDOMISE HARD — seed ${R.seed}. Angle: ${R.angle}. Never repeat a previous sentence.
@@ -6123,6 +6152,46 @@ Return ONLY JSON: {"sentence":"..."}`;
             if (rewriteEl) rewriteEl.value = '';
             updateTightCounts();
             toggleLoading('tight', false);
+        }
+
+        async function hintTight() {
+            if (tightHintBusy) return;
+            const btn = document.getElementById('hint-tight-btn');
+            const rewrite = String((document.getElementById('tight-rewrite') || {}).value || '').trim();
+
+            if (!tightOriginal) {
+                showTightHint('Generate a sentence first, then ask for a hint.');
+                return;
+            }
+
+            tightHintBusy = true;
+            if (btn) btn.disabled = true;
+            showTightHint('Thinking of a hint…');
+
+            const prompt = `You help an ESL student (${WS_LEVEL}) in Tight Write. They must rewrite this padded sentence more concisely.
+ORIGINAL: "${tightOriginal}"
+${rewrite ? `THEIR DRAFT SO FAR: "${rewrite}"` : 'They have not written a draft yet.'}
+
+Give ONE short coaching hint (1-2 sentences) that points them toward a useful conciseness strategy (redundancy, strong verbs, active voice, fillers, shorter phrases, nominalizations, or simpler structure).
+
+STRICT RULES:
+- Calm, plain teacher tone — not dramatic or overblown.
+- Do NOT rewrite the sentence.
+- Do NOT give a model answer or a full corrected version.
+- Do NOT quote a ready-made replacement sentence.
+- You may gently point at a WORDY SPOT or strategy type (e.g. "Look for a verb+noun pair you could replace with one strong verb") without handing them the fix.
+
+Return ONLY JSON: {"hint":"..."}`;
+
+            const data = await fetchGenerativeAI(prompt);
+            tightHintBusy = false;
+            if (btn) btn.disabled = false;
+
+            if (!data || data.__error) {
+                showTightHint(aiErrorMessage(data));
+                return;
+            }
+            showTightHint(data.hint || 'Look for words that repeat an idea already said — those can often go.');
         }
 
         async function checkTight() {
@@ -6178,7 +6247,14 @@ Pass (valid=true) only if:
 
 Fail if meaning is lost, grammar is broken, or bloat largely remains.
 
-Return ONLY JSON: {"valid": true/false, "reason": "1-2 short sentences naming what improved or what still bloats"}`;
+FEEDBACK STYLE (critical):
+- Calm, plain teacher tone — not dramatic, hypey, or overblown.
+- First, comment on what the student ACHIEVED (specific cuts or strategies they used). Be encouraging and concrete.
+- Only AFTER that praise, if useful, suggest at most ONE further conciseness strategy they could still try. If the rewrite is already strong, say so and skip extra tips.
+- Do NOT open with criticism or a list of missing strategies.
+- Do NOT provide a full model rewrite.
+
+Return ONLY JSON: {"valid": true/false, "reason": "2-4 short sentences: achievements first, then optional one further tip"}`;
 
             const data = await fetchGenerativeAI(prompt);
             btn.disabled = false;
