@@ -47,9 +47,33 @@
         mobile: 'mobile-phone', book: 'open-book', bag: 'backpack', apple: 'red-apple',
         orange: 'tangerine', cat: 'cat', dog: 'dog', ball: 'basketball', bike: 'bicycle',
         pizza: 'pizza', football: 'soccer-ball', message: 'envelope', garden: 'house-with-garden',
+        plate: 'fork-and-knife-with-plate',
         swim: 'person-swimming', run: 'person-running', draw: 'crayon', ride: 'person-biking',
         dance: 'woman-dancing', tidy: 'broom', listen: 'ear', wait: 'hourglass-not-done',
-        study: 'books', chairs: 'chair', cushions: 'tabler:pillow', books: 'books'
+        study: 'books', chairs: 'chair', cushions: 'tabler:pillow', books: 'books',
+        mug: 'cup-with-straw', bowl: 'bowl-with-spoon', spoon: 'spoon', glass: 'tumbler-glass',
+        sock: 'socks', glove: 'gloves', scarf: 'icon-park:scarf', skirt: 'icon-park:skirt',
+        't-shirt': 'mdi:tshirt-crew', radio: 'radio', candle: 'candle',
+        pillow: 'noto:pillow', blanket: 'mdi:blanket', toy: 'yo-yo', puzzle: 'jigsaw',
+        postcard: 'incoming-envelope', flower: 'tulip', leaf: 'fallen-leaf',
+        bus: 'bus', train: 'locomotive', boat: 'sailboat',
+        rabbit: 'rabbit', mouse: 'mouse', duck: 'duck',
+        egg: 'egg', cheese: 'cheese-wedge', bread: 'bread',
+        milk: 'glass-of-milk', tea: 'teapot', biscuit: 'cookie',
+        grape: 'grapes', pear: 'pear', tomato: 'tomato', carrot: 'carrot',
+        sticker: 'label', glue: 'mdi:glue', sharpener: 'mdi:pencil-sharpener',
+        cupboard: 'file-cabinet', drawer: 'card-file-box', rug: 'mdi:rug',
+        wall: 'brick', park: 'national-park', stairs: 'icon-park:stairs',
+        whiteboard: 'mdi:whiteboard', camera: 'camera-with-flash', stamp: 'noto:stamp',
+        climb: 'person-climbing', throw: 'flying-disc', catch: 'softball',
+        kick: 'footprints', paint: 'artist-palette', colour: 'rainbow',
+        clap: 'clapping-hands', shout: 'megaphone', whisper: 'shushing-face',
+        carry: 'luggage', push: 'rightwards-pushing-hand', pull: 'leftwards-pushing-hand',
+        drink: 'tropical-drink', smile: 'grinning-face', laugh: 'face-with-tears-of-joy',
+        cry: 'crying-face', pack: 'suitcase', ask: 'thinking-face',
+        mugs: 'cup-with-straw', rabbits: 'rabbit', flowers: 'tulip', biscuits: 'cookie',
+        grapes: 'grapes', stickers: 'label', buses: 'bus', eggs: 'egg',
+        carrots: 'carrot', toys: 'yo-yo', puzzles: 'jigsaw', scarves: 'icon-park:scarf'
     };
 
     const FAMILY_BY_ID = {
@@ -65,7 +89,11 @@
         i: 'subj', you: 'subj', he: 'subj', she: 'subj', we: 'subj', they: 'subj',
         dont: 'neg', one: 'num', two: 'num', three: 'num',
         swim: 'verb', run: 'verb', draw: 'verb', ride: 'verb', dance: 'verb',
-        tidy: 'verb', listen: 'verb', wait: 'verb', study: 'verb'
+        tidy: 'verb', listen: 'verb', wait: 'verb', study: 'verb',
+        climb: 'verb', throw: 'verb', catch: 'verb', kick: 'verb', paint: 'verb',
+        colour: 'verb', clap: 'verb', shout: 'verb', whisper: 'verb', carry: 'verb',
+        push: 'verb', pull: 'verb', drink: 'verb', smile: 'verb', laugh: 'verb',
+        cry: 'verb', pack: 'verb', ask: 'verb'
     };
 
     function W(id, text) {
@@ -202,6 +230,136 @@
             ages: ['older'], family: 'are', cue: ['book', 'on', 'shelf'], extra: '?',
             words: [W('are-there', 'Are there'), W('any', 'any'), W('books', 'books'), W('on', 'on'), W('the', 'the'), W('shelf', 'shelf')],
             pl: 'Czy na półce są jakieś książki?'
+        },
+        {
+            ages: ['young', 'older'], family: 'is', cue: ['mug', 'on', 'table'],
+            words: [W('there-is', 'There is'), W('a', 'a'), W('mug', 'mug'), W('on', 'on'), W('the', 'the'), W('table', 'table')],
+            pl: 'Na stole jest kubek.'
+        },
+        {
+            ages: ['young', 'older'], family: 'art', cue: ['egg', 'in', 'bowl'],
+            words: [W('there-is', 'There is'), W('an', 'an'), W('egg', 'egg'), W('in', 'in'), W('the', 'the'), W('bowl', 'bowl')],
+            pl: 'W misce jest jajko.'
+        },
+        {
+            ages: ['young', 'older'], family: 'are', cue: ['two', 'rabbit', 'in', 'garden'],
+            words: [W('there-are', 'There are'), W('two', 'two'), W('rabbits', 'rabbits'), W('in', 'in'), W('the', 'the'), W('garden', 'garden')],
+            pl: 'W ogrodzie są dwa króliki.'
+        },
+        {
+            ages: ['young', 'older'], family: 'is', cue: ['flower', 'on', 'rug'],
+            words: [W('there-is', 'There is'), W('a', 'a'), W('flower', 'flower'), W('on', 'on'), W('the', 'the'), W('rug', 'rug')],
+            pl: 'Na dywaniku jest kwiat.'
+        },
+        {
+            ages: ['young', 'older'], family: 'is', cue: ['biscuit', 'on', 'plate'],
+            words: [W('there-is', 'There is'), W('a', 'a'), W('biscuit', 'biscuit'), W('on', 'on'), W('the', 'the'), W('plate', 'plate')],
+            pl: 'Na talerzu jest ciastko.'
+        },
+        {
+            ages: ['young', 'older'], family: 'have', cue: ['i', 'scarf'],
+            words: [W('i', 'I'), W('have-got', 'have got'), W('a', 'a'), W('scarf', 'scarf')],
+            pl: 'Mam szalik.'
+        },
+        {
+            ages: ['young', 'older'], family: 'have', cue: ['she', 'stamp'],
+            words: [W('she', 'She'), W('has-got', 'has got'), W('a', 'a'), W('stamp', 'stamp')],
+            pl: 'Ona ma znaczek.'
+        },
+        {
+            ages: ['young', 'older'], family: 'have', cue: ['we', 'puzzle'],
+            words: [W('we', 'We'), W('have-got', 'have got'), W('a', 'a'), W('puzzle', 'puzzle')],
+            pl: 'Mamy puzzle.'
+        },
+        {
+            ages: ['young', 'older'], family: 'have', cue: ['they', 'toy'],
+            words: [W('they', 'They'), W('have-got', 'have got'), W('a', 'a'), W('toy', 'toy')],
+            pl: 'Oni mają zabawkę.'
+        },
+        {
+            ages: ['young', 'older'], family: 'have', cue: ['you', 'camera'],
+            words: [W('you', 'You'), W('have-got', 'have got'), W('a', 'a'), W('camera', 'camera')],
+            pl: 'Masz aparat.'
+        },
+        {
+            ages: ['young', 'older'], family: 'can', cue: ['i', 'climb'],
+            words: [W('i', 'I'), W('can', 'can'), W('climb', 'climb')],
+            pl: 'Potrafię się wspinać.'
+        },
+        {
+            ages: ['young', 'older'], family: 'can', cue: ['he', 'cant', 'catch'],
+            words: [W('he', 'He'), W('cant', "can't"), W('catch', 'catch')],
+            pl: 'On nie potrafi łapać.'
+        },
+        {
+            ages: ['young', 'older'], family: 'can', cue: ['you', 'paint'],
+            words: [W('you', 'You'), W('can', 'can'), W('paint', 'paint')],
+            pl: 'Potrafisz malować.'
+        },
+        {
+            ages: ['young', 'older'], family: 'can', cue: ['they', 'clap'],
+            words: [W('they', 'They'), W('can', 'can'), W('clap', 'clap')],
+            pl: 'Oni potrafią klaskać.'
+        },
+        {
+            ages: ['young', 'older'], family: 'like', cue: ['i', 'biscuit'],
+            words: [W('i', 'I'), W('like', 'like'), W('biscuit', 'biscuits')],
+            pl: 'Lubię ciastka.'
+        },
+        {
+            ages: ['young', 'older'], family: 'like', cue: ['i', 'dont', 'milk'],
+            words: [W('i', 'I'), W('dont', "don't"), W('like', 'like'), W('milk', 'milk')],
+            pl: 'Nie lubię mleka.'
+        },
+        {
+            ages: ['young', 'older'], family: 'like', cue: ['we', 'grape'],
+            words: [W('we', 'We'), W('like', 'like'), W('grape', 'grapes')],
+            pl: 'Lubimy winogrona.'
+        },
+        {
+            ages: ['young', 'older'], family: 'like', cue: ['they', 'dont', 'tea'],
+            words: [W('they', 'They'), W('dont', "don't"), W('like', 'like'), W('tea', 'tea')],
+            pl: 'Oni nie lubią herbaty.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['you', 'pack'],
+            words: [W('you', 'You'), W('must', 'must'), W('pack', 'pack')],
+            pl: 'Musisz się spakować.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['i', 'ask'],
+            words: [W('i', 'I'), W('have-to', 'have to'), W('ask', 'ask')],
+            pl: 'Muszę zapytać.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['we', 'dont', 'shout'],
+            words: [W('we', 'We'), W('dont', "don't"), W('have-to', 'have to'), W('shout', 'shout')],
+            pl: 'Nie musimy krzyczeć.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['she', 'carry'],
+            words: [W('she', 'She'), W('must', 'must'), W('carry', 'carry')],
+            pl: 'Ona musi nieść.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['they', 'whisper'],
+            words: [W('they', 'They'), W('have-to', 'have to'), W('whisper', 'whisper')],
+            pl: 'Oni muszą szeptać.'
+        },
+        {
+            ages: ['older'], family: 'is', cue: ['postcard', 'in', 'drawer'], extra: '?',
+            words: [W('is-there', 'Is there'), W('a', 'a'), W('postcard', 'postcard'), W('in', 'in'), W('the', 'the'), W('drawer', 'drawer')],
+            pl: 'Czy w szufladzie jest pocztówka?'
+        },
+        {
+            ages: ['older'], family: 'are', cue: ['sticker', 'on', 'whiteboard'], extra: '?',
+            words: [W('are-there', 'Are there'), W('any', 'any'), W('stickers', 'stickers'), W('on', 'on'), W('the', 'the'), W('whiteboard', 'whiteboard')],
+            pl: 'Czy na tablicy są jakieś naklejki?'
+        },
+        {
+            ages: ['older'], family: 'are', cue: ['bus', 'near', 'park'],
+            words: [W('there-arent', "There aren't"), W('any', 'any'), W('buses', 'buses'), W('near', 'near'), W('the', 'the'), W('park', 'park')],
+            pl: 'Blisko parku nie ma żadnych autobusów.'
         }
     ];
 
