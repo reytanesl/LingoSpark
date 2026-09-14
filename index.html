@@ -1119,6 +1119,20 @@
             text-transform: uppercase; letter-spacing: 0.22em;
             font-size: clamp(1.15rem, 5vw, 1.45rem); text-align: center;
         }
+        .live-join-code-col input.live-join-code--locked {
+            background: #eef4ff;
+            border-color: var(--royal-blue);
+            color: var(--royal-blue);
+            font-weight: 800;
+            cursor: default;
+        }
+        .live-join-code-hint {
+            text-align: center;
+            margin: 0 0 0.75rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--royal-blue);
+        }
         .live-join-name-col input { font-size: 1.05rem; }
         .live-game-logo {
             display: none;
@@ -3357,65 +3371,7 @@
                     <textarea id="live-host-glossary" class="live-setup-textarea" rows="6" placeholder="apple = A round fruit&#10;house = A building where people live"></textarea>
                 </div>
 
-                <fieldset class="live-setup-section" style="margin-top:1.1rem;">
-                    <legend><i class="fa-solid fa-people-group"></i> Game format</legend>
-                    <div class="live-option-grid live-option-grid--3">
-                        <label class="live-option">
-                            <input type="radio" name="live-game-format" value="race" checked>
-                            <span class="live-option-title">Solo race</span>
-                            <span class="live-option-desc">Each player races alone to 12 in a row</span>
-                        </label>
-                        <label class="live-option">
-                            <input type="radio" name="live-game-format" value="captain-crew">
-                            <span class="live-option-title">Captain &amp; Crew</span>
-                            <span class="live-option-desc">Teams vote, captain submits the team answer</span>
-                        </label>
-                        <label class="live-option">
-                            <input type="radio" name="live-game-format" value="hot-spark-relay">
-                            <span class="live-option-title">Hot Spark Relay</span>
-                            <span class="live-option-desc">Teams take turns answering; spark passes each attempt</span>
-                        </label>
-                    </div>
-                </fieldset>
-
-                <div id="live-host-team-assignment-row" class="live-setup-field" hidden>
-                    <label><i class="fa-solid fa-users"></i> Team setup</label>
-                    <div class="live-option-grid live-option-grid--2" style="margin-top:0.45rem;">
-                        <label class="live-option">
-                            <input type="radio" name="live-team-assignment" value="random" checked>
-                            <span class="live-option-title">Random teams</span>
-                            <span class="live-option-desc">Split into teams of 2–4 when the game starts</span>
-                        </label>
-                        <label class="live-option">
-                            <input type="radio" name="live-team-assignment" value="pick">
-                            <span class="live-option-title">Players choose</span>
-                            <span class="live-option-desc">Students join a team in the lobby before you start</span>
-                        </label>
-                    </div>
-                    <p class="live-muted" style="margin:0.45rem 0 0;font-size:0.88rem;">Each team gets a random British pop-culture name (e.g. Rowan Atkinsons). Minimum 4 players.</p>
-                </div>
-
-                <fieldset id="live-host-answer-mode-section" class="live-setup-section" style="margin-top:1.1rem;">
-                    <legend><i class="fa-solid fa-gamepad"></i> Answer mode</legend>
-                    <div class="live-option-grid live-option-grid--3">
-                        <label class="live-option">
-                            <input type="radio" name="live-answer-mode" value="recognise">
-                            <span class="live-option-title">Recognise</span>
-                            <span class="live-option-desc">Choose the matching term</span>
-                        </label>
-                        <label class="live-option">
-                            <input type="radio" name="live-answer-mode" value="realise">
-                            <span class="live-option-title">Realise</span>
-                            <span class="live-option-desc">Type the term from memory</span>
-                        </label>
-                        <label class="live-option">
-                            <input type="radio" name="live-answer-mode" value="randomise" checked>
-                            <span class="live-option-title">Randomise</span>
-                            <span class="live-option-desc">Mix of both each question</span>
-                        </label>
-                    </div>
-                </fieldset>
-
+                <p class="live-muted" style="margin:1rem 0 0.85rem;font-size:0.9rem;">After you create the room, choose game format and answer mode on the host screen.</p>
                 <button type="button" id="live-host-create-btn" class="btn btn-blue">Create room</button>
             </form>
             <div id="live-host-room-panel" hidden>
@@ -3429,8 +3385,8 @@
                         <p id="live-host-player-count" class="live-muted">0 players joined (minimum 2 to start)</p>
                         <p id="live-host-answer-mode" class="live-muted" hidden></p>
                         <div id="live-host-lobby-settings" class="live-host-lobby-settings" hidden>
-                            <h3 style="margin:1rem 0 0.45rem;font-size:1rem;">Change format</h3>
-                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Switch modes anytime in the lobby. Assigned teams stay with this room.</p>
+                            <h3 style="margin:1rem 0 0.45rem;font-size:1rem;">Game format</h3>
+                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Choose how to play. Assigned teams stay with this room if you switch modes.</p>
                             <div class="live-option-grid live-option-grid--3" style="margin-bottom:0.55rem;">
                                 <label class="live-option live-option--compact">
                                     <input type="radio" name="live-lobby-format" value="race">
@@ -3517,10 +3473,11 @@
                 <div id="live-join-error" class="live-player-error" hidden></div>
                 <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Spark</h2>
                 <p class="live-muted" style="text-align:center;margin:0 0 0.85rem;font-size:0.9rem;">Disconnected? Enter the same room code and nickname to rejoin your team.</p>
+                <p id="live-join-code-hint" class="live-join-code-hint" hidden></p>
                 <div class="live-join-split">
                     <div class="live-join-code-col">
                         <label for="live-join-code" style="font-weight:600;">Room code</label>
-                        <input type="text" id="live-join-code" maxlength="4" autocomplete="off" inputmode="text">
+                        <input type="text" id="live-join-code" maxlength="4" autocomplete="off" inputmode="text" spellcheck="false">
                     </div>
                     <div class="live-join-name-col">
                         <label for="live-join-nickname" style="font-weight:600;">Nickname</label>
@@ -3778,7 +3735,8 @@
         const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid']);
 
         function routePath(hash) {
-            return decodeURIComponent(String(hash || '').replace(/^#\/?/, '') || 'home');
+            const raw = decodeURIComponent(String(hash || '').replace(/^#\/?/, '') || 'home');
+            return raw.split('?')[0];
         }
 
         function setAppHash(path) {
@@ -3893,7 +3851,14 @@
             }             else if (screenId === 'setup') setAppHash('setup/' + (activeGame || 'flashcard'));
             else if (screenId === 'auction') setAppHash('auction');
             else if (screenId === 'live-host') setAppHash('live/host');
-            else if (screenId === 'live-join') setAppHash('live/join');
+            else if (screenId === 'live-join') {
+                const code = (
+                    document.getElementById('live-join-code')?.value
+                    || sessionStorage.getItem('ls_live_join_code_prefill')
+                    || ''
+                ).trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+                setAppHash(code.length === 4 ? `live/join?code=${encodeURIComponent(code)}` : 'live/join');
+            }
             else if (screenId === 'live-play') setAppHash('live/play');
             else setAppHash('game/' + screenId);
         }

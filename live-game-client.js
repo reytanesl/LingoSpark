@@ -1633,13 +1633,6 @@
         return GAME_FORMAT_LABELS[format] || GAME_FORMAT_LABELS.race;
     }
 
-    function updateHostSetupFormatUI() {
-        const format = document.querySelector('input[name="live-game-format"]:checked')?.value || 'race';
-        const isTeamGame = isTeamFormatValue(format);
-        const teamRow = $('live-host-team-assignment-row');
-        if (teamRow) teamRow.hidden = !isTeamGame;
-    }
-
     function hideCrewPanel() {
         const panel = $('live-play-crew-panel');
         const role = $('live-play-crew-role');
@@ -2030,9 +2023,10 @@
     function readHostSetupForm() {
         const source = document.querySelector('input[name="live-source"]:checked')?.value || 'builtin';
         const level = $('live-host-level')?.value || 'intermediate';
-        const gameFormat = document.querySelector('input[name="live-game-format"]:checked')?.value || 'race';
-        const teamAssignment = document.querySelector('input[name="live-team-assignment"]:checked')?.value || 'random';
-        const answerMode = document.querySelector('input[name="live-answer-mode"]:checked')?.value || 'randomise';
+        // Format / answer mode are chosen on the host lobby screen after create.
+        const gameFormat = 'race';
+        const teamAssignment = 'random';
+        const answerMode = 'randomise';
         const setId = String(hostSelectedWordSetId || $('live-host-wordset')?.value || '').trim();
         const terms = String($('live-host-glossary')?.value || '');
         return { source, level, gameFormat, teamAssignment, answerMode, setId, terms };
@@ -2305,11 +2299,52 @@
         }
     }
 
+    function normalizeJoinCode(raw) {
+        return String(raw || '')
+            .trim()
+            .toUpperCase()
+            .replace(/[^A-Z]/g, '')
+            .slice(0, 4);
+    }
+
+    function applyJoinCodePrefill(code) {
+        const input = $('live-join-code');
+        const hint = $('live-join-code-hint');
+        const clean = normalizeJoinCode(code);
+        if (!input) return false;
+        if (clean.length === 4) {
+            input.value = clean;
+            input.readOnly = true;
+            input.setAttribute('aria-readonly', 'true');
+            input.classList.add('live-join-code--locked');
+            sessionStorage.setItem('ls_live_join_code_prefill', clean);
+            if (hint) {
+                hint.hidden = false;
+                hint.textContent = 'Room code filled from your link — just enter your nickname.';
+            }
+            return true;
+        }
+        input.readOnly = false;
+        input.removeAttribute('aria-readonly');
+        input.classList.remove('live-join-code--locked');
+        sessionStorage.removeItem('ls_live_join_code_prefill');
+        if (hint) {
+            hint.hidden = true;
+            hint.textContent = '';
+        }
+        return false;
+    }
+
     function openJoin() {
         showLiveError('');
-        const prefill = getQueryParam('code');
-        if (prefill && $('live-join-code')) $('live-join-code').value = prefill.toUpperCase();
+        const fromUrl = getQueryParam('code');
+        const fromStore = sessionStorage.getItem('ls_live_join_code_prefill');
+        const prefilled = applyJoinCodePrefill(fromUrl || fromStore || '');
         if (typeof showScreen === 'function') showScreen('live-join');
+        requestAnimationFrame(() => {
+            if (prefilled) $('live-join-nickname')?.focus();
+            else $('live-join-code')?.focus();
+        });
     }
 
     function openPlay() {
@@ -2360,16 +2395,9 @@
         if (source === 'wordset') loadWordSetsForHost({ force: false });
     }
 
-    function toggleLiveFormatPanels() {
-        updateHostSetupFormatUI();
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('input[name="live-source"]').forEach((el) => {
             el.addEventListener('change', toggleLiveSourcePanels);
-        });
-        document.querySelectorAll('input[name="live-game-format"]').forEach((el) => {
-            el.addEventListener('change', toggleLiveFormatPanels);
         });
         ['live-lobby-format', 'live-lobby-team', 'live-lobby-answer'].forEach((name) => {
             document.querySelectorAll(`input[name="${name}"]`).forEach((el) => {
@@ -2397,6 +2425,13 @@
         $('live-host-wordset')?.addEventListener('change', onHostWordSetSelected);
         $('live-host-create-btn')?.addEventListener('click', createHostRoom);
         $('live-join-btn')?.addEventListener('click', joinRoom);
+        ['live-join-code', 'live-join-nickname'].forEach((id) => {
+            $(id)?.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                joinRoom();
+            });
+        });
         $('live-host-start')?.addEventListener('click', hostStartGame);
         $('live-host-play-again')?.addEventListener('click', hostPlayAgain);
         $('live-host-end')?.addEventListener('click', hostEnd);
@@ -2421,7 +2456,6 @@
             else submitPlayerAnswer();
         });
         toggleLiveSourcePanels();
-        toggleLiveFormatPanels();
     });
 
     window.LiveGame = { openHost, openHostWithGlossary, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged };
