@@ -396,32 +396,33 @@
         }
         .live-host-race-content {
             position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column;
-            padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem);
+            padding: clamp(0.45rem, 1.5vw, 1rem) clamp(0.65rem, 2.5vw, 1.5rem);
             min-height: 0;
         }
         .live-host-race-header {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            flex-wrap: wrap; margin-bottom: clamp(1rem, 3vh, 1.75rem);
+            display: flex; align-items: center; justify-content: space-between; gap: 0.65rem;
+            flex-wrap: wrap; margin-bottom: clamp(0.35rem, 1.2vh, 0.75rem);
+            flex-shrink: 0;
         }
         .live-host-race-code-wrap,
         .live-play-room-code {
-            display: flex; align-items: center; gap: 0.65rem;
-            background: rgba(255, 255, 255, 0.92); padding: 0.5rem 1.1rem; border-radius: 12px;
+            display: flex; align-items: center; gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.92); padding: 0.35rem 0.75rem; border-radius: 10px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
         .live-host-race-label,
         .live-play-room-label {
-            font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
             color: var(--text-muted); line-height: 1;
         }
         .live-host-race-code,
         .live-play-room-code-value {
-            font-family: var(--font-primary); font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 800;
-            letter-spacing: 0.2em; color: var(--royal-blue); line-height: 1;
+            font-family: var(--font-primary); font-size: clamp(1.05rem, 2.8vw, 1.55rem); font-weight: 800;
+            letter-spacing: 0.16em; color: var(--royal-blue); line-height: 1;
         }
         .live-host-race-status {
             margin: 0; flex: 1; text-align: center; font-family: var(--font-primary);
-            font-weight: 400; font-size: clamp(1.1rem, 2.8vw, 1.5rem); color: var(--royal-blue);
+            font-weight: 400; font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--royal-blue);
         }
         .live-host-race-end-btn {
             flex-shrink: 0; background: rgba(255, 255, 255, 0.9) !important; border: none !important;
@@ -443,41 +444,109 @@
             touch-action: manipulation;
         }
         .live-host-race-end-float[hidden] { display: none !important; }
+        .live-fullscreen-btn {
+            flex-shrink: 0;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.88rem;
+            background: rgba(255, 255, 255, 0.92) !important;
+            border: none !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        .live-host-lobby-settings {
+            margin-top: 0.35rem;
+            padding-top: 0.55rem;
+            border-top: 1px solid var(--border-light);
+        }
+        .live-option--compact { padding: 0.55rem 0.6rem; }
+        .live-option--compact .live-option-title { font-size: 0.88rem; }
+        body.live-player-mode #screen-live-play .top-bar.live-desktop-only {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
         .live-host-race-board {
-            flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(0.85rem, 2.5vh, 1.35rem);
-            min-height: 0; overflow-y: auto;
+            --live-race-tile-min: 9.5rem;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--live-race-tile-min)), 1fr));
+            gap: clamp(0.35rem, 1vw, 0.55rem);
+            align-content: center;
+            justify-content: center;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .live-host-race-board[data-count="1"],
+        .live-host-race-board[data-count="2"],
+        .live-host-race-board[data-count="3"] {
+            --live-race-tile-min: 12rem;
+        }
+        .live-host-race-board[data-count="4"],
+        .live-host-race-board[data-count="5"],
+        .live-host-race-board[data-count="6"] {
+            --live-race-tile-min: 10rem;
+        }
+        .live-host-race-board[data-count="7"],
+        .live-host-race-board[data-count="8"],
+        .live-host-race-board[data-count="9"],
+        .live-host-race-board[data-count="10"] {
+            --live-race-tile-min: 8.5rem;
+        }
+        .live-host-race-board[data-count="11"],
+        .live-host-race-board[data-count="12"],
+        .live-host-race-board[data-count="13"],
+        .live-host-race-board[data-count="14"],
+        .live-host-race-board[data-count="15"],
+        .live-host-race-board[data-count="16"] {
+            --live-race-tile-min: 7.25rem;
+        }
+        .live-host-race-board[data-dense="1"] {
+            --live-race-tile-min: 6.5rem;
         }
         .live-host-race-row {
-            display: grid;
-            grid-template-columns: clamp(5.5rem, 20vw, 9rem) minmax(0, 1fr) clamp(2.5rem, 7vw, 3.25rem);
-            align-items: center; gap: clamp(0.3rem, 0.9vw, 0.55rem);
-        }
-        .live-host-race--teams .live-host-race-row {
-            grid-template-columns: clamp(7.5rem, 26vw, 13.5rem) minmax(0, 1fr) clamp(2.5rem, 7vw, 3.25rem);
-            align-items: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 0.35rem;
+            min-width: 0;
+            min-height: 0;
+            padding: clamp(0.4rem, 1.1vh, 0.65rem) clamp(0.45rem, 1.2vw, 0.7rem);
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+            border: 2px solid transparent;
         }
         .live-host-race-name {
-            font-family: var(--font-primary); font-weight: 400; font-size: clamp(1.1rem, 3vw, 1.6rem);
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: clamp(0.78rem, 1.6vw + 0.35vh, 1.05rem);
             color: var(--royal-blue);
             min-width: 0;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .live-host-race--teams .live-host-race-name {
+            line-height: 1.15;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
             overflow: hidden;
-            text-overflow: unset;
-            white-space: normal;
-            line-height: 1.2;
             word-break: break-word;
         }
+        .live-host-race--teams .live-host-race-name {
+            white-space: normal;
+            text-overflow: unset;
+        }
         .live-host-race-track {
-            position: relative; height: clamp(36px, 6vh, 52px);
+            position: relative;
+            height: clamp(10px, 1.6vh, 14px);
             min-width: 0;
-            background: rgba(0, 0, 0, 0.14); border-radius: 999px; overflow: visible;
-            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 999px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .live-host-race-fill {
             height: 100%; border-radius: 999px; transition: width 0.45s cubic-bezier(0.34, 1.2, 0.64, 1);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
         }
         .live-host-race-fill.reset-flash { filter: brightness(1.2); animation: liveHostRaceFlash 0.55s ease; }
         @keyframes liveHostRaceFlash {
@@ -486,23 +555,31 @@
         }
         .live-host-race-fill.winner {
             background: linear-gradient(90deg, #fbbf24, #f59e0b) !important;
-            box-shadow: 0 0 18px rgba(251, 191, 36, 0.65);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.55);
         }
         .live-host-race-score {
-            font-family: var(--font-primary); font-weight: 400; font-size: clamp(1.05rem, 2.8vw, 1.45rem);
-            color: var(--royal-blue); text-align: right;
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: clamp(0.85rem, 1.5vw + 0.3vh, 1.1rem);
+            color: var(--royal-blue);
+            text-align: left;
+            line-height: 1;
+        }
+        .live-host-race-row--challenge {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25), 0 3px 12px rgba(0, 0, 0, 0.12);
         }
         .live-host-race-row--challenge .live-host-race-name {
             color: #b45309;
         }
         .live-host-challenge-badge {
             display: inline-block;
-            margin-right: 0.35rem;
-            padding: 0.12rem 0.45rem;
+            margin-right: 0.25rem;
+            padding: 0.08rem 0.35rem;
             border-radius: 999px;
             background: #fbbf24;
             color: #78350f;
-            font-size: 0.68rem;
+            font-size: 0.58rem;
             font-weight: 800;
             letter-spacing: 0.04em;
             text-transform: uppercase;
@@ -511,11 +588,11 @@
         .live-host-challenge-panel {
             position: fixed;
             left: 50%;
-            bottom: max(0.85rem, env(safe-area-inset-bottom, 0.85rem));
+            bottom: max(0.65rem, env(safe-area-inset-bottom, 0.65rem));
             transform: translateX(-50%);
             z-index: 530;
-            width: min(640px, calc(100vw - 1.5rem));
-            max-height: 42vh;
+            width: min(560px, calc(100vw - 1.25rem));
+            max-height: 34vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -3315,7 +3392,7 @@
                             <span class="live-option-desc">Students join a team in the lobby before you start</span>
                         </label>
                     </div>
-                    <p class="live-muted" style="margin:0.45rem 0 0;font-size:0.88rem;">Each team gets a random British pop-culture name (e.g. The Rowan Atkinsons). Minimum 4 players.</p>
+                    <p class="live-muted" style="margin:0.45rem 0 0;font-size:0.88rem;">Each team gets a random British pop-culture name (e.g. Rowan Atkinsons). Minimum 4 players.</p>
                 </div>
 
                 <fieldset id="live-host-answer-mode-section" class="live-setup-section" style="margin-top:1.1rem;">
@@ -3351,6 +3428,50 @@
                         <h3 style="margin-top:1rem;">Players</h3>
                         <p id="live-host-player-count" class="live-muted">0 players joined (minimum 2 to start)</p>
                         <p id="live-host-answer-mode" class="live-muted" hidden></p>
+                        <div id="live-host-lobby-settings" class="live-host-lobby-settings" hidden>
+                            <h3 style="margin:1rem 0 0.45rem;font-size:1rem;">Change format</h3>
+                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Switch modes anytime in the lobby. Assigned teams stay with this room.</p>
+                            <div class="live-option-grid live-option-grid--3" style="margin-bottom:0.55rem;">
+                                <label class="live-option live-option--compact">
+                                    <input type="radio" name="live-lobby-format" value="race">
+                                    <span class="live-option-title">Solo race</span>
+                                </label>
+                                <label class="live-option live-option--compact">
+                                    <input type="radio" name="live-lobby-format" value="captain-crew">
+                                    <span class="live-option-title">Captain &amp; Crew</span>
+                                </label>
+                                <label class="live-option live-option--compact">
+                                    <input type="radio" name="live-lobby-format" value="hot-spark-relay">
+                                    <span class="live-option-title">Hot Spark</span>
+                                </label>
+                            </div>
+                            <div id="live-host-lobby-team-row" hidden>
+                                <div class="live-option-grid live-option-grid--2" style="margin-bottom:0.55rem;">
+                                    <label class="live-option live-option--compact">
+                                        <input type="radio" name="live-lobby-team" value="random">
+                                        <span class="live-option-title">Random teams</span>
+                                    </label>
+                                    <label class="live-option live-option--compact">
+                                        <input type="radio" name="live-lobby-team" value="pick">
+                                        <span class="live-option-title">Players choose</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="live-option-grid live-option-grid--3">
+                                <label class="live-option live-option--compact">
+                                    <input type="radio" name="live-lobby-answer" value="recognise">
+                                    <span class="live-option-title">Recognise</span>
+                                </label>
+                                <label class="live-option live-option--compact">
+                                    <input type="radio" name="live-lobby-answer" value="realise">
+                                    <span class="live-option-title">Realise</span>
+                                </label>
+                                <label class="live-option live-option--compact">
+                                    <input type="radio" name="live-lobby-answer" value="randomise">
+                                    <span class="live-option-title">Randomise</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <div class="card" id="live-host-game-panel">
                         <h2 style="margin-top:0;">Live race</h2>
@@ -3372,6 +3493,9 @@
                                 <span id="live-host-race-code" class="live-host-race-code">----</span>
                             </div>
                             <p id="live-host-race-status" class="live-host-race-status">Race underway!</p>
+                            <button type="button" id="live-host-fullscreen-btn" class="btn btn-grey live-fullscreen-btn" title="Fullscreen">
+                                <i class="fa-solid fa-expand"></i> Fullscreen
+                            </button>
                         </header>
                         <div id="live-host-race-board" class="live-host-race-board"></div>
                     </div>
@@ -3392,6 +3516,7 @@
             <div class="live-mobile-join" style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:520px;margin:0 auto;width:100%;">
                 <div id="live-join-error" class="live-player-error" hidden></div>
                 <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Spark</h2>
+                <p class="live-muted" style="text-align:center;margin:0 0 0.85rem;font-size:0.9rem;">Disconnected? Enter the same room code and nickname to rejoin your team.</p>
                 <div class="live-join-split">
                     <div class="live-join-code-col">
                         <label for="live-join-code" style="font-weight:600;">Room code</label>
@@ -3413,6 +3538,9 @@
             <div class="live-play-surface">
             <div class="top-bar live-desktop-only">
                 <span class="live-muted">Playing as <strong id="live-play-nickname">Player</strong></span>
+                <button type="button" id="live-play-fullscreen-btn" class="btn btn-grey live-fullscreen-btn" title="Fullscreen">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
             </div>
             <div class="live-play-body" style="flex:1;display:flex;flex-direction:column;min-height:0;">
             <div id="live-play-error" class="live-player-error" hidden></div>

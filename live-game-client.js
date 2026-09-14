@@ -15,6 +15,7 @@
     let hostRaceColors = new Map();
     let playerCrewVote = null;
     let playerIsCaptain = false;
+    let playerIsRelayActive = false;
     let captainSuggestedAnswer = null;
     let currentQuestion = null;
     let hostPendingChallenges = new Map();
@@ -407,8 +408,10 @@
         lobby: null,
         game: null,
         fanfare: null,
+        _audioCtx: null,
         VOLUME: 0.45,
         FANFARE_VOLUME: 0.7,
+        CHALLENGE_VOLUME: 0.55,
 
         _track(src, { loop = true } = {}) {
             const a = new Audio(src);
@@ -427,6 +430,48 @@
             if (!audio) return;
             audio.pause();
             try { audio.currentTime = 0; } catch { /* ignore */ }
+        },
+
+        _ensureAudioCtx() {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return null;
+            if (!this._audioCtx) this._audioCtx = new Ctx();
+            if (this._audioCtx.state === 'suspended') {
+                this._audioCtx.resume().catch(() => {});
+            }
+            return this._audioCtx;
+        },
+
+        /** Short two-tone chime when a challenge pops up for the host. */
+        playChallengeAlert() {
+            try {
+                const ctx = this._ensureAudioCtx();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                const master = ctx.createGain();
+                master.gain.setValueAtTime(0.0001, now);
+                master.gain.exponentialRampToValueAtTime(this.CHALLENGE_VOLUME, now + 0.02);
+                master.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+                master.connect(ctx.destination);
+
+                const tones = [
+                    { freq: 880, start: 0, dur: 0.16 },
+                    { freq: 1174.66, start: 0.14, dur: 0.28 },
+                ];
+                tones.forEach(({ freq, start, dur }) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + start);
+                    gain.gain.setValueAtTime(0.0001, now + start);
+                    gain.gain.exponentialRampToValueAtTime(0.9, now + start + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+                    osc.connect(gain);
+                    gain.connect(master);
+                    osc.start(now + start);
+                    osc.stop(now + start + dur + 0.02);
+                });
+            } catch { /* ignore autoplay / AudioContext errors */ }
         },
 
         startLobby() {
@@ -644,17 +689,20 @@
         const row = document.querySelector(`.live-host-race-row[data-player-id="${CSS.escape(playerId)}"]`);
         const track = row?.querySelector('.live-host-race-track');
         const container = $('live-host-race-bubbles');
-        if (!track || !container) return;
+        if (!row || !container) return;
 
-        const rect = track.getBoundingClientRect();
+        const anchor = track || row;
+        const rect = anchor.getBoundingClientRect();
         const total = termsToWin || TERMS_TO_WIN;
         const pct = progressPct(progress ?? 0, total);
-        const x = rect.left + Math.max(20, (rect.width * pct) / 100);
+        const x = track
+            ? rect.left + Math.max(16, (rect.width * pct) / 100)
+            : rect.left + rect.width / 2;
 
         const bubble = document.createElement('div');
         bubble.className = `live-host-feedback-bubble ${customText ? 'challenge' : (correct ? 'positive' : 'negative')}`;
         bubble.textContent = customText || (won ? 'Winner!' : pickHostFeedback(correct));
-        bubble.style.left = `${Math.min(x, rect.right - 20)}px`;
+        bubble.style.left = `${Math.min(x, rect.right - 16)}px`;
         bubble.style.top = `${rect.top + rect.height / 2}px`;
         container.appendChild(bubble);
         bubble.addEventListener('animationend', () => bubble.remove());
@@ -664,10 +712,15 @@
         const board = $('live-host-race-board');
         if (!board) return;
         if (!players || !players.length) {
+            board.removeAttribute('data-count');
+            board.removeAttribute('data-dense');
             board.innerHTML = '<p class="live-host-race-status" style="text-align:center;width:100%;">Waiting for players…</p>';
             return;
         }
         const sorted = [...players].sort((a, b) => b.progress - a.progress || a.nickname.localeCompare(b.nickname));
+        board.dataset.count = String(Math.min(sorted.length, 16));
+        board.dataset.dense = sorted.length > 16 ? '1' : '0';
+        board._lastPlayers = sorted;
         board.innerHTML = sorted.map((p) => {
             const total = p.termsToWin || TERMS_TO_WIN;
             const pct = progressPct(p.progress || 0, total);
@@ -683,10 +736,10 @@
                 : '';
             return `<div class="${rowCls}" data-player-id="${esc(p.id)}">
                 <div class="live-host-race-name" title="${esc(p.nickname)}">${challengeBadge}${esc(p.nickname)}</div>
+                <div class="live-host-race-score">${p.progress || 0}/${total}</div>
                 <div class="live-host-race-track">
                     <div class="${fillCls}" style="width:${pct}%;${fillStyle}"></div>
                 </div>
-                <div class="live-host-race-score">${p.progress || 0}/${total}</div>
             </div>`;
         }).join('');
     }
@@ -733,6 +786,7 @@
     }
 
     function canPlayerChallengeAction() {
+        if (isHotSparkRelayMode()) return playerIsRelayActive;
         if (!isCaptainCrewMode()) return true;
         return playerIsCaptain;
     }
@@ -745,8 +799,11 @@
         panel.hidden = false;
         panel.classList.add('live-play-challenge-actions--visible');
         if (resultEl) resultEl.classList.add('live-play-result--visible');
-        const teamLabel = isCaptainCrewMode() ? 'Team' : 'You';
+        const teamLabel = isTeamMode() ? 'Team' : 'You';
         const canAct = canPlayerChallengeAction();
+        const waitingMsg = isHotSparkRelayMode()
+            ? 'Waiting for the teammate who answered…'
+            : 'Waiting for captain to decide…';
         panel.innerHTML = `
             <p class="live-challenge-prompt">Marked wrong. Think your answer should count?</p>
             <p class="live-challenge-detail">Your answer: <strong>${esc(result.answerText)}</strong></p>
@@ -755,7 +812,7 @@
                 ${canAct
                     ? `<button type="button" id="live-play-challenge-btn" class="btn btn-blue">Challenge</button>
                        <button type="button" id="live-play-skip-challenge-btn" class="btn btn-grey">Continue</button>`
-                    : '<p class="live-muted" style="margin:0;">Waiting for captain to decide…</p>'}
+                    : `<p class="live-muted" style="margin:0;">${waitingMsg}</p>`}
             </div>`;
         if (canAct) {
             $('live-play-challenge-btn')?.addEventListener('click', submitChallenge);
@@ -1075,7 +1132,7 @@
     function bindHostSocket() {
         const s = ensureSocket();
         bindSocketReconnect('host');
-        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
@@ -1087,12 +1144,15 @@
             hostState.phase = data.snapshot?.phase || 'lobby';
             hostState.gameFormat = data.snapshot?.gameFormat || hostState?.gameFormat || 'race';
             hostState.teamAssignment = data.snapshot?.teamAssignment || hostState?.teamAssignment || 'random';
+            hostState.answerMode = data.snapshot?.answerMode || hostState?.answerMode || 'randomise';
             if (data.snapshot?.phase === 'playing') {
                 setHostRaceMode(true);
                 renderHostRaceBoard(data.progress?.players || []);
             } else {
                 setHostRaceMode(false);
                 renderHostLobbyFromSnapshot(data.snapshot);
+                syncHostLobbySettingsUI(data.snapshot);
+                updateHostModeLabel();
             }
             updateHostStartButton(data.snapshot);
             if (data.snapshot?.phase === 'playing') {
@@ -1109,6 +1169,7 @@
             hostState.canStart = snap.canStart;
             hostState.gameFormat = snap.gameFormat || hostState?.gameFormat || 'race';
             hostState.teamAssignment = snap.teamAssignment || hostState?.teamAssignment || 'random';
+            hostState.answerMode = snap.answerMode || hostState?.answerMode || 'randomise';
             hostState.phase = snap.phase || hostState?.phase || 'lobby';
             if (hostState?.phase === 'playing') {
                 // Race board is driven by progress-update (teams/players as race entities).
@@ -1118,6 +1179,8 @@
             }
             setHostRaceMode(false);
             renderHostLobbyFromSnapshot(snap);
+            syncHostLobbySettingsUI(snap);
+            updateHostModeLabel();
             updateHostStartButton(snap);
         });
 
@@ -1131,7 +1194,10 @@
 
         s.on('live:challenge-pending', (data) => {
             if (!data?.id) return;
+            const isNew = !hostPendingChallenges.has(data.entityId)
+                || hostPendingChallenges.get(data.entityId)?.id !== data.id;
             hostPendingChallenges.set(data.entityId, data);
+            if (isNew) LiveAudio.playChallengeAlert();
             spawnHostFeedbackBubble(data.entityId, true, data.progress, TERMS_TO_WIN, false, 'Challenge!');
             renderHostChallengePanel();
             const board = $('live-host-race-board');
@@ -1187,6 +1253,7 @@
             LiveAudio.stopLobby();
             LiveAudio.startGame();
             setHostRaceMode(true);
+            syncHostLobbySettingsUI({ phase: 'playing' });
             renderHostRaceBoard(data.progress?.players || []);
             updateHostStartButton({ phase: 'playing', players: data.progress?.players, gameFormat: data.gameFormat, minPlayers: data.minPlayers });
         });
@@ -1214,6 +1281,9 @@
 
         s.on('live:lobby-reset', (data) => {
             hostState.phase = 'lobby';
+            hostState.gameFormat = data.snapshot?.gameFormat || hostState.gameFormat || 'race';
+            hostState.teamAssignment = data.snapshot?.teamAssignment || hostState.teamAssignment || 'random';
+            hostState.answerMode = data.snapshot?.answerMode || hostState.answerMode || 'randomise';
             hostPendingChallenges = new Map();
             renderHostChallengePanel();
             setHostRaceMode(false);
@@ -1221,6 +1291,8 @@
             const ranking = $('live-ranking-screen');
             if (ranking) ranking.hidden = true;
             renderHostLobbyFromSnapshot(data.snapshot);
+            syncHostLobbySettingsUI(data.snapshot);
+            updateHostModeLabel();
             updateHostStartButton(data.snapshot);
             const playAgain = $('live-host-play-again');
             if (playAgain) playAgain.hidden = true;
@@ -1228,6 +1300,19 @@
             if (startBtn) startBtn.hidden = false;
             LiveAudio.startLobby();
             startHostLobbyPoll(hostState?.code);
+        });
+
+        s.on('live:settings-updated', (data) => {
+            if (!hostState) return;
+            hostState.gameFormat = data.gameFormat || hostState.gameFormat;
+            hostState.teamAssignment = data.teamAssignment || hostState.teamAssignment;
+            hostState.answerMode = data.answerMode || hostState.answerMode;
+            syncHostLobbySettingsUI(data.snapshot || data);
+            updateHostModeLabel();
+            if (data.snapshot) {
+                renderHostLobbyFromSnapshot(data.snapshot);
+                updateHostStartButton(data.snapshot);
+            }
         });
 
         s.on('live:error', (data) => handleHostSocketError(data.error));
@@ -1448,6 +1533,96 @@
 
     function answerModeLabel(mode) {
         return ANSWER_MODE_LABELS[mode] || ANSWER_MODE_LABELS.randomise;
+    }
+
+    function updateHostModeLabel() {
+        const modeEl = $('live-host-answer-mode');
+        if (!modeEl || !hostState) return;
+        modeEl.hidden = false;
+        modeEl.textContent = isTeamFormatValue(hostState.gameFormat)
+            ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)} · ${answerModeLabel(hostState.answerMode)}`
+            : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
+    }
+
+    function syncHostLobbySettingsUI(snap) {
+        const panel = $('live-host-lobby-settings');
+        if (!panel) return;
+        const inLobby = (hostState?.phase || snap?.phase || 'lobby') === 'lobby';
+        panel.hidden = !inLobby || !hostState?.code;
+        if (!inLobby) return;
+
+        const format = snap?.gameFormat || hostState?.gameFormat || 'race';
+        const teamAssignment = snap?.teamAssignment || hostState?.teamAssignment || 'random';
+        const answerMode = snap?.answerMode || hostState?.answerMode || 'randomise';
+
+        document.querySelectorAll('input[name="live-lobby-format"]').forEach((el) => {
+            el.checked = el.value === format;
+        });
+        document.querySelectorAll('input[name="live-lobby-team"]').forEach((el) => {
+            el.checked = el.value === teamAssignment;
+        });
+        document.querySelectorAll('input[name="live-lobby-answer"]').forEach((el) => {
+            el.checked = el.value === answerMode;
+        });
+        const teamRow = $('live-host-lobby-team-row');
+        if (teamRow) teamRow.hidden = !isTeamFormatValue(format);
+    }
+
+    function emitHostLobbySettings() {
+        if (!hostState || hostState.phase !== 'lobby') return;
+        const gameFormat = document.querySelector('input[name="live-lobby-format"]:checked')?.value
+            || hostState.gameFormat
+            || 'race';
+        const teamAssignment = document.querySelector('input[name="live-lobby-team"]:checked')?.value
+            || hostState.teamAssignment
+            || 'random';
+        const answerMode = document.querySelector('input[name="live-lobby-answer"]:checked')?.value
+            || hostState.answerMode
+            || 'randomise';
+        ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode });
+    }
+
+    function getFullscreenElement() {
+        return document.fullscreenElement
+            || document.webkitFullscreenElement
+            || document.msFullscreenElement
+            || null;
+    }
+
+    function requestLiveFullscreen(el) {
+        const node = el || document.documentElement;
+        const req = node.requestFullscreen
+            || node.webkitRequestFullscreen
+            || node.msRequestFullscreen;
+        if (!req) return Promise.reject(new Error('Fullscreen is not supported on this device.'));
+        return Promise.resolve(req.call(node));
+    }
+
+    function exitLiveFullscreen() {
+        const exit = document.exitFullscreen
+            || document.webkitExitFullscreen
+            || document.msExitFullscreen;
+        if (!exit || !getFullscreenElement()) return Promise.resolve();
+        return Promise.resolve(exit.call(document));
+    }
+
+    function toggleLiveFullscreen(targetEl) {
+        if (getFullscreenElement()) return exitLiveFullscreen();
+        return requestLiveFullscreen(targetEl || document.documentElement);
+    }
+
+    function updateFullscreenButtons() {
+        const active = Boolean(getFullscreenElement());
+        const label = active ? 'Exit full' : 'Fullscreen';
+        const icon = active ? 'fa-compress' : 'fa-expand';
+        [['live-host-fullscreen-btn', true], ['live-play-fullscreen-btn', false]].forEach(([id, withText]) => {
+            const btn = $(id);
+            if (!btn) return;
+            btn.innerHTML = withText
+                ? `<i class="fa-solid ${icon}"></i> ${label}`
+                : `<i class="fa-solid ${icon}"></i>`;
+            btn.title = active ? 'Exit fullscreen' : 'Fullscreen';
+        });
     }
 
     function gameFormatLabel(format, teamAssignment) {
@@ -1687,6 +1862,7 @@
         playerState.teamId = q.teamId || playerState?.teamId || null;
         playerState.teamName = q.teamName || playerState?.teamName || null;
         playerIsCaptain = Boolean(q.isCaptain);
+        playerIsRelayActive = Boolean(q?.relay?.isActivePlayer);
         playerCrewVote = null;
         setLiveGameActive(true);
         updateProgressLabel();
@@ -1971,17 +2147,17 @@
             sessionStorage.setItem('ls_live_host_token', data.hostToken);
 
             $('live-host-code').textContent = data.code;
-            const modeEl = $('live-host-answer-mode');
-            if (modeEl) {
-                modeEl.hidden = false;
-                modeEl.textContent = isTeamFormatValue(hostState.gameFormat)
-                    ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)}`
-                    : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
-            }
+            updateHostModeLabel();
             setHostJoinArtifacts(data.code, buildJoinUrl(data.code));
 
             $('live-host-setup-form').hidden = true;
             $('live-host-room-panel').hidden = false;
+            syncHostLobbySettingsUI({
+                phase: 'lobby',
+                gameFormat: hostState.gameFormat,
+                teamAssignment: hostState.teamAssignment,
+                answerMode: hostState.answerMode,
+            });
             const playAgain = $('live-host-play-again');
             if (playAgain) playAgain.hidden = true;
             const startBtn = $('live-host-start');
@@ -2020,17 +2196,17 @@
                 minPlayers: snap.minPlayers,
             };
             $('live-host-code').textContent = code;
-            const modeEl = $('live-host-answer-mode');
-            if (modeEl) {
-                modeEl.hidden = false;
-                modeEl.textContent = isTeamFormatValue(hostState.gameFormat)
-                    ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)}`
-                    : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
-            }
+            updateHostModeLabel();
             const joinUrl = buildJoinUrl(code);
             setHostJoinArtifacts(code, joinUrl);
             $('live-host-setup-form').hidden = true;
             $('live-host-room-panel').hidden = false;
+            syncHostLobbySettingsUI({
+                phase: hostState.phase,
+                gameFormat: hostState.gameFormat,
+                teamAssignment: hostState.teamAssignment,
+                answerMode: hostState.answerMode,
+            });
             bindHostSocket();
             emitHostJoin();
             startHostLobbyPoll(code);
@@ -2195,6 +2371,29 @@
         document.querySelectorAll('input[name="live-game-format"]').forEach((el) => {
             el.addEventListener('change', toggleLiveFormatPanels);
         });
+        ['live-lobby-format', 'live-lobby-team', 'live-lobby-answer'].forEach((name) => {
+            document.querySelectorAll(`input[name="${name}"]`).forEach((el) => {
+                el.addEventListener('change', () => {
+                    if (name === 'live-lobby-format') {
+                        const teamRow = $('live-host-lobby-team-row');
+                        if (teamRow) teamRow.hidden = !isTeamFormatValue(el.value);
+                    }
+                    emitHostLobbySettings();
+                });
+            });
+        });
+        $('live-host-fullscreen-btn')?.addEventListener('click', () => {
+            toggleLiveFullscreen($('live-host-race') || document.documentElement).catch(() => {
+                showLiveError('Fullscreen is not available in this browser.');
+            });
+        });
+        $('live-play-fullscreen-btn')?.addEventListener('click', () => {
+            toggleLiveFullscreen($('screen-live-play') || document.documentElement).catch(() => {
+                showLiveError('Fullscreen is not available in this browser.');
+            });
+        });
+        document.addEventListener('fullscreenchange', updateFullscreenButtons);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButtons);
         $('live-host-wordset')?.addEventListener('change', onHostWordSetSelected);
         $('live-host-create-btn')?.addEventListener('click', createHostRoom);
         $('live-join-btn')?.addEventListener('click', joinRoom);

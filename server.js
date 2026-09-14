@@ -617,13 +617,15 @@ async function start() {
             const { code, nickname } = req.body || {};
             if (!code) return res.status(400).json({ error: 'Room code required.' });
             const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-            const { room, player } = joinRoom(code, nickname, ip);
+            const { room, player, reclaimed } = joinRoom(code, nickname, ip);
             broadcastLobbyUpdate(room.code);
             res.json({
                 code: room.code,
                 playerId: player.id,
                 playerToken: player.playerToken,
                 nickname: player.nickname,
+                reclaimed: Boolean(reclaimed),
+                phase: room.phase,
                 snapshot: publicRoomSnapshot(room),
             });
         } catch (err) {
