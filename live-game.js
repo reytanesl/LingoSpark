@@ -1129,24 +1129,50 @@ export function resetRoomToLobby(room) {
     return room;
 }
 
-/** Lobby-only: change game format / answer mode while keeping the room code and teams. */
+/** Lobby (or finished→lobby): change format / answer mode; keep room code + players. */
 export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode } = {}) {
+    if (room.phase === 'playing') {
+        throw new Error('Settings can only be changed before the game starts.');
+    }
+    if (room.phase === 'finished') {
+        resetRoomToLobby(room);
+    }
     if (room.phase !== 'lobby') {
         throw new Error('Settings can only be changed in the lobby.');
     }
+
+    const prevFormat = room.gameFormat;
+    const prevAssignment = room.teamAssignment;
+
     if (gameFormat != null) {
         room.gameFormat = normalizeGameFormat(gameFormat);
     }
     if (answerMode != null) {
         room.answerMode = normalizeAnswerMode(answerMode);
     }
-    if (isTeamFormat(room)) {
+
+    if (!isTeamFormat(room)) {
+        // Solo race: drop team state so a later team mode starts clean.
+        clearAllTeams(room);
+        room.teamAssignment = 'random';
+    } else {
         if (teamAssignment != null) {
             room.teamAssignment = normalizeTeamAssignment(teamAssignment);
         } else if (!LIVE_TEAM_ASSIGNMENT.includes(room.teamAssignment)) {
             room.teamAssignment = 'random';
         }
+        const formatChanged = prevFormat !== room.gameFormat;
+        const assignmentChanged = prevAssignment !== room.teamAssignment;
+        // New format or switch to random: clear stale teams (Start rebuilds random teams).
+        if (formatChanged || (assignmentChanged && room.teamAssignment === 'random')) {
+            clearAllTeams(room);
+        }
+        // Pick mode with incomplete leftovers blocks Start — clear so players can re-form.
+        if (room.teamAssignment === 'pick' && !validateTeamsForStart(room).ok) {
+            clearAllTeams(room);
+        }
     }
+
     pruneEmptyTeams(room);
     touchRoom(room);
     return room;
@@ -1374,14 +1400,17 @@ function processRelayAnswer(room, team, player, answerText) {
 }
 
 function startGame(room) {
-    if (room.phase === 'finished') throw new Error('Game has ended.');
     if (room.phase === 'playing') throw new Error('Game is already in progress.');
+    if (room.phase === 'finished') {
+        resetRoomToLobby(room);
+    }
+    if (room.phase !== 'lobby') throw new Error('Game has ended.');
     const minPlayers = minPlayersForRoom(room);
     if (room.players.size < minPlayers) {
         throw new Error(`At least ${minPlayers} players are required to start.`);
     }
     if (isTeamFormat(room)) {
-        if (!teamsCoverPlayers(room)) {
+        if (room.teamAssignment === 'random' || !teamsCoverPlayers(room)) {
             if (room.teamAssignment === 'random') {
                 clearAllTeams(room);
                 buildRandomTeams(room);
@@ -1595,8 +1624,10 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                const wasFinished = room.phase === 'finished';
                 setRoomSettings(room, { gameFormat, teamAssignment, answerMode });
                 const snapshot = publicRoomSnapshot(room);
+                // Always refresh lobby for host + players (also covers finished → lobby).
                 io.to(`room:${room.code}`).emit('live:lobby-reset', {
                     snapshot,
                     progress: progressSnapshot(room),
@@ -1607,6 +1638,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     teamAssignment: room.teamAssignment,
                     answerMode: room.answerMode,
                     snapshot,
+                    resetFromFinished: wasFinished,
                 });
             } catch (err) {
                 socket.emit('live:error', { error: err.message });

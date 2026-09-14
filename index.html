@@ -396,33 +396,33 @@
         }
         .live-host-race-content {
             position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column;
-            padding: clamp(0.45rem, 1.5vw, 1rem) clamp(0.65rem, 2.5vw, 1.5rem);
+            padding: clamp(0.75rem, 2.5vw, 1.75rem) clamp(0.85rem, 3.5vw, 2.25rem);
             min-height: 0;
         }
         .live-host-race-header {
-            display: flex; align-items: center; justify-content: space-between; gap: 0.65rem;
-            flex-wrap: wrap; margin-bottom: clamp(0.35rem, 1.2vh, 0.75rem);
+            display: flex; align-items: center; justify-content: space-between; gap: 0.85rem;
+            flex-wrap: wrap; margin-bottom: clamp(0.65rem, 2vh, 1.25rem);
             flex-shrink: 0;
         }
         .live-host-race-code-wrap,
         .live-play-room-code {
-            display: flex; align-items: center; gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.92); padding: 0.35rem 0.75rem; border-radius: 10px;
+            display: flex; align-items: center; gap: 0.55rem;
+            background: rgba(255, 255, 255, 0.92); padding: 0.4rem 0.9rem; border-radius: 12px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
         .live-host-race-label,
         .live-play-room-label {
-            font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
             color: var(--text-muted); line-height: 1;
         }
         .live-host-race-code,
         .live-play-room-code-value {
-            font-family: var(--font-primary); font-size: clamp(1.05rem, 2.8vw, 1.55rem); font-weight: 800;
-            letter-spacing: 0.16em; color: var(--royal-blue); line-height: 1;
+            font-family: var(--font-primary); font-size: clamp(1.2rem, 3.5vw, 1.75rem); font-weight: 800;
+            letter-spacing: 0.18em; color: var(--royal-blue); line-height: 1;
         }
         .live-host-race-status {
             margin: 0; flex: 1; text-align: center; font-family: var(--font-primary);
-            font-weight: 400; font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--royal-blue);
+            font-weight: 400; font-size: clamp(1rem, 2.4vw, 1.35rem); color: var(--royal-blue);
         }
         .live-host-race-end-btn {
             flex-shrink: 0; background: rgba(255, 255, 255, 0.9) !important; border: none !important;
@@ -466,87 +466,63 @@
             gap: 0.5rem;
         }
         .live-host-race-board {
-            --live-race-tile-min: 9.5rem;
             flex: 1;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--live-race-tile-min)), 1fr));
-            gap: clamp(0.35rem, 1vw, 0.55rem);
-            align-content: center;
-            justify-content: center;
-            min-height: 0;
-            overflow: hidden;
-        }
-        .live-host-race-board[data-count="1"],
-        .live-host-race-board[data-count="2"],
-        .live-host-race-board[data-count="3"] {
-            --live-race-tile-min: 12rem;
-        }
-        .live-host-race-board[data-count="4"],
-        .live-host-race-board[data-count="5"],
-        .live-host-race-board[data-count="6"] {
-            --live-race-tile-min: 10rem;
-        }
-        .live-host-race-board[data-count="7"],
-        .live-host-race-board[data-count="8"],
-        .live-host-race-board[data-count="9"],
-        .live-host-race-board[data-count="10"] {
-            --live-race-tile-min: 8.5rem;
-        }
-        .live-host-race-board[data-count="11"],
-        .live-host-race-board[data-count="12"],
-        .live-host-race-board[data-count="13"],
-        .live-host-race-board[data-count="14"],
-        .live-host-race-board[data-count="15"],
-        .live-host-race-board[data-count="16"] {
-            --live-race-tile-min: 7.25rem;
-        }
-        .live-host-race-board[data-dense="1"] {
-            --live-race-tile-min: 6.5rem;
-        }
-        .live-host-race-row {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            gap: 0.35rem;
-            min-width: 0;
+            justify-content: center;
+            gap: clamp(0.55rem, 1.8vh, 1rem);
             min-height: 0;
-            padding: clamp(0.4rem, 1.1vh, 0.65rem) clamp(0.45rem, 1.2vw, 0.7rem);
-            background: rgba(255, 255, 255, 0.92);
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-            border: 2px solid transparent;
+            overflow-y: auto;
+        }
+        .live-host-race-row {
+            display: grid;
+            grid-template-columns: clamp(5.5rem, 18vw, 9rem) minmax(0, 1fr) clamp(2.5rem, 7vw, 3.25rem);
+            align-items: center;
+            gap: clamp(0.3rem, 0.9vw, 0.55rem);
+            min-width: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            border-radius: 0;
+        }
+        .live-host-race--teams .live-host-race-row {
+            grid-template-columns: clamp(7rem, 24vw, 12.5rem) minmax(0, 1fr) clamp(2.5rem, 7vw, 3.25rem);
         }
         .live-host-race-name {
             font-family: var(--font-primary);
-            font-weight: 700;
-            font-size: clamp(0.78rem, 1.6vw + 0.35vh, 1.05rem);
+            font-weight: 400;
+            font-size: clamp(0.95rem, 2.4vw, 1.35rem);
             color: var(--royal-blue);
             min-width: 0;
-            line-height: 1.15;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+            line-height: 1.2;
+            word-break: normal;
+        }
+        .live-host-race--teams .live-host-race-name {
+            white-space: normal;
             display: -webkit-box;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 2;
             line-clamp: 2;
-            overflow: hidden;
             word-break: break-word;
-        }
-        .live-host-race--teams .live-host-race-name {
-            white-space: normal;
-            text-overflow: unset;
         }
         .live-host-race-track {
             position: relative;
-            height: clamp(10px, 1.6vh, 14px);
+            height: clamp(28px, 5vh, 44px);
             min-width: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.12);
+            width: auto;
+            background: rgba(0, 0, 0, 0.14);
             border-radius: 999px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: visible;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
         }
         .live-host-race-fill {
             height: 100%; border-radius: 999px; transition: width 0.45s cubic-bezier(0.34, 1.2, 0.64, 1);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         .live-host-race-fill.reset-flash { filter: brightness(1.2); animation: liveHostRaceFlash 0.55s ease; }
         @keyframes liveHostRaceFlash {
@@ -555,35 +531,81 @@
         }
         .live-host-race-fill.winner {
             background: linear-gradient(90deg, #fbbf24, #f59e0b) !important;
-            box-shadow: 0 0 10px rgba(251, 191, 36, 0.55);
+            box-shadow: 0 0 18px rgba(251, 191, 36, 0.65);
         }
         .live-host-race-score {
             font-family: var(--font-primary);
-            font-weight: 800;
-            font-size: clamp(0.85rem, 1.5vw + 0.3vh, 1.1rem);
+            font-weight: 400;
+            font-size: clamp(0.95rem, 2.4vw, 1.3rem);
             color: var(--royal-blue);
-            text-align: left;
+            text-align: right;
             line-height: 1;
-        }
-        .live-host-race-row--challenge {
-            border-color: #f59e0b;
-            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25), 0 3px 12px rgba(0, 0, 0, 0.12);
         }
         .live-host-race-row--challenge .live-host-race-name {
             color: #b45309;
         }
         .live-host-challenge-badge {
             display: inline-block;
-            margin-right: 0.25rem;
-            padding: 0.08rem 0.35rem;
+            margin-right: 0.35rem;
+            padding: 0.1rem 0.4rem;
             border-radius: 999px;
             background: #fbbf24;
             color: #78350f;
-            font-size: 0.58rem;
+            font-size: 0.65rem;
             font-weight: 800;
             letter-spacing: 0.04em;
             text-transform: uppercase;
             vertical-align: middle;
+        }
+        /* Lobby / join waiting: name tiles */
+        .live-lobby-player-tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+            gap: 0.55rem;
+        }
+        .live-lobby-player-tile {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.35rem;
+            padding: 0.65rem 0.7rem;
+            background: #f8fafc;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            min-width: 0;
+        }
+        .live-lobby-player-tile strong {
+            font-family: var(--font-primary);
+            color: var(--royal-blue);
+            font-size: 0.95rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        .live-play-roster-tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+            gap: 0.45rem;
+            margin-top: 0.75rem;
+        }
+        .live-play-roster-tile {
+            padding: 0.55rem 0.6rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-family: var(--font-primary);
+            font-weight: 700;
+            color: var(--royal-blue);
+            font-size: 0.92rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .live-play-roster-tile.is-you {
+            border-color: var(--royal-blue);
+            background: #eef4ff;
         }
         .live-host-challenge-panel {
             position: fixed;
@@ -3386,7 +3408,7 @@
                         <p id="live-host-answer-mode" class="live-muted" hidden></p>
                         <div id="live-host-lobby-settings" class="live-host-lobby-settings" hidden>
                             <h3 style="margin:1rem 0 0.45rem;font-size:1rem;">Game format</h3>
-                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Choose how to play. Assigned teams stay with this room if you switch modes.</p>
+                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Change format anytime — players stay in the room. Team modes default to random teams so you can start immediately.</p>
                             <div class="live-option-grid live-option-grid--3" style="margin-bottom:0.55rem;">
                                 <label class="live-option live-option--compact">
                                     <input type="radio" name="live-lobby-format" value="race">
@@ -3515,6 +3537,7 @@
             </div>
             </div>
             <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
+            <div id="live-play-roster" class="live-play-roster" hidden></div>
             <div id="live-play-team-lobby" class="live-team-lobby-player" hidden>
                 <h3>Choose your team</h3>
                 <div id="live-play-team-list" class="live-team-lobby"></div>

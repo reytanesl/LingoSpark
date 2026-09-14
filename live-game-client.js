@@ -607,13 +607,13 @@
         html += '</div>';
         if (unassigned.length) {
             html += `<p class="live-team-unassigned"><strong>Waiting for a team:</strong></p>`;
-            html += unassigned.map((p) => {
+            html += `<div class="live-lobby-player-tiles">${unassigned.map((p) => {
                 const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
-                return `<div class="live-lobby-player-row" data-player-id="${esc(p.id)}">
-                    <span class="live-lobby-player-name"><strong>${esc(p.nickname)}</strong>${offline}</span>
+                return `<div class="live-lobby-player-tile" data-player-id="${esc(p.id)}">
+                    <strong title="${esc(p.nickname)}">${esc(p.nickname)}${offline}</strong>
                     <button type="button" class="live-remove-player-btn" data-remove-player="${esc(p.id)}" title="Remove from room" aria-label="Remove ${esc(p.nickname)}"><i class="fa-solid fa-xmark"></i></button>
                 </div>`;
-            }).join('');
+            }).join('')}</div>`;
         }
         container.innerHTML = html;
     }
@@ -635,13 +635,31 @@
             return;
         }
         const sorted = [...players].sort((a, b) => a.nickname.localeCompare(b.nickname));
-        container.innerHTML = sorted.map((p) => {
+        container.innerHTML = `<div class="live-lobby-player-tiles">${sorted.map((p) => {
             const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
-            return `<div class="live-lobby-player-row" data-player-id="${esc(p.id)}">
-                <span class="live-lobby-player-name"><strong>${esc(p.nickname)}</strong>${offline}</span>
+            return `<div class="live-lobby-player-tile" data-player-id="${esc(p.id)}">
+                <strong title="${esc(p.nickname)}">${esc(p.nickname)}${offline}</strong>
                 <button type="button" class="live-remove-player-btn" data-remove-player="${esc(p.id)}" title="Remove from room" aria-label="Remove ${esc(p.nickname)}"><i class="fa-solid fa-xmark"></i></button>
             </div>`;
-        }).join('');
+        }).join('')}</div>`;
+    }
+
+    function renderPlayerRosterTiles(players) {
+        const host = $('live-play-roster');
+        if (!host) return;
+        const list = Array.isArray(players) ? players : [];
+        if (!list.length) {
+            host.hidden = true;
+            host.innerHTML = '';
+            return;
+        }
+        const sorted = [...list].sort((a, b) => String(a.nickname || '').localeCompare(String(b.nickname || '')));
+        host.hidden = false;
+        host.innerHTML = `<div class="live-play-roster-tiles">${sorted.map((p) => {
+            const isYou = p.id && playerState?.playerId && p.id === playerState.playerId;
+            const offline = p.connected === false ? ' (offline)' : '';
+            return `<div class="live-play-roster-tile${isYou ? ' is-you' : ''}" title="${esc(p.nickname)}${offline}">${esc(p.nickname)}</div>`;
+        }).join('')}</div>`;
     }
 
     function renderHostPlayerBoard(snap, options = {}) {
@@ -736,10 +754,10 @@
                 : '';
             return `<div class="${rowCls}" data-player-id="${esc(p.id)}">
                 <div class="live-host-race-name" title="${esc(p.nickname)}">${challengeBadge}${esc(p.nickname)}</div>
-                <div class="live-host-race-score">${p.progress || 0}/${total}</div>
                 <div class="live-host-race-track">
                     <div class="${fillCls}" style="width:${pct}%;${fillStyle}"></div>
                 </div>
+                <div class="live-host-race-score">${p.progress || 0}/${total}</div>
             </div>`;
         }).join('');
     }
@@ -1086,10 +1104,13 @@
         const isTeamGame = isTeamFormatValue(format);
         const isPickTeams = isTeamGame && (snapshot?.teamAssignment || hostState?.teamAssignment) === 'pick';
         const playing = snapshot?.phase === 'playing';
+        const finished = snapshot?.phase === 'finished' || hostState?.phase === 'finished';
         const canStart = snapshot?.canStart != null
             ? snapshot.canStart
-            : !isPickTeams && count >= minPlayers && snapshot?.phase === 'lobby';
-        btn.disabled = !canStart || playing;
+            : !isPickTeams && count >= minPlayers && (snapshot?.phase === 'lobby' || finished);
+        // After a game, Start still works (server resets lobby first).
+        btn.disabled = playing ? true : (finished ? count < minPlayers : !canStart);
+        if (finished && !playing) btn.hidden = false;
         if (countEl) {
             countEl.textContent = playing
                 ? `${count} players · ${isTeamGame ? 'team race' : 'solo race'}`
@@ -1105,15 +1126,17 @@
         } else if (count < minPlayers) {
             btn.textContent = `Start game (need ${minPlayers}+ players)`;
             if (status) status.textContent = `Waiting for players (${count} / ${minPlayers} minimum)…`;
-        } else if (isPickTeams && !canStart) {
+        } else if (isPickTeams && !canStart && !finished) {
             btn.textContent = 'Start game (teams not ready)';
             if (status) status.textContent = 'Players are choosing teams (2–4 per team, all players assigned)…';
         } else {
             btn.textContent = 'Start game';
             if (status) {
-                status.textContent = isPickTeams
-                    ? 'All teams ready — start when you are.'
-                    : `${count} players ready. Start when everyone has joined.`;
+                status.textContent = finished
+                    ? 'Game over — change format if you like, then Start game (players stay in the room).'
+                    : isPickTeams
+                        ? 'All teams ready — start when you are.'
+                        : `${count} players ready. Start when everyone has joined.`;
             }
         }
     }
@@ -1249,6 +1272,11 @@
             hostRaceColors = new Map();
             hostPendingChallenges = new Map();
             renderHostChallengePanel();
+            hideLiveWinnerScreen();
+            const ranking = $('live-ranking-screen');
+            if (ranking) ranking.hidden = true;
+            const playAgain = $('live-host-play-again');
+            if (playAgain) playAgain.hidden = true;
             stopHostLobbyPoll();
             LiveAudio.stopLobby();
             LiveAudio.startGame();
@@ -1272,11 +1300,21 @@
                     winnerId: data.winnerId,
                 });
             }
-            updateHostStartButton({ phase: 'finished' });
+            // Keep Start + format controls available — starting or changing settings resets to lobby.
             const playAgain = $('live-host-play-again');
             if (playAgain) playAgain.hidden = false;
             const startBtn = $('live-host-start');
-            if (startBtn) startBtn.hidden = true;
+            if (startBtn) startBtn.hidden = false;
+            syncHostLobbySettingsUI({ phase: 'finished' });
+            updateHostStartButton({
+                phase: 'finished',
+                canStart: true,
+                playerCount: data.players?.length,
+                players: data.players,
+                gameFormat: hostState?.gameFormat,
+                teamAssignment: hostState?.teamAssignment,
+                minPlayers: hostState?.minPlayers,
+            });
         });
 
         s.on('live:lobby-reset', (data) => {
@@ -1547,9 +1585,10 @@
     function syncHostLobbySettingsUI(snap) {
         const panel = $('live-host-lobby-settings');
         if (!panel) return;
-        const inLobby = (hostState?.phase || snap?.phase || 'lobby') === 'lobby';
-        panel.hidden = !inLobby || !hostState?.code;
-        if (!inLobby) return;
+        const phase = hostState?.phase || snap?.phase || 'lobby';
+        const canEdit = phase === 'lobby' || phase === 'finished';
+        panel.hidden = !canEdit || !hostState?.code;
+        if (!canEdit) return;
 
         const format = snap?.gameFormat || hostState?.gameFormat || 'race';
         const teamAssignment = snap?.teamAssignment || hostState?.teamAssignment || 'random';
@@ -1569,13 +1608,21 @@
     }
 
     function emitHostLobbySettings() {
-        if (!hostState || hostState.phase !== 'lobby') return;
+        if (!hostState || (hostState.phase !== 'lobby' && hostState.phase !== 'finished')) return;
         const gameFormat = document.querySelector('input[name="live-lobby-format"]:checked')?.value
             || hostState.gameFormat
             || 'race';
-        const teamAssignment = document.querySelector('input[name="live-lobby-team"]:checked')?.value
+        let teamAssignment = document.querySelector('input[name="live-lobby-team"]:checked')?.value
             || hostState.teamAssignment
             || 'random';
+        // Switching into a team format defaults to random so Start stays usable.
+        if (isTeamFormatValue(gameFormat) && !document.querySelector('input[name="live-lobby-team"]:checked')) {
+            teamAssignment = 'random';
+            document.querySelectorAll('input[name="live-lobby-team"]').forEach((el) => {
+                el.checked = el.value === 'random';
+            });
+        }
+        if (!isTeamFormatValue(gameFormat)) teamAssignment = 'random';
         const answerMode = document.querySelector('input[name="live-lobby-answer"]:checked')?.value
             || hostState.answerMode
             || 'randomise';
@@ -1825,6 +1872,7 @@
         }
         if (pickLobby) {
             applyPlayerLobbySnapshot(snap || playerState?.lastSnapshot);
+            renderPlayerRosterTiles([]);
             if (status) {
                 status.textContent = playerState?.teamName
                     ? `On ${playerState.teamName} — waiting for the host…`
@@ -1833,6 +1881,8 @@
         } else {
             $('live-play-team-lobby').hidden = true;
             if (status) status.textContent = pickLobby ? '' : msg;
+            const roster = snap?.players || playerState?.lastSnapshot?.players || [];
+            renderPlayerRosterTiles(roster);
         }
         setAnswerInputsEnabled(false);
         $('live-play-result').innerHTML = '';
@@ -1868,6 +1918,7 @@
         if (def) def.textContent = q.definition;
         if (def) def.hidden = false;
         $('live-play-team-lobby').hidden = true;
+        renderPlayerRosterTiles([]);
         if (status) {
             if (crewMode) {
                 const modeHint = choiceMode ? 'crew votes, captain submits' : 'crew types & votes, captain submits';
@@ -2373,6 +2424,7 @@
 
     function hostStartGame() {
         if (!hostState) return;
+        // Server accepts start from finished (auto-resets lobby); keep players + code.
         emitWhenConnected('live:start-game');
     }
 
@@ -2404,7 +2456,17 @@
                 el.addEventListener('change', () => {
                     if (name === 'live-lobby-format') {
                         const teamRow = $('live-host-lobby-team-row');
-                        if (teamRow) teamRow.hidden = !isTeamFormatValue(el.value);
+                        const teamMode = isTeamFormatValue(el.value);
+                        if (teamRow) teamRow.hidden = !teamMode;
+                        if (teamMode) {
+                            // Prefer random teams when entering a team format so Start is not blocked.
+                            const checked = document.querySelector('input[name="live-lobby-team"]:checked');
+                            if (!checked) {
+                                document.querySelectorAll('input[name="live-lobby-team"]').forEach((r) => {
+                                    r.checked = r.value === 'random';
+                                });
+                            }
+                        }
                     }
                     emitHostLobbySettings();
                 });
