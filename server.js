@@ -744,21 +744,61 @@ function extractJson(text) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
     }
 
+        const rawImages = Array.isArray(req.body?.images) ? req.body.images : [];
+        let cleanImages = [];
+        if (rawImages.length) {
+            try {
+                cleanImages = rawImages.slice(0, 5).map((img) => {
+                    const mimeType = String(img?.mimeType || 'image/png');
+                    if (!/^image\/(png|jpeg|jpg|gif|webp)$/i.test(mimeType)) {
+                        throw new Error('Unsupported image type. Use PNG, JPEG, GIF or WebP (PDF pages are converted client-side).');
+                    }
+                    let data = String(img?.data || img?.dataUrl || '');
+                    const comma = data.indexOf(',');
+                    if (data.startsWith('data:') && comma !== -1) data = data.slice(comma + 1);
+                    if (!data || data.length > 20_000_000) throw new Error('Image payload too large.');
+                    return { data, mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType };
+                });
+            } catch (error) {
+                return res.status(400).json({ error: error.message });
+            }
+        }
+
         const fullPrompt = `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation, no tool use.`;
 
     try {
-        const result = await Agent.prompt(fullPrompt, {
-            apiKey,
-            model: { id: 'composer-2.5' },
-            local: { cwd: __dirname },
-        });
-
-        if (result.status !== 'finished' || !result.result) {
-            const message = result.error?.message || 'Cursor AI generation failed';
+        let resultText;
+        if (cleanImages.length) {
+            const agent = await Agent.create({
+                apiKey,
+                model: { id: 'composer-2.5' },
+                local: { cwd: __dirname },
+            });
+            const run = await agent.send({
+                text: fullPrompt,
+                images: cleanImages,
+            });
+            const result = await run.wait();
+            if (result.status !== 'finished' || !result.result) {
+                const message = result.error?.message || 'Cursor AI generation failed';
                 return res.status(500).json({ error: message });
+            }
+            resultText = result.result;
+        } else {
+            const result = await Agent.prompt(fullPrompt, {
+                apiKey,
+                model: { id: 'composer-2.5' },
+                local: { cwd: __dirname },
+            });
+
+            if (result.status !== 'finished' || !result.result) {
+                const message = result.error?.message || 'Cursor AI generation failed';
+                return res.status(500).json({ error: message });
+            }
+            resultText = result.result;
         }
 
-        const parsed = extractJson(result.result);
+        const parsed = extractJson(resultText);
         res.json(parsed);
     } catch (error) {
         console.error('Generation error:', error);
