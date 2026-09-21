@@ -2512,7 +2512,7 @@
                     <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>AI task or upload a photo/PDF of a real exam — write the email and get friendly examiner feedback.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
                 </div>
 
                 <!-- Advanced English -->
@@ -3150,14 +3150,17 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en" id="pe-exam-instr-en">Write the email according to the exam task below. Follow the word limit shown in the task and cover every bullet point. You can also upload a photo or PDF of a real exam task.</div>
-                <div class="pe-instr-pl" id="pe-exam-instr-pl">Napisz e-mail zgodnie z poleceniem egzaminacyjnym poniżej. Długość wypowiedzi: 50–120 słów. Rozwiń wszystkie podpunkty. Możesz też wgrać zdjęcie lub PDF prawdziwego polecenia.</div>
+                <div class="pe-instr-en" id="pe-exam-instr-en">Write the email according to the exam task (or upload a photo/PDF of your handwritten email — same as Advanced English). Follow the word limit and cover every bullet point.</div>
+                <div class="pe-instr-pl" id="pe-exam-instr-pl">Napisz e-mail zgodnie z poleceniem (albo wgraj zdjęcie/PDF odręcznej pracy — tak jak w Advanced English). Długość: 50–120 słów. Rozwiń wszystkie podpunkty.</div>
             </div>
             <div id="pe-exam-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-exam-content">
-                <div class="form-group" style="margin-bottom:1rem;">
-                    <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-image"></i> Exam task photo or PDF</label>
-                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.65rem;">Optional — upload a real worksheet task instead of generating one with AI. Files stay in this session only.</p>
+                <button class="btn btn-outline" type="button" id="pe-exam-translate-btn" onclick="togglePeExamTaskLanguage()">Show task in Polish 🇵🇱</button>
+                <div class="pe-prompt-box" id="pe-exam-prompt">Loading...</div>
+
+                <details class="pe-exam-task-upload" style="margin:0 0 1rem;border:1px solid var(--border-light);border-radius:10px;padding:0.75rem 1rem;background:var(--light-grey);">
+                    <summary style="cursor:pointer;font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-file-image"></i> Load task from photo/PDF (optional)</summary>
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0.65rem 0;">Upload a real worksheet polecenie instead of using a New AI Task. Same idea as Advanced English — files stay in this session only.</p>
                     <div class="matura-upload-zone" id="pe-exam-task-dropzone">
                         <p style="margin:0 0 0.75rem;color:var(--text-dark);font-weight:600;">Drag &amp; drop task images or a PDF here</p>
                         <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--text-muted);">JPG, PNG, WebP or PDF (up to 5 pages).</p>
@@ -3168,19 +3171,16 @@
                     </div>
                     <div class="matura-preview-grid" id="pe-exam-task-preview"></div>
                     <button type="button" class="btn btn-outline" style="width:100%;margin-top:0.35rem;" id="pe-exam-use-upload-btn" onclick="initPeExamFromUpload()">
-                        <i class="fa-solid fa-file-image"></i> Use uploaded task
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Read task from upload
                     </button>
-                </div>
-                <button class="btn btn-outline" type="button" id="pe-exam-translate-btn" onclick="togglePeExamTaskLanguage()">Show task in Polish 🇵🇱</button>
-                <div class="pe-prompt-box" id="pe-exam-prompt">Loading...</div>
-                <textarea class="pe-input" id="pe-exam-input" placeholder="Hi Sara..." oninput="updatePeExamWordCount()"></textarea>
-                <div id="pe-exam-wordcount" style="text-align:right;font-size:0.9rem;color:var(--text-muted);margin:-0.35rem 0 1rem;font-family:var(--font-primary);font-weight:600;">Words: 0</div>
+                </details>
+
                 <div class="form-group" style="margin-bottom:1rem;">
-                    <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-pen"></i> Or upload photo/PDF of your email</label>
-                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.65rem;">Optional if you wrote by hand — you can still type above, or use both.</p>
+                    <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-image"></i> Email photo or PDF</label>
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 0.65rem;">Same as Advanced English Matura Assessment — upload a photo or PDF of the handwritten/printed email. Not saved after you leave.</p>
                     <div class="matura-upload-zone" id="pe-exam-answer-dropzone">
-                        <p style="margin:0 0 0.75rem;color:var(--text-dark);font-weight:600;">Drag &amp; drop your handwritten email here</p>
-                        <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--text-muted);">JPG, PNG, WebP or PDF (up to 5 pages).</p>
+                        <p style="margin:0 0 0.75rem;color:var(--text-dark);font-weight:600;">Drag &amp; drop images or a PDF here</p>
+                        <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--text-muted);">JPG, PNG, WebP or PDF (up to 5 pages). Handwritten and printed emails both work.</p>
                         <input type="file" id="pe-exam-answer-file" accept="image/*,application/pdf" multiple style="display:none;" onchange="handlePeExamAnswerFiles(event)">
                         <button type="button" class="btn btn-outline" onclick="document.getElementById('pe-exam-answer-file').click()">
                             <i class="fa-solid fa-upload"></i> Choose files
@@ -3188,7 +3188,13 @@
                     </div>
                     <div class="matura-preview-grid" id="pe-exam-answer-preview"></div>
                 </div>
-                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeExam()" id="pe-exam-check">Submit to Friendly Examiner</button>
+
+                <label style="font-weight:700;color:var(--royal-blue);display:block;margin-bottom:0.5rem;"><i class="fa-solid fa-keyboard"></i> Or type the email</label>
+                <textarea class="pe-input" id="pe-exam-input" placeholder="Hi Sara..." oninput="updatePeExamWordCount()"></textarea>
+                <div id="pe-exam-wordcount" style="text-align:right;font-size:0.9rem;color:var(--text-muted);margin:-0.35rem 0 1rem;font-family:var(--font-primary);font-weight:600;">Words: 0</div>
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeExam()" id="pe-exam-check">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Submit to Friendly Examiner
+                </button>
             </div>
             <div id="pe-exam-feedback" class="feedback"></div>
         </div>
@@ -5133,6 +5139,9 @@
             if (screenId !== 'pe-exam' && typeof clearPeExamUploads === 'function') {
                 clearPeExamUploads();
             }
+            if (screenId === 'pe-exam' && typeof setupPeExamUploadZones === 'function') {
+                setupPeExamUploadZones();
+            }
             if (screenId !== 'speed-match' && typeof stopSpeedMatchTimer === 'function') {
                 stopSpeedMatchTimer();
             }
@@ -5768,10 +5777,11 @@
                 const response = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify(payload)
                 });
 
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
                     console.error('Cursor AI Error:', data.error);
                     return { __error: data.error || 'Generation failed' };
@@ -7522,7 +7532,9 @@ Return ONLY JSON:
                 const canvas = document.createElement('canvas');
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
-                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                const canvasContext = canvas.getContext('2d');
+                const renderTask = page.render({ canvasContext, viewport, canvas });
+                await (renderTask.promise || renderTask);
                 out.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.85), mimeType: 'image/jpeg' });
             }
             return out;
@@ -8330,11 +8342,14 @@ Return ONLY JSON:
                     if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
                         const pages = await pdfFileToImages(file, maxPages - targetArr.length);
                         targetArr.push(...pages);
-                    } else if (file.type.startsWith('image/')) {
+                    } else if (file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif)$/i.test(file.name)) {
+                        if (/heic|heif/i.test(file.type) || /\.heic$/i.test(file.name)) {
+                            throw new Error('HEIC photos are not supported. Please use JPG or PNG (or export the PDF).');
+                        }
                         const dataUrl = await readFileAsDataUrl(file);
                         targetArr.push({ dataUrl, mimeType: file.type || 'image/jpeg' });
                     } else {
-                        throw new Error(`Unsupported file: ${file.name}`);
+                        throw new Error(`Unsupported file: ${file.name}. Use JPG, PNG, WebP or PDF.`);
                     }
                 } catch (err) {
                     if (statusEl) {
@@ -8437,7 +8452,33 @@ Return ONLY JSON:
             if (el) el.textContent = pePoints[key];
         }
 
-        function peToggleLoading(prefix, isLoading) {
+        function peToggleLoading(prefix, isLoading, loadingMessage) {
+            // Exam Simulator mirrors Matura: keep the form visible (opacity) so uploads stay usable.
+            if (prefix === 'pe-exam') {
+                const loader = document.getElementById('pe-exam-loading');
+                const content = document.getElementById('pe-exam-content');
+                const btn = document.getElementById('pe-exam-btn');
+                const check = document.getElementById('pe-exam-check');
+                const useBtn = document.getElementById('pe-exam-use-upload-btn');
+                if (isLoading) {
+                    if (loader) {
+                        loader.innerHTML = loadingMessage
+                            || `<i class="fa-solid fa-spinner fa-spin"></i> Working with Cursor AI…`;
+                        loader.style.display = 'block';
+                    }
+                    if (content) content.style.opacity = '0.55';
+                    if (btn) btn.disabled = true;
+                    if (check) check.disabled = true;
+                    if (useBtn) useBtn.disabled = true;
+                } else {
+                    if (loader) loader.style.display = 'none';
+                    if (content) content.style.opacity = '1';
+                    if (btn) btn.disabled = false;
+                    if (check) check.disabled = false;
+                    if (useBtn) useBtn.disabled = false;
+                }
+                return;
+            }
             toggleLoading(prefix, isLoading);
             const check = document.getElementById(`${prefix}-check`);
             if (check) check.disabled = isLoading;
@@ -8865,13 +8906,9 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
                 return;
             }
             document.getElementById('pe-exam-input').value = '';
-            peExamAnswerImages = [];
-            renderPeExamAnswerPreviews();
             updatePeExamWordCount();
             syncPeLevelBadges();
-            peToggleLoading('pe-exam', true);
-            const loader = document.getElementById('pe-exam-loading');
-            if (loader) loader.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading exam task from your upload…`;
+            peToggleLoading('pe-exam', true, `<i class="fa-solid fa-spinner fa-spin"></i> Reading exam task from your upload…`);
             const L = peLevelGuide();
             const requiredCustomWords = peGetRequiredCustomWords(3);
             const prompt = `You are helping a Polish primary/lower-secondary English teacher.
@@ -8895,7 +8932,7 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
             }
             applyPeExamTask(data, requiredCustomWords);
             feedback.className = 'feedback success';
-            feedback.textContent = 'Task loaded from your upload. Write the email (or upload a photo of it), then submit.';
+            feedback.textContent = 'Task loaded from your upload. Type the email or upload a photo/PDF of it, then submit.';
         }
 
         async function togglePeExamTaskLanguage() {
@@ -8922,48 +8959,65 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
         }
 
         async function checkPeExam() {
-            if (!peExamTask) return;
+            if (!peExamTask) {
+                const feedback = document.getElementById('pe-exam-feedback');
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Load an exam task first (New AI Task or Read task from upload).';
+                return;
+            }
             const input = document.getElementById('pe-exam-input').value.trim();
             const feedback = document.getElementById('pe-exam-feedback');
             const greetingOnly = /^hi\s+\w+,?\s*$/i.test(input.replace(/\n/g, ' ').trim());
-            if ((!input || greetingOnly) && peExamAnswerImages.length === 0) {
+            const essayText = (input && !greetingOnly) ? input : '';
+            if (!essayText && peExamAnswerImages.length === 0) {
                 feedback.className = 'feedback error';
-                feedback.textContent = 'Write your email first, or upload a photo/PDF of your handwritten email.';
+                feedback.textContent = 'Upload a photo/PDF of the email or type it first — same as Advanced English.';
                 return;
             }
+            peToggleLoading('pe-exam', true, `<i class="fa-solid fa-spinner fa-spin"></i> Friendly examiner is reading your email…`);
             feedback.className = 'feedback neutral';
-            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Friendly examiner is reading...';
-            document.getElementById('pe-exam-check').disabled = true;
+            feedback.textContent = '';
             const L = peLevelGuide();
-            const typedBlock = input && !greetingOnly
-                ? `TYPED STUDENT EMAIL:\n"""${input}"""`
-                : 'No typed email body was provided (only a greeting or empty). Read the email from the attached image(s) if present.';
-            const imageNote = peExamAnswerImages.length
-                ? 'Attached image(s)/PDF pages show the student\'s handwritten or printed email — use them together with any typed text.'
-                : 'No answer images attached — grade from the typed text only.';
-            const prompt = `You are a friendly English examiner for CEFR ${L.label} / Polish school writing.
-${PE_TYPEIN_RULE}
-SCHOOL CONTEXT: ${L.schoolLevel || ''}
-LEVEL RULES: ${L.vocab}
-Task: ${peExamTask.taskEn}
-Required points: ${JSON.stringify(peExamTask.bulletsEn || [])}
-Word limit: ${peExamTask.minWords || L.examWords.min}-${peExamTask.maxWords || L.examWords.max}
-${typedBlock}
-${imageNote}
-Evaluate length, bullet coverage, cohesion, and language adequacy for ${L.label} (do not demand higher-level vocabulary). Do not penalise capitalisation choices in the student's email.
-If handwriting is partly illegible, say so briefly but still assess what is readable.
-${peMode === 'custom' ? `MANDATORY: student must correctly use the required custom glossary words (case-insensitive): ${JSON.stringify(peExamTask.requiredWords || [])}.` : ''}
-Return ONLY JSON: {"valid":true/false,"points":100,"wordCount":0,"bulletsCovered":0,"bulletsTotal":3,"message":"HTML-safe multi-line feedback in English with short section labels for Length, Content, Cohesion, Summary."}`;
-            const data = await fetchGenerativeAI(prompt, peExamAnswerImages);
-            document.getElementById('pe-exam-check').disabled = false;
-            if (!data || data.__error) {
+            try {
+                const response = await fetch('/api/assess-pe-exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        task: peExamTask.taskEn,
+                        essayText,
+                        images: peExamAnswerImages.map((img) => ({ data: img.dataUrl, mimeType: img.mimeType })),
+                        level: L.label,
+                        bullets: peExamTask.bulletsEn || [],
+                        minWords: peExamTask.minWords || L.examWords.min,
+                        maxWords: peExamTask.maxWords || L.examWords.max,
+                        requiredWords: peExamTask.requiredWords || [],
+                    }),
+                });
+                const data = await response.json().catch(() => ({}));
+                peToggleLoading('pe-exam', false);
+                if (!response.ok) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = data.error || 'Assessment failed.';
+                    return;
+                }
+                feedback.className = data.valid ? 'feedback success' : 'feedback error';
+                feedback.innerHTML = data.message || (data.valid ? 'Ready for the exam!' : 'Revise and try again.');
+                if (data.valid) {
+                    peAddPoints('exam', data.points || 100);
+                    incrementGameCount();
+                    recordGameSessionApi('pe_exam', { score: data.points || 100, pointsEarned: data.points || 100 });
+                }
+                // Match Matura: drop answer uploads after assessment (session-only)
+                peExamAnswerImages = [];
+                renderPeExamAnswerPreviews();
+                const answerInput = document.getElementById('pe-exam-answer-file');
+                if (answerInput) answerInput.value = '';
+            } catch (err) {
+                peToggleLoading('pe-exam', false);
                 feedback.className = 'feedback error';
-                feedback.textContent = aiErrorMessage(data);
-                return;
+                feedback.textContent = err.message || 'Cannot reach the LingoSpark server.';
             }
-            feedback.className = data.valid ? 'feedback success' : 'feedback error';
-            feedback.innerHTML = data.message || (data.valid ? 'Ready for the exam!' : 'Revise and try again.');
-            if (data.valid) { peAddPoints('exam', data.points || 100); incrementGameCount(); recordGameSessionApi('pe_exam', { score: data.points || 100, pointsEarned: data.points || 100 }); }
         }
 
         // ==========================================

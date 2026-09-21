@@ -727,10 +727,71 @@ async function start() {
 
 function extractJson(text) {
     if (!text) throw new Error('Empty response from Cursor AI');
-        const trimmed = text.trim();
-        const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-        const candidate = fenced ? fenced[1].trim() : trimmed;
-    return JSON.parse(candidate);
+    const trimmed = text.trim();
+    const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const candidate = fenced ? fenced[1].trim() : trimmed;
+    try {
+        return JSON.parse(candidate);
+    } catch (_) {
+        const start = candidate.indexOf('{');
+        const end = candidate.lastIndexOf('}');
+        if (start !== -1 && end > start) {
+            return JSON.parse(candidate.slice(start, end + 1));
+        }
+        throw new Error('Cursor AI did not return valid JSON.');
+    }
+}
+
+function cleanVisionImages(images) {
+    return (Array.isArray(images) ? images : []).slice(0, 5).map((img) => {
+        const mimeType = String(img?.mimeType || 'image/png');
+        if (!/^image\/(png|jpeg|jpg|gif|webp)$/i.test(mimeType)) {
+            throw new Error('Unsupported image type. Use PNG, JPEG, GIF or WebP (PDF pages are converted client-side).');
+        }
+        let data = String(img?.data || img?.dataUrl || '');
+        const comma = data.indexOf(',');
+        if (data.startsWith('data:') && comma !== -1) data = data.slice(comma + 1);
+        if (!data || data.length > 20_000_000) throw new Error('Image payload too large.');
+        return { data, mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType };
+    });
+}
+
+async function runVisionJsonPrompt({ apiKey, prompt, images = [] }) {
+    const cleanImages = cleanVisionImages(images);
+    const fullPrompt = `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation, no tool use.`;
+    if (!cleanImages.length) {
+        const result = await Agent.prompt(fullPrompt, {
+            apiKey,
+            model: { id: 'composer-2.5' },
+            local: { cwd: __dirname },
+        });
+        if (result.status !== 'finished' || !result.result) {
+            throw new Error(result.error?.message || 'Cursor AI generation failed');
+        }
+        return extractJson(result.result);
+    }
+
+    let agent;
+    try {
+        agent = await Agent.create({
+            apiKey,
+            model: { id: 'composer-2.5' },
+            local: { cwd: __dirname },
+        });
+        const run = await agent.send({
+            text: fullPrompt,
+            images: cleanImages,
+        });
+        const result = await run.wait();
+        if (result.status !== 'finished' || !result.result) {
+            throw new Error(result.error?.message || 'Cursor AI generation failed');
+        }
+        return extractJson(result.result);
+    } finally {
+        if (agent && typeof agent[Symbol.asyncDispose] === 'function') {
+            try { await agent[Symbol.asyncDispose](); } catch (_) { /* ignore */ }
+        }
+    }
 }
 
     app.post('/api/generate', requireWritingAccess, async (req, res) => {
@@ -744,65 +805,83 @@ function extractJson(text) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
     }
 
-        const rawImages = Array.isArray(req.body?.images) ? req.body.images : [];
-        let cleanImages = [];
-        if (rawImages.length) {
-            try {
-                cleanImages = rawImages.slice(0, 5).map((img) => {
-                    const mimeType = String(img?.mimeType || 'image/png');
-                    if (!/^image\/(png|jpeg|jpg|gif|webp)$/i.test(mimeType)) {
-                        throw new Error('Unsupported image type. Use PNG, JPEG, GIF or WebP (PDF pages are converted client-side).');
-                    }
-                    let data = String(img?.data || img?.dataUrl || '');
-                    const comma = data.indexOf(',');
-                    if (data.startsWith('data:') && comma !== -1) data = data.slice(comma + 1);
-                    if (!data || data.length > 20_000_000) throw new Error('Image payload too large.');
-                    return { data, mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType };
-                });
-            } catch (error) {
-                return res.status(400).json({ error: error.message });
-            }
-        }
-
-        const fullPrompt = `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation, no tool use.`;
-
     try {
-        let resultText;
-        if (cleanImages.length) {
-            const agent = await Agent.create({
-                apiKey,
-                model: { id: 'composer-2.5' },
-                local: { cwd: __dirname },
-            });
-            const run = await agent.send({
-                text: fullPrompt,
-                images: cleanImages,
-            });
-            const result = await run.wait();
-            if (result.status !== 'finished' || !result.result) {
-                const message = result.error?.message || 'Cursor AI generation failed';
-                return res.status(500).json({ error: message });
-            }
-            resultText = result.result;
-        } else {
-            const result = await Agent.prompt(fullPrompt, {
-                apiKey,
-                model: { id: 'composer-2.5' },
-                local: { cwd: __dirname },
-            });
-
-            if (result.status !== 'finished' || !result.result) {
-                const message = result.error?.message || 'Cursor AI generation failed';
-                return res.status(500).json({ error: message });
-            }
-            resultText = result.result;
-        }
-
-        const parsed = extractJson(resultText);
+        const parsed = await runVisionJsonPrompt({
+            apiKey,
+            prompt,
+            images: Array.isArray(req.body?.images) ? req.body.images : [],
+        });
         res.json(parsed);
     } catch (error) {
         console.error('Generation error:', error);
-            res.status(500).json({ error: error.message || 'Failed to generate content' });
+        const status = /Unsupported image|too large|valid JSON/i.test(error.message || '') ? 400 : 500;
+        res.status(status).json({ error: error.message || 'Failed to generate content' });
+    }
+    });
+
+    /**
+     * Primary English Exam Simulator — same vision upload path as Matura Writing Assessment,
+     * but with friendly PE / E8 email examiner feedback (not Matura 13-point criteria).
+     */
+    app.post('/api/assess-pe-exam', requireWritingAccess, async (req, res) => {
+        const task = (req.body?.task || '').trim();
+        const essayText = (req.body?.essayText || '').trim();
+        const images = Array.isArray(req.body?.images) ? req.body.images : [];
+        const level = String(req.body?.level || 'A2');
+        const bullets = Array.isArray(req.body?.bullets) ? req.body.bullets : [];
+        const minWords = Number(req.body?.minWords) || 50;
+        const maxWords = Number(req.body?.maxWords) || 120;
+        const requiredWords = Array.isArray(req.body?.requiredWords) ? req.body.requiredWords : [];
+
+        if (!task) {
+            return res.status(400).json({ error: 'Exam task is required.' });
+        }
+        if (!essayText && images.length === 0) {
+            return res.status(400).json({ error: 'Upload at least one image/PDF page or type the email.' });
+        }
+
+        const apiKey = process.env.CURSOR_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+        }
+
+        const prompt = `You are a friendly English examiner for CEFR ${level} / Polish primary & lower-secondary school writing (email / short message).
+
+GRADING: Completely IGNORE capitalisation in the student's typed answer — upper/lowercase never affects correctness. Judge spelling, vocabulary, grammar and meaning only.
+
+EXAM TASK:
+"""
+${task}
+"""
+
+Required content points: ${JSON.stringify(bullets)}
+Word limit: ${minWords}-${maxWords}
+${requiredWords.length ? `MANDATORY glossary words the student should use (case-insensitive): ${JSON.stringify(requiredWords)}.` : ''}
+
+${essayText ? `TYPED / PASTED EMAIL (may be incomplete — also use any attached images of the handwritten or printed email):\n"""\n${essayText}\n"""` : 'No typed transcript was provided. Read the email from the attached image(s) of the handwritten or printed work.'}
+
+Evaluate length, bullet coverage, cohesion, and language adequacy for ${level} (do not demand higher-level vocabulary).
+If handwriting is partly illegible, say so briefly but still assess what is readable.
+Do not invent content that is not in the email.
+Address the student in the second person ("you").
+
+Return ONLY valid JSON:
+{
+  "valid": true,
+  "points": 100,
+  "wordCount": 0,
+  "bulletsCovered": 0,
+  "bulletsTotal": ${Math.max(bullets.length, 1)},
+  "message": "HTML-safe multi-line feedback in English with short section labels for Length, Content, Cohesion, Summary."
+}`;
+
+        try {
+            const parsed = await runVisionJsonPrompt({ apiKey, prompt, images });
+            res.json(parsed);
+        } catch (error) {
+            console.error('Assess-pe-exam error:', error);
+            const status = /Unsupported image|too large|valid JSON|required/i.test(error.message || '') ? 400 : 500;
+            res.status(status).json({ error: error.message || 'Failed to assess exam email' });
         }
     });
 
@@ -856,17 +935,7 @@ function extractJson(text) {
 
         let cleanImages;
         try {
-            cleanImages = images.slice(0, 5).map((img) => {
-                const mimeType = String(img?.mimeType || 'image/png');
-                if (!/^image\/(png|jpeg|jpg|gif|webp)$/i.test(mimeType)) {
-                    throw new Error('Unsupported image type. Use PNG, JPEG, GIF or WebP (PDF pages are converted client-side).');
-                }
-                let data = String(img?.data || '');
-                const comma = data.indexOf(',');
-                if (data.startsWith('data:') && comma !== -1) data = data.slice(comma + 1);
-                if (!data || data.length > 20_000_000) throw new Error('Image payload too large.');
-                return { data, mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType };
-            });
+            cleanImages = cleanVisionImages(images);
         } catch (error) {
             return res.status(400).json({ error: error.message });
         }
