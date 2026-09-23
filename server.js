@@ -51,6 +51,9 @@ import {
     getUserById,
     getMaturaAssessAvailability,
     recordMaturaAssessUsage,
+    listTestCountdownPlans,
+    saveTestCountdownPlan,
+    deleteTestCountdownPlan,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
 import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, checkoutUrls } from './billing.js';
@@ -494,6 +497,35 @@ async function start() {
         try {
             const ok = await deleteWordSet(Number(req.params.id), req.user.id);
             if (!ok) return res.status(404).json({ error: 'Not found' });
+            res.json({ deleted: true });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.get('/api/test-countdown', requireLogin, async (req, res) => {
+        try {
+            const plans = await listTestCountdownPlans(req.user.id);
+            res.json({ plans });
+        } catch (err) { res.status(500).json({ error: err.message }); }
+    });
+
+    app.put('/api/test-countdown/:id', requireLogin, async (req, res) => {
+        try {
+            const plan = req.body?.plan;
+            if (!plan || typeof plan !== 'object' || Array.isArray(plan)) {
+                return res.status(400).json({ error: 'Plan is required' });
+            }
+            if (String(plan.id) !== String(req.params.id)) {
+                return res.status(400).json({ error: 'Plan id mismatch' });
+            }
+            await saveTestCountdownPlan(req.user.id, plan);
+            res.json({ ok: true });
+        } catch (err) { res.status(400).json({ error: err.message }); }
+    });
+
+    app.delete('/api/test-countdown/:id', requireLogin, async (req, res) => {
+        try {
+            const deleted = await deleteTestCountdownPlan(req.user.id, req.params.id);
+            if (!deleted) return res.status(404).json({ error: 'Not found' });
             res.json({ deleted: true });
         } catch (err) { res.status(500).json({ error: err.message }); }
     });

@@ -21,6 +21,8 @@
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
     <script src="pe-line-up.js"></script>
+    <link rel="stylesheet" href="test-countdown.css">
+    <script type="module" src="test-countdown.js"></script>
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="live-game-client.js" defer></script>
     
@@ -2289,6 +2291,7 @@
 
                 <h3>Vocab Review</h3>
                 <div class="guide-item"><strong>Classic Flashcards</strong><p>Paste a glossary, flip each card, then mark Know / Don’t know. Unknown cards stay in the deck until you master them.</p></div>
+                <div class="guide-item"><strong>Test Countdown</strong><p>Pick a word set and a test date. LingoSpark builds a daily mix of new words and reviews that peaks on that day. Choose Know / Don’t know, typed recall, or a mix. The readiness percentage is a study signal — it does not promise a pass. Open it from Vocab Review, or from Countdown on a word set.</p></div>
                 <div class="guide-item"><strong>Memory Flip</strong><p>Find matching term-definition pairs by flipping two cards at a time. Clear the board in as few attempts as possible.</p></div>
                 <div class="guide-item"><strong>Word Repair</strong><p>You get a definition plus a broken spelling. Type the correct term to repair it and build a streak.</p></div>
                 <div class="guide-item"><strong>Speed Match Sprint</strong><p>Race the clock: tap the term that matches each definition. Correct answers add time and streak points; mistakes cost seconds.</p></div>
@@ -2340,7 +2343,7 @@
                 <a href="#/vocab" class="hub-square">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
                     <span class="hub-title">Vocab Review</span>
-                    <span class="hub-sub">Flashcards, Bomb, Grid &amp; Auction — free forever</span>
+                    <span class="hub-sub">Flashcards, Test Countdown, Bomb &amp; Auction — free forever</span>
                 </a>
                 <a href="#/team" class="hub-square team">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
@@ -2428,6 +2431,7 @@
                 </div>
                 <div class="grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-hourglass-half"></i></div><h2>Test Countdown</h2><p>Set a test date for a word set. Get a daily plan of new words and reviews that builds toward that day.</p><a href="#/countdown" class="btn btn-outline" onclick="return startTestCountdown(event)">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-table-cells-large"></i></div><h2>Memory Flip</h2><p>Flip cards to match terms with definitions. Fewer attempts means a stronger score.</p><a href="#/setup/memory-flip" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-screwdriver-wrench"></i></div><h2>Word Repair</h2><p>Fix broken spellings and rebuild the correct term from the definition clue.</p><a href="#/setup/word-repair" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gauge-high"></i></div><h2>Speed Match Sprint</h2><p>Tap the matching term as fast as you can. Correct answers add time; mistakes burn the clock.</p><a href="#/setup/speed-match" class="btn btn-outline">Play Now</a></div>
@@ -3301,6 +3305,11 @@
             <div class="grid-board" id="tic-tac-toe-board"></div>
         </div>
 
+        <!-- VOCAB: TEST COUNTDOWN -->
+        <div id="screen-countdown" class="screen engine-container">
+            <div id="tc-root"></div>
+        </div>
+
         <!-- CORE VOCAB: FLASHCARDS -->
         <div id="screen-flashcard" class="screen engine-container">
             <div class="top-bar">
@@ -3871,6 +3880,13 @@
                 return;
             }
 
+            if (root === 'countdown') {
+                if (window.TestCountdown?.goBack?.()) return;
+                showScreen('home');
+                openHomeSection('vocab');
+                return;
+            }
+
             if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'live' || root === 'mysets' || root === 'progress') {
                 showScreen('home');
                 closeHomeSection();
@@ -3918,6 +3934,7 @@
                 setAppHash(code.length === 4 ? `live/join?code=${encodeURIComponent(code)}` : 'live/join');
             }
             else if (screenId === 'live-play') setAppHash('live/play');
+            else if (screenId === 'countdown') setAppHash(window.TestCountdown?.hashPath?.() || 'countdown');
             else setAppHash('game/' + screenId);
         }
 
@@ -3955,6 +3972,10 @@
                     } else {
                         openHomeSection(root);
                     }
+                } else if (root === 'countdown') {
+                    const sub = parts.slice(1).join('/');
+                    if (window.TestCountdown) TestCountdown.openRoute(sub);
+                    else window.__tcPendingRoute = sub;
                 } else if (root === 'auction') {
                     goToAuction();
                 } else if (root === 'set' && arg) {
@@ -4186,6 +4207,35 @@
             document.getElementById('auth-nav-progress')?.classList.toggle('active', !!progressActive);
         }
 
+        function startTestCountdown(event) {
+            if (event) event.preventDefault();
+            const ctx = {
+                wordSetId: currentWordSetId,
+                glossary: document.getElementById('glossary-input')?.value || '',
+            };
+            if (window.TestCountdown) {
+                setAppHash('countdown');
+                TestCountdown.open(ctx);
+            } else {
+                window.__tcHubContext = ctx;
+                window.__tcPendingRoute = '';
+                setAppHash('countdown');
+            }
+            return false;
+        }
+
+        function openTestCountdownForSet(kind, id) {
+            const launch = () => TestCountdown.openFromSet(kind, id);
+            if (window.TestCountdown) {
+                setAppHash('countdown');
+                launch();
+                return;
+            }
+            window.__tcPendingSet = { kind, id };
+            window.__tcPendingRoute = '';
+            setAppHash('countdown');
+        }
+
         function openWordSets() {
             if (!isLoggedIn()) { openAuthModal('login'); return; }
             const panel = document.getElementById('about-panel');
@@ -4290,6 +4340,7 @@
                     <div class="ws-card-meta">${esc(s.description || 'Ready-made set for every player')}</div>
                     <div class="ws-card-actions">
                         <button class="btn btn-blue" onclick="applyDemoWordSet('${esc(s.id)}', { closeMenu: true })"><i class="fa-solid fa-play"></i> Load</button>
+                        <button class="btn btn-outline" onclick="openTestCountdownForSet('demo','${esc(s.id)}')"><i class="fa-solid fa-hourglass-half"></i> Countdown</button>
                         <button class="btn btn-outline" onclick="editDemoWordSet('${esc(s.id)}')"><i class="fa-solid fa-pen"></i> Edit</button>
                     </div>
                 </div>
@@ -4387,6 +4438,7 @@
                         <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
                         <div class="ws-card-actions">
                             <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
+                            <button class="btn btn-outline" onclick="openTestCountdownForSet('saved', ${s.id})"><i class="fa-solid fa-hourglass-half"></i> Countdown</button>
                             <button class="btn btn-outline" onclick="shareWordSet(${s.id})"><i class="fa-solid fa-link"></i> ${s.share_token ? 'Copy link' : 'Share'}</button>
                             ${s.share_token ? `<button class="btn btn-grey" onclick="unshareWordSet(${s.id})" title="Stop sharing"><i class="fa-solid fa-link-slash"></i></button>` : ''}
                             <button class="btn btn-outline" onclick="editWordSet(${s.id})"><i class="fa-solid fa-pen"></i> Edit</button>
@@ -4908,7 +4960,7 @@
                         flashcards: 'Flashcards', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
-                        live_host: 'Live Spark (host)'
+                        live_host: 'Live Spark (host)', test_countdown: 'Test Countdown'
                     };
                     for (const t of data.gameTotals) {
                         html += `<div class="progress-tile"><h4>${gameNames[t.game_key] || t.game_key}</h4><div class="pt-val">${t.sessions_count}</div><div class="pt-label">sessions · ${t.total_points} pts · best ${t.best_score}</div></div>`;
@@ -4942,7 +4994,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', test_countdown:'Test Countdown', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -5150,7 +5202,7 @@
             document.body.classList.toggle('live-player-mode', screenId === 'live-join' || screenId === 'live-play');
             if (screenId !== 'live-play') document.body.classList.remove('live-game-active');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
-            const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match'];
+            const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match', 'countdown'];
             if (playScreens.includes(screenId) && !isLoggedIn()) startGuestLoginReminders();
             else if (!playScreens.includes(screenId)) stopGuestLoginReminders();
             let pageKey = screenId;
@@ -5314,6 +5366,7 @@
             if (document.getElementById('screen-live-host')?.classList.contains('active')) {
                 window.LiveGame?.onAuthChanged?.();
             }
+            window.TestCountdown?.onAuthChanged?.();
             return authState;
         }
         window.refreshAuth = refreshAuth;

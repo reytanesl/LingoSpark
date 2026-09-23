@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "test": "node --test test-countdown-scheduler.test.js",
     "packs": "node packs/build.mjs",
     "study-plan": "node packs/build-study-plan.mjs",
     "study-plan-pr": "node packs/build-matura-pr-study-plan.mjs"
