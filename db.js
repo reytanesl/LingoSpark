@@ -194,6 +194,17 @@ export async function initDb() {
         );
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_matura_reviews_user ON matura_essay_reviews (user_id, created_at DESC)`);
+
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS test_countdown_plans (
+            id TEXT NOT NULL,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            plan JSONB NOT NULL,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            PRIMARY KEY (user_id, id)
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_tc_plans_user ON test_countdown_plans (user_id, updated_at DESC)`);
 }
 
 /** Clear timed premium when the paid/admin period has ended (keeps access_until for history). */
@@ -1142,7 +1153,7 @@ export async function getSharedWordSetByToken(token) {
 // ==========================================
 
 const VALID_GAME_KEYS = new Set([
-    'flashcards', 'memory_flip', 'word_repair', 'speed_match', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'live_host',
+    'flashcards', 'memory_flip', 'word_repair', 'speed_match', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'live_host', 'test_countdown',
     'pe_boring', 'pe_detail', 'pe_link', 'pe_exam', 'pe_dictation', 'pe_colour', 'pe_line',
     'frank', 'trans', 'devil', 'bloat', 'tight', 'vocab_upgrade', 'matura',
 ]);
@@ -1381,4 +1392,41 @@ export async function getGamePopularityStats({ days = 30 } = {}) {
         },
         pages: result.rows,
     };
+}
+
+const TEST_COUNTDOWN_ID = /^[A-Za-z0-9_-]{8,80}$/;
+
+export async function listTestCountdownPlans(userId) {
+    const db = getPool();
+    const result = await db.query(
+        `SELECT plan FROM test_countdown_plans WHERE user_id = $1 ORDER BY updated_at DESC`,
+        [userId]
+    );
+    return result.rows.map((row) => row.plan);
+}
+
+export async function saveTestCountdownPlan(userId, plan) {
+    const id = String(plan?.id || '');
+    if (!TEST_COUNTDOWN_ID.test(id)) throw new Error('Invalid plan id');
+    const json = JSON.stringify(plan);
+    if (json.length > 400000) throw new Error('Plan is too large');
+    const db = getPool();
+    await db.query(
+        `INSERT INTO test_countdown_plans (id, user_id, plan, updated_at)
+         VALUES ($1, $2, $3::jsonb, NOW())
+         ON CONFLICT (user_id, id)
+         DO UPDATE SET plan = EXCLUDED.plan, updated_at = NOW()`,
+        [id, userId, json]
+    );
+    return plan;
+}
+
+export async function deleteTestCountdownPlan(userId, id) {
+    if (!TEST_COUNTDOWN_ID.test(String(id || ''))) return false;
+    const db = getPool();
+    const result = await db.query(
+        `DELETE FROM test_countdown_plans WHERE user_id = $1 AND id = $2`,
+        [userId, id]
+    );
+    return result.rowCount > 0;
 }

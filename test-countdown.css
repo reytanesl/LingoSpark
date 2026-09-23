@@ -1,0 +1,123 @@
+/* Test Countdown — sits on the shared Vocab Review buttons and colours. */
+#screen-countdown { text-align: left; }
+.tc-top { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; border-bottom: 2px solid #eee; padding-bottom: 0.9rem; }
+.tc-top h2 { margin: 0; color: var(--royal-blue); font-size: 1.45rem; }
+.tc-lang { display: inline-flex; border: 2px solid var(--royal-blue); border-radius: 999px; overflow: hidden; }
+.tc-lang button { font-family: var(--font-primary); background: transparent; color: var(--royal-blue); border: 0; padding: 0.28rem 0.7rem; font-weight: 700; cursor: pointer; }
+.tc-lang button.on { background: var(--royal-blue); color: #fff; }
+
+.tc-lead { color: var(--text-muted); margin: 0 0 1.1rem; }
+.tc-label { font-family: var(--font-primary); font-weight: 600; color: var(--royal-blue); display: block; margin: 0 0 0.4rem; }
+.tc-field { margin-bottom: 1.15rem; }
+.tc-select, .tc-date, .tc-minutes {
+    width: 100%; max-width: 420px; padding: 0.65rem 0.75rem; border: 2px solid var(--border-light);
+    border-radius: 8px; font: inherit; background: #fff; color: var(--text-dark);
+}
+.tc-select:focus, .tc-date:focus, .tc-minutes:focus { outline: none; border-color: var(--royal-blue); }
+.tc-hint { color: var(--text-muted); font-size: 0.88rem; margin: 0.35rem 0 0; }
+.tc-pills { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.tc-pill {
+    font-family: var(--font-primary); border: 2px solid var(--border-light); background: #fff; color: var(--text-dark);
+    border-radius: 999px; padding: 0.45rem 0.9rem; cursor: pointer; font-weight: 650; font-size: 0.92rem;
+}
+.tc-pill.on { border-color: var(--royal-blue); background: var(--royal-blue); color: #fff; }
+.tc-pill small { display: block; font-weight: 500; font-size: 0.72rem; opacity: 0.85; }
+.tc-minutes { max-width: 120px; margin-top: 0.55rem; }
+.tc-error { background: rgba(200, 16, 46, 0.08); color: var(--pillarbox-red); border-radius: 8px; padding: 0.7rem 0.85rem; margin: 0 0 1rem; }
+.tc-warning {
+    background: #fffbeb; border: 1px solid #f5d98a; border-left: 4px solid #d4a017; border-radius: 10px;
+    padding: 0.9rem 1rem; margin: 0.5rem 0 1rem;
+}
+.tc-warning h3 { margin: 0 0 0.4rem; color: #8a6100; font-size: 1.05rem; }
+.tc-warning p { margin: 0 0 0.7rem; }
+.tc-warning-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.tc-words { max-height: 220px; overflow: auto; border: 1px solid var(--border-light); border-radius: 8px; padding: 0.4rem 0.7rem; margin-top: 0.7rem; background: #fff; }
+.tc-words label { display: flex; gap: 0.45rem; align-items: flex-start; padding: 0.25rem 0; font-size: 0.92rem; }
+.tc-actions-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem; }
+.tc-guest {
+    margin-top: 1rem; background: rgba(1, 33, 105, 0.05); border-radius: 10px; padding: 0.75rem 0.9rem; font-size: 0.92rem;
+}
+
+.tc-hero { display: flex; flex-wrap: wrap; gap: 1rem; align-items: stretch; margin-bottom: 1rem; }
+.tc-count {
+    flex: 1 1 180px; background: var(--royal-blue); color: #fff; border-radius: 14px; padding: 1rem 1.1rem;
+}
+.tc-count strong { display: block; font-family: var(--font-primary); font-size: 1.7rem; line-height: 1.15; }
+.tc-count span { opacity: 0.85; font-size: 0.88rem; }
+.tc-ready {
+    flex: 2 1 240px; border: 2px solid var(--border-light); border-radius: 14px; padding: 0.85rem 1rem; background: #fff;
+}
+.tc-ready-row { display: flex; justify-content: space-between; gap: 0.5rem; align-items: baseline; }
+.tc-pct { font-family: var(--font-primary); font-size: 1.8rem; color: var(--royal-blue); font-weight: 750; }
+.tc-badge { font-family: var(--font-primary); font-size: 0.78rem; font-weight: 700; border-radius: 999px; padding: 0.2rem 0.6rem; }
+.tc-badge.on-track { background: rgba(0, 130, 59, 0.12); color: var(--success-green); }
+.tc-badge.behind { background: #fff4d6; color: #8a6100; }
+.tc-badge.at-risk { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); }
+.tc-bar { height: 8px; background: var(--light-grey); border-radius: 99px; margin: 0.45rem 0; overflow: hidden; }
+.tc-bar > span { display: block; height: 100%; background: var(--royal-blue); border-radius: 99px; }
+.tc-badge.behind ~ .tc-bar > span, .tc-ready.behind .tc-bar > span { background: #d4a017; }
+.tc-ready.at-risk .tc-bar > span { background: var(--pillarbox-red); }
+.tc-ready.on-track .tc-bar > span { background: var(--success-green); }
+.tc-disclaimer { color: var(--text-muted); font-size: 0.82rem; margin: 0.35rem 0 0; }
+.tc-explain { margin: 0.2rem 0 0; font-size: 0.92rem; }
+
+.tc-cal-wrap { overflow-x: auto; margin: 0.2rem 0 1rem; padding-bottom: 0.3rem; }
+.tc-cal { display: flex; gap: 0.4rem; min-width: min-content; }
+.tc-day {
+    width: 3.1rem; flex: 0 0 auto; text-align: center; border: 1px solid var(--border-light); border-radius: 10px;
+    padding: 0.35rem 0.15rem 0.45rem; background: #fff; font-size: 0.75rem;
+}
+.tc-day.past { opacity: 0.55; }
+.tc-day.today { border-color: var(--royal-blue); box-shadow: 0 0 0 2px rgba(1, 33, 105, 0.15); }
+.tc-day.test { background: rgba(200, 16, 46, 0.06); border-color: var(--pillarbox-red); }
+.tc-day b { display: block; font-size: 0.95rem; color: var(--royal-blue); }
+.tc-day .tc-dot { width: 6px; height: 6px; border-radius: 50%; margin: 0.25rem auto 0; background: transparent; }
+.tc-day .tc-dot.on { background: var(--royal-blue); }
+.tc-day .tc-dot.done { background: var(--success-green); }
+
+.tc-today {
+    background: var(--light-grey); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 1rem;
+}
+.tc-today strong { color: var(--royal-blue); }
+.tc-modes { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.9rem; }
+.tc-mode {
+    flex: 1 1 140px; text-align: left; border: 2px solid var(--border-light); background: #fff; border-radius: 12px;
+    padding: 0.65rem 0.75rem; cursor: pointer; font-family: var(--font-primary); color: var(--text-dark);
+}
+.tc-mode.on { border-color: var(--royal-blue); background: rgba(1, 33, 105, 0.05); }
+.tc-mode b { display: block; color: var(--royal-blue); }
+.tc-mode span { display: block; font-family: var(--font-secondary); font-weight: 400; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+.tc-session-meta { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; margin-bottom: 0.35rem; color: var(--text-muted); font-size: 0.9rem; }
+.tc-progress { height: 6px; background: var(--light-grey); border-radius: 99px; margin-bottom: 1rem; overflow: hidden; }
+.tc-progress > span { display: block; height: 100%; background: var(--royal-blue); }
+.tc-kicker { text-align: center; font-family: var(--font-primary); color: var(--royal-blue); font-weight: 700; margin: 0 0 0.6rem; }
+.tc-kicker.new { color: var(--success-green); }
+#screen-countdown .flip-card { cursor: pointer; }
+#screen-countdown .flip-card-front, #screen-countdown .flip-card-back {
+    font-size: 1.55rem; line-height: 1.3; overflow: auto; padding: 1.2rem;
+}
+.tc-answer-row { display: flex; justify-content: center; gap: 0.7rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.tc-typed-prompt { font-family: var(--font-primary); font-size: clamp(1.4rem, 4vw, 2rem); color: var(--royal-blue); text-align: center; font-weight: 700; margin: 0.4rem 0 1rem; }
+.tc-reveal {
+    text-align: center; border-radius: 12px; padding: 0.9rem 1rem; margin: 0.4rem auto 0.8rem; max-width: 460px;
+}
+.tc-reveal.ok { background: rgba(0, 130, 59, 0.1); color: var(--success-green); }
+.tc-reveal.bad { background: rgba(200, 16, 46, 0.08); color: var(--pillarbox-red); }
+.tc-reveal b { font-family: var(--font-primary); font-size: 1.4rem; display: block; }
+.tc-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem; margin: 0.8rem 0 1rem; }
+.tc-stat { background: var(--light-grey); border-radius: 12px; padding: 0.75rem; text-align: center; }
+.tc-stat b { display: block; font-family: var(--font-primary); font-size: 1.5rem; color: var(--royal-blue); }
+.tc-list { display: grid; gap: 0.7rem; }
+.tc-plan-card {
+    border: 1px solid var(--border-light); border-radius: 12px; padding: 0.9rem 1rem; background: #fff;
+    display: flex; justify-content: space-between; gap: 0.7rem; align-items: center; flex-wrap: wrap;
+}
+.tc-plan-card h3 { margin: 0; color: var(--royal-blue); font-size: 1.05rem; }
+.tc-inline { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+    #screen-countdown.engine-container { padding: 1.1rem; }
+    .tc-count strong { font-size: 1.35rem; }
+    .tc-mode { flex-basis: 100%; }
+}
