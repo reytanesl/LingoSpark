@@ -15,6 +15,7 @@ import {
     listUsers,
     approveUser,
     revokeUser,
+    deleteUser,
     publicUser,
     hasWritingAccess,
     isAdminEmail,
@@ -410,6 +411,22 @@ async function start() {
             res.json({ user: publicUser(user), hasAccess: hasWritingAccess(user) });
         } catch (err) {
             res.status(500).json({ error: err.message });
+        }
+    });
+
+    app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+        try {
+            const id = Number(req.params.id);
+            if (!Number.isFinite(id)) return res.status(400).json({ error: 'Invalid user id' });
+            if (req.user && Number(req.user.id) === id) {
+                return res.status(400).json({ error: 'You cannot delete your own signed-in account.' });
+            }
+            const user = await deleteUser(id);
+            if (!user) return res.status(404).json({ error: 'User not found' });
+            res.json({ deleted: true, id: user.id, email: user.email });
+        } catch (err) {
+            const status = /Cannot delete the admin/i.test(err.message || '') ? 400 : 500;
+            res.status(status).json({ error: err.message || 'Failed to delete user' });
         }
     });
 

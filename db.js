@@ -341,6 +341,25 @@ export async function revokeUser(id) {
     return result.rows[0] || null;
 }
 
+/** Permanently delete a user account and cascade-owned data. Does not delete ADMIN_EMAIL. */
+export async function deleteUser(id) {
+    const db = getPool();
+    const existing = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+    const user = existing.rows[0];
+    if (!user) return null;
+    if (isAdminEmail(user.email)) {
+        throw new Error('Cannot delete the admin account.');
+    }
+    const email = (user.email || '').toLowerCase().trim();
+    if (email) {
+        await db.query(`DELETE FROM pending_bmc_payments WHERE LOWER(email) = $1`, [email]);
+    }
+    // Analytics has no FK — detach so rows stay for site stats without a dangling user id.
+    await db.query(`UPDATE analytics_page_visits SET user_id = NULL WHERE user_id = $1`, [id]);
+    const result = await db.query(`DELETE FROM users WHERE id = $1 RETURNING *`, [id]);
+    return result.rows[0] || null;
+}
+
 async function queuePendingBmcPayment(email, { membershipId = null, days = 7, maturaCredits = 0 } = {}) {
     const db = getPool();
     const normalized = (email || '').toLowerCase().trim();

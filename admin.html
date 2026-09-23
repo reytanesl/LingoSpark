@@ -398,6 +398,7 @@
                     <td class="actions">
                         <button class="btn btn-green" onclick="openApproveModal(${u.id})"><i class="fa-solid fa-check"></i> Approve</button>
                         <button class="btn btn-red" onclick="revoke(${u.id})" ${u.status !== 'active' ? 'disabled' : ''}><i class="fa-solid fa-ban"></i> Revoke</button>
+                        <button class="btn btn-grey" onclick="removeUser(${u.id})" title="Remove this email from the list permanently"><i class="fa-solid fa-trash"></i> Remove</button>
                     </td>
                 </tr>
             `).join('');
@@ -629,6 +630,28 @@
         async function revoke(id) {
             await fetch(`/api/admin/users/${id}/revoke`, { method: 'POST', credentials: 'include' });
             loadUsers();
+        }
+
+        async function removeUser(id) {
+            const user = allUsers.find((u) => Number(u.id) === Number(id));
+            const label = user ? (user.email || user.name || `#${id}`) : `#${id}`;
+            if (!confirm(`Remove ${label} from the list permanently?\n\nThis deletes the account. They can register again later with the same email.`)) {
+                return;
+            }
+            try {
+                const res = await fetch(`/api/admin/users/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    alert(data.error || 'Remove failed');
+                    return;
+                }
+                loadUsers();
+            } catch (err) {
+                alert(err.message || 'Remove failed');
+            }
         }
 
         document.getElementById('approve-custom-days')?.addEventListener('input', updateApproveUntilPreview);
