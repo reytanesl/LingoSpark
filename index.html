@@ -21,6 +21,7 @@
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
     <script src="pe-line-up.js"></script>
+    <script src="test-countdown.js"></script>
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="live-game-client.js" defer></script>
     
@@ -1547,6 +1548,27 @@
         
         .flashcard-controls { display: flex; justify-content: center; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .flashcard-controls.visible { opacity: 1; pointer-events: auto; }
+
+        /* Test Countdown */
+        .tc-pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.45rem; }
+        .tc-day-strip { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 0.85rem 0 1rem; }
+        .tc-day-pill {
+            min-width: 2.2rem; height: 2.2rem; border-radius: 999px; border: 2px solid var(--border-light);
+            background: #fff; font-family: var(--font-primary); font-weight: 700; color: var(--royal-blue); cursor: default;
+        }
+        .tc-day-pill.is-today { border-color: var(--royal-blue); background: #eef4ff; }
+        .tc-day-pill.is-test { border-color: var(--pillarbox-red); color: var(--pillarbox-red); }
+        #tc-readiness[data-level="onTrack"] { color: var(--success-green); }
+        #tc-readiness[data-level="behind"] { color: #b45309; }
+        #tc-readiness[data-level="atRisk"] { color: var(--pillarbox-red); }
+        .tc-home-stats { text-align: center; margin: 0.5rem 0 1rem; }
+        .tc-home-stats .tc-countdown {
+            font-family: var(--font-primary); font-size: 1.45rem; font-weight: 800; color: var(--royal-blue); margin: 0 0 0.35rem;
+        }
+        .tc-warn {
+            background: rgba(200, 16, 46, 0.08); border-left: 4px solid var(--pillarbox-red);
+            border-radius: 8px; padding: 0.75rem 1rem; margin: 0.75rem 0; color: var(--text-dark); font-size: 0.9rem;
+        }
         .fc-stats-overlay { display: none; background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; z-index: 11; padding: 1rem; box-sizing: border-box; }
         .fc-stats-overlay.open { display: flex; }
         .fc-stats-box { background: white; padding: 1.5rem; border-radius: 12px; width: 100%; max-width: 640px; max-height: 85vh; overflow: auto; border-top: 6px solid var(--royal-blue); text-align: left; }
@@ -2289,6 +2311,7 @@
 
                 <h3>Vocab Review</h3>
                 <div class="guide-item"><strong>Classic Flashcards</strong><p>Paste a glossary, flip each card, then mark Know / Don’t know. Unknown cards stay in the deck until you master them.</p></div>
+                <div class="guide-item"><strong>Test Countdown</strong><p>Set your vocab test date, pick a daily budget, and follow a plan of new words plus reviews that peaks on the day — Know/Don’t know, typed recall, or mixed.</p></div>
                 <div class="guide-item"><strong>Memory Flip</strong><p>Find matching term-definition pairs by flipping two cards at a time. Clear the board in as few attempts as possible.</p></div>
                 <div class="guide-item"><strong>Word Repair</strong><p>You get a definition plus a broken spelling. Type the correct term to repair it and build a streak.</p></div>
                 <div class="guide-item"><strong>Speed Match Sprint</strong><p>Race the clock: tap the term that matches each definition. Correct answers add time and streak points; mistakes cost seconds.</p></div>
@@ -2428,6 +2451,7 @@
                 </div>
                 <div class="grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-hourglass-half"></i></div><h2>Test Countdown</h2><p>Set a vocab test date and get a daily plan of new words and reviews that peaks on the day.</p><a href="#/setup/test-countdown" class="btn btn-outline">Plan Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-table-cells-large"></i></div><h2>Memory Flip</h2><p>Flip cards to match terms with definitions. Fewer attempts means a stronger score.</p><a href="#/setup/memory-flip" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-screwdriver-wrench"></i></div><h2>Word Repair</h2><p>Fix broken spellings and rebuild the correct term from the definition clue.</p><a href="#/setup/word-repair" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gauge-high"></i></div><h2>Speed Match Sprint</h2><p>Tap the matching term as fast as you can. Correct answers add time; mistakes burn the clock.</p><a href="#/setup/speed-match" class="btn btn-outline">Play Now</a></div>
@@ -2603,6 +2627,37 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline" style="margin-top: 0.75rem;" onclick="openFcStatsFromSetup()"><i class="fa-solid fa-chart-bar"></i> View word stats</button>
+                </div>
+
+                <div class="form-group" id="test-countdown-settings" style="display: none;">
+                    <div class="pe-instr" style="margin-bottom: 1rem;">
+                        <div class="pe-instr-head">
+                            <strong id="tc-setup-title">Plan for your vocab test</strong>
+                            <button type="button" class="pe-flag-btn" title="Polish / English" onclick="TestCountdown.toggleLang()">🇵🇱</button>
+                        </div>
+                        <div class="pe-instr-en" id="tc-setup-helper">We’ll schedule new words and reviews so you’re sharp on the day.</div>
+                    </div>
+                    <label id="tc-date-label"><i class="fa-solid fa-calendar-day"></i> Test date</label>
+                    <input type="date" id="tc-test-date" onchange="TestCountdown.onSetupDateChange()" style="padding:0.55rem 0.75rem;border:2px solid var(--border-light);border-radius:8px;font-size:1rem;margin-top:0.35rem;max-width:220px;display:block;">
+                    <div id="tc-cram-warn" class="tc-warn" hidden></div>
+
+                    <label id="tc-budget-label" style="display:block;margin-top:1rem;"><i class="fa-solid fa-clock"></i> Daily budget</label>
+                    <div class="tc-pill-row live-option-grid live-option-grid--3" style="margin-top:0.45rem;">
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="10" onchange="TestCountdown.onBudgetChange()"><span class="live-option-title">10 min</span></label>
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="15" checked onchange="TestCountdown.onBudgetChange()"><span class="live-option-title">15 min</span></label>
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="20" onchange="TestCountdown.onBudgetChange()"><span class="live-option-title">20 min</span></label>
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="custom" onchange="TestCountdown.onBudgetChange()"><span class="live-option-title" data-tc-i18n="custom">Custom</span></label>
+                    </div>
+                    <div id="tc-budget-custom-wrap" hidden style="margin-top:0.55rem;">
+                        <input type="number" id="tc-budget-custom" min="5" max="90" value="25" style="padding:0.5rem;width:100px;border:2px solid var(--border-light);border-radius:8px;"> <span data-tc-i18n="min">min</span>
+                    </div>
+
+                    <label id="tc-intensity-label" style="display:block;margin-top:1rem;"><i class="fa-solid fa-gauge-high"></i> Intensity</label>
+                    <div class="tc-pill-row live-option-grid live-option-grid--3" style="margin-top:0.45rem;">
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-intensity" value="calm"><span class="live-option-title" data-tc-i18n="calm">Calm</span></label>
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-intensity" value="standard" checked><span class="live-option-title" data-tc-i18n="standard">Standard</span></label>
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-intensity" value="cram"><span class="live-option-title" data-tc-i18n="cram">Cram</span></label>
+                    </div>
                 </div>
             </div>
 
@@ -3323,6 +3378,71 @@
             </div>
         </div>
 
+        <!-- CORE VOCAB: TEST COUNTDOWN -->
+        <div id="screen-test-countdown" class="screen engine-container">
+            <div class="top-bar">
+                <button type="button" class="btn btn-grey" onclick="TestCountdown.exitToVocab()"><i class="fa-solid fa-arrow-left"></i> <span data-tc-i18n="exit">Exit</span></button>
+                <button type="button" class="pe-flag-btn" id="tc-lang-btn" title="EN / PL" onclick="TestCountdown.toggleLang()">🇵🇱</button>
+                <button type="button" class="btn btn-outline" onclick="goToSetup('test-countdown')"><i class="fa-solid fa-sliders"></i> <span data-tc-i18n="editSetup">Change settings</span></button>
+            </div>
+
+            <div id="tc-panel-home">
+                <div class="tc-home-stats">
+                    <p class="tc-countdown" id="tc-countdown">Days until test: —</p>
+                    <p id="tc-readiness">Readiness: —</p>
+                </div>
+                <div class="tc-day-strip" id="tc-day-strip" aria-label="Plan days"></div>
+                <p id="tc-today-load" style="text-align:center;font-weight:700;color:var(--royal-blue);">Today’s load: —</p>
+                <p id="tc-catchup" class="tc-warn" hidden></p>
+                <div id="tc-weak-list" hidden style="max-width:520px;margin:0.75rem auto 1rem;"></div>
+
+                <div class="form-group" style="max-width:520px;margin:1rem auto;">
+                    <label data-tc-i18n="modeLabel">Session mode</label>
+                    <div class="live-option-grid live-option-grid--3" style="margin-top:0.45rem;">
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-mode" value="know"><span class="live-option-title" data-tc-i18n="modeKnow">Know / Don’t know</span></label>
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-mode" value="typed"><span class="live-option-title" data-tc-i18n="modeTyped">Typed recall</span></label>
+                        <label class="live-option live-option--compact"><input type="radio" name="tc-mode" value="mixed" checked><span class="live-option-title" data-tc-i18n="modeMixed">Mixed</span></label>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:1rem;">
+                    <button type="button" class="btn btn-blue" id="tc-start-btn" style="padding:0.85rem 1.75rem;" onclick="TestCountdown.startSession()">Start today’s session</button>
+                </div>
+            </div>
+
+            <div id="tc-panel-session" hidden>
+                <p id="tc-session-progress" style="text-align:center;font-weight:700;color:var(--royal-blue);margin-bottom:0.75rem;">Card 1 of 1</p>
+                <div id="tc-know-wrap">
+                    <p id="tc-flip-hint" style="text-align:center;color:var(--text-muted);font-size:0.9rem;margin:-0.25rem 0 0.75rem;">Tap card to flip</p>
+                    <div class="flip-card" id="tc-flip-card" onclick="TestCountdown.flipSessionCard()">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front" id="tc-flip-front">Prompt</div>
+                            <div class="flip-card-back" id="tc-flip-back">Answer</div>
+                        </div>
+                    </div>
+                    <div class="flashcard-controls" id="tc-know-controls">
+                        <button class="btn btn-red" onclick="event.stopPropagation(); TestCountdown.markKnow(false)"><i class="fa-solid fa-xmark"></i> <span data-tc-i18n="dontKnow">Don't know</span></button>
+                        <button class="btn btn-green" onclick="event.stopPropagation(); TestCountdown.markKnow(true)"><i class="fa-solid fa-check"></i> <span data-tc-i18n="know">Know</span></button>
+                    </div>
+                </div>
+                <div id="tc-typed-wrap" hidden>
+                    <div class="word-prompt" id="tc-typed-prompt">Definition</div>
+                    <input type="text" id="tc-typed-input" class="game-input" placeholder="Type the term" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();TestCountdown.checkTyped();}">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-blue" id="tc-typed-check" onclick="TestCountdown.checkTyped()"><span data-tc-i18n="check">Check</span></button>
+                        <button type="button" class="btn btn-outline" id="tc-typed-next" hidden onclick="TestCountdown.nextTyped()"><span data-tc-i18n="next">Next</span></button>
+                    </div>
+                    <div id="tc-typed-feedback" class="feedback" style="margin-top:0.85rem;"></div>
+                </div>
+            </div>
+
+            <div id="tc-panel-summary" hidden>
+                <div id="tc-summary-body" style="text-align:center;max-width:520px;margin:1rem auto;"></div>
+                <div style="text-align:center;">
+                    <button type="button" class="btn btn-blue" onclick="TestCountdown.backToHome()" data-tc-i18n="backHome">Back to plan</button>
+                </div>
+            </div>
+        </div>
+
         <!-- CORE VOCAB: MEMORY FLIP -->
         <div id="screen-memory-flip" class="screen engine-container">
             <div class="top-bar">
@@ -3790,7 +3910,7 @@
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
         const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
-        const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid']);
+        const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown']);
 
         function routePath(hash) {
             const raw = decodeURIComponent(String(hash || '').replace(/^#\/?/, '') || 'home');
@@ -3971,7 +4091,15 @@
                     else goToSetup(arg);
                 } else if (root === 'game' && arg) {
                     if (arg === 'auction') goToAuction();
-                    else if (VOCAB_GAMES.has(arg) || arg === 'odyssey') {
+                    else if (arg === 'test-countdown') {
+                        activeGame = arg;
+                        if (!parseGlossary()) {
+                            goToSetup(arg);
+                            return;
+                        }
+                        if (window.TestCountdown) TestCountdown.initFromRoute();
+                        else goToSetup(arg);
+                    } else if (VOCAB_GAMES.has(arg) || arg === 'odyssey') {
                         activeGame = arg;
                         if (!parseGlossary()) {
                             goToSetup(arg);
@@ -4905,7 +5033,7 @@
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin-bottom:0.6rem;">Games Played</h3>';
                     html += '<div class="progress-grid">';
                     const gameNames = {
-                        flashcards: 'Flashcards', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
+                        flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
@@ -4942,7 +5070,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -5150,7 +5278,7 @@
             document.body.classList.toggle('live-player-mode', screenId === 'live-join' || screenId === 'live-play');
             if (screenId !== 'live-play') document.body.classList.remove('live-game-active');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
-            const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match'];
+            const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match', 'test-countdown'];
             if (playScreens.includes(screenId) && !isLoggedIn()) startGuestLoginReminders();
             else if (!playScreens.includes(screenId)) stopGuestLoginReminders();
             let pageKey = screenId;
@@ -5595,7 +5723,7 @@
             activeGame = gameType;
             document.getElementById('setup-title').innerText = 'Game Setup';
             
-            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid'];
+            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown'];
             const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
             const hybridGames = ['odyssey'];
             
@@ -5603,9 +5731,11 @@
             document.getElementById('bomb-settings').style.display = (gameType === 'bomb') ? 'block' : 'none';
             document.getElementById('grid-settings').style.display = (gameType === 'grid') ? 'block' : 'none';
             document.getElementById('flashcard-settings').style.display = (gameType === 'flashcard') ? 'block' : 'none';
+            const tcSettings = document.getElementById('test-countdown-settings');
+            if (tcSettings) tcSettings.style.display = (gameType === 'test-countdown') ? 'block' : 'none';
             document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
             document.getElementById('mission-settings').style.display = (gameType === 'mission') ? 'block' : 'none';
-            document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType)) ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
+            document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType) || gameType === 'test-countdown') ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('pe-dictation-settings').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('pe-colour-settings').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
@@ -5634,6 +5764,18 @@
             }
             if (gameType === 'speed-match') {
                 document.getElementById('setup-title').innerText = 'Speed Match Sprint Setup';
+            }
+            if (gameType === 'test-countdown') {
+                document.getElementById('setup-title').innerText = 'Test Countdown';
+                if (window.TestCountdown) TestCountdown.prepareSetup();
+            }
+            const launchBtn = document.querySelector('#screen-setup button.btn.btn-blue[onclick*="launchSelectedGame"]');
+            if (launchBtn) {
+                if (gameType === 'test-countdown') {
+                    launchBtn.innerHTML = (window.TestCountdown ? TestCountdown.t('build') : 'Build my plan') + ' <i class="fa-solid fa-rocket"></i>';
+                } else {
+                    launchBtn.innerHTML = 'Launch Game <i class="fa-solid fa-rocket"></i>';
+                }
             }
             if (vocabGames.includes(gameType) || hybridGames.includes(gameType)) {
                 renderDemoSetButtons();
@@ -5709,7 +5851,7 @@
         });
 
         function launchSelectedGame() {
-            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid'];
+            const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown'];
             const hybridGames = ['odyssey'];
             
             if(vocabGames.includes(activeGame) || hybridGames.includes(activeGame)) {
@@ -5718,6 +5860,11 @@
 
             if (activeGame === 'mission') {
                 if (!resolveSelectedMission()) return;
+            }
+
+            if (activeGame === 'test-countdown') {
+                if (window.TestCountdown) TestCountdown.buildPlanFromSetup();
+                return;
             }
             
             showScreen(activeGame);
