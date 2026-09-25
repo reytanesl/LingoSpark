@@ -711,27 +711,96 @@
 
     /** Drag tiles into gaps — ids = full sentence tile ids; gaps = blank indices; distractors = wrong bank tiles. */
     const FILL_TASKS = [
+        // to be
         { ids: ['i', 'am', 'a', 'girl', 'dot'], gaps: [1], distractors: ['is', 'are', 'qmark'], family: 'be' },
         { ids: ['he', 'is', 'a', 'boy', 'dot'], gaps: [1], distractors: ['am', 'are', 'qmark'], family: 'be' },
         { ids: ['they', 'are', 'friend-pl', 'dot'], gaps: [1], distractors: ['am', 'is', 'qmark'], family: 'be' },
         { ids: ['she', 'isnt', 'a', 'cat', 'dot'], gaps: [1], distractors: ['am-not', 'arent', 'is'], family: 'be' },
         { ids: ['you', 'arent', 'a', 'dog', 'dot'], gaps: [1], distractors: ['am-not', 'isnt', 'are'], family: 'be' },
+        { ids: ['i', 'am-not', 'a', 'bird', 'dot'], gaps: [1], distractors: ['isnt', 'arent', 'qmark'], family: 'be' },
+        { ids: ['we', 'are', 'friend-pl', 'dot'], gaps: [1], distractors: ['am', 'is', 'qmark'], family: 'be' },
+        // Wh-
         { ids: ['where', 'is', 'the', 'bag', 'qmark'], gaps: [0], distractors: ['who', 'what', 'dot'], family: 'wh' },
         { ids: ['what', 'is', 'on', 'the', 'table', 'qmark'], gaps: [0, 5], distractors: ['who', 'where', 'dot', 'are'], family: 'wh' },
         { ids: ['who', 'are', 'you', 'qmark'], gaps: [0, 3], distractors: ['what', 'where', 'dot', 'is'], family: 'wh' },
         { ids: ['how', 'are', 'you', 'qmark'], gaps: [0], distractors: ['who', 'what', 'dot'], family: 'wh' },
+        { ids: ['where', 'are', 'the', 'book-pl', 'qmark'], gaps: [1], distractors: ['is', 'am', 'dot'], family: 'wh' },
+        { ids: ['when', 'is', 'the', 'train', 'qmark'], gaps: [0], distractors: ['who', 'what', 'dot'], family: 'wh', ages: ['older'] },
+        { ids: ['why', 'is', 'the', 'bag', 'on', 'the', 'floor', 'qmark'], gaps: [0], distractors: ['who', 'where', 'dot'], family: 'wh', ages: ['older'] },
+        // and / or
         { ids: ['i', 'like', 'pizza', 'and', 'cake', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'is'], family: 'art' },
         { ids: ['i', 'like', 'tea', 'or', 'milk', 'dot'], gaps: [3], distractors: ['and', 'qmark', 'is'], family: 'art' },
+        { ids: ['they', 'like', 'apple-pl', 'and', 'grape-pl', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'is'], family: 'like' },
+        // There is / are + prep + furniture / room
         { ids: ['there-is', 'a', 'lamp', 'on', 'the', 'desk', 'dot'], gaps: [6], distractors: ['qmark', 'are', 'and'], family: 'is' },
+        { ids: ['there-is', 'a', 'lamp', 'on', 'the', 'desk', 'dot'], gaps: [3], distractors: ['under', 'in', 'qmark'], family: 'prep' },
+        { ids: ['there-are', 'two', 'cushion-pl', 'next-to', 'the', 'sofa', 'dot'], gaps: [3], distractors: ['on', 'under', 'in'], family: 'prep' },
+        { ids: ['there-is', 'a', 'cat', 'under', 'the', 'table', 'dot'], gaps: [3], distractors: ['on', 'in', 'above'], family: 'prep' },
+        { ids: ['there-is', 'a', 'poster', 'above', 'the', 'bed', 'dot'], gaps: [3], distractors: ['under', 'in', 'next-to'], family: 'prep' },
+        { ids: ['there-is', 'a', 'plant', 'near', 'the', 'window', 'dot'], gaps: [3], distractors: ['under', 'between', 'qmark'], family: 'prep' },
+        { ids: ['there-is', 'a', 'bin', 'behind', 'the', 'door', 'dot'], gaps: [3], distractors: ['in-front-of', 'on', 'under'], family: 'prep' },
+        { ids: ['there-is', 'a', 'mat', 'in-front-of', 'the', 'wardrobe', 'dot'], gaps: [3], distractors: ['behind', 'on', 'under'], family: 'prep', ages: ['older'] },
+        { ids: ['there-are', 'book-pl', 'between', 'the', 'lamp', 'and', 'the', 'clock', 'dot'], gaps: [2], distractors: ['next-to', 'on', 'under'], family: 'prep', ages: ['older'] },
         { ids: ['is-there', 'a', 'cat', 'on', 'the', 'sofa', 'qmark'], gaps: [6], distractors: ['dot', 'are', 'and'], family: 'is' },
-        { ids: ['i', 'can', 'swim', 'dot'], gaps: [3], distractors: ['qmark', 'and', 'or'], family: 'can' },
-        { ids: ['can', 'you', 'swim', 'qmark'], gaps: [3], distractors: ['dot', 'and', 'must'], family: 'can', ages: ['older'] },
+        { ids: ['are-there', 'any', 'chair-pl', 'in', 'the', 'garden', 'qmark'], gaps: [1], distractors: ['some', 'a', 'dot'], family: 'are', ages: ['older'] },
+        { ids: ['there-are', 'some', 'picture-pl', 'on', 'the', 'wall', 'dot'], gaps: [1], distractors: ['any', 'a', 'qmark'], family: 'are' },
+        { ids: ['there-arent', 'any', 'pen-pl', 'in', 'the', 'bag', 'dot'], gaps: [1], distractors: ['some', 'a', 'the'], family: 'are' },
+        { ids: ['there-is', 'an', 'apple', 'on', 'the', 'plate', 'dot'], gaps: [1], distractors: ['a', 'some', 'any'], family: 'art' },
+        { ids: ['there-is', 'a', 'biscuit', 'on', 'the', 'plate', 'dot'], gaps: [1], distractors: ['an', 'some', 'any'], family: 'art' },
+        // food
+        { ids: ['i', 'like', 'pizza', 'dot'], gaps: [2], distractors: ['milk', 'water', 'qmark'], family: 'like' },
+        { ids: ['i', 'dont', 'like', 'milk', 'dot'], gaps: [3], distractors: ['pizza', 'cake', 'swim'], family: 'like' },
+        { ids: ['they', 'like', 'grape-pl', 'dot'], gaps: [2], distractors: ['tea', 'water', 'qmark'], family: 'like' },
+        { ids: ['we', 'like', 'sandwich-pl', 'and', 'juice', 'dot'], gaps: [2], distractors: ['swim', 'run', 'qmark'], family: 'like' },
+        // have got + tech / toys / clothes
         { ids: ['she', 'has-got', 'a', 'key', 'dot'], gaps: [1], distractors: ['have-got', 'is', 'qmark'], family: 'have' },
+        { ids: ['i', 'have-got', 'a', 'mobile', 'dot'], gaps: [3], distractors: ['laptop', 'bag', 'qmark'], family: 'have' },
+        { ids: ['he', 'has-got', 'a', 'bike', 'dot'], gaps: [3], distractors: ['ball', 'teddy', 'qmark'], family: 'have' },
         { ids: ['we', 'have-got', 'a', 'dog', 'and', 'a', 'cat', 'dot'], gaps: [4], distractors: ['or', 'qmark', 'is'], family: 'have' },
-        { ids: ['where', 'are', 'the', 'book-pl', 'qmark'], gaps: [1], distractors: ['is', 'am', 'dot'], family: 'wh' },
-        { ids: ['i', 'am-not', 'a', 'bird', 'dot'], gaps: [1], distractors: ['isnt', 'arent', 'qmark'], family: 'be' },
-        { ids: ['when', 'is', 'the', 'train', 'qmark'], gaps: [0], distractors: ['who', 'what', 'dot'], family: 'wh', ages: ['older'] },
-        { ids: ['why', 'is', 'the', 'bag', 'on', 'the', 'floor', 'qmark'], gaps: [0], distractors: ['who', 'where', 'dot'], family: 'wh', ages: ['older'] }
+        { ids: ['you', 'have-got', 'a', 'hat', 'dot'], gaps: [3], distractors: ['coat', 'shoe', 'qmark'], family: 'have' },
+        { ids: ['they', 'havent-got', 'a', 'tablet', 'dot'], gaps: [1], distractors: ['hasnt-got', 'have-got', 'is'], family: 'have', ages: ['older'] },
+        { ids: ['she', 'hasnt-got', 'a', 'scarf', 'dot'], gaps: [1], distractors: ['havent-got', 'has-got', 'are'], family: 'have' },
+        // school
+        { ids: ['there-is', 'a', 'pencil', 'in', 'the', 'pencil-case', 'dot'], gaps: [2], distractors: ['pen', 'ruler', 'rubber'], family: 'is' },
+        { ids: ['there-are', 'two', 'book-pl', 'on', 'the', 'desk', 'dot'], gaps: [1], distractors: ['one', 'three', 'some'], family: 'are' },
+        { ids: ['i', 'have-got', 'a', 'ruler', 'and', 'a', 'rubber', 'dot'], gaps: [3], distractors: ['crayon', 'glue', 'qmark'], family: 'have' },
+        // animals
+        { ids: ['there-is', 'a', 'rabbit', 'in', 'the', 'garden', 'dot'], gaps: [2], distractors: ['duck', 'mouse', 'dog'], family: 'is', ages: ['older'] },
+        { ids: ['there-are', 'two', 'duck-pl', 'near', 'the', 'park', 'dot'], gaps: [2], distractors: ['cat-pl', 'bird-pl', 'qmark'], family: 'are', ages: ['older'] },
+        // house
+        { ids: ['there-is', 'a', 'fridge', 'in', 'the', 'kitchen', 'dot'], gaps: [5], distractors: ['bedroom', 'bathroom', 'garden'], family: 'is', ages: ['older'] },
+        { ids: ['there-is', 'a', 'bed', 'in', 'the', 'bedroom', 'dot'], gaps: [5], distractors: ['kitchen', 'bathroom', 'balcony'], family: 'is', ages: ['older'] },
+        { ids: ['there-is', 'a', 'towel', 'in', 'the', 'bathroom', 'dot'], gaps: [2], distractors: ['sink', 'mirror', 'qmark'], family: 'is', ages: ['older'] },
+        // can + verbs
+        { ids: ['i', 'can', 'swim', 'dot'], gaps: [3], distractors: ['qmark', 'and', 'or'], family: 'can' },
+        { ids: ['i', 'can', 'swim', 'dot'], gaps: [2], distractors: ['run', 'jump', 'draw'], family: 'can' },
+        { ids: ['he', 'cant', 'ride', 'a', 'bike', 'dot'], gaps: [1], distractors: ['can', 'dont', 'must'], family: 'can' },
+        { ids: ['she', 'can', 'dance', 'dot'], gaps: [2], distractors: ['sing', 'read', 'paint'], family: 'can' },
+        { ids: ['we', 'can', 'climb', 'dot'], gaps: [2], distractors: ['throw', 'catch', 'kick'], family: 'can' },
+        { ids: ['can', 'you', 'swim', 'qmark'], gaps: [3], distractors: ['dot', 'and', 'must'], family: 'can', ages: ['older'] },
+        { ids: ['they', 'can', 'clap', 'and', 'smile', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'dont'], family: 'can' },
+        // like + food/toys
+        { ids: ['i', 'like', 'football', 'dot'], gaps: [1], distractors: ['dont', 'can', 'must'], family: 'like' },
+        { ids: ['you', 'dont', 'like', 'tea', 'dot'], gaps: [1], distractors: ['like', 'can', 'must'], family: 'like' },
+        // must / have to (older)
+        { ids: ['you', 'must', 'listen', 'dot'], gaps: [1], distractors: ['can', 'like', 'dont'], family: 'must', ages: ['older'] },
+        { ids: ['we', 'have-to', 'tidy', 'dot'], gaps: [1], distractors: ['must', 'can', 'like'], family: 'must', ages: ['older'] },
+        { ids: ['they', 'dont', 'have-to', 'shout', 'dot'], gaps: [2], distractors: ['must', 'can', 'like'], family: 'must', ages: ['older'] },
+        { ids: ['i', 'must', 'pack', 'dot'], gaps: [2], distractors: ['ask', 'wait', 'study'], family: 'must', ages: ['older'] },
+        // clothes
+        { ids: ['she', 'has-got', 'a', 'coat', 'and', 'a', 'hat', 'dot'], gaps: [3], distractors: ['shoe', 'sock', 'glove'], family: 'have' },
+        { ids: ['he', 'has-got', 'a', 't-shirt', 'dot'], gaps: [3], distractors: ['jumper', 'skirt', 'qmark'], family: 'have', ages: ['older'] },
+        // tech
+        { ids: ['i', 'have-got', 'a', 'laptop', 'dot'], gaps: [3], distractors: ['tablet', 'camera', 'radio'], family: 'have', ages: ['older'] },
+        { ids: ['there-is', 'a', 'charger', 'on', 'the', 'shelf', 'dot'], gaps: [2], distractors: ['headphone', 'mobile', 'key'], family: 'is', ages: ['older'] },
+        // numbers
+        { ids: ['there-are', 'three', 'pen-pl', 'in', 'the', 'bag', 'dot'], gaps: [1], distractors: ['one', 'two', 'some'], family: 'are', ages: ['older'] },
+        { ids: ['there-is', 'one', 'clock', 'on', 'the', 'wall', 'dot'], gaps: [1], distractors: ['two', 'three', 'some'], family: 'is', ages: ['older'] },
+        // punct + mix
+        { ids: ['is-there', 'a', 'message', 'on', 'the', 'desk', 'qmark'], gaps: [0], distractors: ['there-is', 'there-are', 'dot'], family: 'is' },
+        { ids: ['there-is', 'a', 'flower', 'on', 'the', 'rug', 'dot'], gaps: [2], distractors: ['leaf', 'plant', 'sticker'], family: 'is' },
+        { ids: ['i', 'can', 'paint', 'or', 'draw', 'dot'], gaps: [3], distractors: ['and', 'qmark', 'dont'], family: 'can' },
+        { ids: ['where', 'is', 'the', 'umbrella', 'qmark'], gaps: [3], distractors: ['bag', 'coat', 'ticket'], family: 'wh', ages: ['older'] }
     ];
 
     const CB_CSS = `
@@ -1925,8 +1994,10 @@
         sheetGroups().forEach((g) => { open[g.id] = false; });
         if (S.tab === 'creator') {
             open.who = true; open.be = true; open.wh = true; open.struct = true;
-            open.art = true; open.link = true; open.punct = true; open.grammar = true;
-            open.prep = true; open.food = true; open.furniture = true; open.room = true; open.verb = true;
+            open.art = true; open.link = true; open.punct = true; open.num = true; open.grammar = true;
+            open.prep = true; open.food = true; open.furniture = true; open.room = true;
+            open.school = true; open.clothes = true; open.toys = true; open.animals = true;
+            open.tech = true; open.house = true; open.other = true; open.verb = true;
             return open;
         }
         const g = S.goal;
