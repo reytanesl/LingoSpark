@@ -20,7 +20,10 @@
         verb: { bg: '#0369a1', light: '#e0f2fe', ink: '#0c4a6e', fa: 'fa-person-running', label: 'actions', labelPl: 'czynności' },
         subj: { bg: '#475569', light: '#e2e8f0', ink: '#1e293b', fa: 'fa-user', label: 'who', labelPl: 'kto' },
         neg:  { bg: '#9f1239', light: '#ffe4e6', ink: '#881337', fa: 'fa-ban', label: "don't", labelPl: "don't" },
-        num:  { bg: '#4f46e5', light: '#e0e7ff', ink: '#312e81', fa: 'fa-hashtag', label: 'numbers', labelPl: 'liczby' }
+        num:  { bg: '#4f46e5', light: '#e0e7ff', ink: '#312e81', fa: 'fa-hashtag', label: 'numbers', labelPl: 'liczby' },
+        be:   { bg: '#0e7490', light: '#cffafe', ink: '#155e75', fa: 'fa-equals', label: 'to be', labelPl: 'to be' },
+        wh:   { bg: '#6d28d9', light: '#ede9fe', ink: '#4c1d95', fa: 'fa-circle-question', label: 'question words', labelPl: 'pytania' },
+        punct:{ bg: '#334155', light: '#e2e8f0', ink: '#0f172a', fa: 'fa-circle', label: '. / ?', labelPl: '. / ?' }
     };
 
     const ICONIFY = 'https://api.iconify.design/';
@@ -41,7 +44,12 @@
         in: 'inbox-tray', on: 'up-arrow', under: 'down-arrow', above: 'cloud',
         'next-to': 'left-right-arrow', between: 'balance-scale',
         behind: 'face-with-peeking-eye', 'in-front-of': 'eyes', near: 'round-pushpin',
-        upstairs: 'ladder', downstairs: 'down-arrow', outside: 'sun-behind-cloud', and: 'plus',
+        upstairs: 'ladder', downstairs: 'down-arrow', outside: 'sun-behind-cloud', and: 'plus', or: 'twisted-rightwards-arrows',
+        am: 'blue-circle', is: 'blue-circle', are: 'green-circle',
+        'am-not': 'prohibited', isnt: 'prohibited', arent: 'prohibited',
+        who: 'bust-in-silhouette', what: 'red-question-mark', where: 'round-pushpin',
+        when: 'alarm-clock', why: 'thinking-face', how: 'gear',
+        dot: 'black-circle', qmark: 'red-question-mark',
         chair: 'chair', desk: 'icon-park:workbench', lamp: 'light-bulb', bin: 'wastebasket',
         table: 'icon-park:table', sofa: 'couch-and-lamp', cushion: 'tabler:pillow',
         shelf: 'books', mirror: 'mirror', poster: 'framed-picture', picture: 'framed-picture',
@@ -168,7 +176,31 @@
         tile('upstairs', 'upstairs', 'prep', 'prep', { fa: 'fa-stairs', gloss: 'up', glossPl: 'na górze', icon: '🪜', adverb: true, goals: ['is', 'are'], ages: ['older'] }),
         tile('downstairs', 'downstairs', 'prep', 'prep', { fa: 'fa-stairs', gloss: 'down', glossPl: 'na dole', icon: '⬇️', adverb: true, goals: ['is', 'are'], ages: ['older'] }),
         tile('outside', 'outside', 'prep', 'prep', { fa: 'fa-tree', gloss: 'not in the house', glossPl: 'na dworze', icon: '🌤️', adverb: true, goals: ['is', 'are'] }),
-        tile('and', 'and', 'link', 'art', { fa: 'fa-plus', gloss: 'plus', glossPl: 'i', goals: ['is', 'are'], ages: ['older'] }),
+        tile('and', 'and', 'link', 'art', { fa: 'fa-plus', gloss: 'plus', glossPl: 'i', wordPl: 'i', goals: null }),
+        tile('or', 'or', 'link', 'art', { fa: 'fa-code-branch', gloss: 'choice', glossPl: 'lub', wordPl: 'lub', goals: null }),
+
+        tile('am', 'am', 'be', 'be', { fa: 'fa-equals', gloss: 'I + am', glossPl: 'ja + am', wordPl: 'jestem', goals: null }),
+        tile('is', 'is', 'be', 'be', { fa: 'fa-equals', gloss: 'he / she / it', glossPl: 'on / ona / to', wordPl: 'jest', goals: null }),
+        tile('are', 'are', 'be', 'be', { fa: 'fa-equals', gloss: 'you / we / they', glossPl: 'ty / my / oni', wordPl: 'są / jesteś', goals: null }),
+        tile('am-not', "am not", 'be', 'be', { fa: 'fa-ban', gloss: 'I · no', glossPl: 'ja · nie', wordPl: 'nie jestem', goals: null }),
+        tile('isnt', "isn't", 'be', 'be', { fa: 'fa-ban', gloss: 'he / she · no', glossPl: 'on / ona · nie', wordPl: 'nie jest', goals: null }),
+        tile('arent', "aren't", 'be', 'be', { fa: 'fa-ban', gloss: 'you / we / they · no', glossPl: 'ty / my / oni · nie', wordPl: 'nie są', goals: null }),
+
+        tile('who', 'Who', 'wh', 'wh', { fa: 'fa-user', gloss: 'which person', glossPl: 'kto', wordPl: 'Kto', goals: null }),
+        tile('what', 'What', 'wh', 'wh', { fa: 'fa-cube', gloss: 'which thing', glossPl: 'co', wordPl: 'Co', goals: null }),
+        tile('where', 'Where', 'wh', 'wh', { fa: 'fa-location-dot', gloss: 'which place', glossPl: 'gdzie', wordPl: 'Gdzie', goals: null }),
+        tile('when', 'When', 'wh', 'wh', { fa: 'fa-clock', gloss: 'which time', glossPl: 'kiedy', wordPl: 'Kiedy', goals: null, ages: ['older'] }),
+        tile('why', 'Why', 'wh', 'wh', { fa: 'fa-question', gloss: 'reason', glossPl: 'dlaczego', wordPl: 'Dlaczego', goals: null, ages: ['older'] }),
+        tile('how', 'How', 'wh', 'wh', { fa: 'fa-gear', gloss: 'in what way', glossPl: 'jak', wordPl: 'Jak', goals: null }),
+
+        tile('dot', '.', 'punct', 'punct', {
+            fa: 'fa-circle', gloss: 'statement', glossPl: 'twierdzenie', wordPl: '.',
+            speak: '', goals: null, icon: '.'
+        }),
+        tile('qmark', '?', 'punct', 'punct', {
+            fa: 'fa-question', gloss: 'question', glossPl: 'pytanie', wordPl: '?',
+            speak: '', goals: null, icon: '?'
+        }),
 
         noun('chair', 'chair', 'chairs', '🪑', false, true, { wordPl: 'krzesło' }),
         noun('desk', 'desk', 'desks', '', false, true, { pic: 'desk', wordPl: 'biurko' }),
@@ -222,6 +254,8 @@
         noun('dog', 'dog', 'dogs', '🐶', false, false, { wordPl: 'pies' }),
         noun('bird', 'bird', 'birds', '🐦', false, false, { wordPl: 'ptak' }),
         noun('fish', 'fish', 'fish', '🐟', false, false, { wordPl: 'ryba' }),
+        noun('boy', 'boy', 'boys', '👦', false, false, { wordPl: 'chłopiec', goals: ['is', 'are', 'have', 'like'] }),
+        noun('girl', 'girl', 'girls', '👧', false, false, { wordPl: 'dziewczynka', goals: ['is', 'are', 'have', 'like'] }),
         noun('ball', 'ball', 'balls', '🏀', false, false, { wordPl: 'piłka' }),
         noun('bike', 'bike', 'bikes', '🚲', false, false, { wordPl: 'rower' }),
         noun('teddy', 'teddy', 'teddies', '🧸', false, false, { wordPl: 'miś' }),
@@ -467,7 +501,7 @@
             charger: 'tech', key: 'tech', radio: 'tech', camera: 'tech',
             garden: 'house', kitchen: 'house', bedroom: 'house', bathroom: 'house', 'living-room': 'house',
             balcony: 'house', fridge: 'house', cooker: 'house', sink: 'house', towel: 'house',
-            car: 'other', friend: 'other', message: 'other', photo: 'other', ticket: 'other',
+            car: 'other', friend: 'other', boy: 'other', girl: 'other', message: 'other', photo: 'other', ticket: 'other',
             umbrella: 'other', magazine: 'other', bus: 'other', train: 'other', boat: 'other',
             flower: 'other', leaf: 'other', postcard: 'other', stamp: 'other', park: 'other'
         };
@@ -675,6 +709,31 @@
         { words: ['There aren\'t', 'any', 'buses', 'near', 'the', 'park'], family: 'are' }
     ];
 
+    /** Drag tiles into gaps — ids = full sentence tile ids; gaps = blank indices; distractors = wrong bank tiles. */
+    const FILL_TASKS = [
+        { ids: ['i', 'am', 'a', 'girl', 'dot'], gaps: [1], distractors: ['is', 'are', 'qmark'], family: 'be' },
+        { ids: ['he', 'is', 'a', 'boy', 'dot'], gaps: [1], distractors: ['am', 'are', 'qmark'], family: 'be' },
+        { ids: ['they', 'are', 'friend-pl', 'dot'], gaps: [1], distractors: ['am', 'is', 'qmark'], family: 'be' },
+        { ids: ['she', 'isnt', 'a', 'cat', 'dot'], gaps: [1], distractors: ['am-not', 'arent', 'is'], family: 'be' },
+        { ids: ['you', 'arent', 'a', 'dog', 'dot'], gaps: [1], distractors: ['am-not', 'isnt', 'are'], family: 'be' },
+        { ids: ['where', 'is', 'the', 'bag', 'qmark'], gaps: [0], distractors: ['who', 'what', 'dot'], family: 'wh' },
+        { ids: ['what', 'is', 'on', 'the', 'table', 'qmark'], gaps: [0, 5], distractors: ['who', 'where', 'dot', 'are'], family: 'wh' },
+        { ids: ['who', 'are', 'you', 'qmark'], gaps: [0, 3], distractors: ['what', 'where', 'dot', 'is'], family: 'wh' },
+        { ids: ['how', 'are', 'you', 'qmark'], gaps: [0], distractors: ['who', 'what', 'dot'], family: 'wh' },
+        { ids: ['i', 'like', 'pizza', 'and', 'cake', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'is'], family: 'art' },
+        { ids: ['i', 'like', 'tea', 'or', 'milk', 'dot'], gaps: [3], distractors: ['and', 'qmark', 'is'], family: 'art' },
+        { ids: ['there-is', 'a', 'lamp', 'on', 'the', 'desk', 'dot'], gaps: [6], distractors: ['qmark', 'are', 'and'], family: 'is' },
+        { ids: ['is-there', 'a', 'cat', 'on', 'the', 'sofa', 'qmark'], gaps: [6], distractors: ['dot', 'are', 'and'], family: 'is' },
+        { ids: ['i', 'can', 'swim', 'dot'], gaps: [3], distractors: ['qmark', 'and', 'or'], family: 'can' },
+        { ids: ['can', 'you', 'swim', 'qmark'], gaps: [3], distractors: ['dot', 'and', 'must'], family: 'can', ages: ['older'] },
+        { ids: ['she', 'has-got', 'a', 'key', 'dot'], gaps: [1], distractors: ['have-got', 'is', 'qmark'], family: 'have' },
+        { ids: ['we', 'have-got', 'a', 'dog', 'and', 'a', 'cat', 'dot'], gaps: [4], distractors: ['or', 'qmark', 'is'], family: 'have' },
+        { ids: ['where', 'are', 'the', 'book-pl', 'qmark'], gaps: [1], distractors: ['is', 'am', 'dot'], family: 'wh' },
+        { ids: ['i', 'am-not', 'a', 'bird', 'dot'], gaps: [1], distractors: ['isnt', 'arent', 'qmark'], family: 'be' },
+        { ids: ['when', 'is', 'the', 'train', 'qmark'], gaps: [0], distractors: ['who', 'what', 'dot'], family: 'wh', ages: ['older'] },
+        { ids: ['why', 'is', 'the', 'bag', 'on', 'the', 'floor', 'qmark'], gaps: [0], distractors: ['who', 'where', 'dot'], family: 'wh', ages: ['older'] }
+    ];
+
     const CB_CSS = `
 #screen-pe-colour.engine-container { max-width: 1180px; }
 .cb-legend { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0 0 1rem; padding: 0.7rem 0.8rem; background: var(--light-grey); border-radius: 12px; }
@@ -823,6 +882,32 @@
 .cb-opt.on { border-width: 3px; }
 .cb-gap-line { font-size: 1.2rem; font-family: var(--font-primary); font-weight: 700; text-align: center; margin: 0.75rem 0 1rem; line-height: 1.8; }
 .cb-blank { display: inline-block; min-width: 4.5rem; border-bottom: 3px solid var(--royal-blue); text-align: center; color: var(--royal-blue); }
+.cb-fill-line {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: center;
+    min-height: 5.2rem; border: 3px dashed #cbd5e1; border-radius: 14px; padding: 0.65rem;
+    background: #f8fafc; margin-bottom: 0.85rem;
+}
+.cb-fill-line.sorting { border-color: var(--royal-blue); background: #eff6ff; }
+.cb-fill-fixed { cursor: default; pointer-events: none; opacity: 0.92; }
+.cb-fill-slot {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 5.6rem; min-height: 3.55rem; max-width: 8.4rem; padding: 0.45rem 0.5rem;
+    border-radius: 12px; border: 3px dashed rgba(15, 23, 42, 0.22);
+    background: transparent; cursor: pointer; flex: 0 0 auto;
+}
+.cb-fill-slot.droppable {
+    border-color: var(--royal-blue); border-style: dashed; background: rgba(1, 33, 105, 0.06);
+}
+.cb-fill-slot.selected { border-color: var(--royal-blue); box-shadow: 0 0 0 2px rgba(1, 33, 105, 0.22); }
+.cb-fill-bank { margin-top: 0.35rem; }
+.cb-fill-bank h3 {
+    font-family: var(--font-primary); font-size: 0.95rem; color: var(--royal-blue);
+    margin: 0 0 0.45rem;
+}
+.cb-card.fill-bank { cursor: grab; touch-action: none; }
+.cb-card.fill-bank.used { opacity: 0.32; pointer-events: none; cursor: default; }
+.cb-card.fill-bank.dragging, .cb-card.fill-placed.dragging { opacity: 0.45; cursor: grabbing; transform: scale(1.05); z-index: 2; }
+.cb-card.fill-placed { cursor: grab; touch-action: none; }
 .cb-word {
     display: inline-flex; margin: 0.2rem; padding: 0.4rem 0.65rem; border-radius: 8px; border: 2px solid var(--royal-blue);
     background: #fff; cursor: pointer; font-family: var(--font-primary); font-weight: 700;
@@ -981,12 +1066,21 @@
     }
 
     function joinSpeak(tiles, question) {
-        let out = tiles.map((t) => t.speak).join(' ').replace(/\s+/g, ' ').trim();
+        const list = tiles || [];
+        const words = list.filter((t) => t.kind !== 'punct');
+        let out = words.map((t) => t.speak || t.text).join(' ').replace(/\s+/g, ' ').trim();
         if (!out) return '';
         out = out.charAt(0).toUpperCase() + out.slice(1);
-        if (question || /^(Is |Are |Have |Has |Can |Must )/i.test(out)) {
+        const punct = list.filter((t) => t.kind === 'punct').pop();
+        const startsQ = /^(Is |Are |Am |Have |Has |Can |Must |Who |What |Where |When |Why |How )/i.test(out);
+        const isQ = !!(question || (punct && punct.id === 'qmark') || (!punct && startsQ));
+        if (punct) {
+            out = out.replace(/[.?!]+$/g, '') + punct.text;
+        } else if (isQ) {
             if (!/[?]$/.test(out)) out += '?';
-        } else if (!/[.]$/.test(out)) out += '.';
+        } else if (!/[.]$/.test(out)) {
+            out += '.';
+        }
         return out;
     }
 
@@ -1004,7 +1098,7 @@
     const MUST_NEG_PL = { i: 'nie muszę', you: 'nie musisz', he: 'nie musi', she: 'nie musi', we: 'nie musimy', they: 'nie muszą' };
     const PREP_PL = {
         in: 'w', on: 'na', under: 'pod', above: 'nad', 'next-to': 'obok', between: 'między',
-        behind: 'za', 'in-front-of': 'przed', near: 'blisko', upstairs: 'na górze', downstairs: 'na dole', outside: 'na dworze', and: 'i'
+        behind: 'za', 'in-front-of': 'przed', near: 'blisko', upstairs: 'na górze', downstairs: 'na dole', outside: 'na dworze', and: 'i', or: 'lub'
     };
     const PLACE_NA = {
         chair: 'krześle', desk: 'biurku', table: 'stole', sofa: 'sofie', bin: 'koszu', shelf: 'półce',
@@ -1058,7 +1152,8 @@
         const prep = tiles.find((t) => t.kind === 'prep' && !t.adverb);
         const adv = tiles.find((t) => t.kind === 'prep' && t.adverb);
         const num = tiles.find((t) => t.kind === 'num' || t.id === 'some' || t.id === 'any');
-        const question = first.id === 'is-there' || first.id === 'are-there';
+        const question = first.id === 'is-there' || first.id === 'are-there' ||
+            first.kind === 'wh' || tiles.some((t) => t.id === 'qmark');
 
         if (first.kind === 'struct') {
             const thing = nouns[0];
@@ -1592,10 +1687,15 @@
                 ? 'Spójrz na obrazki. Przesuń kafelki na ponumerowane okienka, żeby złożyć zdanie. Możesz też stuknąć kafel, a potem okienko.'
                 : 'Look at the pictures. Drag each tile into the right numbered box to make the sentence. You can also tap a tile, then tap a box.';
         }
+        if (S.tab === 'fill') {
+            return pl
+                ? 'Uzupełnij niekompletne zdanie. Przesuń poprawny kafel w lukę (albo stuknij kafel, potem lukę). Kropka . = twierdzenie, znak ? = pytanie.'
+                : 'Complete the sentence. Drag the right tile into each gap (or tap a tile, then a gap). Use . for a statement and ? for a question.';
+        }
         if (S.tab === 'creator') {
             return pl
-                ? 'Ułóż własne poprawne zdanie z kafelków. Kliknij Sprawdź — AI oceni gramatykę.'
-                : 'Build your own correct sentence with the tiles. Tap Check — AI will judge the grammar.';
+                ? 'Ułóż własne poprawne zdanie z kafelków — w tym to be (am / is / are), and / or, słowa pytające oraz . albo ?. Kliknij Sprawdź — AI oceni gramatykę.'
+                : 'Build your own correct sentence — including to be (am / is / are), and / or, question words, and . or ?. Tap Check — AI will judge the grammar.';
         }
         if (S.tab === 'build') {
             if (!S.goal) {
@@ -1621,14 +1721,16 @@
     function render() {
         const root = rootEl();
         if (!root) return;
-        if (S.tab !== 'build' && S.tab !== 'text' && S.tab !== 'lineup' && S.tab !== 'creator') S.tab = 'build';
+        if (S.tab !== 'build' && S.tab !== 'text' && S.tab !== 'lineup' && S.tab !== 'creator' && S.tab !== 'fill') S.tab = 'build';
         root.innerHTML = legendHtml() + tabsHtml() + coachHtml() +
             (S.tab === 'build' ? buildHtml() : '') +
             (S.tab === 'creator' ? creatorHtml() : '') +
+            (S.tab === 'fill' ? fillHtml() : '') +
             (S.tab === 'text' ? textHtml() : '') +
             (S.tab === 'lineup' ? '<div id="cb-lineup-host"></div>' : '') +
             nounPickHtml();
         bind(root);
+        if (S.tab === 'fill') bindFillDrag(root);
         if (S.tab === 'lineup' && global.LineUp) {
             global.LineUp.mount(document.getElementById('cb-lineup-host'), {
                 ageBand: S.ageBand,
@@ -1639,9 +1741,12 @@
     }
 
     function legendHtml() {
-        const keys = S.ageBand === 'young'
+        let keys = S.ageBand === 'young'
             ? ['is', 'are', 'have', 'can', 'like', 'art', 'prep']
             : ['is', 'are', 'have', 'can', 'like', 'must', 'art', 'prep'];
+        if (S.tab === 'creator' || S.tab === 'fill') {
+            keys = keys.concat(['be', 'wh', 'punct', 'subj']);
+        }
         return '<div class="cb-legend" aria-label="' + esc(L('Colour key', 'Kolory')) + '">' + keys.map((k) => {
             const c = COL[k];
             return '<span style="background:' + c.bg + '"><i class="fa-solid ' + c.fa + '"></i> ' + esc(L(c.label, c.labelPl)) + '</span>';
@@ -1653,6 +1758,7 @@
         return '<div class="cb-tabs">' +
             t('build', 'Build a sentence', 'Złóż zdanie') +
             t('creator', 'Creator', 'Twórca') +
+            t('fill', 'Fill the gaps', 'Uzupełnij') +
             t('text', 'Text tasks', 'Zadania tekstowe') +
             t('lineup', 'Line Up', 'Ułóż zdanie') +
             '</div>';
@@ -1791,11 +1897,15 @@
     function sheetGroups() {
         return [
             { id: 'who', title: 'Who', titlePl: 'Kto', kinds: ['subj'] },
+            { id: 'be', title: 'to be (am / is / are)', titlePl: 'to be (am / is / are)', kinds: ['be'] },
+            { id: 'wh', title: 'Question words', titlePl: 'Słowa pytające', kinds: ['wh'] },
             { id: 'struct', title: 'Sentence starters', titlePl: 'Początek zdania', kinds: ['struct'] },
             { id: 'art', title: 'a · an · the · some · any', titlePl: 'a · an · the · some · any', kinds: ['art'] },
+            { id: 'link', title: 'and · or', titlePl: 'and · or', kinds: ['link'] },
+            { id: 'punct', title: '. and ?', titlePl: '. i ?', kinds: ['punct'] },
             { id: 'num', title: 'Numbers', titlePl: 'Liczby', kinds: ['num'] },
             { id: 'grammar', title: 'Grammar', titlePl: 'Gramatyka', kinds: ['verbp', 'modal', 'neg'] },
-            { id: 'prep', title: 'Place words', titlePl: 'Przyimki miejsca', kinds: ['prep', 'link'] },
+            { id: 'prep', title: 'Place words', titlePl: 'Przyimki miejsca', kinds: ['prep'] },
             { id: 'food', title: 'Food', titlePl: 'Jedzenie', kinds: ['noun'], cat: 'food' },
             { id: 'furniture', title: 'Furniture', titlePl: 'Meble', kinds: ['noun'], cat: 'furniture' },
             { id: 'room', title: 'In the room', titlePl: 'W pokoju', kinds: ['noun'], cat: 'room' },
@@ -1814,7 +1924,8 @@
         const open = {};
         sheetGroups().forEach((g) => { open[g.id] = false; });
         if (S.tab === 'creator') {
-            open.who = true; open.struct = true; open.art = true; open.grammar = true;
+            open.who = true; open.be = true; open.wh = true; open.struct = true;
+            open.art = true; open.link = true; open.punct = true; open.grammar = true;
             open.prep = true; open.food = true; open.furniture = true; open.room = true; open.verb = true;
             return open;
         }
@@ -1916,6 +2027,156 @@
         return html;
     }
 
+    function fillHtml() {
+        const task = S.fillTask;
+        if (!task) return '<p>' + esc(L('No task yet.', 'Brak zadania.')) + '</p>';
+        const canDrop = !!(S.fillHeld || S.fillDragFrom != null);
+        let html = '';
+        if (S.fillHeld) {
+            const ht = byId(S.fillHeld);
+            if (ht) {
+                html += '<div class="cb-holding">' +
+                    '<span>' + esc(L('Holding — tap a gap to place:', 'Trzymasz — kliknij lukę:')) + '</span>' +
+                    cardHtml(ht, ' moving', 'fill-held-cancel') +
+                    '</div>';
+            }
+        }
+        html += '<div class="cb-fill-line" id="cb-fill-line">';
+        task.ids.forEach((tid, i) => {
+            const isGap = task.gaps.indexOf(i) !== -1;
+            if (!isGap) {
+                const t = byId(tid);
+                if (t) html += cardHtml(t, ' fill-fixed', 'noop');
+                return;
+            }
+            const placed = S.fillPlaced && S.fillPlaced[i];
+            if (placed) {
+                const t = byId(placed);
+                if (t) {
+                    html += cardHtml(t, ' fill-placed' + (S.fillDragFrom === i ? ' dragging' : ''), 'fill-slot-tile')
+                        .replace('data-id="' + t.id + '"', 'data-id="' + i + '" data-tid="' + esc(placed) + '"');
+                    return;
+                }
+            }
+            const exp = byId(tid);
+            const fam = exp ? exp.family : 'be';
+            html += '<button type="button" class="cb-fill-slot cb-slot' + (canDrop ? ' droppable' : '') + (S.fillActive === i ? ' selected' : '') +
+                '" data-cb="fill-slot" data-id="' + i + '" style="' + fadedSlotStyle(fam) + '" title="' +
+                esc(L('Drop a tile here', 'Upuść tu kafel')) + '"></button>';
+        });
+        html += '</div>';
+        html += '<div class="cb-actions cb-actions-top">' +
+            '<button type="button" class="btn btn-blue" data-cb="check-fill">' + esc(L('Check', 'Sprawdź')) + '</button>' +
+            '<button type="button" class="btn btn-outline" data-cb="fill-clear">' + esc(L('Clear gaps', 'Wyczyść luki')) + '</button>' +
+            '<button type="button" class="btn btn-outline" data-cb="fill-next">' + esc(L('New sentence', 'Nowe zdanie')) + '</button>' +
+            '</div>';
+        const fb = L(S.fillFbEn, S.fillFbPl);
+        html += '<div class="cb-fb' + (S.fillOk ? ' ok' : (fb ? ' bad' : '')) + '">' + esc(fb) + '</div>';
+        html += whyHtml(!S.fillOk && !!fb);
+        html += '<div class="cb-fill-bank"><h3>' + esc(L('Tiles — drag into a gap', 'Kafelki — przeciągnij do luki')) + '</h3><div class="cb-cards">';
+        const placedHeld = {};
+        Object.keys(S.fillPlaced || {}).forEach((k) => {
+            const tid = S.fillPlaced[k];
+            if (tid) placedHeld[tid] = (placedHeld[tid] || 0) + 1;
+        });
+        if (S.fillHeld) placedHeld[S.fillHeld] = (placedHeld[S.fillHeld] || 0) + 1;
+        const seen = {};
+        (S.fillBank || []).forEach((tid) => {
+            seen[tid] = (seen[tid] || 0) + 1;
+            const earlier = seen[tid];
+            const isUsed = earlier <= (placedHeld[tid] || 0);
+            const t = byId(tid);
+            if (!t) return;
+            html += cardHtml(t, ' fill-bank' + (isUsed ? ' used' : ''), isUsed ? 'noop' : 'fill-bank');
+        });
+        html += '</div></div>';
+        return html;
+    }
+
+    function loadFillTask() {
+        S.fillFbEn = '';
+        S.fillFbPl = '';
+        S.fillOk = false;
+        S.fillAwarded = false;
+        S.fillHeld = null;
+        S.fillActive = null;
+        S.fillDragFrom = null;
+        S.fillPlaced = {};
+        clearAskWhy();
+        let pool = FILL_TASKS.filter((t) => {
+            if (t.ages && t.ages.indexOf(S.ageBand) === -1) return false;
+            return (t.ids || []).every((id) => !!byId(id));
+        });
+        if (!pool.length) pool = FILL_TASKS.filter((t) => (t.ids || []).every((id) => !!byId(id)));
+        const src = pick(pool);
+        if (!src) {
+            S.fillTask = null;
+            S.fillBank = [];
+            return;
+        }
+        const answers = src.gaps.map((gi) => src.ids[gi]);
+        const bank = shuffle(answers.concat(src.distractors || []).filter((id) => !!byId(id)));
+        S.fillTask = { ids: src.ids.slice(), gaps: src.gaps.slice(), family: src.family || 'be' };
+        S.fillBank = bank;
+    }
+
+    function placeFillTile(slotIndex, tileId) {
+        if (!S.fillTask || S.fillTask.gaps.indexOf(slotIndex) === -1) return false;
+        const prev = S.fillPlaced[slotIndex];
+        S.fillPlaced[slotIndex] = tileId;
+        if (S.fillHeld === tileId) S.fillHeld = prev || null;
+        else if (prev && !S.fillHeld) { /* returned to bank via counts */ }
+        S.fillFbEn = '';
+        S.fillFbPl = '';
+        S.fillOk = false;
+        clearAskWhy();
+        return true;
+    }
+
+    function clearFillSlot(slotIndex) {
+        if (S.fillPlaced[slotIndex]) {
+            delete S.fillPlaced[slotIndex];
+            S.fillFbEn = '';
+            S.fillFbPl = '';
+            S.fillOk = false;
+            clearAskWhy();
+        }
+    }
+
+    function checkFill() {
+        clearAskWhy();
+        const task = S.fillTask;
+        if (!task) return;
+        const missing = task.gaps.some((gi) => !S.fillPlaced[gi]);
+        if (missing) {
+            S.fillOk = false;
+            S.fillFbEn = 'Fill every gap first.';
+            S.fillFbPl = 'Najpierw wypełnij każdą lukę.';
+            render();
+            return;
+        }
+        const wrong = task.gaps.filter((gi) => S.fillPlaced[gi] !== task.ids[gi]);
+        if (wrong.length) {
+            S.fillOk = false;
+            S.fillFbEn = 'Not quite. Check . vs ? and the missing word.';
+            S.fillFbPl = 'Nie tym razem. Sprawdź . vs ? oraz brakujące słowo.';
+            render();
+            return;
+        }
+        const tiles = chainTiles(task.ids);
+        const sentence = joinSpeak(tiles);
+        S.fillOk = true;
+        S.fillFbEn = 'Yes! ' + sentence;
+        S.fillFbPl = 'Tak! ' + sentence;
+        if (!S.fillAwarded) {
+            S.fillAwarded = true;
+            award(10, { tab: 'fill', sentence: sentence });
+            rememberColourSentence(sentence, polishFromTiles(tiles), tiles);
+        }
+        speak(sentence);
+        render();
+    }
+
     function textHtml() {
         const kinds = [
             ['gap', 'Gap fill', 'Luki'],
@@ -1993,9 +2254,13 @@
                 clearAskWhy();
                 S.buildFbEn = ''; S.buildFbPl = '';
                 S.textFbEn = ''; S.textFbPl = '';
+                S.fillFbEn = ''; S.fillFbPl = '';
                 S.movingFrom = null;
                 S.activeSlot = null;
                 S.heldId = null;
+                S.fillHeld = null;
+                S.fillActive = null;
+                S.fillDragFrom = null;
                 if (changed && id === 'build') {
                     if (!S.goal) S.sheetsOpen = null;
                     else S.sheetsOpen = defaultSheetsOpen();
@@ -2011,6 +2276,9 @@
                     S.buildOk = false;
                     S.buildSpoken = '';
                     S.buildAwarded = false;
+                }
+                if (changed && id === 'fill') {
+                    loadFillTask();
                 }
                 render(); return;
             }
@@ -2182,8 +2450,166 @@
                 if (!S.reorder) return;
                 speak(S.reorder.words.join(' ') + (S.reorder.extra || ''));
             }
+            if (a === 'noop') return;
+            if (a === 'fill-bank') {
+                const tile = byId(id);
+                speakTile(tile);
+                if (S.fillHeld === id) S.fillHeld = null;
+                else S.fillHeld = id;
+                S.fillActive = null;
+                S.fillFbEn = ''; S.fillFbPl = ''; S.fillOk = false;
+                clearAskWhy();
+                render();
+                return;
+            }
+            if (a === 'fill-held-cancel') {
+                S.fillHeld = null;
+                render();
+                return;
+            }
+            if (a === 'fill-slot') {
+                const i = Number(id);
+                if (S.fillHeld) {
+                    placeFillTile(i, S.fillHeld);
+                    S.fillHeld = null;
+                    S.fillActive = null;
+                } else {
+                    S.fillActive = S.fillActive === i ? null : i;
+                }
+                render();
+                return;
+            }
+            if (a === 'fill-slot-tile') {
+                const i = Number(id);
+                const tid = S.fillPlaced[i];
+                speakTile(byId(tid));
+                if (S.fillHeld) {
+                    placeFillTile(i, S.fillHeld);
+                    S.fillHeld = null;
+                } else {
+                    S.fillHeld = tid;
+                    clearFillSlot(i);
+                }
+                S.fillActive = null;
+                render();
+                return;
+            }
+            if (a === 'check-fill') { checkFill(); return; }
+            if (a === 'fill-clear') {
+                S.fillPlaced = {};
+                S.fillHeld = null;
+                S.fillActive = null;
+                S.fillFbEn = ''; S.fillFbPl = ''; S.fillOk = false; S.fillAwarded = false;
+                clearAskWhy();
+                render();
+                return;
+            }
+            if (a === 'fill-next') { loadFillTask(); render(); return; }
         };
         bindChainSort(root);
+    }
+
+    function bindFillDrag(root) {
+        const line = root.querySelector('#cb-fill-line');
+        if (!line || S.tab !== 'fill') return;
+        let card = null;
+        let pointerId = null;
+        let startX = 0;
+        let startY = 0;
+        let moved = false;
+        let fromSlot = null;
+        let fromBankId = null;
+
+        function slotAtPoint(x, y) {
+            const slots = Array.prototype.slice.call(line.querySelectorAll('[data-cb="fill-slot"], .cb-card.fill-placed'));
+            let best = null;
+            let bestD = Infinity;
+            slots.forEach((el) => {
+                const r = el.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height / 2;
+                const d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+                if (d < bestD) {
+                    bestD = d;
+                    best = el;
+                }
+            });
+            if (!best || bestD > 160 * 160) return null;
+            return Number(best.getAttribute('data-id'));
+        }
+
+        function finish(x, y) {
+            if (!card) return;
+            const didMove = moved;
+            card.classList.remove('dragging');
+            line.classList.remove('sorting');
+            const bankId = fromBankId;
+            const slotFrom = fromSlot;
+            card = null;
+            pointerId = null;
+            moved = false;
+            fromSlot = null;
+            fromBankId = null;
+            if (!didMove) return;
+            chainSkipClick = true;
+            setTimeout(function () { chainSkipClick = false; }, 400);
+            const target = slotAtPoint(x, y);
+            if (target == null) {
+                render();
+                return;
+            }
+            if (bankId) {
+                const prev = S.fillPlaced[target];
+                S.fillPlaced[target] = bankId;
+                if (prev && prev !== bankId) S.fillHeld = null;
+                S.fillHeld = null;
+            } else if (slotFrom != null && slotFrom !== target) {
+                const moving = S.fillPlaced[slotFrom];
+                const dest = S.fillPlaced[target];
+                S.fillPlaced[target] = moving;
+                if (dest) S.fillPlaced[slotFrom] = dest;
+                else delete S.fillPlaced[slotFrom];
+            }
+            S.fillFbEn = '';
+            S.fillFbPl = '';
+            S.fillOk = false;
+            clearAskWhy();
+            render();
+        }
+
+        root.addEventListener('pointerdown', (e) => {
+            const el = e.target.closest('.cb-card.fill-bank:not(.used), .cb-card.fill-placed');
+            if (!el || e.button) return;
+            card = el;
+            pointerId = e.pointerId;
+            startX = e.clientX;
+            startY = e.clientY;
+            moved = false;
+            fromBankId = el.classList.contains('fill-bank') ? el.getAttribute('data-id') : null;
+            fromSlot = el.classList.contains('fill-placed') ? Number(el.getAttribute('data-id')) : null;
+            try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        root.addEventListener('pointermove', (e) => {
+            if (!card || e.pointerId !== pointerId) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            if (!moved && (dx * dx + dy * dy) < 64) return;
+            if (!moved) {
+                moved = true;
+                card.classList.add('dragging');
+                line.classList.add('sorting');
+            }
+            e.preventDefault();
+        });
+        root.addEventListener('pointerup', (e) => {
+            if (e.pointerId !== pointerId) return;
+            finish(e.clientX, e.clientY);
+        });
+        root.addEventListener('pointercancel', (e) => {
+            if (e.pointerId !== pointerId) return;
+            moved = false;
+            finish(e.clientX, e.clientY);
+        });
     }
 
     function applyChainOrder(ids) {
@@ -2309,6 +2735,18 @@
     }
 
     function askWhyContext() {
+        if (S.tab === 'fill') {
+            const task = S.fillTask || {};
+            const attempt = (task.ids || []).map((tid, i) => {
+                if ((task.gaps || []).indexOf(i) === -1) return (byId(tid) || {}).text || tid;
+                return (byId(S.fillPlaced[i]) || {}).text || '___';
+            }).join(' ');
+            return {
+                task: 'Fill the gaps by dragging tiles into the blanks. . means statement, ? means question.',
+                attempt: attempt,
+                extra: 'Checker note (EN): ' + (S.fillFbEn || '') + ' / (PL): ' + (S.fillFbPl || '')
+            };
+        }
         if (S.tab === 'build' || S.tab === 'creator') {
             const tiles = currentBuildTiles();
             const attempt = joinSpeak(tiles) || tiles.map((t) => t.text).join(' ');
@@ -2317,7 +2755,7 @@
                 : '';
             return {
                 task: S.tab === 'creator'
-                    ? 'Creator mode: invent a grammatically correct English sentence with colour tiles.'
+                    ? 'Creator mode: invent a grammatically correct English sentence with colour tiles (to be, and/or, Wh-words, . or ? allowed).'
                     : 'Build a sentence with colour tiles.',
                 attempt: attempt,
                 extra: (picture ? 'The picture wanted this order: ' + picture + '. ' : '') +
@@ -2361,8 +2799,8 @@
         const age = S.ageBand === 'older' ? '10–12' : '8–9';
         const ctx = askWhyContext();
         const grammar = S.ageBand === 'older'
-            ? "there is/are, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any"
-            : "there is/are, have got, can/can't, like, don't like, a/an, prepositions";
+            ? "there is/are, am/is/are (to be), have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-questions (who/what/where/when/why/how), statement . vs question ?"
+            : "there is/are, am/is/are (to be), have got, can/can't, like, don't like, a/an, and/or, Wh-questions (who/what/where/how), statement . vs question ?, place prepositions";
         const prompt = `You help a Polish child who got a Colour Blocks English task wrong. Be kind. Do not scold.
 Age: ${age}. ${ageWhyVoice()}
 Allowed grammar for this age: ${grammar}.
@@ -2516,16 +2954,17 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
 
         const age = S.ageBand === 'older' ? '10–12' : '8–9';
         const grammar = S.ageBand === 'older'
-            ? "there is/are, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, place prepositions"
-            : "there is/are, have got, can/can't, like, don't like, a/an, place prepositions";
+            ? "there is/are, am/is/are + negatives, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-words, place prepositions, end with . or ?"
+            : "there is/are, am/is/are + negatives, have got, can/can't, like, don't like, a/an, and/or, Who/What/Where/How, place prepositions, end with . or ?";
         const prompt = `You are a kind English teacher for a Polish child (age ${age}).
 ${ageWhyVoice()}
 The child built this sentence with word tiles: "${attempt}"
 Tile words in order: ${tiles.map((t) => t.text).join(' | ')}.
 
 Decide if the sentence is grammatically correct for this age and these patterns: ${grammar}.
-Accept natural capitalisation/punctuation even if tiles omit them.
-Reject nonsense, wrong word order, wrong agreement (is/are, have/has got), or grammar beyond the allowed list.
+Treat tile "." as a full stop (statement) and "?" as a question mark — the ending must match the sentence type.
+Accept natural capitalisation even if tiles omit it.
+Reject nonsense, wrong word order, wrong agreement (is/are, am/is/are, have/has got), or grammar beyond the allowed list.
 
 Return JSON only:
 { "ok": true/false, "explainEn": "1-3 short lines; if wrong, say what to fix and give ONE corrected example with **bold** English words", "explainPl": "same idea in simple Polish with **bold** English words", "sentence": "clean corrected English sentence if ok or a good fix if not" }`;
@@ -2693,6 +3132,16 @@ Return JSON only:
             textFbPl: '',
             textOk: false,
             textAwarded: false,
+            fillTask: null,
+            fillBank: [],
+            fillPlaced: {},
+            fillHeld: null,
+            fillActive: null,
+            fillDragFrom: null,
+            fillFbEn: '',
+            fillFbPl: '',
+            fillOk: false,
+            fillAwarded: false,
             askWhyEn: '',
             askWhyPl: '',
             askWhyBusy: false,
@@ -2712,11 +3161,13 @@ Return JSON only:
         S.polish = keepPolish;
         S.tilePl = keepTilePl;
         S.sheetsOpen = keepSheets;
-        S.tab = (startTab === 'lineup' || startTab === 'text' || startTab === 'build' || startTab === 'creator') ? startTab : 'build';
+        const okTabs = { build: 1, creator: 1, fill: 1, text: 1, lineup: 1 };
+        S.tab = okTabs[startTab] ? startTab : 'build';
         if (S.tab === 'creator') S.sheetsOpen = defaultSheetsOpen();
         const badge = document.getElementById('colour-age-badge');
         if (badge) badge.textContent = S.ageBand === 'older' ? '10–12' : '8–9';
         loadTextTask();
+        if (S.tab === 'fill') loadFillTask();
         if (S.tab === 'lineup' && global.LineUp) global.LineUp.reset(S.ageBand, S.polish);
         render();
     }
