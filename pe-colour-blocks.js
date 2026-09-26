@@ -394,7 +394,146 @@
         verb('laugh', 'laugh', '😂', ['can', 'like'], null, 'śmiać się'),
         verb('cry', 'cry', '😢', ['can'], null, 'płakać'),
         verb('pack', 'pack', '💼', ['must', 'haveto'], ['older'], 'pakować'),
-        verb('ask', 'ask', '🤔', ['can', 'must', 'haveto'], ['older'], 'pytać')
+        verb('ask', 'ask', '🤔', ['can', 'must', 'haveto'], ['older'], 'pytać'),
+
+        // ——— 10–12: play / do / go collocations ———
+        tile('play-football', 'play football', 'colloc', 'verb', {
+            ages: ['older'], goals: ['can', 'like', 'must', 'haveto'],
+            gloss: 'sport', glossPl: 'sport', wordPl: 'grać w piłkę', icon: '⚽'
+        }),
+        tile('play-tennis', 'play tennis', 'colloc', 'verb', {
+            ages: ['older'], goals: ['can', 'like', 'must', 'haveto'],
+            gloss: 'sport', glossPl: 'sport', wordPl: 'grać w tenisa', icon: '🎾'
+        }),
+        tile('play-basketball', 'play basketball', 'colloc', 'verb', {
+            ages: ['older'], goals: ['can', 'like', 'must', 'haveto'],
+            gloss: 'sport', glossPl: 'sport', wordPl: 'grać w koszykówkę', icon: '🏀'
+        }),
+        tile('do-gymnastics', 'do gymnastics', 'colloc', 'verb', {
+            ages: ['older'], goals: ['can', 'like', 'must', 'haveto'],
+            gloss: 'activity', glossPl: 'aktywność', wordPl: 'uprawiać gimnastykę', icon: '🤸'
+        }),
+        tile('do-homework', 'do homework', 'colloc', 'verb', {
+            ages: ['older'], goals: ['must', 'haveto', 'like'],
+            gloss: 'school work', glossPl: 'zadanie', wordPl: 'odrabiać lekcje', icon: '📝'
+        }),
+        tile('do-shopping', 'do the shopping', 'colloc', 'verb', {
+            ages: ['older'], goals: ['must', 'haveto', 'like'],
+            gloss: 'buy food', glossPl: 'zakupy', wordPl: 'robić zakupy', icon: '🛒'
+        }),
+        tile('go-running', 'go running', 'colloc', 'verb', {
+            ages: ['older'], goals: ['can', 'like', 'must', 'haveto'],
+            gloss: 'sport', glossPl: 'sport', wordPl: 'biegać (go running)', icon: '🏃'
+        }),
+        tile('go-swimming', 'go swimming', 'colloc', 'verb', {
+            ages: ['older'], goals: ['can', 'like', 'must', 'haveto'],
+            gloss: 'sport', glossPl: 'sport', wordPl: 'pływać (go swimming)', icon: '🏊'
+        }),
+        tile('go-shopping', 'go shopping', 'colloc', 'verb', {
+            ages: ['older'], goals: ['can', 'like', 'must', 'haveto'],
+            gloss: 'shops', glossPl: 'sklepy', wordPl: 'iść na zakupy', icon: '🛍️'
+        }),
+
+        // ——— 10–12: chores & daily routines ———
+        tile('get-up', 'get up', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto', 'can'],
+            gloss: 'leave bed', glossPl: 'wstawać', wordPl: 'wstawać', icon: '🛏️'
+        }),
+        tile('have-breakfast', 'have breakfast', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto', 'like'],
+            gloss: 'morning meal', glossPl: 'śniadanie', wordPl: 'jeść śniadanie', icon: '🍳'
+        }),
+        tile('have-lunch', 'have lunch', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto', 'like'],
+            gloss: 'midday meal', glossPl: 'obiad', wordPl: 'jeść obiad', icon: '🍽️'
+        }),
+        tile('have-dinner', 'have dinner', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto', 'like'],
+            gloss: 'evening meal', glossPl: 'kolacja', wordPl: 'jeść kolację', icon: '🍝'
+        }),
+        tile('brush-teeth', 'brush my teeth', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto'],
+            gloss: 'teeth', glossPl: 'zęby', wordPl: 'myć zęby', icon: '🪥'
+        }),
+        tile('make-bed', 'make the bed', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto'],
+            gloss: 'chore', glossPl: 'obowiązek', wordPl: 'ścielić łóżko', icon: '🛏️'
+        }),
+        tile('wash-up', 'do the washing up', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto'],
+            gloss: 'dishes', glossPl: 'naczynia', wordPl: 'zmywać naczynia', icon: '🍽️'
+        }),
+        tile('clean-room', 'clean my room', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto'],
+            gloss: 'chore', glossPl: 'obowiązek', wordPl: 'sprzątać pokój', icon: '🧹'
+        }),
+        tile('have-shower', 'have a shower', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto', 'can'],
+            gloss: 'wash', glossPl: 'mycie', wordPl: 'brać prysznic', icon: '🚿'
+        }),
+        tile('go-to-school', 'go to school', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto', 'can'],
+            gloss: 'school day', glossPl: 'szkoła', wordPl: 'iść do szkoły', icon: '🏫'
+        }),
+        tile('go-to-bed', 'go to bed', 'routine', 'must', {
+            ages: ['older'], goals: ['must', 'haveto'],
+            gloss: 'sleep time', glossPl: 'sen', wordPl: 'iść spać', icon: '😴'
+        }),
+
+        // ——— 10–12: parts of the day ———
+        tile('in-the-morning', 'in the morning', 'time', 'prep', {
+            ages: ['older'], goals: ['must', 'haveto', 'can', 'like', 'is', 'are'],
+            gloss: 'a.m.', glossPl: 'rano', wordPl: 'rano', adverb: true, icon: '🌅'
+        }),
+        tile('in-the-afternoon', 'in the afternoon', 'time', 'prep', {
+            ages: ['older'], goals: ['must', 'haveto', 'can', 'like', 'is', 'are'],
+            gloss: 'p.m.', glossPl: 'po południu', wordPl: 'po południu', adverb: true, icon: '☀️'
+        }),
+        tile('in-the-evening', 'in the evening', 'time', 'prep', {
+            ages: ['older'], goals: ['must', 'haveto', 'can', 'like', 'is', 'are'],
+            gloss: 'evening', glossPl: 'wieczorem', wordPl: 'wieczorem', adverb: true, icon: '🌇'
+        }),
+        tile('at-night', 'at night', 'time', 'prep', {
+            ages: ['older'], goals: ['must', 'haveto', 'can', 'like', 'is', 'are'],
+            gloss: 'night', glossPl: 'w nocy', wordPl: 'w nocy', adverb: true, icon: '🌙'
+        }),
+
+        // ——— 10–12: telling the time ———
+        tile('clock-at', 'at', 'time', 'num', {
+            ages: ['older'], goals: ['is', 'are', 'must', 'haveto'],
+            gloss: 'time · at 3', glossPl: 'o godzinie', wordPl: 'o', fa: 'fa-clock'
+        }),
+        tile('oclock', "o'clock", 'time', 'num', {
+            ages: ['older'], goals: ['is', 'are'],
+            gloss: 'full hour', glossPl: 'równa godzina', wordPl: 'zero', fa: 'fa-clock'
+        }),
+        tile('half', 'half', 'time', 'num', {
+            ages: ['older'], goals: ['is', 'are'],
+            gloss: '30 minutes', glossPl: '30 minut', wordPl: 'wpół do', fa: 'fa-clock'
+        }),
+        tile('quarter', 'quarter', 'time', 'num', {
+            ages: ['older'], goals: ['is', 'are'],
+            gloss: '15 minutes', glossPl: '15 minut', wordPl: 'kwadrans', fa: 'fa-clock'
+        }),
+        tile('past', 'past', 'time', 'num', {
+            ages: ['older'], goals: ['is', 'are'],
+            gloss: 'after the hour', glossPl: 'po', wordPl: 'po', fa: 'fa-clock'
+        }),
+        tile('clock-to', 'to', 'time', 'num', {
+            ages: ['older'], goals: ['is', 'are'],
+            gloss: 'before the hour', glossPl: 'za', wordPl: 'za', fa: 'fa-clock'
+        }),
+        tile('four', 'four', 'num', 'num', { fa: 'fa-hashtag', icon: '4', gloss: '4', ages: ['older'], goals: ['is', 'are'] }),
+        tile('five', 'five', 'num', 'num', { fa: 'fa-hashtag', icon: '5', gloss: '5', ages: ['older'], goals: ['is', 'are'] }),
+        tile('six', 'six', 'num', 'num', { fa: 'fa-hashtag', icon: '6', gloss: '6', ages: ['older'], goals: ['is', 'are'] }),
+        tile('seven', 'seven', 'num', 'num', { fa: 'fa-hashtag', icon: '7', gloss: '7', ages: ['older'], goals: ['is', 'are'] }),
+        tile('eight', 'eight', 'num', 'num', { fa: 'fa-hashtag', icon: '8', gloss: '8', ages: ['older'], goals: ['is', 'are'] }),
+        tile('nine', 'nine', 'num', 'num', { fa: 'fa-hashtag', icon: '9', gloss: '9', ages: ['older'], goals: ['is', 'are'] }),
+        tile('ten', 'ten', 'num', 'num', { fa: 'fa-hashtag', icon: '10', gloss: '10', ages: ['older'], goals: ['is', 'are'] }),
+        tile('eleven', 'eleven', 'num', 'num', { fa: 'fa-hashtag', icon: '11', gloss: '11', ages: ['older'], goals: ['is', 'are'] }),
+        tile('twelve', 'twelve', 'num', 'num', { fa: 'fa-hashtag', icon: '12', gloss: '12', ages: ['older'], goals: ['is', 'are'] }),
+        tile('twenty', 'twenty', 'num', 'num', { fa: 'fa-hashtag', icon: '20', gloss: '20', ages: ['older'], goals: ['is', 'are'] }),
+        tile('twenty-five', 'twenty-five', 'num', 'num', { fa: 'fa-hashtag', icon: '25', gloss: '25', ages: ['older'], goals: ['is', 'are'] })
     ];
     expandNounPlurals(TILES);
     assignNounCats(TILES);
@@ -596,7 +735,40 @@
         { parts: ['I ', { gap: true }, ' ask the teacher. (10–12)'], options: ['have to', 'can', 'like'], answer: 'have to', family: 'must',
             en: 'have to = it is necessary.', pl: 'have to = muszę.' },
         { parts: ["We don't ", { gap: true }, ' shout in class. (10–12)'], options: ['have to', 'must', 'can'], answer: 'have to', family: 'must',
-            en: "don't + have to = not necessary.", pl: "don't + have to = nie musimy." }
+            en: "don't + have to = not necessary.", pl: "don't + have to = nie musimy." },
+        // 10–12: collocations, routines, day parts, clock
+        { parts: ['I can ', { gap: true }, '. (10–12)'], options: ['play football', 'do gymnastics', 'go running'], answer: 'play football', family: 'can', ages: ['older'],
+            en: 'play + sport (football, tennis…).', pl: 'play + sport (football, tennis…).' },
+        { parts: ['She can ', { gap: true }, '. (10–12)'], options: ['do gymnastics', 'play football', 'go shopping'], answer: 'do gymnastics', family: 'can', ages: ['older'],
+            en: 'do + gymnastics / homework / the shopping.', pl: 'do + gymnastics / homework / the shopping.' },
+        { parts: ['We like ', { gap: true }, '. (10–12)'], options: ['go swimming', 'do homework', 'play tennis'], answer: 'go swimming', family: 'like', ages: ['older'],
+            en: 'go + -ing (running, swimming, shopping).', pl: 'go + -ing (running, swimming, shopping).' },
+        { parts: ['They must ', { gap: true }, ' after school. (10–12)'], options: ['do homework', 'play football', 'go shopping'], answer: 'do homework', family: 'must', ages: ['older'],
+            en: 'do homework = school work.', pl: 'do homework = odrabiać lekcje.' },
+        { parts: ['I have to ', { gap: true }, ' in the morning. (10–12)'], options: ['get up', 'go to bed', 'have dinner'], answer: 'get up', family: 'must', ages: ['older'],
+            en: 'get up = leave bed.', pl: 'get up = wstawać.' },
+        { parts: ['You must ', { gap: true }, ' before school. (10–12)'], options: ['brush my teeth', 'go to bed', 'have dinner'], answer: 'brush my teeth', family: 'must', ages: ['older'],
+            en: 'brush my teeth = clean teeth.', pl: 'brush my teeth = myć zęby.' },
+        { parts: ['We have breakfast ', { gap: true }, '. (10–12)'], options: ['in the morning', 'at night', 'in the evening'], answer: 'in the morning', family: 'must', ages: ['older'],
+            en: 'in the morning = a.m.', pl: 'in the morning = rano.' },
+        { parts: ['They go to bed ', { gap: true }, '. (10–12)'], options: ['at night', 'in the morning', 'in the afternoon'], answer: 'at night', family: 'must', ages: ['older'],
+            en: 'at night = night time.', pl: 'at night = w nocy.' },
+        { parts: ['She has lunch ', { gap: true }, '. (10–12)'], options: ['in the afternoon', 'at night', 'in the morning'], answer: 'in the afternoon', family: 'must', ages: ['older'],
+            en: 'in the afternoon = after midday.', pl: 'in the afternoon = po południu.' },
+        { parts: ['The clock is three ', { gap: true }, '. (10–12)'], options: ["o'clock", 'past', 'to'], answer: "o'clock", family: 'num', ages: ['older'],
+            en: "o'clock = full hour.", pl: "o'clock = równa godzina." },
+        { parts: ['The clock is half ', { gap: true }, ' two. (10–12)'], options: ['past', 'to', "o'clock"], answer: 'past', family: 'num', ages: ['older'],
+            en: 'half past = 30 minutes after the hour.', pl: 'half past = wpół do.' },
+        { parts: ['The clock is quarter ', { gap: true }, ' five. (10–12)'], options: ['to', 'past', "o'clock"], answer: 'to', family: 'num', ages: ['older'],
+            en: 'quarter to = 15 minutes before the hour.', pl: 'quarter to = za kwadrans.' },
+        { parts: ['We get up ', { gap: true }, ' seven o’clock. (10–12)'], options: ['at', 'past', 'to'], answer: 'at', family: 'num', ages: ['older'],
+            en: 'at + time (at seven o’clock).', pl: 'at + godzina (at seven o’clock).' },
+        { parts: ['The clock is ', { gap: true }, ' past four. (10–12)'], options: ['quarter', "o'clock", 'to'], answer: 'quarter', family: 'num', ages: ['older'],
+            en: 'quarter past = 15 minutes after.', pl: 'quarter past = kwadrans po.' },
+        { parts: ['I must clean my room ', { gap: true }, '. (10–12)'], options: ['in the evening', 'at night', 'in the morning'], answer: 'in the evening', family: 'must', ages: ['older'],
+            en: 'in the evening = evening time.', pl: 'in the evening = wieczorem.' },
+        { parts: ['He can ', { gap: true }, ' or play tennis. (10–12)'], options: ['go running', 'do the shopping', 'get up'], answer: 'go running', family: 'can', ages: ['older'],
+            en: 'go running = go + -ing.', pl: 'go running = go + -ing.' }
     ];
 
     const TEXT_MCQ = [
@@ -659,7 +831,44 @@
             en: "don't + have to = not necessary.", pl: "don't + have to = nie trzeba." },
         { q: 'Choose the correct sentence.', qPl: 'Wybierz poprawne zdanie.', family: 'are',
             options: ['There are some carrots in the bowl.', 'There is some carrots in the bowl.', 'There are any carrots in the bowl.'], answer: 0,
-            en: 'Positive plural → There are + some.', pl: 'Twierdzenie w lm. → There are + some.' }
+            en: 'Positive plural → There are + some.', pl: 'Twierdzenie w lm. → There are + some.' },
+        // 10–12: collocations / routines / time
+        { q: 'Choose the correct collocation. (10–12)', qPl: 'Wybierz poprawną kolokację. (10–12)', family: 'can', ages: ['older'],
+            options: ['I can play football.', 'I can do football.', 'I can go football.'], answer: 0,
+            en: 'play + ball sports.', pl: 'play + sporty z piłką.' },
+        { q: 'Choose the correct collocation. (10–12)', qPl: 'Wybierz poprawną kolokację. (10–12)', family: 'can', ages: ['older'],
+            options: ['She can do gymnastics.', 'She can play gymnastics.', 'She can go gymnastics.'], answer: 0,
+            en: 'do + gymnastics.', pl: 'do + gymnastics.' },
+        { q: 'Choose the correct collocation. (10–12)', qPl: 'Wybierz poprawną kolokację. (10–12)', family: 'like', ages: ['older'],
+            options: ['We like go swimming.', 'We like go to swimming.', 'We like going swimming.'], answer: 0,
+            en: 'In Colour Blocks the tile is go swimming (go + -ing).', pl: 'Na kafelku jest go swimming (go + -ing).' },
+        { q: 'Choose the correct sentence. (10–12)', qPl: 'Wybierz poprawne zdanie. (10–12)', family: 'must', ages: ['older'],
+            options: ['I must get up in the morning.', 'I must get up at the morning.', 'I must get up on the morning.'], answer: 0,
+            en: 'in the morning / afternoon / evening; at night.', pl: 'in the morning / afternoon / evening; at night.' },
+        { q: 'Choose the correct sentence. (10–12)', qPl: 'Wybierz poprawne zdanie. (10–12)', family: 'must', ages: ['older'],
+            options: ['They go to bed at night.', 'They go to bed in night.', 'They go to bed on the night.'], answer: 0,
+            en: 'at night (not in night).', pl: 'at night (nie in night).' },
+        { q: 'Choose the correct time. (10–12)', qPl: 'Wybierz poprawną godzinę. (10–12)', family: 'num', ages: ['older'],
+            options: ["The clock is three o'clock.", 'The clock is three past.', 'The clock is three to.'], answer: 0,
+            en: "full hour → number + o'clock.", pl: "równa godzina → liczba + o'clock." },
+        { q: 'Choose the correct time. (10–12)', qPl: 'Wybierz poprawną godzinę. (10–12)', family: 'num', ages: ['older'],
+            options: ['half past two', 'half to two', "half o'clock two"], answer: 0,
+            en: 'half past = 30 minutes after.', pl: 'half past = 30 minut po.' },
+        { q: 'Choose the correct time. (10–12)', qPl: 'Wybierz poprawną godzinę. (10–12)', family: 'num', ages: ['older'],
+            options: ['quarter to five', 'quarter past to five', "quarter o'clock five"], answer: 0,
+            en: 'quarter to = 15 minutes before.', pl: 'quarter to = za 15 minut.' },
+        { q: 'Choose the correct sentence. (10–12)', qPl: 'Wybierz poprawne zdanie. (10–12)', family: 'num', ages: ['older'],
+            options: ["We get up at seven o'clock.", "We get up past seven o'clock.", "We get up to seven o'clock."], answer: 0,
+            en: 'at + clock time.', pl: 'at + godzina.' },
+        { q: 'Choose the correct chore. (10–12)', qPl: 'Wybierz poprawną czynność. (10–12)', family: 'must', ages: ['older'],
+            options: ['I have to make the bed.', 'I have to make bed.', 'I have to do the bed.'], answer: 0,
+            en: 'make the bed (with the).', pl: 'make the bed (z the).' },
+        { q: 'Choose the correct sentence. (10–12)', qPl: 'Wybierz poprawne zdanie. (10–12)', family: 'must', ages: ['older'],
+            options: ['She must brush my teeth.', 'She must brush the teeth.', 'She must brush teeth my.'], answer: 0,
+            en: 'In this set the tile is brush my teeth.', pl: 'W tym zestawie kafel to brush my teeth.' },
+        { q: 'play / do / go — which is right? (10–12)', qPl: 'play / do / go — co jest poprawne? (10–12)', family: 'can', ages: ['older'],
+            options: ['go shopping', 'play shopping', 'do shopping running'], answer: 0,
+            en: 'go shopping / do the shopping — different tiles.', pl: 'go shopping / do the shopping — różne kafelki.' }
     ];
 
     const TEXT_REORDER = [
@@ -706,7 +915,30 @@
         { words: ['We', "don't", 'have to', 'shout'], family: 'must' },
         { words: ['Is there', 'a', 'postcard', 'in', 'the', 'drawer'], family: 'is', extra: '?' },
         { words: ['Are there', 'any', 'stickers', 'on', 'the', 'whiteboard'], family: 'are', extra: '?' },
-        { words: ['There aren\'t', 'any', 'buses', 'near', 'the', 'park'], family: 'are' }
+        { words: ['There aren\'t', 'any', 'buses', 'near', 'the', 'park'], family: 'are' },
+        // 10–12: collocations, routines, day parts, clock
+        { words: ['I', 'can', 'play football'], family: 'can', ages: ['older'] },
+        { words: ['She', 'can', 'do gymnastics'], family: 'can', ages: ['older'] },
+        { words: ['We', 'can', 'go running'], family: 'can', ages: ['older'] },
+        { words: ['They', 'like', 'go swimming'], family: 'like', ages: ['older'] },
+        { words: ['I', "don't", 'like', 'do homework'], family: 'like', ages: ['older'] },
+        { words: ['You', 'must', 'get up', 'in the morning'], family: 'must', ages: ['older'] },
+        { words: ['We', 'have to', 'brush my teeth'], family: 'must', ages: ['older'] },
+        { words: ['She', 'must', 'make the bed'], family: 'must', ages: ['older'] },
+        { words: ['They', 'go to school', 'in the morning'], family: 'must', ages: ['older'] },
+        { words: ['I', 'have breakfast', 'in the morning'], family: 'must', ages: ['older'] },
+        { words: ['We', 'have dinner', 'in the evening'], family: 'must', ages: ['older'] },
+        { words: ['He', 'must', 'go to bed', 'at night'], family: 'must', ages: ['older'] },
+        { words: ['I', 'must', 'clean my room', 'in the evening'], family: 'must', ages: ['older'] },
+        { words: ['They', "don't", 'have to', 'do the washing up'], family: 'must', ages: ['older'] },
+        { words: ['The', 'clock', 'is', 'three', "o'clock"], family: 'num', ages: ['older'] },
+        { words: ['The', 'clock', 'is', 'half', 'past', 'two'], family: 'num', ages: ['older'] },
+        { words: ['The', 'clock', 'is', 'quarter', 'to', 'five'], family: 'num', ages: ['older'] },
+        { words: ['The', 'clock', 'is', 'quarter', 'past', 'four'], family: 'num', ages: ['older'] },
+        { words: ['We', 'have to', 'get up', 'at', 'seven', "o'clock"], family: 'num', ages: ['older'] },
+        { words: ['I', 'must', 'go to school', 'at', 'eight', "o'clock"], family: 'num', ages: ['older'] },
+        { words: ['She', 'can', 'play tennis', 'or', 'go swimming'], family: 'can', ages: ['older'] },
+        { words: ['We', 'like', 'play basketball', 'in the afternoon'], family: 'like', ages: ['older'] }
     ];
 
     /** Drag tiles into gaps — ids = full sentence tile ids; gaps = blank indices; distractors = wrong bank tiles. */
@@ -881,7 +1113,80 @@
         { ids: ['she', 'can', 'play', 'dot'], gaps: [2], distractors: ['practise', 'study', 'wait'], family: 'can', ages: ['older'] },
         { ids: ['we', 'can', 'cook', 'or', 'eat', 'dot'], gaps: [3], distractors: ['and', 'qmark', 'must'], family: 'can', ages: ['older'] },
         { ids: ['why', 'must', 'we', 'listen', 'qmark'], gaps: [0], distractors: ['when', 'where', 'dot'], family: 'wh', ages: ['older'] },
-        { ids: ['when', 'must', 'you', 'tidy', 'qmark'], gaps: [0], distractors: ['why', 'how', 'dot'], family: 'wh', ages: ['older'] }
+        { ids: ['when', 'must', 'you', 'tidy', 'qmark'], gaps: [0], distractors: ['why', 'how', 'dot'], family: 'wh', ages: ['older'] },
+        // play / do / go collocations
+        { ids: ['i', 'can', 'play-football', 'dot'], gaps: [2], distractors: ['do-gymnastics', 'go-running', 'swim'], family: 'can', ages: ['older'] },
+        { ids: ['she', 'can', 'play-tennis', 'dot'], gaps: [2], distractors: ['play-football', 'do-homework', 'run'], family: 'can', ages: ['older'] },
+        { ids: ['he', 'can', 'play-basketball', 'dot'], gaps: [2], distractors: ['go-shopping', 'do-gymnastics', 'jump'], family: 'can', ages: ['older'] },
+        { ids: ['we', 'can', 'do-gymnastics', 'dot'], gaps: [2], distractors: ['play-tennis', 'go-running', 'dance'], family: 'can', ages: ['older'] },
+        { ids: ['they', 'can', 'go-running', 'dot'], gaps: [2], distractors: ['do-shopping', 'play-football', 'climb'], family: 'can', ages: ['older'] },
+        { ids: ['you', 'can', 'go-swimming', 'dot'], gaps: [2], distractors: ['go-shopping', 'do-homework', 'paint'], family: 'can', ages: ['older'] },
+        { ids: ['i', 'cant', 'play-tennis', 'dot'], gaps: [2], distractors: ['play-football', 'go-running', 'swim'], family: 'can', ages: ['older'] },
+        { ids: ['she', 'cant', 'do-gymnastics', 'dot'], gaps: [1], distractors: ['can', 'dont', 'like'], family: 'can', ages: ['older'] },
+        { ids: ['i', 'like', 'play-football', 'dot'], gaps: [2], distractors: ['do-homework', 'go-shopping', 'milk'], family: 'like', ages: ['older'] },
+        { ids: ['she', 'like', 'go-swimming', 'dot'], gaps: [2], distractors: ['play-tennis', 'do-homework', 'run'], family: 'like', ages: ['older'] },
+        { ids: ['we', 'like', 'go-running', 'dot'], gaps: [2], distractors: ['do-shopping', 'play-basketball', 'tea'], family: 'like', ages: ['older'] },
+        { ids: ['they', 'dont', 'like', 'do-homework', 'dot'], gaps: [3], distractors: ['play-football', 'go-swimming', 'pizza'], family: 'like', ages: ['older'] },
+        { ids: ['you', 'dont', 'like', 'do-shopping', 'dot'], gaps: [3], distractors: ['go-shopping', 'play-tennis', 'cake'], family: 'like', ages: ['older'] },
+        { ids: ['he', 'like', 'play-basketball', 'and', 'play-football', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'dont'], family: 'like', ages: ['older'] },
+        { ids: ['i', 'can', 'play-tennis', 'or', 'go-swimming', 'dot'], gaps: [3], distractors: ['and', 'qmark', 'must'], family: 'can', ages: ['older'] },
+        { ids: ['we', 'must', 'do-homework', 'dot'], gaps: [2], distractors: ['play-football', 'go-running', 'listen'], family: 'must', ages: ['older'] },
+        { ids: ['they', 'have-to', 'do-shopping', 'dot'], gaps: [2], distractors: ['go-shopping', 'play-tennis', 'wait'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'must', 'go-running', 'dot'], gaps: [2], distractors: ['do-gymnastics', 'play-basketball', 'study'], family: 'must', ages: ['older'] },
+        { ids: ['i', 'dont', 'have-to', 'go-shopping', 'dot'], gaps: [3], distractors: ['do-homework', 'play-football', 'pack'], family: 'must', ages: ['older'] },
+        { ids: ['can', 'you', 'play-football', 'qmark'], gaps: [2], distractors: ['do-gymnastics', 'go-running', 'swim'], family: 'can', ages: ['older'] },
+        { ids: ['can', 'he', 'do-gymnastics', 'qmark'], gaps: [0], distractors: ['must', 'dont', 'dot'], family: 'can', ages: ['older'] },
+        // daily routines & chores
+        { ids: ['we', 'must', 'get-up', 'in-the-morning', 'dot'], gaps: [2], distractors: ['go-to-bed', 'have-dinner', 'listen'], family: 'must', ages: ['older'] },
+        { ids: ['we', 'must', 'get-up', 'in-the-morning', 'dot'], gaps: [3], distractors: ['in-the-evening', 'at-night', 'outside'], family: 'must', ages: ['older'] },
+        { ids: ['i', 'have-to', 'brush-teeth', 'dot'], gaps: [2], distractors: ['make-bed', 'wash-up', 'pack'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'must', 'make-bed', 'dot'], gaps: [2], distractors: ['brush-teeth', 'clean-room', 'wait'], family: 'must', ages: ['older'] },
+        { ids: ['he', 'have-to', 'wash-up', 'dot'], gaps: [2], distractors: ['make-bed', 'have-shower', 'study'], family: 'must', ages: ['older'] },
+        { ids: ['you', 'must', 'clean-room', 'dot'], gaps: [2], distractors: ['wash-up', 'get-up', 'shout'], family: 'must', ages: ['older'] },
+        { ids: ['i', 'have-to', 'have-shower', 'in-the-morning', 'dot'], gaps: [2], distractors: ['go-to-bed', 'have-dinner', 'pack'], family: 'must', ages: ['older'] },
+        { ids: ['they', 'go-to-school', 'in-the-morning', 'dot'], gaps: [1], distractors: ['go-to-bed', 'get-up', 'have-breakfast'], family: 'must', ages: ['older'] },
+        { ids: ['they', 'go-to-school', 'in-the-morning', 'dot'], gaps: [2], distractors: ['in-the-evening', 'at-night', 'outside'], family: 'must', ages: ['older'] },
+        { ids: ['we', 'have-breakfast', 'in-the-morning', 'dot'], gaps: [1], distractors: ['have-lunch', 'have-dinner', 'go-to-bed'], family: 'must', ages: ['older'] },
+        { ids: ['i', 'have-lunch', 'in-the-afternoon', 'dot'], gaps: [1], distractors: ['have-breakfast', 'have-dinner', 'get-up'], family: 'must', ages: ['older'] },
+        { ids: ['they', 'have-dinner', 'in-the-evening', 'dot'], gaps: [1], distractors: ['have-breakfast', 'have-lunch', 'brush-teeth'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'must', 'go-to-bed', 'at-night', 'dot'], gaps: [2], distractors: ['get-up', 'go-to-school', 'have-lunch'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'must', 'go-to-bed', 'at-night', 'dot'], gaps: [3], distractors: ['in-the-morning', 'in-the-afternoon', 'outside'], family: 'must', ages: ['older'] },
+        { ids: ['i', 'dont', 'have-to', 'clean-room', 'dot'], gaps: [3], distractors: ['brush-teeth', 'make-bed', 'wash-up'], family: 'must', ages: ['older'] },
+        { ids: ['we', 'have-to', 'get-up', 'and', 'have-breakfast', 'dot'], gaps: [4], distractors: ['or', 'qmark', 'dont'], family: 'must', ages: ['older'] },
+        { ids: ['you', 'must', 'brush-teeth', 'and', 'have-shower', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'can'], family: 'must', ages: ['older'] },
+        { ids: ['when', 'must', 'you', 'get-up', 'qmark'], gaps: [0], distractors: ['why', 'where', 'dot'], family: 'wh', ages: ['older'] },
+        { ids: ['when', 'must', 'they', 'go-to-school', 'qmark'], gaps: [3], distractors: ['go-to-bed', 'get-up', 'have-dinner'], family: 'wh', ages: ['older'] },
+        // parts of the day
+        { ids: ['i', 'like', 'go-running', 'in-the-morning', 'dot'], gaps: [3], distractors: ['in-the-evening', 'at-night', 'outside'], family: 'like', ages: ['older'] },
+        { ids: ['we', 'can', 'play-football', 'in-the-afternoon', 'dot'], gaps: [3], distractors: ['in-the-morning', 'at-night', 'upstairs'], family: 'can', ages: ['older'] },
+        { ids: ['they', 'like', 'go-swimming', 'in-the-evening', 'dot'], gaps: [3], distractors: ['at-night', 'in-the-morning', 'near'], family: 'like', ages: ['older'] },
+        { ids: ['he', 'must', 'do-homework', 'in-the-evening', 'dot'], gaps: [3], distractors: ['in-the-morning', 'at-night', 'outside'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'dont', 'have-to', 'go-to-school', 'at-night', 'dot'], gaps: [4], distractors: ['in-the-morning', 'in-the-afternoon', 'outside'], family: 'must', ages: ['older'] },
+        // telling the time
+        { ids: ['the', 'clock', 'is', 'three', 'oclock', 'dot'], gaps: [4], distractors: ['past', 'quarter', 'half'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'three', 'oclock', 'dot'], gaps: [3], distractors: ['four', 'five', 'six'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'six', 'oclock', 'dot'], gaps: [4], distractors: ['half', 'past', 'quarter'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'nine', 'oclock', 'dot'], gaps: [3], distractors: ['eight', 'ten', 'twelve'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'twelve', 'oclock', 'dot'], gaps: [3, 4], distractors: ['eleven', 'half', 'past', 'quarter'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'half', 'past', 'two', 'dot'], gaps: [3], distractors: ['quarter', 'oclock', 'clock-to'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'half', 'past', 'two', 'dot'], gaps: [4], distractors: ['clock-to', 'oclock', 'quarter'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'half', 'past', 'eight', 'dot'], gaps: [5], distractors: ['seven', 'nine', 'ten'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'quarter', 'past', 'four', 'dot'], gaps: [3], distractors: ['half', 'oclock', 'clock-to'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'quarter', 'past', 'four', 'dot'], gaps: [4], distractors: ['clock-to', 'oclock', 'half'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'quarter', 'clock-to', 'five', 'dot'], gaps: [3, 4], distractors: ['half', 'past', 'oclock', 'clock-at'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'quarter', 'clock-to', 'eleven', 'dot'], gaps: [4], distractors: ['past', 'oclock', 'half'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'twenty', 'past', 'three', 'dot'], gaps: [3], distractors: ['twenty-five', 'ten', 'quarter'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'twenty-five', 'clock-to', 'six', 'dot'], gaps: [3], distractors: ['twenty', 'ten', 'quarter'], family: 'num', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'ten', 'past', 'seven', 'dot'], gaps: [3, 4], distractors: ['twenty', 'clock-to', 'oclock', 'half'], family: 'num', ages: ['older'] },
+        { ids: ['we', 'have-to', 'get-up', 'clock-at', 'seven', 'oclock', 'dot'], gaps: [3], distractors: ['past', 'clock-to', 'half'], family: 'num', ages: ['older'] },
+        { ids: ['we', 'have-to', 'get-up', 'clock-at', 'seven', 'oclock', 'dot'], gaps: [4], distractors: ['six', 'eight', 'nine'], family: 'num', ages: ['older'] },
+        { ids: ['we', 'have-to', 'get-up', 'clock-at', 'seven', 'oclock', 'dot'], gaps: [5], distractors: ['past', 'half', 'quarter'], family: 'num', ages: ['older'] },
+        { ids: ['i', 'must', 'go-to-school', 'clock-at', 'eight', 'oclock', 'dot'], gaps: [3], distractors: ['past', 'half', 'clock-to'], family: 'num', ages: ['older'] },
+        { ids: ['they', 'have-to', 'go-to-bed', 'clock-at', 'nine', 'oclock', 'dot'], gaps: [4], distractors: ['eight', 'ten', 'eleven'], family: 'num', ages: ['older'] },
+        { ids: ['she', 'have-lunch', 'clock-at', 'twelve', 'oclock', 'dot'], gaps: [2], distractors: ['past', 'half', 'quarter'], family: 'num', ages: ['older'] },
+        { ids: ['he', 'have-dinner', 'clock-at', 'six', 'oclock', 'dot'], gaps: [3], distractors: ['five', 'seven', 'eight'], family: 'num', ages: ['older'] },
+        { ids: ['when', 'must', 'we', 'go-to-bed', 'qmark'], gaps: [0], distractors: ['why', 'where', 'dot'], family: 'wh', ages: ['older'] },
+        { ids: ['the', 'clock', 'is', 'half', 'past', 'one', 'dot'], gaps: [5], distractors: ['two', 'three', 'four'], family: 'num', ages: ['older'] }
     ];
 
     const CB_CSS = `
@@ -1016,6 +1321,9 @@
 .cb-nounpick p { margin: 0 0 0.85rem; color: var(--text-muted); font-size: 0.95rem; }
 .cb-nounpick .cb-cards { justify-content: center; }
 .cb-nounpick .cb-card { min-width: 7.2rem; }
+.cb-nounpick-word {
+    display: block; font-size: 1.15rem; font-weight: 800; line-height: 1.2; margin-top: 0.15rem;
+}
 .cb-picture {
     display: flex; align-items: center; justify-content: center; gap: 0.55rem; flex-wrap: wrap;
     background: linear-gradient(180deg, #e0f2fe, #fff); border: 2px solid #bae6fd; border-radius: 16px;
@@ -1248,7 +1556,9 @@
     const MUST_NEG_PL = { i: 'nie muszę', you: 'nie musisz', he: 'nie musi', she: 'nie musi', we: 'nie musimy', they: 'nie muszą' };
     const PREP_PL = {
         in: 'w', on: 'na', under: 'pod', above: 'nad', 'next-to': 'obok', between: 'między',
-        behind: 'za', 'in-front-of': 'przed', near: 'blisko', upstairs: 'na górze', downstairs: 'na dole', outside: 'na dworze', and: 'i', or: 'lub'
+        behind: 'za', 'in-front-of': 'przed', near: 'blisko', upstairs: 'na górze', downstairs: 'na dole', outside: 'na dworze',
+        and: 'i', or: 'lub',
+        'in-the-morning': 'rano', 'in-the-afternoon': 'po południu', 'in-the-evening': 'wieczorem', 'at-night': 'w nocy'
     };
     const PLACE_NA = {
         chair: 'krześle', desk: 'biurku', table: 'stole', sofa: 'sofie', bin: 'koszu', shelf: 'półce',
@@ -1261,7 +1571,12 @@
         chair: 'krzesłem', desk: 'biurkiem', table: 'stołem', sofa: 'sofą', bin: 'koszem', shelf: 'półką',
         bed: 'łóżkiem', box: 'pudełkiem', mat: 'matą', window: 'oknem'
     };
-    const NUM_PL = { one: 'jeden', two: 'dwa', three: 'trzy', some: 'kilka', any: 'jakieś' };
+    const NUM_PL = {
+        one: 'jeden', two: 'dwa', three: 'trzy', four: 'cztery', five: 'pięć', six: 'sześć',
+        seven: 'siedem', eight: 'osiem', nine: 'dziewięć', ten: 'dziesięć', eleven: 'jedenaście', twelve: 'dwanaście',
+        twenty: 'dwadzieścia', 'twenty-five': 'dwadzieścia pięć',
+        some: 'kilka', any: 'jakieś'
+    };
 
     function nounPlWord(t) {
         if (!t) return '';
@@ -1298,9 +1613,9 @@
         const first = tiles[0];
         const subj = tiles.find((t) => t.kind === 'subj');
         const nouns = tiles.filter((t) => t.kind === 'noun');
-        const verb = tiles.find((t) => t.kind === 'verb');
-        const prep = tiles.find((t) => t.kind === 'prep' && !t.adverb);
-        const adv = tiles.find((t) => t.kind === 'prep' && t.adverb);
+        const verb = tiles.find((t) => t.kind === 'verb' || t.kind === 'colloc' || t.kind === 'routine');
+        const prep = tiles.find((t) => (t.kind === 'prep' || t.kind === 'time') && !t.adverb);
+        const adv = tiles.find((t) => (t.kind === 'prep' || t.kind === 'time') && t.adverb);
         const num = tiles.find((t) => t.kind === 'num' || t.id === 'some' || t.id === 'any');
         const question = first.id === 'is-there' || first.id === 'are-there' ||
             first.kind === 'wh' || tiles.some((t) => t.id === 'qmark');
@@ -1519,8 +1834,8 @@
                 if (has('dont') && has('must')) {
                     return { ok: false, en: 'For “not necessary” use don’t + have to (two tiles).', pl: 'Na „nie muszę” użyj don’t + have to (dwa kafelki).' };
                 }
-                const v = tiles.find((t) => t.kind === 'verb');
-                if (!v) return { ok: false, en: 'Add an action (swim, tidy, listen…).', pl: 'Dodaj czynność (swim, tidy, listen…).' };
+                const v = tiles.find((t) => t.kind === 'verb' || t.kind === 'colloc' || t.kind === 'routine');
+                if (!v) return { ok: false, en: 'Add an action (swim, play football, get up…).', pl: 'Dodaj czynność (swim, play football, get up…).' };
                 return { ok: true, sentence: joinSpeak(tiles, false) };
             }
 
@@ -1528,7 +1843,7 @@
                 if (has('dont') && ids.indexOf('dont') > ids.indexOf('like') && has('like')) {
                     return { ok: false, en: 'Order: I / You / We / They / He / She + don’t + like + pizza.', pl: 'Kolejność: I / You / We / They / He / She + don’t + like + pizza.' };
                 }
-                const n = tiles.find((t) => t.kind === 'noun' || t.kind === 'verb');
+                const n = tiles.find((t) => t.kind === 'noun' || t.kind === 'verb' || t.kind === 'colloc' || t.kind === 'routine');
                 if (!n) return { ok: false, en: 'What do they like? Add a thing or an action.', pl: 'Co lubią? Dodaj rzecz albo czynność.' };
                 return { ok: true, sentence: joinSpeak(tiles, false) };
             }
@@ -1676,24 +1991,33 @@
         if (g === 'can') {
             const p = pickPerson();
             const modal = pick(['can', 'cant']);
-            const v = pick(visibleTiles().filter((t) => t.kind === 'verb' && t.goals.indexOf('can') !== -1));
+            const v = pick(visibleTiles().filter((t) =>
+                (t.kind === 'verb' || t.kind === 'colloc') && t.goals && t.goals.indexOf('can') !== -1
+            ));
             return { ids: [p.id, modal, v ? v.id : 'swim'], picture: [byId(p.id), byId(modal), v || byId('swim')] };
         }
         if (g === 'like') {
             const p = pickPerson();
-            const n = pick(visibleTiles().filter((t) => t.kind === 'noun' && t.number !== 'pl' && t.goals && t.goals.indexOf('like') !== -1));
+            const n = pick(visibleTiles().filter((t) =>
+                (t.kind === 'noun' && t.number !== 'pl' && t.goals && t.goals.indexOf('like') !== -1) ||
+                (t.kind === 'colloc' && t.goals && t.goals.indexOf('like') !== -1)
+            ));
             const neg = Math.random() < 0.4;
             const ids = neg ? [p.id, 'dont', 'like', n ? n.id : 'pizza'] : [p.id, 'like', n ? n.id : 'pizza'];
             return { ids: ids, picture: [byId(p.id), byId(neg ? 'dont' : 'like'), n || byId('pizza')] };
         }
         if (g === 'must') {
             const p = pickPerson();
-            const v = pick(visibleTiles().filter((t) => t.kind === 'verb' && t.goals.indexOf('must') !== -1));
+            const v = pick(visibleTiles().filter((t) =>
+                (t.kind === 'verb' || t.kind === 'routine' || t.kind === 'colloc') && t.goals && t.goals.indexOf('must') !== -1
+            ));
             return { ids: [p.id, 'must', v ? v.id : 'listen'], picture: [byId(p.id), byId('must'), v || byId('listen')] };
         }
         if (g === 'haveto') {
             const p = pickPerson();
-            const v = pick(visibleTiles().filter((t) => t.kind === 'verb' && t.goals.indexOf('haveto') !== -1));
+            const v = pick(visibleTiles().filter((t) =>
+                (t.kind === 'verb' || t.kind === 'routine' || t.kind === 'colloc') && t.goals && t.goals.indexOf('haveto') !== -1
+            ));
             const neg = Math.random() < 0.4;
             const ids = neg ? [p.id, 'dont', 'have-to', v ? v.id : 'run'] : [p.id, 'have-to', v ? v.id : 'tidy'];
             return { ids: ids, picture: [byId(p.id), byId(neg ? 'dont' : 'have-to'), v || byId('tidy')] };
@@ -1712,9 +2036,8 @@
 
     function speakTile(t) {
         if (!t) return;
-        let src = t;
-        if (t.kind === 'noun' && t.number === 'pl' && t.sgId) src = byId(t.sgId) || t;
-        speak(String(src.speak || src.text || '').replace(/\s+/g, ' ').trim());
+        // Always speak this tile’s own form (singular or plural) so learners hear what they see.
+        speak(String(t.speak || t.text || '').replace(/\s+/g, ' ').trim());
     }
 
     function award(n, result) {
@@ -1758,17 +2081,20 @@
         const pl = t && t.plId ? byId(t.plId) : null;
         if (!t || !pl) return '';
         const opt = (tile, labelEn, labelPl) => {
-            const gloss = S.tilePl ? (tile.wordPl || '') : '';
-            return '<button type="button" class="cb-card" data-cb="noun-pick" data-id="' + tile.id + '" style="' + colorStyle('noun') + '">' +
+            const plHint = S.tilePl ? (tile.wordPl || '') : '';
+            const formLabel = tile.number === 'pl'
+                ? L('plural', 'mnoga')
+                : L('singular', 'pojedyncza');
+            return '<button type="button" class="cb-card cb-nounpick-opt" data-cb="noun-pick" data-id="' + tile.id + '" style="' + colorStyle('noun') + '">' +
                 icoHtml(tile) +
-                esc(tile.text) +
-                (gloss ? '<span class="gloss plhint">' + esc(gloss) + '</span>' : '') +
-                '<span class="cb-1plus">' + esc(L(labelEn, labelPl)) + '</span></button>';
+                '<span class="cb-nounpick-word">' + esc(tile.text) + '</span>' +
+                (plHint ? '<span class="gloss plhint">' + esc(plHint) + '</span>' : '') +
+                '<span class="cb-1plus">' + esc(L(labelEn, labelPl) + ' · ' + formLabel) + '</span></button>';
         };
         return '<div class="cb-nounpick-back" data-cb="noun-pick-cancel">' +
             '<div class="cb-nounpick" data-cb="noun-pick-box">' +
-            '<h3>' + esc(t.text) + '</h3>' +
-            '<p>' + esc(L('One thing, or more than one?', 'Jedna rzecz czy więcej niż jedna?')) + '</p>' +
+            '<h3>' + esc(t.text) + ' / ' + esc(pl.text) + '</h3>' +
+            '<p>' + esc(L('One thing, or more than one? Tap to hear each form.', 'Jedna rzecz czy więcej? Kliknij, żeby usłyszeć każdą formę.')) + '</p>' +
             '<div class="cb-cards">' +
             opt(t, 'one', 'jedna') +
             opt(pl, 'more than one', 'więcej niż jedna') +
@@ -2055,6 +2381,9 @@
             { id: 'punct', title: '. and ?', titlePl: '. i ?', kinds: ['punct'] },
             { id: 'num', title: 'Numbers', titlePl: 'Liczby', kinds: ['num'] },
             { id: 'grammar', title: 'Grammar', titlePl: 'Gramatyka', kinds: ['verbp', 'modal', 'neg'] },
+            { id: 'colloc', title: 'play · do · go', titlePl: 'play · do · go', kinds: ['colloc'] },
+            { id: 'routine', title: 'Daily routines', titlePl: 'Codzienne czynności', kinds: ['routine'] },
+            { id: 'time', title: 'Time of day', titlePl: 'Pora dnia i godziny', kinds: ['time'] },
             { id: 'prep', title: 'Place words', titlePl: 'Przyimki miejsca', kinds: ['prep'] },
             { id: 'food', title: 'Food', titlePl: 'Jedzenie', kinds: ['noun'], cat: 'food' },
             { id: 'furniture', title: 'Furniture', titlePl: 'Meble', kinds: ['noun'], cat: 'furniture' },
@@ -2076,6 +2405,7 @@
         if (S.tab === 'creator') {
             open.who = true; open.be = true; open.wh = true; open.struct = true;
             open.art = true; open.link = true; open.punct = true; open.num = true; open.grammar = true;
+            open.colloc = true; open.routine = true; open.time = true;
             open.prep = true; open.food = true; open.furniture = true; open.room = true;
             open.school = true; open.clothes = true; open.toys = true; open.animals = true;
             open.tech = true; open.house = true; open.other = true; open.verb = true;
@@ -2086,10 +2416,17 @@
             open.who = true; open.grammar = true; open.art = true; open.tech = true; open.toys = true;
         } else if (g === 'can' || g === 'must' || g === 'haveto') {
             open.who = true; open.grammar = true; open.verb = true;
+            if (S.ageBand === 'older') {
+                open.colloc = true; open.routine = true; open.time = true;
+            }
         } else if (g === 'like') {
             open.who = true; open.grammar = true; open.food = true; open.toys = true; open.animals = true;
+            if (S.ageBand === 'older') open.colloc = true;
         } else {
             open.struct = true; open.art = true; open.prep = true; open.furniture = true; open.room = true;
+            if (S.ageBand === 'older') {
+                open.time = true; open.num = true;
+            }
         }
         return open;
     }
@@ -2951,7 +3288,7 @@
         const age = S.ageBand === 'older' ? '10–12' : '8–9';
         const ctx = askWhyContext();
         const grammar = S.ageBand === 'older'
-            ? "there is/are, am/is/are (to be), have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-questions (who/what/where/when/why/how), statement . vs question ?"
+            ? "there is/are, am/is/are (to be), have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-questions, play/do/go collocations (play football, do gymnastics, go running), daily routines (get up, brush my teeth), parts of the day (in the morning), telling the time (at, o'clock, half, quarter, past, to, numbers), statement . vs question ?"
             : "there is/are, am/is/are (to be), have got, can/can't, like, don't like, a/an, and/or, Wh-questions (who/what/where/how), statement . vs question ?, place prepositions";
         const prompt = `You help a Polish child who got a Colour Blocks English task wrong. Be kind. Do not scold.
 Age: ${age}. ${ageWhyVoice()}
@@ -3106,7 +3443,7 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
 
         const age = S.ageBand === 'older' ? '10–12' : '8–9';
         const grammar = S.ageBand === 'older'
-            ? "there is/are, am/is/are + negatives, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-words, place prepositions, end with . or ?"
+            ? "there is/are, am/is/are + negatives, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-words, play/do/go collocations, daily routines, parts of the day, telling the time (at / o'clock / half / quarter / past / to + numbers), place prepositions, end with . or ?"
             : "there is/are, am/is/are + negatives, have got, can/can't, like, don't like, a/an, and/or, Who/What/Where/How, place prepositions, end with . or ?";
         const prompt = `You are a kind English teacher for a Polish child (age ${age}).
 ${ageWhyVoice()}
@@ -3177,10 +3514,14 @@ Return JSON only:
         let gaps = TEXT_GAPS;
         let mcq = TEXT_MCQ;
         let reorder = TEXT_REORDER;
+        const ageOk = (t) => !t.ages || t.ages.indexOf(S.ageBand) !== -1;
+        gaps = gaps.filter(ageOk);
+        mcq = mcq.filter(ageOk);
+        reorder = reorder.filter(ageOk);
         if (S.ageBand === 'young') {
-            gaps = gaps.filter((g) => g.family !== 'must');
-            mcq = mcq.filter((g) => g.family !== 'must');
-            reorder = reorder.filter((g) => g.family !== 'must');
+            gaps = gaps.filter((g) => g.family !== 'must' && g.family !== 'num');
+            mcq = mcq.filter((g) => g.family !== 'must' && g.family !== 'num');
+            reorder = reorder.filter((g) => g.family !== 'must' && g.family !== 'num');
         }
         if (S.textKind === 'gap') S.gap = pick(gaps);
         if (S.textKind === 'mcq') S.mcq = pick(mcq);

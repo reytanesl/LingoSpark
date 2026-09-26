@@ -73,7 +73,21 @@
         cry: 'crying-face', pack: 'suitcase', ask: 'thinking-face',
         mugs: 'cup-with-straw', rabbits: 'rabbit', flowers: 'tulip', biscuits: 'cookie',
         grapes: 'grapes', stickers: 'label', buses: 'bus', eggs: 'egg',
-        carrots: 'carrot', toys: 'yo-yo', puzzles: 'jigsaw', scarves: 'icon-park:scarf'
+        carrots: 'carrot', toys: 'yo-yo', puzzles: 'jigsaw', scarves: 'icon-park:scarf',
+        'play-football': 'soccer-ball', 'play-tennis': 'tennis', 'play-basketball': 'basketball',
+        'do-gymnastics': 'person-cartwheeling', 'do-homework': 'memo', 'do-shopping': 'shopping-cart',
+        'go-running': 'person-running', 'go-swimming': 'person-swimming', 'go-shopping': 'shopping-bags',
+        'get-up': 'alarm-clock', 'have-breakfast': 'cooking', 'have-lunch': 'fork-and-knife',
+        'have-dinner': 'spaghetti', 'brush-teeth': 'toothbrush', 'make-bed': 'bed',
+        'wash-up': 'soap', 'clean-room': 'broom', 'have-shower': 'shower',
+        'go-to-school': 'school', 'go-to-bed': 'sleeping-face',
+        'in-the-morning': 'sunrise', 'in-the-afternoon': 'sun', 'in-the-evening': 'cityscape-at-dusk',
+        'at-night': 'crescent-moon', clock: 'alarm-clock', oclock: 'alarm-clock',
+        half: 'keycap-3', quarter: 'keycap-4', past: 'right-arrow', 'clock-to': 'left-arrow',
+        'clock-at': 'round-pushpin', four: 'keycap-4', five: 'keycap-5', six: 'keycap-6',
+        seven: 'keycap-7', eight: 'keycap-8', nine: 'keycap-9', ten: 'keycap-10',
+        eleven: 'input-numbers', twelve: 'input-numbers',
+        or: 'twisted-rightwards-arrows', and: 'heavy-plus-sign', is: 'equals'
     };
 
     const FAMILY_BY_ID = {
@@ -86,14 +100,25 @@
         in: 'prep', on: 'prep', under: 'prep', above: 'prep', 'next-to': 'prep',
         between: 'prep', behind: 'prep', 'in-front-of': 'prep', near: 'prep',
         upstairs: 'prep', downstairs: 'prep', outside: 'prep',
+        'in-the-morning': 'prep', 'in-the-afternoon': 'prep', 'in-the-evening': 'prep', 'at-night': 'prep',
         i: 'subj', you: 'subj', he: 'subj', she: 'subj', we: 'subj', they: 'subj',
         dont: 'neg', one: 'num', two: 'num', three: 'num',
+        four: 'num', five: 'num', six: 'num', seven: 'num', eight: 'num', nine: 'num',
+        ten: 'num', eleven: 'num', twelve: 'num',
+        oclock: 'num', half: 'num', quarter: 'num', past: 'num', 'clock-to': 'num', 'clock-at': 'num',
+        or: 'art', and: 'art', is: 'is', clock: 'noun',
         swim: 'verb', run: 'verb', draw: 'verb', ride: 'verb', dance: 'verb',
         tidy: 'verb', listen: 'verb', wait: 'verb', study: 'verb',
         climb: 'verb', throw: 'verb', catch: 'verb', kick: 'verb', paint: 'verb',
         colour: 'verb', clap: 'verb', shout: 'verb', whisper: 'verb', carry: 'verb',
         push: 'verb', pull: 'verb', drink: 'verb', smile: 'verb', laugh: 'verb',
-        cry: 'verb', pack: 'verb', ask: 'verb'
+        cry: 'verb', pack: 'verb', ask: 'verb',
+        'play-football': 'verb', 'play-tennis': 'verb', 'play-basketball': 'verb',
+        'do-gymnastics': 'verb', 'do-homework': 'verb', 'do-shopping': 'verb',
+        'go-running': 'verb', 'go-swimming': 'verb', 'go-shopping': 'verb',
+        'get-up': 'must', 'have-breakfast': 'must', 'have-lunch': 'must', 'have-dinner': 'must',
+        'brush-teeth': 'must', 'make-bed': 'must', 'wash-up': 'must', 'clean-room': 'must',
+        'have-shower': 'must', 'go-to-school': 'must', 'go-to-bed': 'must'
     };
 
     function W(id, text) {
@@ -360,6 +385,107 @@
             ages: ['older'], family: 'are', cue: ['bus', 'near', 'park'],
             words: [W('there-arent', "There aren't"), W('any', 'any'), W('buses', 'buses'), W('near', 'near'), W('the', 'the'), W('park', 'park')],
             pl: 'Blisko parku nie ma żadnych autobusów.'
+        },
+        // 10–12: play / do / go, routines, day parts, clock
+        {
+            ages: ['older'], family: 'can', cue: ['i', 'play-football'],
+            words: [W('i', 'I'), W('can', 'can'), W('play-football', 'play football')],
+            pl: 'Potrafię grać w piłkę nożną.'
+        },
+        {
+            ages: ['older'], family: 'can', cue: ['she', 'do-gymnastics'],
+            words: [W('she', 'She'), W('can', 'can'), W('do-gymnastics', 'do gymnastics')],
+            pl: 'Ona potrafi uprawiać gimnastykę.'
+        },
+        {
+            ages: ['older'], family: 'can', cue: ['we', 'go-running'],
+            words: [W('we', 'We'), W('can', 'can'), W('go-running', 'go running')],
+            pl: 'Potrafimy biegać (go running).'
+        },
+        {
+            ages: ['older'], family: 'like', cue: ['they', 'go-swimming'],
+            words: [W('they', 'They'), W('like', 'like'), W('go-swimming', 'go swimming')],
+            pl: 'Oni lubią pływać (go swimming).'
+        },
+        {
+            ages: ['older'], family: 'like', cue: ['i', 'dont', 'do-homework'],
+            words: [W('i', 'I'), W('dont', "don't"), W('like', 'like'), W('do-homework', 'do homework')],
+            pl: 'Nie lubię odrabiać lekcji.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['you', 'get-up', 'in-the-morning'],
+            words: [W('you', 'You'), W('must', 'must'), W('get-up', 'get up'), W('in-the-morning', 'in the morning')],
+            pl: 'Musisz wstawać rano.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['i', 'brush-teeth'],
+            words: [W('i', 'I'), W('have-to', 'have to'), W('brush-teeth', 'brush my teeth')],
+            pl: 'Muszę myć zęby.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['she', 'make-bed'],
+            words: [W('she', 'She'), W('must', 'must'), W('make-bed', 'make the bed')],
+            pl: 'Ona musi ścielić łóżko.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['they', 'go-to-school', 'in-the-morning'],
+            words: [W('they', 'They'), W('go-to-school', 'go to school'), W('in-the-morning', 'in the morning')],
+            pl: 'Oni idą do szkoły rano.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['we', 'have-breakfast', 'in-the-morning'],
+            words: [W('we', 'We'), W('have-breakfast', 'have breakfast'), W('in-the-morning', 'in the morning')],
+            pl: 'Jemy śniadanie rano.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['he', 'go-to-bed', 'at-night'],
+            words: [W('he', 'He'), W('must', 'must'), W('go-to-bed', 'go to bed'), W('at-night', 'at night')],
+            pl: 'On musi iść spać w nocy.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['i', 'clean-room', 'in-the-evening'],
+            words: [W('i', 'I'), W('must', 'must'), W('clean-room', 'clean my room'), W('in-the-evening', 'in the evening')],
+            pl: 'Muszę sprzątać pokój wieczorem.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['they', 'dont', 'wash-up'],
+            words: [W('they', 'They'), W('dont', "don't"), W('have-to', 'have to'), W('wash-up', 'do the washing up')],
+            pl: 'Oni nie muszą zmywać naczyń.'
+        },
+        {
+            ages: ['older'], family: 'num', cue: ['clock', 'three', 'oclock'],
+            words: [W('the', 'The'), W('clock', 'clock'), W('is', 'is'), W('three', 'three'), W('oclock', "o'clock")],
+            pl: 'Zegar wskazuje trzecią.'
+        },
+        {
+            ages: ['older'], family: 'num', cue: ['clock', 'half', 'past', 'two'],
+            words: [W('the', 'The'), W('clock', 'clock'), W('is', 'is'), W('half', 'half'), W('past', 'past'), W('two', 'two')],
+            pl: 'Zegar wskazuje wpół do trzeciej.'
+        },
+        {
+            ages: ['older'], family: 'num', cue: ['clock', 'quarter', 'clock-to', 'five'],
+            words: [W('the', 'The'), W('clock', 'clock'), W('is', 'is'), W('quarter', 'quarter'), W('clock-to', 'to'), W('five', 'five')],
+            pl: 'Zegar wskazuje za kwadrans piątą.'
+        },
+        {
+            ages: ['older'], family: 'num', cue: ['we', 'get-up', 'clock-at', 'seven', 'oclock'],
+            words: [W('we', 'We'), W('have-to', 'have to'), W('get-up', 'get up'), W('clock-at', 'at'), W('seven', 'seven'), W('oclock', "o'clock")],
+            pl: 'Musimy wstawać o siódmej.'
+        },
+        {
+            ages: ['older'], family: 'can', cue: ['she', 'play-tennis', 'go-swimming'],
+            words: [W('she', 'She'), W('can', 'can'), W('play-tennis', 'play tennis'), W('or', 'or'), W('go-swimming', 'go swimming')],
+            pl: 'Ona potrafi grać w tenisa albo pływać.'
+        },
+        {
+            ages: ['older'], family: 'like', cue: ['we', 'play-basketball', 'in-the-afternoon'],
+            words: [W('we', 'We'), W('like', 'like'), W('play-basketball', 'play basketball'), W('in-the-afternoon', 'in the afternoon')],
+            pl: 'Lubimy grać w koszykówkę po południu.'
+        },
+        {
+            ages: ['older'], family: 'must', cue: ['you', 'do-homework', 'in-the-evening'],
+            words: [W('you', 'You'), W('must', 'must'), W('do-homework', 'do homework'), W('in-the-evening', 'in the evening')],
+            pl: 'Musisz odrabiać lekcje wieczorem.'
         }
     ];
 
