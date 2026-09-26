@@ -536,7 +536,51 @@
         tile('twenty-five', 'twenty-five', 'num', 'num', { fa: 'fa-hashtag', icon: '25', gloss: '25', ages: ['older'], goals: ['is', 'are'] })
     ];
     expandNounPlurals(TILES);
+    expandActionPersons(TILES);
     assignNounCats(TILES);
+
+    function thirdPersonOfPhrase(text) {
+        const parts = String(text || '').trim().split(/\s+/);
+        if (!parts[0]) return String(text || '');
+        const w = parts[0];
+        let head;
+        if (w === 'have') head = 'has';
+        else if (w === 'do') head = 'does';
+        else if (w === 'go') head = 'goes';
+        else if (w === "don't") head = "doesn't";
+        else if (/[sxz]$/i.test(w) || /(ch|sh)$/i.test(w)) head = w + 'es';
+        else if (/[^aeiou]y$/i.test(w)) head = w.slice(0, -1) + 'ies';
+        else head = w + 's';
+        return [head].concat(parts.slice(1)).join(' ');
+    }
+
+    function expandActionPersons(list) {
+        const extra = [];
+        list.forEach((t) => {
+            const actionable = t.kind === 'verb' || t.kind === 'colloc' || t.kind === 'routine' ||
+                t.id === 'like' || t.id === 'dont';
+            if (!actionable || t.person === 's3' || t.s3Id) return;
+            const s3Id = t.id === 'dont' ? 'doesnt' : (t.id === 'like' ? 'likes' : t.id + '-s');
+            if (list.some((x) => x.id === s3Id) || extra.some((x) => x.id === s3Id)) return;
+            const s3Text = t.id === 'dont' ? "doesn't" : thirdPersonOfPhrase(t.text);
+            t.s3Id = s3Id;
+            t.person = t.person || 'base';
+            extra.push(tile(s3Id, s3Text, t.kind, t.family, {
+                speak: s3Text,
+                ages: t.ages,
+                goals: t.goals,
+                gloss: 'he / she',
+                glossPl: 'on / ona',
+                wordPl: t.wordPl || '',
+                fa: t.fa,
+                icon: t.icon,
+                pic: t.pic || '',
+                person: 's3',
+                baseId: t.id
+            }));
+        });
+        extra.forEach((t) => list.push(t));
+    }
 
     function noun(id, sg, plWord, icon, vowel, place, extra) {
         extra = extra || {};
@@ -1007,8 +1051,8 @@
         { ids: ['we', 'like', 'sandwich-pl', 'and', 'juice', 'dot'], gaps: [2], distractors: ['swim', 'run', 'qmark'], family: 'like' },
         { ids: ['i', 'like', 'football', 'dot'], gaps: [1], distractors: ['dont', 'can', 'must'], family: 'like' },
         { ids: ['you', 'dont', 'like', 'tea', 'dot'], gaps: [1], distractors: ['like', 'can', 'must'], family: 'like' },
-        { ids: ['she', 'like', 'ice-cream', 'dot'], gaps: [2], distractors: ['pizza', 'cake', 'banana'], family: 'like' },
-        { ids: ['he', 'dont', 'like', 'cheese', 'dot'], gaps: [3], distractors: ['bread', 'egg', 'water'], family: 'like' },
+        { ids: ['she', 'likes', 'ice-cream', 'dot'], gaps: [2], distractors: ['pizza', 'cake', 'banana'], family: 'like' },
+        { ids: ['he', 'doesnt', 'like', 'cheese', 'dot'], gaps: [3], distractors: ['bread', 'egg', 'water'], family: 'like' },
         { ids: ['we', 'like', 'banana-pl', 'dot'], gaps: [2], distractors: ['apple-pl', 'pear-pl', 'qmark'], family: 'like' },
         { ids: ['they', 'dont', 'like', 'carrot-pl', 'dot'], gaps: [3], distractors: ['tomato-pl', 'grape-pl', 'qmark'], family: 'like' },
         { ids: ['i', 'like', 'music', 'dot'], gaps: [2], distractors: ['football', 'pizza', 'qmark'], family: 'like' },
@@ -1048,7 +1092,7 @@
         { ids: ['there-is', 'a', 'dog', 'on', 'the', 'mat', 'dot'], gaps: [2], distractors: ['cat', 'bird', 'fish'], family: 'is' },
         { ids: ['there-are', 'two', 'cat-pl', 'under', 'the', 'table', 'dot'], gaps: [2], distractors: ['dog-pl', 'bird-pl', 'qmark'], family: 'are' },
         { ids: ['i', 'have-got', 'a', 'fish', 'dot'], gaps: [3], distractors: ['cat', 'dog', 'bird'], family: 'have' },
-        { ids: ['she', 'like', 'cat-pl', 'dot'], gaps: [2], distractors: ['dog-pl', 'bird-pl', 'qmark'], family: 'like' },
+        { ids: ['she', 'likes', 'cat-pl', 'dot'], gaps: [2], distractors: ['dog-pl', 'bird-pl', 'qmark'], family: 'like' },
         // toys
         { ids: ['he', 'has-got', 'a', 'teddy', 'dot'], gaps: [3], distractors: ['doll', 'ball', 'bike'], family: 'have' },
         { ids: ['i', 'like', 'football', 'and', 'music', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'dont'], family: 'like' },
@@ -1124,11 +1168,18 @@
         { ids: ['i', 'cant', 'play-tennis', 'dot'], gaps: [2], distractors: ['play-football', 'go-running', 'swim'], family: 'can', ages: ['older'] },
         { ids: ['she', 'cant', 'do-gymnastics', 'dot'], gaps: [1], distractors: ['can', 'dont', 'like'], family: 'can', ages: ['older'] },
         { ids: ['i', 'like', 'play-football', 'dot'], gaps: [2], distractors: ['do-homework', 'go-shopping', 'milk'], family: 'like', ages: ['older'] },
-        { ids: ['she', 'like', 'go-swimming', 'dot'], gaps: [2], distractors: ['play-tennis', 'do-homework', 'run'], family: 'like', ages: ['older'] },
+        { ids: ['she', 'likes', 'go-swimming', 'dot'], gaps: [2], distractors: ['play-tennis', 'do-homework', 'run'], family: 'like', ages: ['older'] },
         { ids: ['we', 'like', 'go-running', 'dot'], gaps: [2], distractors: ['do-shopping', 'play-basketball', 'tea'], family: 'like', ages: ['older'] },
         { ids: ['they', 'dont', 'like', 'do-homework', 'dot'], gaps: [3], distractors: ['play-football', 'go-swimming', 'pizza'], family: 'like', ages: ['older'] },
         { ids: ['you', 'dont', 'like', 'do-shopping', 'dot'], gaps: [3], distractors: ['go-shopping', 'play-tennis', 'cake'], family: 'like', ages: ['older'] },
-        { ids: ['he', 'like', 'play-basketball', 'and', 'play-football', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'dont'], family: 'like', ages: ['older'] },
+        { ids: ['he', 'likes', 'play-basketball', 'and', 'play-football', 'dot'], gaps: [3], distractors: ['or', 'qmark', 'dont'], family: 'like', ages: ['older'] },
+        // present simple 3rd person actions / collocations
+        { ids: ['she', 'play-football-s', 'in-the-afternoon', 'dot'], gaps: [1], distractors: ['play-football', 'go-running', 'do-homework'], family: 'can', ages: ['older'] },
+        { ids: ['he', 'get-up-s', 'in-the-morning', 'dot'], gaps: [1], distractors: ['get-up', 'go-to-bed', 'have-dinner'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'go-to-school-s', 'clock-at', 'eight', 'oclock', 'dot'], gaps: [1], distractors: ['go-to-school', 'get-up', 'go-to-bed'], family: 'num', ages: ['older'] },
+        { ids: ['he', 'do-homework-s', 'in-the-evening', 'dot'], gaps: [1], distractors: ['do-homework', 'play-football', 'go-swimming'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'likes', 'pizza', 'dot'], gaps: [1], distractors: ['like', 'dont', 'can'], family: 'like', ages: ['older'] },
+        { ids: ['he', 'doesnt', 'like', 'milk', 'dot'], gaps: [1], distractors: ['dont', 'likes', 'can'], family: 'like', ages: ['older'] },
         { ids: ['i', 'can', 'play-tennis', 'or', 'go-swimming', 'dot'], gaps: [3], distractors: ['and', 'qmark', 'must'], family: 'can', ages: ['older'] },
         { ids: ['we', 'must', 'do-homework', 'dot'], gaps: [2], distractors: ['play-football', 'go-running', 'listen'], family: 'must', ages: ['older'] },
         { ids: ['they', 'have-to', 'do-shopping', 'dot'], gaps: [2], distractors: ['go-shopping', 'play-tennis', 'wait'], family: 'must', ages: ['older'] },
@@ -1161,7 +1212,7 @@
         { ids: ['we', 'can', 'play-football', 'in-the-afternoon', 'dot'], gaps: [3], distractors: ['in-the-morning', 'at-night', 'upstairs'], family: 'can', ages: ['older'] },
         { ids: ['they', 'like', 'go-swimming', 'in-the-evening', 'dot'], gaps: [3], distractors: ['at-night', 'in-the-morning', 'near'], family: 'like', ages: ['older'] },
         { ids: ['he', 'must', 'do-homework', 'in-the-evening', 'dot'], gaps: [3], distractors: ['in-the-morning', 'at-night', 'outside'], family: 'must', ages: ['older'] },
-        { ids: ['she', 'dont', 'have-to', 'go-to-school', 'at-night', 'dot'], gaps: [4], distractors: ['in-the-morning', 'in-the-afternoon', 'outside'], family: 'must', ages: ['older'] },
+        { ids: ['she', 'doesnt', 'have-to', 'go-to-school', 'at-night', 'dot'], gaps: [4], distractors: ['in-the-morning', 'in-the-afternoon', 'outside'], family: 'must', ages: ['older'] },
         // telling the time
         { ids: ['the', 'clock', 'is', 'three', 'oclock', 'dot'], gaps: [4], distractors: ['past', 'quarter', 'half'], family: 'num', ages: ['older'] },
         { ids: ['the', 'clock', 'is', 'three', 'oclock', 'dot'], gaps: [3], distractors: ['four', 'five', 'six'], family: 'num', ages: ['older'] },
@@ -1379,11 +1430,23 @@
     text-align: left; font-weight: 500; font-size: 1.05rem; line-height: 1.7;
     color: var(--text-dark);
 }
-.cb-whybox strong {
-    font-weight: 800; color: var(--royal-blue);
-    background: #dbeafe; padding: 0.05em 0.28em; border-radius: 5px;
-    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+.cb-whybox .cb-ai-tile,
+.cb-fb .cb-ai-tile {
+    display: inline-block;
+    font-weight: 700;
+    font-family: var(--font-primary);
+    color: var(--text-dark);
+    background: #fff;
+    border: 1.5px solid #64748b;
+    border-radius: 6px;
+    padding: 0.02em 0.38em;
+    margin: 0 0.12em;
+    line-height: 1.35;
+    white-space: nowrap;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
+.cb-fb .cb-ai-tile { vertical-align: baseline; }
 `;
 
     let S = null;
@@ -1402,7 +1465,7 @@
 
     function packName(t) {
         if (!t) return '';
-        return PACK_ICONS[t.id] || PACK_ICONS[t.sgId] || '';
+        return PACK_ICONS[t.id] || PACK_ICONS[t.sgId] || PACK_ICONS[t.baseId] || '';
     }
 
     function packHtml(name) {
@@ -1433,7 +1496,9 @@
     }
 
     function richWhy(text) {
-        return esc(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        return esc(text)
+            .replace(/\*\*(.+?)\*\*/g, '<span class="cb-ai-tile">$1</span>')
+            .replace(/\n/g, '<br>');
     }
 
     const PERSONS = [
@@ -1519,6 +1584,8 @@
         S.buildSpoken = '';
         S.buildAwarded = false;
         S.buildChecking = false;
+        S.nounPick = null;
+        S.verbPick = null;
         if (!keepGoal) S.buildPrompt = null;
         clearAskWhy();
     }
@@ -1658,8 +1725,8 @@
                 const v = (has('cant') ? CAN_NEG_PL : CAN_PL)[pid];
                 return capPl([who, v, action].filter(Boolean).join(' '));
             }
-            if (has('like') || (has('dont') && has('like'))) {
-                const v = (has('dont') ? LIKE_NEG_PL : LIKE_PL)[pid];
+            if (has('like') || has('likes') || ((has('dont') || has('doesnt')) && (has('like') || has('likes')))) {
+                const v = ((has('dont') || has('doesnt')) ? LIKE_NEG_PL : LIKE_PL)[pid];
                 return capPl([who, v, thingW || action].filter(Boolean).join(' '));
             }
             if (has('must') || has('have-to') || (has('dont') && has('have-to'))) {
@@ -1827,28 +1894,67 @@
                 return { ok: true, sentence: joinSpeak(tiles, false) };
             }
 
-            if (has('can') || has('cant') || has('must') || has('have-to') || (has('dont') && has('have-to'))) {
+            if (has('can') || has('cant') || has('must') || has('have-to') || (has('dont') && has('have-to')) || (has('doesnt') && has('have-to'))) {
                 if (has('must') && has('have-to')) {
                     return { ok: false, en: 'Use must or have to, not both.', pl: 'Użyj must albo have to, nie obu.' };
                 }
-                if (has('dont') && has('must')) {
-                    return { ok: false, en: 'For “not necessary” use don’t + have to (two tiles).', pl: 'Na „nie muszę” użyj don’t + have to (dwa kafelki).' };
+                if ((has('dont') || has('doesnt')) && has('must')) {
+                    return { ok: false, en: 'For “not necessary” use don’t / doesn’t + have to (two tiles).', pl: 'Na „nie muszę” użyj don’t / doesn’t + have to (dwa kafelki).' };
+                }
+                if (sg && has('dont') && has('have-to')) {
+                    return { ok: false, en: 'he / she → doesn’t + have to.', pl: 'he / she → doesn’t + have to.' };
+                }
+                if (!sg && has('doesnt') && has('have-to')) {
+                    return { ok: false, en: 'I / you / we / they → don’t + have to.', pl: 'I / you / we / they → don’t + have to.' };
                 }
                 const v = tiles.find((t) => t.kind === 'verb' || t.kind === 'colloc' || t.kind === 'routine');
                 if (!v) return { ok: false, en: 'Add an action (swim, play football, get up…).', pl: 'Dodaj czynność (swim, play football, get up…).' };
+                if (v.person === 's3') {
+                    return { ok: false, en: 'After can / must / have to use the base form (play football, not plays football).', pl: 'Po can / must / have to użyj formy podstawowej (play football, nie plays football).' };
+                }
                 return { ok: true, sentence: joinSpeak(tiles, false) };
             }
 
-            if (has('like') || (has('dont') && tiles.some((t) => t.id === 'like'))) {
-                if (has('dont') && ids.indexOf('dont') > ids.indexOf('like') && has('like')) {
-                    return { ok: false, en: 'Order: I / You / We / They / He / She + don’t + like + pizza.', pl: 'Kolejność: I / You / We / They / He / She + don’t + like + pizza.' };
+            if (has('like') || has('likes') || ((has('dont') || has('doesnt')) && (has('like') || has('likes')))) {
+                if (sg && has('like') && !has('likes')) {
+                    return { ok: false, en: 'he / she → likes (tap like and choose he / she).', pl: 'he / she → likes (kliknij like i wybierz he / she).' };
+                }
+                if (!sg && has('likes')) {
+                    return { ok: false, en: 'I / you / we / they → like.', pl: 'I / you / we / they → like.' };
+                }
+                if (sg && has('dont')) {
+                    return { ok: false, en: 'he / she → doesn’t like (tap don’t and choose he / she).', pl: 'he / she → doesn’t like (kliknij don’t i wybierz he / she).' };
+                }
+                if (!sg && has('doesnt')) {
+                    return { ok: false, en: 'I / you / we / they → don’t like.', pl: 'I / you / we / they → don’t like.' };
+                }
+                if ((has('dont') || has('doesnt')) && has('likes')) {
+                    return { ok: false, en: 'After don’t / doesn’t use like (base form).', pl: 'Po don’t / doesn’t użyj like (forma podstawowa).' };
+                }
+                if ((has('dont') || has('doesnt')) && ids.indexOf(has('doesnt') ? 'doesnt' : 'dont') > Math.max(ids.indexOf('like'), ids.indexOf('likes'))) {
+                    return { ok: false, en: 'Order: person + don’t/doesn’t + like + thing.', pl: 'Kolejność: osoba + don’t/doesn’t + like + rzecz.' };
                 }
                 const n = tiles.find((t) => t.kind === 'noun' || t.kind === 'verb' || t.kind === 'colloc' || t.kind === 'routine');
                 if (!n) return { ok: false, en: 'What do they like? Add a thing or an action.', pl: 'Co lubią? Dodaj rzecz albo czynność.' };
+                if ((n.kind === 'verb' || n.kind === 'colloc' || n.kind === 'routine') && n.person === 's3') {
+                    return { ok: false, en: 'After like / likes use the base action (go swimming, not goes swimming).', pl: 'Po like / likes użyj formy podstawowej czynności.' };
+                }
                 return { ok: true, sentence: joinSpeak(tiles, false) };
             }
 
-            return { ok: false, en: 'Add have got, can, like, must or have to after I / You / We / They / He / She.', pl: 'Po I / You / We / They / He / She dodaj have got, can, like, must albo have to.' };
+            // Present simple: She plays football. / They get up in the morning.
+            const action = tiles.find((t) => t.kind === 'verb' || t.kind === 'colloc' || t.kind === 'routine');
+            if (action) {
+                if (sg && action.person !== 's3') {
+                    return { ok: false, en: 'he / she needs the -s form (plays football, gets up…). Tap the action and choose he / she.', pl: 'he / she potrzebuje formy z -s (plays football, gets up…). Kliknij czynność i wybierz he / she.' };
+                }
+                if (!sg && action.person === 's3') {
+                    return { ok: false, en: 'I / you / we / they use the base form (play football, get up…).', pl: 'I / you / we / they biorą formę podstawową (play football, get up…).' };
+                }
+                return { ok: true, sentence: joinSpeak(tiles, false) };
+            }
+
+            return { ok: false, en: 'Add have got, can, like, must, have to, or an action after I / You / We / They / He / She.', pl: 'Po I / You / We / They / He / She dodaj have got, can, like, must, have to albo czynność.' };
         }
 
         return { ok: false, en: 'Start with There is / There are, or I / You / We / They / He / She.', pl: 'Zacznij od There is / There are albo I / You / We / They / He / She.' };
@@ -1992,35 +2098,40 @@
             const p = pickPerson();
             const modal = pick(['can', 'cant']);
             const v = pick(visibleTiles().filter((t) =>
-                (t.kind === 'verb' || t.kind === 'colloc') && t.goals && t.goals.indexOf('can') !== -1
+                (t.kind === 'verb' || t.kind === 'colloc') && t.person !== 's3' && t.goals && t.goals.indexOf('can') !== -1
             ));
             return { ids: [p.id, modal, v ? v.id : 'swim'], picture: [byId(p.id), byId(modal), v || byId('swim')] };
         }
         if (g === 'like') {
             const p = pickPerson();
             const n = pick(visibleTiles().filter((t) =>
-                (t.kind === 'noun' && t.number !== 'pl' && t.goals && t.goals.indexOf('like') !== -1) ||
-                (t.kind === 'colloc' && t.goals && t.goals.indexOf('like') !== -1)
+                (t.kind === 'noun' && t.number !== 'pl' && t.person !== 's3' && t.goals && t.goals.indexOf('like') !== -1) ||
+                (t.kind === 'colloc' && t.person !== 's3' && t.goals && t.goals.indexOf('like') !== -1)
             ));
             const neg = Math.random() < 0.4;
-            const ids = neg ? [p.id, 'dont', 'like', n ? n.id : 'pizza'] : [p.id, 'like', n ? n.id : 'pizza'];
-            return { ids: ids, picture: [byId(p.id), byId(neg ? 'dont' : 'like'), n || byId('pizza')] };
+            const sg = p.id === 'he' || p.id === 'she';
+            const likeId = sg ? 'likes' : 'like';
+            const negId = sg ? 'doesnt' : 'dont';
+            const ids = neg ? [p.id, negId, 'like', n ? n.id : 'pizza'] : [p.id, likeId, n ? n.id : 'pizza'];
+            return { ids: ids, picture: [byId(p.id), byId(neg ? negId : likeId), n || byId('pizza')] };
         }
         if (g === 'must') {
             const p = pickPerson();
             const v = pick(visibleTiles().filter((t) =>
-                (t.kind === 'verb' || t.kind === 'routine' || t.kind === 'colloc') && t.goals && t.goals.indexOf('must') !== -1
+                (t.kind === 'verb' || t.kind === 'routine' || t.kind === 'colloc') && t.person !== 's3' && t.goals && t.goals.indexOf('must') !== -1
             ));
             return { ids: [p.id, 'must', v ? v.id : 'listen'], picture: [byId(p.id), byId('must'), v || byId('listen')] };
         }
         if (g === 'haveto') {
             const p = pickPerson();
             const v = pick(visibleTiles().filter((t) =>
-                (t.kind === 'verb' || t.kind === 'routine' || t.kind === 'colloc') && t.goals && t.goals.indexOf('haveto') !== -1
+                (t.kind === 'verb' || t.kind === 'routine' || t.kind === 'colloc') && t.person !== 's3' && t.goals && t.goals.indexOf('haveto') !== -1
             ));
             const neg = Math.random() < 0.4;
-            const ids = neg ? [p.id, 'dont', 'have-to', v ? v.id : 'run'] : [p.id, 'have-to', v ? v.id : 'tidy'];
-            return { ids: ids, picture: [byId(p.id), byId(neg ? 'dont' : 'have-to'), v || byId('tidy')] };
+            const sg = p.id === 'he' || p.id === 'she';
+            const negId = sg ? 'doesnt' : 'dont';
+            const ids = neg ? [p.id, negId, 'have-to', v ? v.id : 'run'] : [p.id, 'have-to', v ? v.id : 'tidy'];
+            return { ids: ids, picture: [byId(p.id), byId(neg ? negId : 'have-to'), v || byId('tidy')] };
         }
         return { ids: ['there-is', 'a', 'lamp', 'on', 'the', 'desk'], picture: [byId('lamp'), byId('on'), byId('desk')] };
     }
@@ -2069,10 +2180,41 @@
         const glossCls = (S && S.tilePl && gloss) ? 'gloss plhint' : 'gloss';
         const inBank = action === 'add' && (!extraClass || extraClass.indexOf('in-chain') === -1);
         const oneOrMore = inBank && t.kind === 'noun' && t.number === 'sg' && t.plId;
+        const personPick = inBank && t.s3Id && t.person !== 's3';
         return '<button type="button" class="cb-card' + (extraClass || '') + '" data-cb="' + action + '" data-id="' + t.id + '" style="' + colorStyle(t.family) + '">' +
             ico + esc(t.text) + (gloss ? '<span class="' + glossCls + '">' + esc(gloss) + '</span>' : '') +
             (oneOrMore ? '<span class="cb-1plus">' + esc(L('1 or +', '1 lub +')) + '</span>' : '') +
+            (personPick ? '<span class="cb-1plus">' + esc(L('I/you · he/she', 'I/you · he/she')) + '</span>' : '') +
             '</button>';
+    }
+
+    function verbPickHtml() {
+        if (!S || !S.verbPick) return '';
+        const t = byId(S.verbPick);
+        const s3 = t && t.s3Id ? byId(t.s3Id) : null;
+        if (!t || !s3) return '';
+        const opt = (tile, labelEn, labelPl) => {
+            const plHint = S.tilePl ? (tile.wordPl || '') : '';
+            return '<button type="button" class="cb-card cb-nounpick-opt" data-cb="verb-pick" data-id="' + tile.id + '" style="' + colorStyle(tile.family || 'verb') + '">' +
+                icoHtml(tile) +
+                '<span class="cb-nounpick-word">' + esc(tile.text) + '</span>' +
+                (plHint ? '<span class="gloss plhint">' + esc(plHint) + '</span>' : '') +
+                '<span class="cb-1plus">' + esc(L(labelEn, labelPl)) + '</span></button>';
+        };
+        return '<div class="cb-nounpick-back" data-cb="verb-pick-cancel">' +
+            '<div class="cb-nounpick" data-cb="verb-pick-box">' +
+            '<h3>' + esc(t.text) + ' / ' + esc(s3.text) + '</h3>' +
+            '<p>' + esc(L(
+                'I / you / we / they, or he / she? Tap to hear each form.',
+                'I / you / we / they, czy he / she? Kliknij, żeby usłyszeć każdą formę.'
+            )) + '</p>' +
+            '<div class="cb-cards">' +
+            opt(t, 'I / you / we / they', 'I / you / we / they') +
+            opt(s3, 'he / she', 'he / she') +
+            '</div>' +
+            '<div class="cb-actions" style="justify-content:center;margin-bottom:0;">' +
+            '<button type="button" class="btn btn-grey" data-cb="verb-pick-cancel">' + esc(L('Cancel', 'Anuluj')) + '</button>' +
+            '</div></div></div>';
     }
 
     function nounPickHtml() {
@@ -2106,6 +2248,7 @@
 
     function addToChain(id) {
         S.nounPick = null;
+        S.verbPick = null;
         clearAskWhy();
         S.buildFbEn = ''; S.buildFbPl = ''; S.buildOk = false; S.buildSpoken = ''; S.buildAwarded = false;
         if (useSlots()) {
@@ -2204,7 +2347,7 @@
             (S.tab === 'fill' ? fillHtml() : '') +
             (S.tab === 'text' ? textHtml() : '') +
             (S.tab === 'lineup' ? '<div id="cb-lineup-host"></div>' : '') +
-            nounPickHtml();
+            nounPickHtml() + verbPickHtml();
         bind(root);
         if (S.tab === 'fill') bindFillDrag(root);
         if (S.tab === 'lineup' && global.LineUp) {
@@ -2446,7 +2589,7 @@
             '</div>';
         groups.forEach((g) => {
             const tiles = list.filter((t) => {
-                if (g.kinds.indexOf(t.kind) === -1 || t.number === 'pl') return false;
+                if (g.kinds.indexOf(t.kind) === -1 || t.number === 'pl' || t.person === 's3') return false;
                 if (g.cat && t.cat !== g.cat) return false;
                 return true;
             });
@@ -2491,7 +2634,7 @@
         if (S.buildSpoken) {
             html += '<div class="cb-sentence">' + currentBuildTiles().map((t) => tokHtml(t.family, t.text)).join(' ') + '</div>';
         }
-        html += '<div class="cb-fb' + (S.buildOk ? ' ok' : (fb ? ' bad' : '')) + '">' + esc(fb) + '</div>';
+        html += '<div class="cb-fb' + (S.buildOk ? ' ok' : (fb ? ' bad' : '')) + '">' + richWhy(fb) + '</div>';
         html += whyHtml(!S.buildOk && !!fb && !S.buildChecking);
         return html;
     }
@@ -2740,6 +2883,7 @@
                 const changed = S.tab !== id;
                 S.tab = id;
                 S.nounPick = null;
+                S.verbPick = null;
                 clearAskWhy();
                 S.buildFbEn = ''; S.buildFbPl = '';
                 S.textFbEn = ''; S.textFbPl = '';
@@ -2801,6 +2945,13 @@
                 speakTile(tile);
                 if (tile && tile.kind === 'noun' && tile.number === 'sg' && tile.plId) {
                     S.nounPick = id;
+                    S.verbPick = null;
+                    render();
+                    return;
+                }
+                if (tile && tile.s3Id && tile.person !== 's3') {
+                    S.verbPick = id;
+                    S.nounPick = null;
                     render();
                     return;
                 }
@@ -2810,6 +2961,9 @@
             if (a === 'noun-pick-box') return;
             if (a === 'noun-pick-cancel') { S.nounPick = null; render(); return; }
             if (a === 'noun-pick') { speakTile(byId(id)); addToChain(id); return; }
+            if (a === 'verb-pick-box') return;
+            if (a === 'verb-pick-cancel') { S.verbPick = null; render(); return; }
+            if (a === 'verb-pick') { speakTile(byId(id)); addToChain(id); return; }
             if (a === 'held-cancel') {
                 // Put held tile back into the first empty blank (or cancel into hand only)
                 if (!ensureSlots() || !S.heldId) return;
@@ -3288,8 +3442,8 @@
         const age = S.ageBand === 'older' ? '10–12' : '8–9';
         const ctx = askWhyContext();
         const grammar = S.ageBand === 'older'
-            ? "there is/are, am/is/are (to be), have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-questions, play/do/go collocations (play football, do gymnastics, go running), daily routines (get up, brush my teeth), parts of the day (in the morning), telling the time (at, o'clock, half, quarter, past, to, numbers), statement . vs question ?"
-            : "there is/are, am/is/are (to be), have got, can/can't, like, don't like, a/an, and/or, Wh-questions (who/what/where/how), statement . vs question ?, place prepositions";
+            ? "there is/are, am/is/are (to be), have got, can/can't, like/likes, don't/doesn't like, must, have to, don't/doesn't + have to, present simple with action -s for he/she (plays football, gets up, goes swimming), a/an/some/any, and/or, Wh-questions, play/do/go collocations, daily routines, parts of the day, telling the time, statement . vs question ?"
+            : "there is/are, am/is/are (to be), have got, can/can't, like/likes, don't/doesn't like, present simple action -s for he/she, a/an, and/or, Wh-questions (who/what/where/how), statement . vs question ?, place prepositions";
         const prompt = `You help a Polish child who got a Colour Blocks English task wrong. Be kind. Do not scold.
 Age: ${age}. ${ageWhyVoice()}
 Allowed grammar for this age: ${grammar}.
@@ -3304,18 +3458,19 @@ LAYOUT
 - Put a blank line between: (1) what is wrong, (2) the rule, (3) one example.
 - No long paragraph. No lists with dashes or stars at the start of a line.
 
-BOLD ENGLISH WORDS
+MARK ENGLISH WORDS AS TILES
 - Wrap every English word or phrase the child should notice in double asterisks, like **has got** or **She**.
-- Always bold: the tiles they used, the tiles they should use, and the example sentence.
-- In explainPl write simple Polish, but keep those English words in English and bold them.
-  Example: Po **She** użyj **has got**, nie **have got**.
-- Do not bold Polish words. Only English words, phrases, and the example.
+- The app shows those **…** wraps as little tiles with a thin border (not bold stars).
+- Always mark: the tiles they used, the tiles they should use, and the example sentence.
+- In explainPl write simple Polish, but keep those English words in English and wrap them in **…**.
+  Example: Po **She** użyj **likes**, nie **like**.
+- Do not wrap Polish words. Only English words, phrases, and the example.
 
 EXAMPLE
-- Give ONE short correct sentence, fully bold: **She has got a key.**
+- Give ONE short correct sentence, fully wrapped: **She likes pizza.**
 
 Do not invent extra grammar beyond this age.
-Return JSON only: { "explainEn": "short readable text with **bold** English", "explainPl": "the same idea in simple Polish with **bold** English words" }`;
+Return JSON only: { "explainEn": "short readable text with **marked** English", "explainPl": "the same idea in simple Polish with **marked** English words" }`;
         if (typeof global.fetchGenerativeAI !== 'function') {
             if (S.askWhyGen !== gen) return;
             S.askWhyBusy = false;
@@ -3443,8 +3598,8 @@ Return JSON only: { "explainEn": "short readable text with **bold** English", "e
 
         const age = S.ageBand === 'older' ? '10–12' : '8–9';
         const grammar = S.ageBand === 'older'
-            ? "there is/are, am/is/are + negatives, have got, can/can't, like, don't like, must, have to, don't + have to, a/an/some/any, and/or, Wh-words, play/do/go collocations, daily routines, parts of the day, telling the time (at / o'clock / half / quarter / past / to + numbers), place prepositions, end with . or ?"
-            : "there is/are, am/is/are + negatives, have got, can/can't, like, don't like, a/an, and/or, Who/What/Where/How, place prepositions, end with . or ?";
+            ? "there is/are, am/is/are + negatives, have got, can/can't, like/likes, don't/doesn't like, must, have to, don't/doesn't + have to, present simple with he/she -s on actions and collocations (plays football, gets up, does homework, goes swimming), a/an/some/any, and/or, Wh-words, play/do/go collocations, daily routines, parts of the day, telling the time (at / o'clock / half / quarter / past / to + numbers), place prepositions, end with . or ?"
+            : "there is/are, am/is/are + negatives, have got, can/can't, like/likes, don't/doesn't like, present simple he/she -s on actions, a/an, and/or, Who/What/Where/How, place prepositions, end with . or ?";
         const prompt = `You are a kind English teacher for a Polish child (age ${age}).
 ${ageWhyVoice()}
 The child built this sentence with word tiles: "${attempt}"
@@ -3453,10 +3608,11 @@ Tile words in order: ${tiles.map((t) => t.text).join(' | ')}.
 Decide if the sentence is grammatically correct for this age and these patterns: ${grammar}.
 Treat tile "." as a full stop (statement) and "?" as a question mark — the ending must match the sentence type.
 Accept natural capitalisation even if tiles omit it.
-Reject nonsense, wrong word order, wrong agreement (is/are, am/is/are, have/has got), or grammar beyond the allowed list.
+Reject nonsense, wrong word order, wrong agreement (is/are, am/is/are, have/has got, like/likes, don't/doesn't, play/plays football), or grammar beyond the allowed list.
+After can / must / have to the action stays in the base form (play football, not plays football).
 
 Return JSON only:
-{ "ok": true/false, "explainEn": "1-3 short lines; if wrong, say what to fix and give ONE corrected example with **bold** English words", "explainPl": "same idea in simple Polish with **bold** English words", "sentence": "clean corrected English sentence if ok or a good fix if not" }`;
+{ "ok": true/false, "explainEn": "1-3 short lines; if wrong, say what to fix and give ONE corrected example with English words wrapped in **double asterisks** (the app shows them as tiles)", "explainPl": "same idea in simple Polish with English words wrapped in **…**", "sentence": "clean corrected English sentence if ok or a good fix if not" }`;
 
         if (typeof global.fetchGenerativeAI !== 'function') {
             if (S.askWhyGen !== gen) {
@@ -3599,6 +3755,7 @@ Return JSON only:
             tilePl: false,
             sheetsOpen: null,
             nounPick: null,
+            verbPick: null,
             goal: null,
             chain: [],
             slots: null,
