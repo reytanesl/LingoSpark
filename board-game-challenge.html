@@ -1,0 +1,3131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Board Game Challenge · LingoSpark</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts for 5 Themes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;700;800;900&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- Canvas Confetti CDN for victory celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Base CSS Variables across Themes */
+    :root {
+      --font-heading: 'Fredoka', cursive, sans-serif;
+      --card-bg: rgba(255, 255, 255, 0.88);
+      --card-border: rgba(255, 255, 255, 0.4);
+      --accent: #ec4899;
+      --text-main: #374151;
+      --board-tile-bg: rgba(255, 255, 255, 0.82);
+    }
+
+    /* THEME 1: KAWAII (Pastel Academy & Cozy Study Sanctuary) */
+    body.theme-kawaii {
+      --font-heading: 'Fredoka', cursive, sans-serif;
+      --card-bg: rgba(255, 245, 248, 0.88);
+      --card-border: rgba(255, 182, 193, 0.5);
+      --accent: #ff69b4;
+      --text-main: #4a2840;
+      --board-tile-bg: rgba(255, 255, 255, 0.9);
+      color: #4a2840;
+    }
+
+    /* THEME 2: CYBERPUNK (Futuristic Neon Neural Holo-Academy) */
+    body.theme-cyberpunk {
+      --font-heading: 'Orbitron', monospace, sans-serif;
+      --card-bg: rgba(10, 14, 30, 0.86);
+      --card-border: rgba(0, 255, 204, 0.35);
+      --accent: #00ffcc;
+      --text-main: #e2e8f0;
+      --board-tile-bg: rgba(15, 23, 42, 0.88);
+      color: #e2e8f0;
+    }
+
+    /* THEME 3: HISTORICAL (Classical Cathedral Library & Athenaeum) */
+    body.theme-historical {
+      --font-heading: 'Cinzel', serif;
+      --card-bg: rgba(252, 248, 238, 0.9);
+      --card-border: rgba(180, 130, 80, 0.45);
+      --accent: #b45309;
+      --text-main: #2b1d0c;
+      --board-tile-bg: rgba(255, 252, 242, 0.92);
+      color: #2b1d0c;
+    }
+
+    /* THEME 4: CONTEMPORARY (Modern University Glass Pavilion) */
+    body.theme-contemporary {
+      --font-heading: 'Inter', sans-serif;
+      --card-bg: rgba(255, 255, 255, 0.88);
+      --card-border: rgba(203, 213, 225, 0.7);
+      --accent: #2563eb;
+      --text-main: #0f172a;
+      --board-tile-bg: rgba(255, 255, 255, 0.92);
+      color: #0f172a;
+    }
+
+    /* THEME 5: ABSTRACT (Bauhaus Prismatic Mathematical Dimension) */
+    body.theme-abstract {
+      --font-heading: 'Syne', sans-serif;
+      --card-bg: rgba(26, 20, 48, 0.88);
+      --card-border: rgba(245, 158, 11, 0.4);
+      --accent: #f59e0b;
+      --text-main: #f8fafc;
+      --board-tile-bg: rgba(35, 27, 65, 0.88);
+      color: #f8fafc;
+    }
+
+    .theme-title {
+      font-family: var(--font-heading);
+    }
+
+    /* Dynamic Theme Background Image Layer */
+    #themeBgImage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: opacity 0.75s ease-in-out, filter 0.75s ease-in-out;
+      z-index: 0;
+    }
+
+    #themeAtmosphereOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      transition: background 0.75s ease-in-out;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .glass-surface {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    body.theme-kawaii {
+      --road-fill: #ffd1dc;
+      --road-stroke: #f472b6;
+      --road-inner: #fff0f5;
+      --stone-bg: #ffffff;
+      --stone-bevel: #fbcfe8;
+      --stone-border: #f43f5e;
+      --stone-num: #831843;
+    }
+
+    body.theme-cyberpunk {
+      --road-fill: #0b1120;
+      --road-stroke: #00ffcc;
+      --road-inner: #1e293b;
+      --stone-bg: #0f172a;
+      --stone-bevel: #042f2e;
+      --stone-border: #38bdf8;
+      --stone-num: #00ffcc;
+    }
+
+    body.theme-historical {
+      --road-fill: #f3e8d2;
+      --road-stroke: #d97706;
+      --road-inner: #fffbeb;
+      --stone-bg: #fefcf3;
+      --stone-bevel: #fde68a;
+      --stone-border: #b45309;
+      --stone-num: #78350f;
+    }
+
+    body.theme-contemporary {
+      --road-fill: #e2e8f0;
+      --road-stroke: #3b82f6;
+      --road-inner: #ffffff;
+      --stone-bg: #ffffff;
+      --stone-bevel: #cbd5e1;
+      --stone-border: #2563eb;
+      --stone-num: #1e3a8a;
+    }
+
+    body.theme-abstract {
+      --road-fill: #1f1638;
+      --road-stroke: #f59e0b;
+      --road-inner: #2e2050;
+      --stone-bg: #2b1c4c;
+      --stone-bevel: #170d2c;
+      --stone-border: #ec4899;
+      --stone-num: #fde68a;
+    }
+
+    .board-stage-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      min-height: 480px;
+      max-height: 72vh;
+    }
+
+    /* Tactile 3D Round Stepping Stone Discs inspired by adventure board games */
+    .stepping-stone-disc {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: var(--stone-bg);
+      border: 2.5px solid var(--stone-border);
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, filter 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      user-select: none;
+    }
+
+    /* 3D Extruded Stone Bevel underneath the disc */
+    .stepping-stone-disc::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      box-shadow: 0 5px 0 var(--stone-bevel), 0 10px 18px rgba(0, 0, 0, 0.28);
+      pointer-events: none;
+      z-index: -1;
+      transition: box-shadow 0.25s ease;
+    }
+
+    .stepping-stone-disc:hover {
+      transform: translate(-50%, -58%) scale(1.14) !important;
+      z-index: 30 !important;
+      filter: brightness(1.06);
+    }
+
+    .stepping-stone-disc:hover::after {
+      box-shadow: 0 8px 0 var(--stone-bevel), 0 16px 26px rgba(0, 0, 0, 0.38);
+    }
+
+    /* Special Stepping Stone Variants */
+    .stone-start {
+      border-color: #10b981 !important;
+      background: radial-gradient(circle at 35% 30%, #ecfdf5 0%, #a7f3d0 100%) !important;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+    }
+    .stone-start::after {
+      box-shadow: 0 6px 0 #059669, 0 12px 22px rgba(5, 150, 105, 0.35) !important;
+    }
+
+    .stone-finish {
+      border-color: #6366f1 !important;
+      background: radial-gradient(circle at 35% 30%, #eef2ff 0%, #c7d2fe 100%) !important;
+      box-shadow: 0 0 18px rgba(99, 102, 241, 0.5);
+    }
+    .stone-finish::after {
+      box-shadow: 0 7px 0 #4f46e5, 0 14px 26px rgba(79, 70, 229, 0.45) !important;
+    }
+
+    .stone-bonus {
+      border-color: #f59e0b !important;
+      background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fde68a 100%) !important;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+    }
+    .stone-bonus::after {
+      box-shadow: 0 5px 0 #d97706, 0 10px 18px rgba(217, 119, 6, 0.35) !important;
+    }
+
+    .stone-trap {
+      border-color: #f43f5e !important;
+      background: radial-gradient(circle at 35% 30%, #fff1f2 0%, #fecdd3 100%) !important;
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+    }
+    .stone-trap::after {
+      box-shadow: 0 5px 0 #e11d48, 0 10px 18px rgba(225, 29, 72, 0.35) !important;
+    }
+
+    @keyframes roadFlowDash {
+      from { stroke-dashoffset: 48; }
+      to { stroke-dashoffset: 0; }
+    }
+    .serpentine-flow-dashes {
+      animation: roadFlowDash 1.8s linear infinite;
+    }
+
+    @keyframes trailAmbientPulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.75; }
+    }
+    .serpentine-road-glow {
+      animation: trailAmbientPulse 3s ease-in-out infinite;
+    }
+
+    /* Piece Hop Keyframe Animation along Serpentine curve */
+    @keyframes hopArc {
+      0% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-30px) scale(1.35) rotate(-6deg); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    .piece-hopping {
+      animation: hopArc 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 45 !important;
+    }
+
+    @keyframes diceShake {
+      0% { transform: rotate(0deg) scale(1); }
+      20% { transform: rotate(-18deg) scale(1.18); }
+      40% { transform: rotate(18deg) scale(1.22); }
+      60% { transform: rotate(-12deg) scale(1.12); }
+      80% { transform: rotate(12deg) scale(1.18); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+    .dice-rolling {
+      animation: diceShake 0.6s ease-in-out;
+    }
+
+    .cyber-scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 255, 204, 0.05) 50%);
+      background-size: 100% 4px;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .edge-dock-card {
+      box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--card-border);
+    }
+
+    .drawer-slide-in {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+
+    /* Animated Audio Equalizer Visualizer Bars */
+    @keyframes eqBarPulse {
+      0%, 100% { height: 4px; }
+      50% { height: 14px; }
+    }
+    .eq-bar {
+      width: 2.5px;
+      background: currentColor;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .eq-bar-1 { animation: eqBarPulse 0.75s ease-in-out infinite; }
+    .eq-bar-2 { animation: eqBarPulse 0.5s ease-in-out infinite 0.15s; }
+    .eq-bar-3 { animation: eqBarPulse 0.9s ease-in-out infinite 0.3s; }
+  </style>
+</head>
+
+<body class="theme-kawaii min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-500 font-sans select-none">
+  <!-- Dynamic Full-Screen Background Image -->
+  <div id="themeBgImage" class="opacity-95"></div>
+  
+  <!-- Atmospheric Color and Texture Overlay -->
+  <div id="themeAtmosphereOverlay"></div>
+
+  <!-- Top Edge App Navigation Bar: Theme switchers & game configuration tools -->
+  <header class="sticky top-0 z-30 w-full px-3 sm:px-6 py-2.5 border-b glass-surface flex flex-wrap items-center justify-between gap-2.5 shadow-md">
+    <div class="flex items-center space-x-2.5">
+      <a href="index.html" class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-lg text-sm font-black hover:brightness-110 transition" title="LingoSpark" aria-label="Back to LingoSpark">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <div id="appLogoBadge" class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-pink-500 to-amber-400 flex items-center justify-center text-white shadow-lg text-base font-black">
+        <i class="fa-solid fa-dice"></i>
+      </div>
+      <div>
+        <h1 class="theme-title text-lg sm:text-xl font-black tracking-tight leading-none" id="appHeaderTitle">Board Game Challenge</h1>
+        <p class="text-[10px] opacity-75 font-semibold tracking-wide" id="appSubtitle">LingoSpark · gra planszowa</p>
+      </div>
+    </div>
+
+    <!-- 5 Thematic Background Switchers -->
+    <div class="flex items-center bg-black/15 dark:bg-black/30 p-1 rounded-2xl backdrop-blur-lg overflow-x-auto max-w-full gap-1 border border-white/20">
+      <span class="text-[11px] font-bold px-2 opacity-80 hidden lg:inline" id="themeNavLabel"><i class="fa-solid fa-palette mr-1"></i>Motyw:</span>
+      
+      <button onclick="switchTheme('kawaii')" class="theme-select-btn px-2 py-1 text-xs font-bold rounded-xl transition flex items-center gap-1.5" data-theme="kawaii" title="Kawaii Pastel Study Room">
+        <i class="fa-solid fa-wand-magic-sparkles text-pink-500"></i>
+        <span class="hidden sm:inline">Kawaii</span>
+      </button>
+
+      <button onclick="switchTheme('cyberpunk')" class="theme-select-btn px-2 py-1 text-xs font-bold rounded-xl transition flex items-center gap-1.5" data-theme="cyberpunk" title="Futuristic Neon Quantum Lab">
+        <i class="fa-solid fa-microchip text-cyan-400"></i>
+        <span class="hidden sm:inline">Cyber</span>
+      </button>
+
+      <button onclick="switchTheme('historical')" class="theme-select-btn px-2 py-1 text-xs font-bold rounded-xl transition flex items-center gap-1.5" data-theme="historical" title="Classical Cathedral Library">
+        <i class="fa-solid fa-landmark text-amber-600"></i>
+        <span class="hidden sm:inline">Historyczny</span>
+      </button>
+
+      <button onclick="switchTheme('contemporary')" class="theme-select-btn px-2 py-1 text-xs font-bold rounded-xl transition flex items-center gap-1.5" data-theme="contemporary" title="Modern Glass University Campus">
+        <i class="fa-solid fa-graduation-cap text-blue-500"></i>
+        <span class="hidden sm:inline">Współczesny</span>
+      </button>
+
+      <button onclick="switchTheme('abstract')" class="theme-select-btn px-2 py-1 text-xs font-bold rounded-xl transition flex items-center gap-1.5" data-theme="abstract" title="Bauhaus Geometric Art Space">
+        <i class="fa-solid fa-cubes text-purple-400"></i>
+        <span class="hidden sm:inline">Abstrakcja</span>
+      </button>
+    </div>
+
+    <!-- Language Layer Selection (PL / EN) & Quick Tool Controls -->
+    <div class="flex items-center space-x-1.5">
+      <div class="flex items-center bg-black/15 dark:bg-black/30 p-1 rounded-2xl backdrop-blur-lg border border-white/20 mr-1">
+        <button id="langBtnPl" onclick="setLanguage('pl')" class="px-2 py-1 text-xs font-black rounded-xl transition flex items-center gap-1 bg-amber-400 text-slate-900 shadow-sm" title="Język Polski">
+          <span>🇵🇱 PL</span>
+        </button>
+        <button id="langBtnEn" onclick="setLanguage('en')" class="px-2 py-1 text-xs font-black rounded-xl transition flex items-center gap-1 opacity-75 hover:opacity-100" title="English Language">
+          <span>🇬🇧 EN</span>
+        </button>
+      </div>
+
+      <button onclick="openConfigModal()" title="Konfiguracja Graczy i Planszy" class="px-2.5 py-1.5 rounded-xl bg-black/10 hover:bg-black/20 text-xs font-bold transition flex items-center gap-1.5 border border-white/20">
+        <i class="fa-solid fa-sliders"></i>
+        <span class="hidden md:inline" id="setupBtnText">Ustawienia</span>
+      </button>
+      <button onclick="openQuestionModalManager()" title="Baza Pytań i Import" class="px-2.5 py-1.5 rounded-xl bg-black/10 hover:bg-black/20 text-xs font-bold transition flex items-center gap-1.5 border border-white/20">
+        <i class="fa-solid fa-file-import"></i>
+        <span class="hidden md:inline" id="tasksBtnText">Zadania</span>
+      </button>
+
+      <!-- Music Soundtrack Player Controller Button & Popover -->
+      <div class="relative">
+        <button onclick="toggleMusicMenu()" id="musicMenuBtn" title="Muzyka w tle" class="px-2.5 py-1.5 rounded-xl bg-black/10 hover:bg-black/20 text-xs font-bold transition flex items-center gap-1.5 border border-white/20">
+          <span id="musicVisualizerIcon" class="flex items-end gap-0.5 h-3.5 text-pink-500">
+            <span class="eq-bar eq-bar-1 h-1"></span>
+            <span class="eq-bar eq-bar-2 h-2"></span>
+            <span class="eq-bar eq-bar-3 h-1"></span>
+          </span>
+          <span class="hidden md:inline" id="currentMusicTrackBadge">Muzyka</span>
+          <i class="fa-solid fa-chevron-down text-[9px] opacity-60"></i>
+        </button>
+
+        <!-- Music Selection Dropdown Menu -->
+        <div id="musicDropdown" class="absolute right-0 top-11 z-50 w-72 sm:w-80 glass-surface p-4 rounded-3xl edge-dock-card border shadow-2xl hidden opacity-0 transition-all duration-200">
+          <div class="flex items-center justify-between pb-2 mb-3 border-b border-black/10 dark:border-white/10">
+            <h3 class="theme-title font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-compact-disc text-pink-500 animate-spin" style="animation-duration: 4s;"></i>
+              <span id="musicDropdownHeading">Ścieżka Dźwiękowa w Tle</span>
+            </h3>
+            <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <i class="fa-solid fa-repeat mr-1"></i>LOOP
+            </span>
+          </div>
+
+          <!-- Soundtrack Presets List -->
+          <div class="space-y-1.5 mb-3" id="musicTracksList">
+            <button onclick="selectMusicTrack('kawaii')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="kawaii">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-pink-500"></i>
+                <span>Kawaii Pastel Lofi</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <button onclick="selectMusicTrack('cyberpunk')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="cyberpunk">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-microchip text-cyan-400"></i>
+                <span>Cyberpunk Synthwave</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <button onclick="selectMusicTrack('historical')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="historical">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-landmark text-amber-600"></i>
+                <span>Klasyczna Katedra (Barok)</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <button onclick="selectMusicTrack('contemporary')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="contemporary">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-blue-500"></i>
+                <span>Kampus Chillout (Rhodes)</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <button onclick="selectMusicTrack('abstract')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="abstract">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-cubes text-purple-400"></i>
+                <span>Bauhaus Minimalizm</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <!-- User Uploaded MP3 Tracks -->
+            <button onclick="selectMusicTrack('low-atmos')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="low-atmos">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-spa text-teal-400"></i>
+                <span>Low Atmos (Stress Relief)</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <button onclick="selectMusicTrack('retro-game')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="retro-game">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-gamepad text-emerald-400"></i>
+                <span>Retro 8-Bit Game Vibe</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <button onclick="selectMusicTrack('dreamy-ambient')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="dreamy-ambient">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-cloud-moon text-sky-400"></i>
+                <span>Tranquil & Dreamy</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <button onclick="selectMusicTrack('gaming-beat')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="gaming-beat">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-cube text-amber-400"></i>
+                <span>Gaming Beat (Minecraft/Roblox)</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+
+            <!-- Custom File Upload Button -->
+            <label class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border cursor-pointer hover:bg-black/5 dark:hover:bg-white/5" data-track="custom">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-folder-open text-indigo-500"></i>
+                <span id="customTrackNameLabel">Wgraj własny plik audio...</span>
+              </span>
+              <input type="file" id="customAudioInput" accept="audio/*" class="hidden" onchange="handleCustomAudioUpload(event)">
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check" id="customCheckIcon"></i>
+            </label>
+
+            <!-- Mute Music Button -->
+            <button onclick="selectMusicTrack('off')" class="music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border" data-track="off">
+              <span class="flex items-center gap-2 opacity-70">
+                <i class="fa-solid fa-volume-xmark text-rose-500"></i>
+                <span id="muteMusicLabel">Wyłącz muzykę (Cisza)</span>
+              </span>
+              <i class="fa-solid fa-check text-emerald-500 opacity-0 track-check"></i>
+            </button>
+          </div>
+
+          <!-- Volume and Playback Controls -->
+          <div class="pt-2 border-t border-black/10 dark:border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-[11px] font-bold">
+              <span class="opacity-75 flex items-center gap-1.5">
+                <i class="fa-solid fa-volume-low text-xs"></i>
+                <span id="musicVolumeLabel">Głośność muzyki:</span>
+              </span>
+              <span id="musicVolumePercent" class="font-mono text-indigo-600 dark:text-indigo-400">35%</span>
+            </div>
+            <input type="range" id="musicVolumeSlider" min="0" max="100" value="35" oninput="handleMusicVolumeChange(this.value)" class="w-full accent-pink-500 cursor-pointer h-1.5 rounded-lg bg-black/10 dark:bg-white/10">
+
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] font-semibold opacity-80">
+                <input type="checkbox" id="autoSyncThemeMusic" checked class="rounded accent-pink-500">
+                <span id="autoSyncMusicLabel">Dopasuj do motywu</span>
+              </label>
+              <button onclick="toggleMusicPlayback()" id="musicPlayPauseBtn" class="px-2.5 py-1 rounded-xl bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-black transition flex items-center gap-1 shadow-sm">
+                <i class="fa-solid fa-play" id="musicPlayPauseIcon"></i>
+                <span id="musicPlayPauseText">Graj</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="toggleAudio()" id="audioToggleBtn" title="Dźwięki efektów" class="w-8 h-8 rounded-xl bg-black/10 hover:bg-black/20 flex items-center justify-center text-xs transition border border-white/20">
+        <i class="fa-solid fa-volume-high"></i>
+      </button>
+      <button onclick="openRulesModal()" title="Zasady gry" class="w-8 h-8 rounded-xl bg-black/10 hover:bg-black/20 flex items-center justify-center text-xs transition border border-white/20">
+        <i class="fa-solid fa-circle-question"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CENTERPIECE: The Educational Board spans full width with dedicated prominence -->
+  <main class="relative z-10 flex-1 w-full max-w-7xl mx-auto p-3 sm:p-6 pb-36 sm:pb-40 flex flex-col justify-center">
+    
+    <!-- Board Info Header & Legend Ribbon -->
+    <div class="glass-surface px-4 py-2.5 rounded-2xl mb-3 flex flex-wrap items-center justify-between gap-3 border shadow-sm">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-map-location-dot text-amber-500 text-sm"></i>
+        <span class="theme-title font-bold text-sm sm:text-base" id="themeTrackTitle">Pastelowa Przystań Nauki</span>
+        <span id="trackTotalSquaresBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-black/10 dark:bg-white/10 font-bold">24 Pola</span>
+      </div>
+
+      <!-- Legend Ribbon -->
+      <div id="legendRibbon" class="flex items-center flex-wrap gap-2.5 sm:gap-4 text-[11px] font-semibold opacity-90">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow"></span> Start</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block shadow"></span> Zadanie</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow"></span> Premia (+2)</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow"></span> Pułapka (-2)</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block shadow"></span> Meta (Dokładny)</span>
+      </div>
+    </div>
+
+    <!-- The Grand Serpentine Meandering Board (Full-width Centerpiece) -->
+    <div class="glass-surface p-2 sm:p-5 rounded-3xl shadow-2xl border w-full overflow-hidden relative flex flex-col items-center justify-center">
+      
+      <!-- Fluid Responsive Board Canvas Stage -->
+      <div id="boardStage" class="board-stage-wrapper relative w-full select-none">
+      
+      <!-- SVG Vector Road Bed, Flow Curves, Directional Arrows & Ambient Glow -->
+      <svg id="serpentineRoadSvg" class="absolute inset-0 w-full h-full overflow-visible pointer-events-none z-0" viewBox="0 0 1000 620" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="roadBedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="var(--road-fill)" stop-opacity="0.85" />
+            <stop offset="100%" stop-color="var(--road-inner)" stop-opacity="0.95" />
+          </linearGradient>
+          <filter id="roadDropShadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="8" stdDeviation="10" flood-opacity="0.32" />
+          </filter>
+        </defs>
+
+        <!-- Hidden Mathematical Spline for Arc-Length Equidistant Calculation -->
+        <path id="serpentineGuidePath" d="M 80,540 C 240,580 480,550 720,545 C 840,540 935,510 930,425 C 925,340 820,345 680,360 C 520,380 340,380 180,355 C 80,340 60,285 75,225 C 95,155 240,170 420,185 C 600,200 780,195 870,165 C 940,140 945,75 860,65 C 750,50 600,65 480,75" fill="none" stroke="transparent" />
+
+        <!-- Layer 1: Ambient Shadow & Glow Ribbon -->
+        <path id="svgRoadGlow" d="M 80,540 C 240,580 480,550 720,545 C 840,540 935,510 930,425 C 925,340 820,345 680,360 C 520,380 340,380 180,355 C 80,340 60,285 75,225 C 95,155 240,170 420,185 C 600,200 780,195 870,165 C 940,140 945,75 860,65 C 750,50 600,65 480,75" fill="none" stroke="var(--road-stroke)" stroke-width="78" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" class="serpentine-road-glow" />
+
+        <!-- Layer 2: Main Curving Road Bed Ribbon (Adventure Highway) -->
+        <path id="svgRoadBed" d="M 80,540 C 240,580 480,550 720,545 C 840,540 935,510 930,425 C 925,340 820,345 680,360 C 520,380 340,380 180,355 C 80,340 60,285 75,225 C 95,155 240,170 420,185 C 600,200 780,195 870,165 C 940,140 945,75 860,65 C 750,50 600,65 480,75" fill="none" stroke="url(#roadBedGradient)" stroke-width="62" stroke-linecap="round" stroke-linejoin="round" filter="url(#roadDropShadow)" />
+
+        <!-- Layer 3: Cobblestone Road Edging -->
+        <path id="svgRoadEdge" d="M 80,540 C 240,580 480,550 720,545 C 840,540 935,510 930,425 C 925,340 820,345 680,360 C 520,380 340,380 180,355 C 80,340 60,285 75,225 C 95,155 240,170 420,185 C 600,200 780,195 870,165 C 940,140 945,75 860,65 C 750,50 600,65 480,75" fill="none" stroke="var(--road-stroke)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" />
+
+        <!-- Layer 4: Centerline Animated Flow Ribbon -->
+        <path id="svgRoadDashes" d="M 80,540 C 240,580 480,550 720,545 C 840,540 935,510 930,425 C 925,340 820,345 680,360 C 520,380 340,380 180,355 C 80,340 60,285 75,225 C 95,155 240,170 420,185 C 600,200 780,195 870,165 C 940,140 945,75 860,65 C 750,50 600,65 480,75" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="8 12" stroke-linecap="round" class="serpentine-flow-dashes" opacity="0.8" />
+      </svg>
+      
+      <!-- Layer 5: HTML 3D Stepping Stone Discs & Scholar Standees -->
+      <div id="steppingStonesContainer" class="absolute inset-0 pointer-events-auto z-10">
+        <!-- Dynamically populated 3D stepping stone discs -->
+      </div>
+
+    </div>
+  </div>
+
+  </main>
+
+  <!-- FLOATING BOTTOM EDGE HUD: Active Turn, 3D Dice Console & Quick Edge Toggles -->
+  <footer class="fixed bottom-3 left-0 right-0 z-30 px-3 sm:px-6 pointer-events-none">
+    <div class="max-w-6xl mx-auto flex items-end justify-between gap-2.5 sm:gap-4">
+      
+      <!-- LEFT EDGE WING: Scholars Standings Drawer Button & Quick Badges -->
+      <div class="pointer-events-auto flex flex-col items-start gap-1">
+        <button onclick="toggleStandingsDrawer()" class="glass-surface px-3 py-2 rounded-2xl edge-dock-card hover:brightness-105 active:scale-95 transition border flex items-center gap-2 text-xs font-bold" title="Tabela Uczonych">
+          <i class="fa-solid fa-users text-amber-500"></i>
+          <span class="hidden sm:inline" id="standingsBtnText">Gracze</span>
+          <span id="scholarsCountNum" class="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[10px] font-black">2</span>
+          <i class="fa-solid fa-chevron-up text-[10px] opacity-60 ml-0.5" id="standingsChevron"></i>
+        </button>
+
+        <!-- Quick Scholar Token Standings Pill -->
+        <div id="scholarsStandingsQuickList" class="glass-surface p-1.5 rounded-2xl edge-dock-card hidden sm:flex items-center gap-1.5 border">
+          <!-- Dynamically populated mini avatars -->
+        </div>
+      </div>
+
+      <!-- CENTER HUB: Active Scholar Turn, 3D Interactive Dice & Roll Button -->
+      <div class="pointer-events-auto glass-surface px-4 sm:px-6 py-2.5 sm:py-3 rounded-3xl edge-dock-card border flex items-center gap-3 sm:gap-6 shadow-2xl">
+        
+        <!-- Active Scholar Turn Badge -->
+        <div class="flex flex-col items-center sm:items-start text-center sm:text-left min-w-[80px] sm:min-w-[120px]">
+          <div class="flex items-center gap-1.5 mb-0.5">
+            <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider opacity-60" id="turnLabelText">TURA</span>
+            <span id="roundCounterBadge" class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">R1</span>
+          </div>
+          <div id="activePlayerBadge" class="theme-title text-xs sm:text-base font-extrabold flex items-center gap-1.5">
+            <!-- Active scholar token & name -->
+          </div>
+        </div>
+
+        <!-- 3D Dice Display -->
+        <div class="relative flex-shrink-0">
+          <div id="diceCube" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/95 dark:bg-slate-900 shadow-xl border-2 border-slate-300 dark:border-slate-700 flex items-center justify-center text-2xl sm:text-3xl text-slate-800 dark:text-white transition-all cursor-pointer transform hover:scale-105 active:scale-95" onclick="triggerDiceRoll()" title="Kliknij, aby rzucić kostką">
+            <span id="diceFaceDisplay"><i class="fa-solid fa-dice-one"></i></span>
+          </div>
+          <!-- Last Roll Value Badge -->
+          <div id="lastRollBadge" class="absolute -top-1.5 -right-1.5 px-1.5 py-0.2 rounded-full bg-indigo-600 text-white text-[9px] font-black shadow-lg hidden">
+            +<span id="lastRollNumber">1</span>
+          </div>
+        </div>
+
+        <!-- Big Roll Dice Button & Helper Info -->
+        <div class="flex flex-col gap-0.5">
+          <button id="rollDiceButton" onclick="triggerDiceRoll()" class="py-2.5 sm:py-3 px-4 sm:px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-pink-500 to-indigo-600 hover:brightness-110 active:scale-95 text-white font-black tracking-wide shadow-lg transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
+            <i class="fa-solid fa-dice text-sm sm:text-base"></i>
+            <span id="rollDiceButtonText">RZUT</span>
+          </button>
+          <span id="turnHelperText" class="text-[9px] sm:text-[10px] text-center opacity-75 font-medium max-w-[130px] sm:max-w-[160px] truncate">
+            Wymagany dokładny rzut do Mety
+          </span>
+        </div>
+
+      </div>
+
+      <!-- RIGHT EDGE WING: Expedition Chronicle Feed Button & Popover -->
+      <div class="pointer-events-auto flex flex-col items-end gap-1">
+        <button onclick="toggleChronicleDrawer()" class="glass-surface px-3 py-2 rounded-2xl edge-dock-card hover:brightness-105 active:scale-95 transition border flex items-center gap-2 text-xs font-bold" title="Kronika Wyprawy">
+          <i class="fa-solid fa-scroll text-indigo-500"></i>
+          <span class="hidden sm:inline" id="chronicleBtnText">Kronika</span>
+          <span id="chronicleUnreadDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <i class="fa-solid fa-chevron-up text-[10px] opacity-60 ml-0.5" id="chronicleChevron"></i>
+        </button>
+
+        <!-- Compact Latest Event Ticker Pill -->
+        <div id="chronicleLatestTicker" class="glass-surface px-2.5 py-1 rounded-xl edge-dock-card hidden sm:block max-w-[180px] truncate text-[10px] font-semibold opacity-75 border">
+          Gra gotowa. Rzuć kostką, aby zacząć!
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- SLIDE-IN POPUP: Scholar Standings Drawer (Edge-anchored) -->
+  <div id="standingsDrawer" class="fixed bottom-20 left-3 sm:left-6 z-40 w-72 sm:w-80 glass-surface p-4 rounded-3xl edge-dock-card border drawer-slide-in hidden opacity-0 translate-y-3">
+    <div class="flex items-center justify-between pb-2 mb-2 border-b border-black/10 dark:border-white/10">
+      <h3 class="theme-title font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 opacity-80">
+        <i class="fa-solid fa-users text-amber-500"></i> Scholar Standings
+      </h3>
+      <button onclick="toggleStandingsDrawer()" class="w-6 h-6 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 flex items-center justify-center text-xs transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="scholarsRosterList" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1 no-scrollbar">
+      <!-- Populated dynamically via updateScholarsRosterUI -->
+    </div>
+  </div>
+
+  <!-- SLIDE-IN POPUP: Expedition Chronicle Drawer (Edge-anchored) -->
+  <div id="chronicleDrawer" class="fixed bottom-20 right-3 sm:right-6 z-40 w-72 sm:w-80 glass-surface p-4 rounded-3xl edge-dock-card border drawer-slide-in hidden opacity-0 translate-y-3">
+    <div class="flex items-center justify-between pb-2 mb-2 border-b border-black/10 dark:border-white/10">
+      <h3 class="theme-title font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 opacity-80">
+        <i class="fa-solid fa-scroll text-indigo-500"></i> Expedition Chronicle
+      </h3>
+      <button onclick="toggleChronicleDrawer()" class="w-6 h-6 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 flex items-center justify-center text-xs transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="chronicleFeed" class="space-y-1.5 max-h-60 overflow-y-auto text-xs pr-1 no-scrollbar">
+      <div class="p-2 rounded-xl bg-black/5 dark:bg-white/5 font-medium text-[11px]">
+        Welcome to Board Game Challenge! Select your theme and roll to begin.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Academic Task / Question Modal -->
+  <div id="questionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-surface w-full max-w-lg rounded-3xl p-6 sm:p-7 shadow-2xl border transform scale-95 transition-transform duration-300 relative overflow-hidden">
+      
+      <!-- Header with Scholar and Square Type Badge -->
+      <div class="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
+        <div class="flex items-center gap-2.5">
+          <div id="questionModalPlayerToken" class="w-9 h-9 rounded-2xl p-1 flex items-center justify-center shadow border"></div>
+          <div>
+            <h4 id="questionModalPlayerName" class="font-bold text-sm leading-tight">Alex</h4>
+            <span class="text-[10px] opacity-60 font-semibold" id="questionModalPlayerPiece">Scholar Piece</span>
+          </div>
+        </div>
+        <span id="questionModalSquareBadge" class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 flex items-center gap-1">
+          Square #12
+        </span>
+      </div>
+
+      <!-- Question Prompt Area -->
+      <div class="py-5 text-center flex flex-col items-center">
+        <div id="questionModalIcon" class="w-12 h-12 rounded-2xl bg-amber-400/20 text-amber-500 text-2xl flex items-center justify-center mb-3 shadow-inner">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+
+        <h3 id="questionModalPrompt" class="text-base sm:text-lg font-bold theme-title leading-snug px-2">
+          What is the primary organelle responsible for energy production in eukaryotic cells?
+        </h3>
+
+        <!-- Answer Spoiler / Solution Key -->
+        <div class="mt-4 w-full">
+          <button type="button" onclick="toggleAnswerVisibility()" class="text-xs font-bold opacity-75 hover:opacity-100 flex items-center justify-center gap-1.5 mx-auto py-1 px-3 rounded-lg bg-black/5 dark:bg-white/5 transition">
+            <i class="fa-solid fa-eye" id="answerToggleIcon"></i>
+            <span id="answerToggleText">Reveal Solution Key</span>
+          </button>
+          <div id="answerRevealBox" class="mt-2.5 p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-xs font-mono hidden">
+            Answer: <strong id="questionModalAnswer" class="text-emerald-600 dark:text-emerald-400">Mitochondria</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decision Verification Buttons -->
+      <div class="grid grid-cols-2 gap-3 pt-3 border-t border-black/10 dark:border-white/10">
+        <button onclick="evaluateQuestionAnswer(false)" class="py-3 px-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white font-black text-xs sm:text-sm transition-all border border-rose-300/40 flex items-center justify-center gap-2 active:scale-95 shadow-sm">
+          <i class="fa-solid fa-xmark text-lg"></i>
+          <span>Incorrect <span class="text-[10px] block opacity-80 font-normal sm:inline">(Move Back)</span></span>
+        </button>
+
+        <button onclick="evaluateQuestionAnswer(true)" class="py-3 px-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-600 text-emerald-600 hover:text-white font-black text-xs sm:text-sm transition-all border border-emerald-300/40 flex items-center justify-center gap-2 active:scale-95 shadow-sm">
+          <i class="fa-solid fa-check text-lg"></i>
+          <span>Correct <span class="text-[10px] block opacity-80 font-normal sm:inline">(Stay/Advance)</span></span>
+        </button>
+      </div>
+
+      <p class="text-[10px] text-center opacity-60 mt-3 font-medium">
+        Scholars answer verbally or in writing, then verify against the solution key.
+      </p>
+    </div>
+  </div>
+
+  <!-- MODAL: Curriculum / Task Importer -->
+  <div id="curriculumModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-surface w-full max-w-2xl rounded-3xl p-6 sm:p-7 shadow-2xl border transform scale-95 transition-transform duration-300 relative flex flex-col max-h-[90vh]">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <h3 class="theme-title font-bold text-lg">Curriculum & Task Importer</h3>
+        </div>
+        <button onclick="closeQuestionModalManager()" class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="py-3 flex flex-wrap gap-2 items-center justify-between">
+        <span class="text-xs font-bold opacity-75">Curriculum Presets:</span>
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="loadCurriculumPreset('stem')" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-500/20">STEM & Science</button>
+          <button onclick="loadCurriculumPreset('history')" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20">World History</button>
+          <button onclick="loadCurriculumPreset('tech')" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/20">Tech & Coding</button>
+          <button onclick="loadCurriculumPreset('arts')" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-300 hover:bg-purple-500/20">Art & Philosophy</button>
+        </div>
+      </div>
+
+      <div class="flex-1 flex flex-col my-2">
+        <label class="text-xs font-bold opacity-80 mb-1">
+          Import Tasks (1 per line formatted as <code class="font-mono bg-black/10 dark:bg-white/10 px-1 rounded">Question? | Answer</code>):
+        </label>
+        <textarea id="curriculumImportArea" class="w-full flex-1 min-h-[160px] p-3 text-xs font-mono rounded-2xl border border-black/20 dark:border-white/20 bg-white/70 dark:bg-black/40 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none leading-relaxed" placeholder="What is the speed of light? | 300,000 km/s&#10;What year was the Magna Carta signed? | 1215"></textarea>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-black/10 dark:border-white/10">
+        <span class="text-xs font-bold opacity-75" id="curriculumCountBadge">20 questions loaded</span>
+        <div class="flex gap-2">
+          <button onclick="closeQuestionModalManager()" class="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 font-bold text-xs transition">Cancel</button>
+          <button onclick="applyImportedCurriculum()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md transition">Apply Curriculum</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Game Setup & Scholar Configuration -->
+  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-surface w-full max-w-md rounded-3xl p-6 shadow-2xl border transform scale-95 transition-transform duration-300 relative">
+      <div class="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-500 text-lg"></i>
+          <h3 class="theme-title font-bold text-lg">Game Configuration</h3>
+        </div>
+        <button onclick="closeConfigModal()" class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4">
+        <div>
+          <label class="block text-xs font-extrabold uppercase tracking-wider opacity-75 mb-2">Number of Scholars:</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="selectPlayerCount(2)" class="player-count-btn py-2 text-xs sm:text-sm font-black rounded-xl border transition" data-players="2">2 Players</button>
+            <button type="button" onclick="selectPlayerCount(3)" class="player-count-btn py-2 text-xs sm:text-sm font-black rounded-xl border transition" data-players="3">3 Players</button>
+            <button type="button" onclick="selectPlayerCount(4)" class="player-count-btn py-2 text-xs sm:text-sm font-black rounded-xl border transition" data-players="4">4 Players</button>
+          </div>
+        </div>
+
+        <div id="scholarNamesList" class="space-y-2">
+          <!-- Dynamic name input rows -->
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-bold mb-1">
+            <span class="uppercase tracking-wider opacity-75" id="boardSquaresModalLabel">Liczba Pól (15 - 40):</span>
+            <span id="sliderSquareCountDisplay" class="text-indigo-600 dark:text-indigo-400 font-black text-sm">24 Pola</span>
+          </div>
+
+          <!-- Quick Presets for 15, 24, 30, 40 Squares -->
+          <div class="grid grid-cols-4 gap-1.5 mb-2.5">
+            <button type="button" onclick="setSquarePreset(15)" class="square-preset-btn py-1.5 text-xs font-bold rounded-xl border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition" data-squares="15">15 pól</button>
+            <button type="button" onclick="setSquarePreset(24)" class="square-preset-btn py-1.5 text-xs font-bold rounded-xl border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition" data-squares="24">24 pola</button>
+            <button type="button" onclick="setSquarePreset(30)" class="square-preset-btn py-1.5 text-xs font-bold rounded-xl border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition" data-squares="30">30 pól</button>
+            <button type="button" onclick="setSquarePreset(40)" class="square-preset-btn py-1.5 text-xs font-bold rounded-xl border border-black/10 dark:border-white/10 bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-black transition" data-squares="40">40 pól</button>
+          </div>
+
+          <input type="range" id="squareCountSlider" min="15" max="40" value="24" step="1" oninput="handleSliderChange(this.value)" class="w-full accent-indigo-600 cursor-pointer" />
+          <div class="flex justify-between text-[10px] opacity-60 font-semibold mt-1">
+            <span>15 (Szybka)</span>
+            <span>24 (Standard)</span>
+            <span>30 (Długa)</span>
+            <span>40 (Epicka Podróż)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-black/10 dark:border-white/10 flex justify-end gap-2">
+        <button onclick="closeConfigModal()" class="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 font-bold text-xs transition">Cancel</button>
+        <button onclick="applyConfigurationSettings()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition">Start Match</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Rules of Engagement -->
+  <div id="rulesModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-surface w-full max-w-lg rounded-3xl p-6 shadow-2xl border transform scale-95 transition-transform duration-300 relative flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
+        <h3 class="theme-title font-bold text-lg flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-amber-500"></i> Rules of Engagement
+        </h3>
+        <button onclick="closeRulesModal()" class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-3 overflow-y-auto text-xs opacity-90 leading-relaxed pr-1 font-medium">
+        <div class="p-3 rounded-2xl bg-black/5 dark:bg-white/5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center flex-shrink-0 text-base">
+            <i class="fa-solid fa-dice"></i>
+          </div>
+          <div>
+            <strong class="block font-bold">1. Sequential Roll & Hopping Movement:</strong>
+            Scholars roll the die on their turn. The scholar token visibly hops across the board tile-by-tile to its designated landing space.
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-black/5 dark:bg-white/5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0 text-base">
+            <i class="fa-solid fa-circle-question"></i>
+          </div>
+          <div>
+            <strong class="block font-bold">2. The Question Trial:</strong>
+            Landing on any space triggers a random task from the active curriculum. If verified <span class="text-emerald-600 font-bold">Correct</span>, the scholar holds their ground. If <span class="text-rose-600 font-bold">Incorrect</span>, the scholar is penalized and moves back.
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-black/5 dark:bg-white/5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0 text-base">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div>
+            <strong class="block font-bold">3. Trap & Bonus Spaces:</strong>
+            <span class="text-amber-500 font-bold">Bonus Spaces</span> award an extra +2 leap forward! <span class="text-rose-500 font-bold">Trap Spaces</span> enforce a severe -2 retreat on an incorrect answer.
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-black/5 dark:bg-white/5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center flex-shrink-0 text-base">
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
+          <div>
+            <strong class="block font-bold">4. The Exact Roll Requirement:</strong>
+            To reach the Finish square, a scholar must roll the <em>exact number of spaces needed</em>. If a higher number is rolled, the scholar remains on their square and the turn passes immediately.
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-black/5 dark:bg-white/5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0 text-base">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+          <div>
+            <strong class="block font-bold">5. The Grand Thesis:</strong>
+            Landing exactly on the Finish triggers the master final question. Answer correctly to claim victory.
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-black/10 dark:border-white/10 flex justify-end">
+        <button onclick="closeRulesModal()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition">Understood!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Grand Valedictorian Victory Celebration -->
+  <div id="victoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-lg hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-surface w-full max-w-md rounded-3xl p-7 text-center shadow-2xl border border-amber-400/40 transform scale-95 transition-transform duration-300 relative">
+      <div class="w-20 h-20 mx-auto rounded-3xl bg-amber-400/20 text-amber-500 text-4xl flex items-center justify-center mb-3 animate-bounce shadow-inner border border-amber-400/30">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <h2 class="theme-title text-2xl sm:text-3xl font-black mb-1">Grand Valedictorian!</h2>
+      <p id="victoryScholarBanner" class="text-lg font-black text-amber-500 mb-2">Alex Triumphs!</p>
+      <p class="text-xs opacity-75 max-w-xs mx-auto mb-5 leading-relaxed">
+        Mastered the curriculum, conquered the obstacles, hit the exact roll to the finish, and defended the Final Thesis!
+      </p>
+
+      <div id="victoryStatsContainer" class="p-3 rounded-2xl bg-black/5 dark:bg-white/5 mb-5 grid grid-cols-2 gap-2 text-xs font-bold">
+        <!-- Populated via JS -->
+      </div>
+
+      <div class="flex gap-2 justify-center">
+        <button onclick="restartGameMatch()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-pink-500 text-white font-black text-xs sm:text-sm shadow-xl hover:scale-105 active:scale-95 transition">
+          <i class="fa-solid fa-rotate-right mr-1.5"></i> Play Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Banner -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none max-w-md">
+    <div class="px-4 py-3 rounded-2xl bg-slate-900/95 text-white text-xs font-bold shadow-2xl flex items-center gap-3 backdrop-blur-md border border-white/20" id="toastContentBox">
+      <span class="text-base flex items-center" id="toastIcon"><i class="fa-solid fa-bell"></i></span>
+      <span id="toastMessageText">Notification message</span>
+    </div>
+  </div>
+
+  <script>
+    /* Procedural Web Audio API Synthesizer (Zero External Audio Files) */
+    let audioCtx = null;
+    let isSoundMuted = false;
+
+    function initWebAudio() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleAudio() {
+      isSoundMuted = !isSoundMuted;
+      const btn = document.getElementById('audioToggleBtn');
+      if (isSoundMuted) {
+        btn.innerHTML = '<i class="fa-solid fa-volume-xmark text-rose-500"></i>';
+        showToastNotification("Dźwięki wyciszone", '<i class="fa-solid fa-volume-xmark text-rose-400"></i>');
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+        initWebAudio();
+        playTone(440, 0.12, 'sine', 0.08);
+        showToastNotification("Dźwięki włączone", '<i class="fa-solid fa-volume-high text-emerald-400"></i>');
+      }
+    }
+
+    /* Soft, low-pass filtered audio tone generator */
+    function playTone(freq, duration, type = 'sine', gainVal = 0.08, filterCutoff = 1400) {
+      if (isSoundMuted) return;
+      try {
+        initWebAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(filterCutoff, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(gainVal, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + duration);
+      } catch (e) {}
+    }
+
+    /* Soft wooden kalimba / waterdrop hopping sound */
+    function playHopStepSound() {
+      if (isSoundMuted) return;
+      try {
+        initWebAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(360, now);
+        osc.frequency.exponentialRampToValueAtTime(520, now + 0.12);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.07, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.14);
+      } catch (e) {}
+    }
+
+    /* Gentle, soft muffled dice roll tap */
+    function playDiceRattleSound() {
+      if (isSoundMuted) return;
+      const rattleFrequencies = [220, 260, 200, 280];
+      rattleFrequencies.forEach((freq, idx) => {
+        setTimeout(() => playTone(freq, 0.04, 'sine', 0.035, 900), idx * 75);
+      });
+    }
+
+    /* Soothing wind chime / celesta success chime */
+    function playSuccessChime() {
+      if (isSoundMuted) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, i) => {
+        setTimeout(() => playTone(freq, 0.38, 'sine', 0.065, 1800), i * 90);
+      });
+    }
+
+    /* Gentle, soft wooden bell for failed questions (no harsh buzzer) */
+    function playFailureBuzz() {
+      if (isSoundMuted) return;
+      playTone(311.13, 0.28, 'sine', 0.065, 800);
+      setTimeout(() => playTone(261.63, 0.35, 'sine', 0.065, 750), 140);
+    }
+
+    /* Sparkling gentle celesta arpeggio for bonuses */
+    function playBonusFanfare() {
+      if (isSoundMuted) return;
+      const fanfare = [523.25, 659.25, 783.99, 987.77, 1046.50];
+      fanfare.forEach((f, i) => {
+        setTimeout(() => playTone(f, 0.25, 'sine', 0.06, 2000), i * 80);
+      });
+    }
+
+    /* Soft warm two-tone reminder for exact roll overshoots */
+    function playOvershotAlertSound() {
+      if (isSoundMuted) return;
+      playTone(392.00, 0.18, 'sine', 0.055, 1100);
+      setTimeout(() => playTone(349.23, 0.25, 'sine', 0.055, 1000), 120);
+    }
+
+    /* 5 Thematic Backgrounds & 20 Distinct Custom Vector SVG Player Pieces (No Emojis) */
+    const THEME_DEFINITIONS = {
+      kawaii: {
+        id: 'kawaii',
+        name: 'Kawaii Style',
+        title: 'Pastel Study Sanctuary',
+        bgImage: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=2000&q=85',
+        overlayGradient: 'radial-gradient(circle at 50% 30%, rgba(255, 235, 240, 0.75) 0%, rgba(254, 215, 226, 0.88) 100%)',
+        accentColor: '#ec4899',
+        pieces: [
+          {
+            name: 'Sakura Bunny',
+            color: '#f43f5e',
+            bg: '#ffe4e6',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <path d="M12 16 C9 9, 10 3, 13 3 C16 3, 16 9, 14 16 Z" fill="#f43f5e" />
+              <path d="M12.5 13 C11 8, 11.5 5, 13 5 C14.5 5, 14.5 8, 13.5 13 Z" fill="#ffe4e6" />
+              <path d="M24 16 C27 9, 26 3, 23 3 C20 3, 20 9, 22 16 Z" fill="#f43f5e" />
+              <path d="M23.5 13 C25 8, 24.5 5, 23 5 C21.5 5, 21.5 8, 22.5 13 Z" fill="#ffe4e6" />
+              <circle cx="18" cy="22" r="11" fill="#f43f5e" />
+              <circle cx="18" cy="22" r="9.5" fill="#fff" />
+              <circle cx="14" cy="20" r="1.5" fill="#4a2840" />
+              <circle cx="22" cy="20" r="1.5" fill="#4a2840" />
+              <circle cx="11.5" cy="23.5" r="1.8" fill="#fda4af" />
+              <circle cx="24.5" cy="23.5" r="1.8" fill="#fda4af" />
+              <path d="M17 23 L19 23 L18 24.5 Z" fill="#f43f5e" />
+              <path d="M16.5 25.5 Q18 27 19.5 25.5" stroke="#4a2840" stroke-width="1.2" stroke-linecap="round" fill="none" />
+              <circle cx="24" cy="14" r="3" fill="#ffb6c1" />
+              <circle cx="24" cy="14" r="1.2" fill="#fbbf24" />
+            </svg>`
+          },
+          {
+            name: 'Boba Brew',
+            color: '#8b5cf6',
+            bg: '#ede9fe',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <circle cx="11" cy="8" r="3.5" fill="#8b5cf6" />
+              <circle cx="11" cy="8" r="2" fill="#ede9fe" />
+              <circle cx="25" cy="8" r="3.5" fill="#8b5cf6" />
+              <circle cx="25" cy="8" r="2" fill="#ede9fe" />
+              <path d="M10 12 C10 8, 26 8, 26 12 Z" fill="#a78bfa" />
+              <line x1="18" y1="2" x2="16" y2="12" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M10 12 L12.5 31 Q13 33 18 33 Q23 33 23.5 31 L26 12 Z" fill="#ddd6fe" stroke="#8b5cf6" stroke-width="1.5" />
+              <circle cx="14" cy="28" r="1.8" fill="#5b21b6" />
+              <circle cx="18" cy="29" r="1.8" fill="#5b21b6" />
+              <circle cx="22" cy="28" r="1.8" fill="#5b21b6" />
+              <circle cx="16" cy="25" r="1.6" fill="#5b21b6" />
+              <circle cx="20" cy="25" r="1.6" fill="#5b21b6" />
+              <circle cx="15" cy="19" r="1" fill="#4a2840" />
+              <circle cx="21" cy="19" r="1" fill="#4a2840" />
+              <path d="M17 21 Q18 22 19 21" stroke="#4a2840" stroke-width="1" stroke-linecap="round" fill="none" />
+            </svg>`
+          },
+          {
+            name: 'Mochi Neko',
+            color: '#ec4899',
+            bg: '#fce7f3',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <polygon points="8,16 13,5 17,13" fill="#ec4899" />
+              <polygon points="10,14 13,8 15,13" fill="#fce7f3" />
+              <polygon points="28,16 23,5 19,13" fill="#ec4899" />
+              <polygon points="26,14 23,8 21,13" fill="#fce7f3" />
+              <ellipse cx="18" cy="21" rx="13" ry="11" fill="#fff" stroke="#ec4899" stroke-width="1.8" />
+              <path d="M12.5 19 Q14.5 17 16.5 19" stroke="#be185d" stroke-width="1.8" stroke-linecap="round" fill="none" />
+              <path d="M19.5 19 Q21.5 17 23.5 19" stroke="#be185d" stroke-width="1.8" stroke-linecap="round" fill="none" />
+              <circle cx="11" cy="22" r="2" fill="#fbcfe8" />
+              <circle cx="25" cy="22" r="2" fill="#fbcfe8" />
+              <ellipse cx="18" cy="22" rx="1.2" ry="0.9" fill="#ec4899" />
+              <path d="M16.5 24 Q18 25.5 19.5 24" stroke="#be185d" stroke-width="1.2" stroke-linecap="round" fill="none" />
+              <line x1="6" y1="20" x2="10" y2="21" stroke="#ec4899" stroke-width="1.2" stroke-linecap="round" />
+              <line x1="6" y1="23" x2="10" y2="23" stroke="#ec4899" stroke-width="1.2" stroke-linecap="round" />
+              <line x1="30" y1="20" x2="26" y2="21" stroke="#ec4899" stroke-width="1.2" stroke-linecap="round" />
+              <line x1="30" y1="23" x2="26" y2="23" stroke="#ec4899" stroke-width="1.2" stroke-linecap="round" />
+            </svg>`
+          },
+          {
+            name: 'Star Chibi',
+            color: '#f59e0b',
+            bg: '#fef3c7',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <path d="M18 3 L22 13 L33 14 L24 21 L27 32 L18 26 L9 32 L12 21 L3 14 L14 13 Z" fill="#fbbf24" stroke="#d97706" stroke-width="1.5" stroke-linejoin="round" />
+              <path d="M18 7 L20.5 14 L27 15 L21.5 19.5 L23.5 27 L18 23 Z" fill="#fef3c7" opacity="0.6" />
+              <circle cx="15" cy="18" r="1.6" fill="#78350f" />
+              <circle cx="21" cy="18" r="1.6" fill="#78350f" />
+              <circle cx="15.5" cy="17.3" r="0.6" fill="#fff" />
+              <circle cx="21.5" cy="17.3" r="0.6" fill="#fff" />
+              <path d="M16.5 21 Q18 23 19.5 21" stroke="#78350f" stroke-width="1.2" stroke-linecap="round" fill="none" />
+              <ellipse cx="12.5" cy="20.5" rx="1.5" ry="1" fill="#f43f5e" opacity="0.7" />
+              <ellipse cx="23.5" cy="20.5" rx="1.5" ry="1" fill="#f43f5e" opacity="0.7" />
+            </svg>`
+          }
+        ]
+      },
+      cyberpunk: {
+        id: 'cyberpunk',
+        name: 'Cyberpunk',
+        title: 'Neural Quantum Holo-Academy',
+        bgImage: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=2000&q=85',
+        overlayGradient: 'radial-gradient(circle at 50% 50%, rgba(10, 14, 30, 0.78) 0%, rgba(4, 6, 18, 0.92) 100%)',
+        accentColor: '#00ffcc',
+        pieces: [
+          {
+            name: 'Neural Mech',
+            color: '#00ffcc',
+            bg: '#042f2e',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <polygon points="18,3 29,8 29,24 18,33 7,24 7,8" fill="#042f2e" stroke="#00ffcc" stroke-width="1.6" />
+              <polygon points="7,10 2,13 7,18" fill="#00ffcc" opacity="0.8" />
+              <polygon points="29,10 34,13 29,18" fill="#00ffcc" opacity="0.8" />
+              <polygon points="10,13 26,13 24,19 12,19" fill="#00ffcc" />
+              <line x1="12" y1="16" x2="24" y2="16" stroke="#fff" stroke-width="1.2" />
+              <line x1="14" y1="24" x2="22" y2="24" stroke="#00ffcc" stroke-width="1.4" />
+              <line x1="15" y1="27" x2="21" y2="27" stroke="#00ffcc" stroke-width="1.4" />
+              <circle cx="18" cy="8" r="1.5" fill="#f43f5e" />
+            </svg>`
+          },
+          {
+            name: 'Quantum Drone',
+            color: '#f43f5e',
+            bg: '#4c0519',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <line x1="6" y1="6" x2="30" y2="30" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" />
+              <line x1="30" y1="6" x2="6" y2="30" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" />
+              <circle cx="6" cy="6" r="3.5" stroke="#f43f5e" stroke-width="1.4" fill="#4c0519" />
+              <circle cx="30" cy="6" r="3.5" stroke="#f43f5e" stroke-width="1.4" fill="#4c0519" />
+              <circle cx="6" cy="30" r="3.5" stroke="#f43f5e" stroke-width="1.4" fill="#4c0519" />
+              <circle cx="30" cy="30" r="3.5" stroke="#f43f5e" stroke-width="1.4" fill="#4c0519" />
+              <rect x="12" y="12" width="12" height="12" rx="3" fill="#1e1b4b" stroke="#f43f5e" stroke-width="1.6" />
+              <circle cx="18" cy="18" r="3" fill="#00ffcc" />
+              <circle cx="18" cy="18" r="1.5" fill="#fff" />
+            </svg>`
+          },
+          {
+            name: 'Glitch Core',
+            color: '#a855f7',
+            bg: '#3b0764',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <polygon points="18,4 29,10 29,26 18,32 7,26 7,10" fill="#2e1065" stroke="#a855f7" stroke-width="1.8" />
+              <rect x="13" y="13" width="10" height="10" rx="1.5" fill="#3b0764" stroke="#c084fc" stroke-width="1.2" />
+              <line x1="18" y1="4" x2="18" y2="13" stroke="#c084fc" stroke-width="1.5" />
+              <line x1="18" y1="23" x2="18" y2="32" stroke="#c084fc" stroke-width="1.5" />
+              <line x1="7" y1="18" x2="13" y2="18" stroke="#c084fc" stroke-width="1.5" />
+              <line x1="23" y1="18" x2="29" y2="18" stroke="#c084fc" stroke-width="1.5" />
+              <path d="M19 14 L16 18 L19 18 L17 22 L21 17 L18 17 Z" fill="#00ffcc" />
+            </svg>`
+          },
+          {
+            name: 'Cyber Disk',
+            color: '#38bdf8',
+            bg: '#0c4a6e',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <circle cx="18" cy="18" r="14" fill="#082f49" stroke="#38bdf8" stroke-width="1.8" />
+              <circle cx="18" cy="18" r="10" stroke="#0284c7" stroke-width="1" stroke-dasharray="3 2" fill="none" />
+              <circle cx="18" cy="18" r="6" stroke="#38bdf8" stroke-width="1.2" fill="none" />
+              <circle cx="18" cy="18" r="2.5" fill="#38bdf8" />
+              <line x1="18" y1="4" x2="18" y2="12" stroke="#f43f5e" stroke-width="1.4" />
+              <line x1="28" y1="18" x2="24" y2="18" stroke="#38bdf8" stroke-width="1.4" />
+              <line x1="8" y1="18" x2="12" y2="18" stroke="#38bdf8" stroke-width="1.4" />
+            </svg>`
+          }
+        ]
+      },
+      historical: {
+        id: 'historical',
+        name: 'Historical',
+        title: 'Cathedral Library of Antiquity',
+        bgImage: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=2000&q=85',
+        overlayGradient: 'radial-gradient(circle at 50% 40%, rgba(254, 250, 240, 0.8) 0%, rgba(240, 225, 200, 0.9) 100%)',
+        accentColor: '#b45309',
+        pieces: [
+          {
+            name: 'Scholar Quill',
+            color: '#b45309',
+            bg: '#fef3c7',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <path d="M28 4 C28 4, 18 8, 14 18 C12 23, 10 27, 8 30 L10 30 C12 26, 17 21, 23 15 C27 11, 29 4, 28 4 Z" fill="#b45309" />
+              <line x1="28" y1="4" x2="8" y2="30" stroke="#78350f" stroke-width="1.2" stroke-linecap="round" />
+              <polygon points="8,30 6,33 9,31" fill="#451a03" />
+              <rect x="18" y="24" width="13" height="9" rx="2" fill="#78350f" stroke="#b45309" stroke-width="1.2" />
+              <path d="M21 24 L21 21 L28 21 L28 24" stroke="#b45309" stroke-width="1.2" fill="none" />
+              <circle cx="24.5" cy="27.5" r="1.5" fill="#f59e0b" />
+            </svg>`
+          },
+          {
+            name: 'Wax Scroll',
+            color: '#92400e',
+            bg: '#ffedd5',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <path d="M7 10 C7 7, 11 7, 11 10 L11 26 C11 29, 7 29, 7 26 Z" fill="#d97706" />
+              <rect x="9" y="8" width="18" height="20" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" />
+              <path d="M27 10 C27 7, 31 7, 31 10 L31 26 C31 29, 27 29, 27 26 Z" fill="#d97706" />
+              <line x1="12" y1="12" x2="24" y2="12" stroke="#b45309" stroke-width="1" />
+              <line x1="12" y1="16" x2="22" y2="16" stroke="#b45309" stroke-width="1" />
+              <line x1="12" y1="20" x2="20" y2="20" stroke="#b45309" stroke-width="1" />
+              <circle cx="23" cy="23" r="3.5" fill="#dc2626" stroke="#991b1b" stroke-width="0.8" />
+              <circle cx="23" cy="23" r="1.5" fill="#f87171" />
+            </svg>`
+          },
+          {
+            name: 'Ionic Column',
+            color: '#475569',
+            bg: '#f1f5f9',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <rect x="6" y="6" width="24" height="3" rx="0.5" fill="#475569" />
+              <circle cx="10" cy="12" r="3" fill="#cbd5e1" stroke="#334155" stroke-width="1.2" />
+              <circle cx="26" cy="12" r="3" fill="#cbd5e1" stroke="#334155" stroke-width="1.2" />
+              <rect x="10" y="10.5" width="16" height="3" fill="#cbd5e1" />
+              <rect x="11" y="14" width="14" height="15" fill="#e2e8f0" stroke="#334155" stroke-width="1" />
+              <line x1="14" y1="14" x2="14" y2="29" stroke="#94a3b8" stroke-width="1" />
+              <line x1="18" y1="14" x2="18" y2="29" stroke="#94a3b8" stroke-width="1" />
+              <line x1="22" y1="14" x2="22" y2="29" stroke="#94a3b8" stroke-width="1" />
+              <rect x="8" y="29" width="20" height="3" rx="0.5" fill="#475569" />
+            </svg>`
+          },
+          {
+            name: 'Brass Hourglass',
+            color: '#0d9488',
+            bg: '#ccfbf1',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <rect x="8" y="5" width="20" height="3" rx="1" fill="#0d9488" stroke="#115e59" stroke-width="1" />
+              <rect x="8" y="28" width="20" height="3" rx="1" fill="#0d9488" stroke="#115e59" stroke-width="1" />
+              <line x1="10" y1="8" x2="10" y2="28" stroke="#0f766e" stroke-width="1.5" />
+              <line x1="26" y1="8" x2="26" y2="28" stroke="#0f766e" stroke-width="1.5" />
+              <path d="M12 8 L24 8 L19 18 L24 28 L12 28 L17 18 Z" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.2" />
+              <polygon points="14,10 22,10 18,16" fill="#f59e0b" />
+              <polygon points="15,28 21,28 19,23" fill="#f59e0b" />
+              <line x1="18" y1="17" x2="18" y2="23" stroke="#f59e0b" stroke-width="1" stroke-dasharray="1 1" />
+            </svg>`
+          }
+        ]
+      },
+      contemporary: {
+        id: 'contemporary',
+        name: 'Contemporary',
+        title: 'Modern Innovation Campus',
+        bgImage: 'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=2000&q=85',
+        overlayGradient: 'radial-gradient(circle at 50% 30%, rgba(248, 250, 252, 0.82) 0%, rgba(226, 232, 240, 0.92) 100%)',
+        accentColor: '#2563eb',
+        pieces: [
+          {
+            name: 'Doctoral Cap',
+            color: '#2563eb',
+            bg: '#dbeafe',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <polygon points="18,6 33,13 18,20 3,13" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.5" />
+              <polygon points="18,7.5 30,13 18,18.5 6,13" fill="#3b82f6" />
+              <path d="M10 16.5 L10 23 Q18 28 26 23 L26 16.5" fill="#1e40af" stroke="#1d4ed8" stroke-width="1.2" />
+              <circle cx="18" cy="13" r="1.5" fill="#fbbf24" />
+              <path d="M18 13 Q24 16 27 22 L26 27 L28 27 L28 22" stroke="#fbbf24" stroke-width="1.4" fill="none" stroke-linecap="round" />
+              <polygon points="26,26 28,26 27,29" fill="#f59e0b" />
+            </svg>`
+          },
+          {
+            name: 'Tech Laptop',
+            color: '#059669',
+            bg: '#d1fae5',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <rect x="8" y="7" width="20" height="14" rx="2" fill="#0f172a" stroke="#059669" stroke-width="1.4" />
+              <text x="18" y="17" font-family="monospace" font-size="7" font-weight="bold" fill="#34d399" text-anchor="middle">&lt;/&gt;</text>
+              <polygon points="4,27 32,27 29,21 7,21" fill="#059669" stroke="#047857" stroke-width="1.2" />
+              <rect x="14" y="24" width="8" height="2" rx="0.5" fill="#a7f3d0" />
+            </svg>`
+          },
+          {
+            name: 'Campus Backpack',
+            color: '#d97706',
+            bg: '#fef3c7',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <path d="M14 8 C14 5, 22 5, 22 8" stroke="#b45309" stroke-width="1.5" fill="none" />
+              <path d="M10 12 C10 8, 26 8, 26 12 L27 30 C27 32, 9 32, 9 30 Z" fill="#d97706" stroke="#b45309" stroke-width="1.5" />
+              <rect x="12" y="18" width="12" height="11" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" />
+              <line x1="13" y1="21" x2="23" y2="21" stroke="#b45309" stroke-width="1.2" />
+              <rect x="17" y="20" width="2" height="3" fill="#b45309" />
+              <line x1="7" y1="16" x2="9" y2="26" stroke="#78350f" stroke-width="1.5" />
+              <line x1="29" y1="16" x2="27" y2="26" stroke="#78350f" stroke-width="1.5" />
+            </svg>`
+          },
+          {
+            name: 'Scholar Mug',
+            color: '#7c3aed',
+            bg: '#ede9fe',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <path d="M13 8 Q15 6 13 4" stroke="#c4b5fd" stroke-width="1.2" stroke-linecap="round" fill="none" />
+              <path d="M17 7 Q19 5 17 3" stroke="#a78bfa" stroke-width="1.2" stroke-linecap="round" fill="none" />
+              <path d="M21 8 Q23 6 21 4" stroke="#c4b5fd" stroke-width="1.2" stroke-linecap="round" fill="none" />
+              <path d="M23 14 C29 14, 29 25, 23 25" stroke="#7c3aed" stroke-width="2.2" fill="none" />
+              <path d="M11 11 L12 28 Q12 30 18 30 Q24 30 24 28 L25 11 Z" fill="#7c3aed" stroke="#5b21b6" stroke-width="1.4" />
+              <circle cx="18" cy="20" r="3.5" fill="#ede9fe" />
+              <polygon points="18,17.5 20.5,19 19.5,21.5 16.5,21.5 15.5,19" fill="#7c3aed" />
+            </svg>`
+          }
+        ]
+      },
+      abstract: {
+        id: 'abstract',
+        name: 'Abstract',
+        title: 'Bauhaus Geometric Art Space',
+        bgImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2000&q=85',
+        overlayGradient: 'radial-gradient(circle at 60% 40%, rgba(30, 20, 55, 0.82) 0%, rgba(13, 9, 26, 0.94) 100%)',
+        accentColor: '#f59e0b',
+        pieces: [
+          {
+            name: 'Prism Gem',
+            color: '#f59e0b',
+            bg: '#fef3c7',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <polygon points="18,3 27,11 9,11" fill="#fde68a" stroke="#d97706" stroke-width="1" />
+              <polygon points="9,11 18,3 13,3" fill="#fef3c7" />
+              <polygon points="27,11 18,3 23,3" fill="#f59e0b" />
+              <polygon points="9,11 18,18 27,11" fill="#fbbf24" stroke="#d97706" stroke-width="1" />
+              <polygon points="9,11 18,18 18,33" fill="#d97706" stroke="#b45309" stroke-width="1" />
+              <polygon points="27,11 18,18 18,33" fill="#b45309" stroke="#78350f" stroke-width="1" />
+            </svg>`
+          },
+          {
+            name: 'Möbius Loop',
+            color: '#06b6d4',
+            bg: '#cffafe',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <path d="M11 11 C4 18, 4 24, 11 27 C18 29, 20 18, 25 15 C30 12, 33 16, 31 22 C29 27, 24 28, 20 23 L16 19 C12 14, 15 8, 20 8 C25 8, 28 11, 25 15" stroke="#06b6d4" stroke-width="3" stroke-linecap="round" fill="none" />
+              <path d="M11 11 C4 18, 4 24, 11 27 C18 29, 20 18, 25 15" stroke="#67e8f9" stroke-width="1.5" fill="none" />
+              <circle cx="18" cy="18" r="2" fill="#0891b2" />
+            </svg>`
+          },
+          {
+            name: 'Tetrahedron',
+            color: '#ec4899',
+            bg: '#fce7f3',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <polygon points="18,4 6,28 18,22" fill="#f472b6" stroke="#db2777" stroke-width="1.2" />
+              <polygon points="18,4 18,22 30,28" fill="#be185d" stroke="#9d174d" stroke-width="1.2" />
+              <polygon points="6,28 18,22 30,28 18,33" fill="#ec4899" stroke="#db2777" stroke-width="1.2" />
+            </svg>`
+          },
+          {
+            name: 'Cosmic Orb',
+            color: '#8b5cf6',
+            bg: '#ede9fe',
+            svg: `<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+              <ellipse cx="18" cy="18" rx="14" ry="5" transform="rotate(-30 18 18)" stroke="#8b5cf6" stroke-width="1.8" fill="none" />
+              <ellipse cx="18" cy="18" rx="14" ry="5" transform="rotate(45 18 18)" stroke="#c084fc" stroke-width="1.4" fill="none" />
+              <circle cx="18" cy="18" r="6" fill="#6d28d9" stroke="#ddd6fe" stroke-width="1.2" />
+              <circle cx="16" cy="16" r="2" fill="#fff" opacity="0.6" />
+              <circle cx="7" cy="12" r="1.5" fill="#f43f5e" />
+              <circle cx="28" cy="23" r="1.5" fill="#38bdf8" />
+            </svg>`
+          }
+        ]
+      }
+    };
+
+    /* Curated Academic Task Bank with Presets (English) */
+    const CURRICULUM_PRESETS = {
+      stem: [
+        { q: "What is the powerhouse organelle of eukaryotic cells?", a: "Mitochondria" },
+        { q: "What is the speed of light in a vacuum approximately?", a: "300,000 km/s (or 3 x 10^8 m/s)" },
+        { q: "What is the chemical symbol for Gold?", a: "Au" },
+        { q: "What is the square root of 144?", a: "12" },
+        { q: "Which planet has the most prominent ring system?", a: "Saturn" },
+        { q: "What is the most abundant gas in Earth's atmosphere?", a: "Nitrogen (~78%)" },
+        { q: "What subatomic particle carries a negative charge?", a: "Electron" },
+        { q: "Solve for x: 4x - 8 = 24", a: "x = 8" },
+        { q: "What gas do green plants absorb during photosynthesis?", a: "Carbon Dioxide (CO2)" },
+        { q: "What is the only even prime number?", a: "2" },
+        { q: "What is absolute zero in Celsius?", a: "-273.15 °C" },
+        { q: "What is Newton's First Law of Motion also known as?", a: "The Law of Inertia" }
+      ],
+      history: [
+        { q: "In what year did the Apollo 11 moon landing take place?", a: "1969" },
+        { q: "Who was the first Emperor of a unified China?", a: "Qin Shi Huang" },
+        { q: "What historic document was sealed at Runnymede in 1215?", a: "The Magna Carta" },
+        { q: "Which civilization constructed the ancient city of Machu Picchu?", a: "The Inca Empire" },
+        { q: "What famous wall in Germany fell in November 1989?", a: "The Berlin Wall" },
+        { q: "Which treaty officially brought an end to World War I?", a: "Treaty of Versailles" },
+        { q: "Who was the legendary Queen of Ancient Egypt associated with Julius Caesar?", a: "Cleopatra" },
+        { q: "What year did Christopher Columbus reach the Americas?", a: "1492" }
+      ],
+      tech: [
+        { q: "What does HTML stand for?", a: "HyperText Markup Language" },
+        { q: "What is the binary representation of decimal number 9?", a: "1001" },
+        { q: "Who is widely regarded as the world's first computer programmer?", a: "Ada Lovelace" },
+        { q: "What data structure operates on a 'Last-In, First-Out' (LIFO) basis?", a: "Stack" },
+        { q: "What does CSS stand for in web engineering?", a: "Cascading Style Sheets" },
+        { q: "What protocol secures HTTP web traffic with encryption?", a: "HTTPS (via SSL/TLS)" }
+      ],
+      arts: [
+        { q: "Who painted the ceiling of the Sistine Chapel in Rome?", a: "Michelangelo" },
+        { q: "Who wrote the play 'Hamlet'?", a: "William Shakespeare" },
+        { q: "Which Dutch post-impressionist painter created 'The Starry Night'?", a: "Vincent van Gogh" },
+        { q: "What philosophical quote is René Descartes famous for?", a: "'Cogito, ergo sum' (I think, therefore I am)" },
+        { q: "What ancient Greek philosopher was the student of Socrates and teacher of Aristotle?", a: "Plato" },
+        { q: "What musical period is Johann Sebastian Bach primarily associated with?", a: "Baroque Period" }
+      ]
+    };
+
+    /* Curated Academic Task Bank with Presets (Polish) */
+    const CURRICULUM_PRESETS_PL = {
+      stem: [
+        { q: "Jaki organell jest nazywany 'elektrownią komórki' eukariotycznej?", a: "Mitochondrium" },
+        { q: "Jaka jest przybliżona prędkość światła w próżni?", a: "300 000 km/s (lub 3 x 10^8 m/s)" },
+        { q: "Jaki jest symbol chemiczny złota w układzie okresowym?", a: "Au" },
+        { q: "Ile wynosi pierwiastek kwadratowy z liczby 144?", a: "12" },
+        { q: "Która planeta Układu Słonecznego ma najbardziej wyrazisty układ pierścieni?", a: "Saturn" },
+        { q: "Jaki gaz stanowi największy procent objętości atmosfery Ziemi?", a: "Azot (~78%)" },
+        { q: "Jaka cząstka elementarna atomu posiada ujemny ładunek elektryczny?", a: "Elektron" },
+        { q: "Rozwiąż równanie: 4x - 8 = 24. Ile wynosi x?", a: "x = 8" },
+        { q: "Jaki gaz pobierają rośliny zielone podczas fotosyntezy?", a: "Dwutlenek węgla (CO2)" },
+        { q: "Jaka jest jedyna parzysta liczba pierwsza w matematyce?", a: "2" },
+        { q: "Ile wynosi temperatura zera bezwzględnego w skali Celsjusza?", a: "-273,15 °C" },
+        { q: "Jak inaczej nazywa się Pierwsza Zasada Dynamiki Newtona?", a: "Zasada bezwładności" }
+      ],
+      history: [
+        { q: "W którym roku odbył się Chrzest Polski?", a: "966 rok" },
+        { q: "W którym roku miała miejsce bitwa pod Grunwaldem?", a: "1410 rok" },
+        { q: "W którym roku Sejm Czteroletni uchwalił Konstytucję 3 Maja?", a: "1791 rok" },
+        { q: "W którym roku Polska odzyskała niepodległość po 123 latach zaborów?", a: "1918 rok" },
+        { q: "Kto był pierwszym koronowanym królem Polski?", a: "Bolesław I Chrobry (1025 r.)" },
+        { q: "W którym roku odbyło się pierwsze lądowanie człowieka na Księżycu (misja Apollo 11)?", a: "1969 rok" },
+        { q: "Jaki słynny mur w Europie runął w listopadzie 1989 roku?", a: "Mur Berliński" },
+        { q: "Który traktat pokojowy oficjalnie zakończył I wojnę światową w 1919 roku?", a: "Traktat Wersalski" }
+      ],
+      tech: [
+        { q: "Co dokładnie oznacza skrót HTML w technologiach internetowych?", a: "HyperText Markup Language" },
+        { q: "Jak zapisać liczbę 9 w systemie binarnym (dwójkowym)?", a: "1001" },
+        { q: "Kto jest uznawany za pierwszą programistkę w historii informatyki?", a: "Ada Lovelace" },
+        { q: "Jaka struktura danych działa zgodnie z regułą LIFO (Last-In, First-Out)?", a: "Stos (Stack)" },
+        { q: "Co oznacza skrót CSS w tworzeniu stron internetowych?", a: "Cascading Style Sheets (Kaskadowe Arkusze Stylów)" },
+        { q: "Jaki protokół zapewnia szyfrowaną i bezpieczną komunikację WWW?", a: "HTTPS (za pomocą SSL/TLS)" }
+      ],
+      arts: [
+        { q: "Kto namalował słynny obraz 'Dama z gronostajem' znajdujący się w Krakowie?", a: "Leonardo da Vinci" },
+        { q: "Kto jest autorem polskiego eposu narodowego 'Pan Tadeusz'?", a: "Adam Mickiewicz" },
+        { q: "Który polski kompozytor stworzył słynne mazurki, polonezy i nokturny fortepianowe?", a: "Fryderyk Chopin" },
+        { q: "Kto namalował sklepienie Kaplicy Sykstyńskiej w Watykanie?", a: "Michał Anioł (Michelangelo Buonarroti)" },
+        { q: "Jak brzmi słynna sentencja Kartezjusza po polsku: 'Cogito, ergo sum'?", a: "Myślę, więc jestem" },
+        { q: "Który starożytny grecki filozof był nauczycielem Arystotelesa i autorem 'Państwa'?", a: "Platon" }
+      ]
+    };
+
+    /* Comprehensive Bilingual Localization Dictionary (Polish & English) */
+    const I18N = {
+      pl: {
+        appTitle: "Board Game Challenge",
+        appSubtitle: "LingoSpark · gra planszowa",
+        themeNavLabel: "Motyw:",
+        setupBtn: "Ustawienia",
+        tasksBtn: "Zadania",
+        squaresUnit: "Pola",
+        themeTitles: {
+          kawaii: "Pastelowa Przystań Nauki",
+          cyberpunk: "Kwantowa Holo-Akademia",
+          historical: "Katedralna Biblioteka Starożytności",
+          contemporary: "Nowoczesny Kampus Innowacji",
+          abstract: "Geometryczna Przestrzeń Bauhausu"
+        },
+        themeNames: {
+          kawaii: "Styl Kawaii",
+          cyberpunk: "Cyberpunk",
+          historical: "Historyczny",
+          contemporary: "Współczesny",
+          abstract: "Abstrakcyjny"
+        },
+        legend: {
+          start: "Start",
+          task: "Zadanie",
+          bonus: "Premia (+2)",
+          trap: "Pułapka (-2)",
+          finish: "Meta (Dokładny)"
+        },
+        turnLabel: "TURA",
+        roundPrefix: "R",
+        rollBtn: "RZUT",
+        scholarsBtn: "Gracze",
+        chronicleBtn: "Kronika",
+        chronicleWelcome: "Witaj w Board Game Challenge! Wybierz motyw i rzuć kostką, aby rozpocząć.",
+        rolledLog: "wyrzuca {roll}!",
+        overshotToast: "Wymagany dokładny rzut! Do Mety brakuje {rem} pól.",
+        overshotLog: "{name} wyrzucił(a) {roll}, ale potrzebował(a) dokładnie {rem}!",
+        retreatLog: "{name} cofa się o {count} pola!",
+        trialHeader: "Próba Wiedzy: {name}",
+        finalThesisBadge: "Wielka Obrona Tezy",
+        bonusBadge: "Pole Premii (+2)",
+        trapBadge: "Pole Pułapki (-2)",
+        squareWord: "Pole",
+        revealKey: "Pokaż klucz odpowiedzi",
+        hideKey: "Ukryj klucz odpowiedzi",
+        btnIncorrect: "Błędna",
+        btnIncorrectSub: "(Cofnięcie)",
+        btnCorrect: "Poprawna",
+        btnCorrectSub: "(Zostajesz / Awans)",
+        answerVerifyNotice: "Gracze odpowiadają ustnie lub pisemnie, a następnie weryfikują z kluczem odpowiedzi.",
+        correctToast: "{name}: Znakomita odpowiedź!",
+        correctLog: "odpowiedział(a) poprawnie!",
+        bonusToast: "Premia! {name} skacze o +2 pola naprzód!",
+        bonusLog: "{name} otrzymał(a) premię i skoczył(a) o 2 pola!",
+        incorrectLog: "odpowiedział(a) błędnie.",
+        thesisRejectedToast: "Teza odrzucona! Cofasz się o 2 pola.",
+        trapToast: "Wpadka w pułapkę! Cofasz się o 2 pola.",
+        incorrectToast: "Błąd! {name} cofa się o 1 pole.",
+        victoryTitle: "Wielki Prymus!",
+        victoryTriumphs: "{name} Triumfuje!",
+        victoryDesc: "Opanował(a) materiał, pokonał(a) przeszkody, uzyskał(a) dokładny rzut na Metę i obronił(a) Wielką Tezę!",
+        victoryRounds: "Rozegrane rundy",
+        victoryCorrect: "Poprawne odpowiedzi",
+        wonGameLog: "{name} obronił(a) Wielką Tezę i wygrał(a) partię!",
+        btnPlayAgain: "Zagraj Ponownie",
+        newMatchLog: "Rozpoczęto nową partię! Rzuć kostką, aby wyruszyć na szlak.",
+        themeSwitchedToast: "Zmieniono motyw na: {theme}",
+        configTitle: "Konfiguracja Rozgrywki",
+        playersCountLabel: "Liczba Uczonych:",
+        playerPrefix: "Gracz",
+        boardSquaresLabel: "Liczba Pól (15 - 40):",
+        btnStartMatch: "Rozpocznij Mecz",
+        btnCancel: "Anuluj",
+        rulesTitle: "Zasady Board Game Challenge",
+        btnUnderstood: "Zrozumiałem!",
+        curriculumTitle: "Kreator i Baza Zadań",
+        curriculumPresetsLabel: "Pakiety pytań:",
+        importTasksLabel: "Wklej zadania (1 na wiersz: <code class=\"font-mono bg-black/10 dark:bg-white/10 px-1 rounded\">Pytanie? | Odpowiedź</code>):",
+        questionsLoaded: "pytań w bazie",
+        btnApplyCurr: "Zastosuj Program",
+        exactRollReminder: "Wymagany dokładny rzut do Mety",
+        turnPrompt: "Ruch gracza: {name}",
+        musicBtn: "Muzyka",
+        musicHeading: "Ścieżka Dźwiękowa w Tle",
+        musicVolume: "Głośność muzyki:",
+        muteMusic: "Wyłącz muzykę (Cisza)",
+        customTrackBtn: "Wgraj własny plik audio...",
+        autoSyncMusic: "Dopasuj do motywu",
+        playWord: "Graj",
+        pauseWord: "Pauza",
+        trackTitles: {
+          kawaii: "Kawaii Pastel Lofi",
+          cyberpunk: "Cyberpunk Synthwave",
+          historical: "Klasyczna Katedra",
+          contemporary: "Kampus Chillout",
+          abstract: "Bauhaus Minimalizm",
+          'low-atmos': "Low Atmos (Relaks)",
+          'retro-game': "Retro 8-Bit Game",
+          'dreamy-ambient': "Tranquil & Dreamy",
+          'gaming-beat': "Gaming Beat (Roblox)",
+          custom: "Własna ścieżka",
+          off: "Cisza"
+        }
+      },
+      en: {
+        appTitle: "Board Game Challenge",
+        appSubtitle: "LingoSpark · classroom board game",
+        themeNavLabel: "Theme:",
+        setupBtn: "Setup",
+        tasksBtn: "Tasks",
+        squaresUnit: "Squares",
+        themeTitles: {
+          kawaii: "Pastel Study Sanctuary",
+          cyberpunk: "Neural Quantum Holo-Academy",
+          historical: "Cathedral Library of Antiquity",
+          contemporary: "Modern Innovation Campus",
+          abstract: "Bauhaus Geometric Art Space"
+        },
+        themeNames: {
+          kawaii: "Kawaii Style",
+          cyberpunk: "Cyberpunk",
+          historical: "Historical",
+          contemporary: "Contemporary",
+          abstract: "Abstract"
+        },
+        legend: {
+          start: "Start",
+          task: "Task",
+          bonus: "Bonus (+2)",
+          trap: "Trap (-2)",
+          finish: "Finish (Exact)"
+        },
+        turnLabel: "TURN",
+        roundPrefix: "R",
+        rollBtn: "ROLL",
+        scholarsBtn: "Scholars",
+        chronicleBtn: "Chronicle",
+        chronicleWelcome: "Welcome to Board Game Challenge! Select your theme and roll to begin.",
+        rolledLog: "rolls a {roll}!",
+        overshotToast: "Exact roll required! {rem} space(s) to finish.",
+        overshotLog: "{name} rolled {roll}, needed {rem} to finish!",
+        retreatLog: "{name} retreats {count} squares!",
+        trialHeader: "Knowledge Trial: {name}",
+        finalThesisBadge: "Final Thesis Trial",
+        bonusBadge: "Bonus Space (+2)",
+        trapBadge: "Trap Space (-2)",
+        squareWord: "Square",
+        revealKey: "Reveal Solution Key",
+        hideKey: "Hide Solution Key",
+        btnIncorrect: "Incorrect",
+        btnIncorrectSub: "(Move Back)",
+        btnCorrect: "Correct",
+        btnCorrectSub: "(Stay / Advance)",
+        answerVerifyNotice: "Scholars answer verbally or in writing, then verify against the solution key.",
+        correctToast: "{name}: Spot on! Correct answer.",
+        correctLog: "answered correctly!",
+        bonusToast: "Bonus! {name} leaps +2 spaces forward!",
+        bonusLog: "{name} gained a bonus and leaped forward 2 spaces!",
+        incorrectLog: "answered incorrectly.",
+        thesisRejectedToast: "Thesis rejected! Retreat 2 spaces.",
+        trapToast: "Trap triggered! Retreat 2 spaces.",
+        incorrectToast: "Incorrect! {name} retreats 1 square.",
+        victoryTitle: "Grand Valedictorian!",
+        victoryTriumphs: "{name} Triumphs!",
+        victoryDesc: "Mastered the curriculum, conquered the obstacles, hit the exact roll to the finish, and defended the Final Thesis!",
+        victoryRounds: "Rounds Played",
+        victoryCorrect: "Correct Answers",
+        wonGameLog: "{name} successfully defended their Thesis and won the game!",
+        btnPlayAgain: "Play Again",
+        newMatchLog: "New match started! Roll dice to begin.",
+        themeSwitchedToast: "Switched theme to: {theme}",
+        configTitle: "Game Configuration",
+        playersCountLabel: "Number of Scholars:",
+        playerPrefix: "Player",
+        boardSquaresLabel: "Board Squares (15 - 40):",
+        btnStartMatch: "Start Match",
+        btnCancel: "Cancel",
+        rulesTitle: "Board Game Challenge Rules",
+        btnUnderstood: "Understood!",
+        curriculumTitle: "Curriculum & Task Importer",
+        curriculumPresetsLabel: "Curriculum Presets:",
+        importTasksLabel: "Import Tasks (1 per line formatted as <code class=\"font-mono bg-black/10 dark:bg-white/10 px-1 rounded\">Question? | Answer</code>):",
+        questionsLoaded: "questions loaded",
+        btnApplyCurr: "Apply Curriculum",
+        exactRollReminder: "Exact roll required for Finish",
+        turnPrompt: "Turn: {name}",
+        musicBtn: "Music",
+        musicHeading: "Background Soundtrack",
+        musicVolume: "Music Volume:",
+        muteMusic: "Turn off music (Silence)",
+        customTrackBtn: "Upload custom audio file...",
+        autoSyncMusic: "Auto-sync with theme",
+        playWord: "Play",
+        pauseWord: "Pause",
+        trackTitles: {
+          kawaii: "Kawaii Pastel Lofi",
+          cyberpunk: "Cyberpunk Synthwave",
+          historical: "Classical Cathedral",
+          contemporary: "Campus Chillout",
+          abstract: "Bauhaus Minimalist",
+          'low-atmos': "Low Atmos (Stress Relief)",
+          'retro-game': "Retro 8-Bit Game Vibe",
+          'dreamy-ambient': "Tranquil & Dreamy",
+          'gaming-beat': "Gaming Beat",
+          custom: "Custom Track",
+          off: "Muted"
+        }
+      }
+    };
+
+    /* Game State Management */
+    let currentLang = 'pl';
+    let activeThemeKey = 'kawaii';
+    let totalSquares = 24;
+    let numberOfScholars = 2;
+    let scholars = [];
+    let currentScholarIdx = 0;
+    let currentRound = 1;
+    let isDiceRolling = false;
+    let isScholarHopping = false;
+    let activeQuestionContext = null;
+    let activeCurriculumBank = [...CURRICULUM_PRESETS_PL.stem, ...CURRICULUM_PRESETS_PL.history];
+
+    /* Board Squares Registry */
+    let boardSquaresData = [];
+
+    const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+    /* Multimedia Uploaded MP3 Tracks Mapping */
+    const AUDIO_TRACK_FILES = {
+      'low-atmos': 'low_atmos-stress-relief-music-533638.mp3',
+      'retro-game': 'nicolesheldon-retro-video-game-vibe-177183.mp3',
+      'dreamy-ambient': 'ambinet-tranquil-and-dreamy-soundscape-315400.mp3',
+      'gaming-beat': 'maksymmalko-roblox-minecraft-fortnite-video-game-music-358426.mp3'
+    };
+
+    /* PROCEDURAL BACKGROUND MUSIC ENGINE (Zero external dependencies, loops seamlessly) */
+    const MusicEngine = {
+      activeTrack: 'kawaii',
+      isPlaying: false,
+      volume: 0.35,
+      stepTimer: null,
+      stepIndex: 0,
+      musicGainNode: null,
+      customAudioEl: null,
+      mp3AudioEl: null,
+      customTrackName: null,
+
+      init() {
+        initWebAudio();
+        if (!this.musicGainNode && audioCtx) {
+          this.musicGainNode = audioCtx.createGain();
+          this.musicGainNode.gain.setValueAtTime(this.volume, audioCtx.currentTime);
+          this.musicGainNode.connect(audioCtx.destination);
+        }
+      },
+
+      setVolume(val) {
+        this.volume = Math.max(0, Math.min(1, val));
+        if (this.musicGainNode && audioCtx) {
+          this.musicGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+          this.musicGainNode.gain.setValueAtTime(this.volume, audioCtx.currentTime);
+        }
+        if (this.customAudioEl) {
+          this.customAudioEl.volume = this.volume;
+        }
+        if (this.mp3AudioEl) {
+          this.mp3AudioEl.volume = this.volume;
+        }
+      },
+
+      play() {
+        initWebAudio();
+        this.init();
+        if (this.activeTrack === 'off') return;
+
+        this.isPlaying = true;
+        updateMusicUI();
+
+        if (this.activeTrack === 'custom') {
+          if (this.customAudioEl) {
+            this.customAudioEl.volume = this.volume;
+            this.customAudioEl.play().catch(() => {});
+          }
+          return;
+        }
+
+        if (AUDIO_TRACK_FILES[this.activeTrack]) {
+          if (!this.mp3AudioEl || this.mp3AudioEl.src.indexOf(AUDIO_TRACK_FILES[this.activeTrack]) === -1) {
+            if (this.mp3AudioEl) {
+              this.mp3AudioEl.pause();
+            }
+            this.mp3AudioEl = new Audio(AUDIO_TRACK_FILES[this.activeTrack]);
+            this.mp3AudioEl.loop = true;
+          }
+          this.mp3AudioEl.volume = this.volume;
+          this.mp3AudioEl.play().catch(() => {});
+          return;
+        }
+
+        if (this.mp3AudioEl) {
+          this.mp3AudioEl.pause();
+        }
+
+        if (this.stepTimer) clearInterval(this.stepTimer);
+        const bpm = this.getTrackBpm(this.activeTrack);
+        const intervalMs = (60000 / bpm) / 4;
+        this.stepTimer = setInterval(() => this.step(), intervalMs);
+      },
+
+      pause() {
+        this.isPlaying = false;
+        if (this.stepTimer) {
+          clearInterval(this.stepTimer);
+          this.stepTimer = null;
+        }
+        if (this.customAudioEl) {
+          this.customAudioEl.pause();
+        }
+        if (this.mp3AudioEl) {
+          this.mp3AudioEl.pause();
+        }
+        updateMusicUI();
+      },
+
+      setTrack(trackKey) {
+        const wasPlaying = this.isPlaying;
+        this.pause();
+        this.activeTrack = trackKey;
+        this.stepIndex = 0;
+
+        if (trackKey === 'off') {
+          updateMusicUI();
+          return;
+        }
+
+        if (wasPlaying || true) {
+          this.play();
+        }
+        updateMusicUI();
+      },
+
+      getTrackBpm(track) {
+        switch (track) {
+          case 'kawaii': return 88;
+          case 'cyberpunk': return 124;
+          case 'historical': return 82;
+          case 'contemporary': return 94;
+          case 'abstract': return 108;
+          default: return 90;
+        }
+      },
+
+      playSynthVoice(freq, duration, type = 'sine', gainAmt = 0.1, attack = 0.02) {
+        if (!audioCtx || isSoundMuted || !this.isPlaying || freq <= 0) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const noteGain = audioCtx.createGain();
+          const filter = audioCtx.createBiquadFilter();
+
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+          if (this.activeTrack === 'cyberpunk') {
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1400, audioCtx.currentTime);
+          } else {
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(3200, audioCtx.currentTime);
+          }
+
+          const now = audioCtx.currentTime;
+          noteGain.gain.setValueAtTime(0.001, now);
+          noteGain.gain.linearRampToValueAtTime(gainAmt, now + attack);
+          noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+          osc.connect(filter);
+          filter.connect(noteGain);
+          noteGain.connect(this.musicGainNode);
+
+          osc.start(now);
+          osc.stop(now + duration);
+        } catch (e) {}
+      },
+
+      step() {
+        if (!audioCtx || audioCtx.state === 'suspended') return;
+        const step = this.stepIndex;
+
+        if (this.activeTrack === 'kawaii') {
+          if (step % 16 === 0) {
+            const chordIdx = Math.floor(step / 16) % 4;
+            const chords = [
+              [261.63, 329.63, 392.00, 493.88],
+              [220.00, 261.63, 329.63, 392.00],
+              [293.66, 349.23, 440.00, 523.25],
+              [196.00, 246.94, 293.66, 349.23]
+            ];
+            chords[chordIdx].forEach(f => this.playSynthVoice(f, 2.2, 'sine', 0.045, 0.25));
+            this.playSynthVoice(chords[chordIdx][0] / 2, 2.4, 'triangle', 0.08, 0.15);
+          }
+
+          const melodyPattern = [
+            523.25, 0, 659.25, 0, 783.99, 0, 880.00, 659.25,
+            0, 587.33, 0, 659.25, 523.25, 0, 392.00, 0
+          ];
+          const melNote = melodyPattern[step % 16];
+          if (melNote > 0) {
+            this.playSynthVoice(melNote, 0.42, 'sine', 0.05, 0.015);
+          }
+        } else if (this.activeTrack === 'cyberpunk') {
+          const bassPattern = [
+            73.42, 73.42, 146.83, 73.42, 87.31, 73.42, 110.0, 73.42,
+            73.42, 73.42, 146.83, 73.42, 65.41, 65.41, 98.00, 130.81
+          ];
+          const bassFreq = bassPattern[step % 16];
+          this.playSynthVoice(bassFreq, 0.18, 'sawtooth', 0.055, 0.01);
+
+          if (step % 16 === 0 || step % 16 === 6 || step % 16 === 10) {
+            const chords = [
+              [146.83, 220.00, 293.66, 349.23],
+              [116.54, 174.61, 233.08, 293.66],
+              [130.81, 196.00, 261.63, 329.63]
+            ];
+            const activeC = chords[Math.floor(step / 16) % 3];
+            activeC.forEach(f => this.playSynthVoice(f, 0.5, 'square', 0.03, 0.02));
+          }
+        } else if (this.activeTrack === 'historical') {
+          const harpPattern = [
+            220.0, 261.63, 329.63, 440.0, 523.25, 440.0, 329.63, 261.63,
+            146.83, 220.0, 293.66, 349.23, 440.0, 349.23, 293.66, 220.0,
+            164.81, 246.94, 329.63, 392.0, 493.88, 392.0, 329.63, 246.94,
+            220.0, 329.63, 440.0, 523.25, 659.25, 523.25, 440.0, 329.63
+          ];
+          const harpNote = harpPattern[step % 32];
+          if (step % 2 === 0) {
+            this.playSynthVoice(harpNote, 0.45, 'triangle', 0.065, 0.02);
+          }
+          if (step % 16 === 0) {
+            this.playSynthVoice(harpPattern[step % 32] / 2, 1.8, 'sine', 0.09, 0.1);
+          }
+        } else if (this.activeTrack === 'contemporary') {
+          if (step % 16 === 0) {
+            const chords = [
+              [174.61, 220.00, 261.63, 329.63],
+              [164.81, 196.00, 246.94, 293.66],
+              [146.83, 174.61, 220.00, 261.63],
+              [130.81, 164.81, 196.00, 246.94]
+            ];
+            const cur = chords[Math.floor(step / 16) % 4];
+            cur.forEach(f => this.playSynthVoice(f, 2.0, 'sine', 0.05, 0.15));
+            this.playSynthVoice(cur[0] / 2, 2.2, 'triangle', 0.07, 0.05);
+          }
+          if (step % 8 === 4) {
+            this.playSynthVoice(523.25, 0.25, 'sine', 0.03, 0.02);
+          }
+        } else if (this.activeTrack === 'abstract') {
+          const tones = [293.66, 329.63, 440.00, 493.88, 587.33, 659.25];
+          if (step % 3 === 0) {
+            const note = tones[(step * 2) % tones.length];
+            this.playSynthVoice(note, 0.35, 'sine', 0.045, 0.03);
+          }
+          if (step % 16 === 0) {
+            this.playSynthVoice(146.83, 2.8, 'sawtooth', 0.025, 0.5);
+          }
+        }
+
+        this.stepIndex = (this.stepIndex + 1) % 64;
+      }
+    };
+
+    function toggleMusicMenu() {
+      const menu = document.getElementById('musicDropdown');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        setTimeout(() => menu.classList.remove('opacity-0'), 10);
+      } else {
+        menu.classList.add('opacity-0');
+        setTimeout(() => menu.classList.add('hidden'), 200);
+      }
+    }
+
+    function toggleMusicPlayback() {
+      initWebAudio();
+      if (MusicEngine.isPlaying) {
+        MusicEngine.pause();
+      } else {
+        MusicEngine.play();
+      }
+    }
+
+    function selectMusicTrack(trackKey) {
+      MusicEngine.setTrack(trackKey);
+      const dict = I18N[currentLang] || I18N.pl;
+      const title = dict.trackTitles[trackKey] || trackKey;
+      showToastNotification(`${dict.musicBtn}: ${title}`, '<i class="fa-solid fa-music text-pink-400"></i>');
+    }
+
+    function handleMusicVolumeChange(val) {
+      const floatVal = parseInt(val, 10) / 100;
+      MusicEngine.setVolume(floatVal);
+      document.getElementById('musicVolumePercent').innerText = `${val}%`;
+    }
+
+    function handleCustomAudioUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const objUrl = URL.createObjectURL(file);
+      if (MusicEngine.customAudioEl) {
+        MusicEngine.customAudioEl.pause();
+      }
+
+      MusicEngine.customAudioEl = new Audio(objUrl);
+      MusicEngine.customAudioEl.loop = true;
+      MusicEngine.customAudioEl.volume = MusicEngine.volume;
+      MusicEngine.customTrackName = file.name.replace(/\.[^/.]+$/, "");
+
+      document.getElementById('customTrackNameLabel').innerText = MusicEngine.customTrackName;
+      selectMusicTrack('custom');
+    }
+
+    function updateMusicUI() {
+      const dict = I18N[currentLang] || I18N.pl;
+      const trackKey = MusicEngine.activeTrack;
+      const isPlaying = MusicEngine.isPlaying && trackKey !== 'off';
+
+      const badge = document.getElementById('currentMusicTrackBadge');
+      if (badge) {
+        if (trackKey === 'custom' && MusicEngine.customTrackName) {
+          badge.innerText = MusicEngine.customTrackName.slice(0, 10) + '...';
+        } else {
+          badge.innerText = dict.trackTitles[trackKey] || dict.musicBtn;
+        }
+      }
+
+      const visIcon = document.getElementById('musicVisualizerIcon');
+      if (visIcon) {
+        if (isPlaying) {
+          visIcon.innerHTML = `
+            <span class="eq-bar eq-bar-1"></span>
+            <span class="eq-bar eq-bar-2"></span>
+            <span class="eq-bar eq-bar-3"></span>
+          `;
+          visIcon.className = "flex items-end gap-0.5 h-3.5 text-pink-500";
+        } else {
+          visIcon.innerHTML = '<i class="fa-solid fa-music text-xs"></i>';
+          visIcon.className = "flex items-center text-xs opacity-60";
+        }
+      }
+
+      const playBtn = document.getElementById('musicPlayPauseBtn');
+      const playIcon = document.getElementById('musicPlayPauseIcon');
+      const playText = document.getElementById('musicPlayPauseText');
+      if (playBtn && playIcon && playText) {
+        if (isPlaying) {
+          playIcon.className = "fa-solid fa-pause";
+          playText.innerText = dict.pauseWord;
+          playBtn.className = "px-2.5 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-black transition flex items-center gap-1 shadow-sm";
+        } else {
+          playIcon.className = "fa-solid fa-play";
+          playText.innerText = dict.playWord;
+          playBtn.className = "px-2.5 py-1 rounded-xl bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-black transition flex items-center gap-1 shadow-sm";
+        }
+      }
+
+      document.querySelectorAll('.music-track-btn').forEach(btn => {
+        const t = btn.dataset.track;
+        const check = btn.querySelector('.track-check');
+        if (t === trackKey) {
+          btn.className = "music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border bg-pink-500/15 border-pink-500/60 shadow-sm";
+          if (check) check.classList.remove('opacity-0');
+        } else {
+          btn.className = "music-track-btn w-full p-2 rounded-xl text-left text-xs font-bold transition flex items-center justify-between border border-transparent hover:bg-black/5 dark:hover:bg-white/5 opacity-80";
+          if (check) check.classList.add('opacity-0');
+        }
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('musicDropdown');
+      const btn = document.getElementById('musicMenuBtn');
+      if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        if (!dropdown.classList.contains('hidden')) {
+          dropdown.classList.add('opacity-0');
+          setTimeout(() => dropdown.classList.add('hidden'), 200);
+        }
+      }
+    });
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const dict = I18N[currentLang] || I18N.pl;
+
+      const btnPl = document.getElementById('langBtnPl');
+      const btnEn = document.getElementById('langBtnEn');
+      if (btnPl && btnEn) {
+        if (lang === 'pl') {
+          btnPl.className = "px-2 py-1 text-xs font-black rounded-xl bg-amber-400 text-slate-900 shadow-sm transition flex items-center gap-1";
+          btnEn.className = "px-2 py-1 text-xs font-black rounded-xl opacity-75 hover:opacity-100 transition flex items-center gap-1";
+        } else {
+          btnEn.className = "px-2 py-1 text-xs font-black rounded-xl bg-amber-400 text-slate-900 shadow-sm transition flex items-center gap-1";
+          btnPl.className = "px-2 py-1 text-xs font-black rounded-xl opacity-75 hover:opacity-100 transition flex items-center gap-1";
+        }
+      }
+
+      if (lang === 'pl') {
+        activeCurriculumBank = [...CURRICULUM_PRESETS_PL.stem, ...CURRICULUM_PRESETS_PL.history];
+      } else {
+        activeCurriculumBank = [...CURRICULUM_PRESETS.stem, ...CURRICULUM_PRESETS.history];
+      }
+
+      const defaultNamesPL = ["Olek", "Kasia", "Janek", "Zosia"];
+      const defaultNamesEN = ["Alex", "Morgan", "Jordan", "Taylor"];
+      if (scholars && scholars.length > 0) {
+        scholars.forEach((s, idx) => {
+          if (defaultNamesPL.includes(s.name) || defaultNamesEN.includes(s.name)) {
+            s.name = lang === 'pl' ? defaultNamesPL[idx] : defaultNamesEN[idx];
+          }
+        });
+      }
+
+      const appSubtitle = document.getElementById('appSubtitle');
+      if (appSubtitle) appSubtitle.innerText = dict.appSubtitle;
+      const themeNavLabel = document.getElementById('themeNavLabel');
+      if (themeNavLabel) themeNavLabel.innerHTML = `<i class="fa-solid fa-palette mr-1"></i>${dict.themeNavLabel}`;
+      const setupBtn = document.getElementById('setupBtnText');
+      if (setupBtn) setupBtn.innerText = dict.setupBtn;
+      const tasksBtn = document.getElementById('tasksBtnText');
+      if (tasksBtn) tasksBtn.innerText = dict.tasksBtn;
+      const themeTrackTitle = document.getElementById('themeTrackTitle');
+      if (themeTrackTitle) themeTrackTitle.innerText = dict.themeTitles[activeThemeKey];
+
+      const legendBox = document.getElementById('legendRibbon');
+      if (legendBox) {
+        legendBox.innerHTML = `
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow"></span> ${dict.legend.start}</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block shadow"></span> ${dict.legend.task}</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow"></span> ${dict.legend.bonus}</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow"></span> ${dict.legend.trap}</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block shadow"></span> ${dict.legend.finish}</span>
+        `;
+      }
+
+      const turnLabel = document.getElementById('turnLabelText');
+      if (turnLabel) turnLabel.innerText = dict.turnLabel;
+      const rollBtnText = document.getElementById('rollDiceButtonText');
+      if (rollBtnText) rollBtnText.innerText = dict.rollBtn;
+      const standingsBtn = document.getElementById('standingsBtnText');
+      if (standingsBtn) standingsBtn.innerText = dict.scholarsBtn;
+      const chronicleBtn = document.getElementById('chronicleBtnText');
+      if (chronicleBtn) chronicleBtn.innerText = dict.chronicleBtn;
+
+      const boardSquaresModalLabel = document.getElementById('boardSquaresModalLabel');
+      if (boardSquaresModalLabel) boardSquaresModalLabel.innerText = dict.boardSquaresLabel;
+
+      const musicHeading = document.getElementById('musicDropdownHeading');
+      if (musicHeading) musicHeading.innerText = dict.musicHeading;
+      const muteMusicLabel = document.getElementById('muteMusicLabel');
+      if (muteMusicLabel) muteMusicLabel.innerText = dict.muteMusic;
+      const customTrackLabel = document.getElementById('customTrackNameLabel');
+      if (customTrackLabel && MusicEngine.activeTrack !== 'custom') customTrackLabel.innerText = dict.customTrackBtn;
+      const musicVolLabel = document.getElementById('musicVolumeLabel');
+      if (musicVolLabel) musicVolLabel.innerText = dict.musicVolume;
+      const autoSyncLabel = document.getElementById('autoSyncMusicLabel');
+      if (autoSyncLabel) autoSyncLabel.innerText = dict.autoSyncMusic;
+      const playPauseTxt = document.getElementById('musicPlayPauseText');
+      if (playPauseTxt) playPauseTxt.innerText = MusicEngine.isPlaying ? dict.pauseWord : dict.playWord;
+      updateMusicUI();
+
+      const turnHelper = document.getElementById('turnHelperText');
+      if (turnHelper && scholars[currentScholarIdx]) {
+        turnHelper.innerText = dict.turnPrompt.replace('{name}', scholars[currentScholarIdx].name);
+      }
+    }
+
+    function initializeScholars() {
+      const themeConfig = THEME_DEFINITIONS[activeThemeKey] || THEME_DEFINITIONS.kawaii;
+      scholars = [];
+      const defaultNamesPL = ["Olek", "Kasia", "Janek", "Zosia"];
+      const defaultNamesEN = ["Alex", "Morgan", "Jordan", "Taylor"];
+      const defaultNames = currentLang === 'pl' ? defaultNamesPL : defaultNamesEN;
+
+      for (let i = 0; i < numberOfScholars; i++) {
+        const piece = themeConfig.pieces[i % themeConfig.pieces.length];
+        scholars.push({
+          id: i,
+          name: defaultNames[i],
+          pieceName: piece.name,
+          color: piece.color,
+          bg: piece.bg,
+          svg: piece.svg,
+          position: 0,
+          turnsCount: 0,
+          correctAnswers: 0,
+          wrongAnswers: 0
+        });
+      }
+
+      currentScholarIdx = 0;
+      currentRound = 1;
+    }
+
+    function generateBoardSquares() {
+      boardSquaresData = [];
+      
+      const bonusSet = new Set();
+      const trapSet = new Set();
+
+      const interval = Math.max(3, Math.floor(totalSquares / 7));
+      for (let pos = 2; pos < totalSquares - 2; pos += interval) {
+        if (pos % 2 === 0) {
+          bonusSet.add(pos);
+        } else {
+          trapSet.add(pos);
+        }
+      }
+
+      for (let i = 0; i < totalSquares; i++) {
+        let type = 'NORMAL';
+        if (i === 0) type = 'START';
+        else if (i === totalSquares - 1) type = 'FINISH';
+        else if (bonusSet.has(i)) type = 'BONUS';
+        else if (trapSet.has(i)) type = 'TRAP';
+
+        boardSquaresData.push({
+          index: i,
+          type: type
+        });
+      }
+
+      renderBoardTrack();
+      updateBoardHeaderBadges();
+    }
+
+    function updateBoardHeaderBadges() {
+      const dict = I18N[currentLang] || I18N.pl;
+      const badge = document.getElementById('trackTotalSquaresBadge');
+      if (badge) badge.innerText = `${totalSquares} ${dict.squaresUnit}`;
+      const sliderBadge = document.getElementById('sliderSquareCountDisplay');
+      if (sliderBadge) sliderBadge.innerText = `${totalSquares} ${dict.squaresUnit}`;
+    }
+
+    function renderBoardTrack() {
+      const container = document.getElementById('steppingStonesContainer');
+      const guidePath = document.getElementById('serpentineGuidePath');
+      if (!container || !guidePath) return;
+
+      container.innerHTML = '';
+      const totalLen = guidePath.getTotalLength();
+      const dict = I18N[currentLang] || I18N.pl;
+
+      // Dynamically scale stone discs and font size gracefully up to 40 squares
+      const sizePx = totalSquares <= 18 ? 64 : totalSquares <= 24 ? 54 : totalSquares <= 30 ? 46 : totalSquares <= 35 ? 39 : 34;
+      const numFontClass = totalSquares <= 18 ? 'text-xs sm:text-base font-black' : totalSquares <= 24 ? 'text-[11px] sm:text-sm font-extrabold' : totalSquares <= 30 ? 'text-[10px] sm:text-xs font-bold' : 'text-[8px] sm:text-[9px] font-bold';
+
+      boardSquaresData.forEach((sq, idx) => {
+        const dist = (idx / (totalSquares - 1)) * totalLen;
+        const pt = guidePath.getPointAtLength(dist);
+
+        const leftPercent = ((pt.x / 1000) * 100).toFixed(2);
+        const topPercent = ((pt.y / 620) * 100).toFixed(2);
+
+        const disc = document.createElement('div');
+        disc.id = `board-tile-${sq.index}`;
+        disc.className = `stepping-stone-disc shadow-xl ${
+          sq.type === 'START' ? 'stone-start' :
+          sq.type === 'FINISH' ? 'stone-finish' :
+          sq.type === 'BONUS' ? 'stone-bonus' :
+          sq.type === 'TRAP' ? 'stone-trap' : ''
+        }`;
+
+        disc.style.width = `${sizePx}px`;
+        disc.style.height = `${sizePx}px`;
+        disc.style.left = `${leftPercent}%`;
+        disc.style.top = `${topPercent}%`;
+
+        const rotationDeg = ((-6 + ((sq.index * 17) % 13))).toFixed(1);
+        disc.style.transform = `translate(-50%, -50%) rotate(${rotationDeg}deg)`;
+
+        let badgeHtml = '';
+        if (sq.type === 'START') {
+          badgeHtml = `
+            <div class="flex flex-col items-center leading-none text-emerald-700">
+              <i class="fa-solid fa-flag-checkered text-[8px] sm:text-xs"></i>
+              <span class="text-[7px] sm:text-[8px] font-black uppercase tracking-wider">${dict.legend.start}</span>
+            </div>
+          `;
+        } else if (sq.type === 'FINISH') {
+          badgeHtml = `
+            <div class="flex flex-col items-center leading-none text-indigo-700 animate-pulse">
+              <i class="fa-solid fa-trophy text-[9px] sm:text-sm text-amber-500"></i>
+              <span class="text-[7px] sm:text-[8px] font-black uppercase tracking-wider">${dict.legend.finish.split(' ')[0]}</span>
+            </div>
+          `;
+        } else if (sq.type === 'BONUS') {
+          badgeHtml = `
+            <div class="flex items-center gap-0.5 leading-none text-amber-600 font-black text-[8px] sm:text-[10px]">
+              <i class="fa-solid fa-angles-up text-[8px]"></i><span>+2</span>
+            </div>
+          `;
+        } else if (sq.type === 'TRAP') {
+          badgeHtml = `
+            <div class="flex items-center gap-0.5 leading-none text-rose-600 font-black text-[8px] sm:text-[10px]">
+              <i class="fa-solid fa-triangle-exclamation text-[8px]"></i><span>-2</span>
+            </div>
+          `;
+        } else if (totalSquares <= 32) {
+          badgeHtml = `
+            <span class="text-[9px] opacity-60"><i class="fa-solid fa-book-open"></i></span>
+          `;
+        }
+
+        disc.innerHTML = `
+          <div class="flex items-center justify-center ${numFontClass} leading-none" style="color: var(--stone-num);">
+            ${sq.index + 1}
+          </div>
+          <div class="mt-0.5 pointer-events-none">
+            ${badgeHtml}
+          </div>
+          <div id="tile-slot-${sq.index}" class="absolute -top-3.5 sm:-top-5 left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none z-20"></div>
+        `;
+
+        disc.title = `${dict.squareWord} #${sq.index + 1}: ${sq.type === 'START' ? dict.legend.start : sq.type === 'FINISH' ? dict.legend.finish : sq.type === 'BONUS' ? dict.legend.bonus : sq.type === 'TRAP' ? dict.legend.trap : dict.legend.task}`;
+
+        container.appendChild(disc);
+      });
+
+      renderScholarTokens();
+    }
+
+    function renderScholarTokens() {
+      for (let i = 0; i < totalSquares; i++) {
+        const slot = document.getElementById(`tile-slot-${i}`);
+        if (slot) slot.innerHTML = '';
+      }
+
+      if (!scholars || scholars.length === 0) return;
+
+      const sizeClass = totalSquares > 34 ? 'w-5 h-5 sm:w-6 sm:h-6' : totalSquares > 26 ? 'w-6 h-6 sm:w-7 sm:h-7' : 'w-8 h-8 sm:w-9 sm:h-9';
+
+      scholars.forEach(scholar => {
+        const slot = document.getElementById(`tile-slot-${scholar.position}`);
+        if (!slot) return;
+
+        const isCurrent = scholar.id === currentScholarIdx;
+
+        const token = document.createElement('div');
+        token.id = `scholar-piece-${scholar.id}`;
+        token.className = `relative flex flex-col items-center justify-center cursor-pointer transform transition-all duration-200 select-none -mx-1 sm:-mx-1.5`;
+        token.title = `${scholar.name} (${scholar.pieceName}) - ${scholar.position + 1}`;
+
+        token.innerHTML = `
+          <div class="${sizeClass} rounded-2xl p-0.5 sm:p-1 flex items-center justify-center shadow-2xl transition-transform duration-200 border-2 ${
+            isCurrent ? 'ring-2 ring-amber-400 scale-110 -translate-y-1' : 'hover:scale-105'
+          }" style="background-color: ${scholar.bg}; border-color: ${scholar.color}; box-shadow: 0 6px 14px ${scholar.color}50;">
+            ${scholar.svg}
+          </div>
+          <span class="absolute -bottom-1 text-[8px] font-black px-1.5 py-0.2 rounded-full leading-tight shadow-md text-white border border-white/50" style="background-color: ${scholar.color};">
+            ${scholar.name.slice(0, 4)}
+          </span>
+        `;
+
+        slot.appendChild(token);
+      });
+
+      updateScholarsRosterUI();
+    }
+
+    function updateScholarsRosterUI() {
+      const rosterList = document.getElementById('scholarsRosterList');
+      if (!rosterList) return;
+      rosterList.innerHTML = '';
+
+      if (!scholars || scholars.length === 0) return;
+      const dict = I18N[currentLang] || I18N.pl;
+
+      scholars.forEach(s => {
+        const isCurrent = s.id === currentScholarIdx;
+        const card = document.createElement('div');
+        card.className = `p-2.5 rounded-2xl border transition-all duration-200 flex items-center justify-between ${
+          isCurrent 
+            ? 'bg-amber-400/20 border-amber-400/80 shadow-md font-bold' 
+            : 'bg-black/5 dark:bg-white/5 border-transparent opacity-80'
+        }`;
+
+        const progressPercent = Math.round((s.position / (totalSquares - 1)) * 100);
+
+        card.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl p-1 flex items-center justify-center border-2 flex-shrink-0" style="background-color: ${s.bg}; border-color: ${s.color};">
+              ${s.svg}
+            </div>
+            <div>
+              <div class="text-xs font-bold leading-tight flex items-center gap-1.5">
+                ${s.name}
+                ${isCurrent ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500 text-white font-extrabold">${dict.turnLabel}</span>` : ''}
+              </div>
+              <div class="text-[10px] opacity-70">${s.pieceName} • ${dict.squareWord} ${s.position + 1}/${totalSquares}</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] font-black">${progressPercent}%</span>
+            <div class="w-14 bg-black/10 dark:bg-white/10 rounded-full h-1.5 overflow-hidden mt-1">
+              <div class="h-full bg-emerald-500 rounded-full" style="width: ${progressPercent}%"></div>
+            </div>
+          </div>
+        `;
+
+        rosterList.appendChild(card);
+      });
+
+      const active = scholars[currentScholarIdx];
+      const activeBadge = document.getElementById('activePlayerBadge');
+      if (active && activeBadge) {
+        activeBadge.innerHTML = `
+          <span class="w-8 h-8 rounded-xl p-1 inline-flex items-center justify-center border-2 shadow-sm" style="background-color: ${active.bg}; border-color: ${active.color};">${active.svg}</span>
+          <span style="color: ${active.color};">${active.name}</span>
+        `;
+      }
+    }
+
+    async function triggerDiceRoll() {
+      if (isDiceRolling || isScholarHopping) return;
+
+      const activeScholar = scholars[currentScholarIdx];
+      const spacesRemaining = (totalSquares - 1) - activeScholar.position;
+
+      isDiceRolling = true;
+      activeScholar.turnsCount++;
+
+      const diceCube = document.getElementById('diceCube');
+      const rollBtn = document.getElementById('rollDiceButton');
+      const faceDisplay = document.getElementById('diceFaceDisplay');
+
+      rollBtn.disabled = true;
+      rollBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      diceCube.classList.add('dice-rolling');
+
+      playDiceRattleSound();
+
+      const diceFaces = [
+        '<i class="fa-solid fa-dice-one"></i>',
+        '<i class="fa-solid fa-dice-two"></i>',
+        '<i class="fa-solid fa-dice-three"></i>',
+        '<i class="fa-solid fa-dice-four"></i>',
+        '<i class="fa-solid fa-dice-five"></i>',
+        '<i class="fa-solid fa-dice-six"></i>'
+      ];
+
+      for (let i = 0; i < 8; i++) {
+        faceDisplay.innerHTML = diceFaces[Math.floor(Math.random() * 6)];
+        await delay(70);
+      }
+
+      const rolledVal = Math.floor(Math.random() * 6) + 1;
+      faceDisplay.innerHTML = diceFaces[rolledVal - 1];
+      diceCube.classList.remove('dice-rolling');
+
+      document.getElementById('lastRollNumber').innerText = rolledVal;
+      document.getElementById('lastRollBadge').classList.remove('hidden');
+
+      const dict = I18N[currentLang] || I18N.pl;
+      logChronicleEntry(`<strong>${activeScholar.name}</strong> ${dict.rolledLog.replace('{roll}', `<strong>${rolledVal}</strong>`)}`);
+
+      // EXACT ROLL TO FINISH CATCH
+      if (rolledVal > spacesRemaining) {
+        playOvershotAlertSound();
+        const overshotMsg = dict.overshotToast.replace('{rem}', spacesRemaining);
+        showToastNotification(overshotMsg, '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>');
+        
+        const overshotLogMsg = dict.overshotLog.replace('{name}', activeScholar.name).replace('{rem}', spacesRemaining).replace('{roll}', rolledVal);
+        logChronicleEntry(`<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i> ${overshotLogMsg}`);
+
+        document.getElementById('turnHelperText').innerText = overshotMsg;
+
+        await delay(1600);
+        advanceScholarTurn();
+        isDiceRolling = false;
+        rollBtn.disabled = false;
+        rollBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      isDiceRolling = false;
+      await executeSequentialHopping(activeScholar, rolledVal);
+      rollBtn.disabled = false;
+      rollBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    async function executeSequentialHopping(scholar, steps) {
+      isScholarHopping = true;
+      const initialPos = scholar.position;
+
+      for (let s = 1; s <= steps; s++) {
+        scholar.position += 1;
+        playHopStepSound();
+        renderScholarTokens();
+
+        const pieceElem = document.getElementById(`scholar-piece-${scholar.id}`);
+        if (pieceElem) {
+          pieceElem.classList.remove('piece-hopping');
+          void pieceElem.offsetWidth;
+          pieceElem.classList.add('piece-hopping');
+        }
+
+        await delay(320);
+      }
+
+      isScholarHopping = false;
+      await handleLandingEvent(scholar, initialPos);
+    }
+
+    async function moveScholarBackward(scholar, steps) {
+      const destination = Math.max(0, scholar.position - steps);
+      const diff = scholar.position - destination;
+
+      if (diff === 0) return;
+
+      const dict = I18N[currentLang] || I18N.pl;
+      logChronicleEntry(`<i class="fa-solid fa-arrow-left text-rose-500 mr-1"></i> ${dict.retreatLog.replace('{name}', `<strong>${scholar.name}</strong>`).replace('{count}', diff)}`);
+      for (let s = 0; s < diff; s++) {
+        scholar.position -= 1;
+        playTone(210 - (s * 30), 0.15, 'triangle', 0.12);
+        renderScholarTokens();
+        await delay(250);
+      }
+    }
+
+    async function handleLandingEvent(scholar, previousPosition) {
+      const landedSquare = boardSquaresData[scholar.position];
+      const square = landedSquare;
+      const isFinalThesis = (scholar.position === totalSquares - 1);
+      const previousPos = previousPosition;
+
+      const dict = I18N[currentLang] || I18N.pl;
+      const defaultQ = currentLang === 'pl' ? { q: "Ile wynosi 8 x 7?", a: "56" } : { q: "Solve: 8 x 7 = ?", a: "56" };
+      const randomIdx = Math.floor(Math.random() * activeCurriculumBank.length);
+      const questionItem = activeCurriculumBank[randomIdx] || defaultQ;
+
+      activeQuestionContext = {
+        scholar: scholar,
+        square: square,
+        previousPos: previousPos,
+        question: questionItem,
+        isFinalThesis: isFinalThesis
+      };
+
+      const modal = document.getElementById('questionModal');
+      const tokenSlot = document.getElementById('questionModalPlayerToken');
+      const nameSlot = document.getElementById('questionModalPlayerName');
+      const pieceSlot = document.getElementById('questionModalPlayerPiece');
+      const badgeSlot = document.getElementById('questionModalSquareBadge');
+      const promptSlot = document.getElementById('questionModalPrompt');
+      const answerSlot = document.getElementById('questionModalAnswer');
+      const hintBox = document.getElementById('answerRevealBox');
+      const toggleText = document.getElementById('answerToggleText');
+
+      tokenSlot.style.backgroundColor = scholar.bg;
+      tokenSlot.style.borderColor = scholar.color;
+      tokenSlot.innerHTML = scholar.svg;
+      nameSlot.innerText = dict.trialHeader.replace('{name}', scholar.name);
+      pieceSlot.innerText = scholar.pieceName;
+
+      if (isFinalThesis) {
+        badgeSlot.className = "text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 flex items-center gap-1";
+        badgeSlot.innerHTML = `<i class="fa-solid fa-trophy text-amber-500"></i> ${dict.finalThesisBadge}`;
+      } else if (square.type === 'BONUS') {
+        badgeSlot.className = "text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 flex items-center gap-1";
+        badgeSlot.innerHTML = `<i class="fa-solid fa-angles-up text-emerald-500"></i> ${dict.bonusBadge}`;
+      } else if (square.type === 'TRAP') {
+        badgeSlot.className = "text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-rose-500/20 text-rose-600 dark:text-rose-300 flex items-center gap-1";
+        badgeSlot.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-500"></i> ${dict.trapBadge}`;
+      } else {
+        badgeSlot.className = "text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 flex items-center gap-1";
+        badgeSlot.innerHTML = `<i class="fa-solid fa-book-open"></i> ${dict.squareWord} #${square.index + 1}`;
+      }
+
+      promptSlot.innerText = questionItem.q;
+      answerSlot.innerText = questionItem.a;
+      hintBox.classList.add('hidden');
+      toggleText.innerText = dict.revealKey;
+
+      playTone(490, 0.18, 'sine', 0.12);
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+      }, 10);
+    }
+
+    function toggleAnswerVisibility() {
+      const box = document.getElementById('answerRevealBox');
+      const label = document.getElementById('answerToggleText');
+      const dict = I18N[currentLang] || I18N.pl;
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        label.innerText = dict.hideKey;
+      } else {
+        box.classList.add('hidden');
+        label.innerText = dict.revealKey;
+      }
+    }
+
+    async function evaluateQuestionAnswer(isCorrect) {
+      const modal = document.getElementById('questionModal');
+      modal.classList.add('opacity-0');
+      modal.querySelector('div').classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 260);
+
+      const ctx = activeQuestionContext;
+      if (!ctx) return;
+
+      const scholar = ctx.scholar;
+      const square = ctx.square;
+      const dict = I18N[currentLang] || I18N.pl;
+
+      if (isCorrect) {
+        scholar.correctAnswers++;
+        playSuccessChime();
+        showToastNotification(dict.correctToast.replace('{name}', scholar.name), '<i class="fa-solid fa-circle-check text-emerald-400"></i>');
+        logChronicleEntry(`<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> <strong>${scholar.name}</strong> ${dict.correctLog}`);
+
+        if (ctx.isFinalThesis) {
+          triggerGrandVictory(scholar);
+          return;
+        }
+
+        // Bonus Leap Forward +2
+        if (square.type === 'BONUS') {
+          playBonusFanfare();
+          showToastNotification(dict.bonusToast.replace('{name}', scholar.name), '<i class="fa-solid fa-angles-up text-amber-400"></i>');
+          logChronicleEntry(`<i class="fa-solid fa-angles-up text-amber-500 mr-1"></i> ${dict.bonusLog.replace('{name}', `<strong>${scholar.name}</strong>`)}`);
+          await delay(450);
+
+          const left = (totalSquares - 1) - scholar.position;
+          const boost = Math.min(2, left);
+          if (boost > 0) {
+            await executeSequentialHopping(scholar, boost);
+            return;
+          }
+        }
+
+      } else {
+        scholar.wrongAnswers++;
+        playFailureBuzz();
+        logChronicleEntry(`<i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i> <strong>${scholar.name}</strong> ${dict.incorrectLog}`);
+
+        if (ctx.isFinalThesis) {
+          showToastNotification(dict.thesisRejectedToast, '<i class="fa-solid fa-circle-xmark text-rose-400"></i>');
+          await moveScholarBackward(scholar, 2);
+        } else if (square.type === 'TRAP') {
+          showToastNotification(dict.trapToast, '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i>');
+          await moveScholarBackward(scholar, 2);
+        } else {
+          showToastNotification(dict.incorrectToast.replace('{name}', scholar.name), '<i class="fa-solid fa-arrow-left text-rose-400"></i>');
+          await moveScholarBackward(scholar, 1);
+        }
+      }
+
+      advanceScholarTurn();
+    }
+
+    function advanceScholarTurn() {
+      currentScholarIdx = (currentScholarIdx + 1) % numberOfScholars;
+      const dict = I18N[currentLang] || I18N.pl;
+      if (currentScholarIdx === 0) {
+        currentRound++;
+        document.getElementById('roundCounterBadge').innerText = `${dict.roundPrefix}${currentRound}`;
+      }
+
+      renderScholarTokens();
+      document.getElementById('turnHelperText').innerText = dict.turnPrompt.replace('{name}', scholars[currentScholarIdx].name);
+    }
+
+    function triggerGrandVictory(winner) {
+      playSuccessChime();
+      setTimeout(playBonusFanfare, 400);
+
+      const dict = I18N[currentLang] || I18N.pl;
+      document.getElementById('victoryScholarBanner').innerText = dict.victoryTriumphs.replace('{name}', winner.name);
+      
+      const statsBox = document.getElementById('victoryStatsContainer');
+      statsBox.innerHTML = `
+        <div class="p-2 rounded-xl bg-black/5 dark:bg-white/5">
+          <div class="text-[10px] opacity-70">${dict.victoryRounds}</div>
+          <div class="text-sm font-black">${currentRound}</div>
+        </div>
+        <div class="p-2 rounded-xl bg-black/5 dark:bg-white/5">
+          <div class="text-[10px] opacity-70">${dict.victoryCorrect}</div>
+          <div class="text-sm font-black text-emerald-500">${winner.correctAnswers}</div>
+        </div>
+      `;
+
+      const vModal = document.getElementById('victoryModal');
+      vModal.classList.remove('hidden');
+      setTimeout(() => {
+        vModal.classList.remove('opacity-0');
+        vModal.querySelector('div').classList.remove('scale-95');
+      }, 10);
+
+      try {
+        confetti({
+          particleCount: 140,
+          spread: 90,
+          origin: { y: 0.6 }
+        });
+        setTimeout(() => {
+          confetti({ particleCount: 90, angle: 60, spread: 60, origin: { x: 0 } });
+          confetti({ particleCount: 90, angle: 120, spread: 60, origin: { x: 1 } });
+        }, 400);
+      } catch (e) {}
+
+      logChronicleEntry(`<i class="fa-solid fa-trophy text-amber-400 mr-1"></i> ${dict.wonGameLog.replace('{name}', `<strong>${winner.name}</strong>`)}`);
+    }
+
+    function restartGameMatch() {
+      const vModal = document.getElementById('victoryModal');
+      vModal.classList.add('opacity-0');
+      setTimeout(() => vModal.classList.add('hidden'), 250);
+
+      initializeScholars();
+      generateBoardSquares();
+      const dict = I18N[currentLang] || I18N.pl;
+      logChronicleEntry(dict.newMatchLog);
+    }
+
+    function switchTheme(themeKey, showToast = true) {
+      const themeConfig = THEME_DEFINITIONS[themeKey];
+      if (!themeConfig) return;
+
+      activeThemeKey = themeKey;
+      const dict = I18N[currentLang] || I18N.pl;
+
+      document.body.className = `theme-${themeKey} min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-500 font-sans select-none`;
+
+      const bgImgLayer = document.getElementById('themeBgImage');
+      const atmosphereLayer = document.getElementById('themeAtmosphereOverlay');
+
+      if (bgImgLayer) bgImgLayer.style.backgroundImage = `url('${themeConfig.bgImage}')`;
+      if (atmosphereLayer) atmosphereLayer.style.background = themeConfig.overlayGradient;
+
+      if (atmosphereLayer) {
+        if (themeKey === 'cyberpunk') {
+          atmosphereLayer.classList.add('cyber-scanlines');
+        } else {
+          atmosphereLayer.classList.remove('cyber-scanlines');
+        }
+      }
+
+      const trackTitle = document.getElementById('themeTrackTitle');
+      if (trackTitle) trackTitle.innerText = dict.themeTitles[themeKey] || themeConfig.title;
+
+      document.querySelectorAll('.theme-select-btn').forEach(btn => {
+        if (btn.dataset.theme === themeKey) {
+          btn.className = "theme-select-btn px-2.5 py-1.5 text-xs font-bold rounded-xl bg-amber-400 text-slate-900 shadow-md transition flex items-center gap-1.5";
+        } else {
+          btn.className = "theme-select-btn px-2.5 py-1.5 text-xs font-bold rounded-xl opacity-75 hover:opacity-100 transition flex items-center gap-1.5";
+        }
+      });
+
+      // Synchronize Player Pieces with Active Theme's bespoke SVGs
+      if (scholars && scholars.length > 0) {
+        scholars.forEach((s, idx) => {
+          const piece = themeConfig.pieces[idx % themeConfig.pieces.length];
+          s.svg = piece.svg;
+          s.pieceName = piece.name;
+          s.color = piece.color;
+          s.bg = piece.bg;
+        });
+
+        renderScholarTokens();
+      }
+
+      if (showToast) {
+        const themeDisplayName = dict.themeNames[themeKey] || themeConfig.name;
+        showToastNotification(dict.themeSwitchedToast.replace('{theme}', themeDisplayName), '<i class="fa-solid fa-palette text-amber-400"></i>');
+      }
+
+      // Auto-sync background music with theme if enabled
+      const autoSyncCheck = document.getElementById('autoSyncThemeMusic');
+      if (autoSyncCheck && autoSyncCheck.checked && MusicEngine.activeTrack !== 'custom' && MusicEngine.activeTrack !== 'off') {
+        MusicEngine.setTrack(themeKey);
+      }
+
+      requestAnimationFrame(renderBoardTrack);
+    }
+
+    function toggleStandingsDrawer() {
+      const drawer = document.getElementById('standingsDrawer');
+      const chev = document.getElementById('standingsChevron');
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        setTimeout(() => {
+          drawer.classList.remove('opacity-0', 'translate-y-3');
+          chev.classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }, 10);
+      } else {
+        drawer.classList.add('opacity-0', 'translate-y-3');
+        chev.classList.replace('fa-chevron-down', 'fa-chevron-up');
+        setTimeout(() => drawer.classList.add('hidden'), 250);
+      }
+    }
+
+    function toggleChronicleDrawer() {
+      const drawer = document.getElementById('chronicleDrawer');
+      const chev = document.getElementById('chronicleChevron');
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        setTimeout(() => {
+          drawer.classList.remove('opacity-0', 'translate-y-3');
+          chev.classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }, 10);
+      } else {
+        drawer.classList.add('opacity-0', 'translate-y-3');
+        chev.classList.replace('fa-chevron-down', 'fa-chevron-up');
+        setTimeout(() => drawer.classList.add('hidden'), 250);
+      }
+    }
+
+    function logChronicleEntry(htmlMsg) {
+      const feed = document.getElementById('chronicleFeed');
+      const ticker = document.getElementById('chronicleLatestTicker');
+      if (feed) {
+        const item = document.createElement('div');
+        item.className = "p-2 rounded-xl bg-black/5 dark:bg-white/5 font-medium text-[11px] leading-tight border border-black/5";
+        item.innerHTML = htmlMsg;
+        feed.prepend(item);
+      }
+      if (ticker) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = htmlMsg;
+        ticker.innerText = tmp.textContent || tmp.innerText || "Nowe wydarzenie";
+      }
+    }
+
+    function showToastNotification(msg, iconHtml = '<i class="fa-solid fa-bell"></i>') {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastMessageText');
+      const icon = document.getElementById('toastIcon');
+      if (!toast) return;
+
+      text.innerText = msg;
+      icon.innerHTML = iconHtml;
+
+      toast.classList.remove('opacity-0', 'translate-y-20');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-20');
+      }, 3000);
+    }
+
+    function openConfigModal() {
+      renderConfigScholarInputs();
+      selectPlayerCount(numberOfScholars);
+      const slider = document.getElementById('squareCountSlider');
+      if (slider) {
+        slider.value = totalSquares;
+        handleSliderChange(totalSquares);
+      }
+      const modal = document.getElementById('configModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeConfigModal() {
+      const modal = document.getElementById('configModal');
+      modal.classList.add('opacity-0');
+      modal.querySelector('div').classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 260);
+    }
+
+    function selectPlayerCount(num) {
+      numberOfScholars = num;
+      document.querySelectorAll('.player-count-btn').forEach(btn => {
+        if (parseInt(btn.dataset.players, 10) === num) {
+          btn.className = "player-count-btn py-2 text-xs sm:text-sm font-black rounded-xl bg-indigo-600 text-white shadow-md border-transparent transition";
+        } else {
+          btn.className = "player-count-btn py-2 text-xs sm:text-sm font-black rounded-xl border border-black/10 dark:border-white/10 opacity-70 hover:opacity-100 transition";
+        }
+      });
+      renderConfigScholarInputs();
+    }
+
+    function renderConfigScholarInputs() {
+      const container = document.getElementById('scholarNamesList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const dict = I18N[currentLang] || I18N.pl;
+      const defaultNamesPL = ["Olek", "Kasia", "Janek", "Zosia"];
+      const defaultNamesEN = ["Alex", "Morgan", "Jordan", "Taylor"];
+      const defaultNames = currentLang === 'pl' ? defaultNamesPL : defaultNamesEN;
+
+      for (let i = 0; i < numberOfScholars; i++) {
+        const row = document.createElement('div');
+        row.className = "flex items-center gap-2";
+        row.innerHTML = `
+          <span class="text-xs font-bold w-16 opacity-75">${dict.playerPrefix} ${i + 1}:</span>
+          <input type="text" id="scholarNameInput_${i}" value="${scholars[i]?.name || defaultNames[i]}" class="flex-1 p-2 rounded-xl text-xs font-semibold border border-black/20 dark:border-white/20 bg-white/70 dark:bg-black/30 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="${dict.playerPrefix}" />
+        `;
+        container.appendChild(row);
+      }
+    }
+
+    function handleSliderChange(val) {
+      const dict = I18N[currentLang] || I18N.pl;
+      const num = parseInt(val, 10);
+      const display = document.getElementById('sliderSquareCountDisplay');
+      if (display) display.innerText = `${num} ${dict.squaresUnit}`;
+
+      document.querySelectorAll('.square-preset-btn').forEach(btn => {
+        const pVal = parseInt(btn.dataset.squares, 10);
+        if (pVal === num) {
+          btn.className = "square-preset-btn py-1.5 text-xs font-bold rounded-xl border border-transparent bg-indigo-600 text-white shadow-sm transition";
+        } else {
+          btn.className = "square-preset-btn py-1.5 text-xs font-bold rounded-xl border border-black/10 dark:border-white/10 opacity-75 hover:opacity-100 transition";
+        }
+      });
+    }
+
+    function setSquarePreset(num) {
+      const slider = document.getElementById('squareCountSlider');
+      if (slider) {
+        slider.value = num;
+        handleSliderChange(num);
+      }
+    }
+
+    function applyConfigurationSettings() {
+      const slider = document.getElementById('squareCountSlider');
+      if (slider) {
+        totalSquares = parseInt(slider.value, 10);
+      }
+
+      initializeScholars();
+      scholars.forEach((s, idx) => {
+        const input = document.getElementById(`scholarNameInput_${idx}`);
+        if (input && input.value.trim()) {
+          s.name = input.value.trim();
+        }
+      });
+
+      document.getElementById('scholarsCountNum').innerText = numberOfScholars;
+      closeConfigModal();
+      generateBoardSquares();
+      const dict = I18N[currentLang] || I18N.pl;
+      showToastNotification(
+        currentLang === 'pl' 
+          ? `Zaktualizowano: ${numberOfScholars} graczy, ${totalSquares} pól`
+          : `Match updated: ${numberOfScholars} scholars, ${totalSquares} squares`,
+        '<i class="fa-solid fa-sliders text-indigo-400"></i>'
+      );
+    }
+
+    function openRulesModal() {
+      const modal = document.getElementById('rulesModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeRulesModal() {
+      const modal = document.getElementById('rulesModal');
+      modal.classList.add('opacity-0');
+      modal.querySelector('div').classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 260);
+    }
+
+    function openQuestionModalManager() {
+      const area = document.getElementById('curriculumImportArea');
+      if (area) {
+        area.value = activeCurriculumBank.map(item => `${item.q} | ${item.a}`).join('\n');
+      }
+      const countBadge = document.getElementById('curriculumCountBadge');
+      const dict = I18N[currentLang] || I18N.pl;
+      if (countBadge) countBadge.innerText = `${activeCurriculumBank.length} ${dict.questionsLoaded}`;
+
+      const modal = document.getElementById('curriculumModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeQuestionModalManager() {
+      const modal = document.getElementById('curriculumModal');
+      modal.classList.add('opacity-0');
+      modal.querySelector('div').classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 260);
+    }
+
+    function loadCurriculumPreset(key) {
+      const presets = currentLang === 'pl' ? CURRICULUM_PRESETS_PL : CURRICULUM_PRESETS;
+      if (presets[key]) {
+        activeCurriculumBank = [...presets[key]];
+        const area = document.getElementById('curriculumImportArea');
+        if (area) {
+          area.value = activeCurriculumBank.map(item => `${item.q} | ${item.a}`).join('\n');
+        }
+        const countBadge = document.getElementById('curriculumCountBadge');
+        const dict = I18N[currentLang] || I18N.pl;
+        if (countBadge) countBadge.innerText = `${activeCurriculumBank.length} ${dict.questionsLoaded} (${key.toUpperCase()})`;
+        showToastNotification(`${key.toUpperCase()}: ${dict.btnApplyCurr}`, '<i class="fa-solid fa-book-bookmark text-amber-400"></i>');
+      }
+    }
+
+    function applyImportedCurriculum() {
+      const text = document.getElementById('curriculumImportArea').value.trim();
+      const lines = text.split('\n');
+      const parsed = [];
+
+      lines.forEach(l => {
+        const parts = l.split('|');
+        if (parts.length >= 2) {
+          const q = parts[0].trim();
+          const a = parts.slice(1).join('|').trim();
+          if (q && a) {
+            parsed.push({ q, a });
+          }
+        }
+      });
+
+      const dict = I18N[currentLang] || I18N.pl;
+      if (parsed.length > 0) {
+        activeCurriculumBank = parsed;
+        closeQuestionModalManager();
+        showToastNotification(`${parsed.length} ${dict.questionsLoaded}!`, '<i class="fa-solid fa-check text-emerald-400"></i>');
+      } else {
+        showToastNotification(currentLang === 'pl' ? "Brak pytań. Format: Pytanie? | Odpowiedź" : "No valid questions detected. Keep format: Question? | Answer", '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i>');
+      }
+    }
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        renderBoardTrack();
+      }, 150);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      currentLang = 'pl';
+      initializeScholars();
+      generateBoardSquares();
+      switchTheme('kawaii', false);
+      setLanguage('pl');
+      MusicEngine.init();
+
+      // Start looping background music on first user interaction
+      const startMusicOnFirstTouch = () => {
+        MusicEngine.play();
+        window.removeEventListener('click', startMusicOnFirstTouch);
+        window.removeEventListener('keydown', startMusicOnFirstTouch);
+      };
+      window.addEventListener('click', startMusicOnFirstTouch, { once: true });
+      window.addEventListener('keydown', startMusicOnFirstTouch, { once: true });
+    });
+  </script>
+</body>
+</html>
