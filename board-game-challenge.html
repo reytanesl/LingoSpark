@@ -329,6 +329,31 @@
     .eq-bar-1 { animation: eqBarPulse 0.75s ease-in-out infinite; }
     .eq-bar-2 { animation: eqBarPulse 0.5s ease-in-out infinite 0.15s; }
     .eq-bar-3 { animation: eqBarPulse 0.9s ease-in-out infinite 0.3s; }
+
+    /* Play focus / fullscreen: hide settings bar, keep board + bottom controls */
+    body.board-play-focus #appTopBar {
+      display: none !important;
+    }
+    body.board-play-focus main {
+      max-width: none;
+      padding-top: 0.75rem;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    body.board-play-focus .board-stage-wrapper {
+      min-height: min(72vh, 820px);
+    }
+    #exitPlayFocusBtn {
+      display: none;
+      position: fixed;
+      top: 0.75rem;
+      right: 0.75rem;
+      z-index: 45;
+      pointer-events: auto;
+    }
+    body.board-play-focus #exitPlayFocusBtn {
+      display: inline-flex;
+    }
   </style>
 </head>
 
@@ -340,7 +365,7 @@
   <div id="themeAtmosphereOverlay"></div>
 
   <!-- Top Edge App Navigation Bar: Theme switchers & game configuration tools -->
-  <header class="sticky top-0 z-30 w-full px-3 sm:px-6 py-2.5 border-b glass-surface flex flex-wrap items-center justify-between gap-2.5 shadow-md">
+  <header id="appTopBar" class="sticky top-0 z-30 w-full px-3 sm:px-6 py-2.5 border-b glass-surface flex flex-wrap items-center justify-between gap-2.5 shadow-md">
     <div class="flex items-center space-x-2.5">
       <a href="index.html" class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-lg text-sm font-black hover:brightness-110 transition" title="LingoSpark" aria-label="Back to LingoSpark">
         <i class="fa-solid fa-arrow-left"></i>
@@ -551,11 +576,20 @@
       <button onclick="toggleAudio()" id="audioToggleBtn" title="Dźwięki efektów" class="w-8 h-8 rounded-xl bg-black/10 hover:bg-black/20 flex items-center justify-center text-xs transition border border-white/20">
         <i class="fa-solid fa-volume-high"></i>
       </button>
+      <button type="button" onclick="toggleBoardPlayFocus()" id="enterPlayFocusBtn" title="Pełny ekran — tylko plansza" class="px-2.5 py-1.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white text-xs font-bold transition flex items-center gap-1.5 border border-white/20 shadow-sm">
+        <i class="fa-solid fa-expand"></i>
+        <span class="hidden md:inline" id="enterPlayFocusBtnText">Pełny ekran</span>
+      </button>
       <button onclick="openRulesModal()" title="Zasady gry" class="w-8 h-8 rounded-xl bg-black/10 hover:bg-black/20 flex items-center justify-center text-xs transition border border-white/20">
         <i class="fa-solid fa-circle-question"></i>
       </button>
     </div>
   </header>
+
+  <button type="button" id="exitPlayFocusBtn" onclick="exitBoardPlayFocus()" class="glass-surface px-3 py-2 rounded-2xl edge-dock-card border items-center gap-2 text-xs font-bold shadow-xl hover:brightness-105 active:scale-95 transition" title="Wyjdź z pełnego ekranu">
+    <i class="fa-solid fa-compress"></i>
+    <span id="exitPlayFocusBtnText">Ustawienia</span>
+  </button>
 
   <!-- MAIN CENTERPIECE: The Educational Board spans full width with dedicated prominence -->
   <main class="relative z-10 flex-1 w-full max-w-7xl mx-auto p-3 sm:p-6 pb-36 sm:pb-40 flex flex-col justify-center">
@@ -1651,6 +1685,10 @@
         autoSyncMusic: "Dopasuj do motywu",
         playWord: "Graj",
         pauseWord: "Pauza",
+        fullscreenBtn: "Pełny ekran",
+        fullscreenExitBtn: "Ustawienia",
+        fullscreenEnterTitle: "Pełny ekran — tylko plansza i sterowanie",
+        fullscreenExitTitle: "Wyjdź z pełnego ekranu (pokaż pasek ustawień)",
         trackTitles: {
           kawaii: "Kawaii Pastel Lofi",
           cyberpunk: "Cyberpunk Synthwave",
@@ -1755,6 +1793,10 @@
         autoSyncMusic: "Auto-sync with theme",
         playWord: "Play",
         pauseWord: "Pause",
+        fullscreenBtn: "Full screen",
+        fullscreenExitBtn: "Settings",
+        fullscreenEnterTitle: "Full screen — board and controls only",
+        fullscreenExitTitle: "Exit full screen (show settings bar)",
         trackTitles: {
           kawaii: "Kawaii Pastel Lofi",
           cyberpunk: "Cyberpunk Synthwave",
@@ -2191,6 +2233,14 @@
       if (setupBtn) setupBtn.innerText = dict.setupBtn;
       const tasksBtn = document.getElementById('tasksBtnText');
       if (tasksBtn) tasksBtn.innerText = dict.tasksBtn;
+      const enterFsBtn = document.getElementById('enterPlayFocusBtnText');
+      if (enterFsBtn) enterFsBtn.innerText = dict.fullscreenBtn;
+      const enterFs = document.getElementById('enterPlayFocusBtn');
+      if (enterFs) enterFs.title = dict.fullscreenEnterTitle;
+      const exitFsBtn = document.getElementById('exitPlayFocusBtnText');
+      if (exitFsBtn) exitFsBtn.innerText = dict.fullscreenExitBtn;
+      const exitFs = document.getElementById('exitPlayFocusBtn');
+      if (exitFs) exitFs.title = dict.fullscreenExitTitle;
       const themeTrackTitle = document.getElementById('themeTrackTitle');
       if (themeTrackTitle) themeTrackTitle.innerText = dict.themeTitles[activeThemeKey];
 
@@ -3107,6 +3157,58 @@
       resizeTimer = setTimeout(() => {
         renderBoardTrack();
       }, 150);
+    });
+
+    function isBrowserFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement);
+    }
+
+    function applyBoardPlayFocus(on) {
+      document.body.classList.toggle('board-play-focus', !!on);
+      setTimeout(() => {
+        try { renderBoardTrack(); } catch (e) { /* ignore */ }
+      }, 80);
+    }
+
+    async function enterBoardPlayFocus() {
+      applyBoardPlayFocus(true);
+      const root = document.documentElement;
+      try {
+        if (!isBrowserFullscreen()) {
+          if (root.requestFullscreen) await root.requestFullscreen();
+          else if (root.webkitRequestFullscreen) root.webkitRequestFullscreen();
+        }
+      } catch (e) {
+        /* Browser may block FS without gesture — play-focus CSS still applies */
+      }
+    }
+
+    async function exitBoardPlayFocus() {
+      applyBoardPlayFocus(false);
+      try {
+        if (isBrowserFullscreen()) {
+          if (document.exitFullscreen) await document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    function toggleBoardPlayFocus() {
+      if (document.body.classList.contains('board-play-focus')) exitBoardPlayFocus();
+      else enterBoardPlayFocus();
+    }
+
+    function syncBoardPlayFocusFromFs() {
+      if (isBrowserFullscreen()) applyBoardPlayFocus(true);
+      else applyBoardPlayFocus(false);
+    }
+
+    document.addEventListener('fullscreenchange', syncBoardPlayFocusFromFs);
+    document.addEventListener('webkitfullscreenchange', syncBoardPlayFocusFromFs);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.body.classList.contains('board-play-focus') && !isBrowserFullscreen()) {
+        exitBoardPlayFocus();
+      }
     });
 
     window.addEventListener('DOMContentLoaded', () => {
