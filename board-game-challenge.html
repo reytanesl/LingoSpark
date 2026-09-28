@@ -849,10 +849,11 @@
       </div>
 
       <div class="flex-1 flex flex-col my-2">
-        <label class="text-xs font-bold opacity-80 mb-1">
-          Import Tasks (1 per line formatted as <code class="font-mono bg-black/10 dark:bg-white/10 px-1 rounded">Question? | Answer</code>):
+        <label id="curriculumImportLabel" class="text-xs font-bold opacity-80 mb-1">
+          Import tasks (1 per line). Any prompt form is fine — questions, gap-fills, translate, commands:
+          <code class="font-mono bg-black/10 dark:bg-white/10 px-1 rounded">Prompt | Answer</code>
         </label>
-        <textarea id="curriculumImportArea" class="w-full flex-1 min-h-[160px] p-3 text-xs font-mono rounded-2xl border border-black/20 dark:border-white/20 bg-white/70 dark:bg-black/40 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none leading-relaxed" placeholder="What is the speed of light? | 300,000 km/s&#10;What year was the Magna Carta signed? | 1215"></textarea>
+        <textarea id="curriculumImportArea" class="w-full flex-1 min-h-[160px] p-3 text-xs font-mono rounded-2xl border border-black/20 dark:border-white/20 bg-white/70 dark:bg-black/40 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none leading-relaxed" placeholder="What is the capital of Poland? | Warsaw&#10;Complete: She ___ to school every day. | goes&#10;Translate into English: Lubię jabłka. | I like apples.&#10;Name three colours. | red, blue, green"></textarea>
       </div>
 
       <div class="flex items-center justify-between pt-3 border-t border-black/10 dark:border-white/10">
@@ -1672,7 +1673,9 @@
         btnUnderstood: "Zrozumiałem!",
         curriculumTitle: "Kreator i Baza Zadań",
         curriculumPresetsLabel: "Pakiety pytań:",
-        importTasksLabel: "Wklej zadania (1 na wiersz: <code class=\"font-mono bg-black/10 dark:bg-white/10 px-1 rounded\">Pytanie? | Odpowiedź</code>):",
+        importTasksLabel: "Wklej zadania (1 na wiersz). Dozwolona dowolna forma — pytania, luki, tłumaczenia, polecenia: <code class=\"font-mono bg-black/10 dark:bg-white/10 px-1 rounded\">Treść | Odpowiedź</code>",
+        importTasksPlaceholder: "Jaka jest stolica Polski? | Warszawa\nUzupełnij: She ___ to school every day. | goes\nPrzetłumacz na angielski: Lubię jabłka. | I like apples.\nPodaj trzy kolory. | red, blue, green",
+        importTasksEmpty: "Brak zadań. Użyj formatu: Treść | Odpowiedź (lub tab / → / —). Samo polecenie też jest OK.",
         questionsLoaded: "pytań w bazie",
         btnApplyCurr: "Zastosuj Program",
         exactRollReminder: "Wymagany dokładny rzut do Mety",
@@ -1780,7 +1783,9 @@
         btnUnderstood: "Understood!",
         curriculumTitle: "Curriculum & Task Importer",
         curriculumPresetsLabel: "Curriculum Presets:",
-        importTasksLabel: "Import Tasks (1 per line formatted as <code class=\"font-mono bg-black/10 dark:bg-white/10 px-1 rounded\">Question? | Answer</code>):",
+        importTasksLabel: "Import tasks (1 per line). Any prompt form is fine — questions, gap-fills, translate, commands: <code class=\"font-mono bg-black/10 dark:bg-white/10 px-1 rounded\">Prompt | Answer</code>",
+        importTasksPlaceholder: "What is the capital of Poland? | Warsaw\nComplete: She ___ to school every day. | goes\nTranslate into English: Lubię jabłka. | I like apples.\nName three colours. | red, blue, green",
+        importTasksEmpty: "No tasks found. Use: Prompt | Answer (or tab / → / —). Prompt-only lines are OK too.",
         questionsLoaded: "questions loaded",
         btnApplyCurr: "Apply Curriculum",
         exactRollReminder: "Exact roll required for Finish",
@@ -2285,6 +2290,15 @@
       if (turnHelper && scholars[currentScholarIdx]) {
         turnHelper.innerText = dict.turnPrompt.replace('{name}', scholars[currentScholarIdx].name);
       }
+
+      const curriculumImportLabel = document.getElementById('curriculumImportLabel');
+      if (curriculumImportLabel && dict.importTasksLabel) {
+        curriculumImportLabel.innerHTML = dict.importTasksLabel;
+      }
+      const curriculumImportArea = document.getElementById('curriculumImportArea');
+      if (curriculumImportArea && dict.importTasksPlaceholder) {
+        curriculumImportArea.placeholder = dict.importTasksPlaceholder;
+      }
     }
 
     function initializeScholars() {
@@ -2690,7 +2704,10 @@
       }
 
       promptSlot.innerText = questionItem.q;
-      answerSlot.innerText = questionItem.a;
+      const ans = (questionItem.a || '').trim();
+      answerSlot.innerText = (!ans || ans === '—')
+        ? (currentLang === 'pl' ? 'Otwarte — nauczyciel ocenia' : 'Open — teacher decides')
+        : ans;
       hintBox.classList.add('hidden');
       toggleText.innerText = dict.revealKey;
 
@@ -3125,20 +3142,46 @@
       }
     }
 
+    function parseCurriculumLine(line) {
+      const raw = String(line || '').trim();
+      if (!raw || raw.startsWith('#') || raw.startsWith('//')) return null;
+
+      // Prefer explicit separators (pipe, tab, arrow, em/en dash pairs)
+      const sepMatch = raw.match(/^(.+?)\s*(?:\||\t|=>|->|→|—|–|::)\s*(.+)$/);
+      if (sepMatch) {
+        const q = sepMatch[1].trim();
+        const a = sepMatch[2].trim();
+        if (q) return { q, a: a || '—' };
+      }
+
+      // "Prompt - Answer" only when both sides look substantive (avoid breaking hyphenated words)
+      const dashMatch = raw.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+      if (dashMatch) {
+        const q = dashMatch[1].trim();
+        const a = dashMatch[2].trim();
+        if (q && a && q.length >= 2 && a.length >= 1) return { q, a };
+      }
+
+      // Prompt-only: open tasks / commands / any question form without a key
+      if (raw.length >= 2) {
+        return { q: raw, a: '—' };
+      }
+      return null;
+    }
+
     function applyImportedCurriculum() {
       const text = document.getElementById('curriculumImportArea').value.trim();
-      const lines = text.split('\n');
+      const lines = text.split(/\r?\n/);
       const parsed = [];
+      const seen = new Set();
 
-      lines.forEach(l => {
-        const parts = l.split('|');
-        if (parts.length >= 2) {
-          const q = parts[0].trim();
-          const a = parts.slice(1).join('|').trim();
-          if (q && a) {
-            parsed.push({ q, a });
-          }
-        }
+      lines.forEach((l) => {
+        const item = parseCurriculumLine(l);
+        if (!item) return;
+        const key = item.q.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        parsed.push(item);
       });
 
       const dict = I18N[currentLang] || I18N.pl;
@@ -3147,7 +3190,9 @@
         closeQuestionModalManager();
         showToastNotification(`${parsed.length} ${dict.questionsLoaded}!`, '<i class="fa-solid fa-check text-emerald-400"></i>');
       } else {
-        showToastNotification(currentLang === 'pl' ? "Brak pytań. Format: Pytanie? | Odpowiedź" : "No valid questions detected. Keep format: Question? | Answer", '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i>');
+        showToastNotification(dict.importTasksEmpty || (currentLang === 'pl'
+          ? 'Brak zadań. Użyj formatu: Treść | Odpowiedź'
+          : 'No tasks found. Use: Prompt | Answer'), '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i>');
       }
     }
 

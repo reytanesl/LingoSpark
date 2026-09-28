@@ -972,6 +972,19 @@ Assess using official Matura rozszerzona writing criteria (total 13 points):
 3) Zakres środków językowych / Range (0–3)
 4) Poprawność środków językowych / Accuracy (0–3)
 
+CONCISENESS (required coaching — does NOT change the 13-point Matura total):
+Also review the essay against these Tight Write / conciseness rules and give concrete feedback with examples from THEIR text when possible:
+1) Eliminate redundancy (e.g. future plans → plans)
+2) Use strong verbs (e.g. conduct an investigation → investigate)
+3) Prefer active voice
+4) Cut fillers (very, really, in order to, the fact that)
+5) Shorten phrases (at this point in time → now)
+6) Avoid nominalizations (turn noun phrases back into verbs)
+7) Simplify long, complex sentence structure
+- Return 3–6 bullets in "conciseness" naming the rule(s) and pointing to their wording. Praise clear, tight writing when they already follow a rule.
+- Weave 1–2 of the most useful conciseness tips into overall "improvements" and into Range and/or Accuracy "improvements" when relevant.
+- Suggest HOW to tighten (name the strategy + short before→after hint). Do NOT rewrite whole paragraphs or supply a model essay.
+
 VOICE AND FORMAT (critical):
 - Address the student directly in the second person ("you", "your"). Never write about "the student" or "the candidate" in the third person.
 - Put EVERY comment as short bullet points (arrays of strings). No long paragraphs.
@@ -1002,8 +1015,9 @@ Return ONLY valid JSON (no markdown fences):
     { "id": "range", "name": "Range (Zakres środków językowych)", "score": 0, "max": 3, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] },
     { "id": "accuracy", "name": "Accuracy (Poprawność środków językowych)", "score": 0, "max": 3, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] }
   ],
+  "conciseness": ["3–6 bullets on redundancy / strong verbs / active voice / fillers / shortening phrases / nominalizations / simpler structure — with examples from your essay"],
   "strengths": ["3–5 overall strengths, addressed to you"],
-  "improvements": ["3–5 prioritised next steps for you to fix yourself — tips, not a rewritten essay"]
+  "improvements": ["3–5 prioritised next steps for you to fix yourself — tips, not a rewritten essay; include at least one conciseness tip when the text is wordy"]
 }`;
 
         let agent;

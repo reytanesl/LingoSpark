@@ -2352,7 +2352,7 @@
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives. Signed-in players collect each informal → formal pair in a Vocab Upgrade set.</p></div>
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
                 <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
-                <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments. Premium includes one assessment every 4 hours; unlock 4 more for 5 zł / $1 when you need them sooner.</p></div>
+                <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments, and also coaches conciseness (cut redundancy, strong verbs, active voice, fillers, shorter phrases, avoid nominalizations, simplify structure). Premium includes one assessment every 4 hours; unlock 4 more for 5 zł / $1 when you need them sooner.</p></div>
             </div>
         </div>
     </div>
@@ -3045,7 +3045,7 @@
             <div class="game-header">
                 <h2>Matura Writing Assessment <span class="live-badge">Cursor AI</span></h2>
             </div>
-            <p class="game-desc">Upload a photo or PDF of a handwritten or printed essay, paste the exam task, and receive detailed Matura rozszerzona criteria feedback.</p>
+            <p class="game-desc">Upload a photo or PDF of a handwritten or printed essay, paste the exam task, and receive detailed Matura rozszerzona criteria feedback — including conciseness coaching (redundancy, strong verbs, active voice, fillers, shorter phrases, nominalizations, simpler structure).</p>
 
             <div id="matura-loading" class="loading-spinner" style="display:none;"></div>
             <div id="matura-content">
@@ -3103,6 +3103,14 @@
                         <ul class="matura-bullets" id="matura-overall"></ul>
                     </div>
                     <div id="matura-criteria-list"></div>
+                    <div id="matura-conciseness-wrap" class="matura-criteria-card" style="display:none;margin-top:0.85rem;">
+                        <div class="crit-head">
+                            <strong><i class="fa-solid fa-scissors"></i> Conciseness</strong>
+                            <span class="crit-score" style="font-size:0.75rem;font-weight:600;color:var(--text-muted);">coaching</span>
+                        </div>
+                        <p style="margin:0.35rem 0 0.55rem;font-size:0.82rem;color:var(--text-muted);">Feedback on redundancy, strong verbs, active voice, fillers, shorter phrases, nominalizations, and simpler sentence structure. Does not change your Matura total.</p>
+                        <ul class="matura-bullets" id="matura-conciseness"></ul>
+                    </div>
                     <div class="mission-feedback-cols" style="margin:1rem 0;">
                         <div class="mission-feedback-col strengths">
                             <h4><i class="fa-solid fa-thumbs-up"></i> Strengths</h4>
@@ -7871,6 +7879,7 @@ Return ONLY JSON:
                     criteria: data.criteria || [],
                     strengths: data.strengths || [],
                     improvements: data.improvements || [],
+                    conciseness: data.conciseness || [],
                     markedTranscript: data.markedTranscript || '',
                     transcribedEssay: data.transcribedEssay || essayText || '',
                 },
@@ -8039,6 +8048,7 @@ Return ONLY JSON:
                     criteria: review.criteria || [],
                     strengths: review.strengths || [],
                     improvements: review.improvements || [],
+                    conciseness: review.conciseness || [],
                     markedTranscript: review.markedTranscript || '',
                     transcribedEssay: review.transcribedEssay || data.essayText || '',
                 };
@@ -8134,6 +8144,19 @@ Return ONLY JSON:
             document.getElementById('matura-improvements').innerHTML =
                 maturaAsBullets(data.improvements).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li>—</li>';
 
+            const concisenessItems = maturaAsBullets(data.conciseness);
+            const concWrap = document.getElementById('matura-conciseness-wrap');
+            const concList = document.getElementById('matura-conciseness');
+            if (concWrap && concList) {
+                if (concisenessItems.length) {
+                    concWrap.style.display = 'block';
+                    concList.innerHTML = concisenessItems.map(s => `<li>${escapeHtml(s)}</li>`).join('');
+                } else {
+                    concWrap.style.display = 'none';
+                    concList.innerHTML = '';
+                }
+            }
+
             const markedHtml = formatMaturaMarkedTranscript(data.markedTranscript, data.transcribedEssay);
             document.getElementById('matura-transcript-wrap').style.display = markedHtml ? 'block' : 'none';
             document.getElementById('matura-transcript').innerHTML = markedHtml;
@@ -8166,6 +8189,7 @@ Return ONLY JSON:
                 })),
                 strengths: maturaAsBullets(maturaResult.strengths),
                 improvements: maturaAsBullets(maturaResult.improvements),
+                conciseness: maturaAsBullets(maturaResult.conciseness),
                 transcriptPlain,
                 transcriptHtml,
             };
@@ -8207,6 +8231,11 @@ Return ONLY JSON:
             push('');
             push('Room for improvement');
             bullets(model.improvements.length ? model.improvements : ['—']);
+            if (model.conciseness && model.conciseness.length) {
+                push('');
+                push('Conciseness (coaching — does not change Matura total)');
+                bullets(model.conciseness);
+            }
             if (model.transcriptPlain) {
                 push('');
                 push('Your essay (mistakes in [brackets])');
@@ -8269,6 +8298,11 @@ Return ONLY JSON:
   ${ul(model.strengths)}
   <h2>Room for improvement</h2>
   ${ul(model.improvements)}
+  ${(model.conciseness && model.conciseness.length) ? `
+  <h2>Conciseness</h2>
+  <p style="font-size:0.9rem;color:#555;">Coaching on redundancy, strong verbs, active voice, fillers, shorter phrases, nominalizations, and simpler structure. Does not change your Matura total.</p>
+  ${ul(model.conciseness)}
+  ` : ''}
   ${model.transcriptHtml ? `
     <h2>Your essay (mistakes marked)</h2>
     <p>Highlighted / bracketed text = mistakes to correct yourself. No model answer is included.</p>
@@ -8333,6 +8367,10 @@ Return ONLY JSON:
             bullets(model.strengths.length ? model.strengths : ['—']);
             para('Room for improvement', true);
             bullets(model.improvements.length ? model.improvements : ['—']);
+            if (model.conciseness && model.conciseness.length) {
+                para('Conciseness (coaching — does not change Matura total)', true);
+                bullets(model.conciseness);
+            }
             if (model.transcriptPlain) {
                 para('Your essay (mistakes in [brackets])', true);
                 para('Correct the bracketed parts yourself — no model answer is included.');

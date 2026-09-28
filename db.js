@@ -1253,6 +1253,9 @@ export function sanitizeMaturaReviewPayload(raw = {}) {
         criteria: Array.isArray(review.criteria) ? review.criteria : [],
         strengths: review.strengths ?? [],
         improvements: review.improvements ?? [],
+        conciseness: Array.isArray(review.conciseness)
+            ? review.conciseness.map((s) => String(s || '').trim()).filter(Boolean)
+            : [],
         markedTranscript: typeof review.markedTranscript === 'string' ? review.markedTranscript : '',
         transcribedEssay: typeof review.transcribedEssay === 'string'
             ? review.transcribedEssay
