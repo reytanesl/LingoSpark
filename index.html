@@ -21,6 +21,8 @@
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
     <script src="pe-line-up.js"></script>
+    <script src="pe-topic-challenge-banks.js"></script>
+    <script src="pe-topic-challenge.js"></script>
     <script src="test-countdown.js"></script>
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="live-game-client.js" defer></script>
@@ -2338,6 +2340,7 @@
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, or upload a photo/PDF of a real exam task (and optionally your handwritten email), then get AI examiner feedback.</p></div>
                 <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
                 <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Creator mode also has to be (am / is / are), and / or, question words, and . or ?. Ages 10–12 add play/do/go collocations, daily routines, parts of the day, and telling the time. Fill the gaps: drag tiles into blanks. When you choose singular or plural, the plural form is shown and spoken. Persons: I, You, We, They, He, She. Things are grouped (food, furniture, school…). Line Up: drag pictured tiles onto numbered boxes. Switch EN | PL for help. Signed-in players collect each correct sentence in a Colour Blocks set.</p></div>
+                <div class="guide-item"><strong>Topic Challenge</strong><p>Premium practice on class topics (school, home, food, free time, clothes &amp; weather, town, animals, routines, time) with grammar focuses (be, have got, can, like, present simple, negatives, questions). Modes: Picture, Tiles, Text, Transform. Optional response path: Write, Speak (Hear model + browser mic or classroom “I said it”), or Both. Answers check locally; Ask why uses AI after a wrong attempt.</p></div>
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
@@ -2517,7 +2520,7 @@
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">Dictation from A1 + Colour Blocks + 3 AI writing games — choose A2 or B1 for AI games</span>
+                        <span class="pe-pack-meta">Dictation from A1 + Colour Blocks + Topic Challenge + 3 AI writing games — choose A2 or B1 for AI games</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
@@ -2536,6 +2539,7 @@
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
                     <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-layer-group"></i></div><h2>Topic Challenge</h2><p>Picture, tiles, text and transforms on school topics — write, speak, or both. Large curated bank for ages 9–11.</p><a href="#/setup/pe-topic" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
@@ -2710,6 +2714,49 @@
                 <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
                     <label><input type="radio" name="colour-age" value="young" checked> 8–9 years — There is/are, have got, can, like, a/an; one picture at a time</label>
                     <label><input type="radio" name="colour-age" value="older"> 10–12 years — plus must, have to, don’t have to; choose a goal then check</label>
+                </div>
+            </div>
+
+            <div id="topic-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
+                <label style="color: #0e7490;"><i class="fa-solid fa-layer-group"></i> Topic Challenge</label>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Pick a class topic and grammar focus, then practise with Picture, Tiles, Text or Transform. Choose Write, Speak (Hear + mic or classroom partner check), or Both. Ages ~9–11. Writing Suite access required.</p>
+            </div>
+
+            <div class="form-group" id="pe-topic-settings" style="display: none;">
+                <label><i class="fa-solid fa-book"></i> Topic:</label>
+                <select id="topic-setup-topic" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
+                    <option value="school">School</option>
+                    <option value="family_home">Family &amp; home</option>
+                    <option value="food">Food</option>
+                    <option value="free_time">Free time</option>
+                    <option value="clothes_weather">Clothes &amp; weather</option>
+                    <option value="town">Town</option>
+                    <option value="animals">Animals</option>
+                    <option value="routines">Routines</option>
+                    <option value="time">Time</option>
+                </select>
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-language"></i> Grammar focus:</label>
+                <select id="topic-setup-grammar" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
+                    <option value="be">to be</option>
+                    <option value="have_got">have got</option>
+                    <option value="can">can / can't</option>
+                    <option value="like">like</option>
+                    <option value="present_simple">Present simple</option>
+                    <option value="negatives">Negatives</option>
+                    <option value="questions">Questions</option>
+                </select>
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-table-cells"></i> Start mode:</label>
+                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.35rem;">
+                    <label><input type="radio" name="topic-setup-mode" value="picture" checked> Picture</label>
+                    <label><input type="radio" name="topic-setup-mode" value="tiles"> Tiles</label>
+                    <label><input type="radio" name="topic-setup-mode" value="text"> Text</label>
+                    <label><input type="radio" name="topic-setup-mode" value="transform"> Transform</label>
+                </div>
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-microphone"></i> Response path:</label>
+                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.35rem;">
+                    <label><input type="radio" name="topic-setup-response" value="write" checked> Write (type or choose)</label>
+                    <label><input type="radio" name="topic-setup-response" value="speak"> Speak (Hear + mic or “I said it”)</label>
+                    <label><input type="radio" name="topic-setup-response" value="both"> Both (speak, then write)</label>
                 </div>
             </div>
 
@@ -3331,6 +3378,27 @@
             <div id="colour-blocks-root"></div>
         </div>
 
+        <!-- PRIMARY ENGLISH: TOPIC CHALLENGE -->
+        <div id="screen-pe-topic" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-topic">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Topic Challenge <span class="pe-level-badge">9–11</span></h2>
+                <button class="btn btn-outline" onclick="initTopicChallenge()" id="pe-topic-btn">New round <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Choose Picture, Tiles, Text or Transform. Write your answer, or use Speak: Hear the model, then Say it (mic) or I said it for classroom checking. Both = speak first, then write. Answers are checked locally. After a wrong Check, Ask why can explain simply.</div>
+                <div class="pe-instr-pl">Wybierz Obrazek, Kafelki, Tekst lub Przekształć. Napisz odpowiedź, albo użyj Mówienia: Posłuchaj wzoru, potem Powiedz (mikrofon) lub Powiedziałem/am (sprawdzenie w klasie). Oba = najpierw mów, potem pisz. Odpowiedzi sprawdzane lokalnie. Po błędnym Sprawdź możesz Dopytać AI.</div>
+            </div>
+            <div id="topic-challenge-root"></div>
+        </div>
+
         <!-- CORE VOCAB: BOMB DEFUSAL -->
         <div id="screen-bomb" class="screen engine-container">
             <div class="top-bar">
@@ -3909,8 +3977,8 @@
 
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
-        const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour']);
+        const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring', 'pe-topic']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
         const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown']);
 
@@ -4131,6 +4199,7 @@
                         if (arg === 'pe-exam') initPeExam();
                         if (arg === 'pe-dictation') initPeDictation();
                         if (arg === 'pe-colour') initColourBlocks();
+                        if (arg === 'pe-topic') initTopicChallenge();
                     }
                 } else {
                     showScreen('home');
@@ -5036,7 +5105,7 @@
                     html += '<div class="progress-grid">';
                     const gameNames = {
                         flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
-                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
                     };
@@ -5072,7 +5141,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -5238,6 +5307,10 @@
         }
 
         async function goToPeGame(gameType) {
+            if (gameType === 'pe-topic') {
+                await goToWritingSetup(gameType);
+                return;
+            }
             if (peMode === 'custom' && peCustomGlossary.length < 4) {
                 appAlert('Please apply a custom glossary with at least 4 items first.');
                 const row = document.getElementById('pe-level-row');
@@ -5726,7 +5799,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -5742,6 +5815,10 @@
             document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('pe-colour-settings').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
             document.getElementById('colour-setup-note').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
+            const peTopicSettings = document.getElementById('pe-topic-settings');
+            if (peTopicSettings) peTopicSettings.style.display = (gameType === 'pe-topic') ? 'block' : 'none';
+            const topicSetupNote = document.getElementById('topic-setup-note');
+            if (topicSetupNote) topicSetupNote.style.display = (gameType === 'pe-topic') ? 'block' : 'none';
             document.getElementById('frank-setup-note').style.display = (gameType === 'frank') ? 'block' : 'none';
             document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType) && gameType !== 'frank') ? 'block' : 'none';
 
@@ -5754,6 +5831,9 @@
             }
             if (gameType === 'pe-colour') {
                 document.getElementById('setup-title').innerText = 'Colour Blocks Setup';
+            }
+            if (gameType === 'pe-topic') {
+                document.getElementById('setup-title').innerText = 'Topic Challenge Setup';
             }
             if (gameType === 'frank') {
                 document.getElementById('setup-title').innerText = 'Frankenstein Builder';
@@ -5893,6 +5973,7 @@
             if(activeGame === 'pe-exam') initPeExam();
             if(activeGame === 'pe-dictation') initPeDictation();
             if(activeGame === 'pe-colour') initColourBlocks();
+            if(activeGame === 'pe-topic') initTopicChallenge();
         }
 
         function toggleLoading(prefix, isLoading) {
@@ -8331,7 +8412,7 @@ Return ONLY JSON:
         // ==========================================
         // PRIMARY ENGLISH PACK (AI)
         // ==========================================
-        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0, colour: 0, line: 0 };
+        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0, colour: 0, line: 0, topic: 0 };
         let peBoringTask = null;
         let peDetailTask = null;
         let peLinkTask = null;

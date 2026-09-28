@@ -1163,7 +1163,7 @@ export async function getSharedWordSetByToken(token) {
 const VALID_GAME_KEYS = new Set([
     'flashcards', 'memory_flip', 'word_repair', 'speed_match', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'live_host',
     'test_countdown',
-    'pe_boring', 'pe_detail', 'pe_link', 'pe_exam', 'pe_dictation', 'pe_colour', 'pe_line',
+    'pe_boring', 'pe_detail', 'pe_link', 'pe_exam', 'pe_dictation', 'pe_colour', 'pe_line', 'pe_topic',
     'frank', 'trans', 'devil', 'bloat', 'tight', 'vocab_upgrade', 'matura',
 ]);
 
