@@ -115,37 +115,153 @@
         desk: ['desk'],
         table: ['table'],
         chair: ['chair'],
-        house: ['house'],
-        home: ['house'],
+        house: ['door', 'roof', 'sofa', 'kitchen'],
+        home: ['sofa', 'door', 'kitchen'],
+        kitchen: ['stove', 'fridge', 'sink', 'table'],
         school: ['school', 'whiteboard', 'chalkboard'],
         classroom: ['whiteboard', 'chalkboard', 'desk'],
         bus: ['bus'],
+        buses: ['bus'],
         train: ['train'],
         taxi: ['taxi'],
         car: ['car'],
         apple: ['apple'],
+        apples: ['apple'],
         banana: ['banana'],
+        bananas: ['banana'],
         bread: ['bread', 'baguette'],
         cake: ['cake', 'cupcake'],
+        sandwich: ['sandwich', 'bread', 'baguette'],
+        pizza: ['pizza'],
+        salad: ['salad'],
+        soup: ['soup'],
+        milk: ['milk'],
         dog: ['dog'],
+        dogs: ['dog'],
         cat: ['cat'],
+        cats: ['cat'],
         cow: ['cow'],
         pig: ['pig'],
         horse: ['horse'],
-        bird: ['bird'],
+        horses: ['horse'],
+        bird: ['bird', 'parrot', 'owl', 'duck', 'chicken', 'flamingo'],
+        birds: ['bird', 'parrot', 'owl', 'duck', 'chicken', 'flamingo'],
         fish: ['fish'],
-        ball: ['ball', 'basketball', 'football'],
+        rabbit: ['rabbit'],
+        rabbits: ['rabbit'],
+        ball: ['ball', 'basketball'],
         football: ['ball'],
         hat: ['hat', 'cap'],
-        coat: ['coat'],
+        coat: ['coat', 'raincoat'],
         dress: ['dress'],
         shoes: ['shoes', 'boots', 'sandals'],
+        gloves: ['mittens'],
+        glove: ['mittens'],
         umbrella: ['umbrella'],
         sun: ['sun'],
+        sunny: ['sun'],
         moon: ['moon'],
         tree: ['tree', 'pine tree'],
         flower: ['flower', 'flowers', 'tulip'],
-        flowers: ['flower', 'flowers', 'tulip']
+        flowers: ['flower', 'flowers', 'tulip'],
+        book: ['book', 'notebook'],
+        books: ['book', 'notebook'],
+        crayon: ['pencil case', 'notebook'],
+        crayons: ['pencil case', 'notebook'],
+        pencil: ['pencil case', 'ruler'],
+        game: ['chessboard', 'ball', 'board game'],
+        games: ['chessboard', 'ball', 'board game'],
+        music: ['guitar'],
+        guitar: ['guitar'],
+        kite: ['kite'],
+        bike: ['bicycle'],
+        bicycle: ['bicycle'],
+        swim: ['boat', 'bucket', 'sandcastle'],
+        clock: ['clock'],
+        watch: ['clock'],
+        calendar: ['calendar'],
+        bed: ['bed'],
+        beds: ['bed'],
+        plant: ['plant'],
+        plants: ['plant'],
+        shirt: ['t-shirt'],
+        shirts: ['t-shirt'],
+        't-shirt': ['t-shirt'],
+        't-shirts': ['t-shirt'],
+        egg: ['egg'],
+        eggs: ['egg'],
+        water: ['glass', 'bottle', 'pitcher'],
+        town: ['shop', 'bus', 'bridge'],
+        library: ['book', 'bench'],
+        museum: ['hospital', 'church'],
+        morning: ['sun', 'bed', 'clock'],
+        mornings: ['sun', 'bed', 'clock'],
+        night: ['moon', 'bed', 'lamp'],
+        weekend: ['ball', 'kite', 'bicycle'],
+        weekends: ['ball', 'kite', 'bicycle'],
+        cinema: ['television'],
+        film: ['painting', 'television'],
+        films: ['painting', 'television'],
+        reading: ['book', 'notebook'],
+        homework: ['notebook', 'book'],
+        tennis: ['ball'],
+        headphones: ['guitar', 'hat'],
+        key: ['door'],
+        grandma: ['grandmother'],
+        grandmother: ['grandmother'],
+        grandpa: ['grandfather'],
+        grandfather: ['grandfather'],
+        bathroom: ['bathtub', 'sink', 'towel', 'soap'],
+        pond: ['pond'],
+        duck: ['duck'],
+        ducks: ['duck'],
+        sandcastle: ['sandcastle'],
+        parrot: ['parrot', 'bird'],
+        balloon: ['balloon'],
+        balloons: ['balloon'],
+        gift: ['gift'],
+        gifts: ['gift'],
+        rainbow: ['rainbow'],
+        toothpaste: ['toothpaste'],
+        toothbrush: ['toothbrush'],
+        cereal: ['cereal'],
+        juice: ['orange', 'bottle', 'glass'],
+        orange: ['orange'],
+        grey: ['cloud'],
+        gray: ['cloud'],
+        colourful: ['parrot', 'flamingo'],
+        colorful: ['parrot', 'flamingo'],
+        wall: ['clock', 'window', 'picture'],
+        sky: ['sun', 'moon', 'cloud'],
+        high: ['kite'],
+        loud: ['guitar'],
+        free: ['bathtub', 'bench'],
+        ready: ['backpack', 'bag'],
+        strong: ['elephant'],
+        green: ['frog'],
+        red: ['apple', 'traffic light', 'tomato'],
+        big: ['elephant', 'church', 'hospital'],
+        new: ['bicycle', 'shoes'],
+        warm: ['coat', 'scarf', 'mittens'],
+        clean: ['bed', 'sink'],
+        delicious: ['cake'],
+        healthy: ['salad'],
+        cold: ['cloud', 'coat', 'boots', 'scarf', 'milk'],
+        open: ['door', 'window'],
+        upstairs: ['bed', 'stairs'],
+        alone: ['toothbrush'],
+        pack: ['backpack', 'bag'],
+        bags: ['backpack', 'bag'],
+        throw: ['ball'],
+        build: ['sandcastle'],
+        fly: ['kite', 'parrot', 'bird'],
+        ride: ['bicycle'],
+        pour: ['milk', 'pitcher'],
+        cut: ['bread', 'cake'],
+        cook: ['stove', 'egg', 'pan'],
+        watch: ['television', 'clock', 'duck'],
+        shows: ['clock'],
+        show: ['clock']
     };
 
     function bank() {
@@ -175,11 +291,31 @@
         return map[sceneId] || [];
     }
 
+    function expandLexicalToken(w) {
+        const out = [];
+        const seen = new Set();
+        const queue = [w];
+        while (queue.length) {
+            const cur = queue.shift();
+            if (!cur || seen.has(cur)) continue;
+            seen.add(cur);
+            out.push(cur);
+            (WORD_ALIASES[cur] || []).forEach((a) => queue.push(a));
+            // Simple English plurals → singular for hotspot matching
+            if (cur.endsWith('ies') && cur.length > 4) queue.push(cur.slice(0, -3) + 'y');
+            else if (/(?:ches|shes|sses|xes|zes)$/.test(cur) && cur.length > 4) queue.push(cur.slice(0, -2));
+            else if (cur.endsWith('s') && !cur.endsWith('ss') && cur.length > 3) queue.push(cur.slice(0, -1));
+            if (cur.includes('-')) queue.push(cur.replace(/-/g, ''));
+            if (out.length > 40) break;
+        }
+        return out;
+    }
+
     function taskSearchTokens(task) {
+        // English only — Polish prompts caused false hits (e.g. "potrafisz" → "pot").
         const text = [
             task.answer,
             task.promptEn,
-            task.promptPl,
             ...(task.tiles || []),
             ...(task.accept || [])
         ].join(' ').toLowerCase();
@@ -187,8 +323,15 @@
         const tokens = [];
         raw.forEach((w) => {
             if (w.length < 2 || STOP_WORDS.has(w)) return;
-            tokens.push(w);
-            (WORD_ALIASES[w] || []).forEach((a) => tokens.push(a));
+            expandLexicalToken(w).forEach((t) => tokens.push(t));
+        });
+        // Multi-word compounds present in the answer (e.g. "ice cream", "traffic light")
+        const compact = text.replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+        [
+            'ice cream', 'pencil case', 'traffic light', 'street lamp', 'board game',
+            't-shirt', 'bus stop', 'sand castle', 'police officer', 'shopping cart'
+        ].forEach((phrase) => {
+            if (compact.includes(phrase)) tokens.push(phrase);
         });
         // Gender preference from pronouns in answer/prompt
         const joined = text;
@@ -204,10 +347,14 @@
     function hotspotMatchesToken(hotspotWord, token) {
         const hw = String(hotspotWord || '').toLowerCase();
         const t = String(token || '').toLowerCase();
-        if (!hw || !t) return false;
+        if (!hw || !t || t.length < 2) return 0;
         if (hw === t) return 3;
-        if (hw.startsWith(t + ' ') || hw.endsWith(' ' + t) || hw.includes(' ' + t + ' ')) return 2;
-        if (t.length >= 4 && (hw.includes(t) || t.includes(hw))) return 1;
+        // Multi-word hotspot: exact whole-word token (ice in "ice cream")
+        const parts = hw.split(/\s+/);
+        if (parts.length > 1 && parts.includes(t) && t.length >= 3) return 3;
+        // Hyphen / space normalization (t-shirt ↔ tshirt)
+        const norm = (s) => s.replace(/[-\s]/g, '');
+        if (norm(hw) === norm(t) && norm(t).length >= 4) return 3;
         return 0;
     }
 
@@ -224,15 +371,13 @@
         if (!hs.length) return [];
         const tokens = taskSearchTokens(task);
         if (!tokens.length) return [];
+        // Exact lexical matches only — never highlight a weakly related region
         const scored = hs
             .map((h, idx) => ({ h, idx, score: scoreHotspot(h, tokens) }))
-            .filter((x) => x.score > 0)
+            .filter((x) => x.score >= 3)
             .sort((a, b) => b.score - a.score || a.idx - b.idx);
         if (!scored.length) return [];
-        const topScore = scored[0].score;
-        // Prefer a single best target; if several share top score and same word, pick one
-        const top = scored.filter((x) => x.score === topScore);
-        const chosen = top[0];
+        const chosen = scored[0];
         return [{ w: chosen.h.w, b: chosen.h.b }];
     }
 

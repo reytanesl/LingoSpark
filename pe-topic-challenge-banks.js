@@ -465,27 +465,28 @@
       "text",
       "speak"
     ],
-    "cue": "🖍️",
-    "promptEn": "Talk about your crayons.",
-    "promptPl": "Powiedz o swoich kredkach.",
-    "answer": "We have got ten crayons.",
+    "cue": "✏️",
+    "promptEn": "Talk about the pencil case.",
+    "promptPl": "Powiedz o piórniku.",
+    "answer": "We have got a pencil case.",
     "accept": [
-      "We've got ten crayons.",
-      "We have ten crayons."
+      "We've got a pencil case.",
+      "We have a pencil case."
     ],
-    "speakPromptEn": "Say: We have got ten crayons.",
-    "speakPromptPl": "Powiedz: We have got ten crayons.",
+    "speakPromptEn": "Say: We have got a pencil case.",
+    "speakPromptPl": "Powiedz: We have got a pencil case.",
     "distractors": [
-      "We has got ten crayons.",
-      "We have got five crayons.",
-      "I have got ten crayons."
+      "We has got a pencil case.",
+      "We have got a bag.",
+      "I have got a pencil case."
     ],
     "tiles": [
       "We",
       "have",
       "got",
-      "ten",
-      "crayons",
+      "a",
+      "pencil",
+      "case",
       "."
     ],
     "gap": null,
@@ -505,21 +506,23 @@
       "speak"
     ],
     "cue": "📖",
-    "promptEn": "Can you read?",
-    "promptPl": "Czy umiesz czytać?",
-    "answer": "I can read.",
+    "promptEn": "Can you read this book?",
+    "promptPl": "Czy umiesz czytać tę książkę?",
+    "answer": "I can read this book.",
     "accept": [],
-    "speakPromptEn": "Say: I can read.",
-    "speakPromptPl": "Powiedz: I can read.",
+    "speakPromptEn": "Say: I can read this book.",
+    "speakPromptPl": "Powiedz: I can read this book.",
     "distractors": [
-      "I can't read.",
-      "I can write.",
-      "She can read."
+      "I can't read this book.",
+      "I can write this book.",
+      "She can read this book."
     ],
     "tiles": [
       "I",
       "can",
       "read",
+      "this",
+      "book",
       "."
     ],
     "gap": null,
@@ -539,21 +542,24 @@
       "speak"
     ],
     "cue": "✍️",
-    "promptEn": "Can she write?",
-    "promptPl": "Czy ona umie pisać?",
-    "answer": "She can write.",
+    "promptEn": "Can she write in the notebook?",
+    "promptPl": "Czy ona umie pisać w zeszycie?",
+    "answer": "She can write in the notebook.",
     "accept": [],
-    "speakPromptEn": "Say: She can write.",
-    "speakPromptPl": "Powiedz: She can write.",
+    "speakPromptEn": "Say: She can write in the notebook.",
+    "speakPromptPl": "Powiedz: She can write in the notebook.",
     "distractors": [
-      "She can't write.",
-      "He can write.",
-      "She can read."
+      "She can't write in the notebook.",
+      "He can write in the notebook.",
+      "She can read the notebook."
     ],
     "tiles": [
       "She",
       "can",
       "write",
+      "in",
+      "the",
+      "notebook",
       "."
     ],
     "gap": null,
@@ -573,21 +579,23 @@
       "speak"
     ],
     "cue": "🔢",
-    "promptEn": "Can he count?",
-    "promptPl": "Czy on umie liczyć?",
-    "answer": "He can count.",
+    "promptEn": "Can he use the ruler?",
+    "promptPl": "Czy on umie użyć linijki?",
+    "answer": "He can use the ruler.",
     "accept": [],
-    "speakPromptEn": "Say: He can count.",
-    "speakPromptPl": "Powiedz: He can count.",
+    "speakPromptEn": "Say: He can use the ruler.",
+    "speakPromptPl": "Powiedz: He can use the ruler.",
     "distractors": [
-      "He can't count.",
-      "She can count.",
-      "He can draw."
+      "He can't use the ruler.",
+      "She can use the ruler.",
+      "He can use the globe."
     ],
     "tiles": [
       "He",
       "can",
-      "count",
+      "use",
+      "the",
+      "ruler",
       "."
     ],
     "gap": null,
@@ -607,22 +615,24 @@
       "speak"
     ],
     "cue": "🗣️",
-    "promptEn": "Can they speak English?",
-    "promptPl": "Czy oni mówią po angielsku?",
-    "answer": "They can speak English.",
+    "promptEn": "Can they listen to the teacher?",
+    "promptPl": "Czy potrafią słuchać nauczyciela?",
+    "answer": "They can listen to the teacher.",
     "accept": [],
-    "speakPromptEn": "Say: They can speak English.",
-    "speakPromptPl": "Powiedz: They can speak English.",
+    "speakPromptEn": "Say: They can listen to the teacher.",
+    "speakPromptPl": "Powiedz: They can listen to the teacher.",
     "distractors": [
-      "They can't speak English.",
-      "They can speak Polish.",
-      "He can speak English."
+      "They can't listen to the teacher.",
+      "They can listen to the boy.",
+      "He can listen to the teacher."
     ],
     "tiles": [
       "They",
       "can",
-      "speak",
-      "English",
+      "listen",
+      "to",
+      "the",
+      "teacher",
       "."
     ],
     "gap": null,
@@ -642,26 +652,27 @@
       "speak"
     ],
     "cue": "🚫✍️",
-    "promptEn": "Say you cannot write now.",
-    "promptPl": "Powiedz, że nie możesz teraz pisać.",
-    "answer": "I can't write now.",
+    "promptEn": "Say you cannot open the window.",
+    "promptPl": "Powiedz, że nie możesz otworzyć okna.",
+    "answer": "I can't open the window.",
     "accept": [
-      "I ca not write now.",
-      "I cannot write now.",
-      "I can not write now."
+      "I ca not open the window.",
+      "I cannot open the window.",
+      "I can not open the window."
     ],
-    "speakPromptEn": "Say: I can't write now.",
-    "speakPromptPl": "Powiedz: I can't write now.",
+    "speakPromptEn": "Say: I can't open the window.",
+    "speakPromptPl": "Powiedz: I can't open the window.",
     "distractors": [
-      "I can write now.",
-      "She can't write now.",
-      "I can't read now."
+      "I can open the window.",
+      "She can't open the window.",
+      "I can't open the door."
     ],
     "tiles": [
       "I",
       "can't",
-      "write",
-      "now",
+      "open",
+      "the",
+      "window",
       "."
     ],
     "gap": null,
@@ -680,22 +691,23 @@
       "text",
       "speak"
     ],
-    "cue": "📚",
-    "promptEn": "Do you like English?",
-    "promptPl": "Czy lubisz angielski?",
-    "answer": "I like English.",
+    "cue": "👩‍🏫",
+    "promptEn": "Do you like your teacher?",
+    "promptPl": "Czy lubisz swoją nauczycielkę?",
+    "answer": "I like my teacher.",
     "accept": [],
-    "speakPromptEn": "Say: I like English.",
-    "speakPromptPl": "Powiedz: I like English.",
+    "speakPromptEn": "Say: I like my teacher.",
+    "speakPromptPl": "Powiedz: I like my teacher.",
     "distractors": [
-      "I don't like English.",
-      "I like maths.",
-      "She likes English."
+      "I don't like my teacher.",
+      "I like my desk.",
+      "She likes my teacher."
     ],
     "tiles": [
       "I",
       "like",
-      "English",
+      "my",
+      "teacher",
       "."
     ],
     "gap": null,
@@ -715,21 +727,22 @@
       "speak"
     ],
     "cue": "🎨",
-    "promptEn": "Does she like art?",
-    "promptPl": "Czy ona lubi plastykę?",
-    "answer": "She likes art.",
+    "promptEn": "Does she like the globe?",
+    "promptPl": "Czy ona lubi globus?",
+    "answer": "She likes the globe.",
     "accept": [],
-    "speakPromptEn": "Say: She likes art.",
-    "speakPromptPl": "Powiedz: She likes art.",
+    "speakPromptEn": "Say: She likes the globe.",
+    "speakPromptPl": "Powiedz: She likes the globe.",
     "distractors": [
-      "She like art.",
-      "She doesn't like art.",
-      "He likes art."
+      "She like the globe.",
+      "She doesn't like the globe.",
+      "He likes the globe."
     ],
     "tiles": [
       "She",
       "likes",
-      "art",
+      "the",
+      "globe",
       "."
     ],
     "gap": null,
@@ -749,21 +762,22 @@
       "speak"
     ],
     "cue": "⚽",
-    "promptEn": "Does he like PE?",
-    "promptPl": "Czy on lubi WF?",
-    "answer": "He likes PE.",
+    "promptEn": "Does he like the ball?",
+    "promptPl": "Czy on lubi piłkę?",
+    "answer": "He likes the ball.",
     "accept": [],
-    "speakPromptEn": "Say: He likes PE.",
-    "speakPromptPl": "Powiedz: He likes PE.",
+    "speakPromptEn": "Say: He likes the ball.",
+    "speakPromptPl": "Powiedz: He likes the ball.",
     "distractors": [
-      "He like PE.",
-      "He doesn't like PE.",
-      "She likes PE."
+      "He like the ball.",
+      "He doesn't like the ball.",
+      "She likes the ball."
     ],
     "tiles": [
       "He",
       "likes",
-      "PE",
+      "the",
+      "ball",
       "."
     ],
     "gap": null,
@@ -782,22 +796,23 @@
       "text",
       "speak"
     ],
-    "cue": "🧮",
-    "promptEn": "Do they like maths?",
-    "promptPl": "Czy oni lubią matematykę?",
-    "answer": "They like maths.",
+    "cue": "🪟",
+    "promptEn": "Do they like the classroom window?",
+    "promptPl": "Czy lubią okno w klasie?",
+    "answer": "They like the window.",
     "accept": [],
-    "speakPromptEn": "Say: They like maths.",
-    "speakPromptPl": "Powiedz: They like maths.",
+    "speakPromptEn": "Say: They like the window.",
+    "speakPromptPl": "Powiedz: They like the window.",
     "distractors": [
-      "They likes maths.",
-      "They don't like maths.",
-      "He likes maths."
+      "They likes the window.",
+      "They don't like the window.",
+      "He likes the window."
     ],
     "tiles": [
       "They",
       "like",
-      "maths",
+      "the",
+      "window",
       "."
     ],
     "gap": null,
@@ -817,21 +832,22 @@
       "speak"
     ],
     "cue": "📖",
-    "promptEn": "Do you like reading at school?",
-    "promptPl": "Czy lubisz czytać w szkole?",
-    "answer": "We like reading.",
+    "promptEn": "Do you like reading books at school?",
+    "promptPl": "Czy lubisz czytać książki w szkole?",
+    "answer": "We like reading books.",
     "accept": [],
-    "speakPromptEn": "Say: We like reading.",
-    "speakPromptPl": "Powiedz: We like reading.",
+    "speakPromptEn": "Say: We like reading books.",
+    "speakPromptPl": "Powiedz: We like reading books.",
     "distractors": [
-      "We likes reading.",
-      "We don't like reading.",
-      "I like writing."
+      "We likes reading books.",
+      "We don't like reading books.",
+      "I like writing books."
     ],
     "tiles": [
       "We",
       "like",
       "reading",
+      "books",
       "."
     ],
     "gap": null,
@@ -1469,26 +1485,26 @@
       "text",
       "speak"
     ],
-    "cue": "🏠",
-    "promptEn": "What is this?",
-    "promptPl": "Co to jest?",
-    "answer": "It is my house.",
+    "cue": "🛋️",
+    "promptEn": "What is this in the living room?",
+    "promptPl": "Co to jest w salonie?",
+    "answer": "It is a sofa.",
     "accept": [
-      "It's my house.",
-      "This is my house."
+      "It's a sofa.",
+      "This is a sofa."
     ],
-    "speakPromptEn": "Say: It is my house.",
-    "speakPromptPl": "Powiedz: It is my house.",
+    "speakPromptEn": "Say: It is a sofa.",
+    "speakPromptPl": "Powiedz: It is a sofa.",
     "distractors": [
-      "It is my school.",
-      "They are my house.",
-      "It is my flat."
+      "It is a bed.",
+      "They are sofas.",
+      "It is a table."
     ],
     "tiles": [
       "It",
       "is",
-      "my",
-      "house",
+      "a",
+      "sofa",
       "."
     ],
     "gap": null,
@@ -1508,20 +1524,20 @@
       "speak"
     ],
     "cue": "🛏️",
-    "promptEn": "Where is your bedroom?",
-    "promptPl": "Gdzie jest twoja sypialnia?",
-    "answer": "My bedroom is upstairs.",
+    "promptEn": "Where is the bed?",
+    "promptPl": "Gdzie jest łóżko?",
+    "answer": "The bed is upstairs.",
     "accept": [],
-    "speakPromptEn": "Say: My bedroom is upstairs.",
-    "speakPromptPl": "Powiedz: My bedroom is upstairs.",
+    "speakPromptEn": "Say: The bed is upstairs.",
+    "speakPromptPl": "Powiedz: The bed is upstairs.",
     "distractors": [
-      "My bedroom is downstairs.",
-      "My kitchen is upstairs.",
-      "My bedrooms are upstairs."
+      "The bed is downstairs.",
+      "The kitchen is upstairs.",
+      "The beds are upstairs."
     ],
     "tiles": [
-      "My",
-      "bedroom",
+      "The",
+      "bed",
       "is",
       "upstairs",
       "."
@@ -1542,26 +1558,23 @@
       "text",
       "speak"
     ],
-    "cue": "😊",
-    "promptEn": "How are you at home?",
-    "promptPl": "Jak się czujesz w domu?",
-    "answer": "I am happy at home.",
-    "accept": [
-      "I'm happy at home."
-    ],
-    "speakPromptEn": "Say: I am happy at home.",
-    "speakPromptPl": "Powiedz: I am happy at home.",
+    "cue": "🐕",
+    "promptEn": "How is the dog at home?",
+    "promptPl": "Jaki jest pies w domu?",
+    "answer": "The dog is happy.",
+    "accept": [],
+    "speakPromptEn": "Say: The dog is happy.",
+    "speakPromptPl": "Powiedz: The dog is happy.",
     "distractors": [
-      "I am sad at home.",
-      "He is happy at home.",
-      "I am happy at school."
+      "The dog is sad.",
+      "The cat is happy.",
+      "The dogs are happy."
     ],
     "tiles": [
-      "I",
-      "am",
+      "The",
+      "dog",
+      "is",
       "happy",
-      "at",
-      "home",
       "."
     ],
     "gap": null,
@@ -1659,27 +1672,27 @@
       "text",
       "speak"
     ],
-    "cue": "🔑",
-    "promptEn": "Talk about the house key.",
-    "promptPl": "Powiedz o kluczu.",
-    "answer": "We have got a key.",
+    "cue": "🚪",
+    "promptEn": "Talk about the door.",
+    "promptPl": "Powiedz o drzwiach.",
+    "answer": "We have got a door.",
     "accept": [
-      "We've got a key.",
-      "We have a key."
+      "We've got a door.",
+      "We have a door."
     ],
-    "speakPromptEn": "Say: We have got a key.",
-    "speakPromptPl": "Powiedz: We have got a key.",
+    "speakPromptEn": "Say: We have got a door.",
+    "speakPromptPl": "Powiedz: We have got a door.",
     "distractors": [
-      "We has got a key.",
-      "We haven't got a key.",
-      "They have got a key."
+      "We has got a door.",
+      "We haven't got a door.",
+      "They have got a door."
     ],
     "tiles": [
       "We",
       "have",
       "got",
       "a",
-      "key",
+      "door",
       "."
     ],
     "gap": null,
@@ -1775,24 +1788,25 @@
       "text",
       "speak"
     ],
-    "cue": "🧹",
-    "promptEn": "Can you help at home?",
-    "promptPl": "Czy możesz pomóc w domu?",
-    "answer": "I can help at home.",
+    "cue": "🍳",
+    "promptEn": "Can you cook on the stove?",
+    "promptPl": "Czy możesz gotować na kuchence?",
+    "answer": "I can cook on the stove.",
     "accept": [],
-    "speakPromptEn": "Say: I can help at home.",
-    "speakPromptPl": "Powiedz: I can help at home.",
+    "speakPromptEn": "Say: I can cook on the stove.",
+    "speakPromptPl": "Powiedz: I can cook on the stove.",
     "distractors": [
-      "I can't help at home.",
-      "She can help at home.",
-      "I can cook at school."
+      "I can't cook on the stove.",
+      "She can cook on the stove.",
+      "I can cook on the bed."
     ],
     "tiles": [
       "I",
       "can",
-      "help",
-      "at",
-      "home",
+      "cook",
+      "on",
+      "the",
+      "stove",
       "."
     ],
     "gap": null,
@@ -1848,26 +1862,26 @@
       "text",
       "speak"
     ],
-    "cue": "🔧",
-    "promptEn": "Can dad fix things?",
-    "promptPl": "Czy tata umie naprawiać?",
-    "answer": "Dad can fix things.",
+    "cue": "📺",
+    "promptEn": "Can dad watch television?",
+    "promptPl": "Czy tata może oglądać telewizję?",
+    "answer": "Dad can watch television.",
     "accept": [
-      "My dad can fix things.",
-      "He can fix things."
+      "My dad can watch television.",
+      "He can watch television."
     ],
-    "speakPromptEn": "Say: Dad can fix things.",
-    "speakPromptPl": "Powiedz: Dad can fix things.",
+    "speakPromptEn": "Say: Dad can watch television.",
+    "speakPromptPl": "Powiedz: Dad can watch television.",
     "distractors": [
-      "Dad can't fix things.",
-      "Mum can fix things.",
+      "Dad can't watch television.",
+      "Mum can watch television.",
       "Dad can cook."
     ],
     "tiles": [
       "Dad",
       "can",
-      "fix",
-      "things",
+      "watch",
+      "television",
       "."
     ],
     "gap": null,
@@ -1961,23 +1975,23 @@
       "text",
       "speak"
     ],
-    "cue": "🏡",
-    "promptEn": "Do you like your home?",
-    "promptPl": "Czy lubisz swój dom?",
-    "answer": "I like my home.",
+    "cue": "🛋️",
+    "promptEn": "Do you like the sofa?",
+    "promptPl": "Czy lubisz sofę?",
+    "answer": "I like the sofa.",
     "accept": [],
-    "speakPromptEn": "Say: I like my home.",
-    "speakPromptPl": "Powiedz: I like my home.",
+    "speakPromptEn": "Say: I like the sofa.",
+    "speakPromptPl": "Powiedz: I like the sofa.",
     "distractors": [
-      "I don't like my home.",
-      "I like my school.",
-      "She likes my home."
+      "I don't like the sofa.",
+      "I like the bed.",
+      "She likes the sofa."
     ],
     "tiles": [
       "I",
       "like",
-      "my",
-      "home",
+      "the",
+      "sofa",
       "."
     ],
     "gap": null,
@@ -2001,7 +2015,8 @@
     "promptPl": "Czy ona lubi babcię?",
     "answer": "She likes grandma.",
     "accept": [
-      "She likes her grandma."
+      "She likes her grandma.",
+      "She likes grandmother."
     ],
     "speakPromptEn": "Say: She likes grandma.",
     "speakPromptPl": "Powiedz: She likes grandma.",
@@ -2032,24 +2047,23 @@
       "text",
       "speak"
     ],
-    "cue": "🎮",
-    "promptEn": "Does he like playing at home?",
-    "promptPl": "Czy on lubi bawić się w domu?",
-    "answer": "He likes playing at home.",
+    "cue": "🐈",
+    "promptEn": "Does he like the cat?",
+    "promptPl": "Czy on lubi kota?",
+    "answer": "He likes the cat.",
     "accept": [],
-    "speakPromptEn": "Say: He likes playing at home.",
-    "speakPromptPl": "Powiedz: He likes playing at home.",
+    "speakPromptEn": "Say: He likes the cat.",
+    "speakPromptPl": "Powiedz: He likes the cat.",
     "distractors": [
-      "He like playing at home.",
-      "He doesn't like playing at home.",
-      "She likes playing at home."
+      "He like the cat.",
+      "He doesn't like the cat.",
+      "She likes the cat."
     ],
     "tiles": [
       "He",
       "likes",
-      "playing",
-      "at",
-      "home",
+      "the",
+      "cat",
       "."
     ],
     "gap": null,
@@ -2103,23 +2117,23 @@
       "text",
       "speak"
     ],
-    "cue": "👪",
-    "promptEn": "Do you like family dinners?",
-    "promptPl": "Czy lubisz rodzinne obiady?",
-    "answer": "We like family dinners.",
+    "cue": "🍽️",
+    "promptEn": "Do you like the kitchen table?",
+    "promptPl": "Czy lubisz stół w kuchni?",
+    "answer": "We like the table.",
     "accept": [],
-    "speakPromptEn": "Say: We like family dinners.",
-    "speakPromptPl": "Powiedz: We like family dinners.",
+    "speakPromptEn": "Say: We like the table.",
+    "speakPromptPl": "Powiedz: We like the table.",
     "distractors": [
-      "We likes family dinners.",
-      "We don't like family dinners.",
-      "I like school dinners."
+      "We likes the table.",
+      "We don't like the table.",
+      "I like the bed."
     ],
     "tiles": [
       "We",
       "like",
-      "family",
-      "dinners",
+      "the",
+      "table",
       "."
     ],
     "gap": null,
@@ -2138,23 +2152,24 @@
       "text",
       "speak"
     ],
-    "cue": "🌅",
+    "cue": "🛏️",
     "promptEn": "What do you do in the morning?",
     "promptPl": "Co robisz rano?",
-    "answer": "I get up early.",
+    "answer": "I get up from bed.",
     "accept": [],
-    "speakPromptEn": "Say: I get up early.",
-    "speakPromptPl": "Powiedz: I get up early.",
+    "speakPromptEn": "Say: I get up from bed.",
+    "speakPromptPl": "Powiedz: I get up from bed.",
     "distractors": [
-      "I gets up early.",
-      "She gets up early.",
+      "I gets up from bed.",
+      "She gets up from bed.",
       "I go to bed early."
     ],
     "tiles": [
       "I",
       "get",
       "up",
-      "early",
+      "from",
+      "bed",
       "."
     ],
     "gap": null,
@@ -2176,21 +2191,21 @@
     "cue": "🍽️",
     "promptEn": "Where does the family eat?",
     "promptPl": "Gdzie je rodzina?",
-    "answer": "We eat in the kitchen.",
+    "answer": "We eat at the table.",
     "accept": [],
-    "speakPromptEn": "Say: We eat in the kitchen.",
-    "speakPromptPl": "Powiedz: We eat in the kitchen.",
+    "speakPromptEn": "Say: We eat at the table.",
+    "speakPromptPl": "Powiedz: We eat at the table.",
     "distractors": [
-      "We eats in the kitchen.",
-      "We eat in the bedroom.",
-      "They eat in the kitchen."
+      "We eats at the table.",
+      "We eat on the bed.",
+      "They eat at the table."
     ],
     "tiles": [
       "We",
       "eat",
-      "in",
+      "at",
       "the",
-      "kitchen",
+      "table",
       "."
     ],
     "gap": null,
@@ -2210,22 +2225,24 @@
       "speak"
     ],
     "cue": "🧼",
-    "promptEn": "What does she do after dinner?",
-    "promptPl": "Co ona robi po obiedzie?",
-    "answer": "She washes the dishes.",
+    "promptEn": "What does she wash in the sink?",
+    "promptPl": "Co ona myje w zlewie?",
+    "answer": "She washes cups in the sink.",
     "accept": [],
-    "speakPromptEn": "Say: She washes the dishes.",
-    "speakPromptPl": "Powiedz: She washes the dishes.",
+    "speakPromptEn": "Say: She washes cups in the sink.",
+    "speakPromptPl": "Powiedz: She washes cups in the sink.",
     "distractors": [
-      "She wash the dishes.",
-      "He washes the dishes.",
-      "She washes the clothes."
+      "She wash cups in the sink.",
+      "He washes cups in the sink.",
+      "She washes shoes in the sink."
     ],
     "tiles": [
       "She",
       "washes",
+      "cups",
+      "in",
       "the",
-      "dishes",
+      "sink",
       "."
     ],
     "gap": null,
@@ -2245,22 +2262,22 @@
       "speak"
     ],
     "cue": "🧹",
-    "promptEn": "What do they do on Saturday?",
-    "promptPl": "Co robią w sobotę?",
-    "answer": "They clean the house.",
+    "promptEn": "What do they clean?",
+    "promptPl": "Co sprzątają?",
+    "answer": "They clean the table.",
     "accept": [],
-    "speakPromptEn": "Say: They clean the house.",
-    "speakPromptPl": "Powiedz: They clean the house.",
+    "speakPromptEn": "Say: They clean the table.",
+    "speakPromptPl": "Powiedz: They clean the table.",
     "distractors": [
-      "They cleans the house.",
+      "They cleans the table.",
       "They clean the school.",
-      "He cleans the house."
+      "He cleans the table."
     ],
     "tiles": [
       "They",
       "clean",
       "the",
-      "house",
+      "table",
       "."
     ],
     "gap": null,
@@ -2852,27 +2869,27 @@
       "text",
       "speak"
     ],
-    "cue": "🥪",
-    "promptEn": "Talk about your lunch.",
-    "promptPl": "Powiedz o swoim lunchu.",
-    "answer": "I have got a sandwich.",
+    "cue": "🍕",
+    "promptEn": "Talk about your pizza.",
+    "promptPl": "Powiedz o swojej pizzy.",
+    "answer": "I have got a pizza.",
     "accept": [
-      "I've got a sandwich.",
-      "I have a sandwich."
+      "I've got a pizza.",
+      "I have a pizza."
     ],
-    "speakPromptEn": "Say: I have got a sandwich.",
-    "speakPromptPl": "Powiedz: I have got a sandwich.",
+    "speakPromptEn": "Say: I have got a pizza.",
+    "speakPromptPl": "Powiedz: I have got a pizza.",
     "distractors": [
-      "She has got a sandwich.",
+      "She has got a pizza.",
       "I have got an apple.",
-      "I haven't got a sandwich."
+      "I haven't got a pizza."
     ],
     "tiles": [
       "I",
       "have",
       "got",
       "a",
-      "sandwich",
+      "pizza",
       "."
     ],
     "gap": null,
@@ -3009,27 +3026,27 @@
       "text",
       "speak"
     ],
-    "cue": "🍪",
-    "promptEn": "Talk about biscuits.",
-    "promptPl": "Powiedz o ciasteczkach.",
-    "answer": "He has got five biscuits.",
+    "cue": "🍎",
+    "promptEn": "Talk about apples.",
+    "promptPl": "Powiedz o jabłkach.",
+    "answer": "He has got five apples.",
     "accept": [
-      "He's got five biscuits.",
-      "He is got five biscuits."
+      "He's got five apples.",
+      "He is got five apples."
     ],
-    "speakPromptEn": "Say: He has got five biscuits.",
-    "speakPromptPl": "Powiedz: He has got five biscuits.",
+    "speakPromptEn": "Say: He has got five apples.",
+    "speakPromptPl": "Powiedz: He has got five apples.",
     "distractors": [
-      "He have got five biscuits.",
-      "He has got four biscuits.",
-      "She has got five biscuits."
+      "He have got five apples.",
+      "He has got four apples.",
+      "She has got five apples."
     ],
     "tiles": [
       "He",
       "has",
       "got",
       "five",
-      "biscuits",
+      "apples",
       "."
     ],
     "gap": null,
@@ -3119,23 +3136,22 @@
       "speak"
     ],
     "cue": "🥤",
-    "promptEn": "Can he make a drink?",
-    "promptPl": "Czy on umie zrobić napój?",
-    "answer": "He can make a drink.",
+    "promptEn": "Can he pour milk?",
+    "promptPl": "Czy on umie nalać mleko?",
+    "answer": "He can pour milk.",
     "accept": [],
-    "speakPromptEn": "Say: He can make a drink.",
-    "speakPromptPl": "Powiedz: He can make a drink.",
+    "speakPromptEn": "Say: He can pour milk.",
+    "speakPromptPl": "Powiedz: He can pour milk.",
     "distractors": [
-      "He can't make a drink.",
-      "She can make a drink.",
-      "He can make a cake."
+      "He can't pour milk.",
+      "She can pour milk.",
+      "He can pour soup."
     ],
     "tiles": [
       "He",
       "can",
-      "make",
-      "a",
-      "drink",
+      "pour",
+      "milk",
       "."
     ],
     "gap": null,
@@ -3190,27 +3206,26 @@
       "text",
       "speak"
     ],
-    "cue": "🚫🌶️",
-    "promptEn": "Say you cannot eat spicy food.",
-    "promptPl": "Powiedz, że nie jesz ostrego.",
-    "answer": "I can't eat spicy food.",
+    "cue": "🚫🐟",
+    "promptEn": "Say you cannot eat fish.",
+    "promptPl": "Powiedz, że nie jesz ryb.",
+    "answer": "I can't eat fish.",
     "accept": [
-      "I ca not eat spicy food.",
-      "I cannot eat spicy food."
+      "I ca not eat fish.",
+      "I cannot eat fish."
     ],
-    "speakPromptEn": "Say: I can't eat spicy food.",
-    "speakPromptPl": "Powiedz: I can't eat spicy food.",
+    "speakPromptEn": "Say: I can't eat fish.",
+    "speakPromptPl": "Powiedz: I can't eat fish.",
     "distractors": [
-      "I can eat spicy food.",
-      "She can't eat spicy food.",
-      "I can't eat sweet food."
+      "I can eat fish.",
+      "She can't eat fish.",
+      "I can't eat cheese."
     ],
     "tiles": [
       "I",
       "can't",
       "eat",
-      "spicy",
-      "food",
+      "fish",
       "."
     ],
     "gap": null,
@@ -3297,22 +3312,22 @@
       "text",
       "speak"
     ],
-    "cue": "🥦",
-    "promptEn": "Does he like broccoli?",
-    "promptPl": "Czy on lubi brokuły?",
-    "answer": "He likes broccoli.",
+    "cue": "🧀",
+    "promptEn": "Does he like cheese?",
+    "promptPl": "Czy on lubi ser?",
+    "answer": "He likes cheese.",
     "accept": [],
-    "speakPromptEn": "Say: He likes broccoli.",
-    "speakPromptPl": "Powiedz: He likes broccoli.",
+    "speakPromptEn": "Say: He likes cheese.",
+    "speakPromptPl": "Powiedz: He likes cheese.",
     "distractors": [
-      "He like broccoli.",
-      "He doesn't like broccoli.",
-      "She likes broccoli."
+      "He like cheese.",
+      "He doesn't like cheese.",
+      "She likes cheese."
     ],
     "tiles": [
       "He",
       "likes",
-      "broccoli",
+      "cheese",
       "."
     ],
     "gap": null,
@@ -3436,23 +3451,22 @@
       "text",
       "speak"
     ],
-    "cue": "🥪",
+    "cue": "🍞",
     "promptEn": "What does she eat for lunch?",
     "promptPl": "Co ona je na lunch?",
-    "answer": "She eats a sandwich for lunch.",
+    "answer": "She eats bread for lunch.",
     "accept": [],
-    "speakPromptEn": "Say: She eats a sandwich for lunch.",
-    "speakPromptPl": "Powiedz: She eats a sandwich for lunch.",
+    "speakPromptEn": "Say: She eats bread for lunch.",
+    "speakPromptPl": "Powiedz: She eats bread for lunch.",
     "distractors": [
-      "She eat a sandwich for lunch.",
-      "He eats a sandwich for lunch.",
-      "She eats a pizza for lunch."
+      "She eat bread for lunch.",
+      "He eats bread for lunch.",
+      "She eats pizza for lunch."
     ],
     "tiles": [
       "She",
       "eats",
-      "a",
-      "sandwich",
+      "bread",
       "for",
       "lunch",
       "."
@@ -3509,22 +3523,22 @@
       "text",
       "speak"
     ],
-    "cue": "💧",
+    "cue": "🥛",
     "promptEn": "What do you drink every day?",
     "promptPl": "Co pijesz codziennie?",
-    "answer": "I drink water every day.",
+    "answer": "I drink milk every day.",
     "accept": [],
-    "speakPromptEn": "Say: I drink water every day.",
-    "speakPromptPl": "Powiedz: I drink water every day.",
+    "speakPromptEn": "Say: I drink milk every day.",
+    "speakPromptPl": "Powiedz: I drink milk every day.",
     "distractors": [
-      "I drinks water every day.",
-      "She drinks water every day.",
-      "I drink juice every day."
+      "I drinks milk every day.",
+      "She drinks milk every day.",
+      "I drink soup every day."
     ],
     "tiles": [
       "I",
       "drink",
-      "water",
+      "milk",
       "every",
       "day",
       "."
@@ -3548,14 +3562,17 @@
     "cue": "🛒",
     "promptEn": "Where do we buy food?",
     "promptPl": "Gdzie kupujemy jedzenie?",
-    "answer": "We buy food at the shop.",
-    "accept": [],
-    "speakPromptEn": "Say: We buy food at the shop.",
-    "speakPromptPl": "Powiedz: We buy food at the shop.",
+    "answer": "We buy food at the supermarket.",
+    "accept": [
+      "We buy food at the fridge.",
+      "We buy bread at the shop."
+    ],
+    "speakPromptEn": "Say: We buy food at the supermarket.",
+    "speakPromptPl": "Powiedz: We buy food at the supermarket.",
     "distractors": [
-      "We buys food at the shop.",
+      "We buys food at the supermarket.",
       "We buy food at school.",
-      "They buy food at the shop."
+      "They buy food at the supermarket."
     ],
     "tiles": [
       "We",
@@ -3563,7 +3580,7 @@
       "food",
       "at",
       "the",
-      "shop",
+      "supermarket",
       "."
     ],
     "gap": null,
@@ -3937,24 +3954,25 @@
       "speak"
     ],
     "cue": "⚽",
-    "promptEn": "What is this sport?",
-    "promptPl": "Jaki to sport?",
-    "answer": "It is football.",
+    "promptEn": "What is this?",
+    "promptPl": "Co to jest?",
+    "answer": "It is a ball.",
     "accept": [
-      "It's football.",
-      "This is football."
+      "It's a ball.",
+      "This is a ball."
     ],
-    "speakPromptEn": "Say: It is football.",
-    "speakPromptPl": "Powiedz: It is football.",
+    "speakPromptEn": "Say: It is a ball.",
+    "speakPromptPl": "Powiedz: It is a ball.",
     "distractors": [
-      "It is tennis.",
-      "It is basketball.",
-      "They are football."
+      "It is a bike.",
+      "It is a kite.",
+      "They are balls."
     ],
     "tiles": [
       "It",
       "is",
-      "football",
+      "a",
+      "ball",
       "."
     ],
     "gap": null,
@@ -3973,23 +3991,23 @@
       "text",
       "speak"
     ],
-    "cue": "🎮",
-    "promptEn": "Is the game fun?",
-    "promptPl": "Czy gra jest fajna?",
-    "answer": "The game is fun.",
+    "cue": "🪁",
+    "promptEn": "Is the kite high?",
+    "promptPl": "Czy latawiec jest wysoko?",
+    "answer": "The kite is high.",
     "accept": [],
-    "speakPromptEn": "Say: The game is fun.",
-    "speakPromptPl": "Powiedz: The game is fun.",
+    "speakPromptEn": "Say: The kite is high.",
+    "speakPromptPl": "Powiedz: The kite is high.",
     "distractors": [
-      "The game is boring.",
-      "The games are fun.",
-      "The book is fun."
+      "The kite is low.",
+      "The kites are high.",
+      "The ball is high."
     ],
     "tiles": [
       "The",
-      "game",
+      "kite",
       "is",
-      "fun",
+      "high",
       "."
     ],
     "gap": null,
@@ -4008,21 +4026,21 @@
       "text",
       "speak"
     ],
-    "cue": "🎵",
-    "promptEn": "How is the music?",
-    "promptPl": "Jaka jest muzyka?",
-    "answer": "The music is loud.",
+    "cue": "🎸",
+    "promptEn": "How is the guitar?",
+    "promptPl": "Jaka jest gitara?",
+    "answer": "The guitar is loud.",
     "accept": [],
-    "speakPromptEn": "Say: The music is loud.",
-    "speakPromptPl": "Powiedz: The music is loud.",
+    "speakPromptEn": "Say: The guitar is loud.",
+    "speakPromptPl": "Powiedz: The guitar is loud.",
     "distractors": [
-      "The music is quiet.",
-      "The musics are loud.",
-      "The song is sad."
+      "The guitar is quiet.",
+      "The guitars are loud.",
+      "The book is loud."
     ],
     "tiles": [
       "The",
-      "music",
+      "guitar",
       "is",
       "loud",
       "."
@@ -4043,26 +4061,25 @@
       "text",
       "speak"
     ],
-    "cue": "😊",
-    "promptEn": "How are you after the match?",
-    "promptPl": "Jak się czujesz po meczu?",
-    "answer": "I am tired but happy.",
-    "accept": [
-      "I'm tired but happy."
-    ],
-    "speakPromptEn": "Say: I am tired but happy.",
-    "speakPromptPl": "Powiedz: I am tired but happy.",
+    "cue": "🚴",
+    "promptEn": "Where is the bicycle?",
+    "promptPl": "Gdzie jest rower?",
+    "answer": "The bicycle is in the park.",
+    "accept": [],
+    "speakPromptEn": "Say: The bicycle is in the park.",
+    "speakPromptPl": "Powiedz: The bicycle is in the park.",
     "distractors": [
-      "I am sad but happy.",
-      "He is tired but happy.",
-      "I am tired but angry."
+      "The bicycle is in the kitchen.",
+      "The ball is in the park.",
+      "The bicycles are in the park."
     ],
     "tiles": [
-      "I",
-      "am",
-      "tired",
-      "but",
-      "happy",
+      "The",
+      "bicycle",
+      "is",
+      "in",
+      "the",
+      "park",
       "."
     ],
     "gap": null,
@@ -4082,24 +4099,24 @@
       "speak"
     ],
     "cue": "🏞️",
-    "promptEn": "Where is the park?",
-    "promptPl": "Gdzie jest park?",
-    "answer": "The park is near my house.",
+    "promptEn": "Where is the pond?",
+    "promptPl": "Gdzie jest staw?",
+    "answer": "The pond is in the park.",
     "accept": [],
-    "speakPromptEn": "Say: The park is near my house.",
-    "speakPromptPl": "Powiedz: The park is near my house.",
+    "speakPromptEn": "Say: The pond is in the park.",
+    "speakPromptPl": "Powiedz: The pond is in the park.",
     "distractors": [
-      "The park is far from my house.",
-      "The school is near my house.",
-      "The parks are near my house."
+      "The pond is at the beach.",
+      "The school is in the park.",
+      "The ponds are in the park."
     ],
     "tiles": [
       "The",
-      "park",
+      "pond",
       "is",
-      "near",
-      "my",
-      "house",
+      "in",
+      "the",
+      "park",
       "."
     ],
     "gap": null,
@@ -4163,7 +4180,8 @@
     "answer": "He has got a new bike.",
     "accept": [
       "He's got a new bike.",
-      "He is got a new bike."
+      "He is got a new bike.",
+      "He has got a new bicycle."
     ],
     "speakPromptEn": "Say: He has got a new bike.",
     "speakPromptPl": "Powiedz: He has got a new bike.",
@@ -4236,27 +4254,26 @@
       "text",
       "speak"
     ],
-    "cue": "🎲",
-    "promptEn": "Talk about board games.",
-    "promptPl": "Powiedz o grach planszowych.",
-    "answer": "We have got three board games.",
+    "cue": "🪁",
+    "promptEn": "Talk about kites.",
+    "promptPl": "Powiedz o latawcach.",
+    "answer": "We have got a kite.",
     "accept": [
-      "We've got three board games."
+      "We've got a kite."
     ],
-    "speakPromptEn": "Say: We have got three board games.",
-    "speakPromptPl": "Powiedz: We have got three board games.",
+    "speakPromptEn": "Say: We have got a kite.",
+    "speakPromptPl": "Powiedz: We have got a kite.",
     "distractors": [
-      "We has got three board games.",
-      "We have got two board games.",
-      "They have got three board games."
+      "We has got a kite.",
+      "We have got a ball.",
+      "They have got a kite."
     ],
     "tiles": [
       "We",
       "have",
       "got",
-      "three",
-      "board",
-      "games",
+      "a",
+      "kite",
       "."
     ],
     "gap": null,
@@ -4275,25 +4292,26 @@
       "text",
       "speak"
     ],
-    "cue": "🎧",
-    "promptEn": "Talk about headphones.",
-    "promptPl": "Powiedz o słuchawkach.",
-    "answer": "They have got headphones.",
+    "cue": "🪣",
+    "promptEn": "Talk about the bucket.",
+    "promptPl": "Powiedz o wiaderku.",
+    "answer": "They have got a bucket.",
     "accept": [
-      "They've got headphones."
+      "They've got a bucket."
     ],
-    "speakPromptEn": "Say: They have got headphones.",
-    "speakPromptPl": "Powiedz: They have got headphones.",
+    "speakPromptEn": "Say: They have got a bucket.",
+    "speakPromptPl": "Powiedz: They have got a bucket.",
     "distractors": [
-      "They has got headphones.",
-      "They haven't got headphones.",
-      "He has got headphones."
+      "They has got a bucket.",
+      "They haven't got a bucket.",
+      "He has got a bucket."
     ],
     "tiles": [
       "They",
       "have",
       "got",
-      "headphones",
+      "a",
+      "bucket",
       "."
     ],
     "gap": null,
@@ -4312,22 +4330,24 @@
       "text",
       "speak"
     ],
-    "cue": "🏊",
-    "promptEn": "Can you swim?",
-    "promptPl": "Czy umiesz pływać?",
-    "answer": "I can swim.",
+    "cue": "🏖️",
+    "promptEn": "Can you build a sandcastle?",
+    "promptPl": "Czy umiesz zbudować zamek z piasku?",
+    "answer": "I can build a sandcastle.",
     "accept": [],
-    "speakPromptEn": "Say: I can swim.",
-    "speakPromptPl": "Powiedz: I can swim.",
+    "speakPromptEn": "Say: I can build a sandcastle.",
+    "speakPromptPl": "Powiedz: I can build a sandcastle.",
     "distractors": [
-      "I can't swim.",
-      "I can run.",
-      "She can swim."
+      "I can't build a sandcastle.",
+      "I can build a house.",
+      "She can build a sandcastle."
     ],
     "tiles": [
       "I",
       "can",
-      "swim",
+      "build",
+      "a",
+      "sandcastle",
       "."
     ],
     "gap": null,
@@ -4347,22 +4367,23 @@
       "speak"
     ],
     "cue": "🏃",
-    "promptEn": "Can he run fast?",
-    "promptPl": "Czy on umie szybko biegać?",
-    "answer": "He can run fast.",
+    "promptEn": "Can he ride a bicycle?",
+    "promptPl": "Czy on umie jeździć na rowerze?",
+    "answer": "He can ride a bicycle.",
     "accept": [],
-    "speakPromptEn": "Say: He can run fast.",
-    "speakPromptPl": "Powiedz: He can run fast.",
+    "speakPromptEn": "Say: He can ride a bicycle.",
+    "speakPromptPl": "Powiedz: He can ride a bicycle.",
     "distractors": [
-      "He can't run fast.",
-      "She can run fast.",
-      "He can jump high."
+      "He can't ride a bicycle.",
+      "She can ride a bicycle.",
+      "He can ride a horse."
     ],
     "tiles": [
       "He",
       "can",
-      "run",
-      "fast",
+      "ride",
+      "a",
+      "bicycle",
       "."
     ],
     "gap": null,
@@ -4382,21 +4403,23 @@
       "speak"
     ],
     "cue": "💃",
-    "promptEn": "Can she dance?",
-    "promptPl": "Czy ona umie tańczyć?",
-    "answer": "She can dance.",
+    "promptEn": "Can she fly a kite?",
+    "promptPl": "Czy ona umie puszczać latawiec?",
+    "answer": "She can fly a kite.",
     "accept": [],
-    "speakPromptEn": "Say: She can dance.",
-    "speakPromptPl": "Powiedz: She can dance.",
+    "speakPromptEn": "Say: She can fly a kite.",
+    "speakPromptPl": "Powiedz: She can fly a kite.",
     "distractors": [
-      "She can't dance.",
-      "He can dance.",
-      "She can sing."
+      "She can't fly a kite.",
+      "He can fly a kite.",
+      "She can fly a ball."
     ],
     "tiles": [
       "She",
       "can",
-      "dance",
+      "fly",
+      "a",
+      "kite",
       "."
     ],
     "gap": null,
@@ -4451,26 +4474,27 @@
       "text",
       "speak"
     ],
-    "cue": "🚫🎾",
-    "promptEn": "Say you cannot play tennis.",
-    "promptPl": "Powiedz, że nie umiesz grać w tenisa.",
-    "answer": "I can't play tennis.",
+    "cue": "🚫⚽",
+    "promptEn": "Say you cannot throw the ball.",
+    "promptPl": "Powiedz, że nie umiesz rzucić piłki.",
+    "answer": "I can't throw the ball.",
     "accept": [
-      "I ca not play tennis.",
-      "I cannot play tennis."
+      "I ca not throw the ball.",
+      "I cannot throw the ball."
     ],
-    "speakPromptEn": "Say: I can't play tennis.",
-    "speakPromptPl": "Powiedz: I can't play tennis.",
+    "speakPromptEn": "Say: I can't throw the ball.",
+    "speakPromptPl": "Powiedz: I can't throw the ball.",
     "distractors": [
-      "I can play tennis.",
-      "She can't play tennis.",
-      "I can't play football."
+      "I can throw the ball.",
+      "She can't throw the ball.",
+      "I can't throw the kite."
     ],
     "tiles": [
       "I",
       "can't",
-      "play",
-      "tennis",
+      "throw",
+      "the",
+      "ball",
       "."
     ],
     "gap": null,
@@ -4523,22 +4547,23 @@
       "text",
       "speak"
     ],
-    "cue": "🎶",
-    "promptEn": "Does she like music?",
-    "promptPl": "Czy ona lubi muzykę?",
-    "answer": "She likes music.",
+    "cue": "🎸",
+    "promptEn": "Does she like the guitar?",
+    "promptPl": "Czy ona lubi gitarę?",
+    "answer": "She likes the guitar.",
     "accept": [],
-    "speakPromptEn": "Say: She likes music.",
-    "speakPromptPl": "Powiedz: She likes music.",
+    "speakPromptEn": "Say: She likes the guitar.",
+    "speakPromptPl": "Powiedz: She likes the guitar.",
     "distractors": [
-      "She like music.",
-      "She doesn't like music.",
-      "He likes music."
+      "She like the guitar.",
+      "She doesn't like the guitar.",
+      "He likes the guitar."
     ],
     "tiles": [
       "She",
       "likes",
-      "music",
+      "the",
+      "guitar",
       "."
     ],
     "gap": null,
@@ -4557,23 +4582,23 @@
       "text",
       "speak"
     ],
-    "cue": "🎮",
-    "promptEn": "Does he like computer games?",
-    "promptPl": "Czy on lubi gry komputerowe?",
-    "answer": "He likes computer games.",
+    "cue": "🪁",
+    "promptEn": "Does he like the kite?",
+    "promptPl": "Czy on lubi latawiec?",
+    "answer": "He likes the kite.",
     "accept": [],
-    "speakPromptEn": "Say: He likes computer games.",
-    "speakPromptPl": "Powiedz: He likes computer games.",
+    "speakPromptEn": "Say: He likes the kite.",
+    "speakPromptPl": "Powiedz: He likes the kite.",
     "distractors": [
-      "He like computer games.",
-      "He doesn't like computer games.",
-      "She likes computer games."
+      "He like the kite.",
+      "He doesn't like the kite.",
+      "She likes the kite."
     ],
     "tiles": [
       "He",
       "likes",
-      "computer",
-      "games",
+      "the",
+      "kite",
       "."
     ],
     "gap": null,
@@ -4593,21 +4618,22 @@
       "speak"
     ],
     "cue": "📚",
-    "promptEn": "Do they like reading?",
-    "promptPl": "Czy lubią czytać?",
-    "answer": "They like reading.",
+    "promptEn": "Do they like reading books?",
+    "promptPl": "Czy lubią czytać książki?",
+    "answer": "They like reading books.",
     "accept": [],
-    "speakPromptEn": "Say: They like reading.",
-    "speakPromptPl": "Powiedz: They like reading.",
+    "speakPromptEn": "Say: They like reading books.",
+    "speakPromptPl": "Powiedz: They like reading books.",
     "distractors": [
-      "They likes reading.",
-      "They don't like reading.",
-      "He likes reading."
+      "They likes reading books.",
+      "They don't like reading books.",
+      "He likes reading books."
     ],
     "tiles": [
       "They",
       "like",
       "reading",
+      "books",
       "."
     ],
     "gap": null,
@@ -4626,22 +4652,23 @@
       "text",
       "speak"
     ],
-    "cue": "🎬",
-    "promptEn": "Do you like films?",
-    "promptPl": "Czy lubisz filmy?",
-    "answer": "We like films.",
+    "cue": "🎨",
+    "promptEn": "Do you like the painting?",
+    "promptPl": "Czy lubisz obraz?",
+    "answer": "We like the painting.",
     "accept": [],
-    "speakPromptEn": "Say: We like films.",
-    "speakPromptPl": "Powiedz: We like films.",
+    "speakPromptEn": "Say: We like the painting.",
+    "speakPromptPl": "Powiedz: We like the painting.",
     "distractors": [
-      "We likes films.",
-      "We don't like films.",
-      "I like books."
+      "We likes the painting.",
+      "We don't like the painting.",
+      "I like the ball."
     ],
     "tiles": [
       "We",
       "like",
-      "films",
+      "the",
+      "painting",
       "."
     ],
     "gap": null,
@@ -4663,19 +4690,21 @@
     "cue": "⚽",
     "promptEn": "What do you play after school?",
     "promptPl": "W co grasz po szkole?",
-    "answer": "I play football after school.",
+    "answer": "I play with a ball after school.",
     "accept": [],
-    "speakPromptEn": "Say: I play football after school.",
-    "speakPromptPl": "Powiedz: I play football after school.",
+    "speakPromptEn": "Say: I play with a ball after school.",
+    "speakPromptPl": "Powiedz: I play with a ball after school.",
     "distractors": [
-      "I plays football after school.",
-      "She plays football after school.",
-      "I play tennis after school."
+      "I plays with a ball after school.",
+      "She plays with a ball after school.",
+      "I play with a kite after school."
     ],
     "tiles": [
       "I",
       "play",
-      "football",
+      "with",
+      "a",
+      "ball",
       "after",
       "school",
       "."
@@ -4696,25 +4725,26 @@
       "text",
       "speak"
     ],
-    "cue": "📺",
-    "promptEn": "What does she watch in the evening?",
-    "promptPl": "Co ona ogląda wieczorem?",
-    "answer": "She watches cartoons in the evening.",
+    "cue": "🎸",
+    "promptEn": "What does she play in the park?",
+    "promptPl": "Na czym ona gra w parku?",
+    "answer": "She plays the guitar in the park.",
     "accept": [],
-    "speakPromptEn": "Say: She watches cartoons in the evening.",
-    "speakPromptPl": "Powiedz: She watches cartoons in the evening.",
+    "speakPromptEn": "Say: She plays the guitar in the park.",
+    "speakPromptPl": "Powiedz: She plays the guitar in the park.",
     "distractors": [
-      "She watch cartoons in the evening.",
-      "He watches cartoons in the evening.",
-      "She watches news in the evening."
+      "She play the guitar in the park.",
+      "He plays the guitar in the park.",
+      "She plays the ball in the park."
     ],
     "tiles": [
       "She",
-      "watches",
-      "cartoons",
+      "plays",
+      "the",
+      "guitar",
       "in",
       "the",
-      "evening",
+      "park",
       "."
     ],
     "gap": null,
@@ -4769,25 +4799,26 @@
       "text",
       "speak"
     ],
-    "cue": "🎵",
-    "promptEn": "What do we do on Friday?",
-    "promptPl": "Co robimy w piątek?",
-    "answer": "We listen to music on Friday.",
+    "cue": "🦆",
+    "promptEn": "What do we watch at the pond?",
+    "promptPl": "Co oglądamy przy stawie?",
+    "answer": "We watch the ducks at the pond.",
     "accept": [],
-    "speakPromptEn": "Say: We listen to music on Friday.",
-    "speakPromptPl": "Powiedz: We listen to music on Friday.",
+    "speakPromptEn": "Say: We watch the ducks at the pond.",
+    "speakPromptPl": "Powiedz: We watch the ducks at the pond.",
     "distractors": [
-      "We listens to music on Friday.",
-      "We listen to music on Monday.",
-      "They listen to music on Friday."
+      "We watches the ducks at the pond.",
+      "We watch the ducks at school.",
+      "They watch the ducks at the pond."
     ],
     "tiles": [
       "We",
-      "listen",
-      "to",
-      "music",
-      "on",
-      "Friday",
+      "watch",
+      "the",
+      "ducks",
+      "at",
+      "the",
+      "pond",
       "."
     ],
     "gap": null,
@@ -5344,24 +5375,22 @@
       "speak"
     ],
     "cue": "❄️",
-    "promptEn": "How is it outside?",
-    "promptPl": "Jak jest na zewnątrz?",
-    "answer": "It is cold outside.",
-    "accept": [
-      "It's cold outside."
-    ],
-    "speakPromptEn": "Say: It is cold outside.",
-    "speakPromptPl": "Powiedz: It is cold outside.",
+    "promptEn": "How is the cloud?",
+    "promptPl": "Jaka jest chmura?",
+    "answer": "The cloud is grey.",
+    "accept": [],
+    "speakPromptEn": "Say: The cloud is grey.",
+    "speakPromptPl": "Powiedz: The cloud is grey.",
     "distractors": [
-      "It is hot outside.",
-      "It is warm outside.",
-      "It are cold outside."
+      "The cloud is blue.",
+      "The clouds are grey.",
+      "The sun is grey."
     ],
     "tiles": [
-      "It",
+      "The",
+      "cloud",
       "is",
-      "cold",
-      "outside",
+      "grey",
       "."
     ],
     "gap": null,
@@ -5459,26 +5488,27 @@
       "speak"
     ],
     "cue": "🧤",
-    "promptEn": "Talk about his gloves.",
+    "promptEn": "Talk about his mittens.",
     "promptPl": "Powiedz o jego rękawiczkach.",
-    "answer": "He has got warm gloves.",
+    "answer": "He has got warm mittens.",
     "accept": [
-      "He's got warm gloves.",
-      "He is got warm gloves."
+      "He's got warm mittens.",
+      "He is got warm mittens.",
+      "He has got warm gloves."
     ],
-    "speakPromptEn": "Say: He has got warm gloves.",
-    "speakPromptPl": "Powiedz: He has got warm gloves.",
+    "speakPromptEn": "Say: He has got warm mittens.",
+    "speakPromptPl": "Powiedz: He has got warm mittens.",
     "distractors": [
-      "She has got warm gloves.",
-      "He have got warm gloves.",
-      "He has got cold gloves."
+      "She has got warm mittens.",
+      "He have got warm mittens.",
+      "He has got cold mittens."
     ],
     "tiles": [
       "He",
       "has",
       "got",
       "warm",
-      "gloves",
+      "mittens",
       "."
     ],
     "gap": null,
@@ -5899,22 +5929,22 @@
       "speak"
     ],
     "cue": "🌬️",
-    "promptEn": "Do you like windy weather?",
-    "promptPl": "Czy lubisz wietrzną pogodę?",
-    "answer": "We like windy weather.",
+    "promptEn": "Do you like the rainbow?",
+    "promptPl": "Czy lubisz tęczę?",
+    "answer": "We like the rainbow.",
     "accept": [],
-    "speakPromptEn": "Say: We like windy weather.",
-    "speakPromptPl": "Powiedz: We like windy weather.",
+    "speakPromptEn": "Say: We like the rainbow.",
+    "speakPromptPl": "Powiedz: We like the rainbow.",
     "distractors": [
-      "We likes windy weather.",
-      "We don't like windy weather.",
-      "I like rainy weather."
+      "We likes the rainbow.",
+      "We don't like the rainbow.",
+      "I like the puddle."
     ],
     "tiles": [
       "We",
       "like",
-      "windy",
-      "weather",
+      "the",
+      "rainbow",
       "."
     ],
     "gap": null,
@@ -6594,19 +6624,20 @@
       "speak"
     ],
     "cue": "🚦",
-    "promptEn": "Is the light red?",
-    "promptPl": "Czy światło jest czerwone?",
-    "answer": "The light is red.",
+    "promptEn": "Is the traffic light red?",
+    "promptPl": "Czy światła są czerwone?",
+    "answer": "The traffic light is red.",
     "accept": [],
-    "speakPromptEn": "Say: The light is red.",
-    "speakPromptPl": "Powiedz: The light is red.",
+    "speakPromptEn": "Say: The traffic light is red.",
+    "speakPromptPl": "Powiedz: The traffic light is red.",
     "distractors": [
-      "The light is green.",
-      "The lights are red.",
+      "The traffic light is green.",
+      "The traffic lights are red.",
       "The car is red."
     ],
     "tiles": [
       "The",
+      "traffic",
       "light",
       "is",
       "red",
@@ -6628,21 +6659,21 @@
       "text",
       "speak"
     ],
-    "cue": "🏛️",
-    "promptEn": "Is the museum big?",
-    "promptPl": "Czy muzeum jest duże?",
-    "answer": "The museum is big.",
+    "cue": "⛪",
+    "promptEn": "Is the church big?",
+    "promptPl": "Czy kościół jest duży?",
+    "answer": "The church is big.",
     "accept": [],
-    "speakPromptEn": "Say: The museum is big.",
-    "speakPromptPl": "Powiedz: The museum is big.",
+    "speakPromptEn": "Say: The church is big.",
+    "speakPromptPl": "Powiedz: The church is big.",
     "distractors": [
-      "The museum is small.",
-      "The museums are big.",
-      "The library is big."
+      "The church is small.",
+      "The churches are big.",
+      "The hospital is big."
     ],
     "tiles": [
       "The",
-      "museum",
+      "church",
       "is",
       "big",
       "."
@@ -6702,19 +6733,19 @@
       "text",
       "speak"
     ],
-    "cue": "🎫",
-    "promptEn": "Talk about her ticket.",
-    "promptPl": "Powiedz o jej bilecie.",
-    "answer": "She has got a ticket.",
+    "cue": "🧳",
+    "promptEn": "Talk about her suitcase.",
+    "promptPl": "Powiedz o jej walizce.",
+    "answer": "She has got a suitcase.",
     "accept": [
-      "She's got a ticket.",
-      "She is got a ticket."
+      "She's got a suitcase.",
+      "She is got a suitcase."
     ],
-    "speakPromptEn": "Say: She has got a ticket.",
-    "speakPromptPl": "Powiedz: She has got a ticket.",
+    "speakPromptEn": "Say: She has got a suitcase.",
+    "speakPromptPl": "Powiedz: She has got a suitcase.",
     "distractors": [
-      "He has got a ticket.",
-      "She have got a ticket.",
+      "He has got a suitcase.",
+      "She have got a suitcase.",
       "She has got a map."
     ],
     "tiles": [
@@ -6722,7 +6753,7 @@
       "has",
       "got",
       "a",
-      "ticket",
+      "suitcase",
       "."
     ],
     "gap": null,
@@ -6821,27 +6852,26 @@
       "text",
       "speak"
     ],
-    "cue": "🅿️",
-    "promptEn": "Talk about a car park.",
-    "promptPl": "Powiedz o parkingu.",
-    "answer": "They have got a car park.",
+    "cue": "🚕",
+    "promptEn": "Talk about a taxi.",
+    "promptPl": "Powiedz o taksówce.",
+    "answer": "They have got a taxi.",
     "accept": [
-      "They've got a car park."
+      "They've got a taxi."
     ],
-    "speakPromptEn": "Say: They have got a car park.",
-    "speakPromptPl": "Powiedz: They have got a car park.",
+    "speakPromptEn": "Say: They have got a taxi.",
+    "speakPromptPl": "Powiedz: They have got a taxi.",
     "distractors": [
-      "They has got a car park.",
-      "They haven't got a car park.",
-      "He has got a car park."
+      "They has got a taxi.",
+      "They haven't got a taxi.",
+      "He has got a taxi."
     ],
     "tiles": [
       "They",
       "have",
       "got",
       "a",
-      "car",
-      "park",
+      "taxi",
       "."
     ],
     "gap": null,
@@ -6969,24 +6999,24 @@
       "text",
       "speak"
     ],
-    "cue": "🚦",
-    "promptEn": "Can they cross the street?",
-    "promptPl": "Czy mogą przejść przez ulicę?",
-    "answer": "They can cross the street.",
+    "cue": "🦓",
+    "promptEn": "Can they use the crosswalk?",
+    "promptPl": "Czy mogą skorzystać z przejścia?",
+    "answer": "They can use the crosswalk.",
     "accept": [],
-    "speakPromptEn": "Say: They can cross the street.",
-    "speakPromptPl": "Powiedz: They can cross the street.",
+    "speakPromptEn": "Say: They can use the crosswalk.",
+    "speakPromptPl": "Powiedz: They can use the crosswalk.",
     "distractors": [
-      "They can't cross the street.",
-      "He can cross the street.",
-      "They can cross the park."
+      "They can't use the crosswalk.",
+      "He can use the crosswalk.",
+      "They can use the bridge."
     ],
     "tiles": [
       "They",
       "can",
-      "cross",
+      "use",
       "the",
-      "street",
+      "crosswalk",
       "."
     ],
     "gap": null,
@@ -7044,23 +7074,23 @@
       "text",
       "speak"
     ],
-    "cue": "🏙️",
-    "promptEn": "Do you like your town?",
-    "promptPl": "Czy lubisz swoje miasto?",
-    "answer": "I like my town.",
+    "cue": "🌉",
+    "promptEn": "Do you like the bridge?",
+    "promptPl": "Czy lubisz most?",
+    "answer": "I like the bridge.",
     "accept": [],
-    "speakPromptEn": "Say: I like my town.",
-    "speakPromptPl": "Powiedz: I like my town.",
+    "speakPromptEn": "Say: I like the bridge.",
+    "speakPromptPl": "Powiedz: I like the bridge.",
     "distractors": [
-      "I don't like my town.",
-      "I like my village.",
-      "She likes my town."
+      "I don't like the bridge.",
+      "I like the river.",
+      "She likes the bridge."
     ],
     "tiles": [
       "I",
       "like",
-      "my",
-      "town",
+      "the",
+      "bridge",
       "."
     ],
     "gap": null,
@@ -7079,23 +7109,23 @@
       "text",
       "speak"
     ],
-    "cue": "🎬",
-    "promptEn": "Does she like the cinema?",
-    "promptPl": "Czy ona lubi kino?",
-    "answer": "She likes the cinema.",
+    "cue": "🚂",
+    "promptEn": "Does she like the train?",
+    "promptPl": "Czy ona lubi pociąg?",
+    "answer": "She likes the train.",
     "accept": [],
-    "speakPromptEn": "Say: She likes the cinema.",
-    "speakPromptPl": "Powiedz: She likes the cinema.",
+    "speakPromptEn": "Say: She likes the train.",
+    "speakPromptPl": "Powiedz: She likes the train.",
     "distractors": [
-      "She like the cinema.",
-      "She doesn't like the cinema.",
-      "He likes the cinema."
+      "She like the train.",
+      "She doesn't like the train.",
+      "He likes the train."
     ],
     "tiles": [
       "She",
       "likes",
       "the",
-      "cinema",
+      "train",
       "."
     ],
     "gap": null,
@@ -7114,24 +7144,23 @@
       "text",
       "speak"
     ],
-    "cue": "🏊",
-    "promptEn": "Does he like the swimming pool?",
-    "promptPl": "Czy on lubi basen?",
-    "answer": "He likes the swimming pool.",
+    "cue": "🚲",
+    "promptEn": "Does he like the bicycle?",
+    "promptPl": "Czy on lubi rower?",
+    "answer": "He likes the bicycle.",
     "accept": [],
-    "speakPromptEn": "Say: He likes the swimming pool.",
-    "speakPromptPl": "Powiedz: He likes the swimming pool.",
+    "speakPromptEn": "Say: He likes the bicycle.",
+    "speakPromptPl": "Powiedz: He likes the bicycle.",
     "distractors": [
-      "He like the swimming pool.",
-      "He doesn't like the swimming pool.",
-      "She likes the swimming pool."
+      "He like the bicycle.",
+      "He doesn't like the bicycle.",
+      "She likes the bicycle."
     ],
     "tiles": [
       "He",
       "likes",
       "the",
-      "swimming",
-      "pool",
+      "bicycle",
       "."
     ],
     "gap": null,
@@ -7151,22 +7180,22 @@
       "speak"
     ],
     "cue": "🌳",
-    "promptEn": "Do they like the park?",
-    "promptPl": "Czy lubią park?",
-    "answer": "They like the park.",
+    "promptEn": "Do they like the park bench?",
+    "promptPl": "Czy lubią ławkę w parku?",
+    "answer": "They like the bench.",
     "accept": [],
-    "speakPromptEn": "Say: They like the park.",
-    "speakPromptPl": "Powiedz: They like the park.",
+    "speakPromptEn": "Say: They like the bench.",
+    "speakPromptPl": "Powiedz: They like the bench.",
     "distractors": [
-      "They likes the park.",
-      "They don't like the park.",
-      "He likes the park."
+      "They likes the bench.",
+      "They don't like the bench.",
+      "He likes the bench."
     ],
     "tiles": [
       "They",
       "like",
       "the",
-      "park",
+      "bench",
       "."
     ],
     "gap": null,
@@ -7186,22 +7215,22 @@
       "speak"
     ],
     "cue": "📚",
-    "promptEn": "Do you like the library?",
-    "promptPl": "Czy lubisz bibliotekę?",
-    "answer": "We like the library.",
+    "promptEn": "Do you like reading a book here?",
+    "promptPl": "Czy lubisz czytać tu książkę?",
+    "answer": "We like the book.",
     "accept": [],
-    "speakPromptEn": "Say: We like the library.",
-    "speakPromptPl": "Powiedz: We like the library.",
+    "speakPromptEn": "Say: We like the book.",
+    "speakPromptPl": "Powiedz: We like the book.",
     "distractors": [
-      "We likes the library.",
-      "We don't like the library.",
-      "I like the museum."
+      "We likes the book.",
+      "We don't like the book.",
+      "I like the map."
     ],
     "tiles": [
       "We",
       "like",
       "the",
-      "library",
+      "book",
       "."
     ],
     "gap": null,
@@ -7297,24 +7326,21 @@
     "cue": "🚶",
     "promptEn": "Where do they walk?",
     "promptPl": "Gdzie chodzą?",
-    "answer": "They walk in the town centre.",
-    "accept": [
-      "They walk in the town center."
-    ],
-    "speakPromptEn": "Say: They walk in the town centre.",
-    "speakPromptPl": "Powiedz: They walk in the town centre.",
+    "answer": "They walk on the bridge.",
+    "accept": [],
+    "speakPromptEn": "Say: They walk on the bridge.",
+    "speakPromptPl": "Powiedz: They walk on the bridge.",
     "distractors": [
-      "They walks in the town centre.",
+      "They walks on the bridge.",
       "They walk in the forest.",
-      "He walks in the town centre."
+      "He walks on the bridge."
     ],
     "tiles": [
       "They",
       "walk",
-      "in",
+      "on",
       "the",
-      "town",
-      "centre",
+      "bridge",
       "."
     ],
     "gap": null,
@@ -7333,26 +7359,25 @@
       "text",
       "speak"
     ],
-    "cue": "📮",
-    "promptEn": "What do we post at the post office?",
-    "promptPl": "Co nadajemy na poczcie?",
-    "answer": "We post letters at the post office.",
+    "cue": "🏥",
+    "promptEn": "Where do we see the hospital?",
+    "promptPl": "Gdzie widzimy szpital?",
+    "answer": "We see the hospital in town.",
     "accept": [],
-    "speakPromptEn": "Say: We post letters at the post office.",
-    "speakPromptPl": "Powiedz: We post letters at the post office.",
+    "speakPromptEn": "Say: We see the hospital in town.",
+    "speakPromptPl": "Powiedz: We see the hospital in town.",
     "distractors": [
-      "We posts letters at the post office.",
-      "We post letters at the bank.",
-      "They post letters at the post office."
+      "We sees the hospital in town.",
+      "We see the hospital at school.",
+      "They see the hospital in town."
     ],
     "tiles": [
       "We",
-      "post",
-      "letters",
-      "at",
+      "see",
       "the",
-      "post",
-      "office",
+      "hospital",
+      "in",
+      "town",
       "."
     ],
     "gap": null,
@@ -7843,22 +7868,25 @@
       "speak"
     ],
     "cue": "🐦",
-    "promptEn": "Is the bird small?",
-    "promptPl": "Czy ptak jest mały?",
-    "answer": "The bird is small.",
-    "accept": [],
-    "speakPromptEn": "Say: The bird is small.",
-    "speakPromptPl": "Powiedz: The bird is small.",
+    "promptEn": "Is the parrot colourful?",
+    "promptPl": "Czy papuga jest kolorowa?",
+    "answer": "The parrot is colourful.",
+    "accept": [
+      "The parrot is colorful.",
+      "The bird is colourful."
+    ],
+    "speakPromptEn": "Say: The parrot is colourful.",
+    "speakPromptPl": "Powiedz: The parrot is colourful.",
     "distractors": [
-      "The bird is big.",
-      "The birds are small.",
-      "The dog is small."
+      "The parrot is grey.",
+      "The parrots are colourful.",
+      "The dog is colourful."
     ],
     "tiles": [
       "The",
-      "bird",
+      "parrot",
       "is",
-      "small",
+      "colourful",
       "."
     ],
     "gap": null,
@@ -8103,26 +8131,26 @@
       "text",
       "speak"
     ],
-    "cue": "🐢",
-    "promptEn": "Talk about a tortoise.",
-    "promptPl": "Powiedz o żółwiu.",
-    "answer": "They have got a tortoise.",
+    "cue": "🦊",
+    "promptEn": "Talk about a fox.",
+    "promptPl": "Powiedz o lisie.",
+    "answer": "They have got a fox.",
     "accept": [
-      "They've got a tortoise."
+      "They've got a fox."
     ],
-    "speakPromptEn": "Say: They have got a tortoise.",
-    "speakPromptPl": "Powiedz: They have got a tortoise.",
+    "speakPromptEn": "Say: They have got a fox.",
+    "speakPromptPl": "Powiedz: They have got a fox.",
     "distractors": [
-      "They has got a tortoise.",
-      "They haven't got a tortoise.",
-      "He has got a tortoise."
+      "They has got a fox.",
+      "They haven't got a fox.",
+      "He has got a fox."
     ],
     "tiles": [
       "They",
       "have",
       "got",
       "a",
-      "tortoise",
+      "fox",
       "."
     ],
     "gap": null,
@@ -8142,23 +8170,24 @@
       "speak"
     ],
     "cue": "🐦",
-    "promptEn": "Can a bird fly?",
-    "promptPl": "Czy ptak umie latać?",
-    "answer": "A bird can fly.",
+    "promptEn": "Can a parrot fly?",
+    "promptPl": "Czy papuga umie latać?",
+    "answer": "A parrot can fly.",
     "accept": [
-      "Birds can fly.",
-      "The bird can fly."
+      "Parrots can fly.",
+      "The parrot can fly.",
+      "A bird can fly."
     ],
-    "speakPromptEn": "Say: A bird can fly.",
-    "speakPromptPl": "Powiedz: A bird can fly.",
+    "speakPromptEn": "Say: A parrot can fly.",
+    "speakPromptPl": "Powiedz: A parrot can fly.",
     "distractors": [
-      "A bird can't fly.",
+      "A parrot can't fly.",
       "A fish can fly.",
-      "A bird can swim."
+      "A parrot can swim."
     ],
     "tiles": [
       "A",
-      "bird",
+      "parrot",
       "can",
       "fly",
       "."
@@ -8432,22 +8461,22 @@
       "text",
       "speak"
     ],
-    "cue": "🐦",
-    "promptEn": "Do they like birds?",
-    "promptPl": "Czy lubią ptaki?",
-    "answer": "They like birds.",
+    "cue": "🦆",
+    "promptEn": "Do they like ducks?",
+    "promptPl": "Czy lubią kaczki?",
+    "answer": "They like ducks.",
     "accept": [],
-    "speakPromptEn": "Say: They like birds.",
-    "speakPromptPl": "Powiedz: They like birds.",
+    "speakPromptEn": "Say: They like ducks.",
+    "speakPromptPl": "Powiedz: They like ducks.",
     "distractors": [
-      "They likes birds.",
-      "They don't like birds.",
-      "He likes birds."
+      "They likes ducks.",
+      "They don't like ducks.",
+      "He likes ducks."
     ],
     "tiles": [
       "They",
       "like",
-      "birds",
+      "ducks",
       "."
     ],
     "gap": null,
@@ -9048,27 +9077,24 @@
       "text",
       "speak"
     ],
-    "cue": "🌅",
-    "promptEn": "How are you in the morning?",
-    "promptPl": "Jak się czujesz rano?",
-    "answer": "I am sleepy in the morning.",
-    "accept": [
-      "I'm sleepy in the morning."
-    ],
-    "speakPromptEn": "Say: I am sleepy in the morning.",
-    "speakPromptPl": "Powiedz: I am sleepy in the morning.",
+    "cue": "🛏️",
+    "promptEn": "Where is the boy?",
+    "promptPl": "Gdzie jest chłopiec?",
+    "answer": "The boy is in bed.",
+    "accept": [],
+    "speakPromptEn": "Say: The boy is in bed.",
+    "speakPromptPl": "Powiedz: The boy is in bed.",
     "distractors": [
-      "I am sleepy at night.",
-      "He is sleepy in the morning.",
-      "I am hungry in the morning."
+      "The boy is in the bath.",
+      "The girl is in bed.",
+      "The boys are in bed."
     ],
     "tiles": [
-      "I",
-      "am",
-      "sleepy",
+      "The",
+      "boy",
+      "is",
       "in",
-      "the",
-      "morning",
+      "bed",
       "."
     ],
     "gap": null,
@@ -9126,25 +9152,24 @@
       "speak"
     ],
     "cue": "🌙",
-    "promptEn": "How is it at night?",
-    "promptPl": "Jak jest w nocy?",
-    "answer": "It is quiet at night.",
-    "accept": [
-      "It's quiet at night."
-    ],
-    "speakPromptEn": "Say: It is quiet at night.",
-    "speakPromptPl": "Powiedz: It is quiet at night.",
+    "promptEn": "What is in the sky at night?",
+    "promptPl": "Co jest na niebie w nocy?",
+    "answer": "The moon is in the sky.",
+    "accept": [],
+    "speakPromptEn": "Say: The moon is in the sky.",
+    "speakPromptPl": "Powiedz: The moon is in the sky.",
     "distractors": [
-      "It is noisy at night.",
-      "It is quiet in the morning.",
-      "It are quiet at night."
+      "The sun is in the sky.",
+      "The moons are in the sky.",
+      "The clock is in the sky."
     ],
     "tiles": [
-      "It",
+      "The",
+      "moon",
       "is",
-      "quiet",
-      "at",
-      "night",
+      "in",
+      "the",
+      "sky",
       "."
     ],
     "gap": null,
@@ -9164,20 +9189,20 @@
       "speak"
     ],
     "cue": "🛁",
-    "promptEn": "Is the bathroom free?",
-    "promptPl": "Czy łazienka jest wolna?",
-    "answer": "The bathroom is free.",
+    "promptEn": "Is the bathtub free?",
+    "promptPl": "Czy wanna jest wolna?",
+    "answer": "The bathtub is free.",
     "accept": [],
-    "speakPromptEn": "Say: The bathroom is free.",
-    "speakPromptPl": "Powiedz: The bathroom is free.",
+    "speakPromptEn": "Say: The bathtub is free.",
+    "speakPromptPl": "Powiedz: The bathtub is free.",
     "distractors": [
-      "The bathroom is busy.",
-      "The bedrooms are free.",
+      "The bathtub is busy.",
+      "The beds are free.",
       "The kitchen is free."
     ],
     "tiles": [
       "The",
-      "bathroom",
+      "bathtub",
       "is",
       "free",
       "."
@@ -9198,27 +9223,25 @@
       "text",
       "speak"
     ],
-    "cue": "🏫",
-    "promptEn": "Are you late for school?",
-    "promptPl": "Czy spóźniasz się do szkoły?",
-    "answer": "I am not late for school.",
-    "accept": [
-      "I'm not late for school."
-    ],
-    "speakPromptEn": "Say: I am not late for school.",
-    "speakPromptPl": "Powiedz: I am not late for school.",
+    "cue": "⏰",
+    "promptEn": "Is the clock on the wall?",
+    "promptPl": "Czy zegar jest na ścianie?",
+    "answer": "The clock is on the wall.",
+    "accept": [],
+    "speakPromptEn": "Say: The clock is on the wall.",
+    "speakPromptPl": "Powiedz: The clock is on the wall.",
     "distractors": [
-      "I am late for school.",
-      "He is not late for school.",
-      "I am not late for bed."
+      "The clock is under the bed.",
+      "The clocks are on the wall.",
+      "The bag is on the wall."
     ],
     "tiles": [
-      "I",
-      "am",
-      "not",
-      "late",
-      "for",
-      "school",
+      "The",
+      "clock",
+      "is",
+      "on",
+      "the",
+      "wall",
       "."
     ],
     "gap": null,
@@ -9238,26 +9261,25 @@
       "speak"
     ],
     "cue": "⏰",
-    "promptEn": "Talk about your alarm clock.",
-    "promptPl": "Powiedz o budziku.",
-    "answer": "I have got an alarm clock.",
+    "promptEn": "Talk about the clock.",
+    "promptPl": "Powiedz o zegarze.",
+    "answer": "I have got a clock.",
     "accept": [
-      "I've got an alarm clock.",
-      "I have an alarm clock."
+      "I've got a clock.",
+      "I have a clock."
     ],
-    "speakPromptEn": "Say: I have got an alarm clock.",
-    "speakPromptPl": "Powiedz: I have got an alarm clock.",
+    "speakPromptEn": "Say: I have got a clock.",
+    "speakPromptPl": "Powiedz: I have got a clock.",
     "distractors": [
-      "She has got an alarm clock.",
-      "I have got a watch.",
-      "I haven't got an alarm clock."
+      "She has got a clock.",
+      "I have got a bag.",
+      "I haven't got a clock."
     ],
     "tiles": [
       "I",
       "have",
       "got",
-      "an",
-      "alarm",
+      "a",
       "clock",
       "."
     ],
@@ -9434,24 +9456,24 @@
       "text",
       "speak"
     ],
-    "cue": "⏰",
-    "promptEn": "Can you get up early?",
-    "promptPl": "Czy potrafisz wstać wcześnie?",
-    "answer": "I can get up early.",
+    "cue": "🛏️",
+    "promptEn": "Can you make the bed?",
+    "promptPl": "Czy potrafisz zaścielić łóżko?",
+    "answer": "I can make the bed.",
     "accept": [],
-    "speakPromptEn": "Say: I can get up early.",
-    "speakPromptPl": "Powiedz: I can get up early.",
+    "speakPromptEn": "Say: I can make the bed.",
+    "speakPromptPl": "Powiedz: I can make the bed.",
     "distractors": [
-      "I can't get up early.",
-      "She can get up early.",
-      "I can go to bed early."
+      "I can't make the bed.",
+      "She can make the bed.",
+      "I can make the table."
     ],
     "tiles": [
       "I",
       "can",
-      "get",
-      "up",
-      "early",
+      "make",
+      "the",
+      "bed",
       "."
     ],
     "gap": null,
@@ -9580,26 +9602,26 @@
       "speak"
     ],
     "cue": "🚫😴",
-    "promptEn": "Say you cannot sleep late today.",
-    "promptPl": "Powiedz, że dziś nie możesz spać długo.",
-    "answer": "I can't sleep late today.",
+    "promptEn": "Say you cannot stay in bed.",
+    "promptPl": "Powiedz, że nie możesz zostać w łóżku.",
+    "answer": "I can't stay in bed.",
     "accept": [
-      "I ca not sleep late today.",
-      "I cannot sleep late today."
+      "I ca not stay in bed.",
+      "I cannot stay in bed."
     ],
-    "speakPromptEn": "Say: I can't sleep late today.",
-    "speakPromptPl": "Powiedz: I can't sleep late today.",
+    "speakPromptEn": "Say: I can't stay in bed.",
+    "speakPromptPl": "Powiedz: I can't stay in bed.",
     "distractors": [
-      "I can sleep late today.",
-      "She can't sleep late today.",
-      "I can't wake up late today."
+      "I can stay in bed.",
+      "She can't stay in bed.",
+      "I can't stay on the sofa."
     ],
     "tiles": [
       "I",
       "can't",
-      "sleep",
-      "late",
-      "today",
+      "stay",
+      "in",
+      "bed",
       "."
     ],
     "gap": null,
@@ -9618,22 +9640,23 @@
       "text",
       "speak"
     ],
-    "cue": "🌅",
-    "promptEn": "Do you like mornings?",
-    "promptPl": "Czy lubisz poranki?",
-    "answer": "I like mornings.",
+    "cue": "☀️",
+    "promptEn": "Do you like the sun in the morning?",
+    "promptPl": "Czy lubisz słońce rano?",
+    "answer": "I like the sun.",
     "accept": [],
-    "speakPromptEn": "Say: I like mornings.",
-    "speakPromptPl": "Powiedz: I like mornings.",
+    "speakPromptEn": "Say: I like the sun.",
+    "speakPromptPl": "Powiedz: I like the sun.",
     "distractors": [
-      "I don't like mornings.",
-      "I like evenings.",
-      "She likes mornings."
+      "I don't like the sun.",
+      "I like the moon.",
+      "She likes the sun."
     ],
     "tiles": [
       "I",
       "like",
-      "mornings",
+      "the",
+      "sun",
       "."
     ],
     "gap": null,
@@ -9653,21 +9676,21 @@
       "speak"
     ],
     "cue": "🍳",
-    "promptEn": "Does she like breakfast?",
-    "promptPl": "Czy ona lubi śniadanie?",
-    "answer": "She likes breakfast.",
+    "promptEn": "Does she like cereal?",
+    "promptPl": "Czy ona lubi płatki?",
+    "answer": "She likes cereal.",
     "accept": [],
-    "speakPromptEn": "Say: She likes breakfast.",
-    "speakPromptPl": "Powiedz: She likes breakfast.",
+    "speakPromptEn": "Say: She likes cereal.",
+    "speakPromptPl": "Powiedz: She likes cereal.",
     "distractors": [
-      "She like breakfast.",
-      "She doesn't like breakfast.",
-      "He likes breakfast."
+      "She like cereal.",
+      "She doesn't like cereal.",
+      "He likes cereal."
     ],
     "tiles": [
       "She",
       "likes",
-      "breakfast",
+      "cereal",
       "."
     ],
     "gap": null,
@@ -9686,22 +9709,23 @@
       "text",
       "speak"
     ],
-    "cue": "🚿",
-    "promptEn": "Does he like showers?",
-    "promptPl": "Czy on lubi prysznic?",
-    "answer": "He likes showers.",
+    "cue": "🛁",
+    "promptEn": "Does he like the bathtub?",
+    "promptPl": "Czy on lubi wannę?",
+    "answer": "He likes the bathtub.",
     "accept": [],
-    "speakPromptEn": "Say: He likes showers.",
-    "speakPromptPl": "Powiedz: He likes showers.",
+    "speakPromptEn": "Say: He likes the bathtub.",
+    "speakPromptPl": "Powiedz: He likes the bathtub.",
     "distractors": [
-      "He like showers.",
-      "He doesn't like showers.",
-      "She likes showers."
+      "He like the bathtub.",
+      "He doesn't like the bathtub.",
+      "She likes the bathtub."
     ],
     "tiles": [
       "He",
       "likes",
-      "showers",
+      "the",
+      "bathtub",
       "."
     ],
     "gap": null,
@@ -9721,22 +9745,22 @@
       "speak"
     ],
     "cue": "📚",
-    "promptEn": "Do they like homework time?",
-    "promptPl": "Czy lubią czas na zadanie?",
-    "answer": "They like homework time.",
+    "promptEn": "Do they like the notebook?",
+    "promptPl": "Czy lubią zeszyt?",
+    "answer": "They like the notebook.",
     "accept": [],
-    "speakPromptEn": "Say: They like homework time.",
-    "speakPromptPl": "Powiedz: They like homework time.",
+    "speakPromptEn": "Say: They like the notebook.",
+    "speakPromptPl": "Powiedz: They like the notebook.",
     "distractors": [
-      "They likes homework time.",
-      "They don't like homework time.",
-      "He likes homework time."
+      "They likes the notebook.",
+      "They don't like the notebook.",
+      "He likes the notebook."
     ],
     "tiles": [
       "They",
       "like",
-      "homework",
-      "time",
+      "the",
+      "notebook",
       "."
     ],
     "gap": null,
@@ -9756,22 +9780,22 @@
       "speak"
     ],
     "cue": "🌙",
-    "promptEn": "Do you like bedtime stories?",
-    "promptPl": "Czy lubisz bajki na dobranoc?",
-    "answer": "We like bedtime stories.",
+    "promptEn": "Do you like the moon at bedtime?",
+    "promptPl": "Czy lubisz księżyc przed snem?",
+    "answer": "We like the moon.",
     "accept": [],
-    "speakPromptEn": "Say: We like bedtime stories.",
-    "speakPromptPl": "Powiedz: We like bedtime stories.",
+    "speakPromptEn": "Say: We like the moon.",
+    "speakPromptPl": "Powiedz: We like the moon.",
     "distractors": [
-      "We likes bedtime stories.",
-      "We don't like bedtime stories.",
-      "I like morning stories."
+      "We likes the moon.",
+      "We don't like the moon.",
+      "I like the sun."
     ],
     "tiles": [
       "We",
       "like",
-      "bedtime",
-      "stories",
+      "the",
+      "moon",
       "."
     ],
     "gap": null,
@@ -9905,21 +9929,22 @@
       "speak"
     ],
     "cue": "📝",
-    "promptEn": "When do they do homework?",
-    "promptPl": "Kiedy robią zadanie?",
-    "answer": "They do homework after school.",
+    "promptEn": "When do they use the notebook?",
+    "promptPl": "Kiedy używają zeszytu?",
+    "answer": "They use the notebook after school.",
     "accept": [],
-    "speakPromptEn": "Say: They do homework after school.",
-    "speakPromptPl": "Powiedz: They do homework after school.",
+    "speakPromptEn": "Say: They use the notebook after school.",
+    "speakPromptPl": "Powiedz: They use the notebook after school.",
     "distractors": [
-      "They does homework after school.",
-      "They do homework before school.",
-      "He does homework after school."
+      "They uses the notebook after school.",
+      "They use the notebook before school.",
+      "He uses the notebook after school."
     ],
     "tiles": [
       "They",
-      "do",
-      "homework",
+      "use",
+      "the",
+      "notebook",
       "after",
       "school",
       "."
@@ -10341,23 +10366,25 @@
       "speak"
     ],
     "cue": "🕐",
-    "promptEn": "What time is it?",
-    "promptPl": "Która godzina?",
-    "answer": "It is one o'clock.",
+    "promptEn": "What time is on the clock?",
+    "promptPl": "Która godzina jest na zegarze?",
+    "answer": "The clock shows one o'clock.",
     "accept": [
+      "It is one o'clock.",
       "It's one o'clock.",
       "It is 1 o'clock."
     ],
-    "speakPromptEn": "Say: It is one o'clock.",
-    "speakPromptPl": "Powiedz: It is one o'clock.",
+    "speakPromptEn": "Say: The clock shows one o'clock.",
+    "speakPromptPl": "Powiedz: The clock shows one o'clock.",
     "distractors": [
-      "It is two o'clock.",
-      "It is half past one.",
-      "It are one o'clock."
+      "The clock shows two o'clock.",
+      "The clock shows half past one.",
+      "The clocks show one o'clock."
     ],
     "tiles": [
-      "It",
-      "is",
+      "The",
+      "clock",
+      "shows",
       "one",
       "o'clock",
       "."
@@ -10379,23 +10406,25 @@
       "speak"
     ],
     "cue": "🕒",
-    "promptEn": "What time is it?",
-    "promptPl": "Która godzina?",
-    "answer": "It is three o'clock.",
+    "promptEn": "What time is on the clock?",
+    "promptPl": "Która godzina jest na zegarze?",
+    "answer": "The clock shows three o'clock.",
     "accept": [
+      "It is three o'clock.",
       "It's three o'clock.",
       "It is 3 o'clock."
     ],
-    "speakPromptEn": "Say: It is three o'clock.",
-    "speakPromptPl": "Powiedz: It is three o'clock.",
+    "speakPromptEn": "Say: The clock shows three o'clock.",
+    "speakPromptPl": "Powiedz: The clock shows three o'clock.",
     "distractors": [
-      "It is four o'clock.",
-      "It is half past three.",
-      "It are three o'clock."
+      "The clock shows four o'clock.",
+      "The clock shows half past three.",
+      "The clocks show three o'clock."
     ],
     "tiles": [
-      "It",
-      "is",
+      "The",
+      "clock",
+      "shows",
       "three",
       "o'clock",
       "."
@@ -10417,23 +10446,25 @@
       "speak"
     ],
     "cue": "🕔",
-    "promptEn": "Is it five o'clock?",
-    "promptPl": "Czy jest piąta?",
-    "answer": "It is five o'clock.",
+    "promptEn": "Is it five on the clock?",
+    "promptPl": "Czy na zegarze jest piąta?",
+    "answer": "The clock shows five o'clock.",
     "accept": [
+      "It is five o'clock.",
       "It's five o'clock.",
       "It is 5 o'clock."
     ],
-    "speakPromptEn": "Say: It is five o'clock.",
-    "speakPromptPl": "Powiedz: It is five o'clock.",
+    "speakPromptEn": "Say: The clock shows five o'clock.",
+    "speakPromptPl": "Powiedz: The clock shows five o'clock.",
     "distractors": [
-      "It is six o'clock.",
-      "It is half past five.",
-      "It are five o'clock."
+      "The clock shows six o'clock.",
+      "The clock shows half past five.",
+      "The clocks show five o'clock."
     ],
     "tiles": [
-      "It",
-      "is",
+      "The",
+      "clock",
+      "shows",
       "five",
       "o'clock",
       "."
@@ -10455,23 +10486,24 @@
       "speak"
     ],
     "cue": "☀️",
-    "promptEn": "Is it morning?",
-    "promptPl": "Czy to poranek?",
-    "answer": "It is morning.",
-    "accept": [
-      "It's morning."
-    ],
-    "speakPromptEn": "Say: It is morning.",
-    "speakPromptPl": "Powiedz: It is morning.",
+    "promptEn": "What is in the morning sky?",
+    "promptPl": "Co jest na porannym niebie?",
+    "answer": "The sun is in the sky.",
+    "accept": [],
+    "speakPromptEn": "Say: The sun is in the sky.",
+    "speakPromptPl": "Powiedz: The sun is in the sky.",
     "distractors": [
-      "It is evening.",
-      "It is night.",
-      "It are morning."
+      "The moon is in the sky.",
+      "The suns are in the sky.",
+      "The cake is in the sky."
     ],
     "tiles": [
-      "It",
+      "The",
+      "sun",
       "is",
-      "morning",
+      "in",
+      "the",
+      "sky",
       "."
     ],
     "gap": null,
@@ -10491,25 +10523,24 @@
       "speak"
     ],
     "cue": "🌙",
-    "promptEn": "Is it night time?",
-    "promptPl": "Czy to noc?",
-    "answer": "It is night time.",
-    "accept": [
-      "It's night time.",
-      "It is night."
-    ],
-    "speakPromptEn": "Say: It is night time.",
-    "speakPromptPl": "Powiedz: It is night time.",
+    "promptEn": "What is in the night sky?",
+    "promptPl": "Co jest na nocnym niebie?",
+    "answer": "The moon is in the sky.",
+    "accept": [],
+    "speakPromptEn": "Say: The moon is in the sky.",
+    "speakPromptPl": "Powiedz: The moon is in the sky.",
     "distractors": [
-      "It is day time.",
-      "It is morning.",
-      "It are night time."
+      "The sun is in the sky.",
+      "The moons are in the sky.",
+      "The clock is in the sky."
     ],
     "tiles": [
-      "It",
+      "The",
+      "moon",
       "is",
-      "night",
-      "time",
+      "in",
+      "the",
+      "sky",
       "."
     ],
     "gap": null,
@@ -10528,27 +10559,27 @@
       "text",
       "speak"
     ],
-    "cue": "⌚",
-    "promptEn": "Talk about your watch.",
-    "promptPl": "Powiedz o swoim zegarku.",
-    "answer": "I have got a watch.",
+    "cue": "🕰️",
+    "promptEn": "Talk about the clock.",
+    "promptPl": "Powiedz o zegarze.",
+    "answer": "I have got a clock.",
     "accept": [
-      "I've got a watch.",
-      "I have a watch."
+      "I've got a clock.",
+      "I have a clock."
     ],
-    "speakPromptEn": "Say: I have got a watch.",
-    "speakPromptPl": "Powiedz: I have got a watch.",
+    "speakPromptEn": "Say: I have got a clock.",
+    "speakPromptPl": "Powiedz: I have got a clock.",
     "distractors": [
-      "She has got a watch.",
-      "I have got a clock.",
-      "I haven't got a watch."
+      "She has got a clock.",
+      "I have got a cake.",
+      "I haven't got a clock."
     ],
     "tiles": [
       "I",
       "have",
       "got",
       "a",
-      "watch",
+      "clock",
       "."
     ],
     "gap": null,
@@ -10568,8 +10599,8 @@
       "speak"
     ],
     "cue": "🕰️",
-    "promptEn": "Talk about the clock.",
-    "promptPl": "Powiedz o zegarze.",
+    "promptEn": "Talk about the big clock.",
+    "promptPl": "Powiedz o dużym zegarze.",
     "answer": "We have got a big clock.",
     "accept": [
       "We've got a big clock."
@@ -10645,28 +10676,26 @@
       "text",
       "speak"
     ],
-    "cue": "🗓️",
-    "promptEn": "Talk about free time.",
-    "promptPl": "Powiedz o wolnym czasie.",
-    "answer": "They have got free time on Sunday.",
+    "cue": "🎈",
+    "promptEn": "Talk about birthday balloons.",
+    "promptPl": "Powiedz o urodzinowych balonach.",
+    "answer": "They have got balloons.",
     "accept": [
-      "They've got free time on Sunday."
+      "They've got balloons.",
+      "They have got a balloon."
     ],
-    "speakPromptEn": "Say: They have got free time on Sunday.",
-    "speakPromptPl": "Powiedz: They have got free time on Sunday.",
+    "speakPromptEn": "Say: They have got balloons.",
+    "speakPromptPl": "Powiedz: They have got balloons.",
     "distractors": [
-      "They has got free time on Sunday.",
-      "They have got free time on Monday.",
-      "He has got free time on Sunday."
+      "They has got balloons.",
+      "They have got cakes.",
+      "He has got balloons."
     ],
     "tiles": [
       "They",
       "have",
       "got",
-      "free",
-      "time",
-      "on",
-      "Sunday",
+      "balloons",
       "."
     ],
     "gap": null,
@@ -10685,19 +10714,19 @@
       "text",
       "speak"
     ],
-    "cue": "⏱️",
-    "promptEn": "Talk about a timer.",
-    "promptPl": "Powiedz o stoperze.",
-    "answer": "He has got a timer.",
+    "cue": "🎁",
+    "promptEn": "Talk about a gift.",
+    "promptPl": "Powiedz o prezencie.",
+    "answer": "He has got a gift.",
     "accept": [
-      "He's got a timer.",
-      "He is got a timer."
+      "He's got a gift.",
+      "He is got a gift."
     ],
-    "speakPromptEn": "Say: He has got a timer.",
-    "speakPromptPl": "Powiedz: He has got a timer.",
+    "speakPromptEn": "Say: He has got a gift.",
+    "speakPromptPl": "Powiedz: He has got a gift.",
     "distractors": [
-      "She has got a timer.",
-      "He have got a timer.",
+      "She has got a gift.",
+      "He have got a gift.",
       "He has got a clock."
     ],
     "tiles": [
@@ -10705,7 +10734,7 @@
       "has",
       "got",
       "a",
-      "timer",
+      "gift",
       "."
     ],
     "gap": null,
@@ -10725,23 +10754,23 @@
       "speak"
     ],
     "cue": "🕐",
-    "promptEn": "Can you tell the time?",
-    "promptPl": "Czy umiesz mówić, która godzina?",
-    "answer": "I can tell the time.",
+    "promptEn": "Can you read the clock?",
+    "promptPl": "Czy umiesz czytać zegar?",
+    "answer": "I can read the clock.",
     "accept": [],
-    "speakPromptEn": "Say: I can tell the time.",
-    "speakPromptPl": "Powiedz: I can tell the time.",
+    "speakPromptEn": "Say: I can read the clock.",
+    "speakPromptPl": "Powiedz: I can read the clock.",
     "distractors": [
-      "I can't tell the time.",
-      "She can tell the time.",
-      "I can tell a story."
+      "I can't read the clock.",
+      "She can read the clock.",
+      "I can read the cake."
     ],
     "tiles": [
       "I",
       "can",
-      "tell",
+      "read",
       "the",
-      "time",
+      "clock",
       "."
     ],
     "gap": null,
@@ -10760,24 +10789,24 @@
       "text",
       "speak"
     ],
-    "cue": "⌚",
-    "promptEn": "Can she read a watch?",
-    "promptPl": "Czy ona umie czytać zegarek?",
-    "answer": "She can read a watch.",
+    "cue": "📅",
+    "promptEn": "Can she read the calendar?",
+    "promptPl": "Czy ona umie czytać kalendarz?",
+    "answer": "She can read the calendar.",
     "accept": [],
-    "speakPromptEn": "Say: She can read a watch.",
-    "speakPromptPl": "Powiedz: She can read a watch.",
+    "speakPromptEn": "Say: She can read the calendar.",
+    "speakPromptPl": "Powiedz: She can read the calendar.",
     "distractors": [
-      "She can't read a watch.",
-      "He can read a watch.",
+      "She can't read the calendar.",
+      "He can read the calendar.",
       "She can read a book."
     ],
     "tiles": [
       "She",
       "can",
       "read",
-      "a",
-      "watch",
+      "the",
+      "calendar",
       "."
     ],
     "gap": null,
@@ -10796,24 +10825,24 @@
       "text",
       "speak"
     ],
-    "cue": "⏰",
-    "promptEn": "Can he set the alarm?",
-    "promptPl": "Czy on umie nastawić budzik?",
-    "answer": "He can set the alarm.",
+    "cue": "🎂",
+    "promptEn": "Can he cut the cake?",
+    "promptPl": "Czy on umie pokroić tort?",
+    "answer": "He can cut the cake.",
     "accept": [],
-    "speakPromptEn": "Say: He can set the alarm.",
-    "speakPromptPl": "Powiedz: He can set the alarm.",
+    "speakPromptEn": "Say: He can cut the cake.",
+    "speakPromptPl": "Powiedz: He can cut the cake.",
     "distractors": [
-      "He can't set the alarm.",
-      "She can set the alarm.",
-      "He can break the alarm."
+      "He can't cut the cake.",
+      "She can cut the cake.",
+      "He can cut the clock."
     ],
     "tiles": [
       "He",
       "can",
-      "set",
+      "cut",
       "the",
-      "alarm",
+      "cake",
       "."
     ],
     "gap": null,
@@ -10833,23 +10862,23 @@
       "speak"
     ],
     "cue": "📅",
-    "promptEn": "Can they plan the week?",
-    "promptPl": "Czy potrafią zaplanować tydzień?",
-    "answer": "They can plan the week.",
+    "promptEn": "Can they use the calendar?",
+    "promptPl": "Czy potrafią użyć kalendarza?",
+    "answer": "They can use the calendar.",
     "accept": [],
-    "speakPromptEn": "Say: They can plan the week.",
-    "speakPromptPl": "Powiedz: They can plan the week.",
+    "speakPromptEn": "Say: They can use the calendar.",
+    "speakPromptPl": "Powiedz: They can use the calendar.",
     "distractors": [
-      "They can't plan the week.",
-      "He can plan the week.",
-      "They can plan the day."
+      "They can't use the calendar.",
+      "He can use the calendar.",
+      "They can use the cake."
     ],
     "tiles": [
       "They",
       "can",
-      "plan",
+      "use",
       "the",
-      "week",
+      "calendar",
       "."
     ],
     "gap": null,
@@ -10868,27 +10897,28 @@
       "text",
       "speak"
     ],
-    "cue": "🚫🕓",
-    "promptEn": "Say you cannot stay up late.",
-    "promptPl": "Powiedz, że nie możesz siedzieć długo.",
-    "answer": "I can't stay up late.",
+    "cue": "🚫🎂",
+    "promptEn": "Say you cannot eat the cake now.",
+    "promptPl": "Powiedz, że nie możesz teraz zjeść tortu.",
+    "answer": "I can't eat the cake now.",
     "accept": [
-      "I ca not stay up late.",
-      "I cannot stay up late."
+      "I ca not eat the cake now.",
+      "I cannot eat the cake now."
     ],
-    "speakPromptEn": "Say: I can't stay up late.",
-    "speakPromptPl": "Powiedz: I can't stay up late.",
+    "speakPromptEn": "Say: I can't eat the cake now.",
+    "speakPromptPl": "Powiedz: I can't eat the cake now.",
     "distractors": [
-      "I can stay up late.",
-      "She can't stay up late.",
-      "I can't get up late."
+      "I can eat the cake now.",
+      "She can't eat the cake now.",
+      "I can't eat the gift now."
     ],
     "tiles": [
       "I",
       "can't",
-      "stay",
-      "up",
-      "late",
+      "eat",
+      "the",
+      "cake",
+      "now",
       "."
     ],
     "gap": null,
@@ -10907,23 +10937,23 @@
       "text",
       "speak"
     ],
-    "cue": "🌅",
-    "promptEn": "Do you like early mornings?",
-    "promptPl": "Czy lubisz wczesne poranki?",
-    "answer": "I like early mornings.",
+    "cue": "☀️",
+    "promptEn": "Do you like the morning sun?",
+    "promptPl": "Czy lubisz poranne słońce?",
+    "answer": "I like the sun.",
     "accept": [],
-    "speakPromptEn": "Say: I like early mornings.",
-    "speakPromptPl": "Powiedz: I like early mornings.",
+    "speakPromptEn": "Say: I like the sun.",
+    "speakPromptPl": "Powiedz: I like the sun.",
     "distractors": [
-      "I don't like early mornings.",
-      "I like late nights.",
-      "She likes early mornings."
+      "I don't like the sun.",
+      "I like the moon.",
+      "She likes the sun."
     ],
     "tiles": [
       "I",
       "like",
-      "early",
-      "mornings",
+      "the",
+      "sun",
       "."
     ],
     "gap": null,
@@ -10942,25 +10972,23 @@
       "text",
       "speak"
     ],
-    "cue": "🕔",
-    "promptEn": "Does she like five o'clock?",
-    "promptPl": "Czy ona lubi piątą?",
-    "answer": "She likes five o'clock.",
-    "accept": [
-      "She likes 5 o'clock."
-    ],
-    "speakPromptEn": "Say: She likes five o'clock.",
-    "speakPromptPl": "Powiedz: She likes five o'clock.",
+    "cue": "🎂",
+    "promptEn": "Does she like the birthday cake?",
+    "promptPl": "Czy ona lubi urodzinowy tort?",
+    "answer": "She likes the cake.",
+    "accept": [],
+    "speakPromptEn": "Say: She likes the cake.",
+    "speakPromptPl": "Powiedz: She likes the cake.",
     "distractors": [
-      "She like five o'clock.",
-      "She doesn't like five o'clock.",
-      "He likes five o'clock."
+      "She like the cake.",
+      "She doesn't like the cake.",
+      "He likes the cake."
     ],
     "tiles": [
       "She",
       "likes",
-      "five",
-      "o'clock",
+      "the",
+      "cake",
       "."
     ],
     "gap": null,
@@ -10980,22 +11008,22 @@
       "speak"
     ],
     "cue": "🌙",
-    "promptEn": "Does he like night time?",
-    "promptPl": "Czy on lubi noc?",
-    "answer": "He likes night time.",
+    "promptEn": "Does he like the moon?",
+    "promptPl": "Czy on lubi księżyc?",
+    "answer": "He likes the moon.",
     "accept": [],
-    "speakPromptEn": "Say: He likes night time.",
-    "speakPromptPl": "Powiedz: He likes night time.",
+    "speakPromptEn": "Say: He likes the moon.",
+    "speakPromptPl": "Powiedz: He likes the moon.",
     "distractors": [
-      "He like night time.",
-      "He doesn't like night time.",
-      "She likes night time."
+      "He like the moon.",
+      "He doesn't like the moon.",
+      "She likes the moon."
     ],
     "tiles": [
       "He",
       "likes",
-      "night",
-      "time",
+      "the",
+      "moon",
       "."
     ],
     "gap": null,
@@ -11014,22 +11042,22 @@
       "text",
       "speak"
     ],
-    "cue": "📅",
-    "promptEn": "Do they like weekends?",
-    "promptPl": "Czy lubią weekendy?",
-    "answer": "They like weekends.",
+    "cue": "🎈",
+    "promptEn": "Do they like balloons?",
+    "promptPl": "Czy lubią balony?",
+    "answer": "They like balloons.",
     "accept": [],
-    "speakPromptEn": "Say: They like weekends.",
-    "speakPromptPl": "Powiedz: They like weekends.",
+    "speakPromptEn": "Say: They like balloons.",
+    "speakPromptPl": "Powiedz: They like balloons.",
     "distractors": [
-      "They likes weekends.",
-      "They don't like weekends.",
-      "He likes weekends."
+      "They likes balloons.",
+      "They don't like balloons.",
+      "He likes balloons."
     ],
     "tiles": [
       "They",
       "like",
-      "weekends",
+      "balloons",
       "."
     ],
     "gap": null,
@@ -11048,23 +11076,22 @@
       "text",
       "speak"
     ],
-    "cue": "🕒",
-    "promptEn": "Do you like free afternoons?",
-    "promptPl": "Czy lubisz wolne popołudnia?",
-    "answer": "We like free afternoons.",
+    "cue": "🎁",
+    "promptEn": "Do you like gifts?",
+    "promptPl": "Czy lubisz prezenty?",
+    "answer": "We like gifts.",
     "accept": [],
-    "speakPromptEn": "Say: We like free afternoons.",
-    "speakPromptPl": "Powiedz: We like free afternoons.",
+    "speakPromptEn": "Say: We like gifts.",
+    "speakPromptPl": "Powiedz: We like gifts.",
     "distractors": [
-      "We likes free afternoons.",
-      "We don't like free afternoons.",
-      "I like busy mornings."
+      "We likes gifts.",
+      "We don't like gifts.",
+      "I like clocks."
     ],
     "tiles": [
       "We",
       "like",
-      "free",
-      "afternoons",
+      "gifts",
       "."
     ],
     "gap": null,
@@ -11640,47 +11667,47 @@
   global.PE_TOPIC_CHALLENGE_MODES = MODES;
   global.PE_TOPIC_CHALLENGE_BANK = BANK;
   global.PE_TOPIC_CHALLENGE_SCENES = {
-    school: [
-      'assets/vocab-scenes/school-classroom.jpg',
-      'assets/vocab-scenes/school-playground.jpg'
-    ],
-    family_home: [
-      'assets/vocab-scenes/family-livingroom.jpg',
-      'assets/vocab-scenes/family-picnic.jpg',
-      'assets/vocab-scenes/home-house.jpg',
-      'assets/vocab-scenes/home-kitchen.jpg'
-    ],
-    food: [
-      'assets/vocab-scenes/food-market.jpg',
-      'assets/vocab-scenes/food-restaurant.jpg',
-      'assets/vocab-scenes/food-supermarket.jpg'
-    ],
-    free_time: [
-      'assets/vocab-scenes/freetime-beach.jpg',
-      'assets/vocab-scenes/freetime-park.jpg'
-    ],
-    clothes_weather: [
-      'assets/vocab-scenes/clothes-bedroom.jpg',
-      'assets/vocab-scenes/clothes-shop.jpg',
-      'assets/vocab-scenes/weather-rainy.jpg',
-      'assets/vocab-scenes/weather-seasons.jpg'
-    ],
-    town: [
-      'assets/vocab-scenes/town-centre.jpg',
-      'assets/vocab-scenes/town-station.jpg'
-    ],
-    animals: [
-      'assets/vocab-scenes/animals-farm.jpg',
-      'assets/vocab-scenes/animals-forest.jpg',
-      'assets/vocab-scenes/animals-zoo.jpg'
-    ],
-    routines: [
-      'assets/vocab-scenes/routines-morning.jpg',
-      'assets/vocab-scenes/routines-evening.jpg'
-    ],
-    time: [
-      'assets/vocab-scenes/time-birthday.jpg',
-      'assets/vocab-scenes/time-schoolday.jpg'
-    ]
-  };
+  "school": [
+    "assets/vocab-scenes/school-classroom.jpg",
+    "assets/vocab-scenes/school-playground.jpg"
+  ],
+  "family_home": [
+    "assets/vocab-scenes/family-livingroom.jpg",
+    "assets/vocab-scenes/family-picnic.jpg",
+    "assets/vocab-scenes/home-house.jpg",
+    "assets/vocab-scenes/home-kitchen.jpg"
+  ],
+  "food": [
+    "assets/vocab-scenes/food-market.jpg",
+    "assets/vocab-scenes/food-restaurant.jpg",
+    "assets/vocab-scenes/food-supermarket.jpg"
+  ],
+  "free_time": [
+    "assets/vocab-scenes/freetime-beach.jpg",
+    "assets/vocab-scenes/freetime-park.jpg"
+  ],
+  "clothes_weather": [
+    "assets/vocab-scenes/clothes-bedroom.jpg",
+    "assets/vocab-scenes/clothes-shop.jpg",
+    "assets/vocab-scenes/weather-rainy.jpg",
+    "assets/vocab-scenes/weather-seasons.jpg"
+  ],
+  "town": [
+    "assets/vocab-scenes/town-centre.jpg",
+    "assets/vocab-scenes/town-station.jpg"
+  ],
+  "animals": [
+    "assets/vocab-scenes/animals-farm.jpg",
+    "assets/vocab-scenes/animals-forest.jpg",
+    "assets/vocab-scenes/animals-zoo.jpg"
+  ],
+  "routines": [
+    "assets/vocab-scenes/routines-morning.jpg",
+    "assets/vocab-scenes/routines-evening.jpg"
+  ],
+  "time": [
+    "assets/vocab-scenes/time-birthday.jpg",
+    "assets/vocab-scenes/time-schoolday.jpg"
+  ]
+};
 })(typeof window !== 'undefined' ? window : globalThis);
