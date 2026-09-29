@@ -6004,10 +6004,16 @@
             try {
                 const payload = { prompt };
                 if (Array.isArray(images) && images.length) {
-                    payload.images = images.slice(0, 5).map((img) => ({
-                        data: img.dataUrl || img.data || '',
-                        mimeType: img.mimeType || 'image/jpeg',
-                    }));
+                    payload.images = images.slice(0, 5).map((img) => {
+                        const entry = {
+                            data: img.dataUrl || img.data || '',
+                            mimeType: img.mimeType || 'image/jpeg',
+                        };
+                        if (img.width && img.height) {
+                            entry.dimension = { width: img.width, height: img.height };
+                        }
+                        return entry;
+                    });
                 }
                 const response = await fetch('/api/generate', {
                     method: 'POST',
@@ -7732,8 +7738,13 @@ Return ONLY JSON:
                         const pages = await pdfFileToImages(file, 5 - maturaImages.length);
                         maturaImages.push(...pages);
                     } else if (file.type.startsWith('image/')) {
-                        const dataUrl = await readFileAsDataUrl(file);
-                        maturaImages.push({ dataUrl, mimeType: file.type || 'image/jpeg' });
+                        const compressed = await compressImageForAi(file);
+                        maturaImages.push({
+                            dataUrl: compressed.dataUrl,
+                            mimeType: compressed.mimeType,
+                            width: compressed.width,
+                            height: compressed.height,
+                        });
                     } else {
                         throw new Error(`Unsupported file: ${file.name}`);
                     }
@@ -7754,6 +7765,42 @@ Return ONLY JSON:
             });
         }
 
+        /**
+         * Downscale + JPEG-compress photos before AI upload (tokens + latency).
+         * Handwriting stays readable around 1280px / q≈0.72.
+         */
+        async function compressImageForAi(source, opts = {}) {
+            const maxSide = opts.maxSide || 1280;
+            const quality = opts.quality ?? 0.72;
+            const dataUrl = typeof source === 'string'
+                ? source
+                : await readFileAsDataUrl(source);
+
+            const img = await new Promise((resolve, reject) => {
+                const el = new Image();
+                el.onload = () => resolve(el);
+                el.onerror = () => reject(new Error('Could not decode image'));
+                el.src = dataUrl;
+            });
+
+            let { width, height } = img;
+            if (!width || !height) {
+                return { dataUrl, mimeType: 'image/jpeg', width: 0, height: 0 };
+            }
+            const scale = Math.min(1, maxSide / Math.max(width, height));
+            const w = Math.max(1, Math.round(width * scale));
+            const h = Math.max(1, Math.round(height * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            const out = canvas.toDataURL('image/jpeg', quality);
+            return { dataUrl: out, mimeType: 'image/jpeg', width: w, height: h };
+        }
+
         async function pdfFileToImages(file, maxPages) {
             const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.mjs');
             pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.mjs';
@@ -7763,14 +7810,22 @@ Return ONLY JSON:
             const out = [];
             for (let i = 1; i <= pages; i++) {
                 const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 1.5 });
+                // ~96–110 DPI equivalent — enough for handwriting OCR, cheaper than 1.5×
+                const viewport = page.getViewport({ scale: 1.15 });
                 const canvas = document.createElement('canvas');
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
                 const canvasContext = canvas.getContext('2d');
                 const renderTask = page.render({ canvasContext, viewport, canvas });
                 await (renderTask.promise || renderTask);
-                out.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.85), mimeType: 'image/jpeg' });
+                const raw = canvas.toDataURL('image/jpeg', 0.78);
+                const compressed = await compressImageForAi(raw, { maxSide: 1280, quality: 0.72 });
+                out.push({
+                    dataUrl: compressed.dataUrl,
+                    mimeType: 'image/jpeg',
+                    width: compressed.width,
+                    height: compressed.height,
+                });
             }
             return out;
         }
@@ -7828,7 +7883,11 @@ Return ONLY JSON:
                     body: JSON.stringify({
                         task,
                         essayText,
-                        images: maturaImages.map(img => ({ data: img.dataUrl, mimeType: img.mimeType }))
+                        images: maturaImages.map(img => ({
+                            data: img.dataUrl,
+                            mimeType: img.mimeType,
+                            ...(img.width && img.height ? { dimension: { width: img.width, height: img.height } } : {}),
+                        }))
                     })
                 });
                 const data = await response.json();
@@ -8611,8 +8670,13 @@ Return ONLY JSON:
                         if (/heic|heif/i.test(file.type) || /\.heic$/i.test(file.name)) {
                             throw new Error('HEIC photos are not supported. Please use JPG or PNG (or export the PDF).');
                         }
-                        const dataUrl = await readFileAsDataUrl(file);
-                        targetArr.push({ dataUrl, mimeType: file.type || 'image/jpeg' });
+                        const compressed = await compressImageForAi(file);
+                        targetArr.push({
+                            dataUrl: compressed.dataUrl,
+                            mimeType: compressed.mimeType,
+                            width: compressed.width,
+                            height: compressed.height,
+                        });
                     } else {
                         throw new Error(`Unsupported file: ${file.name}. Use JPG, PNG, WebP or PDF.`);
                     }
@@ -9251,7 +9315,11 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
                     body: JSON.stringify({
                         task: peExamTask.taskEn,
                         essayText,
-                        images: peExamAnswerImages.map((img) => ({ data: img.dataUrl, mimeType: img.mimeType })),
+                        images: peExamAnswerImages.map((img) => ({
+                            data: img.dataUrl,
+                            mimeType: img.mimeType,
+                            ...(img.width && img.height ? { dimension: { width: img.width, height: img.height } } : {}),
+                        })),
                         level: L.label,
                         bullets: peExamTask.bulletsEn || [],
                         minWords: peExamTask.minWords || L.examWords.min,

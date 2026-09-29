@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import fs from 'fs';
 import http from 'http';
+import os from 'os';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -68,6 +70,37 @@ import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
+
+/** Empty cwd so JSON/vision jobs don't pull the app repo into agent context (tokens + latency). */
+const AI_CWD = path.join(os.tmpdir(), 'lingospark-ai-empty');
+try {
+    fs.mkdirSync(AI_CWD, { recursive: true });
+} catch (err) {
+    console.warn('Could not create AI workspace dir:', err.message);
+}
+
+const AI_MODEL = { id: 'composer-2.5' };
+
+function aiAgentOptions(apiKey) {
+    return {
+        apiKey,
+        model: AI_MODEL,
+        local: {
+            cwd: AI_CWD,
+            // Inline config only — do not load project/user rules from the host.
+            settingSources: [],
+        },
+    };
+}
+
+function logAiUsage(label, result) {
+    const u = result?.usage;
+    if (!u) return;
+    console.log(
+        `[ai] ${label}: in=${u.inputTokens ?? 0} out=${u.outputTokens ?? 0} total=${u.totalTokens ?? 0}` +
+            (u.cacheReadTokens ? ` cacheRead=${u.cacheReadTokens}` : ''),
+    );
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -760,6 +793,8 @@ function extractJson(text) {
 }
 
 function cleanVisionImages(images) {
+    // Cap payload size (~1.5MB base64 ≈ ~1.1MB binary) — client should compress first.
+    const maxBase64Chars = 2_000_000;
     return (Array.isArray(images) ? images : []).slice(0, 5).map((img) => {
         const mimeType = String(img?.mimeType || 'image/png');
         if (!/^image\/(png|jpeg|jpg|gif|webp)$/i.test(mimeType)) {
@@ -768,20 +803,29 @@ function cleanVisionImages(images) {
         let data = String(img?.data || img?.dataUrl || '');
         const comma = data.indexOf(',');
         if (data.startsWith('data:') && comma !== -1) data = data.slice(comma + 1);
-        if (!data || data.length > 20_000_000) throw new Error('Image payload too large.');
-        return { data, mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType };
+        if (!data) throw new Error('Image payload empty.');
+        if (data.length > maxBase64Chars) {
+            throw new Error('Image too large after upload. Re-take as a smaller JPG or crop to one page.');
+        }
+        const out = { data, mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType };
+        const w = Number(img?.dimension?.width || img?.width);
+        const h = Number(img?.dimension?.height || img?.height);
+        if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
+            out.dimension = { width: Math.round(w), height: Math.round(h) };
+        }
+        return out;
     });
 }
 
-async function runVisionJsonPrompt({ apiKey, prompt, images = [] }) {
+async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'generate' }) {
     const cleanImages = cleanVisionImages(images);
-    const fullPrompt = `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation, no tool use.`;
+    const alreadyJsonOnly = /return only valid json/i.test(prompt);
+    const fullPrompt = alreadyJsonOnly
+        ? `${prompt}\n\nNo markdown fences. No tool use. Reply with JSON only.`
+        : `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation, no tool use.`;
     if (!cleanImages.length) {
-        const result = await Agent.prompt(fullPrompt, {
-            apiKey,
-            model: { id: 'composer-2.5' },
-            local: { cwd: __dirname },
-        });
+        const result = await Agent.prompt(fullPrompt, aiAgentOptions(apiKey));
+        logAiUsage(label, result);
         if (result.status !== 'finished' || !result.result) {
             throw new Error(result.error?.message || 'Cursor AI generation failed');
         }
@@ -790,16 +834,13 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [] }) {
 
     let agent;
     try {
-        agent = await Agent.create({
-            apiKey,
-            model: { id: 'composer-2.5' },
-            local: { cwd: __dirname },
-        });
+        agent = await Agent.create(aiAgentOptions(apiKey));
         const run = await agent.send({
             text: fullPrompt,
             images: cleanImages,
         });
         const result = await run.wait();
+        logAiUsage(label, result);
         if (result.status !== 'finished' || !result.result) {
             throw new Error(result.error?.message || 'Cursor AI generation failed');
         }
@@ -827,6 +868,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [] }) {
             apiKey,
             prompt,
             images: Array.isArray(req.body?.images) ? req.body.images : [],
+            label: 'generate',
         });
         res.json(parsed);
     } catch (error) {
@@ -862,25 +904,18 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [] }) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
         }
 
-        const prompt = `You are a friendly English examiner for CEFR ${level} / Polish primary & lower-secondary school writing (email / short message).
+        const prompt = `CEFR ${level} English email examiner (Polish primary/E8). IGNORE capitalisation. Score spelling/vocab/grammar/meaning only.
 
-GRADING: Completely IGNORE capitalisation in the student's typed answer — upper/lowercase never affects correctness. Judge spelling, vocabulary, grammar and meaning only.
-
-EXAM TASK:
+TASK:
 """
 ${task}
 """
+Bullets: ${JSON.stringify(bullets)}
+Words: ${minWords}-${maxWords}
+${requiredWords.length ? `Required words (case-insensitive): ${JSON.stringify(requiredWords)}.` : ''}
+${essayText ? `TYPED EMAIL:\n"""\n${essayText}\n"""` : 'No typed text — read email from attached image(s).'}
 
-Required content points: ${JSON.stringify(bullets)}
-Word limit: ${minWords}-${maxWords}
-${requiredWords.length ? `MANDATORY glossary words the student should use (case-insensitive): ${JSON.stringify(requiredWords)}.` : ''}
-
-${essayText ? `TYPED / PASTED EMAIL (may be incomplete — also use any attached images of the handwritten or printed email):\n"""\n${essayText}\n"""` : 'No typed transcript was provided. Read the email from the attached image(s) of the handwritten or printed work.'}
-
-Evaluate length, bullet coverage, cohesion, and language adequacy for ${level} (do not demand higher-level vocabulary).
-If handwriting is partly illegible, say so briefly but still assess what is readable.
-Do not invent content that is not in the email.
-Address the student in the second person ("you").
+Check length, bullet coverage, cohesion, ${level}-adequate language. Second person. No invented content. Note illegible handwriting briefly.
 
 Return ONLY valid JSON:
 {
@@ -889,11 +924,11 @@ Return ONLY valid JSON:
   "wordCount": 0,
   "bulletsCovered": 0,
   "bulletsTotal": ${Math.max(bullets.length, 1)},
-  "message": "HTML-safe multi-line feedback in English with short section labels for Length, Content, Cohesion, Summary."
+  "message": "HTML-safe multi-line feedback with Length, Content, Cohesion, Summary."
 }`;
 
         try {
-            const parsed = await runVisionJsonPrompt({ apiKey, prompt, images });
+            const parsed = await runVisionJsonPrompt({ apiKey, prompt, images, label: 'pe-exam' });
             res.json(parsed);
         } catch (error) {
             console.error('Assess-pe-exam error:', error);
@@ -950,96 +985,45 @@ Return ONLY valid JSON:
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
         }
 
-        let cleanImages;
-        try {
-            cleanImages = cleanVisionImages(images);
-        } catch (error) {
-            return res.status(400).json({ error: error.message });
-        }
+        const prompt = `Matura rozszerzona English writing feedback TO THE STUDENT (you/your). Total 13 pts: Content 0–5, Coherence 0–2, Range 0–3, Accuracy 0–3.
 
-        const prompt = `You are a supportive Matura examiner giving feedback TO THE STUDENT about their English writing (Polish Matura — poziom ROZSZERZONY, wypowiedź pisemna).
-
-WRITING TASK THE STUDENT RECEIVED:
+TASK:
 """
 ${task}
 """
 
-${essayText ? `TYPED / PASTED ESSAY TEXT (may be incomplete — also use any attached images of the handwritten or printed essay):\n"""\n${essayText}\n"""` : 'No typed transcript was provided. Read the essay from the attached image(s) of the handwritten or printed work.'}
+${essayText ? `TYPED TEXT (also use images if attached):\n"""\n${essayText}\n"""` : 'No typed text — read the essay from the attached image(s).'}
 
-Assess using official Matura rozszerzona writing criteria (total 13 points):
-1) Treść / Content (0–5)
-2) Spójność i logika wypowiedzi / Coherence & cohesion (0–2)
-3) Zakres środków językowych / Range (0–3)
-4) Poprawność środków językowych / Accuracy (0–3)
+Also give conciseness coaching (does NOT change the 13 pts): redundancy, strong verbs, active voice, fillers, short phrases, avoid nominalizations, simpler sentences. 3–6 "conciseness" bullets with before→after hints from THEIR wording. Weave 1–2 into improvements. Do NOT rewrite paragraphs or give a model essay.
 
-CONCISENESS (required coaching — does NOT change the 13-point Matura total):
-Also review the essay against these Tight Write / conciseness rules and give concrete feedback with examples from THEIR text when possible:
-1) Eliminate redundancy (e.g. future plans → plans)
-2) Use strong verbs (e.g. conduct an investigation → investigate)
-3) Prefer active voice
-4) Cut fillers (very, really, in order to, the fact that)
-5) Shorten phrases (at this point in time → now)
-6) Avoid nominalizations (turn noun phrases back into verbs)
-7) Simplify long, complex sentence structure
-- Return 3–6 bullets in "conciseness" naming the rule(s) and pointing to their wording. Praise clear, tight writing when they already follow a rule.
-- Weave 1–2 of the most useful conciseness tips into overall "improvements" and into Range and/or Accuracy "improvements" when relevant.
-- Suggest HOW to tighten (name the strategy + short before→after hint). Do NOT rewrite whole paragraphs or supply a model essay.
+Rules: second person; short bullet arrays only; fair/specific; scores integers in band; no invented content; if handwriting illegible, note briefly. Full original transcript in transcribedEssay; markedTranscript wraps ONLY real mistakes in <<err>>...<<\/err>> (no corrections inside tags).
 
-VOICE AND FORMAT (critical):
-- Address the student directly in the second person ("you", "your"). Never write about "the student" or "the candidate" in the third person.
-- Put EVERY comment as short bullet points (arrays of strings). No long paragraphs.
-- Be fair, specific and constructive. Point to concrete places in their text.
-- If handwriting is partly illegible, say so briefly but still assess what is readable.
-- Do NOT invent content that is not in the essay.
-- Scores must be integers within each band's max.
-- Write in clear English.
-- Do NOT provide a corrected sample essay, model answer, or rewritten paragraph. The student must revise the text themselves after reading your feedback.
-
-TRANSCRIPT WITH MISTAKES MARKED (critical):
-- Return the FULL original essay transcript (best effort from images + typed text). Keep the student's own wording — do not rewrite it into correct English.
-- In markedTranscript, wrap ONLY the incorrect / inaccurate / awkward parts in <<err>>...<<\/err>> tags. Leave correct text unmarked.
-- Mark spelling, grammar, word choice, agreement, and clearly wrong punctuation when it matters. Do not mark everything; mark real mistakes.
-- Do not put corrections inside the tags — only the student's original mistaken text.
-
-Return ONLY valid JSON (no markdown fences):
+Return ONLY valid JSON:
 {
-  "transcribedEssay": "full plain transcript of the original essay (no tags)",
-  "markedTranscript": "same full transcript with mistakes wrapped as <<err>>mistaken words<<\/err>>",
+  "transcribedEssay": "full plain transcript",
+  "markedTranscript": "transcript with <<err>>mistakes<<\/err>>",
   "wordCount": 0,
-  "overallComment": ["2–4 short bullet points addressed to you / the student"],
+  "overallComment": ["2–4 bullets"],
   "totalScore": 0,
   "maxScore": 13,
   "criteria": [
-    { "id": "content", "name": "Content (Treść)", "score": 0, "max": 5, "comment": ["bullet to the student", "..."], "strengths": ["..."], "improvements": ["..."] },
+    { "id": "content", "name": "Content (Treść)", "score": 0, "max": 5, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] },
     { "id": "coherence", "name": "Coherence & cohesion (Spójność i logika)", "score": 0, "max": 2, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] },
     { "id": "range", "name": "Range (Zakres środków językowych)", "score": 0, "max": 3, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] },
     { "id": "accuracy", "name": "Accuracy (Poprawność środków językowych)", "score": 0, "max": 3, "comment": ["..."], "strengths": ["..."], "improvements": ["..."] }
   ],
-  "conciseness": ["3–6 bullets on redundancy / strong verbs / active voice / fillers / shortening phrases / nominalizations / simpler structure — with examples from your essay"],
-  "strengths": ["3–5 overall strengths, addressed to you"],
-  "improvements": ["3–5 prioritised next steps for you to fix yourself — tips, not a rewritten essay; include at least one conciseness tip when the text is wordy"]
+  "conciseness": ["3–6 bullets"],
+  "strengths": ["3–5"],
+  "improvements": ["3–5 next steps for the student; include ≥1 conciseness tip if wordy"]
 }`;
 
-        let agent;
         try {
-            agent = await Agent.create({
+            const parsed = await runVisionJsonPrompt({
                 apiKey,
-                model: { id: 'composer-2.5' },
-                local: { cwd: __dirname },
+                prompt,
+                images,
+                label: 'matura-assess',
             });
-
-            const run = await agent.send({
-                text: `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation.`,
-                images: cleanImages,
-            });
-            const result = await run.wait();
-
-            if (result.status !== 'finished' || !result.result) {
-                const message = result.error?.message || 'Cursor AI assessment failed';
-                return res.status(500).json({ error: message });
-            }
-
-            const parsed = extractJson(result.result);
             let maturaAssess = cooldown;
             if (!admin) {
                 try {
@@ -1056,13 +1040,10 @@ Return ONLY valid JSON (no markdown fences):
             res.json({ ...parsed, maturaAssess, maturaAssessPack: publicMaturaAssessPack() });
         } catch (error) {
             console.error('Assess-writing error:', error);
-            res.status(500).json({ error: error.message || 'Failed to assess writing' });
-        } finally {
-            if (agent && typeof agent[Symbol.asyncDispose] === 'function') {
-                try { await agent[Symbol.asyncDispose](); } catch (_) { /* ignore */ }
-            }
-    }
-});
+            const status = /Unsupported image|too large|valid JSON/i.test(error.message || '') ? 400 : 500;
+            res.status(status).json({ error: error.message || 'Failed to assess writing' });
+        }
+    });
 
 app.get('/api/health', (_req, res) => {
         res.json({
