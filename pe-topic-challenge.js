@@ -1,6 +1,7 @@
 /**
  * Topic Challenge — Primary English (premium).
  * Modes: Picture / Tiles / Transform (grammar-locked) + Write | Speak | Both response path.
+ * Picture typed answers that miss the key can be re-checked by AI for fair alternate readings.
  */
 (function (global) {
     'use strict';
@@ -32,7 +33,8 @@
         lastTranscript: '',
         sceneSrc: null,
         sceneId: null,
-        highlightBoxes: []
+        highlightBoxes: [],
+        aiChecking: false
     };
 
     const STOP_WORDS = new Set([
@@ -707,7 +709,7 @@
         }
 
         body += `<div class="tc-actions">
-            <button type="button" class="btn btn-blue" id="tc-check" ${state.checked ? 'disabled' : ''}><i class="fa-solid fa-check"></i> ${t('Check', 'Sprawdź')}</button>
+            <button type="button" class="btn btn-blue" id="tc-check" ${state.checked || state.aiChecking ? 'disabled' : ''}><i class="fa-solid fa-check"></i> ${t('Check', 'Sprawdź')}</button>
             <button type="button" class="btn btn-outline" id="tc-new"><i class="fa-solid fa-rotate"></i> ${t('New task', 'Nowe zadanie')}</button>
             <button type="button" class="btn btn-outline tc-lang-toggle" id="tc-lang">${state.lang === 'en' ? 'PL' : 'EN'}</button>
             <button type="button" class="btn btn-outline" id="tc-why" style="display:none;"><i class="fa-solid fa-robot"></i> ${t('Ask why', 'Dopytaj AI')}</button>
@@ -881,8 +883,141 @@
         return '';
     }
 
-    function checkAnswer() {
-        if (!state.task || state.checked) return;
+    async function sceneImagePayload() {
+        const maxSide = 720;
+        const quality = 0.7;
+        const draw = (el) => {
+            const nw = el.naturalWidth || el.width;
+            const nh = el.naturalHeight || el.height;
+            if (!nw || !nh) return null;
+            const scale = Math.min(1, maxSide / Math.max(nw, nh));
+            const w = Math.max(1, Math.round(nw * scale));
+            const h = Math.max(1, Math.round(nh * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return null;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(el, 0, 0, w, h);
+            return { dataUrl: canvas.toDataURL('image/jpeg', quality), mimeType: 'image/jpeg', width: w, height: h };
+        };
+        const img = rootEl()?.querySelector('#tc-scene-img');
+        if (img && img.complete && img.naturalWidth) {
+            try {
+                const payload = draw(img);
+                if (payload) return payload;
+            } catch { /* fall through */ }
+        }
+        if (!state.sceneSrc) return null;
+        try {
+            const el = await new Promise((resolve, reject) => {
+                const i = new Image();
+                i.onload = () => resolve(i);
+                i.onerror = () => reject(new Error('scene load'));
+                i.src = state.sceneSrc;
+            });
+            return draw(el);
+        } catch {
+            return null;
+        }
+    }
+
+    function markPictureWrong(user, whyExtra) {
+        state.checked = true;
+        state.streak = 0;
+        const root = rootEl();
+        const fb = root?.querySelector('#tc-feedback');
+        const whyBtn = root?.querySelector('#tc-why');
+        if (fb) {
+            fb.className = 'tc-feedback bad';
+            const extra = whyExtra ? (' ' + whyExtra) : '';
+            fb.textContent = t('Not quite. Model: ', 'Niezupełnie. Wzór: ') + state.task.answer + extra;
+        }
+        if (whyBtn) whyBtn.style.display = '';
+        root?.querySelectorAll('[data-mcq]').forEach((btn) => {
+            const v = btn.getAttribute('data-mcq');
+            if (answersMatch(v, state.task)) btn.classList.add('correct');
+            else if (v === state.chosenMcq) btn.classList.add('wrong');
+        });
+        if (typeof global.recordGameSessionApi === 'function') {
+            global.recordGameSessionApi('pe_topic', { score: 0, pointsEarned: 0 });
+        }
+    }
+
+    async function challengePictureWithAi(user) {
+        const root = rootEl();
+        const fb = root?.querySelector('#tc-feedback');
+        const checkBtn = root?.querySelector('#tc-check');
+        if (typeof global.fetchGenerativeAI !== 'function') {
+            markPictureWrong(user);
+            return;
+        }
+        state.aiChecking = true;
+        if (checkBtn) checkBtn.disabled = true;
+        if (fb) {
+            fb.className = 'tc-feedback info';
+            fb.textContent = t('Close — checking with AI if your reading of the picture also works…', 'Prawie — AI sprawdza, czy Twoje odczytanie obrazka też pasuje…');
+        }
+
+        const accept = (state.task.accept || []).join(' | ') || '(none)';
+        const focusNote = (state.highlightBoxes || []).length
+            ? 'A region of the picture is circled/highlighted — judge that focus mainly.'
+            : 'Judge the whole scene.';
+        const prompt = `Primary English Topic Challenge — picture answer judge for ages 9–11 (CEFR A1–A2).
+Return ONLY valid JSON: {"ok":true|false,"reasonEn":"one short sentence","reasonPl":"one short Polish sentence"}
+
+Student grammar focus: ${state.grammar}
+Topic: ${state.topic}
+Prompt: ${state.task.promptEn}
+Model key answer: ${state.task.answer}
+Also listed as accept: ${accept}
+Student answer: ${user}
+${focusNote}
+
+Rules:
+- Accept ok=true when the student's sentence is grammatically right for the selected grammar AND a fair reading of the picture/prompt.
+- Be open to perspective: a person may be sister vs mum, boy vs brother, teacher vs woman, etc. when the image is ambiguous.
+- Still reject wrong grammar for this focus (e.g. do/don't when grammar is "be"; is/are agreement errors; missing have got / can / like patterns when those are selected).
+- Reject nonsense or answers about a clearly different object/place than the picture shows.
+- Keep reasons kind and very short.`;
+
+        const images = [];
+        const scene = await sceneImagePayload();
+        if (scene) images.push(scene);
+
+        let data = null;
+        try {
+            data = await global.fetchGenerativeAI(prompt, images);
+        } catch {
+            data = null;
+        }
+        state.aiChecking = false;
+        if (state.checked) return; // new round meanwhile
+
+        if (!data || data.__error) {
+            markPictureWrong(user);
+            return;
+        }
+        if (data.ok === true || data.ok === 'true') {
+            const note = state.lang === 'pl'
+                ? (data.reasonPl || data.reasonEn || '')
+                : (data.reasonEn || data.reasonPl || '');
+            const msg = note
+                ? t('Good reading of the picture! ', 'Dobre odczytanie obrazka! ') + note
+                : t('Good reading of the picture — that works too!', 'Dobre odczytanie obrazka — to też pasuje!');
+            finishCorrect(msg, false);
+            return;
+        }
+        const tip = state.lang === 'pl'
+            ? (data.reasonPl || data.reasonEn || '')
+            : (data.reasonEn || data.reasonPl || '');
+        markPictureWrong(user, tip ? (' — ' + tip) : '');
+    }
+
+    async function checkAnswer() {
+        if (!state.task || state.checked || state.aiChecking) return;
         const root = rootEl();
         const fb = root?.querySelector('#tc-feedback');
         const whyBtn = root?.querySelector('#tc-why');
@@ -891,6 +1026,10 @@
             // Prefer recognition result; else require I said it after hear
             if (state.lastTranscript && answersMatch(state.lastTranscript, state.task)) {
                 finishCorrect(t('Great speaking!', 'Świetne mówienie!'), false);
+                return;
+            }
+            if (state.mode === 'picture' && state.lastTranscript && !state._useMcq) {
+                await challengePictureWithAi(state.lastTranscript);
                 return;
             }
             if (state.speakOk) {
@@ -924,24 +1063,16 @@
 
         if (ok) {
             finishCorrect(t('Correct!', 'Dobrze!'), false);
-        } else {
-            state.checked = true;
-            state.streak = 0;
-            if (fb) {
-                fb.className = 'tc-feedback bad';
-                fb.textContent = t('Not quite. Model: ', 'Niezupełnie. Wzór: ') + state.task.answer;
-            }
-            if (whyBtn) whyBtn.style.display = '';
-            // colour mcq
-            root?.querySelectorAll('[data-mcq]').forEach((btn) => {
-                const v = btn.getAttribute('data-mcq');
-                if (answersMatch(v, state.task)) btn.classList.add('correct');
-                else if (v === state.chosenMcq) btn.classList.add('wrong');
-            });
-            if (typeof global.recordGameSessionApi === 'function') {
-                global.recordGameSessionApi('pe_topic', { score: 0, pointsEarned: 0 });
-            }
+            return;
         }
+
+        // Picture free-text: AI may accept a fair alternate reading of the scene.
+        if (state.mode === 'picture' && !state._useMcq && user) {
+            await challengePictureWithAi(user);
+            return;
+        }
+
+        markPictureWrong(user);
     }
 
     function finishCorrect(msg, soft) {
@@ -1034,7 +1165,7 @@ Topic: ${state.topic}. Grammar: ${state.grammar}. Mode: ${state.mode}.
 Prompt: ${state.task.promptEn}
 Correct answer: ${state.task.answer}
 Learner attempt: ${user || '(empty)'}
-Explain in simple English (max 3 short sentences) why the model is right and what to fix. Then one Polish sentence summary. No new examples beyond the model answer.`;
+Explain in simple English (max 3 short sentences) why the model is right and what to fix. If mode is picture, note that another fair reading of the person/object can sometimes also be OK when grammar is correct — but explain this attempt. Then one Polish sentence summary. No new examples beyond the model answer.`;
         const data = await global.fetchGenerativeAI(prompt);
         if (btn) btn.disabled = false;
         if (!data || data.__error) {
@@ -1058,6 +1189,7 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         state._useMcq = null;
         state._mcqOpts = null;
         state._forceType = false;
+        state.aiChecking = false;
         state.sceneSrc = null;
         state.sceneId = null;
         state.highlightBoxes = [];
