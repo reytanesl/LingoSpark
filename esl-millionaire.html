@@ -39,28 +39,152 @@
             user-select: none;
         }
 
-        #audio-toggle {
+        .audio-dock {
             position: absolute;
             top: 18px;
             right: 18px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dock-btn {
             background: var(--panel);
             border: 2px solid rgba(232, 197, 71, 0.55);
             color: var(--gold);
-            font-size: 22px;
-            padding: 0;
-            border-radius: 50%;
+            font-family: inherit;
             cursor: pointer;
-            z-index: 1000;
-            width: 48px;
-            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             transition: background 0.25s, transform 0.2s;
         }
-        #audio-toggle:hover {
+        .dock-btn:hover {
             background: rgba(232, 197, 71, 0.2);
-            transform: scale(1.05);
+            transform: scale(1.03);
+        }
+        #audio-toggle {
+            font-size: 20px;
+            padding: 0;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+        }
+        #music-menu-btn {
+            height: 48px;
+            padding: 0 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .music-menu-wrap { position: relative; }
+        #music-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            width: min(320px, calc(100vw - 36px));
+            background: linear-gradient(165deg, #152a5c, #0a1638);
+            border: 2px solid rgba(232, 197, 71, 0.45);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+            display: none;
+            max-height: min(70vh, 520px);
+            overflow-y: auto;
+        }
+        #music-dropdown.open { display: block; }
+        .music-dropdown-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .music-dropdown-head h3 {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--gold-soft);
+        }
+        .music-loop-badge {
+            font-size: 9px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(62, 207, 142, 0.18);
+            color: #6ee7b0;
+        }
+        .music-tracks { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        .music-track-btn {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .music-track-btn:hover { background: rgba(255, 255, 255, 0.06); }
+        .music-track-btn.active {
+            background: rgba(232, 197, 71, 0.14);
+            border-color: rgba(232, 197, 71, 0.55);
+        }
+        .music-track-btn .track-check {
+            opacity: 0;
+            color: #6ee7b0;
+            font-weight: 800;
+        }
+        .music-track-btn.active .track-check { opacity: 1; }
+        .music-controls {
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .music-vol-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(244, 247, 255, 0.75);
+        }
+        #music-volume-percent { color: var(--gold); font-variant-numeric: tabular-nums; }
+        #music-volume-slider {
+            width: 100%;
+            accent-color: var(--gold);
+            cursor: pointer;
+        }
+        .music-play-row { display: flex; justify-content: flex-end; }
+        #music-play-pause {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(160deg, #e8c547, #c9a22e);
+            color: #1a1200;
+        }
+        #music-play-pause.is-playing {
+            background: linear-gradient(160deg, #4ea1ff, #2a6bc4);
+            color: #fff;
         }
 
         .screen {
@@ -395,9 +519,47 @@
 
     <a class="ls-brand" href="index.html#/team" title="Back to LingoSpark">LingoSpark</a>
 
-    <!-- Audio Toggle Button -->
-    <div id="audio-toggle" onclick="toggleAudio()" title="Toggle Sound & Music">
-        🔊
+    <div class="audio-dock">
+        <div class="music-menu-wrap">
+            <button type="button" class="dock-btn" id="music-menu-btn" onclick="toggleMusicMenu()" title="Background soundtrack">
+                <span id="music-eq" aria-hidden="true">♪</span>
+                <span id="current-music-badge">Music</span>
+            </button>
+            <div id="music-dropdown">
+                <div class="music-dropdown-head">
+                    <h3>Background Soundtrack</h3>
+                    <span class="music-loop-badge">LOOP</span>
+                </div>
+                <div class="music-tracks" id="music-tracks-list">
+                    <button type="button" class="music-track-btn" data-track="kawaii" onclick="selectMusicTrack('kawaii')"><span>✨ Kawaii Pastel Lofi</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="cyberpunk" onclick="selectMusicTrack('cyberpunk')"><span>🤖 Cyberpunk Synthwave</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="historical" onclick="selectMusicTrack('historical')"><span>🎻 Classical Cathedral</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="contemporary" onclick="selectMusicTrack('contemporary')"><span>🎓 Campus Chillout</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="abstract" onclick="selectMusicTrack('abstract')"><span>◻️ Bauhaus Minimal</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="low-atmos" onclick="selectMusicTrack('low-atmos')"><span>🌿 Low Atmos (Stress Relief)</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="retro-game" onclick="selectMusicTrack('retro-game')"><span>🎮 Retro 8-Bit Game</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="dreamy-ambient" onclick="selectMusicTrack('dreamy-ambient')"><span>🌙 Tranquil & Dreamy</span><span class="track-check">✓</span></button>
+                    <button type="button" class="music-track-btn" data-track="gaming-beat" onclick="selectMusicTrack('gaming-beat')"><span>🧱 Gaming Beat</span><span class="track-check">✓</span></button>
+                    <label class="music-track-btn" data-track="custom">
+                        <span id="custom-track-label">📁 Upload custom audio...</span>
+                        <input type="file" id="custom-audio-input" accept="audio/*" hidden onchange="handleCustomAudioUpload(event)">
+                        <span class="track-check">✓</span>
+                    </label>
+                    <button type="button" class="music-track-btn" data-track="off" onclick="selectMusicTrack('off')"><span>🔇 Turn off music</span><span class="track-check">✓</span></button>
+                </div>
+                <div class="music-controls">
+                    <div class="music-vol-row">
+                        <span>Music volume</span>
+                        <span id="music-volume-percent">35%</span>
+                    </div>
+                    <input type="range" id="music-volume-slider" min="0" max="100" value="35" oninput="handleMusicVolumeChange(this.value)">
+                    <div class="music-play-row">
+                        <button type="button" id="music-play-pause" onclick="toggleMusicPlayback()">Play</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="dock-btn" id="audio-toggle" onclick="toggleAudio()" title="Toggle sound effects">🔊</button>
     </div>
 
     <!-- 1. Intro Screen -->
@@ -488,7 +650,7 @@
 
     <script>
         /* ==========================================================================
-           1. AUDIO SYSTEM (Web Audio API) - mild SFX + gentle looping BGM
+           1. AUDIO SYSTEM — mild SFX + Board Game soundtrack picker
            ========================================================================== */
         class AudioController {
             constructor() {
@@ -497,8 +659,6 @@
                 this.masterGain.connect(this.ctx.destination);
                 this.masterGain.gain.value = 0.45;
                 this.isMuted = false;
-                this.bgmNodes = null;
-                this.bgmTimer = null;
                 this.initialized = false;
             }
 
@@ -566,114 +726,280 @@
                 this._tone(659.25, 'sine', t + 0.1, 0.5, 0.04, 0.06);
                 this._tone(783.99, 'sine', t + 0.22, 0.55, 0.03, 0.08);
             }
-
-            // Gentle ambient pad + soft arpeggio loop
-            startMusic() {
-                if (this.bgmNodes || !this.initialized) return;
-
-                const bus = this.ctx.createGain();
-                bus.gain.value = 0.0001;
-                bus.connect(this.masterGain);
-                bus.gain.linearRampToValueAtTime(0.12, this.ctx.currentTime + 2.2);
-
-                // Warm low pad
-                const padOsc = this.ctx.createOscillator();
-                const padGain = this.ctx.createGain();
-                const padFilter = this.ctx.createBiquadFilter();
-                padOsc.type = 'sine';
-                padOsc.frequency.value = 110;
-                padFilter.type = 'lowpass';
-                padFilter.frequency.value = 420;
-                padGain.gain.value = 0.35;
-                padOsc.connect(padFilter);
-                padFilter.connect(padGain);
-                padGain.connect(bus);
-
-                // Soft fifth above
-                const pad2 = this.ctx.createOscillator();
-                const pad2Gain = this.ctx.createGain();
-                pad2.type = 'triangle';
-                pad2.frequency.value = 164.81;
-                pad2Gain.gain.value = 0.12;
-                pad2.connect(pad2Gain);
-                pad2Gain.connect(bus);
-
-                // Slow breath LFO on pad volume
-                const lfo = this.ctx.createOscillator();
-                const lfoGain = this.ctx.createGain();
-                lfo.type = 'sine';
-                lfo.frequency.value = 0.08;
-                lfoGain.gain.value = 0.08;
-                lfo.connect(lfoGain);
-                lfoGain.connect(padGain.gain);
-
-                padOsc.start();
-                pad2.start();
-                lfo.start();
-
-                // Soft arpeggio over a calm progression (Cmaj7-ish feel)
-                const pattern = [261.63, 329.63, 392, 493.88, 392, 329.63];
-                let step = 0;
-                const playStep = () => {
-                    if (!this.bgmNodes || this.isMuted) return;
-                    const freq = pattern[step % pattern.length];
-                    step++;
-                    const t = this.ctx.currentTime;
-                    const osc = this.ctx.createOscillator();
-                    const g = this.ctx.createGain();
-                    const f = this.ctx.createBiquadFilter();
-                    osc.type = 'sine';
-                    osc.frequency.value = freq;
-                    f.type = 'lowpass';
-                    f.frequency.value = 1400;
-                    g.gain.setValueAtTime(0.0001, t);
-                    g.gain.linearRampToValueAtTime(0.045, t + 0.12);
-                    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
-                    osc.connect(f);
-                    f.connect(g);
-                    g.connect(bus);
-                    osc.start(t);
-                    osc.stop(t + 1.5);
-                };
-
-                playStep();
-                this.bgmTimer = setInterval(playStep, 1400);
-
-                this.bgmNodes = { bus, padOsc, pad2, lfo };
-            }
-
-            stopMusic() {
-                if (!this.bgmNodes) return;
-                const { bus, padOsc, pad2, lfo } = this.bgmNodes;
-                if (this.bgmTimer) {
-                    clearInterval(this.bgmTimer);
-                    this.bgmTimer = null;
-                }
-                const t = this.ctx.currentTime;
-                bus.gain.cancelScheduledValues(t);
-                bus.gain.linearRampToValueAtTime(0.0001, t + 1.2);
-                setTimeout(() => {
-                    try { padOsc.stop(); } catch (_) {}
-                    try { pad2.stop(); } catch (_) {}
-                    try { lfo.stop(); } catch (_) {}
-                    this.bgmNodes = null;
-                }, 1300);
-            }
-
-            // Aliases used by existing game flow
-            startDrone() { this.startMusic(); }
-            stopDrone() { this.stopMusic(); }
         }
 
         const audioFX = new AudioController();
+
+        /* Same track set as Board Game Challenge */
+        const AUDIO_TRACK_FILES = {
+            'low-atmos': 'low_atmos-stress-relief-music-533638.mp3',
+            'retro-game': 'nicolesheldon-retro-video-game-vibe-177183.mp3',
+            'dreamy-ambient': 'ambinet-tranquil-and-dreamy-soundscape-315400.mp3',
+            'gaming-beat': 'maksymmalko-roblox-minecraft-fortnite-video-game-music-358426.mp3'
+        };
+
+        const TRACK_TITLES = {
+            kawaii: 'Kawaii Pastel Lofi',
+            cyberpunk: 'Cyberpunk Synthwave',
+            historical: 'Classical Cathedral',
+            contemporary: 'Campus Chillout',
+            abstract: 'Bauhaus Minimal',
+            'low-atmos': 'Low Atmos',
+            'retro-game': 'Retro 8-Bit',
+            'dreamy-ambient': 'Tranquil & Dreamy',
+            'gaming-beat': 'Gaming Beat',
+            custom: 'Custom track',
+            off: 'Silence'
+        };
+
+        const MusicEngine = {
+            activeTrack: 'contemporary',
+            isPlaying: false,
+            volume: 0.35,
+            stepTimer: null,
+            stepIndex: 0,
+            musicGainNode: null,
+            customAudioEl: null,
+            mp3AudioEl: null,
+            customTrackName: null,
+
+            init() {
+                audioFX.init();
+                if (!this.musicGainNode && audioFX.ctx) {
+                    this.musicGainNode = audioFX.ctx.createGain();
+                    this.musicGainNode.gain.setValueAtTime(this.volume, audioFX.ctx.currentTime);
+                    this.musicGainNode.connect(audioFX.ctx.destination);
+                }
+            },
+
+            setVolume(val) {
+                this.volume = Math.max(0, Math.min(1, val));
+                if (this.musicGainNode && audioFX.ctx) {
+                    this.musicGainNode.gain.cancelScheduledValues(audioFX.ctx.currentTime);
+                    this.musicGainNode.gain.setValueAtTime(this.volume, audioFX.ctx.currentTime);
+                }
+                if (this.customAudioEl) this.customAudioEl.volume = this.volume;
+                if (this.mp3AudioEl) this.mp3AudioEl.volume = this.volume;
+            },
+
+            play() {
+                this.init();
+                if (this.activeTrack === 'off') return;
+                this.isPlaying = true;
+                updateMusicUI();
+
+                if (this.activeTrack === 'custom') {
+                    if (this.customAudioEl) {
+                        this.customAudioEl.volume = this.volume;
+                        this.customAudioEl.play().catch(() => {});
+                    }
+                    return;
+                }
+
+                if (AUDIO_TRACK_FILES[this.activeTrack]) {
+                    if (!this.mp3AudioEl || this.mp3AudioEl.src.indexOf(AUDIO_TRACK_FILES[this.activeTrack]) === -1) {
+                        if (this.mp3AudioEl) this.mp3AudioEl.pause();
+                        this.mp3AudioEl = new Audio(AUDIO_TRACK_FILES[this.activeTrack]);
+                        this.mp3AudioEl.loop = true;
+                    }
+                    this.mp3AudioEl.volume = this.volume;
+                    this.mp3AudioEl.play().catch(() => {});
+                    return;
+                }
+
+                if (this.mp3AudioEl) this.mp3AudioEl.pause();
+                if (this.stepTimer) clearInterval(this.stepTimer);
+                const bpm = this.getTrackBpm(this.activeTrack);
+                const intervalMs = (60000 / bpm) / 4;
+                this.stepTimer = setInterval(() => this.step(), intervalMs);
+            },
+
+            pause() {
+                this.isPlaying = false;
+                if (this.stepTimer) {
+                    clearInterval(this.stepTimer);
+                    this.stepTimer = null;
+                }
+                if (this.customAudioEl) this.customAudioEl.pause();
+                if (this.mp3AudioEl) this.mp3AudioEl.pause();
+                updateMusicUI();
+            },
+
+            setTrack(trackKey) {
+                this.pause();
+                this.activeTrack = trackKey;
+                this.stepIndex = 0;
+                if (trackKey === 'off') {
+                    updateMusicUI();
+                    return;
+                }
+                this.play();
+                updateMusicUI();
+            },
+
+            getTrackBpm(track) {
+                switch (track) {
+                    case 'kawaii': return 88;
+                    case 'cyberpunk': return 124;
+                    case 'historical': return 82;
+                    case 'contemporary': return 94;
+                    case 'abstract': return 108;
+                    default: return 90;
+                }
+            },
+
+            playSynthVoice(freq, duration, type = 'sine', gainAmt = 0.1, attack = 0.02) {
+                if (!audioFX.ctx || !this.isPlaying || freq <= 0) return;
+                try {
+                    const osc = audioFX.ctx.createOscillator();
+                    const noteGain = audioFX.ctx.createGain();
+                    const filter = audioFX.ctx.createBiquadFilter();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioFX.ctx.currentTime);
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(this.activeTrack === 'cyberpunk' ? 1400 : 3200, audioFX.ctx.currentTime);
+                    const now = audioFX.ctx.currentTime;
+                    noteGain.gain.setValueAtTime(0.001, now);
+                    noteGain.gain.linearRampToValueAtTime(gainAmt, now + attack);
+                    noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                    osc.connect(filter);
+                    filter.connect(noteGain);
+                    noteGain.connect(this.musicGainNode);
+                    osc.start(now);
+                    osc.stop(now + duration);
+                } catch (e) {}
+            },
+
+            step() {
+                if (!audioFX.ctx || audioFX.ctx.state === 'suspended') return;
+                const step = this.stepIndex;
+
+                if (this.activeTrack === 'kawaii') {
+                    if (step % 16 === 0) {
+                        const chords = [
+                            [261.63, 329.63, 392.00, 493.88],
+                            [220.00, 261.63, 329.63, 392.00],
+                            [293.66, 349.23, 440.00, 523.25],
+                            [196.00, 246.94, 293.66, 349.23]
+                        ];
+                        const chord = chords[Math.floor(step / 16) % 4];
+                        chord.forEach(f => this.playSynthVoice(f, 2.2, 'sine', 0.045, 0.25));
+                        this.playSynthVoice(chord[0] / 2, 2.4, 'triangle', 0.08, 0.15);
+                    }
+                    const melodyPattern = [523.25, 0, 659.25, 0, 783.99, 0, 880.00, 659.25, 0, 587.33, 0, 659.25, 523.25, 0, 392.00, 0];
+                    const melNote = melodyPattern[step % 16];
+                    if (melNote > 0) this.playSynthVoice(melNote, 0.42, 'sine', 0.05, 0.015);
+                } else if (this.activeTrack === 'cyberpunk') {
+                    const bassPattern = [73.42, 73.42, 146.83, 73.42, 87.31, 73.42, 110.0, 73.42, 73.42, 73.42, 146.83, 73.42, 65.41, 65.41, 98.00, 130.81];
+                    this.playSynthVoice(bassPattern[step % 16], 0.18, 'sawtooth', 0.055, 0.01);
+                    if (step % 16 === 0 || step % 16 === 6 || step % 16 === 10) {
+                        const chords = [
+                            [146.83, 220.00, 293.66, 349.23],
+                            [116.54, 174.61, 233.08, 293.66],
+                            [130.81, 196.00, 261.63, 329.63]
+                        ];
+                        chords[Math.floor(step / 16) % 3].forEach(f => this.playSynthVoice(f, 0.5, 'square', 0.03, 0.02));
+                    }
+                } else if (this.activeTrack === 'historical') {
+                    const harpPattern = [
+                        220.0, 261.63, 329.63, 440.0, 523.25, 440.0, 329.63, 261.63,
+                        146.83, 220.0, 293.66, 349.23, 440.0, 349.23, 293.66, 220.0,
+                        164.81, 246.94, 329.63, 392.0, 493.88, 392.0, 329.63, 246.94,
+                        220.0, 329.63, 440.0, 523.25, 659.25, 523.25, 440.0, 329.63
+                    ];
+                    if (step % 2 === 0) this.playSynthVoice(harpPattern[step % 32], 0.45, 'triangle', 0.065, 0.02);
+                    if (step % 16 === 0) this.playSynthVoice(harpPattern[step % 32] / 2, 1.8, 'sine', 0.09, 0.1);
+                } else if (this.activeTrack === 'contemporary') {
+                    if (step % 16 === 0) {
+                        const chords = [
+                            [174.61, 220.00, 261.63, 329.63],
+                            [164.81, 196.00, 246.94, 293.66],
+                            [146.83, 174.61, 220.00, 261.63],
+                            [130.81, 164.81, 196.00, 246.94]
+                        ];
+                        const cur = chords[Math.floor(step / 16) % 4];
+                        cur.forEach(f => this.playSynthVoice(f, 2.0, 'sine', 0.05, 0.15));
+                        this.playSynthVoice(cur[0] / 2, 2.2, 'triangle', 0.07, 0.05);
+                    }
+                    if (step % 8 === 4) this.playSynthVoice(523.25, 0.25, 'sine', 0.03, 0.02);
+                } else if (this.activeTrack === 'abstract') {
+                    const tones = [293.66, 329.63, 440.00, 493.88, 587.33, 659.25];
+                    if (step % 3 === 0) this.playSynthVoice(tones[(step * 2) % tones.length], 0.35, 'sine', 0.045, 0.03);
+                    if (step % 16 === 0) this.playSynthVoice(146.83, 2.8, 'sawtooth', 0.025, 0.5);
+                }
+
+                this.stepIndex = (this.stepIndex + 1) % 64;
+            }
+        };
+
+        function toggleMusicMenu() {
+            document.getElementById('music-dropdown').classList.toggle('open');
+        }
+
+        function toggleMusicPlayback() {
+            audioFX.init();
+            if (MusicEngine.isPlaying) MusicEngine.pause();
+            else MusicEngine.play();
+        }
+
+        function selectMusicTrack(trackKey) {
+            MusicEngine.setTrack(trackKey);
+        }
+
+        function handleMusicVolumeChange(val) {
+            MusicEngine.setVolume(parseInt(val, 10) / 100);
+            document.getElementById('music-volume-percent').innerText = `${val}%`;
+        }
+
+        function handleCustomAudioUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const objUrl = URL.createObjectURL(file);
+            if (MusicEngine.customAudioEl) MusicEngine.customAudioEl.pause();
+            MusicEngine.customAudioEl = new Audio(objUrl);
+            MusicEngine.customAudioEl.loop = true;
+            MusicEngine.customAudioEl.volume = MusicEngine.volume;
+            MusicEngine.customTrackName = file.name.replace(/\.[^/.]+$/, '');
+            document.getElementById('custom-track-label').innerText = '📁 ' + MusicEngine.customTrackName;
+            selectMusicTrack('custom');
+        }
+
+        function updateMusicUI() {
+            const trackKey = MusicEngine.activeTrack;
+            const isPlaying = MusicEngine.isPlaying && trackKey !== 'off';
+            const badge = document.getElementById('current-music-badge');
+            if (badge) {
+                if (trackKey === 'custom' && MusicEngine.customTrackName) {
+                    badge.innerText = MusicEngine.customTrackName.slice(0, 12);
+                } else {
+                    badge.innerText = TRACK_TITLES[trackKey] || 'Music';
+                }
+            }
+            const eq = document.getElementById('music-eq');
+            if (eq) eq.innerText = isPlaying ? '♫' : '♪';
+
+            const playBtn = document.getElementById('music-play-pause');
+            if (playBtn) {
+                playBtn.innerText = isPlaying ? 'Pause' : 'Play';
+                playBtn.classList.toggle('is-playing', isPlaying);
+            }
+
+            document.querySelectorAll('.music-track-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.track === trackKey);
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            const wrap = document.querySelector('.music-menu-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                document.getElementById('music-dropdown').classList.remove('open');
+            }
+        });
 
         function toggleAudio() {
             audioFX.init();
             const isMuted = audioFX.toggleMute();
             document.getElementById('audio-toggle').innerText = isMuted ? '🔇' : '🔊';
-            if (!isMuted && document.getElementById('game-screen').classList.contains('active')) {
-                audioFX.startMusic();
-            }
         }
 
         /* ==========================================================================
@@ -698,16 +1024,13 @@
             loadQuestionsFromStorage();
             renderMoneyTree();
             updateAdminStats();
+            updateMusicUI();
         };
 
         function showScreen(screenId) {
             audioFX.init();
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-            
-            if (screenId !== 'game-screen') {
-                audioFX.stopDrone();
-            }
         }
 
         function startGame() {
@@ -724,7 +1047,7 @@
                 document.getElementById(id).classList.remove('used');
             });
 
-            audioFX.startDrone();
+            MusicEngine.play();
             showScreen('game-screen');
             updateMoneyTreeUI();
             loadNextQuestion();
@@ -798,7 +1121,6 @@
                     // Wrong
                     selectedBox.classList.remove('selected');
                     selectedBox.classList.add('wrong');
-                    audioFX.stopDrone();
                     audioFX.playWrong();
                     
                     // Highlight correct answer
@@ -813,7 +1135,6 @@
         }
 
         function endGame(won) {
-            audioFX.stopDrone();
             if (won) {
                 showModal("Congratulations!", "You are an ESL Millionaire!", "Main Menu", () => showScreen('intro-screen'));
             } else {
