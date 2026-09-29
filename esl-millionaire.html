@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESL Millionaire · LingoSpark</title>
+    <style>
+        :root {
+            --bg-color: #000033;
+            --box-bg: #000066;
+            --border-color: silver;
+            --gold: #FFD700;
+            --text-color: #FFFFFF;
+            --correct-color: #00FF00;
+            --wrong-color: #FF0000;
+            --hover-color: #ff9900;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle, #000066 0%, #000011 100%);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- Global Audio Toggle --- */
+        #audio-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-size: 24px;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        #audio-toggle:hover {
+            background: var(--gold);
+            color: var(--bg-color);
+        }
+
+        /* --- Screens --- */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* --- Intro Screen --- */
+        #intro-screen {
+            text-align: center;
+        }
+        .logo-container {
+            width: 300px;
+            height: 300px;
+            border: 5px solid var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #000099, #000033);
+            margin-bottom: 40px;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+            flex-direction: column;
+        }
+        .logo-text-top { font-size: 24px; font-weight: bold; letter-spacing: 2px; }
+        .logo-text-mid { font-size: 48px; font-weight: bold; color: var(--gold); text-transform: uppercase; margin: 10px 0; text-shadow: 2px 2px 4px #000; }
+        .logo-text-bot { font-size: 20px; font-style: italic; }
+        
+        .intro-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #0000cc, #000066);
+            border: 2px solid var(--gold);
+            color: white;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: linear-gradient(to bottom, var(--hover-color), #cc7a00);
+            transform: scale(1.05);
+        }
+
+        /* --- Admin Panel --- */
+        #admin-screen {
+            justify-content: flex-start;
+            padding: 40px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 900px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .admin-box {
+            background: rgba(0, 0, 51, 0.8);
+            border: 2px solid var(--gold);
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 900px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: #000022;
+            color: #fff;
+            border: 1px solid var(--gold);
+            padding: 10px;
+            font-family: monospace;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        .status-msg { color: var(--correct-color); margin-top: 10px; }
+
+        /* --- Game Screen --- */
+        #game-screen {
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Top Bar: Lifelines & Money Tree */
+        .top-bar {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: flex-start;
+            height: 40%;
+        }
+
+        /* Lifelines */
+        .lifelines {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+        }
+        .lifeline {
+            width: 70px;
+            height: 45px;
+            border: 2px solid var(--gold);
+            border-radius: 25px;
+            background: linear-gradient(to bottom, #0000cc, #000033);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+            transition: transform 0.2s;
+        }
+        .lifeline:hover { transform: scale(1.1); }
+        .lifeline.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #333;
+            border-color: #555;
+        }
+        .lifeline-icon { font-size: 24px; }
+
+        /* Money Tree */
+        .money-tree {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid var(--gold);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column-reverse; /* Bottom to top */
+        }
+        .money-level {
+            padding: 2px 10px;
+            margin: 2px 0;
+            color: #ffcc00;
+            display: flex;
+            justify-content: space-between;
+            width: 150px;
+        }
+        .money-level.safe-haven { color: #fff; }
+        .money-level.active {
+            background-color: var(--hover-color);
+            color: #000;
+            border-radius: 5px;
+        }
+
+        /* Game Area: Question & Answers */
+        .game-area {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .hexagon-box {
+            position: relative;
+            background: linear-gradient(to bottom, #0000cc, #000033);
+            border: 2px solid var(--gold);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 15px 30px;
+            font-size: 22px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        
+        /* Hexagon pointed ends simulation using pseudo-elements */
+        .hexagon-box::before, .hexagon-box::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: inherit;
+            border: inherit;
+            border-left: none;
+            border-bottom: none;
+            top: 50%;
+            z-index: -1;
+        }
+        .hexagon-box::before {
+            left: -20px;
+            transform: translateY(-50%) rotate(-135deg);
+        }
+        .hexagon-box::after {
+            right: -20px;
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .question-box {
+            justify-content: center;
+            text-align: center;
+            min-height: 80px;
+            margin-bottom: 20px;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 40px;
+        }
+
+        .answer-box {
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .answer-box:hover {
+            background: linear-gradient(to bottom, var(--hover-color), #cc7a00);
+        }
+        .answer-letter {
+            color: var(--gold);
+            margin-right: 15px;
+        }
+        
+        .answer-box.selected { background: linear-gradient(to bottom, #ffcc00, #cc9900); color: black; }
+        .answer-box.correct { background: linear-gradient(to bottom, var(--correct-color), #009900); animation: blink 0.5s 3; }
+        .answer-box.wrong { background: linear-gradient(to bottom, var(--wrong-color), #990000); }
+        .answer-box.hidden { visibility: hidden; pointer-events: none; }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Modal / Overlay */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: linear-gradient(to bottom, #000066, #000022);
+            border: 3px solid var(--gold);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .modal h2 { color: var(--gold); font-size: 32px; }
+        .modal p { font-size: 20px; line-height: 1.5; }
+        .modal .btn { margin-top: 20px; }
+
+        .ls-brand {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            opacity: 0.9;
+            border: 1px solid rgba(255, 215, 0, 0.45);
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(0, 0, 51, 0.55);
+        }
+        .ls-brand:hover { opacity: 1; background: rgba(255, 215, 0, 0.15); }
+    </style>
+</head>
+<body>
+
+    <a class="ls-brand" href="index.html#/team" title="Back to LingoSpark">LingoSpark</a>
+
+    <!-- Audio Toggle Button -->
+    <div id="audio-toggle" onclick="toggleAudio()" title="Toggle Sound & Music">
+        🔊
+    </div>
+
+    <!-- 1. Intro Screen -->
+    <div id="intro-screen" class="screen active">
+        <div class="logo-container">
+            <div class="logo-text-top">LINGOSPARK</div>
+            <div class="logo-text-mid">ESL<br>Millionaire</div>
+            <div class="logo-text-bot">Team Challenge · 15 levels</div>
+        </div>
+        <div class="intro-buttons">
+            <button class="btn" onmouseover="audioFX.playHover()" onclick="startGame()">Start Game</button>
+            <button class="btn" style="background: #333; border-color: #888;" onmouseover="audioFX.playHover()" onclick="showScreen('admin-screen')">Question Bank</button>
+        </div>
+    </div>
+
+    <!-- 2. Admin / Question Bank Screen -->
+    <div id="admin-screen" class="screen">
+        <div class="admin-header">
+            <h2>Question Bank Management</h2>
+            <button class="btn" onmouseover="audioFX.playHover()" onclick="showScreen('intro-screen')">Back to Menu</button>
+        </div>
+        <div class="admin-box">
+            <p>Paste your batch of questions here. Format: <code>Level (1-15) | Question | Correct | Wrong 1 | Wrong 2 | Wrong 3</code></p>
+            <p style="font-size: 14px; color: #ccc;">Example: <i>1 | What color is the sky? | Blue | Red | Green | Yellow</i></p>
+            <textarea id="batch-input" placeholder="1 | Question | Correct | Wrong 1 | Wrong 2 | Wrong 3&#10;2 | Next question..."></textarea>
+            <br>
+            <button class="btn" onmouseover="audioFX.playHover()" onclick="importQuestions()">Import Questions</button>
+            <button class="btn" style="background: #990000; border-color: #ff0000; margin-left:10px;" onmouseover="audioFX.playHover()" onclick="clearQuestions()">Clear All</button>
+            <div id="admin-status" class="status-msg"></div>
+            
+            <h3 style="margin-top: 30px; color: var(--gold);">Current Database Status:</h3>
+            <p id="db-stats">No questions loaded.</p>
+        </div>
+    </div>
+
+    <!-- 3. Game Screen -->
+    <div id="game-screen" class="screen">
+        <div class="top-bar">
+            <div class="lifelines">
+                <div class="lifeline" id="ll-5050" onclick="use5050()" title="50:50 - Removes two wrong answers">
+                    <span class="lifeline-icon">50:50</span>
+                </div>
+                <div class="lifeline" id="ll-phone" onclick="usePhone()" title="Phone a Friend - Gets a hint">
+                    <span class="lifeline-icon">☎️</span>
+                </div>
+                <div class="lifeline" id="ll-audience" onclick="useAudience()" title="Ask the Audience - Poll results">
+                    <span class="lifeline-icon">👥</span>
+                </div>
+            </div>
+
+            <div class="money-tree" id="money-tree">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="hexagon-box question-box" id="question-text">
+                Loading question...
+            </div>
+            
+            <div class="answers-grid">
+                <div class="hexagon-box answer-box" id="ans-0" onclick="selectAnswer(0)" onmouseover="audioFX.playHover()">
+                    <span class="answer-letter">A:</span> <span class="answer-text"></span>
+                </div>
+                <div class="hexagon-box answer-box" id="ans-1" onclick="selectAnswer(1)" onmouseover="audioFX.playHover()">
+                    <span class="answer-letter">B:</span> <span class="answer-text"></span>
+                </div>
+                <div class="hexagon-box answer-box" id="ans-2" onclick="selectAnswer(2)" onmouseover="audioFX.playHover()">
+                    <span class="answer-letter">C:</span> <span class="answer-text"></span>
+                </div>
+                <div class="hexagon-box answer-box" id="ans-3" onclick="selectAnswer(3)" onmouseover="audioFX.playHover()">
+                    <span class="answer-letter">D:</span> <span class="answer-text"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Lifelines / Game Over -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Title</h2>
+            <p id="modal-body">Message goes here.</p>
+            <button class="btn" id="modal-btn" onclick="closeModal()">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           1. AUDIO SYSTEM (Web Audio API) - No external files needed!
+           ========================================================================== */
+        class AudioController {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.connect(this.ctx.destination);
+                this.masterGain.gain.value = 0.4; // Default volume
+                this.isMuted = false;
+                this.bgmOsc = null;
+                this.lfo = null;
+                this.bgmGain = null;
+                this.initialized = false;
+            }
+
+            init() {
+                if(this.ctx.state === 'suspended') this.ctx.resume();
+                this.initialized = true;
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                this.masterGain.gain.value = this.isMuted ? 0 : 0.4;
+                return this.isMuted;
+            }
+
+            // Simple soft tick for hovering
+            playHover() {
+                if(this.isMuted || !this.initialized) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            // Ascending chime for correct answer
+            playCorrect() {
+                if(this.isMuted || !this.initialized) return;
+                const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0, this.ctx.currentTime + i * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + i * 0.1 + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.1 + 0.5);
+                    osc.connect(gain);
+                    gain.connect(this.masterGain);
+                    osc.start(this.ctx.currentTime + i * 0.1);
+                    osc.stop(this.ctx.currentTime + i * 0.1 + 0.5);
+                });
+            }
+
+            // Low descending buzz for wrong answer
+            playWrong() {
+                if(this.isMuted || !this.initialized) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.8);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.8);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.8);
+            }
+
+            // Magical ping for lifelines
+            playLifeline() {
+                if(this.isMuted || !this.initialized) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(2000, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.5);
+            }
+
+            // Gentle pulsing ambient drone for background
+            startDrone() {
+                if(this.bgmOsc || !this.initialized) return;
+                
+                this.bgmOsc = this.ctx.createOscillator();
+                this.bgmOsc.type = 'triangle';
+                this.bgmOsc.frequency.value = 65.41; // C2
+
+                this.lfo = this.ctx.createOscillator();
+                this.lfo.type = 'sine';
+                this.lfo.frequency.value = 0.2; // Slow pulse
+
+                this.bgmGain = this.ctx.createGain();
+                this.bgmGain.gain.value = 0.15; // Base volume
+
+                const lfoGain = this.ctx.createGain();
+                lfoGain.gain.value = 0.1; // Modulation depth
+
+                this.lfo.connect(lfoGain);
+                lfoGain.connect(this.bgmGain.gain);
+
+                this.bgmOsc.connect(this.bgmGain);
+                this.bgmGain.connect(this.masterGain);
+
+                this.bgmOsc.start();
+                this.lfo.start();
+            }
+
+            stopDrone() {
+                if(this.bgmOsc) {
+                    this.bgmGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1); // Fade out
+                    setTimeout(() => {
+                        this.bgmOsc.stop();
+                        this.lfo.stop();
+                        this.bgmOsc = null;
+                        this.lfo = null;
+                    }, 1000);
+                }
+            }
+        }
+
+        const audioFX = new AudioController();
+
+        function toggleAudio() {
+            audioFX.init();
+            const isMuted = audioFX.toggleMute();
+            document.getElementById('audio-toggle').innerText = isMuted ? '🔇' : '🔊';
+        }
+
+        /* ==========================================================================
+           2. GAME DATA & LOGIC
+           ========================================================================== */
+        
+        const moneyLevels = [
+            "$100", "$200", "$300", "$500", "$1,000", // Safe haven
+            "$2,000", "$4,000", "$8,000", "$16,000", "$32,000", // Safe haven
+            "$64,000", "$125,000", "$250,000", "$500,000", "$1,000,000"
+        ];
+        
+        let questionBank = {}; // { level_1: [...], level_2: [...] }
+        let currentLevel = 0; // 0 to 14
+        let currentQuestion = null;
+        let shuffledAnswers = [];
+        let isWaitingForAction = false;
+        let earnedMoney = "$0";
+
+        // Initialize App
+        window.onload = () => {
+            loadQuestionsFromStorage();
+            renderMoneyTree();
+            updateAdminStats();
+        };
+
+        function showScreen(screenId) {
+            audioFX.init();
+            audioFX.playHover();
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if(screenId !== 'game-screen') {
+                audioFX.stopDrone();
+            }
+        }
+
+        function startGame() {
+            audioFX.init();
+            if (!validateQuestionBank()) {
+                alert("Please add questions for all 15 levels in the Question Bank first!");
+                return;
+            }
+            currentLevel = 0;
+            earnedMoney = "$0";
+            
+            // Reset lifelines
+            ['ll-5050', 'll-phone', 'll-audience'].forEach(id => {
+                document.getElementById(id).classList.remove('used');
+            });
+
+            audioFX.startDrone();
+            showScreen('game-screen');
+            updateMoneyTreeUI();
+            loadNextQuestion();
+        }
+
+        function validateQuestionBank() {
+            for (let i = 1; i <= 15; i++) {
+                if (!questionBank[i] || questionBank[i].length === 0) return false;
+            }
+            return true;
+        }
+
+        function loadNextQuestion() {
+            isWaitingForAction = false;
+            
+            // Get a random question for the current level (1 to 15)
+            const levelQs = questionBank[currentLevel + 1];
+            const randIndex = Math.floor(Math.random() * levelQs.length);
+            currentQuestion = levelQs[randIndex];
+
+            document.getElementById('question-text').innerText = currentQuestion.q;
+
+            // Prepare answers: correct is always index 0 internally before shuffle
+            let answers = [
+                { text: currentQuestion.c, isCorrect: true, originalIndex: 0 },
+                { text: currentQuestion.w1, isCorrect: false, originalIndex: 1 },
+                { text: currentQuestion.w2, isCorrect: false, originalIndex: 2 },
+                { text: currentQuestion.w3, isCorrect: false, originalIndex: 3 }
+            ];
+
+            // Shuffle answers
+            shuffledAnswers = answers.sort(() => Math.random() - 0.5);
+
+            // Display
+            for (let i = 0; i < 4; i++) {
+                const box = document.getElementById(`ans-${i}`);
+                box.className = 'hexagon-box answer-box'; // reset classes
+                box.querySelector('.answer-text').innerText = shuffledAnswers[i].text;
+            }
+        }
+
+        function selectAnswer(index) {
+            if (isWaitingForAction) return;
+            isWaitingForAction = true;
+            
+            const selectedBox = document.getElementById(`ans-${index}`);
+            selectedBox.classList.add('selected');
+            audioFX.playHover(); // Use tick as a lock-in sound
+
+            // Simulate dramatic pause
+            setTimeout(() => {
+                if (shuffledAnswers[index].isCorrect) {
+                    // Correct
+                    selectedBox.classList.remove('selected');
+                    selectedBox.classList.add('correct');
+                    audioFX.playCorrect();
+                    
+                    if (currentLevel === 4) earnedMoney = "$1,000";
+                    if (currentLevel === 9) earnedMoney = "$32,000";
+
+                    setTimeout(() => {
+                        if (currentLevel === 14) {
+                            endGame(true);
+                        } else {
+                            currentLevel++;
+                            updateMoneyTreeUI();
+                            loadNextQuestion();
+                        }
+                    }, 2000);
+                } else {
+                    // Wrong
+                    selectedBox.classList.remove('selected');
+                    selectedBox.classList.add('wrong');
+                    audioFX.stopDrone();
+                    audioFX.playWrong();
+                    
+                    // Highlight correct answer
+                    const correctIdx = shuffledAnswers.findIndex(a => a.isCorrect);
+                    document.getElementById(`ans-${correctIdx}`).classList.add('correct');
+
+                    setTimeout(() => {
+                        endGame(false);
+                    }, 2500);
+                }
+            }, 1500);
+        }
+
+        function endGame(won) {
+            audioFX.stopDrone();
+            if (won) {
+                showModal("Congratulations!", "You are an ESL Millionaire!", "Main Menu", () => showScreen('intro-screen'));
+            } else {
+                showModal("Game Over", `You walk away with ${earnedMoney}.`, "Try Again", () => showScreen('intro-screen'));
+            }
+        }
+
+        /* --- Lifelines (Tailored for ESL) --- */
+        function use5050() {
+            if (isWaitingForAction || document.getElementById('ll-5050').classList.contains('used')) return;
+            audioFX.playLifeline();
+            document.getElementById('ll-5050').classList.add('used');
+            
+            let wrongRemoved = 0;
+            for (let i = 0; i < 4; i++) {
+                if (!shuffledAnswers[i].isCorrect && wrongRemoved < 2) {
+                    document.getElementById(`ans-${i}`).classList.add('hidden');
+                    wrongRemoved++;
+                }
+            }
+        }
+
+        function usePhone() {
+            if (isWaitingForAction || document.getElementById('ll-phone').classList.contains('used')) return;
+            audioFX.playLifeline();
+            document.getElementById('ll-phone').classList.add('used');
+            
+            // ESL specific hint generation
+            let hint = "";
+            let correctWord = currentQuestion.c;
+            
+            if (currentLevel < 5) {
+                hint = `Your friend says: "I'm pretty sure the answer starts with the letter '${correctWord.charAt(0).toUpperCase()}'."`;
+            } else if (currentLevel < 10) {
+                hint = `Your friend says: "I think it has ${correctWord.length} letters..."`;
+            } else {
+                // Higher levels: semantic hint (fake confidence)
+                hint = `Your friend says: "This is tough vocabulary. I'm 75% sure it's ${correctWord}."`;
+            }
+            
+            showModal("Phone a Friend", hint, "Close");
+        }
+
+        function useAudience() {
+            if (isWaitingForAction || document.getElementById('ll-audience').classList.contains('used')) return;
+            audioFX.playLifeline();
+            document.getElementById('ll-audience').classList.add('used');
+            
+            // Generate percentages based on difficulty
+            let correctPercent = Math.max(30, 90 - (currentLevel * 4)); // Easier Qs get higher correct %
+            let rem = 100 - correctPercent;
+            
+            let results = [];
+            for(let i=0; i<4; i++) {
+                if(shuffledAnswers[i].isCorrect) {
+                    results[i] = correctPercent;
+                } else {
+                    let share = Math.floor(Math.random() * rem);
+                    results[i] = share;
+                    rem -= share;
+                }
+            }
+            // Add remaining to a random wrong answer to ensure it totals 100
+            let lastWrong = shuffledAnswers.findIndex(a => !a.isCorrect);
+            results[lastWrong] += rem;
+
+            let msg = `A: ${results[0]}% <br> B: ${results[1]}% <br> C: ${results[2]}% <br> D: ${results[3]}%`;
+            showModal("Ask the Audience", msg, "Close");
+        }
+
+        /* --- UI Helpers --- */
+        function renderMoneyTree() {
+            const tree = document.getElementById('money-tree');
+            tree.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                let div = document.createElement('div');
+                div.className = 'money-level';
+                div.id = `level-${i}`;
+                if (i === 4 || i === 9 || i === 14) div.classList.add('safe-haven');
+                
+                div.innerHTML = `<span>${15 - i}</span> <span>${moneyLevels[14 - i]}</span>`;
+                tree.appendChild(div);
+            }
+        }
+
+        function updateMoneyTreeUI() {
+            document.querySelectorAll('.money-level').forEach(el => el.classList.remove('active'));
+            // money levels are indexed 0 (top/mill) to 14 (bottom/$100)
+            const activeIndex = 14 - currentLevel;
+            document.getElementById(`level-${activeIndex}`).classList.add('active');
+        }
+
+        function showModal(title, body, btnText, callback = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerHTML = body;
+            const btn = document.getElementById('modal-btn');
+            btn.innerText = btnText;
+            btn.onclick = () => {
+                audioFX.playHover();
+                closeModal();
+                if(callback) callback();
+            };
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        /* --- Question Bank Management --- */
+        function importQuestions() {
+            const input = document.getElementById('batch-input').value;
+            const lines = input.split('\n');
+            let added = 0;
+
+            lines.forEach(line => {
+                if(line.trim() === '') return;
+                const parts = line.split('|').map(p => p.trim());
+                if(parts.length === 6) {
+                    const level = parseInt(parts[0]);
+                    if(level >= 1 && level <= 15) {
+                        if(!questionBank[level]) questionBank[level] = [];
+                        questionBank[level].push({
+                            q: parts[1], c: parts[2], w1: parts[3], w2: parts[4], w3: parts[5]
+                        });
+                        added++;
+                    }
+                }
+            });
+
+            saveQuestionsToStorage();
+            updateAdminStats();
+            document.getElementById('batch-input').value = '';
+            document.getElementById('admin-status').innerText = `Successfully added ${added} questions.`;
+            setTimeout(() => document.getElementById('admin-status').innerText = '', 3000);
+        }
+
+        function clearQuestions() {
+            if(confirm("Are you sure you want to delete all questions?")) {
+                questionBank = {};
+                saveQuestionsToStorage();
+                updateAdminStats();
+                document.getElementById('admin-status').innerText = `Question bank cleared.`;
+                setTimeout(() => document.getElementById('admin-status').innerText = '', 3000);
+            }
+        }
+
+        function saveQuestionsToStorage() {
+            localStorage.setItem('esl_millionaire_questions', JSON.stringify(questionBank));
+        }
+
+        function loadQuestionsFromStorage() {
+            const stored = localStorage.getItem('esl_millionaire_questions');
+            if (stored) {
+                try {
+                    questionBank = JSON.parse(stored);
+                } catch(e) {
+                    questionBank = {};
+                }
+            }
+        }
+
+        function updateAdminStats() {
+            let html = '<ul style="list-style:none; padding:0; display:flex; flex-wrap:wrap; gap:10px;">';
+            let total = 0;
+            let missing = [];
+            for(let i=1; i<=15; i++) {
+                let count = questionBank[i] ? questionBank[i].length : 0;
+                total += count;
+                let color = count > 0 ? 'var(--correct-color)' : 'var(--wrong-color)';
+                html += `<li style="color:${color}; background:rgba(0,0,0,0.5); padding:5px 10px; border-radius:5px;">Lvl ${i}: ${count} Qs</li>`;
+                if(count === 0) missing.push(i);
+            }
+            html += '</ul>';
+            html += `<p><strong>Total Questions: ${total}</strong></p>`;
+            
+            if(missing.length > 0) {
+                html += `<p style="color:var(--wrong-color);">Warning: Missing questions for levels: ${missing.join(', ')}. Game cannot start.</p>`;
+            } else {
+                html += `<p style="color:var(--correct-color);">Ready to play!</p>`;
+            }
+
+            document.getElementById('db-stats').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
