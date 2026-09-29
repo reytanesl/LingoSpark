@@ -225,6 +225,31 @@
         .logo-text-bot { font-size: 16px; color: rgba(244, 247, 255, 0.7); font-weight: 400; }
 
         .intro-buttons { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+        .intro-note {
+            margin-top: 18px;
+            max-width: 420px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: rgba(244, 247, 255, 0.65);
+        }
+        .session-badge {
+            display: none;
+            align-self: flex-start;
+            margin-bottom: 4px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: #1a1200;
+            background: linear-gradient(90deg, var(--gold), #f0d878);
+        }
+        .session-badge.visible { display: inline-flex; }
+        #session-screen {
+            justify-content: flex-start;
+            padding: 72px 40px 40px;
+            overflow-y: auto;
+        }
 
         .btn {
             background: linear-gradient(160deg, #2a5bb8, #153a7a);
@@ -571,7 +596,27 @@
         </div>
         <div class="intro-buttons">
             <button class="btn" onclick="startGame()">Start Game</button>
+            <button class="btn" style="background: linear-gradient(160deg, #3d74d4, #1e4a96);" onclick="showScreen('session-screen')">Paste for this session</button>
             <button class="btn" style="background: #3a4258; border-color: #7a849c;" onclick="showScreen('admin-screen')">Question Bank</button>
+        </div>
+        <p class="intro-note">Use <strong>Paste for this session</strong> for a one-off set (not saved). Use <strong>Question Bank</strong> to store questions for later.</p>
+    </div>
+
+    <!-- Session-only question paste -->
+    <div id="session-screen" class="screen">
+        <div class="admin-header">
+            <h2>Questions for this session</h2>
+            <button class="btn" onclick="cancelSessionPaste()">Back to Menu</button>
+        </div>
+        <div class="admin-box">
+            <p>Paste a full set for <strong>one game only</strong>. These questions are <strong>not saved</strong> to the Question Bank and clear when you return to the menu.</p>
+            <p>Format: <code>Level (1-15) | Question | Correct | Wrong 1 | Wrong 2 | Wrong 3</code></p>
+            <p style="font-size: 14px; color: #ccc;">Need at least one question for every level 1–15. Example: <i>1 | What color is the sky? | Blue | Red | Green | Yellow</i></p>
+            <textarea id="session-input" placeholder="1 | Question | Correct | Wrong 1 | Wrong 2 | Wrong 3&#10;2 | Next question...&#10;...&#10;15 | Final question | ..."></textarea>
+            <br>
+            <button class="btn" onclick="startSessionGame()">Play with these questions</button>
+            <button class="btn" style="background: #3a4258; border-color: #7a849c; margin-left:10px;" onclick="cancelSessionPaste()">Cancel</button>
+            <div id="session-status" class="status-msg"></div>
         </div>
     </div>
 
@@ -582,7 +627,8 @@
             <button class="btn" onclick="showScreen('intro-screen')">Back to Menu</button>
         </div>
         <div class="admin-box">
-            <p>Paste your batch of questions here. Format: <code>Level (1-15) | Question | Correct | Wrong 1 | Wrong 2 | Wrong 3</code></p>
+            <p>Paste questions to <strong>save permanently</strong> in this browser. Format: <code>Level (1-15) | Question | Correct | Wrong 1 | Wrong 2 | Wrong 3</code></p>
+            <p style="font-size: 14px; color: #ccc;">For a one-off game without saving, go back and use <strong>Paste for this session</strong>.</p>
             <p style="font-size: 14px; color: #ccc;">Example: <i>1 | What color is the sky? | Blue | Red | Green | Yellow</i></p>
             <textarea id="batch-input" placeholder="1 | Question | Correct | Wrong 1 | Wrong 2 | Wrong 3&#10;2 | Next question..."></textarea>
             <br>
@@ -599,6 +645,7 @@
     <div id="game-screen" class="screen">
         <div class="game-layout">
             <div class="game-main">
+                <div class="session-badge" id="session-badge">Session questions · not saved</div>
                 <div class="lifelines">
                     <div class="lifeline" id="ll-5050" onclick="use5050()" title="50:50 - Removes two wrong answers">
                         <span class="lifeline-icon">50:50</span>
@@ -1012,12 +1059,61 @@
             "$64,000", "$125,000", "$250,000", "$500,000", "$1,000,000"
         ];
         
-        let questionBank = {}; // { level_1: [...], level_2: [...] }
+        let questionBank = {}; // persistent bank { 1: [...], 2: [...] }
+        let sessionBank = null; // one-game override, not written to localStorage
         let currentLevel = 0; // 0 to 14
         let currentQuestion = null;
         let shuffledAnswers = [];
         let isWaitingForAction = false;
         let earnedMoney = "$0";
+
+        function getActiveBank() {
+            return sessionBank || questionBank;
+        }
+
+        function clearSessionQuestions() {
+            sessionBank = null;
+            const badge = document.getElementById('session-badge');
+            if (badge) badge.classList.remove('visible');
+            const status = document.getElementById('session-status');
+            if (status) status.innerText = '';
+        }
+
+        function parseQuestionBatch(text) {
+            const bank = {};
+            let added = 0;
+            const lines = String(text || '').split('\n');
+            lines.forEach(line => {
+                if (line.trim() === '') return;
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length === 6) {
+                    const level = parseInt(parts[0], 10);
+                    if (level >= 1 && level <= 15) {
+                        if (!bank[level]) bank[level] = [];
+                        bank[level].push({
+                            q: parts[1], c: parts[2], w1: parts[3], w2: parts[4], w3: parts[5]
+                        });
+                        added++;
+                    }
+                }
+            });
+            return { bank, added };
+        }
+
+        function bankIsComplete(bank) {
+            for (let i = 1; i <= 15; i++) {
+                if (!bank[i] || bank[i].length === 0) return false;
+            }
+            return true;
+        }
+
+        function missingLevels(bank) {
+            const missing = [];
+            for (let i = 1; i <= 15; i++) {
+                if (!bank[i] || bank[i].length === 0) missing.push(i);
+            }
+            return missing;
+        }
 
         // Initialize App
         window.onload = () => {
@@ -1033,38 +1129,79 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        function startGame() {
-            audioFX.init();
-            if (!validateQuestionBank()) {
-                alert("Please add questions for all 15 levels in the Question Bank first!");
-                return;
-            }
+        function discardSessionAndGoMenu() {
+            const input = document.getElementById('session-input');
+            if (input) input.value = '';
+            clearSessionQuestions();
+            showScreen('intro-screen');
+        }
+
+        function cancelSessionPaste() {
+            const input = document.getElementById('session-input');
+            if (input) input.value = '';
+            clearSessionQuestions();
+            showScreen('intro-screen');
+        }
+
+        function beginGameFromBank() {
             currentLevel = 0;
             earnedMoney = "$0";
-            
-            // Reset lifelines
             ['ll-5050', 'll-phone', 'll-audience'].forEach(id => {
                 document.getElementById(id).classList.remove('used');
             });
-
+            const badge = document.getElementById('session-badge');
+            if (badge) badge.classList.toggle('visible', !!sessionBank);
             MusicEngine.play();
-            showScreen('game-screen');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('game-screen').classList.add('active');
             updateMoneyTreeUI();
             loadNextQuestion();
         }
 
-        function validateQuestionBank() {
-            for (let i = 1; i <= 15; i++) {
-                if (!questionBank[i] || questionBank[i].length === 0) return false;
+        function startGame() {
+            audioFX.init();
+            clearSessionQuestions();
+            if (!bankIsComplete(questionBank)) {
+                alert("Please add questions for all 15 levels in the Question Bank first — or use Paste for this session.");
+                return;
             }
-            return true;
+            beginGameFromBank();
+        }
+
+        function startSessionGame() {
+            audioFX.init();
+            const input = document.getElementById('session-input');
+            const status = document.getElementById('session-status');
+            const { bank, added } = parseQuestionBatch(input.value);
+
+            if (added === 0) {
+                status.style.color = 'var(--wrong-color)';
+                status.innerText = 'No valid questions found. Check the format.';
+                return;
+            }
+
+            const missing = missingLevels(bank);
+            if (missing.length > 0) {
+                status.style.color = 'var(--wrong-color)';
+                status.innerText = `Need questions for every level. Missing: ${missing.join(', ')}.`;
+                return;
+            }
+
+            sessionBank = bank;
+            status.style.color = 'var(--correct-color)';
+            status.innerText = `Loaded ${added} session questions (not saved). Starting…`;
+            beginGameFromBank();
+        }
+
+        function validateQuestionBank() {
+            return bankIsComplete(getActiveBank());
         }
 
         function loadNextQuestion() {
             isWaitingForAction = false;
             
             // Get a random question for the current level (1 to 15)
-            const levelQs = questionBank[currentLevel + 1];
+            const levelQs = getActiveBank()[currentLevel + 1];
             const randIndex = Math.floor(Math.random() * levelQs.length);
             currentQuestion = levelQs[randIndex];
 
@@ -1136,7 +1273,9 @@
 
         function endGame(won) {
             if (won) {
-                showModal("Congratulations!", "You are an ESL Millionaire!", "Main Menu", () => showScreen('intro-screen'));
+                showModal("Congratulations!", "You are an ESL Millionaire!", "Main Menu", () => discardSessionAndGoMenu());
+            } else if (sessionBank) {
+                showModal("Game Over", `You walk away with ${earnedMoney}.`, "Play again", () => beginGameFromBank());
             } else {
                 showModal("Game Over", `You walk away with ${earnedMoney}.`, "Try Again", () => showScreen('intro-screen'));
             }
@@ -1246,22 +1385,11 @@
         /* --- Question Bank Management --- */
         function importQuestions() {
             const input = document.getElementById('batch-input').value;
-            const lines = input.split('\n');
-            let added = 0;
+            const { bank, added } = parseQuestionBatch(input);
 
-            lines.forEach(line => {
-                if(line.trim() === '') return;
-                const parts = line.split('|').map(p => p.trim());
-                if(parts.length === 6) {
-                    const level = parseInt(parts[0]);
-                    if(level >= 1 && level <= 15) {
-                        if(!questionBank[level]) questionBank[level] = [];
-                        questionBank[level].push({
-                            q: parts[1], c: parts[2], w1: parts[3], w2: parts[4], w3: parts[5]
-                        });
-                        added++;
-                    }
-                }
+            Object.keys(bank).forEach(level => {
+                if (!questionBank[level]) questionBank[level] = [];
+                questionBank[level].push(...bank[level]);
             });
 
             saveQuestionsToStorage();
