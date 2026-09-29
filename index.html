@@ -2341,7 +2341,8 @@
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, or upload a photo/PDF of a real exam task (and optionally your handwritten email), then get AI examiner feedback.</p></div>
                 <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
                 <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Creator mode also has to be (am / is / are), and / or, question words, and . or ?. Ages 10–12 add play/do/go collocations, daily routines, parts of the day, and telling the time. Fill the gaps: drag tiles into blanks. When you choose singular or plural, the plural form is shown and spoken. Persons: I, You, We, They, He, She. Things are grouped (food, furniture, school…). Line Up: drag pictured tiles onto numbered boxes. Switch EN | PL for help. Signed-in players collect each correct sentence in a Colour Blocks set.</p></div>
-                <div class="guide-item"><strong>Topic Challenge</strong><p>Premium practice on class topics (school, home, food, free time, clothes &amp; weather, town, animals, routines, time) with grammar focuses (be, have got, can, like, present simple, negatives, questions). Modes: Picture, Tiles, Text, Transform. Optional response path: Write, Speak (Hear model + browser mic or classroom “I said it”), or Both. Answers check locally; Ask why uses AI after a wrong attempt.</p></div>
+                <div class="guide-item"><strong>Vocab Scenes</strong><p>24 interactive classroom scenes (school, home, food, free time, clothes, weather, town, animals, routines, time). Hover or tap objects to see and hear English words; quiz mode hides labels. Opens in a new tab — free to play.</p></div>
+                <div class="guide-item"><strong>Topic Challenge</strong><p>Premium practice on class topics with real scene pictures. Pick a topic and grammar, then switch Picture / Tiles / Text / Transform in play. Optional speaking (Hear model + mic or “I said it”). Answers check locally; Ask why uses AI after a wrong attempt.</p></div>
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
@@ -2522,7 +2523,7 @@
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">Dictation from A1 + Colour Blocks + Topic Challenge + 3 AI writing games — choose A2 or B1 for AI games</span>
+                        <span class="pe-pack-meta">Dictation, Colour Blocks, Vocab Scenes, Topic Challenge + AI writing games — choose A2 or B1 for AI games</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
@@ -2531,7 +2532,7 @@
                     <button type="button" class="pe-level-btn" data-level="A2" onclick="selectPeLevel('A2')">A2</button>
                     <button type="button" class="pe-level-btn" data-level="B1" onclick="selectPeLevel('B1')">B1</button>
                     <button type="button" class="pe-level-btn" id="pe-custom-toggle-btn" onclick="togglePeCustomMode()">Custom Vocab</button>
-                    <div class="pe-level-hint" id="pe-level-hint">Select A2 or B1 for AI games, or Custom Vocab. Dictation and Colour Blocks have their own setup and do not need this level.</div>
+                    <div class="pe-level-hint" id="pe-level-hint">Select A2 or B1 for AI games, or Custom Vocab. Dictation, Colour Blocks and Vocab Scenes do not need this level.</div>
                     <div class="pe-custom-panel" id="pe-custom-panel">
                         <textarea id="pe-custom-glossary-input" placeholder="Paste custom glossary words/phrases (one per line, or use Term = Meaning format)"></textarea>
                         <button type="button" class="btn btn-outline" onclick="applyPeCustomGlossary()">Apply Custom Glossary</button>
@@ -2541,7 +2542,8 @@
                 <div class="grid pe-pack-grid" id="pe-pack-grid">
                     <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-layer-group"></i></div><h2>Topic Challenge</h2><p>Picture, tiles, text and transforms on school topics — write, speak, or both. Large curated bank for ages 9–11.</p><a href="#/setup/pe-topic" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-image"></i></div><h2>Vocab Scenes</h2><p>Explore 24 classroom scenes — hover or tap objects to learn words, quiz yourself, and hear pronunciation.</p><a href="vocab-scenes.html" target="_blank" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-layer-group"></i></div><h2>Topic Challenge</h2><p>Scene pictures plus tiles, text and transforms on school topics — write, and optionally speak. Ages 9–11.</p><a href="#/setup/pe-topic" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
@@ -2721,7 +2723,7 @@
 
             <div id="topic-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
                 <label style="color: #0e7490;"><i class="fa-solid fa-layer-group"></i> Topic Challenge</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Pick a class topic and grammar focus, then practise with Picture, Tiles, Text or Transform. Choose Write, Speak (Hear + mic or classroom partner check), or Both. Ages ~9–11. Writing Suite access required.</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Choose a topic and grammar. Picture mode shows a class scene; switch Picture / Tiles / Text / Transform during play. Optional speaking practice. Ages ~9–11 · Writing Suite access required.</p>
             </div>
 
             <div class="form-group" id="pe-topic-settings" style="display: none;">
@@ -2747,19 +2749,11 @@
                     <option value="negatives">Negatives</option>
                     <option value="questions">Questions</option>
                 </select>
-                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-table-cells"></i> Start mode:</label>
-                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.35rem;">
-                    <label><input type="radio" name="topic-setup-mode" value="picture" checked> Picture</label>
-                    <label><input type="radio" name="topic-setup-mode" value="tiles"> Tiles</label>
-                    <label><input type="radio" name="topic-setup-mode" value="text"> Text</label>
-                    <label><input type="radio" name="topic-setup-mode" value="transform"> Transform</label>
-                </div>
-                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-microphone"></i> Response path:</label>
-                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.35rem;">
-                    <label><input type="radio" name="topic-setup-response" value="write" checked> Write (type or choose)</label>
-                    <label><input type="radio" name="topic-setup-response" value="speak"> Speak (Hear + mic or “I said it”)</label>
-                    <label><input type="radio" name="topic-setup-response" value="both"> Both (speak, then write)</label>
-                </div>
+                <label style="margin-top:0.85rem; display:flex; align-items:center; gap:0.5rem; font-weight:600; cursor:pointer;">
+                    <input type="checkbox" id="topic-setup-speak" style="width:1.1rem; height:1.1rem;">
+                    <span><i class="fa-solid fa-microphone"></i> Also practise speaking</span>
+                </label>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin:0.35rem 0 0;">Modes (Picture, Tiles, Text, Transform) are available as tabs after you launch.</p>
             </div>
 
             <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">

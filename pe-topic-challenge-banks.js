@@ -11639,4 +11639,48 @@
   global.PE_TOPIC_CHALLENGE_GRAMMARS = GRAMMARS;
   global.PE_TOPIC_CHALLENGE_MODES = MODES;
   global.PE_TOPIC_CHALLENGE_BANK = BANK;
+  global.PE_TOPIC_CHALLENGE_SCENES = {
+    school: [
+      'assets/topic-scenes/school-classroom.png',
+      'assets/topic-scenes/school-playground.png'
+    ],
+    family_home: [
+      'assets/topic-scenes/family-livingroom.png',
+      'assets/topic-scenes/family-picnic.png',
+      'assets/topic-scenes/home-house.png',
+      'assets/topic-scenes/home-kitchen.png'
+    ],
+    food: [
+      'assets/topic-scenes/food-market.png',
+      'assets/topic-scenes/food-restaurant.png',
+      'assets/topic-scenes/food-supermarket.png'
+    ],
+    free_time: [
+      'assets/topic-scenes/freetime-beach.png',
+      'assets/topic-scenes/freetime-park.png'
+    ],
+    clothes_weather: [
+      'assets/topic-scenes/clothes-bedroom.png',
+      'assets/topic-scenes/clothes-shop.png',
+      'assets/topic-scenes/weather-rainy.png',
+      'assets/topic-scenes/weather-seasons.png'
+    ],
+    town: [
+      'assets/topic-scenes/town-centre.png',
+      'assets/topic-scenes/town-station.png'
+    ],
+    animals: [
+      'assets/topic-scenes/animals-farm.png',
+      'assets/topic-scenes/animals-forest.png',
+      'assets/topic-scenes/animals-zoo.png'
+    ],
+    routines: [
+      'assets/topic-scenes/routines-morning.png',
+      'assets/topic-scenes/routines-evening.png'
+    ],
+    time: [
+      'assets/topic-scenes/time-birthday.png',
+      'assets/topic-scenes/time-schoolday.png'
+    ]
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

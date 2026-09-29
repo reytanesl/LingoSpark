@@ -29,7 +29,8 @@
         speakOk: false,
         recognition: null,
         listening: false,
-        lastTranscript: ''
+        lastTranscript: '',
+        sceneSrc: null
     };
 
     function bank() {
@@ -42,6 +43,17 @@
 
     function grammars() {
         return global.PE_TOPIC_CHALLENGE_GRAMMARS || [];
+    }
+
+    function scenesForTopic(topicId) {
+        const map = global.PE_TOPIC_CHALLENGE_SCENES || {};
+        return map[topicId] || [];
+    }
+
+    function pickScene(topicId) {
+        const list = scenesForTopic(topicId);
+        if (!list.length) return null;
+        return list[Math.floor(Math.random() * list.length)];
     }
 
     function t(en, pl) {
@@ -63,6 +75,9 @@
 .tc-streak { font-weight: 700; color: var(--tc-accent); }
 .tc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 1.1rem 1.15rem; box-shadow: 0 1px 0 rgba(15,23,42,0.04); }
 .tc-cue { font-size: 3.2rem; line-height: 1; text-align: center; margin: 0.35rem 0 0.75rem; }
+.tc-scene { margin: 0 0 0.9rem; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+.tc-scene img { display: block; width: 100%; max-height: 280px; object-fit: cover; object-position: center; }
+.tc-scene-caption { font-size: 0.8rem; color: #64748b; text-align: center; padding: 0.35rem 0.5rem 0.5rem; }
 .tc-prompt { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.85rem; color: #0f172a; }
 .tc-pair { background: #ecfeff; border-left: 3px solid var(--tc-accent); padding: 0.55rem 0.75rem; border-radius: 0 0.45rem 0.45rem 0; margin-bottom: 0.85rem; font-size: 0.92rem; color: #155e75; }
 .tc-transform-from { background: #f8fafc; border: 1px dashed #94a3b8; border-radius: 0.55rem; padding: 0.65rem 0.8rem; margin-bottom: 0.85rem; font-size: 1.05rem; }
@@ -191,12 +206,20 @@
     function readSetupFromDom() {
         const topicEl = document.getElementById('topic-setup-topic');
         const gramEl = document.getElementById('topic-setup-grammar');
+        const speakEl = document.getElementById('topic-setup-speak');
         const modeEl = document.querySelector('input[name="topic-setup-mode"]:checked');
         const respEl = document.querySelector('input[name="topic-setup-response"]:checked');
         if (topicEl && topicEl.value) state.topic = topicEl.value;
         if (gramEl && gramEl.value) state.grammar = gramEl.value;
-        if (modeEl && modeEl.value) state.mode = modeEl.value;
-        if (respEl && respEl.value) state.response = respEl.value;
+        // Modes can still be switched in-game; setup defaults to Picture
+        state.mode = (modeEl && modeEl.value) ? modeEl.value : 'picture';
+        if (speakEl) {
+            state.response = speakEl.checked ? 'both' : 'write';
+        } else if (respEl && respEl.value) {
+            state.response = respEl.value;
+        } else {
+            state.response = 'write';
+        }
     }
 
     function labelTopic(id) {
@@ -247,7 +270,18 @@
 
         let body = '';
         if (state.mode === 'picture') {
-            body += `<div class="tc-cue" aria-hidden="true">${task.cue || '📝'}</div>`;
+            if (state.sceneSrc) {
+                body += `<div class="tc-scene">
+                    <img src="${escapeAttr(state.sceneSrc)}" alt="${escapeAttr(labelTopic(state.topic))} scene" loading="lazy">
+                    <div class="tc-scene-caption">${escapeHtml(t('Look at the picture', 'Spójrz na obrazek'))}</div>
+                </div>`;
+            } else {
+                body += `<div class="tc-cue" aria-hidden="true">${task.cue || '📝'}</div>`;
+            }
+        } else if (state.sceneSrc) {
+            body += `<div class="tc-scene" style="max-width:220px;margin-left:auto;margin-right:auto;">
+                <img src="${escapeAttr(state.sceneSrc)}" alt="" loading="lazy" style="max-height:120px;">
+            </div>`;
         }
         body += `<div class="tc-prompt">${escapeHtml(prompt)}</div>`;
         if (pair && showSpeak) {
@@ -646,6 +680,7 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         state._mcqOpts = null;
         state._gap = null;
         state._forceType = false;
+        state.sceneSrc = pickScene(state.topic);
         if (state.task && state.mode === 'text' && Math.random() < 0.45) {
             state._gap = gapPrompt(state.task);
         }
