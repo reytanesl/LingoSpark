@@ -274,10 +274,10 @@
 .tc-streak { font-weight: 700; color: var(--tc-accent); }
 .tc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 1.1rem 1.15rem; box-shadow: 0 1px 0 rgba(15,23,42,0.04); }
 .tc-cue { font-size: 3.2rem; line-height: 1; text-align: center; margin: 0.35rem 0 0.75rem; }
-.tc-scene { margin: 0 0 0.9rem; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e2e8f0; background: #0f172a0d; }
-.tc-scene-frame { width: 100%; background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 160px; padding: 0.35rem; }
-.tc-scene-stage { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
-.tc-scene-stage img { display: block; width: auto; max-width: 100%; max-height: min(52vh, 420px); height: auto; }
+.tc-scene { margin: 0 0 0.9rem; border-radius: 0.75rem; overflow: visible; border: 1px solid #e2e8f0; background: #f8fafc; }
+.tc-scene-frame { width: 100%; background: #f1f5f9; display: flex; justify-content: center; align-items: flex-start; padding: 0.5rem; }
+.tc-scene-stage { position: relative; display: block; width: 100%; max-width: 960px; line-height: 0; margin: 0 auto; }
+.tc-scene-stage img { display: block; width: 100%; height: auto; max-width: 100%; max-height: none; object-fit: contain; }
 .tc-scene-overlay { position: absolute; inset: 0; pointer-events: none; }
 .tc-hotspot {
   position: absolute;
@@ -502,15 +502,6 @@
             } else {
                 body += `<div class="tc-cue" aria-hidden="true">${task.cue || '📝'}</div>`;
             }
-        } else if (state.sceneSrc) {
-            body += `<div class="tc-scene" style="max-width:260px;margin-left:auto;margin-right:auto;">
-                <div class="tc-scene-frame">
-                    <div class="tc-scene-stage" id="tc-scene-stage">
-                        <img id="tc-scene-img" src="${escapeAttr(state.sceneSrc)}" alt="" loading="lazy" style="max-height:140px;">
-                        <div class="tc-scene-overlay" id="tc-scene-overlay"></div>
-                    </div>
-                </div>
-            </div>`;
         }
         body += `<div class="tc-prompt">${escapeHtml(prompt)}</div>`;
         if (pair && showSpeak) {
