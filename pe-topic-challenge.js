@@ -30,7 +30,122 @@
         recognition: null,
         listening: false,
         lastTranscript: '',
-        sceneSrc: null
+        sceneSrc: null,
+        sceneId: null,
+        highlightBoxes: []
+    };
+
+    const STOP_WORDS = new Set([
+        'this', 'that', 'these', 'those', 'what', 'where', 'who', 'how', 'when', 'why',
+        'are', 'is', 'am', 'was', 'were', 'the', 'and', 'for', 'with', 'from', 'into',
+        'your', 'her', 'his', 'their', 'our', 'about', 'talk', 'make', 'does', 'did',
+        'don', "don't", 'like', 'have', 'has', 'got', 'can', 'not', 'negative', 'question',
+        'every', 'day', 'here', 'there', 'very', 'also', 'just', 'some', 'any', 'all'
+    ]);
+
+    const WORD_ALIASES = {
+        pupil: ['boy', 'girl'],
+        student: ['boy', 'girl'],
+        children: ['boy', 'girl'],
+        child: ['boy', 'girl'],
+        kids: ['boy', 'girl'],
+        kid: ['boy', 'girl'],
+        people: ['boy', 'girl', 'man', 'woman'],
+        person: ['boy', 'girl', 'man', 'woman'],
+        he: ['boy', 'man', 'grandfather', 'father'],
+        she: ['girl', 'woman', 'teacher', 'grandmother', 'mother'],
+        him: ['boy', 'man'],
+        bag: ['backpack', 'bag', 'suitcase'],
+        bags: ['backpack', 'bag', 'suitcase'],
+        pencil: ['pencil case'],
+        pens: ['pencil case'],
+        pen: ['pencil case'],
+        rubber: ['pencil case'],
+        eraser: ['pencil case'],
+        mum: ['woman', 'grandmother'],
+        mom: ['woman', 'grandmother'],
+        mother: ['woman', 'grandmother'],
+        dad: ['man', 'grandfather'],
+        father: ['man', 'grandfather'],
+        sister: ['girl'],
+        brother: ['boy'],
+        friend: ['boy', 'girl'],
+        friends: ['boy', 'girl'],
+        tv: ['television'],
+        fridge: ['fridge'],
+        refrigerator: ['fridge'],
+        jumper: ['sweater'],
+        trainers: ['shoes'],
+        sneakers: ['shoes'],
+        bike: ['bicycle'],
+        bicycle: ['bicycle'],
+        rain: ['umbrella', 'raincoat', 'puddle', 'cloud'],
+        rainy: ['umbrella', 'raincoat', 'puddle'],
+        sunny: ['sun'],
+        snow: ['snowman', 'sled'],
+        winter: ['snowman', 'sled', 'scarf', 'mittens'],
+        summer: ['sun', 'ice cream', 'swimsuit'],
+        spring: ['flower', 'flowers', 'rainbow'],
+        autumn: ['rake'],
+        birthday: ['cake', 'balloon', 'gift'],
+        party: ['cake', 'balloon', 'gift'],
+        clock: ['clock'],
+        time: ['clock'],
+        meal: ['plate', 'table', 'bowl'],
+        breakfast: ['cereal', 'toast', 'egg'],
+        dinner: ['plate', 'table', 'soup'],
+        kitchen: ['stove', 'fridge', 'sink'],
+        bedroom: ['bed', 'wardrobe', 'pillow'],
+        bathroom: ['bathtub', 'sink', 'towel', 'soap'],
+        living: ['sofa', 'armchair', 'television'],
+        park: ['tree', 'bench', 'ball'],
+        beach: ['sandcastle', 'shell', 'bucket', 'boat'],
+        animal: ['dog', 'cat', 'bird', 'cow', 'pig', 'horse', 'lion', 'tiger', 'monkey', 'elephant'],
+        animals: ['dog', 'cat', 'bird', 'cow', 'pig', 'horse', 'lion', 'tiger', 'monkey', 'elephant'],
+        pet: ['dog', 'cat'],
+        zoo: ['zookeeper', 'lion', 'tiger', 'elephant', 'monkey', 'zebra', 'giraffe'],
+        farm: ['cow', 'pig', 'horse', 'chicken', 'sheep', 'tractor', 'barn'],
+        forest: ['tree', 'fox', 'owl', 'squirrel', 'bird'],
+        teacher: ['teacher'],
+        chef: ['chef'],
+        waiter: ['waiter'],
+        door: ['door'],
+        window: ['window'],
+        book: ['book', 'notebook'],
+        desk: ['desk'],
+        table: ['table'],
+        chair: ['chair'],
+        house: ['house'],
+        home: ['house'],
+        school: ['school', 'whiteboard', 'chalkboard'],
+        classroom: ['whiteboard', 'chalkboard', 'desk'],
+        bus: ['bus'],
+        train: ['train'],
+        taxi: ['taxi'],
+        car: ['car'],
+        apple: ['apple'],
+        banana: ['banana'],
+        bread: ['bread', 'baguette'],
+        cake: ['cake', 'cupcake'],
+        dog: ['dog'],
+        cat: ['cat'],
+        cow: ['cow'],
+        pig: ['pig'],
+        horse: ['horse'],
+        bird: ['bird'],
+        fish: ['fish'],
+        ball: ['ball', 'basketball', 'football'],
+        football: ['ball'],
+        hat: ['hat', 'cap'],
+        coat: ['coat'],
+        dress: ['dress'],
+        shoes: ['shoes', 'boots', 'sandals'],
+        umbrella: ['umbrella'],
+        sun: ['sun'],
+        moon: ['moon'],
+        tree: ['tree', 'pine tree'],
+        flower: ['flower', 'flowers', 'tulip'],
+        flowers: ['flower', 'flowers', 'tulip']
     };
 
     function bank() {
@@ -48,6 +163,90 @@
     function scenesForTopic(topicId) {
         const map = global.PE_TOPIC_CHALLENGE_SCENES || {};
         return map[topicId] || [];
+    }
+
+    function sceneIdFromSrc(src) {
+        const base = String(src || '').split('/').pop() || '';
+        return base.replace(/\.(png|jpe?g|webp)$/i, '');
+    }
+
+    function hotspotsForScene(sceneId) {
+        const map = global.PE_TOPIC_CHALLENGE_HOTSPOTS || {};
+        return map[sceneId] || [];
+    }
+
+    function taskSearchTokens(task) {
+        const text = [
+            task.answer,
+            task.promptEn,
+            task.promptPl,
+            ...(task.tiles || []),
+            ...(task.accept || [])
+        ].join(' ').toLowerCase();
+        const raw = text.replace(/[^a-z0-9\s'-]/g, ' ').split(/\s+/).filter(Boolean);
+        const tokens = [];
+        raw.forEach((w) => {
+            if (w.length < 2 || STOP_WORDS.has(w)) return;
+            tokens.push(w);
+            (WORD_ALIASES[w] || []).forEach((a) => tokens.push(a));
+        });
+        // Gender preference from pronouns in answer/prompt
+        const joined = text;
+        if (/\b(he|him|his|boy|man|brother|father|dad)\b/.test(joined)) {
+            tokens.push('boy', 'man', 'grandfather');
+        }
+        if (/\b(she|her|girl|woman|sister|mother|mum|mom)\b/.test(joined)) {
+            tokens.push('girl', 'woman', 'teacher', 'grandmother');
+        }
+        return [...new Set(tokens)];
+    }
+
+    function hotspotMatchesToken(hotspotWord, token) {
+        const hw = String(hotspotWord || '').toLowerCase();
+        const t = String(token || '').toLowerCase();
+        if (!hw || !t) return false;
+        if (hw === t) return 3;
+        if (hw.startsWith(t + ' ') || hw.endsWith(' ' + t) || hw.includes(' ' + t + ' ')) return 2;
+        if (t.length >= 4 && (hw.includes(t) || t.includes(hw))) return 1;
+        return 0;
+    }
+
+    function scoreHotspot(hs, tokens) {
+        let best = 0;
+        tokens.forEach((tok) => {
+            best = Math.max(best, hotspotMatchesToken(hs.w, tok));
+        });
+        return best;
+    }
+
+    function pickHighlights(sceneId, task) {
+        const hs = hotspotsForScene(sceneId);
+        if (!hs.length) return [];
+        const tokens = taskSearchTokens(task);
+        if (!tokens.length) return [];
+        const scored = hs
+            .map((h, idx) => ({ h, idx, score: scoreHotspot(h, tokens) }))
+            .filter((x) => x.score > 0)
+            .sort((a, b) => b.score - a.score || a.idx - b.idx);
+        if (!scored.length) return [];
+        const topScore = scored[0].score;
+        // Prefer a single best target; if several share top score and same word, pick one
+        const top = scored.filter((x) => x.score === topScore);
+        const chosen = top[0];
+        return [{ w: chosen.h.w, b: chosen.h.b }];
+    }
+
+    function pickSceneForTask(topicId, task) {
+        const list = scenesForTopic(topicId);
+        if (!list.length) return { src: null, id: null, highlights: [] };
+        const ranked = list.map((src) => {
+            const id = sceneIdFromSrc(src);
+            const highlights = pickHighlights(id, task);
+            return { src, id, highlights, score: highlights.length ? 2 : 0 };
+        }).sort((a, b) => b.score - a.score);
+        const winners = ranked.filter((r) => r.score === ranked[0].score);
+        const pick = winners[Math.floor(Math.random() * winners.length)];
+        return pick;
     }
 
     function pickScene(topicId) {
@@ -75,9 +274,25 @@
 .tc-streak { font-weight: 700; color: var(--tc-accent); }
 .tc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 1.1rem 1.15rem; box-shadow: 0 1px 0 rgba(15,23,42,0.04); }
 .tc-cue { font-size: 3.2rem; line-height: 1; text-align: center; margin: 0.35rem 0 0.75rem; }
-.tc-scene { margin: 0 0 0.9rem; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
-.tc-scene img { display: block; width: 100%; max-height: 280px; object-fit: cover; object-position: center; }
+.tc-scene { margin: 0 0 0.9rem; border-radius: 0.75rem; overflow: hidden; border: 1px solid #e2e8f0; background: #0f172a0d; }
+.tc-scene-frame { width: 100%; background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 160px; padding: 0.35rem; }
+.tc-scene-stage { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
+.tc-scene-stage img { display: block; width: auto; max-width: 100%; max-height: min(52vh, 420px); height: auto; }
+.tc-scene-overlay { position: absolute; inset: 0; pointer-events: none; }
+.tc-hotspot {
+  position: absolute;
+  border: 3px solid #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.9), 0 0 0 6px rgba(239,68,68,0.35), 0 8px 18px rgba(15,23,42,0.25);
+  background: rgba(239, 68, 68, 0.12);
+  animation: tcPulse 1.4s ease-in-out infinite;
+}
+@keyframes tcPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(255,255,255,0.9), 0 0 0 6px rgba(239,68,68,0.3), 0 8px 18px rgba(15,23,42,0.25); }
+  50% { box-shadow: 0 0 0 3px rgba(255,255,255,0.95), 0 0 0 10px rgba(239,68,68,0.18), 0 8px 18px rgba(15,23,42,0.25); }
+}
 .tc-scene-caption { font-size: 0.8rem; color: #64748b; text-align: center; padding: 0.35rem 0.5rem 0.5rem; }
+.tc-scene-caption strong { color: #0e7490; }
 .tc-prompt { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.85rem; color: #0f172a; }
 .tc-pair { background: #ecfeff; border-left: 3px solid var(--tc-accent); padding: 0.55rem 0.75rem; border-radius: 0 0.45rem 0.45rem 0; margin-bottom: 0.85rem; font-size: 0.92rem; color: #155e75; }
 .tc-transform-from { background: #f8fafc; border: 1px dashed #94a3b8; border-radius: 0.55rem; padding: 0.65rem 0.8rem; margin-bottom: 0.85rem; font-size: 1.05rem; }
@@ -271,16 +486,30 @@
         let body = '';
         if (state.mode === 'picture') {
             if (state.sceneSrc) {
+                const hasFocus = (state.highlightBoxes || []).length > 0;
+                const caption = hasFocus
+                    ? t('Look at the circled part of the picture', 'Spójrz na zakreśloną część obrazka')
+                    : t('Look at the whole picture', 'Spójrz na cały obrazek');
                 body += `<div class="tc-scene">
-                    <img src="${escapeAttr(state.sceneSrc)}" alt="${escapeAttr(labelTopic(state.topic))} scene" loading="lazy">
-                    <div class="tc-scene-caption">${escapeHtml(t('Look at the picture', 'Spójrz na obrazek'))}</div>
+                    <div class="tc-scene-frame" id="tc-scene-frame">
+                        <div class="tc-scene-stage" id="tc-scene-stage">
+                            <img id="tc-scene-img" src="${escapeAttr(state.sceneSrc)}" alt="${escapeAttr(labelTopic(state.topic))} scene" loading="lazy">
+                            <div class="tc-scene-overlay" id="tc-scene-overlay"></div>
+                        </div>
+                    </div>
+                    <div class="tc-scene-caption"><strong>${escapeHtml(caption)}</strong></div>
                 </div>`;
             } else {
                 body += `<div class="tc-cue" aria-hidden="true">${task.cue || '📝'}</div>`;
             }
         } else if (state.sceneSrc) {
-            body += `<div class="tc-scene" style="max-width:220px;margin-left:auto;margin-right:auto;">
-                <img src="${escapeAttr(state.sceneSrc)}" alt="" loading="lazy" style="max-height:120px;">
+            body += `<div class="tc-scene" style="max-width:260px;margin-left:auto;margin-right:auto;">
+                <div class="tc-scene-frame">
+                    <div class="tc-scene-stage" id="tc-scene-stage">
+                        <img id="tc-scene-img" src="${escapeAttr(state.sceneSrc)}" alt="" loading="lazy" style="max-height:140px;">
+                        <div class="tc-scene-overlay" id="tc-scene-overlay"></div>
+                    </div>
+                </div>
             </div>`;
         }
         body += `<div class="tc-prompt">${escapeHtml(prompt)}</div>`;
@@ -381,6 +610,41 @@
         </div>`;
 
         bindUi();
+        placeSceneHighlights();
+    }
+
+    function placeSceneHighlights() {
+        const overlay = document.getElementById('tc-scene-overlay');
+        const img = document.getElementById('tc-scene-img');
+        if (!overlay || !img) return;
+        overlay.innerHTML = '';
+        const boxes = state.highlightBoxes || [];
+        if (!boxes.length) return;
+
+        const draw = () => {
+            overlay.innerHTML = '';
+            boxes.forEach((box) => {
+                const [x0, y0, x1, y1] = box.b;
+                const el = document.createElement('div');
+                el.className = 'tc-hotspot';
+                el.setAttribute('aria-hidden', 'true');
+                // Expand slightly so the circle clearly covers the target
+                const padX = Math.max(0.012, (x1 - x0) * 0.08);
+                const padY = Math.max(0.012, (y1 - y0) * 0.08);
+                const left = Math.max(0, x0 - padX) * 100;
+                const top = Math.max(0, y0 - padY) * 100;
+                const width = Math.min(1, x1 + padX) * 100 - left;
+                const height = Math.min(1, y1 + padY) * 100 - top;
+                el.style.left = left + '%';
+                el.style.top = top + '%';
+                el.style.width = width + '%';
+                el.style.height = height + '%';
+                overlay.appendChild(el);
+            });
+        };
+
+        if (img.complete && img.naturalWidth) draw();
+        else img.addEventListener('load', draw, { once: true });
     }
 
     function escapeHtml(s) {
@@ -680,7 +944,15 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         state._mcqOpts = null;
         state._gap = null;
         state._forceType = false;
-        state.sceneSrc = pickScene(state.topic);
+        state.sceneSrc = null;
+        state.sceneId = null;
+        state.highlightBoxes = [];
+        if (state.task) {
+            const picked = pickSceneForTask(state.topic, state.task);
+            state.sceneSrc = picked.src;
+            state.sceneId = picked.id;
+            state.highlightBoxes = picked.highlights || [];
+        }
         if (state.task && state.mode === 'text' && Math.random() < 0.45) {
             state._gap = gapPrompt(state.task);
         }

@@ -11641,46 +11641,46 @@
   global.PE_TOPIC_CHALLENGE_BANK = BANK;
   global.PE_TOPIC_CHALLENGE_SCENES = {
     school: [
-      'assets/topic-scenes/school-classroom.png',
-      'assets/topic-scenes/school-playground.png'
+      'assets/vocab-scenes/school-classroom.jpg',
+      'assets/vocab-scenes/school-playground.jpg'
     ],
     family_home: [
-      'assets/topic-scenes/family-livingroom.png',
-      'assets/topic-scenes/family-picnic.png',
-      'assets/topic-scenes/home-house.png',
-      'assets/topic-scenes/home-kitchen.png'
+      'assets/vocab-scenes/family-livingroom.jpg',
+      'assets/vocab-scenes/family-picnic.jpg',
+      'assets/vocab-scenes/home-house.jpg',
+      'assets/vocab-scenes/home-kitchen.jpg'
     ],
     food: [
-      'assets/topic-scenes/food-market.png',
-      'assets/topic-scenes/food-restaurant.png',
-      'assets/topic-scenes/food-supermarket.png'
+      'assets/vocab-scenes/food-market.jpg',
+      'assets/vocab-scenes/food-restaurant.jpg',
+      'assets/vocab-scenes/food-supermarket.jpg'
     ],
     free_time: [
-      'assets/topic-scenes/freetime-beach.png',
-      'assets/topic-scenes/freetime-park.png'
+      'assets/vocab-scenes/freetime-beach.jpg',
+      'assets/vocab-scenes/freetime-park.jpg'
     ],
     clothes_weather: [
-      'assets/topic-scenes/clothes-bedroom.png',
-      'assets/topic-scenes/clothes-shop.png',
-      'assets/topic-scenes/weather-rainy.png',
-      'assets/topic-scenes/weather-seasons.png'
+      'assets/vocab-scenes/clothes-bedroom.jpg',
+      'assets/vocab-scenes/clothes-shop.jpg',
+      'assets/vocab-scenes/weather-rainy.jpg',
+      'assets/vocab-scenes/weather-seasons.jpg'
     ],
     town: [
-      'assets/topic-scenes/town-centre.png',
-      'assets/topic-scenes/town-station.png'
+      'assets/vocab-scenes/town-centre.jpg',
+      'assets/vocab-scenes/town-station.jpg'
     ],
     animals: [
-      'assets/topic-scenes/animals-farm.png',
-      'assets/topic-scenes/animals-forest.png',
-      'assets/topic-scenes/animals-zoo.png'
+      'assets/vocab-scenes/animals-farm.jpg',
+      'assets/vocab-scenes/animals-forest.jpg',
+      'assets/vocab-scenes/animals-zoo.jpg'
     ],
     routines: [
-      'assets/topic-scenes/routines-morning.png',
-      'assets/topic-scenes/routines-evening.png'
+      'assets/vocab-scenes/routines-morning.jpg',
+      'assets/vocab-scenes/routines-evening.jpg'
     ],
     time: [
-      'assets/topic-scenes/time-birthday.png',
-      'assets/topic-scenes/time-schoolday.png'
+      'assets/vocab-scenes/time-birthday.jpg',
+      'assets/vocab-scenes/time-schoolday.jpg'
     ]
   };
 })(typeof window !== 'undefined' ? window : globalThis);

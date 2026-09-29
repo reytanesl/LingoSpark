@@ -6,6 +6,7 @@ ctx.window = ctx;
 ctx.globalThis = ctx;
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync('pe-topic-challenge-banks.js', 'utf8'), ctx);
+vm.runInContext(fs.readFileSync('pe-topic-challenge-hotspots.js', 'utf8'), ctx);
 vm.runInContext(fs.readFileSync('pe-topic-challenge.js', 'utf8'), ctx);
 
 const bank = ctx.PE_TOPIC_CHALLENGE_BANK;
@@ -66,10 +67,13 @@ console.log('screen-pe-topic', html.includes('id="screen-pe-topic"'));
 console.log('scripts', html.includes('pe-topic-challenge-banks.js') && html.includes('pe-topic-challenge.js'));
 console.log('card setup link', html.includes('#/setup/pe-topic'));
 console.log('simplified setup', html.includes('topic-setup-speak') && !html.includes('name="topic-setup-mode"'));
+console.log('hotspots script', html.includes('pe-topic-challenge-hotspots.js'));
 console.log('scene images registered', Object.keys(ctx.PE_TOPIC_CHALLENGE_SCENES || {}).length);
 const sceneFiles = Object.values(ctx.PE_TOPIC_CHALLENGE_SCENES || {}).flat();
 const missingScenes = sceneFiles.filter((p) => !fs.existsSync(p));
-console.log('scene files on disk', missingScenes.length ? `MISSING ${missingScenes.length}` : `${sceneFiles.length} ok`);
+console.log('scene files on disk', missingScenes.length ? `MISSING ${missingScenes.length}: ${missingScenes.slice(0,3)}` : `${sceneFiles.length} ok`);
+const hotspotScenes = Object.keys(ctx.PE_TOPIC_CHALLENGE_HOTSPOTS || {});
+console.log('hotspot scenes', hotspotScenes.length);
 
 const db = fs.readFileSync('db.js', 'utf8');
 console.log('db pe_topic', db.includes("'pe_topic'"));
