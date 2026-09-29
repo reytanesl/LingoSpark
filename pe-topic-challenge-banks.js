@@ -101,11 +101,6 @@
     "labelPl": "Kafelki"
   },
   {
-    "id": "text",
-    "label": "Text",
-    "labelPl": "Tekst"
-  },
-  {
     "id": "transform",
     "label": "Transform",
     "labelPl": "Przekształć"
@@ -119,7 +114,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏫",
@@ -144,7 +138,6 @@
       "school",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -157,7 +150,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👩‍🏫",
@@ -181,7 +173,6 @@
       "teacher",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -194,7 +185,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👦",
@@ -219,7 +209,6 @@
       "pupil",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -232,7 +221,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📘",
@@ -256,7 +244,6 @@
       "desk",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -269,7 +256,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚪",
@@ -291,7 +277,6 @@
       "open",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -304,7 +289,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "✏️",
@@ -330,7 +314,6 @@
       "pencil",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -343,7 +326,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎒",
@@ -370,7 +352,6 @@
       "bag",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -383,7 +364,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📐",
@@ -410,7 +390,6 @@
       "ruler",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -423,7 +402,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📗",
@@ -449,7 +427,6 @@
       "books",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -462,7 +439,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "✏️",
@@ -489,7 +465,6 @@
       "case",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -502,7 +477,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📖",
@@ -525,7 +499,6 @@
       "book",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -538,7 +511,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "✍️",
@@ -562,7 +534,6 @@
       "notebook",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -575,7 +546,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🔢",
@@ -598,7 +568,6 @@
       "ruler",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -611,7 +580,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🗣️",
@@ -635,7 +603,6 @@
       "teacher",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -648,7 +615,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫✍️",
@@ -675,7 +641,6 @@
       "window",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -688,7 +653,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👩‍🏫",
@@ -710,7 +674,6 @@
       "teacher",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -723,7 +686,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎨",
@@ -745,7 +707,6 @@
       "globe",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -758,7 +719,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⚽",
@@ -780,7 +740,6 @@
       "ball",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -793,7 +752,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🪟",
@@ -815,7 +773,6 @@
       "window",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -828,7 +785,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📖",
@@ -850,7 +806,6 @@
       "books",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -863,7 +818,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚌",
@@ -887,7 +841,6 @@
       "bus",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -900,7 +853,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕗",
@@ -926,7 +878,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -939,7 +890,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📝",
@@ -961,7 +911,6 @@
       "homework",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -974,7 +923,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🙋",
@@ -997,7 +945,6 @@
       "teacher",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1010,7 +957,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏫",
@@ -1033,7 +979,6 @@
       "school",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1045,7 +990,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🤫",
@@ -1071,7 +1016,6 @@
       "class",
       "."
     ],
-    "gap": null,
     "transformFrom": "I am noisy in class.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -1083,7 +1027,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "📕",
@@ -1111,7 +1055,6 @@
       "book",
       "."
     ],
-    "gap": null,
     "transformFrom": "She has got a red book.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -1123,7 +1066,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "✏️",
@@ -1148,7 +1091,6 @@
       "Chinese",
       "."
     ],
-    "gap": null,
     "transformFrom": "He can write Chinese.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -1160,7 +1102,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "📚",
@@ -1184,7 +1126,6 @@
       "homework",
       "."
     ],
-    "gap": null,
     "transformFrom": "They like homework.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -1196,7 +1137,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🏫",
@@ -1223,7 +1164,6 @@
       "Sunday",
       "."
     ],
-    "gap": null,
     "transformFrom": "We go to school on Sunday.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -1235,7 +1175,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -1256,7 +1196,6 @@
       "ready",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You are ready.",
     "transformTo": "question",
     "pairCueEn": "Ask your partner if they are ready.",
@@ -1268,7 +1207,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -1291,7 +1230,6 @@
       "pen",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She has got a pen.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -1303,7 +1241,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -1324,7 +1262,6 @@
       "swim",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He can swim.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -1336,7 +1273,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -1358,7 +1295,6 @@
       "English",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like English.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -1370,7 +1306,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -1393,7 +1329,6 @@
       "school",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She goes to school.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -1406,7 +1341,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👨",
@@ -1431,7 +1365,6 @@
       "dad",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1444,7 +1377,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👩",
@@ -1469,7 +1401,6 @@
       "mum",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1482,7 +1413,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛋️",
@@ -1507,7 +1437,6 @@
       "sofa",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1520,7 +1449,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛏️",
@@ -1542,7 +1470,6 @@
       "upstairs",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1555,7 +1482,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐕",
@@ -1577,7 +1503,6 @@
       "happy",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1590,7 +1515,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐕",
@@ -1616,7 +1540,6 @@
       "dog",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1629,7 +1552,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👶",
@@ -1656,7 +1578,6 @@
       "brother",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1669,7 +1590,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚪",
@@ -1695,7 +1615,6 @@
       "door",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1708,7 +1627,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛋️",
@@ -1734,7 +1652,6 @@
       "sofa",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1747,7 +1664,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🪴",
@@ -1772,7 +1688,6 @@
       "plants",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1785,7 +1700,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍳",
@@ -1809,7 +1723,6 @@
       "stove",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1822,7 +1735,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍳",
@@ -1846,7 +1758,6 @@
       "cook",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1859,7 +1770,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📺",
@@ -1884,7 +1794,6 @@
       "television",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1897,7 +1806,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚪",
@@ -1920,7 +1828,6 @@
       "door",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1933,7 +1840,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫🐕",
@@ -1959,7 +1865,6 @@
       "in",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -1972,7 +1877,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛋️",
@@ -1994,7 +1898,6 @@
       "sofa",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2007,7 +1910,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👵",
@@ -2031,7 +1933,6 @@
       "grandma",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2044,7 +1945,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐈",
@@ -2066,7 +1966,6 @@
       "cat",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2079,7 +1978,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📺",
@@ -2101,7 +1999,6 @@
       "TV",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2114,7 +2011,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍽️",
@@ -2136,7 +2032,6 @@
       "table",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2149,7 +2044,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛏️",
@@ -2172,7 +2066,6 @@
       "bed",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2185,7 +2078,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍽️",
@@ -2208,7 +2100,6 @@
       "table",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2221,7 +2112,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧼",
@@ -2245,7 +2135,6 @@
       "sink",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2258,7 +2147,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧹",
@@ -2280,7 +2168,6 @@
       "table",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2293,7 +2180,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌙",
@@ -2318,7 +2204,6 @@
       "book",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2330,7 +2215,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🏠",
@@ -2355,7 +2240,6 @@
       "school",
       "."
     ],
-    "gap": null,
     "transformFrom": "I am at school.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -2367,7 +2251,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🐱",
@@ -2392,7 +2276,6 @@
       "cat",
       "."
     ],
-    "gap": null,
     "transformFrom": "We have got a cat.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -2404,7 +2287,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🍳",
@@ -2428,7 +2311,6 @@
       "cook",
       "."
     ],
-    "gap": null,
     "transformFrom": "He can cook.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -2440,7 +2322,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "📺",
@@ -2464,7 +2346,6 @@
       "TV",
       "."
     ],
-    "gap": null,
     "transformFrom": "She likes TV.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -2476,7 +2357,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🧹",
@@ -2501,7 +2382,6 @@
       "day",
       "."
     ],
-    "gap": null,
     "transformFrom": "They clean every day.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -2513,7 +2393,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -2535,7 +2415,6 @@
       "brother",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He is your brother.",
     "transformTo": "question",
     "pairCueEn": "Ask if he is their brother.",
@@ -2547,7 +2426,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -2570,7 +2449,6 @@
       "sister",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You have got a sister.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -2582,7 +2460,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -2606,7 +2484,6 @@
       "cook",
       "?"
     ],
-    "gap": null,
     "transformFrom": "Mum can cook.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -2618,7 +2495,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -2641,7 +2518,6 @@
       "house",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like their house.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -2653,7 +2529,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -2675,7 +2551,6 @@
       "here",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She lives here.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -2688,7 +2563,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍎",
@@ -2710,7 +2584,6 @@
       "red",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2723,7 +2596,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍌",
@@ -2748,7 +2620,6 @@
       "banana",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2761,7 +2632,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🥛",
@@ -2783,7 +2653,6 @@
       "cold",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2796,7 +2665,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍰",
@@ -2818,7 +2686,6 @@
       "delicious",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2831,7 +2698,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🥗",
@@ -2853,7 +2719,6 @@
       "healthy",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2866,7 +2731,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍕",
@@ -2892,7 +2756,6 @@
       "pizza",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2905,7 +2768,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧃",
@@ -2932,7 +2794,6 @@
       "juice",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2945,7 +2806,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧀",
@@ -2971,7 +2831,6 @@
       "cheese",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -2984,7 +2843,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍕",
@@ -3010,7 +2868,6 @@
       "pizza",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3023,7 +2880,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍎",
@@ -3049,7 +2905,6 @@
       "apples",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3062,7 +2917,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍳",
@@ -3084,7 +2938,6 @@
       "eggs",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3097,7 +2950,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🔪",
@@ -3119,7 +2971,6 @@
       "bread",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3132,7 +2983,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🥤",
@@ -3154,7 +3004,6 @@
       "milk",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3167,7 +3016,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍽️",
@@ -3190,7 +3038,6 @@
       "table",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3203,7 +3050,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫🐟",
@@ -3228,7 +3074,6 @@
       "fish",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3241,7 +3086,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍕",
@@ -3262,7 +3106,6 @@
       "pizza",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3275,7 +3118,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍎",
@@ -3296,7 +3138,6 @@
       "apples",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3309,7 +3150,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧀",
@@ -3330,7 +3170,6 @@
       "cheese",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3343,7 +3182,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍦",
@@ -3365,7 +3203,6 @@
       "cream",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3378,7 +3215,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🥛",
@@ -3399,7 +3235,6 @@
       "milk",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3412,7 +3247,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍳",
@@ -3435,7 +3269,6 @@
       "breakfast",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3448,7 +3281,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍞",
@@ -3471,7 +3303,6 @@
       "lunch",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3484,7 +3315,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍲",
@@ -3507,7 +3337,6 @@
       "dinner",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3520,7 +3349,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🥛",
@@ -3543,7 +3371,6 @@
       "day",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3556,7 +3383,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛒",
@@ -3583,7 +3409,6 @@
       "supermarket",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3595,7 +3420,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🧅",
@@ -3619,7 +3444,6 @@
       "onions",
       "."
     ],
-    "gap": null,
     "transformFrom": "I like onions.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -3631,7 +3455,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🍰",
@@ -3656,7 +3480,6 @@
       "cold",
       "."
     ],
-    "gap": null,
     "transformFrom": "The cake is cold.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -3668,7 +3491,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🧀",
@@ -3692,7 +3515,6 @@
       "cheese",
       "."
     ],
-    "gap": null,
     "transformFrom": "We have got cheese.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -3704,7 +3526,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🍳",
@@ -3729,7 +3551,6 @@
       "fish",
       "."
     ],
-    "gap": null,
     "transformFrom": "He can cook fish.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -3741,7 +3562,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🍕",
@@ -3767,7 +3588,6 @@
       "day",
       "."
     ],
-    "gap": null,
     "transformFrom": "She eats pizza every day.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -3779,7 +3599,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -3801,7 +3621,6 @@
       "hot",
       "?"
     ],
-    "gap": null,
     "transformFrom": "The soup is hot.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -3813,7 +3632,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -3836,7 +3655,6 @@
       "apple",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You have got an apple.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -3848,7 +3666,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -3869,7 +3687,6 @@
       "cook",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She can cook.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -3881,7 +3698,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -3903,7 +3720,6 @@
       "bananas",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like bananas.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -3915,7 +3731,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -3937,7 +3753,6 @@
       "milk",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He drinks milk.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -3950,7 +3765,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⚽",
@@ -3975,7 +3789,6 @@
       "ball",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -3988,7 +3801,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🪁",
@@ -4010,7 +3822,6 @@
       "high",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4023,7 +3834,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎸",
@@ -4045,7 +3855,6 @@
       "loud",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4058,7 +3867,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚴",
@@ -4082,7 +3890,6 @@
       "park",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4095,7 +3902,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏞️",
@@ -4119,7 +3925,6 @@
       "park",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4132,7 +3937,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏀",
@@ -4158,7 +3962,6 @@
       "ball",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4171,7 +3974,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚲",
@@ -4199,7 +4001,6 @@
       "bike",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4212,7 +4013,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎸",
@@ -4238,7 +4038,6 @@
       "guitar",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4251,7 +4050,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🪁",
@@ -4276,7 +4074,6 @@
       "kite",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4289,7 +4086,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🪣",
@@ -4314,7 +4110,6 @@
       "bucket",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4327,7 +4122,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏖️",
@@ -4350,7 +4144,6 @@
       "sandcastle",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4363,7 +4156,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏃",
@@ -4386,7 +4178,6 @@
       "bicycle",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4399,7 +4190,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "💃",
@@ -4422,7 +4212,6 @@
       "kite",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4435,7 +4224,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚴",
@@ -4458,7 +4246,6 @@
       "bike",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4471,7 +4258,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫⚽",
@@ -4497,7 +4283,6 @@
       "ball",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4510,7 +4295,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⚽",
@@ -4531,7 +4315,6 @@
       "football",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4544,7 +4327,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎸",
@@ -4566,7 +4348,6 @@
       "guitar",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4579,7 +4360,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🪁",
@@ -4601,7 +4381,6 @@
       "kite",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4614,7 +4393,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📚",
@@ -4636,7 +4414,6 @@
       "books",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4649,7 +4426,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎨",
@@ -4671,7 +4447,6 @@
       "painting",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4684,7 +4459,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⚽",
@@ -4709,7 +4483,6 @@
       "school",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4722,7 +4495,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎸",
@@ -4747,7 +4519,6 @@
       "park",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4760,7 +4531,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏞️",
@@ -4783,7 +4553,6 @@
       "park",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4796,7 +4565,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🦆",
@@ -4821,7 +4589,6 @@
       "pond",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4834,7 +4601,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚴",
@@ -4859,7 +4625,6 @@
       "weekend",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -4871,7 +4636,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🎮",
@@ -4897,7 +4662,6 @@
       "day",
       "."
     ],
-    "gap": null,
     "transformFrom": "I play games all day.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -4909,7 +4673,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "⚽",
@@ -4933,7 +4697,6 @@
       "boring",
       "."
     ],
-    "gap": null,
     "transformFrom": "Football is boring.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -4945,7 +4708,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🎸",
@@ -4970,7 +4733,6 @@
       "guitar",
       "."
     ],
-    "gap": null,
     "transformFrom": "She has got a guitar.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -4982,7 +4744,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🏊",
@@ -5006,7 +4768,6 @@
       "swim",
       "."
     ],
-    "gap": null,
     "transformFrom": "He can swim.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -5018,7 +4779,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🎬",
@@ -5042,7 +4803,6 @@
       "films",
       "."
     ],
-    "gap": null,
     "transformFrom": "They like films.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -5054,7 +4814,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -5076,7 +4836,6 @@
       "open",
       "?"
     ],
-    "gap": null,
     "transformFrom": "The park is open.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -5088,7 +4847,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -5111,7 +4870,6 @@
       "ball",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You have got a ball.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -5123,7 +4881,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -5144,7 +4902,6 @@
       "dance",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She can dance.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -5156,7 +4913,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -5178,7 +4935,6 @@
       "football",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like football.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -5190,7 +4946,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -5212,7 +4968,6 @@
       "tennis",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He plays tennis.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -5225,7 +4980,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☀️",
@@ -5250,7 +5004,6 @@
       "today",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5263,7 +5016,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌧️",
@@ -5288,7 +5040,6 @@
       "today",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5301,7 +5052,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧥",
@@ -5323,7 +5073,6 @@
       "blue",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5336,7 +5085,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧣",
@@ -5358,7 +5106,6 @@
       "warm",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5371,7 +5118,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "❄️",
@@ -5393,7 +5139,6 @@
       "grey",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5406,7 +5151,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧢",
@@ -5432,7 +5176,6 @@
       "hat",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5445,7 +5188,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👟",
@@ -5471,7 +5213,6 @@
       "shoes",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5484,7 +5225,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧤",
@@ -5511,7 +5251,6 @@
       "mittens",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5524,7 +5263,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👕",
@@ -5550,7 +5288,6 @@
       "T-shirts",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5563,7 +5300,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☂️",
@@ -5588,7 +5324,6 @@
       "umbrella",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5601,7 +5336,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧥",
@@ -5625,7 +5359,6 @@
       "coat",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5638,7 +5371,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👒",
@@ -5662,7 +5394,6 @@
       "today",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5675,7 +5406,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👟",
@@ -5698,7 +5428,6 @@
       "shoes",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5711,7 +5440,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☂️",
@@ -5734,7 +5462,6 @@
       "umbrella",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5747,7 +5474,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫🩳",
@@ -5774,7 +5500,6 @@
       "winter",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5787,7 +5512,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☀️",
@@ -5809,7 +5533,6 @@
       "days",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5822,7 +5545,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧥",
@@ -5844,7 +5566,6 @@
       "coat",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5857,7 +5578,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "❄️",
@@ -5878,7 +5598,6 @@
       "snow",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5891,7 +5610,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👢",
@@ -5912,7 +5630,6 @@
       "boots",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5925,7 +5642,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌬️",
@@ -5947,7 +5663,6 @@
       "rainbow",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5960,7 +5675,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧥",
@@ -5985,7 +5699,6 @@
       "winter",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -5998,7 +5711,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "👕",
@@ -6024,7 +5736,6 @@
       "summer",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6037,7 +5748,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☂️",
@@ -6062,7 +5772,6 @@
       "rains",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6075,7 +5784,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧢",
@@ -6101,7 +5809,6 @@
       "sun",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6114,7 +5821,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧦",
@@ -6138,7 +5844,6 @@
       "shoes",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6150,7 +5855,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "☀️",
@@ -6175,7 +5880,6 @@
       "today",
       "."
     ],
-    "gap": null,
     "transformFrom": "It is cold today.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -6187,7 +5891,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🧤",
@@ -6211,7 +5915,6 @@
       "gloves",
       "."
     ],
-    "gap": null,
     "transformFrom": "I have got gloves.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -6223,7 +5926,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🩳",
@@ -6249,7 +5952,6 @@
       "now",
       "."
     ],
-    "gap": null,
     "transformFrom": "She can wear shorts now.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -6261,7 +5963,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🌧️",
@@ -6285,7 +5987,6 @@
       "rain",
       "."
     ],
-    "gap": null,
     "transformFrom": "He likes rain.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -6297,7 +5998,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🧥",
@@ -6323,7 +6024,6 @@
       "summer",
       "."
     ],
-    "gap": null,
     "transformFrom": "They wear coats in summer.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -6335,7 +6035,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -6356,7 +6056,6 @@
       "windy",
       "?"
     ],
-    "gap": null,
     "transformFrom": "It is windy.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -6368,7 +6067,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -6391,7 +6090,6 @@
       "scarf",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You have got a scarf.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -6403,7 +6101,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -6425,7 +6123,6 @@
       "boots",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She can wear boots.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -6437,7 +6134,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -6459,7 +6156,6 @@
       "snow",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like snow.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -6471,7 +6167,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -6494,7 +6190,6 @@
       "jumper",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He wears a jumper.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -6507,7 +6202,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏪",
@@ -6532,7 +6226,6 @@
       "shop",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6545,7 +6238,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏥",
@@ -6569,7 +6261,6 @@
       "hospital",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6582,7 +6273,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚏",
@@ -6607,7 +6297,6 @@
       "park",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6620,7 +6309,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚦",
@@ -6643,7 +6331,6 @@
       "red",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6656,7 +6343,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⛪",
@@ -6678,7 +6364,6 @@
       "big",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6691,7 +6376,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🗺️",
@@ -6717,7 +6401,6 @@
       "map",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6730,7 +6413,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧳",
@@ -6756,7 +6438,6 @@
       "suitcase",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6769,7 +6450,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚌",
@@ -6795,7 +6475,6 @@
       "buses",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6808,7 +6487,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏪",
@@ -6836,7 +6514,6 @@
       "street",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6849,7 +6526,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚕",
@@ -6874,7 +6550,6 @@
       "taxi",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6887,7 +6562,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚶",
@@ -6911,7 +6585,6 @@
       "shop",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6924,7 +6597,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚌",
@@ -6947,7 +6619,6 @@
       "bus",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6960,7 +6631,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🗺️",
@@ -6983,7 +6653,6 @@
       "map",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -6996,7 +6665,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🦓",
@@ -7019,7 +6687,6 @@
       "crosswalk",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7032,7 +6699,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫🚗",
@@ -7058,7 +6724,6 @@
       "car",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7071,7 +6736,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌉",
@@ -7093,7 +6757,6 @@
       "bridge",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7106,7 +6769,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚂",
@@ -7128,7 +6790,6 @@
       "train",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7141,7 +6802,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚲",
@@ -7163,7 +6823,6 @@
       "bicycle",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7176,7 +6835,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌳",
@@ -7198,7 +6856,6 @@
       "bench",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7211,7 +6868,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📚",
@@ -7233,7 +6889,6 @@
       "book",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7246,7 +6901,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚌",
@@ -7270,7 +6924,6 @@
       "bus",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7283,7 +6936,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛒",
@@ -7307,7 +6959,6 @@
       "bakery",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7320,7 +6971,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚶",
@@ -7343,7 +6993,6 @@
       "bridge",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7356,7 +7005,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏥",
@@ -7380,7 +7028,6 @@
       "town",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7393,7 +7040,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🏥",
@@ -7416,7 +7062,6 @@
       "hospital",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7428,7 +7073,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🏪",
@@ -7453,7 +7098,6 @@
       "open",
       "."
     ],
-    "gap": null,
     "transformFrom": "The shop is open.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -7465,7 +7109,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🎫",
@@ -7490,7 +7134,6 @@
       "ticket",
       "."
     ],
-    "gap": null,
     "transformFrom": "I have got a ticket.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -7502,7 +7145,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🚌",
@@ -7528,7 +7171,6 @@
       "bus",
       "."
     ],
-    "gap": null,
     "transformFrom": "She can take the bus.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -7540,7 +7182,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🎬",
@@ -7565,7 +7207,6 @@
       "cinema",
       "."
     ],
-    "gap": null,
     "transformFrom": "He likes the cinema.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -7577,7 +7218,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🚶",
@@ -7604,7 +7245,6 @@
       "day",
       "."
     ],
-    "gap": null,
     "transformFrom": "They walk to town every day.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -7616,7 +7256,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -7638,7 +7278,6 @@
       "free",
       "?"
     ],
-    "gap": null,
     "transformFrom": "The library is free.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -7650,7 +7289,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -7673,7 +7312,6 @@
       "map",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You have got a map.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -7685,7 +7323,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -7707,7 +7345,6 @@
       "there",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She can walk there.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -7719,7 +7356,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -7742,7 +7379,6 @@
       "town",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like this town.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -7754,7 +7390,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -7776,7 +7412,6 @@
       "here",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He works here.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -7789,7 +7424,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐕",
@@ -7814,7 +7448,6 @@
       "dog",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7827,7 +7460,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐈",
@@ -7851,7 +7483,6 @@
       "cat",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7864,7 +7495,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐦",
@@ -7889,7 +7519,6 @@
       "colourful",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7902,7 +7531,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐘",
@@ -7924,7 +7552,6 @@
       "strong",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7937,7 +7564,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐸",
@@ -7959,7 +7585,6 @@
       "green",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -7972,7 +7597,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐇",
@@ -7998,7 +7622,6 @@
       "rabbit",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8011,7 +7634,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐴",
@@ -8037,7 +7659,6 @@
       "horse",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8050,7 +7671,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐟",
@@ -8076,7 +7696,6 @@
       "fish",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8089,7 +7708,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐶",
@@ -8115,7 +7733,6 @@
       "dog",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8128,7 +7745,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🦊",
@@ -8153,7 +7769,6 @@
       "fox",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8166,7 +7781,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐦",
@@ -8192,7 +7806,6 @@
       "fly",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8205,7 +7818,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐟",
@@ -8230,7 +7842,6 @@
       "swim",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8243,7 +7854,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐕",
@@ -8265,7 +7875,6 @@
       "run",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8278,7 +7887,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐈",
@@ -8302,7 +7910,6 @@
       "climb",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8315,7 +7922,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫🐘",
@@ -8343,7 +7949,6 @@
       "fly",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8356,7 +7961,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐕",
@@ -8377,7 +7981,6 @@
       "dogs",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8390,7 +7993,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐈",
@@ -8411,7 +8013,6 @@
       "cats",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8424,7 +8025,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐴",
@@ -8445,7 +8045,6 @@
       "horses",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8458,7 +8057,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🦆",
@@ -8479,7 +8077,6 @@
       "ducks",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8492,7 +8089,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐇",
@@ -8513,7 +8109,6 @@
       "rabbits",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8526,7 +8121,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐕",
@@ -8551,7 +8145,6 @@
       "meat",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8564,7 +8157,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐈",
@@ -8589,7 +8181,6 @@
       "milk",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8602,7 +8193,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐦",
@@ -8626,7 +8216,6 @@
       "trees",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8639,7 +8228,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐟",
@@ -8663,7 +8251,6 @@
       "water",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8676,7 +8263,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🐴",
@@ -8701,7 +8287,6 @@
       "grass",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -8713,7 +8298,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🐟",
@@ -8741,7 +8326,6 @@
       "fly",
       "."
     ],
-    "gap": null,
     "transformFrom": "A fish can fly.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -8753,7 +8337,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🐕",
@@ -8778,7 +8362,6 @@
       "small",
       "."
     ],
-    "gap": null,
     "transformFrom": "The dog is small.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -8790,7 +8373,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🐈",
@@ -8815,7 +8398,6 @@
       "cat",
       "."
     ],
-    "gap": null,
     "transformFrom": "I have got a cat.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -8827,7 +8409,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🐦",
@@ -8851,7 +8433,6 @@
       "birds",
       "."
     ],
-    "gap": null,
     "transformFrom": "She likes birds.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -8863,7 +8444,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🐘",
@@ -8889,7 +8470,6 @@
       "sea",
       "."
     ],
-    "gap": null,
     "transformFrom": "Elephants live in the sea.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -8901,7 +8481,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -8923,7 +8503,6 @@
       "hungry",
       "?"
     ],
-    "gap": null,
     "transformFrom": "The cat is hungry.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -8935,7 +8514,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -8958,7 +8537,6 @@
       "dog",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You have got a dog.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -8970,7 +8548,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -8992,7 +8570,6 @@
       "sing",
       "?"
     ],
-    "gap": null,
     "transformFrom": "A bird can sing.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -9004,7 +8581,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -9026,7 +8603,6 @@
       "rabbits",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like rabbits.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -9038,7 +8614,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -9061,7 +8637,6 @@
       "dog",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He feeds the dog.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -9074,7 +8649,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛏️",
@@ -9097,7 +8671,6 @@
       "bed",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9110,7 +8683,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "😊",
@@ -9135,7 +8707,6 @@
       "school",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9148,7 +8719,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌙",
@@ -9172,7 +8742,6 @@
       "sky",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9185,7 +8754,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛁",
@@ -9207,7 +8775,6 @@
       "free",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9220,7 +8787,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⏰",
@@ -9244,7 +8810,6 @@
       "wall",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9257,7 +8822,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⏰",
@@ -9283,7 +8847,6 @@
       "clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9296,7 +8859,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🪥",
@@ -9322,7 +8884,6 @@
       "toothbrush",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9335,7 +8896,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🧼",
@@ -9362,7 +8922,6 @@
       "bathroom",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9375,7 +8934,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛏️",
@@ -9400,7 +8958,6 @@
       "beds",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9413,7 +8970,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎒",
@@ -9440,7 +8996,6 @@
       "ready",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9453,7 +9008,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛏️",
@@ -9476,7 +9030,6 @@
       "bed",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9489,7 +9042,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🦷",
@@ -9513,7 +9065,6 @@
       "alone",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9526,7 +9077,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛏️",
@@ -9549,7 +9099,6 @@
       "bed",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9562,7 +9111,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎒",
@@ -9585,7 +9133,6 @@
       "bags",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9598,7 +9145,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫😴",
@@ -9624,7 +9170,6 @@
       "bed",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9637,7 +9182,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☀️",
@@ -9659,7 +9203,6 @@
       "sun",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9672,7 +9215,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🍳",
@@ -9693,7 +9235,6 @@
       "cereal",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9706,7 +9247,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🛁",
@@ -9728,7 +9268,6 @@
       "bathtub",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9741,7 +9280,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📚",
@@ -9763,7 +9301,6 @@
       "notebook",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9776,7 +9313,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌙",
@@ -9798,7 +9334,6 @@
       "moon",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9811,7 +9346,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "⏰",
@@ -9838,7 +9372,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9851,7 +9384,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🦷",
@@ -9875,7 +9407,6 @@
       "breakfast",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9888,7 +9419,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚌",
@@ -9912,7 +9442,6 @@
       "bus",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9925,7 +9454,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📝",
@@ -9949,7 +9477,6 @@
       "school",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -9962,7 +9489,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌙",
@@ -9990,7 +9516,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10002,7 +9527,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "⏰",
@@ -10027,7 +9552,6 @@
       "late",
       "."
     ],
-    "gap": null,
     "transformFrom": "I get up late.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -10039,7 +9563,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "😴",
@@ -10064,7 +9588,6 @@
       "now",
       "."
     ],
-    "gap": null,
     "transformFrom": "She is tired now.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -10076,7 +9599,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🪥",
@@ -10101,7 +9624,6 @@
       "toothbrush",
       "."
     ],
-    "gap": null,
     "transformFrom": "He has got a toothbrush.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -10113,7 +9635,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🚿",
@@ -10138,7 +9660,6 @@
       "showers",
       "."
     ],
-    "gap": null,
     "transformFrom": "They like cold showers.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -10150,7 +9671,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "📺",
@@ -10176,7 +9697,6 @@
       "bed",
       "."
     ],
-    "gap": null,
     "transformFrom": "We watch TV before bed.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -10188,7 +9708,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -10209,7 +9729,6 @@
       "ready",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You are ready.",
     "transformTo": "question",
     "pairCueEn": "Ask your partner if they are ready.",
@@ -10221,7 +9740,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -10245,7 +9764,6 @@
       "clock",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She has got an alarm clock.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -10257,7 +9775,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -10280,7 +9798,6 @@
       "early",
       "?"
     ],
-    "gap": null,
     "transformFrom": "He can get up early.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -10292,7 +9809,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -10314,7 +9831,6 @@
       "mornings",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like mornings.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -10326,7 +9842,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -10349,7 +9865,6 @@
       "teeth",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She brushes her teeth.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -10362,34 +9877,30 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕐",
-    "promptEn": "What time is on the clock?",
-    "promptPl": "Która godzina jest na zegarze?",
-    "answer": "The clock shows one o'clock.",
+    "promptEn": "What time is it?",
+    "promptPl": "Która jest godzina?",
+    "answer": "It is one o'clock.",
     "accept": [
-      "It is one o'clock.",
       "It's one o'clock.",
       "It is 1 o'clock."
     ],
-    "speakPromptEn": "Say: The clock shows one o'clock.",
-    "speakPromptPl": "Powiedz: The clock shows one o'clock.",
+    "speakPromptEn": "Say: It is one o'clock.",
+    "speakPromptPl": "Powiedz: It is one o'clock.",
     "distractors": [
-      "The clock shows two o'clock.",
-      "The clock shows half past one.",
-      "The clocks show one o'clock."
+      "It is two o'clock.",
+      "It are one o'clock.",
+      "They are one o'clock."
     ],
     "tiles": [
-      "The",
-      "clock",
-      "shows",
+      "It",
+      "is",
       "one",
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10402,34 +9913,30 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕒",
-    "promptEn": "What time is on the clock?",
-    "promptPl": "Która godzina jest na zegarze?",
-    "answer": "The clock shows three o'clock.",
+    "promptEn": "What time is it?",
+    "promptPl": "Która jest godzina?",
+    "answer": "It is three o'clock.",
     "accept": [
-      "It is three o'clock.",
       "It's three o'clock.",
       "It is 3 o'clock."
     ],
-    "speakPromptEn": "Say: The clock shows three o'clock.",
-    "speakPromptPl": "Powiedz: The clock shows three o'clock.",
+    "speakPromptEn": "Say: It is three o'clock.",
+    "speakPromptPl": "Powiedz: It is three o'clock.",
     "distractors": [
-      "The clock shows four o'clock.",
-      "The clock shows half past three.",
-      "The clocks show three o'clock."
+      "It is four o'clock.",
+      "It are three o'clock.",
+      "They are three o'clock."
     ],
     "tiles": [
-      "The",
-      "clock",
-      "shows",
+      "It",
+      "is",
       "three",
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10442,34 +9949,30 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕔",
-    "promptEn": "Is it five on the clock?",
-    "promptPl": "Czy na zegarze jest piąta?",
-    "answer": "The clock shows five o'clock.",
+    "promptEn": "Is it five o'clock?",
+    "promptPl": "Czy jest piąta?",
+    "answer": "It is five o'clock.",
     "accept": [
-      "It is five o'clock.",
       "It's five o'clock.",
       "It is 5 o'clock."
     ],
-    "speakPromptEn": "Say: The clock shows five o'clock.",
-    "speakPromptPl": "Powiedz: The clock shows five o'clock.",
+    "speakPromptEn": "Say: It is five o'clock.",
+    "speakPromptPl": "Powiedz: It is five o'clock.",
     "distractors": [
-      "The clock shows six o'clock.",
-      "The clock shows half past five.",
-      "The clocks show five o'clock."
+      "It is six o'clock.",
+      "It are five o'clock.",
+      "They are five o'clock."
     ],
     "tiles": [
-      "The",
-      "clock",
-      "shows",
+      "It",
+      "is",
       "five",
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10482,7 +9985,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☀️",
@@ -10506,7 +10008,6 @@
       "sky",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10519,7 +10020,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌙",
@@ -10543,7 +10043,6 @@
       "sky",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10556,7 +10055,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕰️",
@@ -10582,7 +10080,6 @@
       "clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10595,7 +10092,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕰️",
@@ -10621,7 +10117,6 @@
       "clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10634,7 +10129,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📅",
@@ -10660,7 +10154,6 @@
       "calendar",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10673,7 +10166,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎈",
@@ -10698,7 +10190,6 @@
       "balloons",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10711,7 +10202,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎁",
@@ -10737,7 +10227,6 @@
       "gift",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10750,7 +10239,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕐",
@@ -10773,7 +10261,6 @@
       "clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10786,7 +10273,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📅",
@@ -10809,7 +10295,6 @@
       "calendar",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10822,7 +10307,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎂",
@@ -10845,7 +10329,6 @@
       "cake",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10858,7 +10341,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "📅",
@@ -10881,7 +10363,6 @@
       "calendar",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10894,7 +10375,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🚫🎂",
@@ -10921,7 +10401,6 @@
       "now",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10934,7 +10413,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "☀️",
@@ -10956,7 +10434,6 @@
       "sun",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -10969,7 +10446,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎂",
@@ -10991,7 +10467,6 @@
       "cake",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11004,7 +10479,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🌙",
@@ -11026,7 +10500,6 @@
       "moon",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11039,7 +10512,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎈",
@@ -11060,7 +10532,6 @@
       "balloons",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11073,7 +10544,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🎁",
@@ -11094,7 +10564,6 @@
       "gifts",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11107,7 +10576,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕐",
@@ -11132,7 +10600,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11145,7 +10612,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕛",
@@ -11172,7 +10638,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11185,7 +10650,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕕",
@@ -11211,7 +10675,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11224,7 +10687,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕘",
@@ -11251,7 +10713,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11264,7 +10725,6 @@
     "modeHints": [
       "picture",
       "tiles",
-      "text",
       "speak"
     ],
     "cue": "🕞",
@@ -11292,7 +10752,6 @@
       "three",
       "."
     ],
-    "gap": null,
     "transformFrom": null,
     "transformTo": null,
     "pairCueEn": null,
@@ -11304,7 +10763,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🕐",
@@ -11329,7 +10788,6 @@
       "o'clock",
       "."
     ],
-    "gap": null,
     "transformFrom": "It is two o'clock.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -11341,7 +10799,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "⌚",
@@ -11366,7 +10824,6 @@
       "watch",
       "."
     ],
-    "gap": null,
     "transformFrom": "I have got a watch.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -11378,7 +10835,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🕐",
@@ -11404,7 +10861,6 @@
       "time",
       "."
     ],
-    "gap": null,
     "transformFrom": "She can tell the time.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -11416,7 +10872,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "🌙",
@@ -11441,7 +10897,6 @@
       "nights",
       "."
     ],
-    "gap": null,
     "transformFrom": "He likes late nights.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -11453,7 +10908,7 @@
     "grammar": "negatives",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "📅",
@@ -11480,7 +10935,6 @@
       "day",
       "."
     ],
-    "gap": null,
     "transformFrom": "We start at nine every day.",
     "transformTo": "negative",
     "pairCueEn": null,
@@ -11492,7 +10946,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -11515,7 +10969,6 @@
       "four",
       "?"
     ],
-    "gap": null,
     "transformFrom": "It is half past four.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -11527,7 +10980,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -11550,7 +11003,6 @@
       "watch",
       "?"
     ],
-    "gap": null,
     "transformFrom": "You have got a watch.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -11562,7 +11014,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -11585,7 +11037,6 @@
       "time",
       "?"
     ],
-    "gap": null,
     "transformFrom": "She can tell the time.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -11597,7 +11048,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -11619,7 +11070,6 @@
       "weekends",
       "?"
     ],
-    "gap": null,
     "transformFrom": "They like weekends.",
     "transformTo": "question",
     "pairCueEn": null,
@@ -11631,7 +11081,7 @@
     "grammar": "questions",
     "modeHints": [
       "transform",
-      "text",
+      "tiles",
       "speak"
     ],
     "cue": "❓",
@@ -11654,7 +11104,6 @@
       "three",
       "?"
     ],
-    "gap": null,
     "transformFrom": "School finishes at three.",
     "transformTo": "question",
     "pairCueEn": null,

@@ -1,6 +1,6 @@
 /**
  * Topic Challenge — Primary English (premium).
- * Modes: Picture / Tiles / Text / Transform + Write | Speak | Both response path.
+ * Modes: Picture / Tiles / Transform (grammar-locked) + Write | Speak | Both response path.
  */
 (function (global) {
     'use strict';
@@ -460,8 +460,6 @@
 .tc-speak-panel { margin-top: 0.75rem; padding: 0.75rem; border-radius: 0.55rem; background: #f0f9ff; border: 1px solid #bae6fd; }
 .tc-speak-panel .tc-transcript { margin-top: 0.45rem; font-size: 0.92rem; color: #0369a1; min-height: 1.2em; }
 .tc-lang-toggle { margin-left: auto; }
-.tc-gap { font-size: 1.1rem; line-height: 1.7; margin-bottom: 0.6rem; }
-.tc-gap .blank { display: inline-block; min-width: 4.5rem; border-bottom: 2px solid var(--tc-accent); margin: 0 0.15rem; text-align: center; color: var(--tc-accent); font-weight: 700; }
 .tc-why { margin-top: 0.55rem; font-size: 0.92rem; font-weight: 500; color: #334155; white-space: pre-wrap; }
 `;
         document.head.appendChild(style);
@@ -485,31 +483,43 @@
 
     function filterPool(mode) {
         const m = mode || state.mode;
+        // Always lock to the student's selected topic + grammar — never borrow other structures.
         return bank().filter((item) => {
             if (item.topic !== state.topic || item.grammar !== state.grammar) return false;
             const hints = item.modeHints || [];
             if (m === 'transform') return hints.includes('transform') && item.transformFrom;
-            if (m === 'tiles') return hints.includes('tiles') && Array.isArray(item.tiles) && item.tiles.length;
+            if (m === 'tiles') {
+                return (hints.includes('tiles') || hints.includes('transform') || hints.includes('picture'))
+                    && Array.isArray(item.tiles) && item.tiles.length >= 2;
+            }
             if (m === 'picture') return hints.includes('picture');
-            return hints.includes('text') || hints.includes('picture') || hints.includes('tiles');
+            return false;
         });
     }
 
+    function availableModes() {
+        return ['picture', 'tiles', 'transform'].filter((m) => filterPool(m).length > 0);
+    }
+
+    function ensureValidMode() {
+        if (state.mode === 'text') state.mode = 'picture';
+        const modes = availableModes();
+        if (!modes.length) return;
+        if (!modes.includes(state.mode)) state.mode = modes[0];
+    }
+
     function pickTask() {
+        ensureValidMode();
         let pool = filterPool(state.mode);
-        if (!pool.length && state.mode === 'tiles') {
-            pool = bank().filter((i) => i.topic === state.topic && i.grammar === state.grammar && i.tiles && i.tiles.length);
-        }
-        if (!pool.length && state.mode === 'transform') {
-            // Prefer same topic transform cards from any grammar
-            pool = bank().filter((i) => i.topic === state.topic && (i.modeHints || []).includes('transform') && i.transformFrom);
-        }
-        if (!pool.length && (state.mode === 'picture' || state.mode === 'tiles')) {
-            // Negatives/questions banks are transform-heavy — use text-capable items
-            pool = bank().filter((i) => i.topic === state.topic && i.grammar === state.grammar);
-        }
         if (!pool.length) {
-            pool = bank().filter((i) => i.topic === state.topic && i.grammar === state.grammar);
+            const modes = availableModes();
+            for (const m of modes) {
+                pool = filterPool(m);
+                if (pool.length) {
+                    state.mode = m;
+                    break;
+                }
+            }
         }
         if (!pool.length) return null;
         const fresh = pool.filter((i) => !state.usedIds.includes(i.id));
@@ -597,20 +607,6 @@
         return shuffle([...new Set(opts)]).slice(0, 4);
     }
 
-    function gapPrompt(task) {
-        // Replace one content word in answer with blank for text mode variety
-        const words = task.answer.replace(/[.?!,]/g, '').split(/\s+/).filter(Boolean);
-        if (words.length < 3) return null;
-        const skip = new Set(['a', 'an', 'the', 'to', 'at', 'in', 'on', 'of', 'is', 'are', 'am', 'i', 'you', 'he', 'she', 'we', 'they']);
-        const candidates = words
-            .map((w, i) => ({ w, i }))
-            .filter((x) => !skip.has(x.w.toLowerCase()) && x.w.length > 2);
-        if (!candidates.length) return null;
-        const pick = candidates[Math.floor(Math.random() * candidates.length)];
-        const shown = task.answer.replace(new RegExp('\\b' + pick.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'), '___');
-        return { shown, blank: pick.w };
-    }
-
     function render() {
         const root = rootEl();
         if (!root) return;
@@ -680,13 +676,8 @@
                 <div class="tc-tiles-build" id="tc-build">${built || ''}</div>
                 <div class="tc-label">${t('Word bank', 'Bank słów')}</div>
                 <div class="tc-tiles-pool" id="tc-pool">${pool}${extraHtml}</div>`;
-        } else if (state.mode === 'text' && state._gap) {
-            body += `<div class="tc-gap">${escapeHtml(state._gap.shown).replace('___', '<span class="blank">___</span>')}</div>`;
-            if (showWrite) {
-                body += `<input type="text" class="tc-input" id="tc-answer" autocomplete="off" placeholder="${t('Type the missing word', 'Wpisz brakujące słowo')}" ${state.checked ? 'disabled' : ''}>`;
-            }
-        } else if (state.mode === 'text' || state.mode === 'picture' || state.mode === 'transform') {
-            const useMcq = (state.mode === 'picture' || state.mode === 'text') && (task.distractors || []).length >= 2 && Math.random() < 0.55 && !state._forceType;
+        } else if (state.mode === 'picture' || state.mode === 'transform') {
+            const useMcq = state.mode === 'picture' && (task.distractors || []).length >= 2 && Math.random() < 0.55 && !state._forceType;
             // Use state flag so it stays stable for this task
             if (state._useMcq == null) state._useMcq = useMcq && showWrite && state.mode !== 'transform';
             if (state._useMcq && showWrite) {
@@ -724,11 +715,10 @@
         <div class="tc-feedback" id="tc-feedback"></div>
         <div class="tc-why" id="tc-why-box" hidden></div>`;
 
-        const modeTabs = ['picture', 'tiles', 'text', 'transform'].map((m) => {
+        const modeTabs = availableModes().map((m) => {
             const labels = {
                 picture: t('Picture', 'Obrazek'),
                 tiles: t('Tiles', 'Kafelki'),
-                text: t('Text', 'Tekst'),
                 transform: t('Transform', 'Przekształć')
             };
             return `<button type="button" class="tc-tab ${state.mode === m ? 'active' : ''}" data-mode="${m}">${labels[m]}</button>`;
@@ -887,15 +877,8 @@
         }
         if (state._useMcq && state.chosenMcq) return state.chosenMcq;
         const input = rootEl()?.querySelector('#tc-answer');
-        if (input) {
-            if (state._gap) return String(input.value || '').trim();
-            return String(input.value || '').trim();
-        }
+        if (input) return String(input.value || '').trim();
         return '';
-    }
-
-    function expectedForGap() {
-        return state._gap ? state._gap.blank : null;
     }
 
     function checkAnswer() {
@@ -923,11 +906,7 @@
 
         let user = getUserAnswer();
         let ok = false;
-        if (state._gap) {
-            ok = normalize(user) === normalize(expectedForGap());
-            // also accept full sentence
-            if (!ok) ok = answersMatch(user, state.task);
-        } else if (state.mode === 'tiles') {
+        if (state.mode === 'tiles') {
             const built = normalize(user);
             const target = normalize(state.task.tiles.join(' '));
             ok = built === target || answersMatch(user.replace(/\s+([.?!,])/g, '$1'), state.task);
@@ -1078,7 +1057,6 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         state.listening = false;
         state._useMcq = null;
         state._mcqOpts = null;
-        state._gap = null;
         state._forceType = false;
         state.sceneSrc = null;
         state.sceneId = null;
@@ -1088,9 +1066,6 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
             state.sceneSrc = picked.src;
             state.sceneId = picked.id;
             state.highlightBoxes = picked.highlights || [];
-        }
-        if (state.task && state.mode === 'text' && Math.random() < 0.45) {
-            state._gap = gapPrompt(state.task);
         }
         render();
     }
