@@ -1,7 +1,8 @@
 /**
  * Topic Challenge — Primary English (premium).
- * Modes: Picture / Tiles / Transform (grammar-locked) + Write | Speak | Both response path.
- * Picture typed answers that miss the key can be re-checked by AI for fair alternate readings.
+ * Modes: Picture (Spot & Say) / Tiles / Transform + Write | Speak | Both.
+ * Picture: circle a real scene hotspot first, then ask about THAT label — no bank fuzzy match.
+ * Near-miss typed answers can still be re-checked by AI for fair alternate readings.
  */
 (function (global) {
     'use strict';
@@ -18,7 +19,7 @@
         topic: 'school',
         grammar: 'be',
         mode: 'picture',
-        response: 'write', // write | speak | both
+        response: 'write',
         lang: 'en',
         task: null,
         usedIds: [],
@@ -37,234 +38,31 @@
         aiChecking: false
     };
 
-    const STOP_WORDS = new Set([
-        'this', 'that', 'these', 'those', 'what', 'where', 'who', 'how', 'when', 'why',
-        'are', 'is', 'am', 'was', 'were', 'the', 'and', 'for', 'with', 'from', 'into',
-        'your', 'her', 'his', 'their', 'our', 'about', 'talk', 'make', 'does', 'did',
-        'don', "don't", 'like', 'have', 'has', 'got', 'can', 'not', 'negative', 'question',
-        'every', 'day', 'here', 'there', 'very', 'also', 'just', 'some', 'any', 'all'
+    const FEMALE = new Set([
+        'girl', 'woman', 'grandmother', 'mother', 'mum', 'mom', 'sister'
     ]);
-
-    const WORD_ALIASES = {
-        pupil: ['boy', 'girl'],
-        student: ['boy', 'girl'],
-        children: ['boy', 'girl'],
-        child: ['boy', 'girl'],
-        kids: ['boy', 'girl'],
-        kid: ['boy', 'girl'],
-        people: ['boy', 'girl', 'man', 'woman'],
-        person: ['boy', 'girl', 'man', 'woman'],
-        he: ['boy', 'man', 'grandfather', 'father'],
-        she: ['girl', 'woman', 'teacher', 'grandmother', 'mother'],
-        him: ['boy', 'man'],
-        bag: ['backpack', 'bag', 'suitcase'],
-        bags: ['backpack', 'bag', 'suitcase'],
-        pencil: ['pencil case'],
-        pens: ['pencil case'],
-        pen: ['pencil case'],
-        rubber: ['pencil case'],
-        eraser: ['pencil case'],
-        mum: ['woman', 'grandmother'],
-        mom: ['woman', 'grandmother'],
-        mother: ['woman', 'grandmother'],
-        dad: ['man', 'grandfather'],
-        father: ['man', 'grandfather'],
-        sister: ['girl'],
-        brother: ['boy'],
-        friend: ['boy', 'girl'],
-        friends: ['boy', 'girl'],
-        tv: ['television'],
-        fridge: ['fridge'],
-        refrigerator: ['fridge'],
-        jumper: ['sweater'],
-        trainers: ['shoes'],
-        sneakers: ['shoes'],
-        bike: ['bicycle'],
-        bicycle: ['bicycle'],
-        rain: ['umbrella', 'raincoat', 'puddle', 'cloud'],
-        rainy: ['umbrella', 'raincoat', 'puddle'],
-        sunny: ['sun'],
-        snow: ['snowman', 'sled'],
-        winter: ['snowman', 'sled', 'scarf', 'mittens'],
-        summer: ['sun', 'ice cream', 'swimsuit'],
-        spring: ['flower', 'flowers', 'rainbow'],
-        autumn: ['rake'],
-        birthday: ['cake', 'balloon', 'gift'],
-        party: ['cake', 'balloon', 'gift'],
-        clock: ['clock'],
-        time: ['clock'],
-        meal: ['plate', 'table', 'bowl'],
-        breakfast: ['cereal', 'toast', 'egg'],
-        dinner: ['plate', 'table', 'soup'],
-        kitchen: ['stove', 'fridge', 'sink'],
-        bedroom: ['bed', 'wardrobe', 'pillow'],
-        bathroom: ['bathtub', 'sink', 'towel', 'soap'],
-        living: ['sofa', 'armchair', 'television'],
-        park: ['tree', 'bench', 'ball'],
-        beach: ['sandcastle', 'shell', 'bucket', 'boat'],
-        animal: ['dog', 'cat', 'bird', 'cow', 'pig', 'horse', 'lion', 'tiger', 'monkey', 'elephant'],
-        animals: ['dog', 'cat', 'bird', 'cow', 'pig', 'horse', 'lion', 'tiger', 'monkey', 'elephant'],
-        pet: ['dog', 'cat'],
-        zoo: ['zookeeper', 'lion', 'tiger', 'elephant', 'monkey', 'zebra', 'giraffe'],
-        farm: ['cow', 'pig', 'horse', 'chicken', 'sheep', 'tractor', 'barn'],
-        forest: ['tree', 'fox', 'owl', 'squirrel', 'bird'],
-        teacher: ['teacher'],
-        chef: ['chef'],
-        waiter: ['waiter'],
-        door: ['door'],
-        window: ['window'],
-        book: ['book', 'notebook'],
-        desk: ['desk'],
-        table: ['table'],
-        chair: ['chair'],
-        house: ['door', 'roof', 'sofa', 'kitchen'],
-        home: ['sofa', 'door', 'kitchen'],
-        kitchen: ['stove', 'fridge', 'sink', 'table'],
-        school: ['school', 'whiteboard', 'chalkboard'],
-        classroom: ['whiteboard', 'chalkboard', 'desk'],
-        bus: ['bus'],
-        buses: ['bus'],
-        train: ['train'],
-        taxi: ['taxi'],
-        car: ['car'],
-        apple: ['apple'],
-        apples: ['apple'],
-        banana: ['banana'],
-        bananas: ['banana'],
-        bread: ['bread', 'baguette'],
-        cake: ['cake', 'cupcake'],
-        sandwich: ['sandwich', 'bread', 'baguette'],
-        pizza: ['pizza'],
-        salad: ['salad'],
-        soup: ['soup'],
-        milk: ['milk'],
-        dog: ['dog'],
-        dogs: ['dog'],
-        cat: ['cat'],
-        cats: ['cat'],
-        cow: ['cow'],
-        pig: ['pig'],
-        horse: ['horse'],
-        horses: ['horse'],
-        bird: ['bird', 'parrot', 'owl', 'duck', 'chicken', 'flamingo'],
-        birds: ['bird', 'parrot', 'owl', 'duck', 'chicken', 'flamingo'],
-        fish: ['fish'],
-        rabbit: ['rabbit'],
-        rabbits: ['rabbit'],
-        ball: ['ball', 'basketball'],
-        football: ['ball'],
-        hat: ['hat', 'cap'],
-        coat: ['coat', 'raincoat'],
-        dress: ['dress'],
-        shoes: ['shoes', 'boots', 'sandals'],
-        gloves: ['mittens'],
-        glove: ['mittens'],
-        umbrella: ['umbrella'],
-        sun: ['sun'],
-        sunny: ['sun'],
-        moon: ['moon'],
-        tree: ['tree', 'pine tree'],
-        flower: ['flower', 'flowers', 'tulip'],
-        flowers: ['flower', 'flowers', 'tulip'],
-        book: ['book', 'notebook'],
-        books: ['book', 'notebook'],
-        crayon: ['pencil case', 'notebook'],
-        crayons: ['pencil case', 'notebook'],
-        pencil: ['pencil case', 'ruler'],
-        game: ['chessboard', 'ball', 'board game'],
-        games: ['chessboard', 'ball', 'board game'],
-        music: ['guitar'],
-        guitar: ['guitar'],
-        kite: ['kite'],
-        bike: ['bicycle'],
-        bicycle: ['bicycle'],
-        swim: ['boat', 'bucket', 'sandcastle'],
-        clock: ['clock'],
-        watch: ['clock'],
-        calendar: ['calendar'],
-        bed: ['bed'],
-        beds: ['bed'],
-        plant: ['plant'],
-        plants: ['plant'],
-        shirt: ['t-shirt'],
-        shirts: ['t-shirt'],
-        't-shirt': ['t-shirt'],
-        't-shirts': ['t-shirt'],
-        egg: ['egg'],
-        eggs: ['egg'],
-        water: ['glass', 'bottle', 'pitcher'],
-        town: ['shop', 'bus', 'bridge'],
-        library: ['book', 'bench'],
-        museum: ['hospital', 'church'],
-        morning: ['sun', 'bed', 'clock'],
-        mornings: ['sun', 'bed', 'clock'],
-        night: ['moon', 'bed', 'lamp'],
-        weekend: ['ball', 'kite', 'bicycle'],
-        weekends: ['ball', 'kite', 'bicycle'],
-        cinema: ['television'],
-        film: ['painting', 'television'],
-        films: ['painting', 'television'],
-        reading: ['book', 'notebook'],
-        homework: ['notebook', 'book'],
-        tennis: ['ball'],
-        headphones: ['guitar', 'hat'],
-        key: ['door'],
-        grandma: ['grandmother'],
-        grandmother: ['grandmother'],
-        grandpa: ['grandfather'],
-        grandfather: ['grandfather'],
-        bathroom: ['bathtub', 'sink', 'towel', 'soap'],
-        pond: ['pond'],
-        duck: ['duck'],
-        ducks: ['duck'],
-        sandcastle: ['sandcastle'],
-        parrot: ['parrot', 'bird'],
-        balloon: ['balloon'],
-        balloons: ['balloon'],
-        gift: ['gift'],
-        gifts: ['gift'],
-        rainbow: ['rainbow'],
-        toothpaste: ['toothpaste'],
-        toothbrush: ['toothbrush'],
-        cereal: ['cereal'],
-        juice: ['orange', 'bottle', 'glass'],
-        orange: ['orange'],
-        grey: ['cloud'],
-        gray: ['cloud'],
-        colourful: ['parrot', 'flamingo'],
-        colorful: ['parrot', 'flamingo'],
-        wall: ['clock', 'window', 'picture'],
-        sky: ['sun', 'moon', 'cloud'],
-        high: ['kite'],
-        loud: ['guitar'],
-        free: ['bathtub', 'bench'],
-        ready: ['backpack', 'bag'],
-        strong: ['elephant'],
-        green: ['frog'],
-        red: ['apple', 'traffic light', 'tomato'],
-        big: ['elephant', 'church', 'hospital'],
-        new: ['bicycle', 'shoes'],
-        warm: ['coat', 'scarf', 'mittens'],
-        clean: ['bed', 'sink'],
-        delicious: ['cake'],
-        healthy: ['salad'],
-        cold: ['cloud', 'coat', 'boots', 'scarf', 'milk'],
-        open: ['door', 'window'],
-        upstairs: ['bed', 'stairs'],
-        alone: ['toothbrush'],
-        pack: ['backpack', 'bag'],
-        bags: ['backpack', 'bag'],
-        throw: ['ball'],
-        build: ['sandcastle'],
-        fly: ['kite', 'parrot', 'bird'],
-        ride: ['bicycle'],
-        pour: ['milk', 'pitcher'],
-        cut: ['bread', 'cake'],
-        cook: ['stove', 'egg', 'pan'],
-        watch: ['television', 'clock', 'duck'],
-        shows: ['clock'],
-        show: ['clock']
-    };
+    const MALE = new Set([
+        'boy', 'man', 'grandfather', 'father', 'dad', 'brother', 'waiter'
+    ]);
+    const PEOPLE = new Set([
+        ...FEMALE, ...MALE,
+        'baby', 'teacher', 'cashier', 'chef', 'zookeeper', 'police officer'
+    ]);
+    // Tiny / decorative labels that make poor circle targets on their own
+    const SKIP_HOTSPOTS = new Set([
+        'cloud', 'splash', 'flame', 'headlight', 'weather vane', 'streamer',
+        'rock', 'bee', 'lily pad', 'bow tie', 'necklace', 'collar', 'flag',
+        'glasses', 'goggles', 'sunglasses', 'cap', 'helmet', 'hat', 'apron',
+        'boot', 'boots', 'shoes', 'sandals', 'socks', 'sock', 'mittens',
+        'wheel', 'tap', 'towel', 'soap', 'toothpaste', 'toothbrush',
+        'spoon', 'fork', 'knife', 'spatula', 'cup', 'mug', 'glass', 'bowl',
+        'plate', 'pitcher', 'tray', 'basket', 'box', 'bag', 'money',
+        'egg', 'lemon', 'strawberry', 'tomato', 'onion', 'potato', 'carrot',
+        'pepper', 'cucumber', 'orange', 'apple', 'cookie', 'cupcake',
+        'shell', 'starfish', 'crab', 'snail', 'mushroom', 'flower', 'flowers',
+        'tulip', 'butterfly', 'bird', 'frisbee', 'paintbrush', 'binoculars'
+    ]);
+    const MIN_HOTSPOT_AREA = 0.012;
 
     function bank() {
         return global.PE_TOPIC_CHALLENGE_BANK || [];
@@ -293,113 +91,251 @@
         return map[sceneId] || [];
     }
 
-    function expandLexicalToken(w) {
+    function hotspotArea(hs) {
+        const b = hs && hs.b;
+        if (!b || b.length < 4) return 0;
+        return Math.max(0, b[2] - b[0]) * Math.max(0, b[3] - b[1]);
+    }
+
+    function article(word) {
+        const w = String(word || '').toLowerCase().replace(/^(a|an)\s+/, '');
+        return /^[aeiou]/.test(w) ? 'an' : 'a';
+    }
+
+    function personPronoun(word) {
+        const w = String(word || '').toLowerCase();
+        if (FEMALE.has(w)) return 'She';
+        if (MALE.has(w)) return 'He';
+        return null;
+    }
+
+    function isPerson(word) {
+        return PEOPLE.has(String(word || '').toLowerCase());
+    }
+
+    function withArticle(word) {
+        const w = String(word || '').toLowerCase();
+        return article(w) + ' ' + w;
+    }
+
+    function tilesFromAnswer(answer) {
+        return String(answer || '')
+            .replace(/([.?!,])/g, ' $1 ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .split(' ')
+            .filter(Boolean);
+    }
+
+    function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    }
+
+    function eligibleHotspots(sceneId) {
+        return hotspotsForScene(sceneId)
+            .filter((h) => h && h.w && h.b)
+            .filter((h) => !SKIP_HOTSPOTS.has(String(h.w).toLowerCase()))
+            .filter((h) => hotspotArea(h) >= MIN_HOTSPOT_AREA)
+            .sort((a, b) => hotspotArea(b) - hotspotArea(a));
+    }
+
+    function grammarCard(grammar, word) {
+        const w = String(word || '').toLowerCase();
+        const art = withArticle(w);
+        const pron = personPronoun(w);
+        const person = isPerson(w);
+
+        if (grammar === 'be') {
+            if (pron) {
+                return {
+                    promptEn: 'Who is in the red circle? Use to be.',
+                    promptPl: 'Kto jest w czerwonym kółku? Użyj to be.',
+                    answer: pron + ' is ' + art + '.',
+                    accept: [pron + "'s " + art + '.', 'This is ' + art + '.']
+                };
+            }
+            if (person) {
+                return {
+                    promptEn: 'Who is in the red circle? Use to be.',
+                    promptPl: 'Kto jest w czerwonym kółku? Użyj to be.',
+                    answer: 'This is ' + art + '.',
+                    accept: ['It is ' + art + '.', "It's " + art + '.']
+                };
+            }
+            return {
+                promptEn: 'What is in the red circle? Use to be.',
+                promptPl: 'Co jest w czerwonym kółku? Użyj to be.',
+                answer: 'It is ' + art + '.',
+                accept: ["It's " + art + '.', 'This is ' + art + '.']
+            };
+        }
+
+        if (grammar === 'have_got') {
+            if (person) return null;
+            return {
+                promptEn: 'Talk about the circled thing with have got.',
+                promptPl: 'Powiedz o zakreślonej rzeczy używając have got.',
+                answer: 'I have got ' + art + '.',
+                accept: ["I've got " + art + '.', 'I have ' + art + '.']
+            };
+        }
+
+        if (grammar === 'can') {
+            return {
+                promptEn: 'Look at the circle. Say what you can see (use can).',
+                promptPl: 'Spójrz na kółko. Powiedz, co możesz zobaczyć (użyj can).',
+                answer: 'I can see ' + art + '.',
+                accept: ['I can see the ' + w + '.']
+            };
+        }
+
+        if (grammar === 'like') {
+            return {
+                promptEn: 'Do you like the circled thing? Answer with like.',
+                promptPl: 'Czy lubisz to, co jest w kółku? Odpowiedz z like.',
+                answer: 'I like the ' + w + '.',
+                accept: ['I like ' + art + '.']
+            };
+        }
+
+        if (grammar === 'present_simple') {
+            return {
+                promptEn: 'Look at the circle. Make a present simple sentence with see.',
+                promptPl: 'Spójrz na kółko. Zrób zdanie w present simple z see.',
+                answer: 'I see ' + art + '.',
+                accept: ['I see the ' + w + '.']
+            };
+        }
+
+        if (grammar === 'negatives') {
+            if (person && pron) {
+                return {
+                    promptEn: 'Make it negative: ' + pron + ' is ' + art + '.',
+                    promptPl: 'Zrób przeczenie: ' + pron + ' is ' + art + '.',
+                    answer: pron + ' is not ' + art + '.',
+                    accept: [pron + " isn't " + art + '.'],
+                    transformFrom: pron + ' is ' + art + '.',
+                    transformTo: 'negative'
+                };
+            }
+            return {
+                promptEn: 'Make it negative: It is ' + art + '.',
+                promptPl: 'Zrób przeczenie: It is ' + art + '.',
+                answer: 'It is not ' + art + '.',
+                accept: ["It isn't " + art + '.', "It's not " + art + '.'],
+                transformFrom: 'It is ' + art + '.',
+                transformTo: 'negative'
+            };
+        }
+
+        if (grammar === 'questions') {
+            if (person && pron) {
+                return {
+                    promptEn: 'Make a question: ' + pron + ' is ' + art + '.',
+                    promptPl: 'Zrób pytanie: ' + pron + ' is ' + art + '.',
+                    answer: 'Is ' + pron.toLowerCase() + ' ' + art + '?',
+                    accept: [],
+                    transformFrom: pron + ' is ' + art + '.',
+                    transformTo: 'question'
+                };
+            }
+            return {
+                promptEn: 'Make a question: It is ' + art + '.',
+                promptPl: 'Zrób pytanie: It is ' + art + '.',
+                answer: 'Is it ' + art + '?',
+                accept: [],
+                transformFrom: 'It is ' + art + '.',
+                transformTo: 'question'
+            };
+        }
+
+        return null;
+    }
+
+    function distractorsForWord(sceneId, word, grammar, answer) {
+        const others = eligibleHotspots(sceneId)
+            .map((h) => String(h.w).toLowerCase())
+            .filter((w) => w !== String(word).toLowerCase());
+        const uniq = [...new Set(others)];
         const out = [];
-        const seen = new Set();
-        const queue = [w];
-        while (queue.length) {
-            const cur = queue.shift();
-            if (!cur || seen.has(cur)) continue;
-            seen.add(cur);
-            out.push(cur);
-            (WORD_ALIASES[cur] || []).forEach((a) => queue.push(a));
-            // Simple English plurals → singular for hotspot matching
-            if (cur.endsWith('ies') && cur.length > 4) queue.push(cur.slice(0, -3) + 'y');
-            else if (/(?:ches|shes|sses|xes|zes)$/.test(cur) && cur.length > 4) queue.push(cur.slice(0, -2));
-            else if (cur.endsWith('s') && !cur.endsWith('ss') && cur.length > 3) queue.push(cur.slice(0, -1));
-            if (cur.includes('-')) queue.push(cur.replace(/-/g, ''));
-            if (out.length > 40) break;
+        for (const alt of shuffle(uniq).slice(0, 8)) {
+            const card = grammarCard(grammar, alt);
+            if (!card || card.answer === answer) continue;
+            out.push(card.answer);
+            if (out.length >= 3) break;
         }
         return out;
     }
 
-    function taskSearchTokens(task) {
-        // English only — Polish prompts caused false hits (e.g. "potrafisz" → "pot").
-        const text = [
-            task.answer,
-            task.promptEn,
-            ...(task.tiles || []),
-            ...(task.accept || [])
-        ].join(' ').toLowerCase();
-        const raw = text.replace(/[^a-z0-9\s'-]/g, ' ').split(/\s+/).filter(Boolean);
-        const tokens = [];
-        raw.forEach((w) => {
-            if (w.length < 2 || STOP_WORDS.has(w)) return;
-            expandLexicalToken(w).forEach((t) => tokens.push(t));
-        });
-        // Multi-word compounds present in the answer (e.g. "ice cream", "traffic light")
-        const compact = text.replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
-        [
-            'ice cream', 'pencil case', 'traffic light', 'street lamp', 'board game',
-            't-shirt', 'bus stop', 'sand castle', 'police officer', 'shopping cart'
-        ].forEach((phrase) => {
-            if (compact.includes(phrase)) tokens.push(phrase);
-        });
-        // Gender preference from pronouns in answer/prompt
-        const joined = text;
-        if (/\b(he|him|his|boy|man|brother|father|dad)\b/.test(joined)) {
-            tokens.push('boy', 'man', 'grandfather');
-        }
-        if (/\b(she|her|girl|woman|sister|mother|mum|mom)\b/.test(joined)) {
-            tokens.push('girl', 'woman', 'teacher', 'grandmother');
-        }
-        return [...new Set(tokens)];
-    }
-
-    function hotspotMatchesToken(hotspotWord, token) {
-        const hw = String(hotspotWord || '').toLowerCase();
-        const t = String(token || '').toLowerCase();
-        if (!hw || !t || t.length < 2) return 0;
-        if (hw === t) return 3;
-        // Multi-word hotspot: exact whole-word token (ice in "ice cream")
-        const parts = hw.split(/\s+/);
-        if (parts.length > 1 && parts.includes(t) && t.length >= 3) return 3;
-        // Hyphen / space normalization (t-shirt ↔ tshirt)
-        const norm = (s) => s.replace(/[-\s]/g, '');
-        if (norm(hw) === norm(t) && norm(t).length >= 4) return 3;
-        return 0;
-    }
-
-    function scoreHotspot(hs, tokens) {
-        let best = 0;
-        tokens.forEach((tok) => {
-            best = Math.max(best, hotspotMatchesToken(hs.w, tok));
-        });
-        return best;
-    }
-
-    function pickHighlights(sceneId, task) {
-        const hs = hotspotsForScene(sceneId);
-        if (!hs.length) return [];
-        const tokens = taskSearchTokens(task);
-        if (!tokens.length) return [];
-        // Exact lexical matches only — never highlight a weakly related region
-        const scored = hs
-            .map((h, idx) => ({ h, idx, score: scoreHotspot(h, tokens) }))
-            .filter((x) => x.score >= 3)
-            .sort((a, b) => b.score - a.score || a.idx - b.idx);
-        if (!scored.length) return [];
-        const chosen = scored[0];
-        return [{ w: chosen.h.w, b: chosen.h.b }];
-    }
-
-    function pickSceneForTask(topicId, task) {
-        const list = scenesForTopic(topicId);
-        if (!list.length) return { src: null, id: null, highlights: [] };
-        const ranked = list.map((src) => {
+    function picturePoolSize(topicId, grammar) {
+        let n = 0;
+        scenesForTopic(topicId).forEach((src) => {
             const id = sceneIdFromSrc(src);
-            const highlights = pickHighlights(id, task);
-            return { src, id, highlights, score: highlights.length ? 2 : 0 };
-        }).sort((a, b) => b.score - a.score);
-        const winners = ranked.filter((r) => r.score === ranked[0].score);
-        const pick = winners[Math.floor(Math.random() * winners.length)];
-        return pick;
+            eligibleHotspots(id).forEach((h) => {
+                if (grammarCard(grammar, h.w)) n += 1;
+            });
+        });
+        return n;
     }
 
-    function pickScene(topicId) {
-        const list = scenesForTopic(topicId);
-        if (!list.length) return null;
-        return list[Math.floor(Math.random() * list.length)];
+    function buildPictureTask(topicId, grammar) {
+        const scenes = scenesForTopic(topicId);
+        if (!scenes.length) return null;
+
+        const candidates = [];
+        scenes.forEach((src) => {
+            const id = sceneIdFromSrc(src);
+            const hs = eligibleHotspots(id);
+            const pool = hs.slice(0, Math.max(6, Math.ceil(hs.length * 0.55)));
+            pool.forEach((h) => {
+                const card = grammarCard(grammar, h.w);
+                if (!card) return;
+                candidates.push({ src, id, h, card });
+            });
+        });
+        if (!candidates.length) return null;
+
+        const fresh = candidates.filter((c) => {
+            const tid = 'pic-' + c.id + '-' + c.h.w + '-' + grammar;
+            return !state.usedIds.includes(tid);
+        });
+        const list = fresh.length ? fresh : candidates;
+        if (!fresh.length) {
+            state.usedIds = state.usedIds.filter((x) => !String(x).startsWith('pic-'));
+        }
+        const pick = list[Math.floor(Math.random() * list.length)];
+        const word = String(pick.h.w).toLowerCase();
+        const id = 'pic-' + pick.id + '-' + word + '-' + grammar;
+        const answer = pick.card.answer;
+        return {
+            id,
+            topic: topicId,
+            grammar,
+            modeHints: ['picture', 'speak'],
+            cue: '🔍',
+            promptEn: pick.card.promptEn,
+            promptPl: pick.card.promptPl,
+            answer,
+            accept: pick.card.accept || [],
+            speakPromptEn: 'Say: ' + answer,
+            speakPromptPl: 'Powiedz: ' + answer,
+            distractors: distractorsForWord(pick.id, word, grammar, answer),
+            tiles: tilesFromAnswer(answer),
+            transformFrom: pick.card.transformFrom || null,
+            transformTo: pick.card.transformTo || null,
+            pairCueEn: null,
+            pairCuePl: null,
+            hotspotWord: word,
+            sceneSrc: pick.src,
+            sceneId: pick.id,
+            highlightBoxes: [{ w: pick.h.w, b: pick.h.b }],
+            spotSay: true
+        };
     }
 
     function t(en, pl) {
@@ -485,7 +421,7 @@
 
     function filterPool(mode) {
         const m = mode || state.mode;
-        // Always lock to the student's selected topic + grammar — never borrow other structures.
+        if (m === 'picture') return []; // picture uses Spot & Say builder, not the bank
         return bank().filter((item) => {
             if (item.topic !== state.topic || item.grammar !== state.grammar) return false;
             const hints = item.modeHints || [];
@@ -494,13 +430,16 @@
                 return (hints.includes('tiles') || hints.includes('transform') || hints.includes('picture'))
                     && Array.isArray(item.tiles) && item.tiles.length >= 2;
             }
-            if (m === 'picture') return hints.includes('picture');
             return false;
         });
     }
 
     function availableModes() {
-        return ['picture', 'tiles', 'transform'].filter((m) => filterPool(m).length > 0);
+        const modes = [];
+        if (picturePoolSize(state.topic, state.grammar) > 0) modes.push('picture');
+        if (filterPool('tiles').length) modes.push('tiles');
+        if (filterPool('transform').length) modes.push('transform');
+        return modes;
     }
 
     function ensureValidMode() {
@@ -512,10 +451,29 @@
 
     function pickTask() {
         ensureValidMode();
+        if (state.mode === 'picture') {
+            const task = buildPictureTask(state.topic, state.grammar);
+            if (task) {
+                state.usedIds.push(task.id);
+                return task;
+            }
+            const modes = availableModes().filter((m) => m !== 'picture');
+            if (modes.length) state.mode = modes[0];
+            else return null;
+        }
         let pool = filterPool(state.mode);
         if (!pool.length) {
             const modes = availableModes();
             for (const m of modes) {
+                if (m === 'picture') {
+                    const task = buildPictureTask(state.topic, state.grammar);
+                    if (task) {
+                        state.mode = 'picture';
+                        state.usedIds.push(task.id);
+                        return task;
+                    }
+                    continue;
+                }
                 pool = filterPool(m);
                 if (pool.length) {
                     state.mode = m;
@@ -526,19 +484,10 @@
         if (!pool.length) return null;
         const fresh = pool.filter((i) => !state.usedIds.includes(i.id));
         const list = fresh.length ? fresh : pool;
-        if (!fresh.length) state.usedIds = [];
+        if (!fresh.length) state.usedIds = state.usedIds.filter((x) => String(x).startsWith('pic-'));
         const task = list[Math.floor(Math.random() * list.length)];
         state.usedIds.push(task.id);
         return task;
-    }
-
-    function shuffle(arr) {
-        const a = arr.slice();
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            const t = a[i]; a[i] = a[j]; a[j] = t;
-        }
-        return a;
     }
 
     function speakText(text) {
@@ -631,7 +580,7 @@
             if (state.sceneSrc) {
                 const hasFocus = (state.highlightBoxes || []).length > 0;
                 const caption = hasFocus
-                    ? t('Look at the circled part of the picture', 'Spójrz na zakreśloną część obrazka')
+                    ? t('Answer only about the red circle', 'Odpowiedz tylko o czerwonym kółku')
                     : t('Look at the whole picture', 'Spójrz na cały obrazek');
                 body += `<div class="tc-scene">
                     <div class="tc-scene-frame" id="tc-scene-frame">
@@ -679,7 +628,7 @@
                 <div class="tc-label">${t('Word bank', 'Bank słów')}</div>
                 <div class="tc-tiles-pool" id="tc-pool">${pool}${extraHtml}</div>`;
         } else if (state.mode === 'picture' || state.mode === 'transform') {
-            const useMcq = state.mode === 'picture' && (task.distractors || []).length >= 2 && Math.random() < 0.55 && !state._forceType;
+            const useMcq = state.mode === 'picture' && (task.distractors || []).length >= 2 && Math.random() < 0.35 && !state._forceType;
             // Use state flag so it stays stable for this task
             if (state._useMcq == null) state._useMcq = useMcq && showWrite && state.mode !== 'transform';
             if (state._useMcq && showWrite) {
@@ -965,22 +914,22 @@
         const focusNote = (state.highlightBoxes || []).length
             ? 'A region of the picture is circled/highlighted — judge that focus mainly.'
             : 'Judge the whole scene.';
-        const prompt = `Primary English Topic Challenge — picture answer judge for ages 9–11 (CEFR A1–A2).
+        const prompt = `Primary English Topic Challenge — Spot & Say judge for ages 9–11 (CEFR A1–A2).
 Return ONLY valid JSON: {"ok":true|false,"reasonEn":"one short sentence","reasonPl":"one short Polish sentence"}
 
 Student grammar focus: ${state.grammar}
 Topic: ${state.topic}
 Prompt: ${state.task.promptEn}
+Circled hotspot label (author key): ${state.task.hotspotWord || '(unknown)'}
 Model key answer: ${state.task.answer}
 Also listed as accept: ${accept}
 Student answer: ${user}
 ${focusNote}
 
 Rules:
-- Accept ok=true when the student's sentence is grammatically right for the selected grammar AND a fair reading of the picture/prompt.
-- Be open to perspective: a person may be sister vs mum, boy vs brother, teacher vs woman, etc. when the image is ambiguous.
-- Still reject wrong grammar for this focus (e.g. do/don't when grammar is "be"; is/are agreement errors; missing have got / can / like patterns when those are selected).
-- Reject nonsense or answers about a clearly different object/place than the picture shows.
+- The red circle marks one hotspot. The model answer names that hotspot with the selected grammar.
+- Accept ok=true when grammar is correct for the focus AND the student fairly names the same circled thing (synonyms OK: woman/mum/sister, boy/brother, bag/backpack, etc.).
+- Reject answers about a different object than the circle, or wrong grammar for this focus.
 - Keep reasons kind and very short.`;
 
         const images = [];
@@ -1193,11 +1142,10 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         state.sceneSrc = null;
         state.sceneId = null;
         state.highlightBoxes = [];
-        if (state.task) {
-            const picked = pickSceneForTask(state.topic, state.task);
-            state.sceneSrc = picked.src;
-            state.sceneId = picked.id;
-            state.highlightBoxes = picked.highlights || [];
+        if (state.task && state.task.spotSay) {
+            state.sceneSrc = state.task.sceneSrc;
+            state.sceneId = state.task.sceneId;
+            state.highlightBoxes = state.task.highlightBoxes || [];
         }
         render();
     }
@@ -1218,6 +1166,8 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         init: initTopicChallenge,
         newRound,
         setLang(lang) { state.lang = lang === 'pl' ? 'pl' : 'en'; render(); },
-        getState() { return Object.assign({}, state); }
+        getState() { return Object.assign({}, state); },
+        buildPictureTask,
+        picturePoolSize
     };
 })(typeof window !== 'undefined' ? window : globalThis);
