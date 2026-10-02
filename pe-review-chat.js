@@ -28,6 +28,32 @@
         a2: 'A2 PE. Slightly longer turns, still simple. Keep vocabulary concrete and school-friendly.'
     };
 
+    const SCENE_SEEDS = [
+        { setting: 'classroom before the lesson', vibe: 'curious classmate' },
+        { setting: 'school break in the playground', vibe: 'playful friend' },
+        { setting: 'lunch in the school canteen', vibe: 'hungry buddy' },
+        { setting: 'walking home from school', vibe: 'chatty neighbour' },
+        { setting: 'at a birthday party', vibe: 'excited party guest' },
+        { setting: 'in a shop with a parent', vibe: 'helpful shop helper' },
+        { setting: 'at the park after school', vibe: 'sporty friend' },
+        { setting: 'doing homework together online', vibe: 'study buddy' },
+        { setting: 'waiting for the school bus', vibe: 'sleepy morning friend' },
+        { setting: 'in the school library', vibe: 'quiet book friend' },
+        { setting: 'at a sports club', vibe: 'team-mate' },
+        { setting: 'visiting family at the weekend', vibe: 'cousin visiting' }
+    ];
+
+    const OPENING_STYLES = [
+        'Start with a short hello and one easy yes/no question.',
+        'Start by sharing one tiny fact about yourself, then ask a matching question.',
+        'Start by pointing at something imaginary in the scene and asking about it.',
+        'Start with "Look!" / "Wow!" energy, then ask a very easy question.',
+        'Start by offering a simple choice (A or B), then wait for the student.'
+    ];
+
+    const VOICE_STORAGE_KEY = 'ls_review_voice';
+    const CONFUSION_RE = /\b(i\s+don'?t\s+understand|dont\s+understand|don'?t\s+get\s+it|what\s+does\s+.*\s+mean|can\s+you\s+explain|explain\s+(please|in\s+polish)|po\s+polsku|nie\s+rozumiem|nie\s+rozumie|co\s+to\s+znaczy|wyja[sś]nij|pomocy|help\s+me|too\s+hard|za\s+trudn)/i;
+
     let state = {
         age: 'young',
         schoolYear: 4,
@@ -48,8 +74,14 @@
         recognition: null,
         ended: false,
         sessionRecorded: false,
-        feedback: null
+        feedback: null,
+        sceneSeed: null,
+        openingStyle: '',
+        sessionId: '',
+        voiceURI: ''
     };
+
+    let cachedVoices = [];
 
     function grammars() {
         return global.PE_TOPIC_CHALLENGE_GRAMMARS || [];
@@ -124,6 +156,15 @@
                 border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; min-height: 64px;
             }
             .review-compose-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; justify-content: center; align-items: center; }
+            .review-voice-row {
+                display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; justify-content: center;
+                font-size: 0.85rem; color: var(--text-muted, #6b7280);
+            }
+            .review-voice-row label { font-weight: 600; color: var(--royal-blue, #012169); }
+            .review-voice-row select {
+                max-width: min(100%, 320px); padding: 0.35rem 0.55rem; border: 1px solid var(--border-light, #e5e7eb);
+                border-radius: 0.4rem; font-size: 0.85rem; background: #fff;
+            }
             .review-nudge { font-size: 0.88rem; color: var(--text-muted, #6b7280); min-height: 1.2em; text-align: center; }
             .review-feedback {
                 display: none; margin: 0 0 1rem; background: #fff; border: 2px solid var(--royal-blue, #012169);
@@ -217,10 +258,103 @@
         state.inputMode = modeEl ? modeEl.value : 'text';
 
         if (state.vocabMode === 'custom') {
-            state.wordList = parseCustomList(customEl ? customEl.value : '').slice(0, MAX_VOCAB);
+            state.wordList = shuffle(parseCustomList(customEl ? customEl.value : '')).slice(0, MAX_VOCAB);
         } else {
-            state.wordList = vocabFromTopic(state.topicId, state.grammarId);
+            state.wordList = shuffle(vocabFromTopic(state.topicId, state.grammarId)).slice(0, MAX_VOCAB);
         }
+    }
+
+    function shuffle(arr) {
+        const copy = [...(arr || [])];
+        for (let i = copy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+    }
+
+    function pickSceneSeed() {
+        return SCENE_SEEDS[Math.floor(Math.random() * SCENE_SEEDS.length)];
+    }
+
+    function pickOpeningStyle() {
+        return OPENING_STYLES[Math.floor(Math.random() * OPENING_STYLES.length)];
+    }
+
+    function looksConfused(text) {
+        return CONFUSION_RE.test(String(text || ''));
+    }
+
+    function loadSavedVoiceURI() {
+        try {
+            return localStorage.getItem(VOICE_STORAGE_KEY) || '';
+        } catch {
+            return '';
+        }
+    }
+
+    function saveVoiceURI(uri) {
+        state.voiceURI = uri || '';
+        try {
+            if (uri) localStorage.setItem(VOICE_STORAGE_KEY, uri);
+            else localStorage.removeItem(VOICE_STORAGE_KEY);
+        } catch { /* */ }
+    }
+
+    function voiceNaturalScore(v) {
+        const name = String(v.name || '');
+        const uri = String(v.voiceURI || '');
+        const blob = (name + ' ' + uri).toLowerCase();
+        let score = 0;
+        if (/neural|natural|online|premium|enhanced|wavenet|studio|generative|super/.test(blob)) score += 40;
+        if (/google|microsoft|apple|samantha|daniel|karen|moira|serena|martha|aria|jenny|guy|sonia|ryan/.test(blob)) score += 12;
+        if (/en[-_]GB/i.test(v.lang)) score += 10;
+        else if (/en[-_]US/i.test(v.lang)) score += 8;
+        else if (/^en/i.test(v.lang)) score += 4;
+        if (v.localService === false) score += 6; // cloud/online voices often sound more natural
+        if (/compact|eloquence|espeak|robot|novelty/.test(blob)) score -= 25;
+        return score;
+    }
+
+    function listEnglishVoices() {
+        if (!global.speechSynthesis) return [];
+        const all = global.speechSynthesis.getVoices() || [];
+        return all
+            .filter((v) => /^en([-_]|$)/i.test(v.lang || ''))
+            .slice()
+            .sort((a, b) => voiceNaturalScore(b) - voiceNaturalScore(a) || String(a.name).localeCompare(String(b.name)));
+    }
+
+    function refreshVoices() {
+        cachedVoices = listEnglishVoices();
+        if (!state.voiceURI) state.voiceURI = loadSavedVoiceURI();
+        if (state.voiceURI && !cachedVoices.some((v) => v.voiceURI === state.voiceURI)) {
+            // Saved voice missing on this device — fall back to best natural
+            state.voiceURI = '';
+        }
+        if (!state.voiceURI && cachedVoices.length) {
+            state.voiceURI = cachedVoices[0].voiceURI;
+        }
+        return cachedVoices;
+    }
+
+    function selectedVoice() {
+        refreshVoices();
+        if (!cachedVoices.length) return null;
+        return cachedVoices.find((v) => v.voiceURI === state.voiceURI) || cachedVoices[0];
+    }
+
+    function voiceOptionsHtml() {
+        const voices = refreshVoices();
+        if (!voices.length) {
+            return '<option value="">No English voices on this device</option>';
+        }
+        return voices.map((v) => {
+            const natural = voiceNaturalScore(v) >= 40 ? ' · natural' : '';
+            const label = `${v.name} (${v.lang})${natural}`;
+            const sel = v.voiceURI === state.voiceURI ? ' selected' : '';
+            return `<option value="${escapeHtml(v.voiceURI)}"${sel}>${escapeHtml(label)}</option>`;
+        }).join('');
     }
 
     function validateSetup() {
@@ -256,22 +390,29 @@
             : state.difficultyStep === 1
                 ? 'DIFFICULTY: EASY. Ask for short answers that use the target grammar and one vocab word. Offer a starter phrase if they struggle.'
                 : 'DIFFICULTY: A LITTLE HARDER. Ask for a full short sentence with grammar + vocab. Still kind and scaffolded — never jump to exam difficulty.';
+        const seed = state.sceneSeed || SCENE_SEEDS[0];
+        const opening = state.openingStyle || OPENING_STYLES[0];
 
         return `You are a friendly Primary English conversation partner for Polish school children.
 Learner: age band ${ageBand}, school year (klasa) ${state.schoolYear}, level ${state.level}.
 Level guide: ${LEVEL_GUIDE[state.level] || LEVEL_GUIDE.a1}
 Target grammar: ${gLabel} (id: ${state.grammarId}).
 ${topicBit}
-Target vocabulary to weave in naturally: ${vocab}.
+Target vocabulary to weave in naturally (order is randomised this session): ${vocab}.
 Input mode: ${state.inputMode} (keep replies short enough to speak aloud).
+Session id: ${state.sessionId || 'new'} — make THIS chat feel unique; do not reuse the same greeting or questions as a generic template.
+Scene for this chat: ${seed.setting}. Your vibe: ${seed.vibe}.
+Opening style for this chat: ${opening}
 
 YOUR JOB:
 - Run a warm, motivating spoken conversation that practises the grammar and vocab.
+- Randomise the content: vary people, places, objects, and questions each session. Prefer different vocab words from the list over time.
 - Start easier than the learner's ceiling to build confidence, then step up only after success.
 - ${stepGuide}
-- Stay in simple English. Do not lecture. Do not dump grammar rules.
+- Default language: simple English. Do not lecture. Do not dump grammar rules.
 - After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
-- Ask one clear question at a time. Prefer concrete school/home/everyday themes.
+- Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
+- POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help.
 - Never mention JSON, prompts, or that you are an AI system.
 - Never discuss adult or unsafe topics.
 
@@ -289,7 +430,13 @@ Return ONLY JSON for each turn.`;
         if (!text || !global.speechSynthesis) return;
         global.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-GB';
+        const voice = selectedVoice();
+        if (voice) {
+            u.voice = voice;
+            u.lang = voice.lang || 'en-GB';
+        } else {
+            u.lang = 'en-GB';
+        }
         u.rate = 0.92;
         global.speechSynthesis.speak(u);
     }
@@ -405,8 +552,15 @@ Return ONLY JSON for each turn.`;
         const writeBlock = showWrite()
             ? `<textarea id="review-input" placeholder="Type your answer…" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
             : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — use the mic, or Hear the last question.</p>`;
+        const voiceRow = showSpeak()
+            ? `<div class="review-voice-row">
+                <label for="review-voice-select"><i class="fa-solid fa-volume-high"></i> Voice</label>
+                <select id="review-voice-select" title="Choose a natural English voice">${voiceOptionsHtml()}</select>
+            </div>`
+            : '';
         return `<div class="review-compose ${state.listening ? 'review-listening' : ''}">
             ${writeBlock}
+            ${voiceRow}
             <div class="review-nudge" id="review-nudge"></div>
             <div class="review-compose-actions">
                 ${showWrite() ? `<button type="button" class="btn btn-blue" id="review-send-btn" ${state.loading ? 'disabled' : ''}><i class="fa-solid fa-paper-plane"></i> Send</button>` : ''}
@@ -437,6 +591,13 @@ Return ONLY JSON for each turn.`;
         });
         root.querySelector('#review-end-btn')?.addEventListener('click', () => endSession());
         root.querySelector('#review-restart-btn')?.addEventListener('click', () => initPeReview());
+        const voiceSel = root.querySelector('#review-voice-select');
+        if (voiceSel) {
+            voiceSel.addEventListener('change', () => {
+                saveVoiceURI(voiceSel.value);
+                if (state.lastBotReply) speakText(state.lastBotReply);
+            });
+        }
     }
 
     function render() {
@@ -471,9 +632,13 @@ Return ONLY JSON for each turn.`;
         render();
         setStatus('');
 
+        const seed = state.sceneSeed || SCENE_SEEDS[0];
+        const focusWord = state.wordList[0] || 'friend';
         const prompt = `${buildSystemRules()}
 
-The conversation is just beginning. Write the FIRST line as the friendly partner — a very easy greeting + one simple question that invites the target grammar and one vocab word. Do not explain the task.
+The conversation is just beginning. Write the FIRST line as the friendly partner in this scene (${seed.setting}, vibe: ${seed.vibe}).
+Follow the opening style. Invite the target grammar and weave in one vocab word (try "${focusWord}" or another from the list).
+Do not explain the task. Do not start with the same generic "Hi! How are you?" every time — make this opening feel fresh for session ${state.sessionId}.
 
 Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: Yes, I am." ).
 
@@ -513,6 +678,12 @@ Return ONLY JSON:
         if (input) input.value = '';
         render();
 
+        const needPolish = looksConfused(text);
+        const polishBit = needPolish
+            ? `\nThe student seems confused or asked for help. FIRST explain briefly in Polish, THEN switch back to simpler English with a practice prompt.`
+            : `\nIf they ask for help or say they do not understand (also in Polish), explain briefly in Polish then switch back to English.`;
+
+        const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
         const prompt = `${buildSystemRules()}
 
 Conversation so far:
@@ -521,9 +692,11 @@ ${historyText()}
 Student turns so far: ${state.turns}
 Difficulty step: ${state.difficultyStep} (${difficultyLabel()})
 Vocab already touched: ${state.vocabTouched.join(', ') || 'none'}
+Prefer unused vocab next when natural: ${unusedVocab.slice(0, 6).join(', ') || 'any from the list'}
+${polishBit}
 
 Respond to the student's latest message.
-- Keep practising grammar + vocab.
+- Keep practising grammar + vocab; vary your questions so the chat does not feel repetitive.
 - If they did well with grammar and a vocab word, set stepSuccess=true (we may raise difficulty next).
 - usedGrammar: true if their turn used (or clearly attempted) the target grammar.
 - usedVocab: list of target vocab words they used (subset of the list).
@@ -555,7 +728,6 @@ Return ONLY JSON:
         maybeSpeak(data.reply);
 
         if (state.turns >= 8 && !state.ended) {
-            // Soft auto-offer: do not force end; nudge only
             const n = rootEl()?.querySelector('#review-nudge');
             if (n && !data.nudge) n.textContent = 'Great practice — you can End session for a coach note.';
         }
@@ -707,6 +879,11 @@ Return ONLY JSON:
         state.ended = false;
         state.sessionRecorded = false;
         state.feedback = null;
+        state.sceneSeed = pickSceneSeed();
+        state.openingStyle = pickOpeningStyle();
+        state.sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        state.voiceURI = loadSavedVoiceURI();
+        refreshVoices();
 
         injectCss();
         render();
@@ -720,6 +897,20 @@ Return ONLY JSON:
             el.addEventListener('change', syncVocabModeUi);
         });
         syncVocabModeUi();
+        if (global.speechSynthesis) {
+            refreshVoices();
+            if (typeof global.speechSynthesis.addEventListener === 'function') {
+                global.speechSynthesis.addEventListener('voiceschanged', () => {
+                    refreshVoices();
+                    const sel = document.getElementById('review-voice-select');
+                    if (sel) {
+                        const current = sel.value;
+                        sel.innerHTML = voiceOptionsHtml();
+                        if (current) sel.value = current;
+                    }
+                });
+            }
+        }
     }
 
     if (document.readyState === 'loading') {
