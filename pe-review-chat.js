@@ -125,6 +125,8 @@
 
     const VOICE_STORAGE_KEY = 'ls_review_voice';
     const CONFUSION_RE = /\b(i\s+don'?t\s+understand|dont\s+understand|don'?t\s+get\s+it|what\s+does\s+.*\s+mean|can\s+you\s+explain|explain\s+(please|in\s+polish)|po\s+polsku|nie\s+rozumiem|nie\s+rozumie|co\s+to\s+znaczy|wyja[sś]nij|pomocy|help\s+me|too\s+hard|za\s+trudn)/i;
+    const PL_CHAR_RE = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/;
+    const PL_WORD_RE = /\b(jestem|jest|mam|lubie|lubię|mogę|moge|nie|tak|to|moja|moj|mój|moje|chce|chcę|lubisz|kocham|szkoła|szkola|dom|mama|tata|brat|siostra|bo|ale|jak|gdzie|co|dlaczego|prosze|proszę|dziekuje|dziękuję|cześć|czesc)\b/i;
 
     let state = {
         age: 'young',
@@ -150,7 +152,9 @@
         sceneSeed: null,
         openingStyle: '',
         sessionId: '',
-        voiceURI: ''
+        voiceURI: '',
+        voiceMenuOpen: false,
+        lastRepeatLine: ''
     };
 
     let cachedVoices = [];
@@ -248,13 +252,19 @@
                 border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; min-height: 64px;
             }
             .review-compose-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; justify-content: center; align-items: center; }
-            .review-voice-row {
-                display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; justify-content: center;
-                font-size: 0.85rem; color: var(--text-muted, #6b7280);
+            .review-voice-wrap { position: relative; display: inline-flex; flex-direction: column; align-items: stretch; }
+            .review-voice-menu {
+                display: none; position: absolute; left: 50%; bottom: calc(100% + 0.4rem); transform: translateX(-50%);
+                z-index: 20; min-width: min(92vw, 300px); background: #fff; border: 2px solid var(--royal-blue, #012169);
+                border-radius: 10px; padding: 0.65rem 0.75rem; box-shadow: 0 8px 24px rgba(1,33,105,0.15);
             }
-            .review-voice-row label { font-weight: 600; color: var(--royal-blue, #012169); }
-            .review-voice-row select {
-                max-width: min(100%, 320px); padding: 0.35rem 0.55rem; border: 1px solid var(--border-light, #e5e7eb);
+            .review-voice-menu.open { display: block; }
+            .review-voice-menu label {
+                display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+                color: var(--royal-blue, #012169); margin-bottom: 0.35rem;
+            }
+            .review-voice-menu select {
+                width: 100%; padding: 0.4rem 0.5rem; border: 1px solid var(--border-light, #e5e7eb);
                 border-radius: 0.4rem; font-size: 0.85rem; background: #fff;
             }
             .review-nudge { font-size: 0.88rem; color: var(--text-muted, #6b7280); min-height: 1.2em; text-align: center; }
@@ -415,6 +425,21 @@
         return CONFUSION_RE.test(String(text || ''));
     }
 
+    function looksMixedPolishEnglish(text) {
+        const t = String(text || '').trim();
+        if (!t) return false;
+        const hasPl = PL_CHAR_RE.test(t) || PL_WORD_RE.test(t);
+        if (!hasPl) return false;
+        // Mixed: Polish cues plus some English letter words, OR mostly Polish answering in the chat
+        const hasAsciiWord = /\b[a-z]{2,}\b/i.test(t.replace(PL_WORD_RE, ' '));
+        return hasPl || hasAsciiWord;
+    }
+
+    function hasPolishContent(text) {
+        const t = String(text || '');
+        return PL_CHAR_RE.test(t) || PL_WORD_RE.test(t);
+    }
+
     function loadSavedVoiceURI() {
         try {
             return localStorage.getItem(VOICE_STORAGE_KEY) || '';
@@ -546,6 +571,7 @@ YOUR JOB:
 - After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
 - Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
 - POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help.
+- MIXED POLISH + ENGLISH (important): Students may answer with a mix (e.g. "I lubię pizza" or "Mam a dog"). Accept the meaning kindly. Then RETELL their whole idea as one short, correct English sentence for them to repeat. Shape: "Nice! In English we say: I like pizza. Can you say that?" Put that English sentence in englishRetell and set askRepeat=true. Do not scold. After they can try the English line, continue the conversation.
 - Never mention JSON, prompts, or that you are an AI system.
 - Never discuss adult or unsafe topics.
 
@@ -579,9 +605,10 @@ Return ONLY JSON for each turn.`;
         if (!SR) return null;
         try {
             const rec = new SR();
-            rec.lang = 'en-GB';
+            // pl-PL catches mixed Polish+English better for Polish learners; English-only still works for short PE lines.
+            rec.lang = 'pl-PL';
             rec.interimResults = false;
-            rec.maxAlternatives = 3;
+            rec.maxAlternatives = 5;
             return rec;
         } catch {
             return null;
@@ -687,22 +714,27 @@ Return ONLY JSON for each turn.`;
             </div>`;
         }
         const writeBlock = showWrite()
-            ? `<textarea id="review-input" placeholder="Type your answer…" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
-            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — use the mic, or Hear the last question.</p>`;
-        const voiceRow = showSpeak()
-            ? `<div class="review-voice-row">
-                <label for="review-voice-select"><i class="fa-solid fa-volume-high"></i> Voice</label>
-                <select id="review-voice-select" title="Choose a natural English voice">${voiceOptionsHtml()}</select>
+            ? `<textarea id="review-input" placeholder="English — or mix in Polish if you need to…" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
+            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — use the mic (Polish + English OK), or Hear. Open Voice to pick a natural voice.</p>`;
+        const voiceBtn = showSpeak()
+            ? `<div class="review-voice-wrap">
+                <button type="button" class="btn btn-outline" id="review-voice-btn" ${state.loading ? 'disabled' : ''} aria-expanded="${state.voiceMenuOpen ? 'true' : 'false'}" title="Choose voice">
+                    <i class="fa-solid fa-volume-high"></i> Voice
+                </button>
+                <div class="review-voice-menu${state.voiceMenuOpen ? ' open' : ''}" id="review-voice-menu" role="dialog" aria-label="Voice">
+                    <label for="review-voice-select">Choose a natural voice</label>
+                    <select id="review-voice-select">${voiceOptionsHtml()}</select>
+                </div>
             </div>`
             : '';
         return `<div class="review-compose ${state.listening ? 'review-listening' : ''}">
             ${writeBlock}
-            ${voiceRow}
             <div class="review-nudge" id="review-nudge"></div>
             <div class="review-compose-actions">
                 ${showWrite() ? `<button type="button" class="btn btn-blue" id="review-send-btn" ${state.loading ? 'disabled' : ''}><i class="fa-solid fa-paper-plane"></i> Send</button>` : ''}
                 ${showSpeak() ? `<button type="button" class="btn btn-outline" id="review-mic-btn" ${state.loading ? 'disabled' : ''}><i class="fa-solid fa-microphone"></i> ${state.listening ? 'Listening…' : 'Say it'}</button>` : ''}
-                ${showSpeak() ? `<button type="button" class="btn btn-outline" id="review-hear-btn" ${state.loading || !state.lastBotReply ? 'disabled' : ''}><i class="fa-solid fa-volume-high"></i> Hear</button>` : ''}
+                ${showSpeak() ? `<button type="button" class="btn btn-outline" id="review-hear-btn" ${state.loading || !state.lastBotReply ? 'disabled' : ''}><i class="fa-solid fa-headphones"></i> Hear</button>` : ''}
+                ${voiceBtn}
                 <button type="button" class="btn btn-outline" id="review-end-btn" ${state.loading || state.turns < 1 ? 'disabled' : ''}><i class="fa-solid fa-flag-checkered"></i> End session</button>
             </div>
         </div>`;
@@ -724,16 +756,45 @@ Return ONLY JSON for each turn.`;
         root.querySelector('#review-send-btn')?.addEventListener('click', () => submitMessage());
         root.querySelector('#review-mic-btn')?.addEventListener('click', () => startMic());
         root.querySelector('#review-hear-btn')?.addEventListener('click', () => {
-            if (state.lastBotReply) speakText(state.lastBotReply);
+            const line = state.lastRepeatLine || state.lastBotReply;
+            if (line) speakText(line);
         });
         root.querySelector('#review-end-btn')?.addEventListener('click', () => endSession());
         root.querySelector('#review-restart-btn')?.addEventListener('click', () => initPeReview());
+
+        const voiceBtn = root.querySelector('#review-voice-btn');
+        const voiceMenu = root.querySelector('#review-voice-menu');
         const voiceSel = root.querySelector('#review-voice-select');
+        if (voiceBtn && voiceMenu) {
+            voiceBtn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                state.voiceMenuOpen = !state.voiceMenuOpen;
+                voiceMenu.classList.toggle('open', state.voiceMenuOpen);
+                voiceBtn.setAttribute('aria-expanded', state.voiceMenuOpen ? 'true' : 'false');
+            });
+        }
         if (voiceSel) {
             voiceSel.addEventListener('change', () => {
                 saveVoiceURI(voiceSel.value);
-                if (state.lastBotReply) speakText(state.lastBotReply);
+                state.voiceMenuOpen = false;
+                if (voiceMenu) voiceMenu.classList.remove('open');
+                if (voiceBtn) voiceBtn.setAttribute('aria-expanded', 'false');
+                const line = state.lastRepeatLine || state.lastBotReply;
+                if (line) speakText(line);
             });
+            voiceSel.addEventListener('click', (ev) => ev.stopPropagation());
+        }
+        if (state.voiceMenuOpen) {
+            const closer = (ev) => {
+                if (ev.target.closest && ev.target.closest('.review-voice-wrap')) return;
+                state.voiceMenuOpen = false;
+                document.removeEventListener('click', closer);
+                const menu = rootEl()?.querySelector('#review-voice-menu');
+                const btn = rootEl()?.querySelector('#review-voice-btn');
+                if (menu) menu.classList.remove('open');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            };
+            setTimeout(() => document.addEventListener('click', closer), 0);
         }
     }
 
@@ -816,9 +877,15 @@ Return ONLY JSON:
         render();
 
         const needPolish = looksConfused(text);
-        const polishBit = needPolish
-            ? `\nThe student seems confused or asked for help. FIRST explain briefly in Polish, THEN switch back to simpler English with a practice prompt.`
-            : `\nIf they ask for help or say they do not understand (also in Polish), explain briefly in Polish then switch back to English.`;
+        const mixed = looksMixedPolishEnglish(text) || hasPolishContent(text);
+        let supportBit = '';
+        if (needPolish) {
+            supportBit = `\nThe student seems confused or asked for help. FIRST explain briefly in Polish, THEN switch back to simpler English with a practice prompt.`;
+        } else if (mixed) {
+            supportBit = `\nMIXED / POLISH DETECTED in the student's latest line. Accept their meaning. RETELL the full idea as one short English sentence for them to repeat. Set askRepeat=true and englishRetell to that exact English sentence (no Polish inside englishRetell). In reply, praise briefly then ask them to say the English line.`;
+        } else {
+            supportBit = `\nIf they mix Polish with English or answer partly in Polish, retell their idea in English for them to repeat (askRepeat=true). If they ask for help or say they do not understand, explain briefly in Polish then switch back to English.`;
+        }
 
         const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
         const prompt = `${buildSystemRules()}
@@ -830,17 +897,19 @@ Student turns so far: ${state.turns}
 Difficulty step: ${state.difficultyStep} (${difficultyLabel()})
 Vocab already touched: ${state.vocabTouched.join(', ') || 'none'}
 Prefer unused vocab next when natural: ${unusedVocab.slice(0, 6).join(', ') || 'any from the list'}
-${polishBit}
+${supportBit}
 
 Respond to the student's latest message.
 - Keep practising grammar + vocab; vary your questions so the chat does not feel repetitive.
-- If they did well with grammar and a vocab word, set stepSuccess=true (we may raise difficulty next).
-- usedGrammar: true if their turn used (or clearly attempted) the target grammar.
-- usedVocab: list of target vocab words they used (subset of the list).
-- nudge: one short tip for the UI (not spoken).
+- If they did well with grammar and a vocab word (in English), set stepSuccess=true (we may raise difficulty next).
+- usedGrammar: true if their turn used (or clearly attempted) the target grammar in English, or their meaning clearly aimed at it.
+- usedVocab: list of target vocab words they used (English forms; subset of the list).
+- nudge: one short tip for the UI (not spoken). If askRepeat, nudge should be like: Repeat: I like pizza.
+- englishRetell: the exact English sentence to repeat when askRepeat is true; otherwise "".
+- askRepeat: true when you retold a mixed/Polish answer into English for practice.
 
 Return ONLY JSON:
-{"reply":"...","usedGrammar":true,"usedVocab":["apple"],"nudge":"short tip","stepSuccess":true}`;
+{"reply":"...","usedGrammar":true,"usedVocab":["pizza"],"nudge":"Repeat: I like pizza.","stepSuccess":false,"askRepeat":true,"englishRetell":"I like pizza."}`;
 
         const data = await fetchAi(prompt);
         state.loading = false;
@@ -855,18 +924,24 @@ Return ONLY JSON:
         state.turns += 1;
         bumpDifficulty(data);
         const pts = awardTurnPoints(data);
-        state.lastBotReply = data.reply;
+        const retell = String(data.englishRetell || '').trim();
+        const askRepeat = !!data.askRepeat && !!retell;
+        state.lastRepeatLine = askRepeat ? retell : '';
+        state.lastBotReply = askRepeat ? retell : data.reply;
         state.messages.push({ role: 'assistant', text: data.reply });
         render();
         const nudge = rootEl()?.querySelector('#review-nudge');
         if (nudge) {
-            nudge.textContent = (data.nudge || '') + (pts ? ` · +${pts}` : '');
+            const tip = askRepeat
+                ? (`Repeat: ${retell}` + (pts ? ` · +${pts}` : ''))
+                : ((data.nudge || '') + (pts ? ` · +${pts}` : ''));
+            nudge.textContent = tip;
         }
-        maybeSpeak(data.reply);
+        maybeSpeak(askRepeat ? retell : data.reply);
 
         if (state.turns >= 8 && !state.ended) {
             const n = rootEl()?.querySelector('#review-nudge');
-            if (n && !data.nudge) n.textContent = 'Great practice — you can End session for a coach note.';
+            if (n && !data.nudge && !askRepeat) n.textContent = 'Great practice — you can End session for a coach note.';
         }
     }
 
@@ -886,13 +961,21 @@ Return ONLY JSON:
             try {
                 const res = ev.results[0];
                 best = (res[0] && res[0].transcript) || '';
+                // Prefer an alternative that keeps Polish letters / mixed wording when available
+                for (let i = 0; i < res.length; i++) {
+                    const alt = (res[i] && res[i].transcript) || '';
+                    if (hasPolishContent(alt) || looksMixedPolishEnglish(alt)) {
+                        best = alt;
+                        break;
+                    }
+                }
             } catch { /* */ }
             state.listening = false;
             if (best.trim()) {
                 submitMessage(best.trim());
             } else {
                 render();
-                setStatus('Did not catch that — try again.', 'error');
+                setStatus('Did not catch that — try again, or type Polish + English.', 'error');
             }
         };
         rec.onerror = () => {
@@ -1040,6 +1123,8 @@ Return ONLY JSON:
         state.openingStyle = pickOpeningStyle();
         state.sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
         state.voiceURI = loadSavedVoiceURI();
+        state.voiceMenuOpen = false;
+        state.lastRepeatLine = '';
         refreshVoices();
 
         injectCss();
