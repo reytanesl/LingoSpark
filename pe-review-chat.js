@@ -161,8 +161,20 @@
         sceneSrc: '',
         sceneId: '',
         sceneLabels: [],
-        scenePayload: null
+        scenePayload: null,
+        runInstructions: ''
     };
+
+    const MAX_RUN_INSTRUCTIONS = 500;
+
+    const RUN_INSTRUCTION_PRESETS = [
+        { label: 'Possessive pronouns', text: 'Practise possessive pronouns (my, your, his, her, our) in natural talk about family and things people have — e.g. "my mum", "your bag".' },
+        { label: 'Family members', text: 'Focus on family members (mum, dad, brother, sister, grandma…) — who people are and simple facts about them.' },
+        { label: 'Home & rooms', text: 'Talk about rooms and objects at home (kitchen, bedroom, sofa, garden) using simple descriptions.' },
+        { label: 'Likes & dislikes', text: 'Practise like / don\'t like with food and free-time activities in everyday chat.' },
+        { label: 'Can / can\'t', text: 'Use can and can\'t for abilities and permission in a friendly scenario (school, sport, home).' },
+        { label: 'Daily routines', text: 'Gentle practice of daily routines (get up, go to school, homework) with present simple — keep it conversational, not a drill.' }
+    ];
 
     let cachedVoices = [];
     let micStopTimer = null;
@@ -236,6 +248,30 @@
 
     function escapeAttr(str) {
         return escapeHtml(str).replace(/'/g, '&#39;');
+    }
+
+    function sanitizeRunInstructions(raw) {
+        return String(raw == null ? '' : raw)
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, MAX_RUN_INSTRUCTIONS);
+    }
+
+    function runInstructionsPromptBlock() {
+        const brief = sanitizeRunInstructions(state.runInstructions);
+        if (!brief) return '';
+        const profile = classProfile(state.schoolYear);
+        const ease = easeInfo(currentEaseIndex());
+        return `SESSION BRIEF (follow this focus for the whole chat):
+"${brief}"
+
+How to honour the brief (critical):
+- Steer the conversation toward this focus through natural play-talk, mini-stories, and open questions — as if chatting with a friend, NOT running a grammar worksheet or lesson plan.
+- Match klasa ${state.schoolYear} (${profile.band}) and ease "${ease.label}": same focus, simpler words and shorter lines when ease is lower.
+- Weave in the target grammar and vocab list above; if the brief names a different angle (e.g. possessive pronouns while grammar is "to be"), blend them smoothly in context.
+- Never say "today we will practise…", "your task is…", or read the brief aloud to the student.
+- If the brief conflicts with the picture scene, use the picture as the setting and the brief as the language focus.`;
     }
 
     function classProfile(year) {
@@ -446,6 +482,7 @@
         const vocabModeEl = document.querySelector('input[name="review-setup-vocab-mode"]:checked');
         const topicEl = document.getElementById('review-setup-topic');
         const customEl = document.getElementById('review-setup-custom');
+        const runEl = document.getElementById('review-setup-run-instructions');
         const modeEl = document.querySelector('input[name="review-setup-mode"]:checked');
 
         state.age = ageEl ? ageEl.value : 'young';
@@ -456,6 +493,8 @@
         state.topicId = topicEl ? topicEl.value : 'school';
         if (state.topicId === 'family_home') state.topicId = 'family';
         state.inputMode = modeEl ? modeEl.value : 'text';
+        state.runInstructions = sanitizeRunInstructions(runEl ? runEl.value : '');
+        if (runEl && runEl.value !== state.runInstructions) runEl.value = state.runInstructions;
 
         const sceneEl = document.getElementById('review-setup-scene');
         const sceneSrc = state.vocabMode === 'topic' && sceneEl ? String(sceneEl.value || '').trim() : '';
@@ -654,6 +693,7 @@
         const pictureBit = state.sceneSrc
             ? `PICTURE MODE (critical): A Topic Challenge scene is attached (${state.sceneId || 'scene'}). Base the conversation on what is visible in the picture. Useful labels in the scene: ${(state.sceneLabels || []).slice(0, 18).join(', ') || 'people and objects in the scene'}. Ask about people/things in the picture using the target grammar. Do not invent objects that are clearly not there.`
             : 'No picture attached — use everyday scenes from the topic.';
+        const runBit = runInstructionsPromptBlock();
 
         return `You are a friendly Primary English conversation partner for Polish school children.
 Learner: age band ${ageBand}, school year (klasa) ${state.schoolYear} (${profile.band}), ease setting: ${ease.label}.
@@ -664,7 +704,7 @@ Target grammar: ${gLabel} (id: ${state.grammarId}).
 ${topicBit}
 ${topicFocus}
 ${pictureBit}
-Target vocabulary to weave in naturally (order is randomised this session): ${vocab}.
+${runBit ? runBit + '\n' : ''}Target vocabulary to weave in naturally (order is randomised this session): ${vocab}.
 Input mode: ${state.inputMode} (keep replies short enough to speak aloud).
 Session id: ${state.sessionId || 'new'} — make THIS chat feel unique; do not reuse the same greeting or questions as a generic template.
 Scene for this chat: ${seed.setting}. Your vibe: ${seed.vibe}.
@@ -894,8 +934,13 @@ Return ONLY JSON for each turn.`;
             : `Custom (${state.wordList.length})`;
         const profile = classProfile(state.schoolYear);
         const pic = state.sceneSrc ? ' · picture' : '';
+        const brief = sanitizeRunInstructions(state.runInstructions);
+        const briefHud = brief
+            ? `<div class="review-hud-card review-hud-brief"><strong>Session focus</strong><span>${escapeHtml(brief.length > 120 ? brief.slice(0, 117) + '…' : brief)}</span></div>`
+            : '';
         return `<div class="review-hud">
             <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarLabel(state.grammarId))} · ${escapeHtml(vocabLabel)}${pic}</span></div>
+            ${briefHud}
             <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(difficultyLabel())} · ${state.age === 'young' ? '8–9' : '10–12'}</span></div>
             <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length}/${state.wordList.length} vocab · ${escapeHtml(profile.band)}</span></div>
         </div>`;
@@ -1131,6 +1176,7 @@ Follow the opening style. Invite the target grammar and weave in one vocab word 
 Do not explain the task. Do not start with the same generic "Hi! How are you?" every time — make this opening feel fresh for session ${state.sessionId}.
 Never offer letter choices (A/B/C). If you offer a choice, use real words the student must say or type.
 Do NOT open with a yes/no question — ask What/Who/Where or a two-word choice so the student must say a real word. No emojis.
+${state.runInstructions ? 'If a SESSION BRIEF is set above, open in a natural way that fits that focus — do not announce the brief.' : ''}
 
 Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: a dog" or "Try: I like pizza." ).
 
@@ -1388,6 +1434,7 @@ Review this short practice chat. Be kind, concrete, and brief. No adult jargon.
 
 Grammar focus: ${grammarLabel(state.grammarId)}
 Vocab focus: ${state.wordList.join(', ')}
+Session brief: ${sanitizeRunInstructions(state.runInstructions) || 'none'}
 Class relevance: ${classProfile(state.schoolYear).relevance}
 Turns: ${state.turns}
 Grammar hits (approx): ${state.grammarHits}
@@ -1437,6 +1484,7 @@ Return ONLY JSON:
                         vocabMode: state.vocabMode,
                         topic: state.topicId,
                         scene: state.sceneId || null,
+                        runInstructions: sanitizeRunInstructions(state.runInstructions) || null,
                         schoolYear: state.schoolYear,
                         ease: easeInfo(state.ease).id,
                         level: easeInfo(state.ease).id
@@ -1456,6 +1504,24 @@ Return ONLY JSON:
         const isCustom = mode && mode.value === 'custom';
         if (topicWrap) topicWrap.style.display = isCustom ? 'none' : 'block';
         if (customWrap) customWrap.style.display = isCustom ? 'block' : 'none';
+    }
+
+    function renderRunInstructionPresets() {
+        const wrap = document.getElementById('review-setup-run-presets');
+        if (!wrap) return;
+        wrap.innerHTML = RUN_INSTRUCTION_PRESETS.map((p) =>
+            `<button type="button" class="review-setup-run-chip" data-run-text="${escapeAttr(p.text)}">${escapeHtml(p.label)}</button>`
+        ).join('');
+    }
+
+    function setRunInstruction(text, append) {
+        const el = document.getElementById('review-setup-run-instructions');
+        if (!el) return;
+        const next = sanitizeRunInstructions(append && el.value.trim()
+            ? `${el.value.trim()} ${text}`
+            : text);
+        el.value = next;
+        state.runInstructions = next;
     }
 
     function syncClassHint() {
@@ -1562,6 +1628,19 @@ Return ONLY JSON:
         if (easeEl) easeEl.addEventListener('input', syncEaseLabel);
         const topicEl = document.getElementById('review-setup-topic');
         if (topicEl) topicEl.addEventListener('change', syncScenePicker);
+        const runEl = document.getElementById('review-setup-run-instructions');
+        if (runEl) {
+            runEl.addEventListener('input', () => {
+                state.runInstructions = sanitizeRunInstructions(runEl.value);
+            });
+        }
+        renderRunInstructionPresets();
+        document.getElementById('review-setup-run-presets')?.addEventListener('click', (ev) => {
+            const btn = ev.target.closest('.review-setup-run-chip');
+            if (!btn) return;
+            const text = btn.getAttribute('data-run-text') || '';
+            if (text) setRunInstruction(text, false);
+        });
         syncVocabModeUi();
         syncClassHint();
         syncEaseLabel();
@@ -1599,6 +1678,8 @@ Return ONLY JSON:
         syncClassHint,
         syncEaseLabel,
         syncScenePicker,
+        setRunInstruction,
+        renderRunInstructionPresets,
         getState() { return Object.assign({}, state, { wordList: state.wordList.slice(), sceneLabels: state.sceneLabels.slice() }); }
     };
 })(typeof window !== 'undefined' ? window : globalThis);
