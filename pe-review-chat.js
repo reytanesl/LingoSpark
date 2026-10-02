@@ -570,7 +570,7 @@ YOUR JOB:
 - Default language: simple English. Do not lecture. Do not dump grammar rules.
 - After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
 - Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
-- POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help.
+- POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help. Polish is for reading only — speech/audio will speak English only.
 - MIXED POLISH + ENGLISH (important): Students may answer with a mix (e.g. "I lubię pizza" or "Mam a dog"). Accept the meaning kindly. Then RETELL their whole idea as one short, correct English sentence for them to repeat. Shape: "Nice! In English we say: I like pizza. Can you say that?" Put that English sentence in englishRetell and set askRepeat=true. Do not scold. After they can try the English line, continue the conversation.
 - Never mention JSON, prompts, or that you are an AI system.
 - Never discuss adult or unsafe topics.
@@ -585,10 +585,50 @@ Return ONLY JSON for each turn.`;
             .join('\n');
     }
 
+    /** Keep Polish on screen, but never send it to TTS. */
+    function englishForSpeech(text) {
+        let t = String(text || '').trim();
+        if (!t) return '';
+
+        // Drop explicit Polish-help blocks; keep the English that follows.
+        t = t.replace(/po\s*polsku\s*[:\-–]?\s*/gi, '«PL»');
+        t = t.replace(/«PL»[\s\S]*?(?=(now\s+in\s+english|in\s+english|english\s*[:\-–]|we\s+say|say\s*:|try\s*:|can\s+you\s+say|$))/gi, ' ');
+        t = t.replace(/\(\s*po\s*polsku\s*[:\-–]?[^)]*\)/gi, ' ');
+        t = t.replace(/\[[^\]]*[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ][^\]]*\]/g, ' ');
+        t = t.replace(/\b(now\s+in\s+english|in\s+english)\s*[:\-–]?\s*/gi, ' ');
+
+        const parts = t.split(/(?<=[.!?…])\s+|\n+/).map((p) => p.trim()).filter(Boolean);
+        const kept = parts.filter((p) => {
+            if (PL_CHAR_RE.test(p)) return false;
+            const plHits = (p.match(new RegExp(PL_WORD_RE.source, 'gi')) || []).length;
+            const enHits = (p.match(/\b(the|a|an|i|you|we|they|is|are|am|have|has|can|like|do|does|what|where|who|my|your|this|that|yes|no|nice|say|try|hello|hi|ok|okay)\b/gi) || []).length;
+            if (plHits >= 1 && enHits === 0) return false;
+            return true;
+        });
+
+        let out = (kept.length ? kept.join(' ') : t)
+            .replace(/«PL»/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        // Safety: drop any remaining tokens with Polish letters.
+        if (PL_CHAR_RE.test(out)) {
+            out = out
+                .split(/\s+/)
+                .filter((w) => !PL_CHAR_RE.test(w))
+                .join(' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        return out;
+    }
+
     function speakText(text) {
-        if (!text || !global.speechSynthesis) return;
+        const spoken = englishForSpeech(text);
+        if (!spoken || !global.speechSynthesis) return;
         global.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
+        const u = new SpeechSynthesisUtterance(spoken);
         const voice = selectedVoice();
         if (voice) {
             u.voice = voice;
