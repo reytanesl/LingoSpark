@@ -154,10 +154,14 @@
         sessionId: '',
         voiceURI: '',
         voiceMenuOpen: false,
-        lastRepeatLine: ''
+        lastRepeatLine: '',
+        micStream: null,
+        micInterim: '',
+        micFinal: ''
     };
 
     let cachedVoices = [];
+    let micStopTimer = null;
 
     function grammars() {
         return global.PE_TOPIC_CHALLENGE_GRAMMARS || [];
@@ -645,9 +649,11 @@ Return ONLY JSON for each turn.`;
         if (!SR) return null;
         try {
             const rec = new SR();
-            // pl-PL catches mixed Polish+English better for Polish learners; English-only still works for short PE lines.
-            rec.lang = 'pl-PL';
-            rec.interimResults = false;
+            // Match Topic Challenge: en-GB catches PE English far better than pl-PL.
+            // Mixed Polish+English can still be typed; mic prioritises clear English.
+            rec.lang = 'en-GB';
+            rec.interimResults = true;
+            rec.continuous = false;
             rec.maxAlternatives = 5;
             return rec;
         } catch {
@@ -655,11 +661,83 @@ Return ONLY JSON for each turn.`;
         }
     }
 
+    function releaseMicStream() {
+        if (state.micStream) {
+            try {
+                state.micStream.getTracks().forEach((t) => t.stop());
+            } catch { /* */ }
+            state.micStream = null;
+        }
+    }
+
+    async function ensureMicAccess() {
+        if (!global.navigator || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return true; // SpeechRecognition may still work without an explicit stream
+        }
+        try {
+            releaseMicStream();
+            state.micStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                },
+                video: false
+            });
+            return true;
+        } catch (err) {
+            const name = err && err.name;
+            if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+                setStatus('Please allow microphone access in the browser, then try Say it again.', 'error');
+            } else if (name === 'NotFoundError') {
+                setStatus('No microphone found. Check your device settings.', 'error');
+            } else {
+                setStatus('Could not open the microphone. Try Chrome/Edge, or type your answer.', 'error');
+            }
+            return false;
+        }
+    }
+
+    function silenceBotSpeech() {
+        if (global.speechSynthesis) {
+            try { global.speechSynthesis.cancel(); } catch { /* */ }
+        }
+    }
+
+    function setMicHint(text) {
+        const nudge = rootEl()?.querySelector('#review-nudge');
+        if (nudge) nudge.textContent = text || '';
+    }
+
+    function pickBestTranscript(result) {
+        if (!result || !result.length) return '';
+        let best = '';
+        let bestScore = -1;
+        for (let i = 0; i < result.length; i++) {
+            const alt = result[i];
+            const text = String((alt && alt.transcript) || '').trim();
+            if (!text) continue;
+            const conf = typeof alt.confidence === 'number' ? alt.confidence : 0.5;
+            // Prefer clearer, slightly longer PE answers; do not prefer Polish mangling.
+            const score = conf * 10 + Math.min(text.length, 40) / 40;
+            if (score > bestScore) {
+                bestScore = score;
+                best = text;
+            }
+        }
+        return best || String((result[0] && result[0].transcript) || '').trim();
+    }
+
     function stopListening() {
+        if (micStopTimer) {
+            clearTimeout(micStopTimer);
+            micStopTimer = null;
+        }
         if (state.recognition && state.listening) {
             try { state.recognition.stop(); } catch { /* */ }
         }
         state.listening = false;
+        releaseMicStream();
     }
 
     function maybeSpeak(reply) {
@@ -755,7 +833,7 @@ Return ONLY JSON for each turn.`;
         }
         const writeBlock = showWrite()
             ? `<textarea id="review-input" placeholder="English — or mix in Polish if you need to…" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
-            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — use the mic (Polish + English OK), or Hear. Open Voice to pick a natural voice.</p>`;
+            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — wait for the partner to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.</p>`;
         const voiceBtn = showSpeak()
             ? `<div class="review-voice-wrap">
                 <button type="button" class="btn btn-outline" id="review-voice-btn" ${state.loading ? 'disabled' : ''} aria-expanded="${state.voiceMenuOpen ? 'true' : 'false'}" title="Choose voice">
@@ -985,53 +1063,115 @@ Return ONLY JSON:
         }
     }
 
-    function startMic() {
+    async function startMic() {
         if (state.loading || state.ended) return;
+
+        // Stop any bot speech first — otherwise the mic hears TTS / audio is busy.
         stopListening();
-        const rec = getSpeechRecognition();
-        if (!rec) {
-            setStatus('Speech recognition is not available in this browser. Use text mode or Chrome/Edge.', 'error');
+        silenceBotSpeech();
+        state.micInterim = '';
+        state.micFinal = '';
+        setStatus('');
+        setMicHint('Getting microphone ready…');
+
+        const ok = await ensureMicAccess();
+        if (!ok) {
+            setMicHint('');
             return;
         }
+
+        // Brief settle so echoCancellation and cancelled TTS do not eat the first words.
+        await new Promise((r) => setTimeout(r, 320));
+        if (state.loading || state.ended) {
+            releaseMicStream();
+            return;
+        }
+
+        const rec = getSpeechRecognition();
+        if (!rec) {
+            releaseMicStream();
+            setStatus('Speech recognition is not available in this browser. Use text mode or Chrome/Edge.', 'error');
+            setMicHint('');
+            return;
+        }
+
         state.recognition = rec;
         state.listening = true;
         render();
+        setMicHint('Listening… speak clearly in English');
+
         rec.onresult = (ev) => {
-            let best = '';
             try {
-                const res = ev.results[0];
-                best = (res[0] && res[0].transcript) || '';
-                // Prefer an alternative that keeps Polish letters / mixed wording when available
-                for (let i = 0; i < res.length; i++) {
-                    const alt = (res[i] && res[i].transcript) || '';
-                    if (hasPolishContent(alt) || looksMixedPolishEnglish(alt)) {
-                        best = alt;
-                        break;
+                for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                    const res = ev.results[i];
+                    const text = pickBestTranscript(res);
+                    if (!text) continue;
+                    if (res.isFinal) {
+                        state.micFinal = (state.micFinal ? state.micFinal + ' ' : '') + text;
+                        setMicHint('Heard: ' + state.micFinal.trim());
+                    } else {
+                        state.micInterim = text;
+                        setMicHint('Listening… ' + text);
                     }
                 }
             } catch { /* */ }
+        };
+
+        rec.onerror = (ev) => {
+            const code = ev && ev.error;
+            // aborted / no-speech: onend will submit any transcript or show a friendly empty message.
+            if (code === 'aborted' || code === 'no-speech') return;
             state.listening = false;
-            if (best.trim()) {
-                submitMessage(best.trim());
+            releaseMicStream();
+            if (micStopTimer) {
+                clearTimeout(micStopTimer);
+                micStopTimer = null;
+            }
+            render();
+            if (code === 'not-allowed' || code === 'service-not-allowed') {
+                setStatus('Microphone blocked — allow mic access for this site, then try again.', 'error');
+            } else if (code === 'audio-capture') {
+                setStatus('Cannot capture audio — check that another app is not locking the mic.', 'error');
+            } else if (code === 'network') {
+                setStatus('Speech needs a network connection in this browser. Try again or type.', 'error');
+            } else {
+                setStatus('Mic error — try Say it again, or type your answer.', 'error');
+            }
+            setMicHint('');
+        };
+
+        rec.onend = () => {
+            if (micStopTimer) {
+                clearTimeout(micStopTimer);
+                micStopTimer = null;
+            }
+            state.listening = false;
+            releaseMicStream();
+            const text = (state.micFinal || state.micInterim || '').trim();
+            state.micFinal = '';
+            state.micInterim = '';
+            if (text) {
+                submitMessage(text);
             } else {
                 render();
-                setStatus('Did not catch that — try again, or type Polish + English.', 'error');
+                setStatus('Did not catch that — try Say it again a little louder, or type.', 'error');
+                setMicHint('');
             }
         };
-        rec.onerror = () => {
-            state.listening = false;
-            render();
-            setStatus('Mic error — try again or type your answer.', 'error');
-        };
-        rec.onend = () => {
-            state.listening = false;
-        };
+
         try {
             rec.start();
+            // Safety stop so continuous/slow browsers do not hang forever.
+            micStopTimer = setTimeout(() => {
+                micStopTimer = null;
+                try { if (state.listening && state.recognition) state.recognition.stop(); } catch { /* */ }
+            }, 9000);
         } catch {
             state.listening = false;
+            releaseMicStream();
             render();
-            setStatus('Could not start the mic.', 'error');
+            setStatus('Could not start the mic. Try again or type your answer.', 'error');
+            setMicHint('');
         }
     }
 
