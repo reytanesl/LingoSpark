@@ -26,32 +26,32 @@
         {
             id: 'starter',
             label: 'Starter',
-            hint: 'Ultra-short — one word or yes/no, heavy modelling',
-            guide: 'STARTER: Use the simplest English possible. Prefer pointing, echo, and yes/no. Model the exact words the student can copy. One tiny question only.'
+            hint: 'Ultra-short — one word answers, heavy modelling',
+            guide: 'STARTER: Use the simplest English possible. Ask for ONE concrete word (a noun from the vocab) — e.g. "What is this?" / "Who is this?" / "pizza or pasta?". Model the exact word they can copy. Avoid yes/no-only questions. One tiny question only.'
         },
         {
             id: 'beginner',
             label: 'Beginner',
-            hint: 'Copy-friendly phrases and yes/no answers',
-            guide: 'BEGINNER: Short modelled phrases. Lots of yes/no and finish-the-sentence. Celebrate every attempt.'
+            hint: 'Copy-friendly phrases and one-word answers',
+            guide: 'BEGINNER: Short modelled phrases. Prefer What/Who/Where/How many questions that need a word or short phrase. Finish-the-sentence is OK. Rare yes/no only as a warm-up — then ask for a real word. Celebrate every attempt.'
         },
         {
             id: 'very_easy',
             label: 'Very easy',
             hint: 'Short answers with a model phrase',
-            guide: 'VERY EASY: Prefer yes/no or one-word answers. Model a short phrase the student can copy. Celebrate every attempt.'
+            guide: 'VERY EASY: Prefer one-word or short-phrase answers (not yes/no chains). Use What/Who/Where/colour/choice-of-two-words. Model a short phrase the student can copy. Celebrate every attempt.'
         },
         {
             id: 'easy',
             label: 'Easy',
             hint: 'Short answers using grammar + one vocab word',
-            guide: 'EASY: Ask for short answers that use the target grammar and one vocab word. Offer a starter phrase if they struggle.'
+            guide: 'EASY: Ask for short answers that use the target grammar and one vocab word (What/Who/Where/Why-simple). Offer a starter phrase if they struggle. Do not rely on yes/no.'
         },
         {
             id: 'normal',
             label: 'Normal',
             hint: 'Short PE sentences, still kind and scaffolded',
-            guide: 'NORMAL: Ask for a full short sentence with grammar + vocab. Still kind and scaffolded — never jump to exam difficulty.'
+            guide: 'NORMAL: Ask for a full short sentence with grammar + vocab. Still kind and scaffolded — never jump to exam difficulty. Prefer open questions over yes/no.'
         }
     ];
 
@@ -116,10 +116,10 @@
     ];
 
     const OPENING_STYLES = [
-        'Start with a short hello and one easy yes/no question that needs a word answer (Yes / No or a short phrase).',
-        'Start by sharing one tiny fact about yourself, then ask a matching question.',
-        'Start by pointing at something imaginary in the scene and asking about it.',
-        'Start with "Look!" / "Wow!" energy, then ask a very easy question.',
+        'Start with a short hello and one easy open question that needs a word (What/Who/Where), not yes/no.',
+        'Start by sharing one tiny fact about yourself, then ask a matching open question that needs a word or short phrase.',
+        'Start by pointing at something imaginary in the scene and asking what/who it is.',
+        'Start with "Look!" / "Wow!" energy, then ask a very easy What/Who/Where question.',
         'Start by offering a simple choice with TWO WORDS (never letters), e.g. "pizza or pasta?", then wait for the student to say the word.'
     ];
 
@@ -678,6 +678,8 @@ YOUR JOB:
 - Default language: simple English. Do not lecture. Do not dump grammar rules.
 - After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
 - Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
+- OPEN QUESTIONS (critical): Do NOT run a conversation of mostly yes/no questions. Prefer questions that need a real word or short phrase — What / Who / Where / How many / What colour / choice of two words (e.g. "dog or cat?"). At most one yes/no in a long stretch; the next turn must ask for a vocab word or short phrase. Never stack yes/no questions.
+- NO EMOJIS in your reply text (speech cannot read them usefully; keep replies plain words).
 - WORDS ONLY (critical): Students must answer by saying or typing real words / short phrases — never only a letter like A, B, C or D. Do NOT offer multiple-choice letter options (never "A) … B) …"). If you give a choice, name the options as words (e.g. "pizza or pasta?"). If the student answers with only a letter, kindly ask them to say or type the full word instead. Do not treat a lone letter as a successful answer.
 - POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help. Polish is for reading only — speech/audio will speak English only.
 - MIXED POLISH + ENGLISH (important): Students may answer with a mix (e.g. "I lubię pizza" or "Mam a dog"). Accept the meaning kindly. Then RETELL their whole idea as one short, correct English sentence for them to repeat. Shape: "Nice! In English we say: I like pizza. Can you say that?" Put that English sentence in englishRetell and set askRepeat=true. Do not scold. After they can try the English line, continue the conversation.
@@ -694,10 +696,19 @@ Return ONLY JSON for each turn.`;
             .join('\n');
     }
 
-    /** Keep Polish on screen, but never send it to TTS. */
+    /** Keep Polish on screen, but never send it to TTS. Strip emojis so they are never spoken. */
     function englishForSpeech(text) {
         let t = String(text || '').trim();
         if (!t) return '';
+
+        // Never read emojis / pictographs aloud.
+        try {
+            t = t.replace(/\p{Extended_Pictographic}/gu, ' ');
+        } catch {
+            t = t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ');
+        }
+        t = t.replace(/[\u{1F1E6}-\u{1F1FF}]/gu, ' '); // flag pairs
+        t = t.replace(/:[a-z0-9_+-]+:/gi, ' '); // :smile: style
 
         // Drop explicit Polish-help blocks; keep the English that follows.
         t = t.replace(/po\s*polsku\s*[:\-–]?\s*/gi, '«PL»');
@@ -1119,8 +1130,9 @@ The conversation is just beginning. ${pictureOpen}
 Follow the opening style. Invite the target grammar and weave in one vocab word (try "${focusWord}" or another from the list).
 Do not explain the task. Do not start with the same generic "Hi! How are you?" every time — make this opening feel fresh for session ${state.sessionId}.
 Never offer letter choices (A/B/C). If you offer a choice, use real words the student must say or type.
+Do NOT open with a yes/no question — ask What/Who/Where or a two-word choice so the student must say a real word. No emojis.
 
-Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: Yes, I am." ).
+Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: a dog" or "Try: I like pizza." ).
 
 Return ONLY JSON:
 {"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"short tip","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
@@ -1203,6 +1215,8 @@ ${supportBit}
 Respond to the student's latest message.
 - Keep practising grammar + vocab; vary your questions so the chat does not feel repetitive.
 - Always expect WORD answers (spoken or typed) — never letter choices A/B/C/D.
+- Prefer open questions (What/Who/Where/How many/two-word choice). Do not follow up with another yes/no if the last question was yes/no.
+- No emojis in reply.
 - If they did well with grammar and a vocab word (in English), set stepSuccess=true (we may raise difficulty next).
 - usedGrammar: true if their turn used (or clearly attempted) the target grammar in English, or their meaning clearly aimed at it.
 - usedVocab: list of target vocab words they used (English forms; subset of the list).
