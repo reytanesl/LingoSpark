@@ -24,6 +24,7 @@
     <script src="pe-topic-challenge-banks.js"></script>
     <script src="pe-topic-challenge-hotspots.js"></script>
     <script src="pe-topic-challenge.js"></script>
+    <script src="pe-review-chat.js"></script>
     <script src="test-countdown.js"></script>
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="live-game-client.js" defer></script>
@@ -2344,6 +2345,7 @@
                 <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Creator mode also has to be (am / is / are), and / or, question words, and . or ?. Ages 10–12 add play/do/go collocations, daily routines, parts of the day, and telling the time. Fill the gaps: drag tiles into blanks. When you choose singular or plural, the plural form is shown and spoken. Persons: I, You, We, They, He, She. Things are grouped (food, furniture, school…). Line Up: drag pictured tiles onto numbered boxes. Switch EN | PL for help. Signed-in players collect each correct sentence in a Colour Blocks set.</p></div>
                 <div class="guide-item"><strong>Vocab Scenes</strong><p>24 interactive classroom scenes (school, home, food, free time, clothes, weather, town, animals, routines, time). Hover or tap objects to see and hear English words; quiz mode hides labels. Opens in a new tab — free to play.</p></div>
                 <div class="guide-item"><strong>Topic Challenge</strong><p>Premium practice on class topics with real scene pictures. Picture mode is Spot &amp; Say (circle → question about that thing). Also switch Tiles / Transform when they fit the selected grammar. Optional speaking (Hear model + mic or “I said it”). Near-miss picture answers can be re-checked by AI; Ask why explains after a wrong attempt.</p></div>
+                <div class="guide-item"><strong>Review Chatbot</strong><p>Premium live chat (text and/or speech). Set age, school year, level, a grammar point, and vocabulary from a topic pack or your own list. The partner starts very easy and steps up gently; End session for a short coach note.</p></div>
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
@@ -2524,7 +2526,7 @@
                 <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                     <span>
                         <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">Dictation, Colour Blocks, Vocab Scenes, Topic Challenge + AI writing games — choose A2 or B1 for AI games</span>
+                        <span class="pe-pack-meta">Dictation, Colour Blocks, Vocab Scenes, Topic Challenge, Review Chatbot + AI writing games — choose A2 or B1 for AI games</span>
                     </span>
                     <i class="fa-solid fa-chevron-down chevron"></i>
                 </button>
@@ -2545,6 +2547,7 @@
                     <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-image"></i></div><h2>Vocab Scenes</h2><p>Explore 24 classroom scenes — hover or tap objects to learn words, quiz yourself, and hear pronunciation.</p><a href="vocab-scenes.html" target="_blank" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-layer-group"></i></div><h2>Topic Challenge</h2><p>Scene pictures plus tiles, text and transforms on school topics — write, and optionally speak. Ages 9–11.</p><a href="#/setup/pe-topic" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Review Chatbot</h2><p>Live text or speech chat that practises a grammar point plus topic or custom vocabulary — starts easy to build confidence.</p><a href="#/setup/pe-review" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
@@ -2755,6 +2758,78 @@
                     <span><i class="fa-solid fa-microphone"></i> Also practise speaking</span>
                 </label>
                 <p style="font-size:0.8rem; color:var(--text-muted); margin:0.35rem 0 0;">Modes appear as tabs after you launch — Picture is Spot &amp; Say; Tiles / Transform only when they match the grammar.</p>
+            </div>
+
+            <div id="review-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
+                <label style="color: #0e7490;"><i class="fa-solid fa-comments"></i> Review Chatbot</label>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Set age, school year, level, grammar and vocabulary (topic pack or your own list). The chatbot starts with a very easy conversation and steps up gently. Text, speech, or both. Writing Suite access required.</p>
+            </div>
+
+            <div class="form-group" id="pe-review-settings" style="display: none;">
+                <label><i class="fa-solid fa-child"></i> Age:</label>
+                <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-age" value="young" checked> 8–9 years</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-age" value="older"> 10–12 years</label>
+                </div>
+
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-school"></i> Class (school year / klasa):</label>
+                <select id="review-setup-year" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
+                    <option value="1">Klasa 1</option>
+                    <option value="2">Klasa 2</option>
+                    <option value="3">Klasa 3</option>
+                    <option value="4" selected>Klasa 4</option>
+                    <option value="5">Klasa 5</option>
+                    <option value="6">Klasa 6</option>
+                    <option value="7">Klasa 7</option>
+                    <option value="8">Klasa 8</option>
+                </select>
+
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-signal"></i> Level:</label>
+                <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-level" value="beginner"> Beginner (klasy 1–3 feel)</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-level" value="a1" checked> A1</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-level" value="a2"> A2</label>
+                </div>
+
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-language"></i> Grammar point:</label>
+                <select id="review-setup-grammar" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
+                    <option value="be">to be</option>
+                    <option value="have_got">have got</option>
+                    <option value="can">can / can't</option>
+                    <option value="like">like</option>
+                    <option value="present_simple">Present simple</option>
+                    <option value="negatives">Negatives</option>
+                    <option value="questions">Questions</option>
+                </select>
+
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-book-open"></i> Vocabulary:</label>
+                <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-vocab-mode" value="topic" checked onchange="if(window.PEReviewChat)PEReviewChat.syncVocabModeUi()"> Topic pack</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-vocab-mode" value="custom" onchange="if(window.PEReviewChat)PEReviewChat.syncVocabModeUi()"> Custom word list</label>
+                </div>
+                <div id="review-setup-topic-wrap" style="margin-top:0.55rem;">
+                    <select id="review-setup-topic" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
+                        <option value="school">School</option>
+                        <option value="family_home">Family &amp; home</option>
+                        <option value="food">Food</option>
+                        <option value="free_time">Free time</option>
+                        <option value="clothes_weather">Clothes &amp; weather</option>
+                        <option value="town">Town</option>
+                        <option value="animals">Animals</option>
+                        <option value="routines">Routines</option>
+                        <option value="time">Time</option>
+                    </select>
+                </div>
+                <div id="review-setup-custom-wrap" style="display:none; margin-top:0.55rem;">
+                    <textarea id="review-setup-custom" rows="5" placeholder="One word or phrase per line (or Term = Meaning). At least 4 items." style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:0.95rem; box-sizing:border-box;"></textarea>
+                </div>
+
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-keyboard"></i> Input mode:</label>
+                <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-mode" value="text" checked> Text</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-mode" value="speech"> Speech</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-mode" value="both"> Text and speech</label>
+                </div>
             </div>
 
             <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
@@ -3404,6 +3479,28 @@
             <div id="topic-challenge-root"></div>
         </div>
 
+        <!-- PRIMARY ENGLISH: REVIEW CHATBOT -->
+        <div id="screen-pe-review" class="screen engine-container">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <span class="pe-points">Points: <span id="pe-points-review">0</span></span>
+            </div>
+            <div class="game-header">
+                <h2>Review Chatbot <span class="pe-level-badge">PE</span></h2>
+                <button class="btn btn-outline" onclick="initPeReview()" id="pe-review-btn">New chat <i class="fa-solid fa-rotate"></i></button>
+            </div>
+            <div class="pe-instr">
+                <div class="pe-instr-head">
+                    <strong>Instructions</strong>
+                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                </div>
+                <div class="pe-instr-en">Chat with a friendly partner about your grammar and vocabulary. The chat starts very easy and gets a little harder when you do well. Use text, speech (mic), or both. Press End session for a short coach note.</div>
+                <div class="pe-instr-pl">Rozmawiaj z przyjaznym partnerem, ćwicząc gramatykę i słownictwo. Czat zaczyna się bardzo łatwo i trochę się utrudnia, gdy Ci idzie. Pisz, mów (mikrofon) albo jedno i drugie. Zakończ sesję, żeby dostać krótką notatkę od trenera.</div>
+            </div>
+            <div id="review-chat-root"></div>
+            <div id="review-status" class="feedback"></div>
+        </div>
+
         <!-- CORE VOCAB: BOMB DEFUSAL -->
         <div id="screen-bomb" class="screen engine-container">
             <div class="top-bar">
@@ -3982,8 +4079,8 @@
 
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
-        const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring', 'pe-topic']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic']);
+        const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring', 'pe-topic', 'pe-review']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
         const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown']);
 
@@ -4205,6 +4302,7 @@
                         if (arg === 'pe-dictation') initPeDictation();
                         if (arg === 'pe-colour') initColourBlocks();
                         if (arg === 'pe-topic') initTopicChallenge();
+                        if (arg === 'pe-review') initPeReview();
                     }
                 } else {
                     showScreen('home');
@@ -5110,7 +5208,7 @@
                     html += '<div class="progress-grid">';
                     const gameNames = {
                         flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
-                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
                     };
@@ -5146,7 +5244,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -5312,7 +5410,7 @@
         }
 
         async function goToPeGame(gameType) {
-            if (gameType === 'pe-topic') {
+            if (gameType === 'pe-topic' || gameType === 'pe-review') {
                 await goToWritingSetup(gameType);
                 return;
             }
@@ -5804,7 +5902,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -5824,6 +5922,11 @@
             if (peTopicSettings) peTopicSettings.style.display = (gameType === 'pe-topic') ? 'block' : 'none';
             const topicSetupNote = document.getElementById('topic-setup-note');
             if (topicSetupNote) topicSetupNote.style.display = (gameType === 'pe-topic') ? 'block' : 'none';
+            const peReviewSettings = document.getElementById('pe-review-settings');
+            if (peReviewSettings) peReviewSettings.style.display = (gameType === 'pe-review') ? 'block' : 'none';
+            const reviewSetupNote = document.getElementById('review-setup-note');
+            if (reviewSetupNote) reviewSetupNote.style.display = (gameType === 'pe-review') ? 'block' : 'none';
+            if (gameType === 'pe-review' && window.PEReviewChat) PEReviewChat.syncVocabModeUi();
             document.getElementById('frank-setup-note').style.display = (gameType === 'frank') ? 'block' : 'none';
             document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType) && gameType !== 'frank') ? 'block' : 'none';
 
@@ -5839,6 +5942,9 @@
             }
             if (gameType === 'pe-topic') {
                 document.getElementById('setup-title').innerText = 'Topic Challenge Setup';
+            }
+            if (gameType === 'pe-review') {
+                document.getElementById('setup-title').innerText = 'Review Chatbot Setup';
             }
             if (gameType === 'frank') {
                 document.getElementById('setup-title').innerText = 'Frankenstein Builder';
@@ -5949,6 +6055,14 @@
                 if (!resolveSelectedMission()) return;
             }
 
+            if (activeGame === 'pe-review') {
+                const reviewErr = typeof validatePeReviewSetup === 'function' ? validatePeReviewSetup() : null;
+                if (reviewErr) {
+                    appAlert(reviewErr);
+                    return;
+                }
+            }
+
             if (activeGame === 'test-countdown') {
                 if (window.TestCountdown) TestCountdown.buildPlanFromSetup();
                 return;
@@ -5979,6 +6093,7 @@
             if(activeGame === 'pe-dictation') initPeDictation();
             if(activeGame === 'pe-colour') initColourBlocks();
             if(activeGame === 'pe-topic') initTopicChallenge();
+            if(activeGame === 'pe-review') initPeReview();
         }
 
         function toggleLoading(prefix, isLoading) {
@@ -8506,7 +8621,7 @@ Return ONLY JSON:
         // ==========================================
         // PRIMARY ENGLISH PACK (AI)
         // ==========================================
-        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0, colour: 0, line: 0, topic: 0 };
+        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0, colour: 0, line: 0, topic: 0, review: 0 };
         let peBoringTask = null;
         let peDetailTask = null;
         let peLinkTask = null;
