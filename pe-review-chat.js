@@ -1,7 +1,7 @@
 /**
  * Review Chatbot — Primary English (Writing Suite / premium).
- * Easy-first live conversation practising a grammar point + vocab (topic pack or custom list).
- * Text and/or speech mode; reuses Mission Chat AI loop + Topic Challenge mic/TTS patterns.
+ * Teaching chatbot: practises one grammar point + vocab through short, level-fit conversation.
+ * Text and/or speech; Mission-style AI loop + Topic Challenge mic/TTS patterns.
  */
 (function (global) {
     'use strict';
@@ -10,6 +10,7 @@
     const POINTS_KEY = 'review';
     const MIN_CUSTOM = 4;
     const MAX_VOCAB = 14;
+    const HISTORY_TURNS = 6; // last N student+bot messages kept in the AI prompt (speed)
 
     const STOP = new Set([
         'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
@@ -26,32 +27,37 @@
         {
             id: 'starter',
             label: 'Starter',
-            hint: 'Tiny sentences with heavy modelling',
-            guide: 'STARTER: Ask questions that invite a tiny full sentence, then MODEL it to copy (e.g. "Tell me: This is my mum." / "Say: I like pizza."). Accept one word at first, then gently stretch to a short sentence. Avoid yes/no-only and avoid "A or B" choice questions as the main pattern. One clear ask at a time.'
+            hint: 'Very short bot lines; heavy modelling',
+            maxWords: 10,
+            guide: 'STARTER: YOUR reply max ~10 words. Teach by modelling one tiny sentence, then ask the student to copy or change one word. Example: "This is my mum. Your turn: This is my…" One ask only. No lectures.'
         },
         {
             id: 'beginner',
             label: 'Beginner',
-            hint: 'Copy-friendly short sentences',
-            guide: 'BEGINNER: Prefer questions that need a short full sentence with the target grammar (Who is …? What do you like? Where is …?). Give a model starter if needed ("Try: My brother is tall."). Finish-the-sentence is OK. Do not rely on picking between two words. Celebrate every attempt.'
+            hint: 'Short bot lines; copy-friendly sentences',
+            maxWords: 14,
+            guide: 'BEGINNER: YOUR reply max ~14 words. Model a short sentence with the grammar, then ask for a similar sentence. Give a frame if needed ("Try: My brother is tall."). Keep words very simple.'
         },
         {
             id: 'very_easy',
             label: 'Very easy',
-            hint: 'Short full-sentence answers with a model',
-            guide: 'VERY EASY: Ask for a short full sentence (not just one word, not yes/no, not "pizza or pasta?"). Use What/Who/Where/Tell me about… Model one sentence they can copy, then ask them to make their own. Celebrate every attempt.'
+            hint: 'Short clear teaching turns',
+            maxWords: 18,
+            guide: 'VERY EASY: YOUR reply max ~18 words. Teach the grammar + one vocab word in a short chat turn. Model if stuck. Prefer What/Who/Where that need a short full sentence.'
         },
         {
             id: 'easy',
             label: 'Easy',
-            hint: 'Full short sentences with grammar + vocab',
-            guide: 'EASY: Expect a full short sentence that uses the target grammar and at least one vocab word. Offer a sentence frame only if they struggle. Do not rely on yes/no or two-option word choices.'
+            hint: 'Short sentences; light scaffolding',
+            maxWords: 22,
+            guide: 'EASY: YOUR reply max ~22 words. Ask for a short full sentence with grammar + one vocab word. Scaffold only when they struggle. Still simple PE English.'
         },
         {
             id: 'normal',
             label: 'Normal',
-            hint: 'Natural short PE sentences',
-            guide: 'NORMAL: Ask for a full short sentence (or two) with grammar + vocab in natural chat. Still kind and scaffolded — never jump to exam difficulty. Prefer open sentence-building questions over yes/no or either/or choices.'
+            hint: 'Natural short PE teaching chat',
+            maxWords: 28,
+            guide: 'NORMAL: YOUR reply max ~28 words. Natural short PE chat that still teaches grammar + vocab. Never long, never exam-hard.'
         }
     ];
 
@@ -116,11 +122,11 @@
     ];
 
     const OPENING_STYLES = [
-        'Start with a short hello and one easy open question that needs a short full sentence (What/Who/Where/Tell me…), not yes/no and not A-or-B.',
-        'Start by sharing one tiny fact about yourself in a full sentence, then ask a matching question that needs a short sentence back.',
-        'Start by pointing at something in the scene and asking the student to say a short sentence about it (model if needed).',
-        'Start with "Look!" / "Wow!" energy, then ask a very easy sentence-building question (e.g. "Who is this? Try: This is my mum.").',
-        'Start by modelling one short sentence with the target grammar, then invite the student to make a similar sentence about themselves or the scene.'
+        'Open by modelling one short teaching sentence with the target grammar, then ask the student to make a similar sentence.',
+        'Open with a warm hello + one short model + one open question that needs a short full sentence.',
+        'Open by pointing at the scene (or an everyday topic) and modelling a tiny sentence; invite the student to copy/change it.',
+        'Open with one vocab word in a short modelled sentence, then ask for the student\'s sentence.',
+        'Open as a patient coach: show the pattern once, then ask "Your turn" with a clear frame.'
     ];
 
     const VOICE_STORAGE_KEY = 'ls_review_voice';
@@ -261,17 +267,8 @@
     function runInstructionsPromptBlock() {
         const brief = sanitizeRunInstructions(state.runInstructions);
         if (!brief) return '';
-        const profile = classProfile(state.schoolYear);
-        const ease = easeInfo(currentEaseIndex());
-        return `SESSION BRIEF (follow this focus for the whole chat):
-"${brief}"
-
-How to honour the brief (critical):
-- Steer the conversation toward this focus through natural play-talk, mini-stories, and open questions — as if chatting with a friend, NOT running a grammar worksheet or lesson plan.
-- Match klasa ${state.schoolYear} (${profile.band}) and ease "${ease.label}": same focus, simpler words and shorter lines when ease is lower.
-- Weave in the target grammar and vocab list above; if the brief names a different angle (e.g. possessive pronouns while grammar is "to be"), blend them smoothly in context.
-- Never say "today we will practise…", "your task is…", or read the brief aloud to the student.
-- If the brief conflicts with the picture scene, use the picture as the setting and the brief as the language focus.`;
+        return `SESSION FOCUS: ${brief}
+Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease "${easeInfo(currentEaseIndex()).label}". Do not announce the brief.`;
     }
 
     function classProfile(year) {
@@ -541,7 +538,7 @@ How to honour the brief (critical):
         if (state.sceneSrc) {
             return {
                 setting: `looking at the picture (${state.sceneId || 'scene'}) together`,
-                vibe: 'curious picture partner',
+                vibe: 'curious picture coach',
                 topics: [state.topicId]
             };
         }
@@ -675,65 +672,57 @@ How to honour the brief (critical):
     }
 
     function buildSystemRules() {
-        const ageBand = state.age === 'young' ? '8–9 years old' : '10–12 years old';
+        const ageBand = state.age === 'young' ? '8–9' : '10–12';
         const gLabel = grammarLabel(state.grammarId);
         const vocab = state.wordList.join(', ');
-        const topicBit = state.vocabMode === 'topic'
-            ? `Topic pack: ${topicLabel(state.topicId)}.`
-            : 'Custom vocabulary list from the teacher/student.';
         const profile = classProfile(state.schoolYear);
         const ease = easeInfo(currentEaseIndex());
         const seed = state.sceneSeed || SCENE_SEEDS[0];
         const opening = state.openingStyle || OPENING_STYLES[0];
+        const topicBit = state.vocabMode === 'topic'
+            ? `Topic: ${topicLabel(state.topicId)}.`
+            : 'Custom vocab list.';
         const topicFocus = state.topicId === 'family'
-            ? 'Stay on FAMILY people and relationships (mum, dad, brother, sister…) — not rooms or furniture.'
+            ? 'Focus: family people (not rooms).'
             : state.topicId === 'home'
-                ? 'Stay on HOME places and objects (kitchen, bedroom, sofa, garden…) — not family members as the main focus.'
-                : `Stay on the ${topicLabel(state.topicId)} topic.`;
+                ? 'Focus: home places/objects (not family names as main focus).'
+                : '';
         const pictureBit = state.sceneSrc
-            ? `PICTURE MODE (critical): A Topic Challenge scene is attached (${state.sceneId || 'scene'}). Base the conversation on what is visible in the picture. Useful labels in the scene: ${(state.sceneLabels || []).slice(0, 18).join(', ') || 'people and objects in the scene'}. Ask about people/things in the picture using the target grammar. Do not invent objects that are clearly not there.`
-            : 'No picture attached — use everyday scenes from the topic.';
+            ? `Picture scene (${state.sceneId || 'scene'}): use what is visible. Labels: ${(state.sceneLabels || []).slice(0, 12).join(', ') || 'scene objects'}.`
+            : '';
         const runBit = runInstructionsPromptBlock();
+        const maxW = ease.maxWords || 18;
 
-        return `You are a friendly Primary English conversation partner for Polish school children.
-Learner: age band ${ageBand}, school year (klasa) ${state.schoolYear} (${profile.band}), ease setting: ${ease.label}.
-Class relevance (critical): ${profile.relevance}
-Vocab range for this class: about ${profile.maxWords} concrete words max — keep the conversation inside that range so it feels relevant for klasa ${state.schoolYear}.
-Ease guide: ${ease.guide}
-Target grammar: ${gLabel} (id: ${state.grammarId}).
-${topicBit}
-${topicFocus}
+        return `You are a Primary English TEACHING chatbot for Polish children.
+TEACH through short conversation: target grammar "${gLabel}" + vocab [${vocab}].
+Learner: age ${ageBand}, klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}.
+${profile.relevance}
+${topicBit} ${topicFocus}
 ${pictureBit}
-${runBit ? runBit + '\n' : ''}Target vocabulary to weave in naturally (order is randomised this session): ${vocab}.
-Input mode: ${state.inputMode} (keep replies short enough to speak aloud).
-Session id: ${state.sessionId || 'new'} — make THIS chat feel unique; do not reuse the same greeting or questions as a generic template.
-Scene for this chat: ${seed.setting}. Your vibe: ${seed.vibe}.
-Opening style for this chat: ${opening}
+${runBit}
+Ease: ${ease.guide}
+Setting: ${seed.setting}. Opening style: ${opening}.
+Mode: ${state.inputMode}.
 
-YOUR JOB:
-- Run a warm, motivating spoken conversation that practises the grammar and vocab.
-- Match klasa ${state.schoolYear}: topics, examples, and vocab must feel relevant for that school year (not too babyish for older classes, not too advanced for younger ones).
-- Randomise the content: vary people, places, objects, and questions each session. Prefer different vocab words from the list over time.
-- Hold the chosen ease level (${ease.label}); only gently enrich if the student is clearly succeeding.
-- Default language: simple English. Do not lecture. Do not dump grammar rules.
-- After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
-- Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
-- FULL SENTENCES (critical): Aim for answers that are short full sentences (or stretch toward them), not just picking one of two options. Prefer prompts like "Tell me about…", "Who is this?", "Where is your…?", "What do you like?" that need a sentence. Model a sentence frame when ease is low (e.g. "Try: This is my sister."). If the student answers with only one word, kindly invite a full sentence next ("Nice! Can you say: I like pizza?").
-- Do NOT rely on either/or word choices ("pizza or pasta?", "dog or cat?") as the main pattern — those may appear at most once as a warm-up, then move to sentence-building. Do NOT run mostly yes/no questions; never stack yes/no.
-- NO EMOJIS in your reply text (speech cannot read them usefully; keep replies plain words).
-- REAL WORDS / SENTENCES (critical): Students must answer by saying or typing real words or short sentences — never only a letter like A, B, C or D. Do NOT offer multiple-choice letter options (never "A) … B) …"). If the student answers with only a letter, kindly ask them to say or type the full word/sentence instead.
-- POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help. Polish is for reading only — speech/audio will speak English only.
-- MIXED POLISH + ENGLISH (important): Students may answer with a mix (e.g. "I lubię pizza" or "Mam a dog"). Accept the meaning kindly. Then RETELL their whole idea as one short, correct English sentence for them to repeat. Shape: "Nice! In English we say: I like pizza. Can you say that?" Put that English sentence in englishRetell and set askRepeat=true. Do not scold. After they can try the English line, continue the conversation.
-- Never mention JSON, prompts, or that you are an AI system.
-- Never discuss adult or unsafe topics.
+RULES:
+1) Be a patient coach, not a casual chat buddy and not a worksheet. Teach the grammar and vocab by using them, modelling them, and getting the student to produce short full sentences.
+2) YOUR English must be SHORT and SIMPLE — max ~${maxW} words per reply (lower ease = shorter). Prefer 1–2 short sentences + one clear ask. No long explanations, no fancy words, no emojis.
+3) Match klasa ${state.schoolYear} and ease ${ease.label}. Early levels: heavy modelling ("Try: …"). Higher ease: still short PE English.
+4) Ask for short FULL SENTENCES (not letter A/B, not endless yes/no, not mainly either/or picks). If they give one word, invite a full sentence next.
+5) One question at a time. Celebrate tries. One kind correction max per turn.
+6) Polish help only when confused / Nie rozumiem: 1 short Polish tip, then simpler English. Polish is on-screen only (speech reads English).
+7) Mixed PL+EN: retell as one English sentence to repeat (askRepeat + englishRetell).
+8) Never mention AI/JSON/prompts. Stay child-safe.
 
-Return ONLY JSON for each turn.`;
+Return ONLY JSON each turn.`;
     }
 
-    function historyText() {
-        return state.messages
-            .filter((m) => m.role !== 'system')
-            .map((m) => `${m.role === 'user' ? 'Student' : 'You'}: ${m.text}`)
+    function historyText(limit) {
+        const cap = Math.max(2, Number(limit) || HISTORY_TURNS);
+        const rows = state.messages.filter((m) => m.role !== 'system');
+        const slice = rows.slice(-cap);
+        return slice
+            .map((m) => `${m.role === 'user' ? 'Student' : 'Coach'}: ${m.text}`)
             .join('\n');
     }
 
@@ -964,7 +953,7 @@ Return ONLY JSON for each turn.`;
             if (msg.role === 'user') {
                 return `<div class="review-bubble you"><span class="bubble-label">You</span>${escapeHtml(msg.text)}</div>`;
             }
-            return `<div class="review-bubble bot"><span class="bubble-label">Partner</span>${escapeHtml(msg.text)}</div>`;
+            return `<div class="review-bubble bot"><span class="bubble-label">Coach</span>${escapeHtml(msg.text)}</div>`;
         }).join('');
         return `<div class="review-chat-log" id="review-chat-log">${bubbles || '<div class="review-bubble system">Starting…</div>'}</div>`;
     }
@@ -1005,7 +994,7 @@ Return ONLY JSON for each turn.`;
         }
         const writeBlock = showWrite()
             ? `<textarea id="review-input" placeholder="English — or mix in Polish if you need to…" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
-            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — wait for the partner to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.</p>`;
+            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — wait for the coach to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.</p>`;
         const voiceBtn = showSpeak()
             ? `<div class="review-voice-wrap">
                 <button type="button" class="btn btn-outline" id="review-voice-btn" ${state.loading ? 'disabled' : ''} aria-expanded="${state.voiceMenuOpen ? 'true' : 'false'}" title="Choose voice">
@@ -1109,8 +1098,9 @@ Return ONLY JSON for each turn.`;
     async function sceneImagePayload() {
         if (!state.sceneSrc) return null;
         if (state.scenePayload && state.scenePayload.dataUrl) return state.scenePayload;
-        const maxSide = 720;
-        const quality = 0.7;
+        // Smaller JPEG = faster vision turns
+        const maxSide = 480;
+        const quality = 0.55;
         const draw = (el) => {
             const nw = el.naturalWidth || el.width;
             const nh = el.naturalHeight || el.height;
@@ -1143,12 +1133,13 @@ Return ONLY JSON for each turn.`;
         }
     }
 
-    async function fetchAi(prompt) {
+    async function fetchAi(prompt, opts) {
         if (typeof global.fetchGenerativeAI !== 'function') {
             return { __error: 'AI unavailable' };
         }
         const images = [];
-        if (state.sceneSrc) {
+        // Vision only when requested (opening with picture) — later turns stay text-only for speed.
+        if (opts && opts.withImage && state.sceneSrc) {
             const scene = await sceneImagePayload();
             if (scene) images.push(scene);
         }
@@ -1165,26 +1156,23 @@ Return ONLY JSON for each turn.`;
         render();
         setStatus('');
 
-        const seed = state.sceneSeed || SCENE_SEEDS[0];
+        const ease = easeInfo(currentEaseIndex());
         const focusWord = state.wordList[0] || 'friend';
         const pictureOpen = state.sceneSrc
-            ? `A picture is attached. Open by pointing at something visible in the picture and asking a very easy question about it (grammar + one vocab word from the labels if possible).`
-            : `Write the FIRST line as the friendly partner in this scene (${seed.setting}, vibe: ${seed.vibe}).`;
+            ? 'A picture is attached this turn only. Point at something visible and teach with a short model + question.'
+            : 'No picture — teach from the topic/scene.';
         const prompt = `${buildSystemRules()}
 
-The conversation is just beginning. ${pictureOpen}
-Follow the opening style. Invite the target grammar and weave in one vocab word (try "${focusWord}" or another from the list).
-Do not explain the task. Do not start with the same generic "Hi! How are you?" every time — make this opening feel fresh for session ${state.sessionId}.
-Never offer letter choices (A/B/C). Do not open with yes/no or an either/or word pick ("pizza or pasta?").
-Open with a question that invites a short full sentence (What/Who/Where/Tell me…); if ease is low, include a model sentence to copy. No emojis.
-${state.runInstructions ? 'If a SESSION BRIEF is set above, open in a natural way that fits that focus — do not announce the brief.' : ''}
-
-Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: This is my mum." or "Try: I like pizza." ).
+START. ${pictureOpen}
+Open as the teaching coach. Use grammar + one vocab word (try "${focusWord}").
+Keep YOUR reply under ~${ease.maxWords || 18} words. Model then ask for a short full sentence. No yes/no opener, no A/B, no emojis.
+${state.runInstructions ? 'Fit the SESSION FOCUS without announcing it.' : ''}
+nudge = short tip like "Try: This is my mum."
 
 Return ONLY JSON:
-{"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"short tip","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
+{"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"Try: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
 
-        const data = await fetchAi(prompt);
+        const data = await fetchAi(prompt, { withImage: !!state.sceneSrc });
         state.loading = false;
 
         if (!data || data.__error || !data.reply) {
@@ -1205,7 +1193,7 @@ Return ONLY JSON:
     async function askForHelp() {
         if (state.loading || state.ended) return;
         if (!state.lastBotReply) {
-            setStatus('Wait for the partner to speak first.', 'error');
+            setStatus('Wait for the coach to speak first.', 'error');
             return;
         }
         return submitMessage('Nie rozumiem', { helpRequest: true });
@@ -1222,9 +1210,9 @@ Return ONLY JSON:
 
         const helpRequest = !!(opts && opts.helpRequest);
         if (!helpRequest && isLetterOnlyAnswer(text)) {
-            setStatus('Say or type the word — not just A or B.', 'error');
+            setStatus('Say or type a short sentence — not just A or B.', 'error');
             const nudge = rootEl()?.querySelector('#review-nudge');
-            if (nudge) nudge.textContent = 'Use a real word or short phrase (e.g. pizza), not a letter.';
+            if (nudge) nudge.textContent = 'Use a short sentence (e.g. I like pizza), not a letter.';
             return;
         }
 
@@ -1234,47 +1222,35 @@ Return ONLY JSON:
         if (input) input.value = '';
         render();
 
+        const ease = easeInfo(currentEaseIndex());
         const needPolish = helpRequest || looksConfused(text);
         const mixed = !needPolish && (looksMixedPolishEnglish(text) || hasPolishContent(text));
         let supportBit = '';
         if (helpRequest) {
-            supportBit = `\nHELP BUTTON: The student tapped "Nie rozumiem". They need help with YOUR LAST line (what it means / what to do). FIRST give a SHORT clear explanation in Polish (1–2 sentences) about that last partner message. THEN immediately switch back to simpler English with an easier practice question or a model answer. Do NOT stay in Polish. Do NOT raise difficulty. Set stepSuccess=false.`;
+            supportBit = 'HELP: Student tapped Nie rozumiem. 1 short Polish tip about your last line, then simpler English + model. stepSuccess=false.';
         } else if (needPolish) {
-            supportBit = `\nThe student seems confused or asked for help. FIRST explain briefly in Polish, THEN switch back to simpler English with a practice prompt.`;
+            supportBit = 'Confused: brief Polish tip, then simpler English practice.';
         } else if (mixed) {
-            supportBit = `\nMIXED / POLISH DETECTED in the student's latest line. Accept their meaning. RETELL the full idea as one short English sentence for them to repeat. Set askRepeat=true and englishRetell to that exact English sentence (no Polish inside englishRetell). In reply, praise briefly then ask them to say the English line.`;
-        } else {
-            supportBit = `\nIf they mix Polish with English or answer partly in Polish, retell their idea in English for them to repeat (askRepeat=true). If they ask for help or say they do not understand, explain briefly in Polish then switch back to English.`;
+            supportBit = 'Mixed PL/EN: retell as one English sentence; askRepeat=true + englishRetell.';
         }
 
         const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
         const prompt = `${buildSystemRules()}
 
-Conversation so far:
-${historyText()}
+Chat (recent):
+${historyText(HISTORY_TURNS)}
 
-Student turns so far: ${state.turns}
-Difficulty step: ${state.difficultyStep} (${difficultyLabel()})
-Vocab already touched: ${state.vocabTouched.join(', ') || 'none'}
-Prefer unused vocab next when natural: ${unusedVocab.slice(0, 6).join(', ') || 'any from the list'}
+Turns: ${state.turns}. Ease now: ${ease.label} (max ~${ease.maxWords || 18} words in YOUR reply).
+Touched vocab: ${state.vocabTouched.join(', ') || 'none'}. Prefer next: ${unusedVocab.slice(0, 5).join(', ') || 'any'}.
 ${supportBit}
 
-Respond to the student's latest message.
-- Keep practising grammar + vocab; vary your questions so the chat does not feel repetitive.
-- Expect spoken/typed real words that build toward FULL short SENTENCES — never letter choices A/B/C/D, and do not keep asking either/or word picks.
-- Prefer open sentence-building questions (What/Who/Where/Tell me about…/What do you like?). If they gave only one word, stretch them gently into a sentence next turn. Do not follow up with another yes/no if the last question was yes/no.
-- No emojis in reply.
-- If they did well with grammar and a vocab word (in English), set stepSuccess=true (we may raise difficulty next).
-- usedGrammar: true if their turn used (or clearly attempted) the target grammar in English, or their meaning clearly aimed at it.
-- usedVocab: list of target vocab words they used (English forms; subset of the list).
-- nudge: one short tip for the UI (not spoken). If askRepeat, nudge should be like: Repeat: I like pizza.
-- englishRetell: the exact English sentence to repeat when askRepeat is true; otherwise "".
-- askRepeat: true when you retold a mixed/Polish answer into English for practice.
+Reply as teaching coach. Keep teaching grammar + vocab with SHORT simple English. Ask for a short full sentence next. No A/B letters, no emoji spam.
+JSON fields: reply, usedGrammar, usedVocab[], nudge, stepSuccess, askRepeat, englishRetell.
 
 Return ONLY JSON:
-{"reply":"...","usedGrammar":true,"usedVocab":["pizza"],"nudge":"Repeat: I like pizza.","stepSuccess":false,"askRepeat":true,"englishRetell":"I like pizza."}`;
+{"reply":"...","usedGrammar":true,"usedVocab":["pizza"],"nudge":"Try: I like pizza.","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
 
-        const data = await fetchAi(prompt);
+        const data = await fetchAi(prompt, { withImage: false });
         state.loading = false;
 
         if (!data || data.__error || !data.reply) {
@@ -1430,28 +1406,17 @@ Return ONLY JSON:
         state.loading = true;
         render();
 
-        const prompt = `You are a supportive Primary English coach for Polish children (klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}).
-Review this short practice chat. Be kind, concrete, and brief. No adult jargon.
-
-Grammar focus: ${grammarLabel(state.grammarId)}
-Vocab focus: ${state.wordList.join(', ')}
-Session brief: ${sanitizeRunInstructions(state.runInstructions) || 'none'}
-Class relevance: ${classProfile(state.schoolYear).relevance}
-Turns: ${state.turns}
-Grammar hits (approx): ${state.grammarHits}
-Vocab touched: ${state.vocabTouched.join(', ') || 'none'}
+        const prompt = `Primary English coach note for klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}. Be brief and kind.
+Grammar: ${grammarLabel(state.grammarId)}. Vocab: ${state.wordList.join(', ')}. Focus: ${sanitizeRunInstructions(state.runInstructions) || 'none'}.
+Turns: ${state.turns}. Grammar hits: ${state.grammarHits}. Vocab touched: ${state.vocabTouched.join(', ') || 'none'}.
 
 Transcript:
-${historyText()}
+${historyText(10)}
 
 Return ONLY JSON:
-{
-  "summary": "2 short encouraging sentences",
-  "strengths": ["2–4 child-friendly strengths"],
-  "improvements": ["2–4 tiny next-step tips"]
-}`;
+{"summary":"2 short encouraging sentences","strengths":["2–4 tips"],"improvements":["2–4 next steps"]}`;
 
-        const data = await fetchAi(prompt);
+        const data = await fetchAi(prompt, { withImage: false });
         state.loading = false;
         state.ended = true;
         state.messages.push({ role: 'system', text: 'Session ended — well done!' });
