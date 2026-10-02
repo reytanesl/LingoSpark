@@ -157,7 +157,11 @@
         lastRepeatLine: '',
         micStream: null,
         micInterim: '',
-        micFinal: ''
+        micFinal: '',
+        sceneSrc: '',
+        sceneId: '',
+        sceneLabels: [],
+        scenePayload: null
     };
 
     let cachedVoices = [];
@@ -189,6 +193,49 @@
     function bankTopicId(topicId) {
         if (topicId === 'family' || topicId === 'home') return 'family_home';
         return topicId;
+    }
+
+    function scenesMap() {
+        return global.PE_TOPIC_CHALLENGE_SCENES || {};
+    }
+
+    function scenesForTopic(topicId) {
+        const map = scenesMap();
+        if (topicId === 'family') {
+            return (map.family_home || []).filter((src) => /family-/i.test(src));
+        }
+        if (topicId === 'home') {
+            return (map.family_home || []).filter((src) => /home-/i.test(src));
+        }
+        return map[bankTopicId(topicId)] || map[topicId] || [];
+    }
+
+    function sceneIdFromSrc(src) {
+        const base = String(src || '').split('/').pop() || '';
+        return base.replace(/\.(png|jpe?g|webp)$/i, '');
+    }
+
+    function sceneTitleFromSrc(src) {
+        const id = sceneIdFromSrc(src);
+        return id.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    function hotspotLabels(sceneId) {
+        const map = global.PE_TOPIC_CHALLENGE_HOTSPOTS || {};
+        const list = map[sceneId] || [];
+        const seen = new Set();
+        const out = [];
+        list.forEach((hs) => {
+            const w = String(hs && hs.w ? hs.w : '').trim().toLowerCase();
+            if (!w || seen.has(w)) return;
+            seen.add(w);
+            out.push(w);
+        });
+        return out;
+    }
+
+    function escapeAttr(str) {
+        return escapeHtml(str).replace(/'/g, '&#39;');
     }
 
     function classProfile(year) {
@@ -232,6 +279,17 @@
                 letter-spacing: 0.4px; color: var(--royal-blue, #012169); margin-bottom: 0.25rem;
             }
             .review-hud-card span { font-size: 0.92rem; color: var(--text-dark, #1f2937); line-height: 1.35; }
+            .review-scene-panel {
+                margin: 0 0 1rem; border: 2px solid var(--border-light, #e5e7eb); border-radius: 12px;
+                overflow: hidden; background: #fff;
+            }
+            .review-scene-panel img {
+                display: block; width: 100%; max-height: 260px; object-fit: contain; background: #eef2f7;
+            }
+            .review-scene-caption {
+                font-size: 0.82rem; color: var(--text-muted, #6b7280); padding: 0.55rem 0.75rem; line-height: 1.35;
+                border-top: 1px solid var(--border-light, #e5e7eb);
+            }
             .review-chat-log {
                 background: #f7f8fb; border: 2px solid var(--border-light, #e5e7eb); border-radius: 12px;
                 padding: 1.1rem; min-height: 260px; max-height: 420px; overflow-y: auto;
@@ -272,6 +330,10 @@
                 border-radius: 0.4rem; font-size: 0.85rem; background: #fff;
             }
             .review-nudge { font-size: 0.88rem; color: var(--text-muted, #6b7280); min-height: 1.2em; text-align: center; }
+            .review-help-btn {
+                border-color: #b45309 !important; color: #9a3412 !important; background: #fff7ed !important;
+            }
+            .review-help-btn:hover:not(:disabled) { background: #ffedd5 !important; }
             .review-feedback {
                 display: none; margin: 0 0 1rem; background: #fff; border: 2px solid var(--royal-blue, #012169);
                 border-radius: 12px; padding: 1.1rem 1.25rem;
@@ -395,13 +457,35 @@
         if (state.topicId === 'family_home') state.topicId = 'family';
         state.inputMode = modeEl ? modeEl.value : 'text';
 
+        const sceneEl = document.getElementById('review-setup-scene');
+        const sceneSrc = state.vocabMode === 'topic' && sceneEl ? String(sceneEl.value || '').trim() : '';
+        const available = scenesForTopic(state.topicId);
+        if (sceneSrc && available.includes(sceneSrc)) {
+            state.sceneSrc = sceneSrc;
+            state.sceneId = sceneIdFromSrc(sceneSrc);
+            state.sceneLabels = hotspotLabels(state.sceneId);
+        } else {
+            state.sceneSrc = '';
+            state.sceneId = '';
+            state.sceneLabels = [];
+            if (sceneEl) sceneEl.value = '';
+        }
+        state.scenePayload = null;
+
         const profile = classProfile(state.schoolYear);
         const maxWords = profile.maxWords;
 
         if (state.vocabMode === 'custom') {
             state.wordList = shuffle(parseCustomList(customEl ? customEl.value : '')).slice(0, maxWords);
         } else {
-            state.wordList = shuffle(vocabFromTopic(state.topicId, state.grammarId, maxWords)).slice(0, maxWords);
+            // Prefer picture hotspot labels when a scene is chosen; fill from topic bank.
+            let words = [];
+            if (state.sceneLabels.length) {
+                words = state.sceneLabels.filter((w) => w && !STOP.has(w) && w.length > 1);
+            }
+            const fromTopic = vocabFromTopic(state.topicId, state.grammarId, maxWords);
+            words = [...new Set(words.concat(fromTopic))];
+            state.wordList = shuffle(words).slice(0, maxWords);
         }
     }
 
@@ -415,6 +499,13 @@
     }
 
     function pickSceneSeed() {
+        if (state.sceneSrc) {
+            return {
+                setting: `looking at the picture (${state.sceneId || 'scene'}) together`,
+                vibe: 'curious picture partner',
+                topics: [state.topicId]
+            };
+        }
         const topic = state.topicId;
         const matched = SCENE_SEEDS.filter((s) => !s.topics || s.topics.includes(topic));
         const pool = matched.length ? matched : SCENE_SEEDS;
@@ -551,6 +642,9 @@
             : state.topicId === 'home'
                 ? 'Stay on HOME places and objects (kitchen, bedroom, sofa, garden…) — not family members as the main focus.'
                 : `Stay on the ${topicLabel(state.topicId)} topic.`;
+        const pictureBit = state.sceneSrc
+            ? `PICTURE MODE (critical): A Topic Challenge scene is attached (${state.sceneId || 'scene'}). Base the conversation on what is visible in the picture. Useful labels in the scene: ${(state.sceneLabels || []).slice(0, 18).join(', ') || 'people and objects in the scene'}. Ask about people/things in the picture using the target grammar. Do not invent objects that are clearly not there.`
+            : 'No picture attached — use everyday scenes from the topic.';
 
         return `You are a friendly Primary English conversation partner for Polish school children.
 Learner: age band ${ageBand}, school year (klasa) ${state.schoolYear} (${profile.band}), ease setting: ${ease.label}.
@@ -560,6 +654,7 @@ Ease guide: ${ease.guide}
 Target grammar: ${gLabel} (id: ${state.grammarId}).
 ${topicBit}
 ${topicFocus}
+${pictureBit}
 Target vocabulary to weave in naturally (order is randomised this session): ${vocab}.
 Input mode: ${state.inputMode} (keep replies short enough to speak aloud).
 Session id: ${state.sessionId || 'new'} — make THIS chat feel unique; do not reuse the same greeting or questions as a generic template.
@@ -777,10 +872,20 @@ Return ONLY JSON for each turn.`;
             ? topicLabel(state.topicId)
             : `Custom (${state.wordList.length})`;
         const profile = classProfile(state.schoolYear);
+        const pic = state.sceneSrc ? ' · picture' : '';
         return `<div class="review-hud">
-            <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarLabel(state.grammarId))} · ${escapeHtml(vocabLabel)}</span></div>
+            <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarLabel(state.grammarId))} · ${escapeHtml(vocabLabel)}${pic}</span></div>
             <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(difficultyLabel())} · ${state.age === 'young' ? '8–9' : '10–12'}</span></div>
             <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length}/${state.wordList.length} vocab · ${escapeHtml(profile.band)}</span></div>
+        </div>`;
+    }
+
+    function renderSceneHtml() {
+        if (!state.sceneSrc) return '';
+        const labels = (state.sceneLabels || []).slice(0, 12).join(', ');
+        return `<div class="review-scene-panel">
+            <img src="${escapeAttr(state.sceneSrc)}" alt="${escapeAttr(sceneTitleFromSrc(state.sceneSrc))}" loading="lazy">
+            <div class="review-scene-caption">Talk about the picture${labels ? ': ' + escapeHtml(labels) : ''}.</div>
         </div>`;
     }
 
@@ -853,6 +958,7 @@ Return ONLY JSON for each turn.`;
                 ${showSpeak() ? `<button type="button" class="btn btn-outline" id="review-mic-btn" ${state.loading ? 'disabled' : ''}><i class="fa-solid fa-microphone"></i> ${state.listening ? 'Listening…' : 'Say it'}</button>` : ''}
                 ${showSpeak() ? `<button type="button" class="btn btn-outline" id="review-hear-btn" ${state.loading || !state.lastBotReply ? 'disabled' : ''}><i class="fa-solid fa-headphones"></i> Hear</button>` : ''}
                 ${voiceBtn}
+                <button type="button" class="btn btn-outline review-help-btn" id="review-help-btn" ${state.loading || !state.lastBotReply ? 'disabled' : ''} title="Poproś o krótkie wyjaśnienie po polsku"><i class="fa-solid fa-circle-question"></i> Nie rozumiem</button>
                 <button type="button" class="btn btn-outline" id="review-end-btn" ${state.loading || state.turns < 1 ? 'disabled' : ''}><i class="fa-solid fa-flag-checkered"></i> End session</button>
             </div>
         </div>`;
@@ -877,6 +983,7 @@ Return ONLY JSON for each turn.`;
             const line = state.lastRepeatLine || state.lastBotReply;
             if (line) speakText(line);
         });
+        root.querySelector('#review-help-btn')?.addEventListener('click', () => askForHelp());
         root.querySelector('#review-end-btn')?.addEventListener('click', () => endSession());
         root.querySelector('#review-restart-btn')?.addEventListener('click', () => initPeReview());
 
@@ -922,6 +1029,7 @@ Return ONLY JSON for each turn.`;
         injectCss();
         root.innerHTML = `<div class="review-wrap">
             ${renderHudHtml()}
+            ${renderSceneHtml()}
             ${renderFeedbackHtml()}
             ${renderChatHtml()}
             ${renderComposeHtml()}
@@ -931,11 +1039,53 @@ Return ONLY JSON for each turn.`;
         bindUi();
     }
 
+    async function sceneImagePayload() {
+        if (!state.sceneSrc) return null;
+        if (state.scenePayload && state.scenePayload.dataUrl) return state.scenePayload;
+        const maxSide = 720;
+        const quality = 0.7;
+        const draw = (el) => {
+            const nw = el.naturalWidth || el.width;
+            const nh = el.naturalHeight || el.height;
+            if (!nw || !nh) return null;
+            const scale = Math.min(1, maxSide / Math.max(nw, nh));
+            const w = Math.max(1, Math.round(nw * scale));
+            const h = Math.max(1, Math.round(nh * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return null;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(el, 0, 0, w, h);
+            return { dataUrl: canvas.toDataURL('image/jpeg', quality), mimeType: 'image/jpeg', width: w, height: h };
+        };
+        try {
+            const el = await new Promise((resolve, reject) => {
+                const i = new Image();
+                i.onload = () => resolve(i);
+                i.onerror = () => reject(new Error('scene load'));
+                i.src = state.sceneSrc;
+            });
+            const payload = draw(el);
+            if (payload) state.scenePayload = payload;
+            return payload;
+        } catch {
+            return null;
+        }
+    }
+
     async function fetchAi(prompt) {
         if (typeof global.fetchGenerativeAI !== 'function') {
             return { __error: 'AI unavailable' };
         }
-        return global.fetchGenerativeAI(prompt);
+        const images = [];
+        if (state.sceneSrc) {
+            const scene = await sceneImagePayload();
+            if (scene) images.push(scene);
+        }
+        return global.fetchGenerativeAI(prompt, images);
     }
 
     function aiErr(data) {
@@ -950,16 +1100,19 @@ Return ONLY JSON for each turn.`;
 
         const seed = state.sceneSeed || SCENE_SEEDS[0];
         const focusWord = state.wordList[0] || 'friend';
+        const pictureOpen = state.sceneSrc
+            ? `A picture is attached. Open by pointing at something visible in the picture and asking a very easy question about it (grammar + one vocab word from the labels if possible).`
+            : `Write the FIRST line as the friendly partner in this scene (${seed.setting}, vibe: ${seed.vibe}).`;
         const prompt = `${buildSystemRules()}
 
-The conversation is just beginning. Write the FIRST line as the friendly partner in this scene (${seed.setting}, vibe: ${seed.vibe}).
+The conversation is just beginning. ${pictureOpen}
 Follow the opening style. Invite the target grammar and weave in one vocab word (try "${focusWord}" or another from the list).
 Do not explain the task. Do not start with the same generic "Hi! How are you?" every time — make this opening feel fresh for session ${state.sessionId}.
 
 Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: Yes, I am." ).
 
 Return ONLY JSON:
-{"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"short tip","stepSuccess":false}`;
+{"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"short tip","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
 
         const data = await fetchAi(prompt);
         state.loading = false;
@@ -979,7 +1132,16 @@ Return ONLY JSON:
         maybeSpeak(data.reply);
     }
 
-    async function submitMessage(rawText) {
+    async function askForHelp() {
+        if (state.loading || state.ended) return;
+        if (!state.lastBotReply) {
+            setStatus('Wait for the partner to speak first.', 'error');
+            return;
+        }
+        return submitMessage('Nie rozumiem', { helpRequest: true });
+    }
+
+    async function submitMessage(rawText, opts) {
         if (state.loading || state.ended) return;
         const input = rootEl()?.querySelector('#review-input');
         const text = (rawText != null ? String(rawText) : (input ? input.value : '')).trim();
@@ -994,10 +1156,13 @@ Return ONLY JSON:
         if (input) input.value = '';
         render();
 
-        const needPolish = looksConfused(text);
-        const mixed = looksMixedPolishEnglish(text) || hasPolishContent(text);
+        const helpRequest = !!(opts && opts.helpRequest);
+        const needPolish = helpRequest || looksConfused(text);
+        const mixed = !needPolish && (looksMixedPolishEnglish(text) || hasPolishContent(text));
         let supportBit = '';
-        if (needPolish) {
+        if (helpRequest) {
+            supportBit = `\nHELP BUTTON: The student tapped "Nie rozumiem". They need help with YOUR LAST line (what it means / what to do). FIRST give a SHORT clear explanation in Polish (1–2 sentences) about that last partner message. THEN immediately switch back to simpler English with an easier practice question or a model answer. Do NOT stay in Polish. Do NOT raise difficulty. Set stepSuccess=false.`;
+        } else if (needPolish) {
             supportBit = `\nThe student seems confused or asked for help. FIRST explain briefly in Polish, THEN switch back to simpler English with a practice prompt.`;
         } else if (mixed) {
             supportBit = `\nMIXED / POLISH DETECTED in the student's latest line. Accept their meaning. RETELL the full idea as one short English sentence for them to repeat. Set askRepeat=true and englishRetell to that exact English sentence (no Polish inside englishRetell). In reply, praise briefly then ask them to say the English line.`;
@@ -1238,6 +1403,7 @@ Return ONLY JSON:
                         grammar: state.grammarId,
                         vocabMode: state.vocabMode,
                         topic: state.topicId,
+                        scene: state.sceneId || null,
                         schoolYear: state.schoolYear,
                         ease: easeInfo(state.ease).id,
                         level: easeInfo(state.ease).id
@@ -1277,6 +1443,41 @@ Return ONLY JSON:
         label.textContent = `${info.label} — ${info.hint}`;
     }
 
+    function syncScenePicker() {
+        const grid = document.getElementById('review-setup-scenes');
+        const hidden = document.getElementById('review-setup-scene');
+        const topicEl = document.getElementById('review-setup-topic');
+        if (!grid) return;
+
+        const topicId = topicEl ? topicEl.value : 'school';
+        const scenes = scenesForTopic(topicId);
+        const current = hidden ? String(hidden.value || '') : '';
+        const stillValid = current && scenes.includes(current);
+        if (hidden && current && !stillValid) hidden.value = '';
+
+        const selected = hidden ? String(hidden.value || '') : '';
+        let html = `<button type="button" class="review-setup-scene-btn${selected ? '' : ' selected'}" data-scene="">
+            <div class="review-setup-scene-none">No picture</div>
+        </button>`;
+        scenes.forEach((src) => {
+            const sel = src === selected ? ' selected' : '';
+            html += `<button type="button" class="review-setup-scene-btn${sel}" data-scene="${escapeAttr(src)}">
+                <img src="${escapeAttr(src)}" alt="${escapeAttr(sceneTitleFromSrc(src))}" loading="lazy">
+                <span>${escapeHtml(sceneTitleFromSrc(src))}</span>
+            </button>`;
+        });
+        grid.innerHTML = html;
+        grid.querySelectorAll('.review-setup-scene-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const src = btn.getAttribute('data-scene') || '';
+                if (hidden) hidden.value = src;
+                grid.querySelectorAll('.review-setup-scene-btn').forEach((b) => {
+                    b.classList.toggle('selected', (b.getAttribute('data-scene') || '') === src);
+                });
+            });
+        });
+    }
+
     function initPeReview() {
         const err = validateSetup();
         if (err) {
@@ -1299,6 +1500,7 @@ Return ONLY JSON:
         state.ended = false;
         state.sessionRecorded = false;
         state.feedback = null;
+        state.scenePayload = null;
         state.sceneSeed = pickSceneSeed();
         state.openingStyle = pickOpeningStyle();
         state.sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1316,15 +1518,21 @@ Return ONLY JSON:
     // Setup helpers for index.html toggles
     function wireSetupListeners() {
         document.querySelectorAll('input[name="review-setup-vocab-mode"]').forEach((el) => {
-            el.addEventListener('change', syncVocabModeUi);
+            el.addEventListener('change', () => {
+                syncVocabModeUi();
+                syncScenePicker();
+            });
         });
         const yearEl = document.getElementById('review-setup-year');
         if (yearEl) yearEl.addEventListener('change', syncClassHint);
         const easeEl = document.getElementById('review-setup-ease');
         if (easeEl) easeEl.addEventListener('input', syncEaseLabel);
+        const topicEl = document.getElementById('review-setup-topic');
+        if (topicEl) topicEl.addEventListener('change', syncScenePicker);
         syncVocabModeUi();
         syncClassHint();
         syncEaseLabel();
+        syncScenePicker();
         if (global.speechSynthesis) {
             refreshVoices();
             if (typeof global.speechSynthesis.addEventListener === 'function') {
@@ -1352,10 +1560,12 @@ Return ONLY JSON:
     global.PEReviewChat = {
         init: initPeReview,
         submit: submitMessage,
+        askHelp: askForHelp,
         end: endSession,
         syncVocabModeUi,
         syncClassHint,
         syncEaseLabel,
-        getState() { return Object.assign({}, state, { wordList: state.wordList.slice() }); }
+        syncScenePicker,
+        getState() { return Object.assign({}, state, { wordList: state.wordList.slice(), sceneLabels: state.sceneLabels.slice() }); }
     };
 })(typeof window !== 'undefined' ? window : globalThis);

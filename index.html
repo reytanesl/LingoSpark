@@ -1724,6 +1724,25 @@
         .pe-pack-toggle.open .chevron { transform: rotate(180deg); color: var(--royal-blue); }
         .pe-pack-grid { display: none; margin-top: 1.25rem; }
         .pe-pack-grid.open { display: grid; }
+        .review-setup-scenes {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.55rem; margin-top: 0.35rem;
+        }
+        .review-setup-scene-btn {
+            appearance: none; border: 2px solid var(--border-light); border-radius: 0.55rem; padding: 0; background: #fff;
+            cursor: pointer; overflow: hidden; text-align: left; transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .review-setup-scene-btn:hover { border-color: var(--royal-blue); }
+        .review-setup-scene-btn.selected {
+            border-color: #0e7490; box-shadow: 0 0 0 2px rgba(14,116,144,0.25);
+        }
+        .review-setup-scene-btn img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #eef2f7; }
+        .review-setup-scene-btn span {
+            display: block; font-size: 0.72rem; padding: 0.35rem 0.4rem; color: var(--text-dark); line-height: 1.25;
+        }
+        .review-setup-scene-none {
+            display: flex; align-items: center; justify-content: center; min-height: 72px;
+            font-size: 0.8rem; font-weight: 600; color: var(--text-muted); padding: 0.5rem; text-align: center;
+        }
         .pe-level-row {
             display: none; margin-top: 1.25rem; padding: 1rem 1.25rem; background: var(--light-grey);
             border-radius: 12px; border-left: 4px solid var(--royal-blue); align-items: center; gap: 0.75rem; flex-wrap: wrap;
@@ -2762,7 +2781,7 @@
 
             <div id="review-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
                 <label style="color: #0e7490;"><i class="fa-solid fa-comments"></i> Review Chatbot</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Set age, school year, ease slider, grammar and vocabulary (topic pack or your own list). Class steers how relevant and how wide the vocab feels. Family and Home are separate topics. If a student does not understand, the partner explains briefly in Polish, then returns to English. Text, speech, or both — choose a natural voice in the chat. Writing Suite access required.</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Set age, school year, ease slider, grammar and vocabulary (topic pack or your own list). Optionally pick a Topic Challenge picture so the chat is about the scene. Class steers how relevant and how wide the vocab feels. Family and Home are separate topics. If a student does not understand, the partner explains briefly in Polish, then returns to English. Text, speech, or both — choose a natural voice in the chat. Writing Suite access required.</p>
             </div>
 
             <div class="form-group" id="pe-review-settings" style="display: none;">
@@ -2811,7 +2830,7 @@
                     <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-vocab-mode" value="custom" onchange="if(window.PEReviewChat)PEReviewChat.syncVocabModeUi()"> Custom word list</label>
                 </div>
                 <div id="review-setup-topic-wrap" style="margin-top:0.55rem;">
-                    <select id="review-setup-topic" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
+                    <select id="review-setup-topic" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;" onchange="if(window.PEReviewChat)PEReviewChat.syncScenePicker()">
                         <option value="school">School</option>
                         <option value="family">Family</option>
                         <option value="home">Home</option>
@@ -2823,6 +2842,10 @@
                         <option value="routines">Routines</option>
                         <option value="time">Time</option>
                     </select>
+                    <label style="margin-top:0.75rem; display:block;"><i class="fa-solid fa-image"></i> Picture from Topic Challenge (optional):</label>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin:0.25rem 0 0.45rem;">Pick a scene so the chat talks about what is in the picture.</p>
+                    <div id="review-setup-scenes" class="review-setup-scenes"></div>
+                    <input type="hidden" id="review-setup-scene" value="">
                 </div>
                 <div id="review-setup-custom-wrap" style="display:none; margin-top:0.55rem;">
                     <textarea id="review-setup-custom" rows="5" placeholder="One word or phrase per line (or Term = Meaning). At least 4 items." style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:0.95rem; box-sizing:border-box;"></textarea>
@@ -3498,8 +3521,8 @@
                     <strong>Instructions</strong>
                     <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                 </div>
-                <div class="pe-instr-en">Chat with a friendly partner about your grammar and vocabulary. Each chat starts in a different scene. You may mix Polish with English if you are stuck — the partner retells your idea in English for you to repeat. If you do not understand, ask for a short Polish tip. Use text, speech (mic), or both. Tap Voice to choose a natural voice; Hear plays the line to practise. Press End session for a short coach note.</div>
-                <div class="pe-instr-pl">Rozmawiaj z przyjaznym partnerem, ćwicząc gramatykę i słownictwo. Każdy czat zaczyna się w innej scence. Możesz mieszać polski z angielskim, gdy brakuje Ci słów — partner powtórzy Twoją myśl po angielsku do powtórzenia. Jeśli nie rozumiesz, poproś o krótką podpowiedź po polsku. Pisz, mów (mikrofon) albo jedno i drugie. Przycisk Voice otwiera wybór naturalnego głosu; Hear odtwarza zdanie do ćwiczenia. Zakończ sesję, żeby dostać krótką notatkę od trenera.</div>
+                <div class="pe-instr-en">Chat with a friendly partner about your grammar and vocabulary. You can choose a Topic Challenge picture in setup — then the chat is about what you see. If you do not understand, tap Nie rozumiem for a short Polish tip, then simpler English. You may mix Polish with English if you are stuck — the partner retells your idea in English for you to repeat. Tap Voice to choose a natural voice; Hear plays English only. Press End session for a short coach note.</div>
+                <div class="pe-instr-pl">Rozmawiaj z przyjaznym partnerem, ćwicząc gramatykę i słownictwo. W ustawieniach możesz wybrać obrazek z Topic Challenge — wtedy rozmowa dotyczy tego, co widać. Jeśli nie rozumiesz, naciśnij Nie rozumiem — dostaniesz krótką podpowiedź po polsku, a potem prostszy angielski. Możesz mieszać polski z angielskim — partner powtórzy Twoją myśl po angielsku. Przycisk Voice otwiera wybór głosu; Hear mówi tylko po angielsku. Zakończ sesję, żeby dostać krótką notatkę.</div>
             </div>
             <div id="review-chat-root"></div>
             <div id="review-status" class="feedback"></div>
@@ -5934,6 +5957,7 @@
                 PEReviewChat.syncVocabModeUi();
                 PEReviewChat.syncClassHint();
                 PEReviewChat.syncEaseLabel();
+                PEReviewChat.syncScenePicker();
             }
             document.getElementById('frank-setup-note').style.display = (gameType === 'frank') ? 'block' : 'none';
             document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType) && gameType !== 'frank') ? 'block' : 'none';
@@ -5957,6 +5981,7 @@
                     PEReviewChat.syncVocabModeUi();
                     PEReviewChat.syncClassHint();
                     PEReviewChat.syncEaseLabel();
+                    PEReviewChat.syncScenePicker();
                 }
             }
             if (gameType === 'frank') {
