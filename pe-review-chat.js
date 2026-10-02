@@ -22,25 +22,97 @@
         'when', 'why', 'how', 'there', 'here', 'very', 'too', 'also', 'just'
     ]);
 
-    const LEVEL_GUIDE = {
-        beginner: 'Very young / early PE (approx. A0–A1). Ultra-short sentences. Lots of yes/no and one-word answers. Model the phrase first.',
-        a1: 'A1 PE. Short questions and answers. Simple present / to be / can / like. Clear models.',
-        a2: 'A2 PE. Slightly longer turns, still simple. Keep vocabulary concrete and school-friendly.'
+    const EASE_STEPS = [
+        {
+            id: 'starter',
+            label: 'Starter',
+            hint: 'Ultra-short — one word or yes/no, heavy modelling',
+            guide: 'STARTER: Use the simplest English possible. Prefer pointing, echo, and yes/no. Model the exact words the student can copy. One tiny question only.'
+        },
+        {
+            id: 'beginner',
+            label: 'Beginner',
+            hint: 'Copy-friendly phrases and yes/no answers',
+            guide: 'BEGINNER: Short modelled phrases. Lots of yes/no and finish-the-sentence. Celebrate every attempt.'
+        },
+        {
+            id: 'very_easy',
+            label: 'Very easy',
+            hint: 'Short answers with a model phrase',
+            guide: 'VERY EASY: Prefer yes/no or one-word answers. Model a short phrase the student can copy. Celebrate every attempt.'
+        },
+        {
+            id: 'easy',
+            label: 'Easy',
+            hint: 'Short answers using grammar + one vocab word',
+            guide: 'EASY: Ask for short answers that use the target grammar and one vocab word. Offer a starter phrase if they struggle.'
+        },
+        {
+            id: 'normal',
+            label: 'Normal',
+            hint: 'Short PE sentences, still kind and scaffolded',
+            guide: 'NORMAL: Ask for a full short sentence with grammar + vocab. Still kind and scaffolded — never jump to exam difficulty.'
+        }
+    ];
+
+    const CLASS_GUIDE = {
+        1: { maxWords: 5, band: 'early starter', relevance: 'Klasa 1: tiny concrete words (family people, toys, colours, school bag). Chat about mummy/daddy, classroom objects, pets — very here-and-now.' },
+        2: { maxWords: 6, band: 'early primary', relevance: 'Klasa 2: simple school and home words. Chat about friends, toys, food likes, classroom routines.' },
+        3: { maxWords: 8, band: 'lower primary', relevance: 'Klasa 3: everyday school life, family, food, free time. Keep topics childlike and concrete.' },
+        4: { maxWords: 10, band: 'mid primary', relevance: 'Klasa 4: school subjects, hobbies, home rooms, town places kids know. Conversation should feel like a real klasa 4 chat.' },
+        5: { maxWords: 11, band: 'mid–upper primary', relevance: 'Klasa 5: slightly wider everyday vocab (routines, clothes, weather, animals). Still primary — no teen slang or abstract essays.' },
+        6: { maxWords: 12, band: 'upper primary', relevance: 'Klasa 6: richer everyday topics (plans, free time, town, routines) but keep language PE-simple and age-fit.' },
+        7: { maxWords: 13, band: 'early lower secondary', relevance: 'Klasa 7: school life, hobbies, home, opinions in very simple English. Stay practical and teenage-primary, not academic.' },
+        8: { maxWords: 14, band: 'lower secondary', relevance: 'Klasa 8: everyday life, school, free time, future plans in short PE sentences. Still concrete — not Matura style.' }
     };
 
+    const REVIEW_TOPIC_LABELS = {
+        school: 'School',
+        family: 'Family',
+        home: 'Home',
+        family_home: 'Family & home',
+        food: 'Food',
+        free_time: 'Free time',
+        clothes_weather: 'Clothes & weather',
+        town: 'Town',
+        animals: 'Animals',
+        routines: 'Routines',
+        time: 'Time'
+    };
+
+    const FAMILY_FOCUS = new Set([
+        'mum', 'mom', 'mother', 'dad', 'father', 'brother', 'sister', 'baby', 'grandma', 'grandmother',
+        'grandpa', 'grandfather', 'family', 'parents', 'cousin', 'uncle', 'aunt', 'child', 'children',
+        'son', 'daughter', 'friend', 'dog', 'cat', 'pet', 'happy', 'tall', 'small'
+    ]);
+    const HOME_FOCUS = new Set([
+        'house', 'home', 'flat', 'apartment', 'room', 'kitchen', 'bedroom', 'bathroom', 'living', 'garden',
+        'sofa', 'table', 'bed', 'door', 'window', 'chair', 'lamp', 'cup', 'cups', 'sink', 'stove', 'fridge',
+        'television', 'tv', 'plant', 'plants', 'upstairs', 'downstairs', 'floor', 'wall', 'cook', 'clean',
+        'wash', 'washes', 'eat', 'sleep', 'watch', 'watching'
+    ]);
+    const FAMILY_SEED = ['mum', 'dad', 'brother', 'sister', 'baby', 'grandma', 'family', 'dog', 'cat', 'happy'];
+    const HOME_SEED = ['house', 'kitchen', 'bedroom', 'sofa', 'table', 'bed', 'door', 'garden', 'window', 'fridge'];
+
     const SCENE_SEEDS = [
-        { setting: 'classroom before the lesson', vibe: 'curious classmate' },
-        { setting: 'school break in the playground', vibe: 'playful friend' },
-        { setting: 'lunch in the school canteen', vibe: 'hungry buddy' },
-        { setting: 'walking home from school', vibe: 'chatty neighbour' },
-        { setting: 'at a birthday party', vibe: 'excited party guest' },
-        { setting: 'in a shop with a parent', vibe: 'helpful shop helper' },
-        { setting: 'at the park after school', vibe: 'sporty friend' },
-        { setting: 'doing homework together online', vibe: 'study buddy' },
-        { setting: 'waiting for the school bus', vibe: 'sleepy morning friend' },
-        { setting: 'in the school library', vibe: 'quiet book friend' },
-        { setting: 'at a sports club', vibe: 'team-mate' },
-        { setting: 'visiting family at the weekend', vibe: 'cousin visiting' }
+        { setting: 'classroom before the lesson', vibe: 'curious classmate', topics: ['school'] },
+        { setting: 'school break in the playground', vibe: 'playful friend', topics: ['school', 'free_time', 'animals'] },
+        { setting: 'lunch in the school canteen', vibe: 'hungry buddy', topics: ['school', 'food'] },
+        { setting: 'walking home from school', vibe: 'chatty neighbour', topics: ['school', 'town', 'routines'] },
+        { setting: 'at a birthday party', vibe: 'excited party guest', topics: ['family', 'food', 'free_time'] },
+        { setting: 'in a shop with a parent', vibe: 'helpful shop helper', topics: ['town', 'food', 'clothes_weather'] },
+        { setting: 'at the park after school', vibe: 'sporty friend', topics: ['free_time', 'animals', 'town'] },
+        { setting: 'doing homework together online', vibe: 'study buddy', topics: ['school', 'routines', 'time'] },
+        { setting: 'waiting for the school bus', vibe: 'sleepy morning friend', topics: ['school', 'routines', 'time', 'town'] },
+        { setting: 'in the school library', vibe: 'quiet book friend', topics: ['school'] },
+        { setting: 'at a sports club', vibe: 'team-mate', topics: ['free_time', 'routines'] },
+        { setting: 'visiting grandparents at the weekend', vibe: 'cousin visiting', topics: ['family'] },
+        { setting: 'talking about brothers and sisters', vibe: 'family friend', topics: ['family'] },
+        { setting: 'showing photos of family', vibe: 'proud classmate', topics: ['family'] },
+        { setting: 'at home in the kitchen', vibe: 'home buddy', topics: ['home', 'food', 'routines'] },
+        { setting: 'tidying a bedroom', vibe: 'helpful flatmate', topics: ['home', 'routines'] },
+        { setting: 'on the sofa after school', vibe: 'relaxed friend', topics: ['home', 'free_time', 'routines'] },
+        { setting: 'in the garden at home', vibe: 'outdoor neighbour', topics: ['home', 'animals'] }
     ];
 
     const OPENING_STYLES = [
@@ -57,7 +129,7 @@
     let state = {
         age: 'young',
         schoolYear: 4,
-        level: 'a1',
+        ease: 2,
         grammarId: 'be',
         vocabMode: 'topic',
         topicId: 'school',
@@ -101,8 +173,28 @@
     }
 
     function topicLabel(id) {
+        if (REVIEW_TOPIC_LABELS[id]) return REVIEW_TOPIC_LABELS[id];
         const row = topics().find((t) => t.id === id);
         return row ? row.label : id;
+    }
+
+    function bankTopicId(topicId) {
+        if (topicId === 'family' || topicId === 'home') return 'family_home';
+        return topicId;
+    }
+
+    function classProfile(year) {
+        const y = Math.max(1, Math.min(8, Number(year) || 4));
+        return CLASS_GUIDE[y] || CLASS_GUIDE[4];
+    }
+
+    function easeInfo(idx) {
+        const i = Math.max(0, Math.min(EASE_STEPS.length - 1, Number(idx) || 0));
+        return EASE_STEPS[i];
+    }
+
+    function currentEaseIndex() {
+        return Math.max(0, Math.min(EASE_STEPS.length - 1, (Number(state.ease) || 0) + (Number(state.difficultyStep) || 0)));
     }
 
     function escapeHtml(str) {
@@ -218,31 +310,62 @@
         return unique;
     }
 
-    function vocabFromTopic(topicId, grammarId) {
-        const rows = bank().filter((r) => r.topic === topicId && (!grammarId || r.grammar === grammarId));
-        const pool = rows.length ? rows : bank().filter((r) => r.topic === topicId);
+    function collectTopicCounts(topicId, grammarId, focusSet) {
+        const bankId = bankTopicId(topicId);
+        const rows = bank().filter((r) => r.topic === bankId && (!grammarId || r.grammar === grammarId));
+        const pool = rows.length ? rows : bank().filter((r) => r.topic === bankId);
         const counts = new Map();
         pool.forEach((row) => {
             (row.tiles || []).forEach((tile) => {
                 const w = String(tile || '').trim().toLowerCase().replace(/[.?!,]/g, '');
                 if (!w || STOP.has(w) || w.length < 2) return;
+                if (focusSet && !focusSet.has(w)) return;
                 counts.set(w, (counts.get(w) || 0) + 1);
             });
             String(row.answer || '').toLowerCase().split(/[^a-z']+/).forEach((w) => {
                 if (!w || STOP.has(w) || w.length < 3) return;
+                if (focusSet && !focusSet.has(w)) return;
                 counts.set(w, (counts.get(w) || 0) + 1);
             });
         });
-        return [...counts.entries()]
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, MAX_VOCAB)
-            .map(([w]) => w);
+        return counts;
+    }
+
+    function vocabFromTopic(topicId, grammarId, maxWords) {
+        const limit = Math.max(4, Math.min(MAX_VOCAB, maxWords || MAX_VOCAB));
+        let focusSet = null;
+        let seed = [];
+        if (topicId === 'family') {
+            focusSet = FAMILY_FOCUS;
+            seed = FAMILY_SEED;
+        } else if (topicId === 'home') {
+            focusSet = HOME_FOCUS;
+            seed = HOME_SEED;
+        }
+
+        let counts = collectTopicCounts(topicId, grammarId, focusSet);
+        let words = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([w]) => w);
+
+        if (focusSet && words.length < 4) {
+            // Softer pass: any family_home content, then keep focus + seed
+            counts = collectTopicCounts(topicId, grammarId, null);
+            const soft = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([w]) => w)
+                .filter((w) => focusSet.has(w));
+            words = [...new Set(soft.concat(seed))];
+        }
+
+        if (!words.length && seed.length) words = seed.slice();
+        if (words.length < 4 && seed.length) {
+            words = [...new Set(words.concat(seed))];
+        }
+
+        return words.slice(0, limit);
     }
 
     function readSetupFromDom() {
         const ageEl = document.querySelector('input[name="review-setup-age"]:checked');
         const yearEl = document.getElementById('review-setup-year');
-        const levelEl = document.querySelector('input[name="review-setup-level"]:checked');
+        const easeEl = document.getElementById('review-setup-ease');
         const gramEl = document.getElementById('review-setup-grammar');
         const vocabModeEl = document.querySelector('input[name="review-setup-vocab-mode"]:checked');
         const topicEl = document.getElementById('review-setup-topic');
@@ -251,16 +374,20 @@
 
         state.age = ageEl ? ageEl.value : 'young';
         state.schoolYear = yearEl ? Math.max(1, Math.min(8, parseInt(yearEl.value, 10) || 4)) : 4;
-        state.level = levelEl ? levelEl.value : 'a1';
+        state.ease = easeEl ? Math.max(0, Math.min(4, parseInt(easeEl.value, 10) || 2)) : 2;
         state.grammarId = gramEl ? gramEl.value : 'be';
         state.vocabMode = vocabModeEl ? vocabModeEl.value : 'topic';
         state.topicId = topicEl ? topicEl.value : 'school';
+        if (state.topicId === 'family_home') state.topicId = 'family';
         state.inputMode = modeEl ? modeEl.value : 'text';
 
+        const profile = classProfile(state.schoolYear);
+        const maxWords = profile.maxWords;
+
         if (state.vocabMode === 'custom') {
-            state.wordList = shuffle(parseCustomList(customEl ? customEl.value : '')).slice(0, MAX_VOCAB);
+            state.wordList = shuffle(parseCustomList(customEl ? customEl.value : '')).slice(0, maxWords);
         } else {
-            state.wordList = shuffle(vocabFromTopic(state.topicId, state.grammarId)).slice(0, MAX_VOCAB);
+            state.wordList = shuffle(vocabFromTopic(state.topicId, state.grammarId, maxWords)).slice(0, maxWords);
         }
     }
 
@@ -274,7 +401,10 @@
     }
 
     function pickSceneSeed() {
-        return SCENE_SEEDS[Math.floor(Math.random() * SCENE_SEEDS.length)];
+        const topic = state.topicId;
+        const matched = SCENE_SEEDS.filter((s) => !s.topics || s.topics.includes(topic));
+        const pool = matched.length ? matched : SCENE_SEEDS;
+        return pool[Math.floor(Math.random() * pool.length)];
     }
 
     function pickOpeningStyle() {
@@ -373,9 +503,7 @@
     }
 
     function difficultyLabel() {
-        if (state.difficultyStep <= 0) return 'Very easy';
-        if (state.difficultyStep === 1) return 'Easy';
-        return 'A little harder';
+        return easeInfo(currentEaseIndex()).label;
     }
 
     function buildSystemRules() {
@@ -385,19 +513,24 @@
         const topicBit = state.vocabMode === 'topic'
             ? `Topic pack: ${topicLabel(state.topicId)}.`
             : 'Custom vocabulary list from the teacher/student.';
-        const stepGuide = state.difficultyStep <= 0
-            ? 'DIFFICULTY: VERY EASY. Prefer yes/no or one-word answers. Model a short phrase the student can copy. Celebrate every attempt.'
-            : state.difficultyStep === 1
-                ? 'DIFFICULTY: EASY. Ask for short answers that use the target grammar and one vocab word. Offer a starter phrase if they struggle.'
-                : 'DIFFICULTY: A LITTLE HARDER. Ask for a full short sentence with grammar + vocab. Still kind and scaffolded — never jump to exam difficulty.';
+        const profile = classProfile(state.schoolYear);
+        const ease = easeInfo(currentEaseIndex());
         const seed = state.sceneSeed || SCENE_SEEDS[0];
         const opening = state.openingStyle || OPENING_STYLES[0];
+        const topicFocus = state.topicId === 'family'
+            ? 'Stay on FAMILY people and relationships (mum, dad, brother, sister…) — not rooms or furniture.'
+            : state.topicId === 'home'
+                ? 'Stay on HOME places and objects (kitchen, bedroom, sofa, garden…) — not family members as the main focus.'
+                : `Stay on the ${topicLabel(state.topicId)} topic.`;
 
         return `You are a friendly Primary English conversation partner for Polish school children.
-Learner: age band ${ageBand}, school year (klasa) ${state.schoolYear}, level ${state.level}.
-Level guide: ${LEVEL_GUIDE[state.level] || LEVEL_GUIDE.a1}
+Learner: age band ${ageBand}, school year (klasa) ${state.schoolYear} (${profile.band}), ease setting: ${ease.label}.
+Class relevance (critical): ${profile.relevance}
+Vocab range for this class: about ${profile.maxWords} concrete words max — keep the conversation inside that range so it feels relevant for klasa ${state.schoolYear}.
+Ease guide: ${ease.guide}
 Target grammar: ${gLabel} (id: ${state.grammarId}).
 ${topicBit}
+${topicFocus}
 Target vocabulary to weave in naturally (order is randomised this session): ${vocab}.
 Input mode: ${state.inputMode} (keep replies short enough to speak aloud).
 Session id: ${state.sessionId || 'new'} — make THIS chat feel unique; do not reuse the same greeting or questions as a generic template.
@@ -406,9 +539,9 @@ Opening style for this chat: ${opening}
 
 YOUR JOB:
 - Run a warm, motivating spoken conversation that practises the grammar and vocab.
+- Match klasa ${state.schoolYear}: topics, examples, and vocab must feel relevant for that school year (not too babyish for older classes, not too advanced for younger ones).
 - Randomise the content: vary people, places, objects, and questions each session. Prefer different vocab words from the list over time.
-- Start easier than the learner's ceiling to build confidence, then step up only after success.
-- ${stepGuide}
+- Hold the chosen ease level (${ease.label}); only gently enrich if the student is clearly succeeding.
 - Default language: simple English. Do not lecture. Do not dump grammar rules.
 - After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
 - Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
@@ -478,8 +611,11 @@ Return ONLY JSON for each turn.`;
                 if (key && !state.vocabTouched.includes(key)) state.vocabTouched.push(key);
             });
         }
-        if (usedG && (usedV || state.wordList.length === 0) && state.difficultyStep < 2) {
-            state.difficultyStep += 1;
+        if (usedG && (usedV || state.wordList.length === 0) && data.stepSuccess) {
+            const room = (EASE_STEPS.length - 1) - (Number(state.ease) || 0);
+            if (state.difficultyStep < Math.min(1, room)) {
+                state.difficultyStep += 1;
+            }
         }
     }
 
@@ -495,10 +631,11 @@ Return ONLY JSON for each turn.`;
         const vocabLabel = state.vocabMode === 'topic'
             ? topicLabel(state.topicId)
             : `Custom (${state.wordList.length})`;
+        const profile = classProfile(state.schoolYear);
         return `<div class="review-hud">
             <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarLabel(state.grammarId))} · ${escapeHtml(vocabLabel)}</span></div>
-            <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(state.level.toUpperCase())} · ${state.age === 'young' ? '8–9' : '10–12'}</span></div>
-            <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length} vocab · ${difficultyLabel()}</span></div>
+            <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(difficultyLabel())} · ${state.age === 'young' ? '8–9' : '10–12'}</span></div>
+            <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length}/${state.wordList.length} vocab · ${escapeHtml(profile.band)}</span></div>
         </div>`;
     }
 
@@ -785,11 +922,12 @@ Return ONLY JSON:
         state.loading = true;
         render();
 
-        const prompt = `You are a supportive Primary English coach for Polish children (klasa ${state.schoolYear}, level ${state.level}).
+        const prompt = `You are a supportive Primary English coach for Polish children (klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}).
 Review this short practice chat. Be kind, concrete, and brief. No adult jargon.
 
 Grammar focus: ${grammarLabel(state.grammarId)}
 Vocab focus: ${state.wordList.join(', ')}
+Class relevance: ${classProfile(state.schoolYear).relevance}
 Turns: ${state.turns}
 Grammar hits (approx): ${state.grammarHits}
 Vocab touched: ${state.vocabTouched.join(', ') || 'none'}
@@ -838,7 +976,8 @@ Return ONLY JSON:
                         vocabMode: state.vocabMode,
                         topic: state.topicId,
                         schoolYear: state.schoolYear,
-                        level: state.level
+                        ease: easeInfo(state.ease).id,
+                        level: easeInfo(state.ease).id
                     }
                 });
             }
@@ -855,6 +994,24 @@ Return ONLY JSON:
         const isCustom = mode && mode.value === 'custom';
         if (topicWrap) topicWrap.style.display = isCustom ? 'none' : 'block';
         if (customWrap) customWrap.style.display = isCustom ? 'block' : 'none';
+    }
+
+    function syncClassHint() {
+        const yearEl = document.getElementById('review-setup-year');
+        const hint = document.getElementById('review-setup-class-hint');
+        if (!hint) return;
+        const year = yearEl ? Math.max(1, Math.min(8, parseInt(yearEl.value, 10) || 4)) : 4;
+        const profile = classProfile(year);
+        hint.textContent = `Vocab range for klasa ${year}: about ${profile.maxWords} words · ${profile.band}. ${profile.relevance}`;
+    }
+
+    function syncEaseLabel() {
+        const easeEl = document.getElementById('review-setup-ease');
+        const label = document.getElementById('review-setup-ease-label');
+        if (!label) return;
+        const idx = easeEl ? Math.max(0, Math.min(4, parseInt(easeEl.value, 10) || 2)) : 2;
+        const info = easeInfo(idx);
+        label.textContent = `${info.label} — ${info.hint}`;
     }
 
     function initPeReview() {
@@ -896,7 +1053,13 @@ Return ONLY JSON:
         document.querySelectorAll('input[name="review-setup-vocab-mode"]').forEach((el) => {
             el.addEventListener('change', syncVocabModeUi);
         });
+        const yearEl = document.getElementById('review-setup-year');
+        if (yearEl) yearEl.addEventListener('change', syncClassHint);
+        const easeEl = document.getElementById('review-setup-ease');
+        if (easeEl) easeEl.addEventListener('input', syncEaseLabel);
         syncVocabModeUi();
+        syncClassHint();
+        syncEaseLabel();
         if (global.speechSynthesis) {
             refreshVoices();
             if (typeof global.speechSynthesis.addEventListener === 'function') {
@@ -926,6 +1089,8 @@ Return ONLY JSON:
         submit: submitMessage,
         end: endSession,
         syncVocabModeUi,
+        syncClassHint,
+        syncEaseLabel,
         getState() { return Object.assign({}, state, { wordList: state.wordList.slice() }); }
     };
 })(typeof window !== 'undefined' ? window : globalThis);

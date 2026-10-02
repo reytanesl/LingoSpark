@@ -2345,7 +2345,7 @@
                 <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Creator mode also has to be (am / is / are), and / or, question words, and . or ?. Ages 10–12 add play/do/go collocations, daily routines, parts of the day, and telling the time. Fill the gaps: drag tiles into blanks. When you choose singular or plural, the plural form is shown and spoken. Persons: I, You, We, They, He, She. Things are grouped (food, furniture, school…). Line Up: drag pictured tiles onto numbered boxes. Switch EN | PL for help. Signed-in players collect each correct sentence in a Colour Blocks set.</p></div>
                 <div class="guide-item"><strong>Vocab Scenes</strong><p>24 interactive classroom scenes (school, home, food, free time, clothes, weather, town, animals, routines, time). Hover or tap objects to see and hear English words; quiz mode hides labels. Opens in a new tab — free to play.</p></div>
                 <div class="guide-item"><strong>Topic Challenge</strong><p>Premium practice on class topics with real scene pictures. Picture mode is Spot &amp; Say (circle → question about that thing). Also switch Tiles / Transform when they fit the selected grammar. Optional speaking (Hear model + mic or “I said it”). Near-miss picture answers can be re-checked by AI; Ask why explains after a wrong attempt.</p></div>
-                <div class="guide-item"><strong>Review Chatbot</strong><p>Premium live chat (text and/or speech). Set age, school year, level, a grammar point, and vocabulary from a topic pack or your own list. The partner starts very easy and steps up gently; End session for a short coach note.</p></div>
+                <div class="guide-item"><strong>Review Chatbot</strong><p>Premium live chat (text and/or speech). Set age, school year, an ease slider (Starter → Normal), a grammar point, and vocabulary from a topic pack (Family and Home are separate) or your own list. Class steers vocab range and chat relevance. The partner explains briefly in Polish if the student is lost, then returns to English; End session for a short coach note.</p></div>
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
@@ -2762,7 +2762,7 @@
 
             <div id="review-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
                 <label style="color: #0e7490;"><i class="fa-solid fa-comments"></i> Review Chatbot</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Set age, school year, level, grammar and vocabulary (topic pack or your own list). Each chat picks a fresh scene and starts very easy. If a student does not understand, the partner explains briefly in Polish, then returns to English. Text, speech, or both — choose a natural voice in the chat. Writing Suite access required.</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0;">Set age, school year, ease slider, grammar and vocabulary (topic pack or your own list). Class steers how relevant and how wide the vocab feels. Family and Home are separate topics. If a student does not understand, the partner explains briefly in Polish, then returns to English. Text, speech, or both — choose a natural voice in the chat. Writing Suite access required.</p>
             </div>
 
             <div class="form-group" id="pe-review-settings" style="display: none;">
@@ -2773,7 +2773,7 @@
                 </div>
 
                 <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-school"></i> Class (school year / klasa):</label>
-                <select id="review-setup-year" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
+                <select id="review-setup-year" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;" onchange="if(window.PEReviewChat)PEReviewChat.syncClassHint()">
                     <option value="1">Klasa 1</option>
                     <option value="2">Klasa 2</option>
                     <option value="3">Klasa 3</option>
@@ -2783,12 +2783,15 @@
                     <option value="7">Klasa 7</option>
                     <option value="8">Klasa 8</option>
                 </select>
+                <p id="review-setup-class-hint" style="font-size:0.8rem; color:var(--text-muted); margin:0.4rem 0 0;"></p>
 
-                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-signal"></i> Level:</label>
-                <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">
-                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-level" value="beginner"> Beginner (klasy 1–3 feel)</label>
-                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-level" value="a1" checked> A1</label>
-                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-level" value="a2"> A2</label>
+                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-gauge-high"></i> Ease:</label>
+                <div style="margin-top:0.45rem;">
+                    <input type="range" id="review-setup-ease" min="0" max="4" step="1" value="2" style="width:100%;" oninput="if(window.PEReviewChat)PEReviewChat.syncEaseLabel()">
+                    <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem; gap:0.2rem;">
+                        <span>Starter</span><span>Beginner</span><span>Very easy</span><span>Easy</span><span>Normal</span>
+                    </div>
+                    <p id="review-setup-ease-label" style="font-size:0.85rem; font-weight:600; color:#0e7490; margin:0.35rem 0 0;">Very easy — short answers with a model phrase</p>
                 </div>
 
                 <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-language"></i> Grammar point:</label>
@@ -2810,7 +2813,8 @@
                 <div id="review-setup-topic-wrap" style="margin-top:0.55rem;">
                     <select id="review-setup-topic" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
                         <option value="school">School</option>
-                        <option value="family_home">Family &amp; home</option>
+                        <option value="family">Family</option>
+                        <option value="home">Home</option>
                         <option value="food">Food</option>
                         <option value="free_time">Free time</option>
                         <option value="clothes_weather">Clothes &amp; weather</option>
@@ -5926,7 +5930,11 @@
             if (peReviewSettings) peReviewSettings.style.display = (gameType === 'pe-review') ? 'block' : 'none';
             const reviewSetupNote = document.getElementById('review-setup-note');
             if (reviewSetupNote) reviewSetupNote.style.display = (gameType === 'pe-review') ? 'block' : 'none';
-            if (gameType === 'pe-review' && window.PEReviewChat) PEReviewChat.syncVocabModeUi();
+            if (gameType === 'pe-review' && window.PEReviewChat) {
+                PEReviewChat.syncVocabModeUi();
+                PEReviewChat.syncClassHint();
+                PEReviewChat.syncEaseLabel();
+            }
             document.getElementById('frank-setup-note').style.display = (gameType === 'frank') ? 'block' : 'none';
             document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType) && gameType !== 'frank') ? 'block' : 'none';
 
@@ -5945,6 +5953,11 @@
             }
             if (gameType === 'pe-review') {
                 document.getElementById('setup-title').innerText = 'Review Chatbot Setup';
+                if (window.PEReviewChat) {
+                    PEReviewChat.syncVocabModeUi();
+                    PEReviewChat.syncClassHint();
+                    PEReviewChat.syncEaseLabel();
+                }
             }
             if (gameType === 'frank') {
                 document.getElementById('setup-title').innerText = 'Frankenstein Builder';
