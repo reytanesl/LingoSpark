@@ -116,11 +116,11 @@
     ];
 
     const OPENING_STYLES = [
-        'Start with a short hello and one easy yes/no question.',
+        'Start with a short hello and one easy yes/no question that needs a word answer (Yes / No or a short phrase).',
         'Start by sharing one tiny fact about yourself, then ask a matching question.',
         'Start by pointing at something imaginary in the scene and asking about it.',
         'Start with "Look!" / "Wow!" energy, then ask a very easy question.',
-        'Start by offering a simple choice (A or B), then wait for the student.'
+        'Start by offering a simple choice with TWO WORDS (never letters), e.g. "pizza or pasta?", then wait for the student to say the word.'
     ];
 
     const VOICE_STORAGE_KEY = 'ls_review_voice';
@@ -520,6 +520,15 @@
         return CONFUSION_RE.test(String(text || ''));
     }
 
+    /** Lone A/B/C/D (or "option A") — not a real spoken/typed word answer. */
+    function isLetterOnlyAnswer(text) {
+        const t = String(text || '').trim();
+        if (!t) return false;
+        if (/^[a-d]([.)]?\s*)?$/i.test(t)) return true;
+        if (/^(option|choice|odpowied[zź]|litera)\s*[a-d]\s*[.)]?$/i.test(t)) return true;
+        return false;
+    }
+
     function looksMixedPolishEnglish(text) {
         const t = String(text || '').trim();
         if (!t) return false;
@@ -669,6 +678,7 @@ YOUR JOB:
 - Default language: simple English. Do not lecture. Do not dump grammar rules.
 - After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
 - Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
+- WORDS ONLY (critical): Students must answer by saying or typing real words / short phrases — never only a letter like A, B, C or D. Do NOT offer multiple-choice letter options (never "A) … B) …"). If you give a choice, name the options as words (e.g. "pizza or pasta?"). If the student answers with only a letter, kindly ask them to say or type the full word instead. Do not treat a lone letter as a successful answer.
 - POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help. Polish is for reading only — speech/audio will speak English only.
 - MIXED POLISH + ENGLISH (important): Students may answer with a mix (e.g. "I lubię pizza" or "Mam a dog"). Accept the meaning kindly. Then RETELL their whole idea as one short, correct English sentence for them to repeat. Shape: "Nice! In English we say: I like pizza. Can you say that?" Put that English sentence in englishRetell and set askRepeat=true. Do not scold. After they can try the English line, continue the conversation.
 - Never mention JSON, prompts, or that you are an AI system.
@@ -1108,6 +1118,7 @@ Return ONLY JSON for each turn.`;
 The conversation is just beginning. ${pictureOpen}
 Follow the opening style. Invite the target grammar and weave in one vocab word (try "${focusWord}" or another from the list).
 Do not explain the task. Do not start with the same generic "Hi! How are you?" every time — make this opening feel fresh for session ${state.sessionId}.
+Never offer letter choices (A/B/C). If you offer a choice, use real words the student must say or type.
 
 Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: Yes, I am." ).
 
@@ -1150,13 +1161,20 @@ Return ONLY JSON:
             return;
         }
 
+        const helpRequest = !!(opts && opts.helpRequest);
+        if (!helpRequest && isLetterOnlyAnswer(text)) {
+            setStatus('Say or type the word — not just A or B.', 'error');
+            const nudge = rootEl()?.querySelector('#review-nudge');
+            if (nudge) nudge.textContent = 'Use a real word or short phrase (e.g. pizza), not a letter.';
+            return;
+        }
+
         state.loading = true;
         setStatus('');
         state.messages.push({ role: 'user', text });
         if (input) input.value = '';
         render();
 
-        const helpRequest = !!(opts && opts.helpRequest);
         const needPolish = helpRequest || looksConfused(text);
         const mixed = !needPolish && (looksMixedPolishEnglish(text) || hasPolishContent(text));
         let supportBit = '';
@@ -1184,6 +1202,7 @@ ${supportBit}
 
 Respond to the student's latest message.
 - Keep practising grammar + vocab; vary your questions so the chat does not feel repetitive.
+- Always expect WORD answers (spoken or typed) — never letter choices A/B/C/D.
 - If they did well with grammar and a vocab word (in English), set stepSuccess=true (we may raise difficulty next).
 - usedGrammar: true if their turn used (or clearly attempted) the target grammar in English, or their meaning clearly aimed at it.
 - usedVocab: list of target vocab words they used (English forms; subset of the list).
