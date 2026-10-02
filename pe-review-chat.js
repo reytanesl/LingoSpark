@@ -26,32 +26,32 @@
         {
             id: 'starter',
             label: 'Starter',
-            hint: 'Ultra-short — one word answers, heavy modelling',
-            guide: 'STARTER: Use the simplest English possible. Ask for ONE concrete word (a noun from the vocab) — e.g. "What is this?" / "Who is this?" / "pizza or pasta?". Model the exact word they can copy. Avoid yes/no-only questions. One tiny question only.'
+            hint: 'Tiny sentences with heavy modelling',
+            guide: 'STARTER: Ask questions that invite a tiny full sentence, then MODEL it to copy (e.g. "Tell me: This is my mum." / "Say: I like pizza."). Accept one word at first, then gently stretch to a short sentence. Avoid yes/no-only and avoid "A or B" choice questions as the main pattern. One clear ask at a time.'
         },
         {
             id: 'beginner',
             label: 'Beginner',
-            hint: 'Copy-friendly phrases and one-word answers',
-            guide: 'BEGINNER: Short modelled phrases. Prefer What/Who/Where/How many questions that need a word or short phrase. Finish-the-sentence is OK. Rare yes/no only as a warm-up — then ask for a real word. Celebrate every attempt.'
+            hint: 'Copy-friendly short sentences',
+            guide: 'BEGINNER: Prefer questions that need a short full sentence with the target grammar (Who is …? What do you like? Where is …?). Give a model starter if needed ("Try: My brother is tall."). Finish-the-sentence is OK. Do not rely on picking between two words. Celebrate every attempt.'
         },
         {
             id: 'very_easy',
             label: 'Very easy',
-            hint: 'Short answers with a model phrase',
-            guide: 'VERY EASY: Prefer one-word or short-phrase answers (not yes/no chains). Use What/Who/Where/colour/choice-of-two-words. Model a short phrase the student can copy. Celebrate every attempt.'
+            hint: 'Short full-sentence answers with a model',
+            guide: 'VERY EASY: Ask for a short full sentence (not just one word, not yes/no, not "pizza or pasta?"). Use What/Who/Where/Tell me about… Model one sentence they can copy, then ask them to make their own. Celebrate every attempt.'
         },
         {
             id: 'easy',
             label: 'Easy',
-            hint: 'Short answers using grammar + one vocab word',
-            guide: 'EASY: Ask for short answers that use the target grammar and one vocab word (What/Who/Where/Why-simple). Offer a starter phrase if they struggle. Do not rely on yes/no.'
+            hint: 'Full short sentences with grammar + vocab',
+            guide: 'EASY: Expect a full short sentence that uses the target grammar and at least one vocab word. Offer a sentence frame only if they struggle. Do not rely on yes/no or two-option word choices.'
         },
         {
             id: 'normal',
             label: 'Normal',
-            hint: 'Short PE sentences, still kind and scaffolded',
-            guide: 'NORMAL: Ask for a full short sentence with grammar + vocab. Still kind and scaffolded — never jump to exam difficulty. Prefer open questions over yes/no.'
+            hint: 'Natural short PE sentences',
+            guide: 'NORMAL: Ask for a full short sentence (or two) with grammar + vocab in natural chat. Still kind and scaffolded — never jump to exam difficulty. Prefer open sentence-building questions over yes/no or either/or choices.'
         }
     ];
 
@@ -116,11 +116,11 @@
     ];
 
     const OPENING_STYLES = [
-        'Start with a short hello and one easy open question that needs a word (What/Who/Where), not yes/no.',
-        'Start by sharing one tiny fact about yourself, then ask a matching open question that needs a word or short phrase.',
-        'Start by pointing at something imaginary in the scene and asking what/who it is.',
-        'Start with "Look!" / "Wow!" energy, then ask a very easy What/Who/Where question.',
-        'Start by offering a simple choice with TWO WORDS (never letters), e.g. "pizza or pasta?", then wait for the student to say the word.'
+        'Start with a short hello and one easy open question that needs a short full sentence (What/Who/Where/Tell me…), not yes/no and not A-or-B.',
+        'Start by sharing one tiny fact about yourself in a full sentence, then ask a matching question that needs a short sentence back.',
+        'Start by pointing at something in the scene and asking the student to say a short sentence about it (model if needed).',
+        'Start with "Look!" / "Wow!" energy, then ask a very easy sentence-building question (e.g. "Who is this? Try: This is my mum.").',
+        'Start by modelling one short sentence with the target grammar, then invite the student to make a similar sentence about themselves or the scene.'
     ];
 
     const VOICE_STORAGE_KEY = 'ls_review_voice';
@@ -718,9 +718,10 @@ YOUR JOB:
 - Default language: simple English. Do not lecture. Do not dump grammar rules.
 - After a good try, you may give ONE short kind correction or model (e.g. "Nice! We say: I like apples.").
 - Ask one clear question at a time. Stay inside the chosen scene/vibe unless the student leads elsewhere.
-- OPEN QUESTIONS (critical): Do NOT run a conversation of mostly yes/no questions. Prefer questions that need a real word or short phrase — What / Who / Where / How many / What colour / choice of two words (e.g. "dog or cat?"). At most one yes/no in a long stretch; the next turn must ask for a vocab word or short phrase. Never stack yes/no questions.
+- FULL SENTENCES (critical): Aim for answers that are short full sentences (or stretch toward them), not just picking one of two options. Prefer prompts like "Tell me about…", "Who is this?", "Where is your…?", "What do you like?" that need a sentence. Model a sentence frame when ease is low (e.g. "Try: This is my sister."). If the student answers with only one word, kindly invite a full sentence next ("Nice! Can you say: I like pizza?").
+- Do NOT rely on either/or word choices ("pizza or pasta?", "dog or cat?") as the main pattern — those may appear at most once as a warm-up, then move to sentence-building. Do NOT run mostly yes/no questions; never stack yes/no.
 - NO EMOJIS in your reply text (speech cannot read them usefully; keep replies plain words).
-- WORDS ONLY (critical): Students must answer by saying or typing real words / short phrases — never only a letter like A, B, C or D. Do NOT offer multiple-choice letter options (never "A) … B) …"). If you give a choice, name the options as words (e.g. "pizza or pasta?"). If the student answers with only a letter, kindly ask them to say or type the full word instead. Do not treat a lone letter as a successful answer.
+- REAL WORDS / SENTENCES (critical): Students must answer by saying or typing real words or short sentences — never only a letter like A, B, C or D. Do NOT offer multiple-choice letter options (never "A) … B) …"). If the student answers with only a letter, kindly ask them to say or type the full word/sentence instead.
 - POLISH HELP (important): If the student asks for help, says they do not understand, writes in Polish asking for meaning, or clearly sounds lost — first give a SHORT clear explanation in Polish (1–2 sentences), then immediately switch back to English with a simpler practice question or model. Example shape: "Po polsku: ... Now in English: ..." Do NOT stay in Polish for the whole reply. Do NOT use Polish unless they need help. Polish is for reading only — speech/audio will speak English only.
 - MIXED POLISH + ENGLISH (important): Students may answer with a mix (e.g. "I lubię pizza" or "Mam a dog"). Accept the meaning kindly. Then RETELL their whole idea as one short, correct English sentence for them to repeat. Shape: "Nice! In English we say: I like pizza. Can you say that?" Put that English sentence in englishRetell and set askRepeat=true. Do not scold. After they can try the English line, continue the conversation.
 - Never mention JSON, prompts, or that you are an AI system.
@@ -1174,11 +1175,11 @@ Return ONLY JSON for each turn.`;
 The conversation is just beginning. ${pictureOpen}
 Follow the opening style. Invite the target grammar and weave in one vocab word (try "${focusWord}" or another from the list).
 Do not explain the task. Do not start with the same generic "Hi! How are you?" every time — make this opening feel fresh for session ${state.sessionId}.
-Never offer letter choices (A/B/C). If you offer a choice, use real words the student must say or type.
-Do NOT open with a yes/no question — ask What/Who/Where or a two-word choice so the student must say a real word. No emojis.
+Never offer letter choices (A/B/C). Do not open with yes/no or an either/or word pick ("pizza or pasta?").
+Open with a question that invites a short full sentence (What/Who/Where/Tell me…); if ease is low, include a model sentence to copy. No emojis.
 ${state.runInstructions ? 'If a SESSION BRIEF is set above, open in a natural way that fits that focus — do not announce the brief.' : ''}
 
-Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: a dog" or "Try: I like pizza." ).
+Also set usedGrammar=false, usedVocab=[] for the opening, and nudge as a short UI tip for the student (e.g. "Try: This is my mum." or "Try: I like pizza." ).
 
 Return ONLY JSON:
 {"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"short tip","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
@@ -1260,8 +1261,8 @@ ${supportBit}
 
 Respond to the student's latest message.
 - Keep practising grammar + vocab; vary your questions so the chat does not feel repetitive.
-- Always expect WORD answers (spoken or typed) — never letter choices A/B/C/D.
-- Prefer open questions (What/Who/Where/How many/two-word choice). Do not follow up with another yes/no if the last question was yes/no.
+- Expect spoken/typed real words that build toward FULL short SENTENCES — never letter choices A/B/C/D, and do not keep asking either/or word picks.
+- Prefer open sentence-building questions (What/Who/Where/Tell me about…/What do you like?). If they gave only one word, stretch them gently into a sentence next turn. Do not follow up with another yes/no if the last question was yes/no.
 - No emojis in reply.
 - If they did well with grammar and a vocab word (in English), set stepSuccess=true (we may raise difficulty next).
 - usedGrammar: true if their turn used (or clearly attempted) the target grammar in English, or their meaning clearly aimed at it.
