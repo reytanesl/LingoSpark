@@ -2795,13 +2795,7 @@
             </div>
 
             <div class="form-group" id="pe-review-settings" style="display: none;">
-                <label><i class="fa-solid fa-child"></i> Age:</label>
-                <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">
-                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-age" value="young" checked> 8–9 years</label>
-                    <label style="font-weight:500; cursor:pointer;"><input type="radio" name="review-setup-age" value="older"> 10–12 years</label>
-                </div>
-
-                <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-school"></i> Class (school year / klasa):</label>
+                <label><i class="fa-solid fa-school"></i> Class (school year / klasa):</label>
                 <select id="review-setup-year" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;" onchange="if(window.PEReviewChat)PEReviewChat.syncClassHint()">
                     <option value="1">Klasa 1</option>
                     <option value="2">Klasa 2</option>
@@ -2824,15 +2818,15 @@
                 </div>
 
                 <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-language"></i> Grammar point:</label>
-                <select id="review-setup-grammar" style="width:100%; padding:0.55rem 0.7rem; border:1px solid var(--border-light); border-radius:0.45rem; font-size:1rem;">
-                    <option value="be">to be</option>
-                    <option value="have_got">have got</option>
-                    <option value="can">can / can't</option>
-                    <option value="like">like</option>
-                    <option value="present_simple">Present simple</option>
-                    <option value="negatives">Negatives</option>
-                    <option value="questions">Questions</option>
-                </select>
+                <div id="review-setup-grammar" style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">
+                    <label style="font-weight:500; cursor:pointer;"><input type="checkbox" name="review-setup-grammar" value="be" checked> to be</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="checkbox" name="review-setup-grammar" value="have_got"> have got</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="checkbox" name="review-setup-grammar" value="can"> can / can't</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="checkbox" name="review-setup-grammar" value="like"> like</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="checkbox" name="review-setup-grammar" value="present_simple"> Present simple</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="checkbox" name="review-setup-grammar" value="negatives"> Negatives</label>
+                    <label style="font-weight:500; cursor:pointer;"><input type="checkbox" name="review-setup-grammar" value="questions"> Questions</label>
+                </div>
 
                 <label style="margin-top:0.85rem; display:block;"><i class="fa-solid fa-book-open"></i> Vocabulary:</label>
                 <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem;">

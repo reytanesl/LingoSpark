@@ -129,16 +129,24 @@
         'Open as a patient coach: show the pattern once, then ask "Your turn" with a clear frame.'
     ];
 
+    const OPENING_STYLES_PL = [
+        'Zacznij krótkim, poprawnym polskim pytaniem o słówko, potem podaj angielski wzorzec i poproś o odpowiedź po angielsku.',
+        'Przywitaj ciepło po polsku, pokaż jedno krótkie zdanie-wzorzec po angielsku i poproś ucznia o podobne.',
+        'Wskaż coś ze sceny lub tematu, zapytaj poprawną polszczyzną „Jak po angielsku…?” i modeluj odpowiedź.',
+        'Wpleć jedno słówko w krótkie polskie pytanie, potem daj angielski wzorzec do powtórzenia lub ułożenia zdania.',
+        'Jak cierpliwy nauczyciel: raz pokaż wzorzec, potem „Twoja kolej” z jasną ramą po polsku.'
+    ];
+
     const VOICE_STORAGE_KEY = 'ls_review_voice';
+    const VOICE_STORAGE_KEY_PL = 'ls_review_voice_pl';
     const CONFUSION_RE = /\b(i\s+don'?t\s+understand|dont\s+understand|don'?t\s+get\s+it|what\s+does\s+.*\s+mean|can\s+you\s+explain|explain\s+(please|in\s+polish)|po\s+polsku|nie\s+rozumiem|nie\s+rozumie|co\s+to\s+znaczy|wyja[sś]nij|pomocy|help\s+me|too\s+hard|za\s+trudn)/i;
     const PL_CHAR_RE = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/;
     const PL_WORD_RE = /\b(jestem|jest|mam|lubie|lubię|mogę|moge|nie|tak|to|moja|moj|mój|moje|chce|chcę|lubisz|kocham|szkoła|szkola|dom|mama|tata|brat|siostra|bo|ale|jak|gdzie|co|dlaczego|prosze|proszę|dziekuje|dziękuję|cześć|czesc)\b/i;
 
     let state = {
-        age: 'young',
         schoolYear: 4,
         ease: 2,
-        grammarId: 'be',
+        grammarIds: ['be'],
         vocabMode: 'topic',
         topicId: 'school',
         wordList: [],
@@ -161,6 +169,7 @@
         openingStyle: '',
         sessionId: '',
         voiceURI: '',
+        voiceURIPl: '',
         voiceMenuOpen: false,
         lastRepeatLine: '',
         micStream: null,
@@ -185,6 +194,7 @@
     ];
 
     let cachedVoices = [];
+    let cachedPlVoices = [];
     let micStopTimer = null;
     let speechToken = 0;
 
@@ -202,7 +212,27 @@
 
     function grammarLabel(id) {
         const row = grammars().find((g) => g.id === id);
-        return row ? row.label : id;
+        if (row) return row.label;
+        const fallback = {
+            be: 'to be',
+            have_got: 'have got',
+            can: "can / can't",
+            like: 'like',
+            present_simple: 'Present simple',
+            negatives: 'Negatives',
+            questions: 'Questions'
+        };
+        return fallback[id] || id;
+    }
+
+    function grammarLabels(ids) {
+        const list = Array.isArray(ids) ? ids : [];
+        return list.map(grammarLabel).filter(Boolean);
+    }
+
+    function grammarFocusText() {
+        const labels = grammarLabels(state.grammarIds);
+        return labels.length ? labels.join(', ') : 'to be';
     }
 
     function topicLabel(id) {
@@ -364,7 +394,7 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
             .review-voice-wrap { position: relative; display: inline-flex; flex-direction: column; align-items: stretch; }
             .review-voice-menu {
                 display: none; position: absolute; left: 50%; bottom: calc(100% + 0.4rem); transform: translateX(-50%);
-                z-index: 20; min-width: min(92vw, 300px); background: #fff; border: 2px solid var(--royal-blue, #012169);
+                z-index: 20; min-width: min(92vw, 320px); background: #fff; border: 2px solid var(--royal-blue, #012169);
                 border-radius: 10px; padding: 0.65rem 0.75rem; box-shadow: 0 8px 24px rgba(1,33,105,0.15);
             }
             .review-voice-menu.open { display: block; }
@@ -433,9 +463,12 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         return unique;
     }
 
-    function collectTopicCounts(topicId, grammarId, focusSet) {
+    function collectTopicCounts(topicId, grammarIds, focusSet) {
+        const ids = Array.isArray(grammarIds)
+            ? grammarIds.filter(Boolean)
+            : (grammarIds ? [grammarIds] : []);
         const bankId = bankTopicId(topicId);
-        const rows = bank().filter((r) => r.topic === bankId && (!grammarId || r.grammar === grammarId));
+        const rows = bank().filter((r) => r.topic === bankId && (!ids.length || ids.includes(r.grammar)));
         const pool = rows.length ? rows : bank().filter((r) => r.topic === bankId);
         const counts = new Map();
         pool.forEach((row) => {
@@ -454,7 +487,7 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         return counts;
     }
 
-    function vocabFromTopic(topicId, grammarId, maxWords) {
+    function vocabFromTopic(topicId, grammarIds, maxWords) {
         const limit = Math.max(4, Math.min(MAX_VOCAB, maxWords || MAX_VOCAB));
         let focusSet = null;
         let seed = [];
@@ -466,12 +499,12 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
             seed = HOME_SEED;
         }
 
-        let counts = collectTopicCounts(topicId, grammarId, focusSet);
+        let counts = collectTopicCounts(topicId, grammarIds, focusSet);
         let words = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([w]) => w);
 
         if (focusSet && words.length < 4) {
             // Softer pass: any family_home content, then keep focus + seed
-            counts = collectTopicCounts(topicId, grammarId, null);
+            counts = collectTopicCounts(topicId, grammarIds, null);
             const soft = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([w]) => w)
                 .filter((w) => focusSet.has(w));
             words = [...new Set(soft.concat(seed))];
@@ -486,10 +519,9 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
     }
 
     function readSetupFromDom() {
-        const ageEl = document.querySelector('input[name="review-setup-age"]:checked');
         const yearEl = document.getElementById('review-setup-year');
         const easeEl = document.getElementById('review-setup-ease');
-        const gramEl = document.getElementById('review-setup-grammar');
+        const gramEls = document.querySelectorAll('input[name="review-setup-grammar"]:checked');
         const vocabModeEl = document.querySelector('input[name="review-setup-vocab-mode"]:checked');
         const topicEl = document.getElementById('review-setup-topic');
         const customEl = document.getElementById('review-setup-custom');
@@ -497,10 +529,9 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         const modeEl = document.querySelector('input[name="review-setup-mode"]:checked');
         const styleEl = document.querySelector('input[name="review-setup-coach-style"]:checked');
 
-        state.age = ageEl ? ageEl.value : 'young';
         state.schoolYear = yearEl ? Math.max(1, Math.min(8, parseInt(yearEl.value, 10) || 4)) : 4;
         state.ease = easeEl ? Math.max(0, Math.min(4, parseInt(easeEl.value, 10) || 2)) : 2;
-        state.grammarId = gramEl ? gramEl.value : 'be';
+        state.grammarIds = Array.from(gramEls).map((el) => el.value).filter(Boolean);
         state.vocabMode = vocabModeEl ? vocabModeEl.value : 'topic';
         state.topicId = topicEl ? topicEl.value : 'school';
         if (state.topicId === 'family_home') state.topicId = 'family';
@@ -535,7 +566,7 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
             if (state.sceneLabels.length) {
                 words = state.sceneLabels.filter((w) => w && !STOP.has(w) && w.length > 1);
             }
-            const fromTopic = vocabFromTopic(state.topicId, state.grammarId, maxWords);
+            const fromTopic = vocabFromTopic(state.topicId, state.grammarIds, maxWords);
             words = [...new Set(words.concat(fromTopic))];
             state.wordList = shuffle(words).slice(0, maxWords);
         }
@@ -565,7 +596,8 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
     }
 
     function pickOpeningStyle() {
-        return OPENING_STYLES[Math.floor(Math.random() * OPENING_STYLES.length)];
+        const pool = isPolishTutor() ? OPENING_STYLES_PL : OPENING_STYLES;
+        return pool[Math.floor(Math.random() * pool.length)];
     }
 
     function looksConfused(text) {
@@ -596,9 +628,9 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         return PL_CHAR_RE.test(t) || PL_WORD_RE.test(t);
     }
 
-    function loadSavedVoiceURI() {
+    function loadSavedVoiceURI(key) {
         try {
-            return localStorage.getItem(VOICE_STORAGE_KEY) || '';
+            return localStorage.getItem(key || VOICE_STORAGE_KEY) || '';
         } catch {
             return '';
         }
@@ -612,17 +644,27 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         } catch { /* */ }
     }
 
+    function saveVoiceURIPl(uri) {
+        state.voiceURIPl = uri || '';
+        try {
+            if (uri) localStorage.setItem(VOICE_STORAGE_KEY_PL, uri);
+            else localStorage.removeItem(VOICE_STORAGE_KEY_PL);
+        } catch { /* */ }
+    }
+
     function voiceNaturalScore(v) {
         const name = String(v.name || '');
         const uri = String(v.voiceURI || '');
         const blob = (name + ' ' + uri).toLowerCase();
         let score = 0;
         if (/neural|natural|online|premium|enhanced|wavenet|studio|generative|super/.test(blob)) score += 40;
-        if (/google|microsoft|apple|samantha|daniel|karen|moira|serena|martha|aria|jenny|guy|sonia|ryan/.test(blob)) score += 12;
+        if (/google|microsoft|apple|samantha|daniel|karen|moira|serena|martha|aria|jenny|guy|sonia|ryan|paulina|agnieszka|zofia|maja|adam|marek|piotr/.test(blob)) score += 12;
+        if (/pl[-_]PL/i.test(v.lang)) score += 10;
+        else if (/^pl/i.test(v.lang)) score += 8;
         if (/en[-_]GB/i.test(v.lang)) score += 10;
         else if (/en[-_]US/i.test(v.lang)) score += 8;
         else if (/^en/i.test(v.lang)) score += 4;
-        if (v.localService === false) score += 6; // cloud/online voices often sound more natural
+        if (v.localService === false) score += 6;
         if (/compact|eloquence|espeak|robot|novelty/.test(blob)) score -= 25;
         return score;
     }
@@ -636,17 +678,36 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
             .sort((a, b) => voiceNaturalScore(b) - voiceNaturalScore(a) || String(a.name).localeCompare(String(b.name)));
     }
 
+    function listPolishVoices() {
+        if (!global.speechSynthesis) return [];
+        const all = global.speechSynthesis.getVoices() || [];
+        return all
+            .filter((v) => /^pl([-_]|$)/i.test(v.lang || ''))
+            .slice()
+            .sort((a, b) => voiceNaturalScore(b) - voiceNaturalScore(a) || String(a.name).localeCompare(String(b.name)));
+    }
+
     function refreshVoices() {
         cachedVoices = listEnglishVoices();
-        if (!state.voiceURI) state.voiceURI = loadSavedVoiceURI();
+        cachedPlVoices = listPolishVoices();
+
+        if (!state.voiceURI) state.voiceURI = loadSavedVoiceURI(VOICE_STORAGE_KEY);
         if (state.voiceURI && !cachedVoices.some((v) => v.voiceURI === state.voiceURI)) {
-            // Saved voice missing on this device — fall back to best natural
             state.voiceURI = '';
         }
         if (!state.voiceURI && cachedVoices.length) {
             state.voiceURI = cachedVoices[0].voiceURI;
         }
-        return cachedVoices;
+
+        if (!state.voiceURIPl) state.voiceURIPl = loadSavedVoiceURI(VOICE_STORAGE_KEY_PL);
+        if (state.voiceURIPl && !cachedPlVoices.some((v) => v.voiceURI === state.voiceURIPl)) {
+            state.voiceURIPl = '';
+        }
+        if (!state.voiceURIPl && cachedPlVoices.length) {
+            state.voiceURIPl = cachedPlVoices[0].voiceURI;
+        }
+
+        return { en: cachedVoices, pl: cachedPlVoices };
     }
 
     function selectedVoice() {
@@ -655,21 +716,34 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         return cachedVoices.find((v) => v.voiceURI === state.voiceURI) || cachedVoices[0];
     }
 
-    function voiceOptionsHtml() {
-        const voices = refreshVoices();
+    function selectedPolishVoice() {
+        refreshVoices();
+        if (!cachedPlVoices.length) return null;
+        return cachedPlVoices.find((v) => v.voiceURI === state.voiceURIPl) || cachedPlVoices[0];
+    }
+
+    function voiceOptionsHtml(lang) {
+        refreshVoices();
+        const voices = lang === 'pl' ? cachedPlVoices : cachedVoices;
+        const current = lang === 'pl' ? state.voiceURIPl : state.voiceURI;
         if (!voices.length) {
-            return '<option value="">No English voices on this device</option>';
+            return lang === 'pl'
+                ? '<option value="">Brak głosów polskich na tym urządzeniu</option>'
+                : '<option value="">No English voices on this device</option>';
         }
         return voices.map((v) => {
             const natural = voiceNaturalScore(v) >= 40 ? ' · natural' : '';
             const label = `${v.name} (${v.lang})${natural}`;
-            const sel = v.voiceURI === state.voiceURI ? ' selected' : '';
+            const sel = v.voiceURI === current ? ' selected' : '';
             return `<option value="${escapeHtml(v.voiceURI)}"${sel}>${escapeHtml(label)}</option>`;
         }).join('');
     }
 
     function validateSetup() {
         readSetupFromDom();
+        if (!state.grammarIds.length) {
+            return 'Please tick at least one grammar point.';
+        }
         if (state.vocabMode === 'custom' && state.wordList.length < MIN_CUSTOM) {
             return `Please enter at least ${MIN_CUSTOM} vocabulary words (one per line, or Term = Meaning).`;
         }
@@ -692,13 +766,12 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
     }
 
     function buildSystemRules() {
-        const ageBand = state.age === 'young' ? '8–9' : '10–12';
-        const gLabel = grammarLabel(state.grammarId);
+        const gLabel = grammarFocusText();
         const vocab = state.wordList.join(', ');
         const profile = classProfile(state.schoolYear);
         const ease = easeInfo(currentEaseIndex());
         const seed = state.sceneSeed || SCENE_SEEDS[0];
-        const opening = state.openingStyle || OPENING_STYLES[0];
+        const opening = state.openingStyle || (isPolishTutor() ? OPENING_STYLES_PL[0] : OPENING_STYLES[0]);
         const topicBit = state.vocabMode === 'topic'
             ? `Topic: ${topicLabel(state.topicId)}.`
             : 'Custom vocab list.';
@@ -715,8 +788,8 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
 
         if (isPolishTutor()) {
             return `Jesteś trenerem angielskiego dla polskich dzieci — prowadzisz rozmowę PO POLSKU.
-Uczysz gramatyki "${gLabel}" i słówek [${vocab}] przez krótkie przepytywanie i modelowanie.
-Uczeń: wiek ${ageBand}, klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}.
+Uczysz punktów gramatycznych: ${gLabel}. Słówka: [${vocab}]. Przepytuj i modeluj.
+Uczeń: klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}.
 ${profile.relevance}
 ${topicBit} ${topicFocus}
 ${pictureBit}
@@ -726,22 +799,22 @@ Scena: ${seed.setting}. Styl otwarcia: ${opening}.
 Input: ${state.inputMode}.
 
 ZASADY (tryb polski — krytyczne):
-1) TWOJE wypowiedzi są po POLSKU: krótko, ciepło, jak dobry nauczyciel — nie wykład. Max ~${maxW} słów na turę.
-2) Przepytuj i ucz: tłumacz po polsku, potem proś o angielskie słowo lub krótkie angielskie zdanie. Przykłady: „Jak po angielsku powiesz 'mama'?”, „Ułóż zdanie: To jest mój brat. Spróbuj: This is my brother.”
-3) Dopasuj język polski do wieku (klasa ${state.schoolYear}) i ease ${ease.label}: młodsze/łatwiejsze = bardzo proste słowa, mocne modelowanie angielskiego wzorca.
-4) Uczeń ma odpowiadać po ANGIELSKU (słowo lub krótkie pełne zdanie). Nie akceptuj samego A/B. Jeśli poda tylko jedno słowo, poproś o zdanie.
-5) Jedno pytanie na turę. Chwal próby. Max jedna łagodna korekta.
-6) Angielskie wzorce w reply trzymaj osobno. Pole say (obowiązkowe) = kolejka TTS: każdy fragment z lang "pl" lub "en". Polski tekst → lang "pl"; angielskie słowa/zdania do wymowy → lang "en". Przykład: say:[{"lang":"pl","text":"Jak powiesz mama? Spróbuj:"},{"lang":"en","text":"This is my mum."}]
-7) englishRetell = dokładne angielskie zdanie do powtórzenia (askRepeat=true), samo EN bez polskiego.
-8) Nie emoji. Nie wspominaj AI/JSON. Bezpieczne treści.
-9) Nie przechodź na angielski w roli trenera w reply — angielski tylko jako model w say/englishRetell.
+1) TWOJE wypowiedzi są poprawną, naturalną polszczyzną: krótko, ciepło, jak dobry nauczyciel — nie wykład. Max ~${maxW} słów na turę.
+2) SKŁADNIA POLSKA (obowiązkowa): poprawna fleksja, przypadki, rodzaj, liczba, szyk zdania. Używaj naturalnych form: „Jak po angielsku powiesz…?”, „Ułóż zdanie…”, „Spróbuj powiedzieć…”, „Świetnie!”, „Prawie — poprawnie jest…”. Unikaj kalk z angielskiego, błędów typu „powiedz mama”, „to jest brat mój” (lepiej: „to jest mój brat”), „jak jest po angielsku dla…”. Polskie znaki: ą ć ę ł ń ó ś ź ż.
+3) Przepytuj i ucz: najpierw krótko po polsku, potem proś o angielskie słowo lub krótkie zdanie. Przykłady poprawne: „Jak po angielsku powiesz «mama»?”, „Ułóż zdanie: To jest mój brat. Spróbuj: This is my brother.”
+4) Dopasuj język do klasy ${state.schoolYear} i ease ${ease.label}: młodsze/łatwiejsze = bardzo proste, poprawne zdania; nie „dzieciniej” błędną składnią.
+5) Uczeń odpowiada po ANGIELSKU. Nie akceptuj samego A/B. Po jednym słowie poproś o zdanie.
+6) Jedno pytanie na turę. Chwal próby. Max jedna łagodna korekta.
+7) Pole say (obowiązkowe): kolejka TTS — pl = tylko poprawny polski, en = tylko angielski wzorzec. Przykład: say:[{"lang":"pl","text":"Jak po angielsku powiesz mama? Spróbuj:"},{"lang":"en","text":"This is my mum."}]
+8) englishRetell = dokładne angielskie zdanie (askRepeat=true), bez polskiego.
+9) Bez emoji, bez AI/JSON. Bezpieczne treści. W roli trenera nie mów po angielsku — angielski tylko jako model.
 
 Zwracaj TYLKO JSON każda tura.`;
         }
 
         return `You are a Primary English TEACHING chatbot for Polish children.
-TEACH through short conversation: target grammar "${gLabel}" + vocab [${vocab}].
-Learner: age ${ageBand}, klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}.
+TEACH through short conversation: target grammar point(s) ${gLabel} + vocab [${vocab}].
+Learner: klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}.
 ${profile.relevance}
 ${topicBit} ${topicFocus}
 ${pictureBit}
@@ -756,7 +829,7 @@ RULES:
 3) Match klasa ${state.schoolYear} and ease ${ease.label}. Early levels: heavy modelling ("Try: …"). Higher ease: still short PE English.
 4) Ask for short FULL SENTENCES (not letter A/B, not endless yes/no, not mainly either/or picks). If they give one word, invite a full sentence next.
 5) One question at a time. Celebrate tries. One kind correction max per turn.
-6) SPEECH SCRIPT (required): Always fill "say" as an ordered TTS list. Each item is {lang:"en"|"pl", text:"..."}. English coach talk → lang "en". If you give a Polish tip (confused student), that tip alone → lang "pl", then English again → lang "en". Never put Polish words inside an "en" item or English models inside a "pl" item.
+6) SPEECH SCRIPT (required): Always fill "say" as an ordered TTS list. Each item is {lang:"en"|"pl", text:"..."}. English coach talk → lang "en". If you give a Polish tip (confused student), that tip alone → lang "pl" in correct, natural Polish (proper grammar/cases/diacritics), then English again → lang "en". Never mix languages inside one say item.
 7) Mixed PL+EN answers: retell as one English sentence (askRepeat + englishRetell).
 8) Never mention AI/JSON/prompts. Stay child-safe.
 
@@ -827,20 +900,12 @@ Return ONLY JSON each turn.`;
     }
 
     function listVoicesForLang(langPrefix) {
-        if (!global.speechSynthesis) return [];
-        const all = global.speechSynthesis.getVoices() || [];
-        const re = new RegExp('^' + langPrefix + '([-_]|$)', 'i');
-        return all
-            .filter((v) => re.test(v.lang || ''))
-            .slice()
-            .sort((a, b) => voiceNaturalScore(b) - voiceNaturalScore(a) || String(a.name).localeCompare(String(b.name)));
+        if (langPrefix === 'pl') return listPolishVoices();
+        return listEnglishVoices();
     }
 
     function pickVoice(lang) {
-        if (lang === 'pl') {
-            const pl = listVoicesForLang('pl');
-            return pl[0] || null;
-        }
+        if (lang === 'pl') return selectedPolishVoice();
         return selectedVoice();
     }
 
@@ -1100,9 +1165,9 @@ Return ONLY JSON each turn.`;
             ? `<div class="review-hud-card review-hud-brief"><strong>Session focus</strong><span>${escapeHtml(brief.length > 120 ? brief.slice(0, 117) + '…' : brief)}</span></div>`
             : '';
         return `<div class="review-hud">
-            <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarLabel(state.grammarId))} · ${escapeHtml(vocabLabel)}${pic}${styleBit}</span></div>
+            <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarFocusText())} · ${escapeHtml(vocabLabel)}${pic}${styleBit}</span></div>
             ${briefHud}
-            <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(difficultyLabel())} · ${state.age === 'young' ? '8–9' : '10–12'}</span></div>
+            <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(difficultyLabel())}</span></div>
             <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length}/${state.wordList.length} vocab · ${escapeHtml(profile.band)}</span></div>
         </div>`;
     }
@@ -1255,12 +1320,14 @@ Return ONLY JSON each turn.`;
             : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">${isPolishTutor() ? 'Tryb mowy — poczekaj na trenera, potem tapnij Say it i odpowiedz po angielsku.' : 'Speech mode — wait for the coach to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.'}</p>`;
         const voiceBtn = showSpeak()
             ? `<div class="review-voice-wrap">
-                <button type="button" class="btn btn-outline" id="review-voice-btn" ${state.loading ? 'disabled' : ''} aria-expanded="${state.voiceMenuOpen ? 'true' : 'false'}" title="Choose voice">
+                <button type="button" class="btn btn-outline" id="review-voice-btn" ${state.loading ? 'disabled' : ''} aria-expanded="${state.voiceMenuOpen ? 'true' : 'false'}" title="Wybierz głosy EN / PL">
                     <i class="fa-solid fa-volume-high"></i> Voice
                 </button>
                 <div class="review-voice-menu${state.voiceMenuOpen ? ' open' : ''}" id="review-voice-menu" role="dialog" aria-label="Voice">
-                    <label for="review-voice-select">Choose a natural voice</label>
-                    <select id="review-voice-select">${voiceOptionsHtml()}</select>
+                    <label for="review-voice-select">English voice</label>
+                    <select id="review-voice-select">${voiceOptionsHtml('en')}</select>
+                    <label for="review-voice-select-pl" style="margin-top:0.55rem;">Polish voice / Głos polski</label>
+                    <select id="review-voice-select-pl">${voiceOptionsHtml('pl')}</select>
                 </div>
             </div>`
             : '';
@@ -1301,6 +1368,7 @@ Return ONLY JSON each turn.`;
         const voiceBtn = root.querySelector('#review-voice-btn');
         const voiceMenu = root.querySelector('#review-voice-menu');
         const voiceSel = root.querySelector('#review-voice-select');
+        const voiceSelPl = root.querySelector('#review-voice-select-pl');
         if (voiceBtn && voiceMenu) {
             voiceBtn.addEventListener('click', (ev) => {
                 ev.stopPropagation();
@@ -1312,12 +1380,16 @@ Return ONLY JSON each turn.`;
         if (voiceSel) {
             voiceSel.addEventListener('change', () => {
                 saveVoiceURI(voiceSel.value);
-                state.voiceMenuOpen = false;
-                if (voiceMenu) voiceMenu.classList.remove('open');
-                if (voiceBtn) voiceBtn.setAttribute('aria-expanded', 'false');
                 hearLastCoach();
             });
             voiceSel.addEventListener('click', (ev) => ev.stopPropagation());
+        }
+        if (voiceSelPl) {
+            voiceSelPl.addEventListener('change', () => {
+                saveVoiceURIPl(voiceSelPl.value);
+                hearLastCoach();
+            });
+            voiceSelPl.addEventListener('click', (ev) => ev.stopPropagation());
         }
         if (state.voiceMenuOpen) {
             const closer = (ev) => {
@@ -1421,10 +1493,10 @@ Return ONLY JSON each turn.`;
             : (isPolishTutor() ? 'Bez obrazka — ucz z tematu/sceny.' : 'No picture — teach from the topic/scene.');
         const openBit = isPolishTutor()
             ? `START. ${pictureOpen}
-Otwórz jako trener po polsku. Wpleć gramatykę + jedno słówko (spróbuj "${focusWord}").
-Reply max ~${ease.maxWords || 18} słów PO POLSKU. Modeluj angielski wzorzec, potem poproś o angielską odpowiedź. Bez A/B, bez emoji.
+Otwórz jako trener po polsku — poprawna, naturalna polszczyzna (fleksja, przypadki, szyk). Wpleć gramatykę + jedno słówko (spróbuj "${focusWord}").
+Max ~${ease.maxWords || 18} słów PO POLSKU. Modeluj angielski wzorzec, potem poproś o angielską odpowiedź. Bez A/B, bez emoji, bez kalk z angielskiego.
 ${state.runInstructions ? 'Uwzględnij SESSION FOCUS bez ogłaszania go.' : ''}
-nudge = krótka wskazówka. WYPEŁNIJ "say": osobno pl i en.
+nudge = krótka wskazówka po polsku. WYPEŁNIJ "say": osobno pl (poprawny polski) i en.
 
 Return ONLY JSON:
 {"reply":"...","say":[{"lang":"pl","text":"..."},{"lang":"en","text":"This is my mum."}],"usedGrammar":false,"usedVocab":[],"nudge":"Spróbuj: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`
@@ -1505,23 +1577,23 @@ ${openBit}`;
         let supportBit = '';
         if (isPolishTutor()) {
             if (helpRequest || needPolish) {
-                supportBit = 'POMOC: Uczeń nie rozumie. Wyjaśnij prościej po polsku (1–2 zdania), daj łatwiejszy wzorzec EN. stepSuccess=false.';
+                supportBit = 'POMOC: Uczeń nie rozumie. Wyjaśnij prościej poprawną polszczyzną (1–2 zdania, dobra fleksja), daj łatwiejszy wzorzec EN. stepSuccess=false.';
             } else if (mixed) {
                 supportBit = 'Odpowiedź mieszana: zaakceptuj sens, podaj czyste angielskie zdanie do powtórzenia (askRepeat + englishRetell).';
             } else {
-                supportBit = 'Kontynuuj przepytywanie po polsku; wymagaj angielskiej odpowiedzi (słowo → potem krótkie zdanie).';
+                supportBit = 'Kontynuuj przepytywanie poprawną polszczyzną; wymagaj angielskiej odpowiedzi (słowo → potem krótkie zdanie).';
             }
         } else if (helpRequest) {
-            supportBit = 'HELP: Student tapped Nie rozumiem. 1 short Polish tip about your last line, then simpler English + model. stepSuccess=false.';
+            supportBit = 'HELP: Student tapped Nie rozumiem. 1 short tip in correct natural Polish about your last line, then simpler English + model. stepSuccess=false.';
         } else if (needPolish) {
-            supportBit = 'Confused: brief Polish tip, then simpler English practice.';
+            supportBit = 'Confused: brief tip in correct natural Polish, then simpler English practice.';
         } else if (mixed) {
             supportBit = 'Mixed PL/EN: retell as one English sentence; askRepeat=true + englishRetell.';
         }
 
         const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
         const turnGuide = isPolishTutor()
-            ? `Odpowiedz PO POLSKU (max ~${ease.maxWords || 18} słów). Ucz + poproś o krótką EN odpowiedź.`
+            ? `Odpowiedz poprawną polszczyzną (max ~${ease.maxWords || 18} słów; dobra fleksja i szyk). Ucz + poproś o krótką EN odpowiedź.`
             : `Reply short (max ~${ease.maxWords || 18} words). Teach grammar+vocab; ask for a short full sentence.`;
         const prompt = `${buildSystemRules()}
 
@@ -1690,17 +1762,18 @@ Fill say[] for TTS (pl/en split). JSON only:
         render();
 
         const prompt = isPolishTutor()
-            ? `Notatka trenera PE (po polsku, krótko i życzliwie) dla klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}.
-Gramatyka: ${grammarLabel(state.grammarId)}. Słówka: ${state.wordList.join(', ')}. Focus: ${sanitizeRunInstructions(state.runInstructions) || 'brak'}.
+            ? `Notatka trenera PE poprawną, naturalną polszczyzną (krótko i życzliwie) dla klasy ${state.schoolYear}, ease ${easeInfo(state.ease).label}.
+Używaj poprawnej fleksji, przypadków, szyku i polskich znaków. Bez kalk z angielskiego.
+Gramatyka: ${grammarFocusText()}. Słówka: ${state.wordList.join(', ')}. Focus: ${sanitizeRunInstructions(state.runInstructions) || 'brak'}.
 Tury: ${state.turns}. Trafienia gramatyki: ${state.grammarHits}. Słówka: ${state.vocabTouched.join(', ') || 'brak'}.
 
 Transkrypt:
 ${historyText(10)}
 
 Return ONLY JSON:
-{"summary":"2 krótkie zdania po polsku","strengths":["2–4 mocne strony po polsku"],"improvements":["2–4 wskazówki po polsku"]}`
+{"summary":"2 krótkie poprawne zdania po polsku","strengths":["2–4 mocne strony po polsku"],"improvements":["2–4 wskazówki po polsku"]}`
             : `Primary English coach note for klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}. Be brief and kind.
-Grammar: ${grammarLabel(state.grammarId)}. Vocab: ${state.wordList.join(', ')}. Focus: ${sanitizeRunInstructions(state.runInstructions) || 'none'}.
+Grammar: ${grammarFocusText()}. Vocab: ${state.wordList.join(', ')}. Focus: ${sanitizeRunInstructions(state.runInstructions) || 'none'}.
 Turns: ${state.turns}. Grammar hits: ${state.grammarHits}. Vocab touched: ${state.vocabTouched.join(', ') || 'none'}.
 
 Transcript:
@@ -1739,7 +1812,7 @@ Return ONLY JSON:
                     pointsEarned: score,
                     result: {
                         turns: state.turns,
-                        grammar: state.grammarId,
+                        grammar: state.grammarIds.slice(),
                         vocabMode: state.vocabMode,
                         topic: state.topicId,
                         scene: state.sceneId || null,
@@ -1864,7 +1937,8 @@ Return ONLY JSON:
         state.sceneSeed = pickSceneSeed();
         state.openingStyle = pickOpeningStyle();
         state.sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-        state.voiceURI = loadSavedVoiceURI();
+        state.voiceURI = loadSavedVoiceURI(VOICE_STORAGE_KEY);
+        state.voiceURIPl = loadSavedVoiceURI(VOICE_STORAGE_KEY_PL);
         state.voiceMenuOpen = false;
         state.lastRepeatLine = '';
         refreshVoices();
@@ -1914,8 +1988,14 @@ Return ONLY JSON:
                     const sel = document.getElementById('review-voice-select');
                     if (sel) {
                         const current = sel.value;
-                        sel.innerHTML = voiceOptionsHtml();
+                        sel.innerHTML = voiceOptionsHtml('en');
                         if (current) sel.value = current;
+                    }
+                    const selPl = document.getElementById('review-voice-select-pl');
+                    if (selPl) {
+                        const currentPl = selPl.value;
+                        selPl.innerHTML = voiceOptionsHtml('pl');
+                        if (currentPl) selPl.value = currentPl;
                     }
                 });
             }
