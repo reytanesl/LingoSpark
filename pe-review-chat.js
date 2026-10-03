@@ -185,6 +185,7 @@
 
     let cachedVoices = [];
     let micStopTimer = null;
+    let speechToken = 0;
 
     function grammars() {
         return global.PE_TOPIC_CHALLENGE_GRAMMARS || [];
@@ -812,6 +813,90 @@ Return ONLY JSON each turn.`;
         return stripEmojis(text);
     }
 
+    function looksPolishChunk(chunk) {
+        const t = String(chunk || '').trim();
+        if (!t) return false;
+        if (PL_CHAR_RE.test(t)) return true;
+        const plHits = (t.match(new RegExp(PL_WORD_RE.source, 'gi')) || []).length;
+        return plHits >= 1;
+    }
+
+    function looksEnglishChunk(chunk) {
+        const t = String(chunk || '').trim();
+        if (!t) return false;
+        if (looksPolishChunk(t)) return false;
+        if (/\b(the|a|an|i|you|we|they|is|are|am|have|has|can|like|this|that|my|your|his|her|our|their|try|say|nice|hello|hi|what|where|who|mum|mom|dad|brother|sister|friend|school|pizza|dog|cat|yes|no|ok|okay)\b/i.test(t)) {
+            return true;
+        }
+        // Short PE model lines without Polish letters
+        return /^[a-z0-9\s'’.,!?:+\-]+$/i.test(t) && /[a-z]{2,}/i.test(t);
+    }
+
+    function classifySpeechChunk(chunk) {
+        const t = String(chunk || '').trim();
+        if (!t) return null;
+        if (looksPolishChunk(t)) return 'pl';
+        if (looksEnglishChunk(t)) return 'en';
+        return isPolishTutor() ? 'pl' : 'en';
+    }
+
+    function splitIntoSentences(text) {
+        return String(text || '')
+            .split(/(?<=[.!?…])\s+|\n+/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+    }
+
+    /**
+     * Split mixed PL/EN coach text so each language is spoken with the right voice.
+     * English models after "Spróbuj:" / quotes use EN; Polish explanations use PL.
+     */
+    function splitSpeechSegments(raw) {
+        const text = stripEmojis(raw);
+        if (!text) return [];
+
+        const segments = [];
+        const push = (lang, piece) => {
+            const t = String(piece || '').replace(/\s+/g, ' ').trim();
+            if (!t || !lang) return;
+            const last = segments[segments.length - 1];
+            if (last && last.lang === lang) last.text += (/[.!?…,:;]$/.test(last.text) ? ' ' : ' ') + t;
+            else segments.push({ lang, text: t });
+        };
+
+        const pieceRe = /"([^"]+)"|'([^']+)'|(?:Po\s*polsku|Now\s+in\s+English|In\s+English|Spróbuj|Sprobuj|Try|Say|We\s+say|Po\s+angielsku|Powiedz)\s*[:\-–]\s*[^.!?\n]+[.!?]?/gi;
+        let lastIdx = 0;
+        let m;
+        while ((m = pieceRe.exec(text)) !== null) {
+            if (m.index > lastIdx) {
+                splitIntoSentences(text.slice(lastIdx, m.index)).forEach((s) => push(classifySpeechChunk(s), s));
+            }
+            const whole = m[0];
+            const quoted = m[1] != null ? m[1] : (m[2] != null ? m[2] : null);
+            if (quoted != null) {
+                push(classifySpeechChunk(quoted) || 'en', quoted);
+            } else {
+                const mm = whole.match(/^((?:Po\s*polsku|Now\s+in\s+English|In\s+English|Spróbuj|Sprobuj|Try|Say|We\s+say|Po\s+angielsku|Powiedz)\s*[:\-–]\s*)([\s\S]+)$/i);
+                if (mm) {
+                    const label = mm[1].replace(/[:\-–]\s*$/, '').trim();
+                    const rest = mm[2].trim();
+                    const labelLang = /^(try|say|we\s+say|now\s+in\s+english|in\s+english)$/i.test(label) ? 'en' : 'pl';
+                    push(labelLang, label);
+                    // Content after these teaching markers is the English (or Polish) model to pronounce correctly
+                    if (/^(po\s*polsku)$/i.test(label)) push('pl', rest);
+                    else push(looksPolishChunk(rest) ? 'pl' : 'en', rest);
+                } else {
+                    push(classifySpeechChunk(whole), whole);
+                }
+            }
+            lastIdx = m.index + whole.length;
+        }
+        if (lastIdx < text.length) {
+            splitIntoSentences(text.slice(lastIdx)).forEach((s) => push(classifySpeechChunk(s), s));
+        }
+        return segments;
+    }
+
     function listVoicesForLang(langPrefix) {
         if (!global.speechSynthesis) return [];
         const all = global.speechSynthesis.getVoices() || [];
@@ -830,22 +915,50 @@ Return ONLY JSON each turn.`;
         return selectedVoice();
     }
 
-    function speakText(text, opts) {
-        const forceLang = opts && opts.lang;
-        const wantPl = forceLang === 'pl' || (!forceLang && isPolishTutor() && !(opts && opts.englishOnly));
-        const spoken = wantPl ? polishForSpeech(text) : englishForSpeech(text);
-        if (!spoken || !global.speechSynthesis) return;
-        global.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(spoken);
-        const voice = pickVoice(wantPl ? 'pl' : 'en');
+    function speakUtterance(seg, onDone) {
+        const u = new SpeechSynthesisUtterance(seg.text);
+        const voice = pickVoice(seg.lang);
         if (voice) {
             u.voice = voice;
-            u.lang = voice.lang || (wantPl ? 'pl-PL' : 'en-GB');
+            u.lang = voice.lang || (seg.lang === 'pl' ? 'pl-PL' : 'en-GB');
         } else {
-            u.lang = wantPl ? 'pl-PL' : 'en-GB';
+            u.lang = seg.lang === 'pl' ? 'pl-PL' : 'en-GB';
         }
         u.rate = 0.92;
+        u.onend = () => { if (typeof onDone === 'function') onDone(); };
+        u.onerror = () => { if (typeof onDone === 'function') onDone(); };
         global.speechSynthesis.speak(u);
+    }
+
+    function speakText(text, opts) {
+        if (!global.speechSynthesis) return;
+        try { global.speechSynthesis.cancel(); } catch { /* */ }
+        const token = ++speechToken;
+
+        let segments;
+        if (opts && (opts.englishOnly || opts.lang === 'en')) {
+            const en = englishForSpeech(text) || stripEmojis(text);
+            segments = en ? [{ lang: 'en', text: en }] : [];
+        } else if (opts && opts.lang === 'pl') {
+            const pl = polishForSpeech(text);
+            segments = pl ? [{ lang: 'pl', text: pl }] : [];
+        } else {
+            segments = splitSpeechSegments(text);
+            // Fallback: if classifier found nothing useful, speak whole line in coach language
+            if (!segments.length) {
+                const fallback = stripEmojis(text);
+                if (fallback) segments = [{ lang: isPolishTutor() ? 'pl' : 'en', text: fallback }];
+            }
+        }
+        if (!segments.length) return;
+
+        let i = 0;
+        const next = () => {
+            if (token !== speechToken) return;
+            if (i >= segments.length) return;
+            speakUtterance(segments[i++], next);
+        };
+        next();
     }
 
     function getSpeechRecognition() {
@@ -903,6 +1016,7 @@ Return ONLY JSON each turn.`;
     }
 
     function silenceBotSpeech() {
+        speechToken += 1;
         if (global.speechSynthesis) {
             try { global.speechSynthesis.cancel(); } catch { /* */ }
         }
