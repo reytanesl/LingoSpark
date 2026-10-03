@@ -130,11 +130,11 @@
     ];
 
     const OPENING_STYLES_PL = [
-        'Zacznij krótkim, poprawnym polskim pytaniem o słówko, potem podaj angielski wzorzec i poproś o odpowiedź po angielsku.',
-        'Przywitaj ciepło po polsku, pokaż jedno krótkie zdanie-wzorzec po angielsku i poproś ucznia o podobne.',
-        'Wskaż coś ze sceny lub tematu, zapytaj poprawną polszczyzną „Jak po angielsku…?” i modeluj odpowiedź.',
-        'Wpleć jedno słówko w krótkie polskie pytanie, potem daj angielski wzorzec do powtórzenia lub ułożenia zdania.',
-        'Jak cierpliwy nauczyciel: raz pokaż wzorzec, potem „Twoja kolej” z jasną ramą po polsku.'
+        'Zacznij krótkim, poprawnym polskim pytaniem o słówko, potem podaj angielski wzorzec w say[] i poproś: „Powiedz po angielsku.”',
+        'Przywitaj ciepło po polsku, opisz scenę jednym poprawnym zdaniem i poproś o angielską odpowiedź.',
+        'Wskaż coś ze sceny lub tematu, zapytaj poprawną polszczyzną („Jak po angielsku…?”) i modeluj odpowiedź tylko w say[].',
+        'Wpleć jedno słówko w krótkie polskie pytanie, potem daj angielski wzorzec w say[] (nie w etykiecie „Wzór”).',
+        'Jak cierpliwy nauczyciel: jedno poprawne polskie zdanie + „Powiedz po angielsku.” Angielski tylko w say[].'
     ];
 
     const VOICE_STORAGE_KEY = 'ls_review_voice';
@@ -800,14 +800,20 @@ Input: ${state.inputMode}.
 
 ZASADY (tryb polski — krytyczne):
 1) TWOJE wypowiedzi są poprawną, naturalną polszczyzną: krótko, ciepło, jak dobry nauczyciel — nie wykład. Max ~${maxW} słów na turę.
-2) SKŁADNIA POLSKA (obowiązkowa): poprawna fleksja, przypadki, rodzaj, liczba, szyk zdania. Używaj naturalnych form: „Jak po angielsku powiesz…?”, „Ułóż zdanie…”, „Spróbuj powiedzieć…”, „Świetnie!”, „Prawie — poprawnie jest…”. Unikaj kalk z angielskiego, błędów typu „powiedz mama”, „to jest brat mój” (lepiej: „to jest mój brat”), „jak jest po angielsku dla…”. Polskie znaki: ą ć ę ł ń ó ś ź ż.
-3) Przepytuj i ucz: najpierw krótko po polsku, potem proś o angielskie słowo lub krótkie zdanie. Przykłady poprawne: „Jak po angielsku powiesz «mama»?”, „Ułóż zdanie: To jest mój brat. Spróbuj: This is my brother.”
-4) Dopasuj język do klasy ${state.schoolYear} i ease ${ease.label}: młodsze/łatwiejsze = bardzo proste, poprawne zdania; nie „dzieciniej” błędną składnią.
-5) Uczeń odpowiada po ANGIELSKU. Nie akceptuj samego A/B. Po jednym słowie poproś o zdanie.
+2) SKŁADNIA I PRZYPADKI (obowiązkowe — sprawdzaj KAŻDE słowo): poprawna fleksja, przypadki, rodzaj, liczba, szyk. Polskie znaki: ą ć ę ł ń ó ś ź ż.
+   • tort → przy torcie / na torcie (NIGDY „przy tortcie”); stół → przy stole; dom → w domu; szkoła → w szkole; mama → z mamą / o mamie; brat → z bratem.
+   • Nie dokładaj zbędnego „c” przed końcówką (tortcie ✗). Unikaj kalk: „powiedz mama”, „to jest brat mój” (→ „to jest mój brat”), „jak jest po angielsku dla…”.
+   • Naturalne prośby: „Jak po angielsku powiesz…?”, „Powiedz po angielsku.”, „Ułóż zdanie…”, „Świetnie!”, „Prawie — poprawnie jest…”.
+3) reply = TYLKO poprawny polski (1–2 zdania). Kończ prośbą „Powiedz po angielsku.” NIE pisz etykiet: „Wzór”, „Wzór:”, „Twoja kolej”, „Spróbuj:”, „Model:”. Angielski wzorzec NIE w reply — tylko w say[].
+   Dobrze: „Siostra uśmiecha się przy torcie. Powiedz po angielsku.”
+   Źle: „Siostra uśmiecha się przy tortcie. Wzór: She's happy. Twoja kolej — powiedz po angielsku.”
+4) Przepytuj: najpierw po polsku, potem uczeń odpowiada po angielsku. Po jednym słowie poproś o zdanie. Bez A/B.
+5) Dopasuj język do klasy ${state.schoolYear} i ease ${ease.label}: proste, ale POPRAWNE — nigdy „dzieciniej” błędną składnią.
 6) Jedno pytanie na turę. Chwal próby. Max jedna łagodna korekta.
-7) Pole say (obowiązkowe): kolejka TTS — pl = tylko poprawny polski, en = tylko angielski wzorzec. Przykład: say:[{"lang":"pl","text":"Jak po angielsku powiesz mama? Spróbuj:"},{"lang":"en","text":"This is my mum."}]
+7) Pole say (obowiązkowe): pl = dokładnie to, co ma być przeczytane po polsku (jak reply, bez etykiet, poprawne przypadki); en = TYLKO angielski wzorzec.
+   Przykład: say:[{"lang":"pl","text":"Siostra uśmiecha się przy torcie. Powiedz po angielsku."},{"lang":"en","text":"She's happy."}]
 8) englishRetell = dokładne angielskie zdanie (askRepeat=true), bez polskiego.
-9) Bez emoji, bez AI/JSON. Bezpieczne treści. W roli trenera nie mów po angielsku — angielski tylko jako model.
+9) Bez emoji, bez AI/JSON. Bezpieczne treści. W roli trenera nie mów po angielsku w reply — angielski tylko w say[].
 
 Zwracaj TYLKO JSON każda tura.`;
         }
@@ -896,7 +902,53 @@ Return ONLY JSON each turn.`;
     }
 
     function polishForSpeech(text) {
-        return stripEmojis(text);
+        let t = stripEmojis(text);
+        if (!t) return '';
+        // Drop coach scaffolding that sounds broken when spoken aloud.
+        t = t.replace(/\b(wzór|wzor|model|example)\s*[:\-–]?\s*/gi, ' ');
+        t = t.replace(/\btwoja\s+kolej\b\s*[—\-–,:]?\s*/gi, ' ');
+        t = t.replace(/\b(spróbuj|sprobuj)\s*[:\-–]?\s*/gi, ' ');
+        // Drop clear English model clauses (keep Polish words without diacritics, e.g. Powiedz).
+        t = t.replace(/\b(?:She's|He's|It's|I'm|You're|We're|They're|This is|That is|I like|I can|I have|My \w+ is|She is|He is|They are|We are)[^.!?]{0,60}[.!?]?/gi, ' ');
+        t = applyPolishCaseFixes(t);
+        t = t.replace(/\bpowiedz\s+po\s+angielsku\b/gi, 'Powiedz po angielsku');
+        return t.replace(/\s*[—\-–]+\s*/g, '. ').replace(/\s+/g, ' ').replace(/\s+([.!?])/g, '$1').trim();
+    }
+
+    /** Common AI Polish case mistakes — keep short and high-confidence only. */
+    function applyPolishCaseFixes(text) {
+        let t = String(text || '');
+        const fixes = [
+            [/\btortcie\b/gi, 'torcie'],
+            [/\bstołcie\b/gi, 'stole'],
+            [/\bdomcie\b/gi, 'domu'],
+            [/\bszkołcie\b/gi, 'szkole'],
+            [/\bmamcie\b/gi, 'mamie'],
+            [/\btatcie\b/gi, 'tacie'],
+            [/\bbratcie\b/gi, 'bracie'],
+            [/\bsiostrcie\b/gi, 'siostrze']
+        ];
+        fixes.forEach(([re, to]) => { t = t.replace(re, to); });
+        return t;
+    }
+
+    function cleanPolishTutorReply(text) {
+        let t = stripEmojis(text);
+        if (!t) return '';
+        // Remove meta labels; keep Polish sentences. Drop "Wzór: She's happy." style blocks.
+        t = t.replace(/\b(wzór|wzor|model|example)\s*[:\-–]?\s*[A-Za-z][^.]{0,80}\.?/gi, ' ');
+        t = t.replace(/\btwoja\s+kolej\b\s*[—\-–,:]?\s*/gi, ' ');
+        t = t.replace(/\b(spróbuj|sprobuj)\s*[:\-–]\s*/gi, ' ');
+        t = applyPolishCaseFixes(t);
+        t = t.replace(/\bpowiedz\s+po\s+angielsku\b/gi, 'Powiedz po angielsku');
+        return t.replace(/\s+/g, ' ').replace(/\s+([.!?])/g, '$1').trim();
+    }
+
+    function finalizeCoachReply(reply) {
+        const raw = String(reply || '').trim();
+        if (!raw) return '';
+        if (isPolishTutor()) return cleanPolishTutorReply(raw) || applyPolishCaseFixes(raw);
+        return stripEmojis(raw);
     }
 
     function listVoicesForLang(langPrefix) {
@@ -916,7 +968,9 @@ Return ONLY JSON each turn.`;
         raw.forEach((item) => {
             if (!item || typeof item !== 'object') return;
             const lang = item.lang === 'pl' || item.lang === 'en' ? item.lang : '';
-            const text = stripEmojis(item.text);
+            let text = stripEmojis(item.text);
+            if (lang === 'pl') text = polishForSpeech(text);
+            else if (lang === 'en') text = englishForSpeech(text) || text;
             if (!lang || !text) return;
             const last = out[out.length - 1];
             if (last && last.lang === lang) last.text += ' ' + text;
@@ -930,7 +984,7 @@ Return ONLY JSON each turn.`;
             const en = englishForSpeech(replyText) || stripEmojis(replyText);
             return en ? [{ lang: 'en', text: en }] : [];
         }
-        const pl = polishForSpeech(replyText);
+        const pl = polishForSpeech(cleanPolishTutorReply(replyText) || replyText);
         return pl ? [{ lang: 'pl', text: pl }] : [];
     }
 
@@ -989,11 +1043,13 @@ Return ONLY JSON each turn.`;
     function rememberAndSpeakBot(data) {
         const retell = String(data && data.englishRetell || '').trim();
         const askRepeat = !!(data && data.askRepeat) && !!retell;
-        const segments = normalizeSaySegments(data, data && data.reply);
+        const cleanReply = finalizeCoachReply(data && data.reply);
+        if (data && cleanReply) data.reply = cleanReply;
+        const segments = normalizeSaySegments(data, cleanReply);
         state.lastSay = segments.slice();
         state.lastRepeatLine = askRepeat ? retell : '';
         // Hear / lastBotReply: prefer English retell when practising; else full reply text
-        state.lastBotReply = askRepeat ? retell : String(data && data.reply || '');
+        state.lastBotReply = askRepeat ? retell : cleanReply;
 
         if (!(state.inputMode === 'speech' || state.inputMode === 'both')) return;
 
@@ -1493,13 +1549,13 @@ Return ONLY JSON each turn.`;
             : (isPolishTutor() ? 'Bez obrazka — ucz z tematu/sceny.' : 'No picture — teach from the topic/scene.');
         const openBit = isPolishTutor()
             ? `START. ${pictureOpen}
-Otwórz jako trener po polsku — poprawna, naturalna polszczyzna (fleksja, przypadki, szyk). Wpleć gramatykę + jedno słówko (spróbuj "${focusWord}").
-Max ~${ease.maxWords || 18} słów PO POLSKU. Modeluj angielski wzorzec, potem poproś o angielską odpowiedź. Bez A/B, bez emoji, bez kalk z angielskiego.
+Otwórz jako trener po polsku — poprawna fleksja/przypadki (np. przy torcie, NIE tortcie). Wpleć gramatykę + jedno słówko (spróbuj "${focusWord}").
+Max ~${ease.maxWords || 18} słów. reply = tylko polski + „Powiedz po angielsku.” Bez etykiet „Wzór” / „Twoja kolej”. Angielski tylko w say[].
 ${state.runInstructions ? 'Uwzględnij SESSION FOCUS bez ogłaszania go.' : ''}
-nudge = krótka wskazówka po polsku. WYPEŁNIJ "say": osobno pl (poprawny polski) i en.
+nudge = krótka wskazówka po polsku. Przykład say: pl „Siostra uśmiecha się przy torcie. Powiedz po angielsku.” + en „She's happy.”
 
 Return ONLY JSON:
-{"reply":"...","say":[{"lang":"pl","text":"..."},{"lang":"en","text":"This is my mum."}],"usedGrammar":false,"usedVocab":[],"nudge":"Spróbuj: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`
+{"reply":"Siostra uśmiecha się przy torcie. Powiedz po angielsku.","say":[{"lang":"pl","text":"Siostra uśmiecha się przy torcie. Powiedz po angielsku."},{"lang":"en","text":"She's happy."}],"usedGrammar":false,"usedVocab":[],"nudge":"…","stepSuccess":false,"askRepeat":false,"englishRetell":""}`
             : `START. ${pictureOpen}
 Open as the teaching coach. Use grammar + one vocab word (try "${focusWord}").
 Keep YOUR reply under ~${ease.maxWords || 18} words. Model then ask for a short full sentence. No yes/no opener, no A/B, no emojis.
@@ -1524,9 +1580,10 @@ ${openBit}`;
             return;
         }
 
-        state.messages.push({ role: 'assistant', text: data.reply });
+        const replyText = finalizeCoachReply(data.reply);
+        state.messages.push({ role: 'assistant', text: replyText });
         appendBubble(state.messages[state.messages.length - 1]);
-        rememberAndSpeakBot(data);
+        rememberAndSpeakBot(Object.assign({}, data, { reply: replyText }));
         setBusy(false);
         patchHud();
         if (data.nudge) patchNudge(data.nudge);
@@ -1593,7 +1650,7 @@ ${openBit}`;
 
         const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
         const turnGuide = isPolishTutor()
-            ? `Odpowiedz poprawną polszczyzną (max ~${ease.maxWords || 18} słów; dobra fleksja i szyk). Ucz + poproś o krótką EN odpowiedź.`
+            ? `Odpowiedz poprawną polszczyzną (max ~${ease.maxWords || 18} słów; przypadki!). reply bez „Wzór”/„Twoja kolej”; kończ „Powiedz po angielsku.” Angielski tylko w say[].`
             : `Reply short (max ~${ease.maxWords || 18} words). Teach grammar+vocab; ask for a short full sentence.`;
         const prompt = `${buildSystemRules()}
 
@@ -1603,8 +1660,8 @@ ${historyText(HISTORY_TURNS)}
 Turn ${state.turns + 1}. Prefer vocab: ${unusedVocab.slice(0, 4).join(', ') || 'any'}.
 ${supportBit}
 ${turnGuide}
-Fill say[] for TTS (pl/en split). JSON only:
-{"reply":"...","say":[{"lang":"pl","text":"..."},{"lang":"en","text":"..."}],"usedGrammar":true,"usedVocab":[],"nudge":"...","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
+Fill say[] for TTS (pl = natural Polish to speak; en = English model only). JSON only:
+{"reply":"Siostra uśmiecha się przy torcie. Powiedz po angielsku.","say":[{"lang":"pl","text":"Siostra uśmiecha się przy torcie. Powiedz po angielsku."},{"lang":"en","text":"She's happy."}],"usedGrammar":true,"usedVocab":[],"nudge":"...","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
 
         const data = await fetchAi(prompt, { withImage: false });
         hideTyping();
@@ -1626,9 +1683,10 @@ Fill say[] for TTS (pl/en split). JSON only:
         const pts = awardTurnPoints(data);
         const retell = String(data.englishRetell || '').trim();
         const askRepeat = !!data.askRepeat && !!retell;
-        state.messages.push({ role: 'assistant', text: data.reply });
+        const replyText = finalizeCoachReply(data.reply);
+        state.messages.push({ role: 'assistant', text: replyText });
         appendBubble(state.messages[state.messages.length - 1]);
-        rememberAndSpeakBot(data);
+        rememberAndSpeakBot(Object.assign({}, data, { reply: replyText }));
         setBusy(false);
         patchHud();
         const tip = askRepeat
