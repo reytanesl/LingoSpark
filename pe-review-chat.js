@@ -10,7 +10,7 @@
     const POINTS_KEY = 'review';
     const MIN_CUSTOM = 4;
     const MAX_VOCAB = 14;
-    const HISTORY_TURNS = 6; // last N student+bot messages kept in the AI prompt (speed)
+    const HISTORY_TURNS = 4; // keep prompts short for faster turns
 
     const STOP = new Set([
         'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
@@ -150,6 +150,7 @@
         vocabTouched: [],
         grammarHits: 0,
         lastBotReply: '',
+        lastSay: [], // [{lang:'pl'|'en', text}] from AI — authoritative TTS script
         loading: false,
         listening: false,
         recognition: null,
@@ -339,6 +340,17 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
                 letter-spacing: 0.4px; margin-bottom: 0.25rem; color: var(--royal-blue, #012169);
             }
             .review-bubble.you .bubble-label { color: var(--pillarbox-red, #c8102e); text-align: right; }
+            .review-bubble.review-typing {
+                opacity: 0.85; font-style: italic; color: var(--text-muted, #6b7280);
+            }
+            .review-typing-dots span {
+                animation: review-typing-blink 1.2s infinite; opacity: 0.25;
+            }
+            .review-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+            .review-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+            @keyframes review-typing-blink { 0%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+            .review-compose.review-busy { opacity: 0.92; }
+            .review-compose textarea:disabled { opacity: 0.7; }
             .review-compose {
                 background: #fff; border: 2px solid var(--border-light, #e5e7eb); border-radius: 12px;
                 padding: 1rem; border-top: 4px solid var(--pillarbox-red, #c8102e);
@@ -719,9 +731,10 @@ ZASADY (tryb polski — krytyczne):
 3) Dopasuj język polski do wieku (klasa ${state.schoolYear}) i ease ${ease.label}: młodsze/łatwiejsze = bardzo proste słowa, mocne modelowanie angielskiego wzorca.
 4) Uczeń ma odpowiadać po ANGIELSKU (słowo lub krótkie pełne zdanie). Nie akceptuj samego A/B. Jeśli poda tylko jedno słowo, poproś o zdanie.
 5) Jedno pytanie na turę. Chwal próby. Max jedna łagodna korekta.
-6) Angielskie wzorce w reply trzymaj w cudzysłowie lub po „Spróbuj: …”. Pole englishRetell = dokładne angielskie zdanie do powtórzenia, gdy chcesz, by uczeń je powtórzył (askRepeat=true).
-7) Nie emoji. Nie wspominaj AI/JSON. Bezpieczne treści.
-8) Nie przechodź na angielski w roli trenera — prowadź po polsku; angielski tylko jako materiał do nauki/powtórzenia.
+6) Angielskie wzorce w reply trzymaj osobno. Pole say (obowiązkowe) = kolejka TTS: każdy fragment z lang "pl" lub "en". Polski tekst → lang "pl"; angielskie słowa/zdania do wymowy → lang "en". Przykład: say:[{"lang":"pl","text":"Jak powiesz mama? Spróbuj:"},{"lang":"en","text":"This is my mum."}]
+7) englishRetell = dokładne angielskie zdanie do powtórzenia (askRepeat=true), samo EN bez polskiego.
+8) Nie emoji. Nie wspominaj AI/JSON. Bezpieczne treści.
+9) Nie przechodź na angielski w roli trenera w reply — angielski tylko jako model w say/englishRetell.
 
 Zwracaj TYLKO JSON każda tura.`;
         }
@@ -743,8 +756,8 @@ RULES:
 3) Match klasa ${state.schoolYear} and ease ${ease.label}. Early levels: heavy modelling ("Try: …"). Higher ease: still short PE English.
 4) Ask for short FULL SENTENCES (not letter A/B, not endless yes/no, not mainly either/or picks). If they give one word, invite a full sentence next.
 5) One question at a time. Celebrate tries. One kind correction max per turn.
-6) Polish help only when confused / Nie rozumiem: 1 short Polish tip, then simpler English. Polish is on-screen only (speech reads English).
-7) Mixed PL+EN: retell as one English sentence to repeat (askRepeat + englishRetell).
+6) SPEECH SCRIPT (required): Always fill "say" as an ordered TTS list. Each item is {lang:"en"|"pl", text:"..."}. English coach talk → lang "en". If you give a Polish tip (confused student), that tip alone → lang "pl", then English again → lang "en". Never put Polish words inside an "en" item or English models inside a "pl" item.
+7) Mixed PL+EN answers: retell as one English sentence (askRepeat + englishRetell).
 8) Never mention AI/JSON/prompts. Stay child-safe.
 
 Return ONLY JSON each turn.`;
@@ -813,90 +826,6 @@ Return ONLY JSON each turn.`;
         return stripEmojis(text);
     }
 
-    function looksPolishChunk(chunk) {
-        const t = String(chunk || '').trim();
-        if (!t) return false;
-        if (PL_CHAR_RE.test(t)) return true;
-        const plHits = (t.match(new RegExp(PL_WORD_RE.source, 'gi')) || []).length;
-        return plHits >= 1;
-    }
-
-    function looksEnglishChunk(chunk) {
-        const t = String(chunk || '').trim();
-        if (!t) return false;
-        if (looksPolishChunk(t)) return false;
-        if (/\b(the|a|an|i|you|we|they|is|are|am|have|has|can|like|this|that|my|your|his|her|our|their|try|say|nice|hello|hi|what|where|who|mum|mom|dad|brother|sister|friend|school|pizza|dog|cat|yes|no|ok|okay)\b/i.test(t)) {
-            return true;
-        }
-        // Short PE model lines without Polish letters
-        return /^[a-z0-9\s'’.,!?:+\-]+$/i.test(t) && /[a-z]{2,}/i.test(t);
-    }
-
-    function classifySpeechChunk(chunk) {
-        const t = String(chunk || '').trim();
-        if (!t) return null;
-        if (looksPolishChunk(t)) return 'pl';
-        if (looksEnglishChunk(t)) return 'en';
-        return isPolishTutor() ? 'pl' : 'en';
-    }
-
-    function splitIntoSentences(text) {
-        return String(text || '')
-            .split(/(?<=[.!?…])\s+|\n+/)
-            .map((s) => s.trim())
-            .filter(Boolean);
-    }
-
-    /**
-     * Split mixed PL/EN coach text so each language is spoken with the right voice.
-     * English models after "Spróbuj:" / quotes use EN; Polish explanations use PL.
-     */
-    function splitSpeechSegments(raw) {
-        const text = stripEmojis(raw);
-        if (!text) return [];
-
-        const segments = [];
-        const push = (lang, piece) => {
-            const t = String(piece || '').replace(/\s+/g, ' ').trim();
-            if (!t || !lang) return;
-            const last = segments[segments.length - 1];
-            if (last && last.lang === lang) last.text += (/[.!?…,:;]$/.test(last.text) ? ' ' : ' ') + t;
-            else segments.push({ lang, text: t });
-        };
-
-        const pieceRe = /"([^"]+)"|'([^']+)'|(?:Po\s*polsku|Now\s+in\s+English|In\s+English|Spróbuj|Sprobuj|Try|Say|We\s+say|Po\s+angielsku|Powiedz)\s*[:\-–]\s*[^.!?\n]+[.!?]?/gi;
-        let lastIdx = 0;
-        let m;
-        while ((m = pieceRe.exec(text)) !== null) {
-            if (m.index > lastIdx) {
-                splitIntoSentences(text.slice(lastIdx, m.index)).forEach((s) => push(classifySpeechChunk(s), s));
-            }
-            const whole = m[0];
-            const quoted = m[1] != null ? m[1] : (m[2] != null ? m[2] : null);
-            if (quoted != null) {
-                push(classifySpeechChunk(quoted) || 'en', quoted);
-            } else {
-                const mm = whole.match(/^((?:Po\s*polsku|Now\s+in\s+English|In\s+English|Spróbuj|Sprobuj|Try|Say|We\s+say|Po\s+angielsku|Powiedz)\s*[:\-–]\s*)([\s\S]+)$/i);
-                if (mm) {
-                    const label = mm[1].replace(/[:\-–]\s*$/, '').trim();
-                    const rest = mm[2].trim();
-                    const labelLang = /^(try|say|we\s+say|now\s+in\s+english|in\s+english)$/i.test(label) ? 'en' : 'pl';
-                    push(labelLang, label);
-                    // Content after these teaching markers is the English (or Polish) model to pronounce correctly
-                    if (/^(po\s*polsku)$/i.test(label)) push('pl', rest);
-                    else push(looksPolishChunk(rest) ? 'pl' : 'en', rest);
-                } else {
-                    push(classifySpeechChunk(whole), whole);
-                }
-            }
-            lastIdx = m.index + whole.length;
-        }
-        if (lastIdx < text.length) {
-            splitIntoSentences(text.slice(lastIdx)).forEach((s) => push(classifySpeechChunk(s), s));
-        }
-        return segments;
-    }
-
     function listVoicesForLang(langPrefix) {
         if (!global.speechSynthesis) return [];
         const all = global.speechSynthesis.getVoices() || [];
@@ -915,6 +844,31 @@ Return ONLY JSON each turn.`;
         return selectedVoice();
     }
 
+    /** Trust AI "say" segments only — no heuristic language guessing. */
+    function normalizeSaySegments(data, replyText) {
+        const out = [];
+        const raw = data && Array.isArray(data.say) ? data.say : [];
+        raw.forEach((item) => {
+            if (!item || typeof item !== 'object') return;
+            const lang = item.lang === 'pl' || item.lang === 'en' ? item.lang : '';
+            const text = stripEmojis(item.text);
+            if (!lang || !text) return;
+            const last = out[out.length - 1];
+            if (last && last.lang === lang) last.text += ' ' + text;
+            else out.push({ lang, text });
+        });
+        if (out.length) return out;
+
+        // Safe fallback: one language for the whole reply (coach style). No mixed guessing.
+        const primary = isPolishTutor() ? 'pl' : 'en';
+        if (primary === 'en') {
+            const en = englishForSpeech(replyText) || stripEmojis(replyText);
+            return en ? [{ lang: 'en', text: en }] : [];
+        }
+        const pl = polishForSpeech(replyText);
+        return pl ? [{ lang: 'pl', text: pl }] : [];
+    }
+
     function speakUtterance(seg, onDone) {
         const u = new SpeechSynthesisUtterance(seg.text);
         const voice = pickVoice(seg.lang);
@@ -930,35 +884,79 @@ Return ONLY JSON each turn.`;
         global.speechSynthesis.speak(u);
     }
 
-    function speakText(text, opts) {
+    function speakSegments(segments) {
         if (!global.speechSynthesis) return;
         try { global.speechSynthesis.cancel(); } catch { /* */ }
         const token = ++speechToken;
-
-        let segments;
-        if (opts && (opts.englishOnly || opts.lang === 'en')) {
-            const en = englishForSpeech(text) || stripEmojis(text);
-            segments = en ? [{ lang: 'en', text: en }] : [];
-        } else if (opts && opts.lang === 'pl') {
-            const pl = polishForSpeech(text);
-            segments = pl ? [{ lang: 'pl', text: pl }] : [];
-        } else {
-            segments = splitSpeechSegments(text);
-            // Fallback: if classifier found nothing useful, speak whole line in coach language
-            if (!segments.length) {
-                const fallback = stripEmojis(text);
-                if (fallback) segments = [{ lang: isPolishTutor() ? 'pl' : 'en', text: fallback }];
-            }
-        }
-        if (!segments.length) return;
-
+        const list = Array.isArray(segments) ? segments.filter((s) => s && s.text && (s.lang === 'pl' || s.lang === 'en')) : [];
+        if (!list.length) return;
         let i = 0;
         const next = () => {
             if (token !== speechToken) return;
-            if (i >= segments.length) return;
-            speakUtterance(segments[i++], next);
+            if (i >= list.length) return;
+            speakUtterance(list[i++], next);
         };
         next();
+    }
+
+    function speakText(text, opts) {
+        if (opts && (opts.englishOnly || opts.lang === 'en')) {
+            const en = englishForSpeech(text) || stripEmojis(text);
+            if (en) speakSegments([{ lang: 'en', text: en }]);
+            return;
+        }
+        if (opts && opts.lang === 'pl') {
+            const pl = polishForSpeech(text);
+            if (pl) speakSegments([{ lang: 'pl', text: pl }]);
+            return;
+        }
+        // Default: never guess mixed languages from plain text — use coach primary only.
+        const primary = isPolishTutor() ? 'pl' : 'en';
+        if (primary === 'en') {
+            const en = englishForSpeech(text) || stripEmojis(text);
+            if (en) speakSegments([{ lang: 'en', text: en }]);
+        } else {
+            const pl = polishForSpeech(text);
+            if (pl) speakSegments([{ lang: 'pl', text: pl }]);
+        }
+    }
+
+    function rememberAndSpeakBot(data) {
+        const retell = String(data && data.englishRetell || '').trim();
+        const askRepeat = !!(data && data.askRepeat) && !!retell;
+        const segments = normalizeSaySegments(data, data && data.reply);
+        state.lastSay = segments.slice();
+        state.lastRepeatLine = askRepeat ? retell : '';
+        // Hear / lastBotReply: prefer English retell when practising; else full reply text
+        state.lastBotReply = askRepeat ? retell : String(data && data.reply || '');
+
+        if (!(state.inputMode === 'speech' || state.inputMode === 'both')) return;
+
+        if (askRepeat && retell) {
+            // Speak coach script if provided, then ensure the practice line is heard in EN
+            const hasRetellEn = segments.some((s) => s.lang === 'en' && s.text.toLowerCase() === retell.toLowerCase());
+            if (segments.length && !hasRetellEn) {
+                speakSegments(segments.concat([{ lang: 'en', text: retell }]));
+            } else if (segments.length) {
+                speakSegments(segments);
+            } else {
+                speakSegments([{ lang: 'en', text: retell }]);
+            }
+            return;
+        }
+        speakSegments(segments);
+    }
+
+    function hearLastCoach() {
+        if (state.lastRepeatLine) {
+            speakText(state.lastRepeatLine, { lang: 'en', englishOnly: true });
+            return;
+        }
+        if (state.lastSay && state.lastSay.length) {
+            speakSegments(state.lastSay);
+            return;
+        }
+        if (state.lastBotReply) speakText(state.lastBotReply);
     }
 
     function getSpeechRecognition() {
@@ -1119,16 +1117,103 @@ Return ONLY JSON each turn.`;
     }
 
     function renderChatHtml() {
-        const bubbles = state.messages.map((msg) => {
-            if (msg.role === 'system') {
-                return `<div class="review-bubble system">${escapeHtml(msg.text)}</div>`;
-            }
-            if (msg.role === 'user') {
-                return `<div class="review-bubble you"><span class="bubble-label">You</span>${escapeHtml(msg.text)}</div>`;
-            }
-            return `<div class="review-bubble bot"><span class="bubble-label">Coach</span>${escapeHtml(msg.text)}</div>`;
-        }).join('');
+        const bubbles = state.messages.map((msg) => bubbleHtml(msg)).join('');
         return `<div class="review-chat-log" id="review-chat-log">${bubbles || '<div class="review-bubble system">Starting…</div>'}</div>`;
+    }
+
+    function bubbleHtml(msg) {
+        if (!msg) return '';
+        if (msg.role === 'system') {
+            return `<div class="review-bubble system">${escapeHtml(msg.text)}</div>`;
+        }
+        if (msg.role === 'user') {
+            return `<div class="review-bubble you"><span class="bubble-label">You</span>${escapeHtml(msg.text)}</div>`;
+        }
+        return `<div class="review-bubble bot"><span class="bubble-label">Coach</span>${escapeHtml(msg.text)}</div>`;
+    }
+
+    function chatLogEl() {
+        return rootEl()?.querySelector('#review-chat-log');
+    }
+
+    function scrollChatToEnd() {
+        const log = chatLogEl();
+        if (log) log.scrollTop = log.scrollHeight;
+    }
+
+    function appendBubble(msg) {
+        const log = chatLogEl();
+        if (!log) {
+            render();
+            return;
+        }
+        hideTyping();
+        const starter = log.querySelector('.review-bubble.system');
+        if (starter && /starting/i.test(starter.textContent || '') && state.messages.length) {
+            starter.remove();
+        }
+        log.insertAdjacentHTML('beforeend', bubbleHtml(msg));
+        scrollChatToEnd();
+    }
+
+    function showTyping() {
+        const log = chatLogEl();
+        if (!log || log.querySelector('#review-typing')) return;
+        const label = isPolishTutor() ? 'Trener pisze…' : 'Coach is typing…';
+        log.insertAdjacentHTML('beforeend',
+            `<div class="review-bubble bot review-typing" id="review-typing"><span class="bubble-label">Coach</span>${escapeHtml(label)} <span class="review-typing-dots"><span>·</span><span>·</span><span>·</span></span></div>`);
+        scrollChatToEnd();
+    }
+
+    function hideTyping() {
+        chatLogEl()?.querySelector('#review-typing')?.remove();
+    }
+
+    function setBusy(busy) {
+        state.loading = !!busy;
+        const root = rootEl();
+        if (!root) return;
+        const compose = root.querySelector('.review-compose');
+        if (compose) compose.classList.toggle('review-busy', state.loading);
+        const input = root.querySelector('#review-input');
+        if (input) input.disabled = state.loading;
+        [
+            '#review-send-btn', '#review-mic-btn', '#review-voice-btn',
+            '#review-help-btn', '#review-end-btn', '#review-hear-btn'
+        ].forEach((sel) => {
+            const btn = root.querySelector(sel);
+            if (!btn) return;
+            if (sel === '#review-hear-btn' || sel === '#review-help-btn') {
+                btn.disabled = state.loading || !state.lastBotReply;
+            } else if (sel === '#review-end-btn') {
+                btn.disabled = state.loading || state.turns < 1;
+            } else {
+                btn.disabled = state.loading;
+            }
+        });
+    }
+
+    function patchHud() {
+        const root = rootEl();
+        const hud = root?.querySelector('.review-hud');
+        if (!hud) return;
+        hud.outerHTML = renderHudHtml();
+    }
+
+    function patchNudge(text) {
+        const nudge = rootEl()?.querySelector('#review-nudge');
+        if (nudge) nudge.textContent = text || '';
+    }
+
+    function patchListeningUi() {
+        const root = rootEl();
+        if (!root) return;
+        root.querySelector('.review-compose')?.classList.toggle('review-listening', !!state.listening);
+        const mic = root.querySelector('#review-mic-btn');
+        if (mic) {
+            mic.innerHTML = `<i class="fa-solid fa-microphone"></i> ${state.listening ? 'Listening…' : 'Say it'}`;
+            mic.disabled = state.loading;
+        }
     }
 
     function renderFeedbackHtml() {
@@ -1208,12 +1293,7 @@ Return ONLY JSON each turn.`;
         }
         root.querySelector('#review-send-btn')?.addEventListener('click', () => submitMessage());
         root.querySelector('#review-mic-btn')?.addEventListener('click', () => startMic());
-        root.querySelector('#review-hear-btn')?.addEventListener('click', () => {
-            const line = state.lastRepeatLine || state.lastBotReply;
-            if (!line) return;
-            if (state.lastRepeatLine) speakText(line, { lang: 'en', englishOnly: true });
-            else speakText(line);
-        });
+        root.querySelector('#review-hear-btn')?.addEventListener('click', () => hearLastCoach());
         root.querySelector('#review-help-btn')?.addEventListener('click', () => askForHelp());
         root.querySelector('#review-end-btn')?.addEventListener('click', () => endSession());
         root.querySelector('#review-restart-btn')?.addEventListener('click', () => initPeReview());
@@ -1235,10 +1315,7 @@ Return ONLY JSON each turn.`;
                 state.voiceMenuOpen = false;
                 if (voiceMenu) voiceMenu.classList.remove('open');
                 if (voiceBtn) voiceBtn.setAttribute('aria-expanded', 'false');
-                const line = state.lastRepeatLine || state.lastBotReply;
-                if (!line) return;
-                if (state.lastRepeatLine) speakText(line, { lang: 'en', englishOnly: true });
-                else speakText(line);
+                hearLastCoach();
             });
             voiceSel.addEventListener('click', (ev) => ev.stopPropagation());
         }
@@ -1332,6 +1409,8 @@ Return ONLY JSON each turn.`;
         state.loading = true;
         render();
         setStatus('');
+        showTyping();
+        setBusy(true);
 
         const ease = easeInfo(currentEaseIndex());
         const focusWord = state.wordList[0] || 'friend';
@@ -1345,24 +1424,25 @@ Return ONLY JSON each turn.`;
 Otwórz jako trener po polsku. Wpleć gramatykę + jedno słówko (spróbuj "${focusWord}").
 Reply max ~${ease.maxWords || 18} słów PO POLSKU. Modeluj angielski wzorzec, potem poproś o angielską odpowiedź. Bez A/B, bez emoji.
 ${state.runInstructions ? 'Uwzględnij SESSION FOCUS bez ogłaszania go.' : ''}
-nudge = krótka wskazówka, np. "Spróbuj: This is my mum."
+nudge = krótka wskazówka. WYPEŁNIJ "say": osobno pl i en.
 
 Return ONLY JSON:
-{"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"Spróbuj: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`
+{"reply":"...","say":[{"lang":"pl","text":"..."},{"lang":"en","text":"This is my mum."}],"usedGrammar":false,"usedVocab":[],"nudge":"Spróbuj: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`
             : `START. ${pictureOpen}
 Open as the teaching coach. Use grammar + one vocab word (try "${focusWord}").
 Keep YOUR reply under ~${ease.maxWords || 18} words. Model then ask for a short full sentence. No yes/no opener, no A/B, no emojis.
 ${state.runInstructions ? 'Fit the SESSION FOCUS without announcing it.' : ''}
-nudge = short tip like "Try: This is my mum."
+nudge = short tip. Always fill "say" (usually one en item).
 
 Return ONLY JSON:
-{"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"Try: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
+{"reply":"...","say":[{"lang":"en","text":"..."}],"usedGrammar":false,"usedVocab":[],"nudge":"Try: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
 
         const prompt = `${buildSystemRules()}
 
 ${openBit}`;
 
         const data = await fetchAi(prompt, { withImage: !!state.sceneSrc });
+        hideTyping();
         state.loading = false;
 
         if (!data || data.__error || !data.reply) {
@@ -1372,12 +1452,14 @@ ${openBit}`;
             return;
         }
 
-        state.lastBotReply = data.reply;
         state.messages.push({ role: 'assistant', text: data.reply });
-        render();
-        const nudge = rootEl()?.querySelector('#review-nudge');
-        if (nudge && data.nudge) nudge.textContent = data.nudge;
-        maybeSpeak(data.reply);
+        appendBubble(state.messages[state.messages.length - 1]);
+        rememberAndSpeakBot(data);
+        setBusy(false);
+        patchHud();
+        if (data.nudge) patchNudge(data.nudge);
+        const input = rootEl()?.querySelector('#review-input');
+        if (input) input.focus();
     }
 
     async function askForHelp() {
@@ -1406,11 +1488,16 @@ ${openBit}`;
             return;
         }
 
+        // Interrupt coach speech so the next turn feels instant — student need not wait for TTS.
+        silenceBotSpeech();
+        stopListening();
         state.loading = true;
         setStatus('');
         state.messages.push({ role: 'user', text });
         if (input) input.value = '';
-        render();
+        appendBubble(state.messages[state.messages.length - 1]);
+        showTyping();
+        setBusy(true);
 
         const ease = easeInfo(currentEaseIndex());
         const needPolish = helpRequest || looksConfused(text);
@@ -1434,30 +1521,31 @@ ${openBit}`;
 
         const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
         const turnGuide = isPolishTutor()
-            ? `Odpowiedz jako trener PO POLSKU (max ~${ease.maxWords || 18} słów). Ucz gramatykę + słówka. Poproś o krótką pełną odpowiedź po angielsku.`
-            : `Reply as teaching coach. Keep teaching grammar + vocab with SHORT simple English. Ask for a short full sentence next.`;
+            ? `Odpowiedz PO POLSKU (max ~${ease.maxWords || 18} słów). Ucz + poproś o krótką EN odpowiedź.`
+            : `Reply short (max ~${ease.maxWords || 18} words). Teach grammar+vocab; ask for a short full sentence.`;
         const prompt = `${buildSystemRules()}
 
-Chat (recent):
+Recent chat:
 ${historyText(HISTORY_TURNS)}
 
-Turns: ${state.turns}. Ease now: ${ease.label} (max ~${ease.maxWords || 18} words in YOUR reply).
-Touched vocab: ${state.vocabTouched.join(', ') || 'none'}. Prefer next: ${unusedVocab.slice(0, 5).join(', ') || 'any'}.
+Turn ${state.turns + 1}. Prefer vocab: ${unusedVocab.slice(0, 4).join(', ') || 'any'}.
 ${supportBit}
-
-${turnGuide} No A/B letters, no emoji spam.
-JSON fields: reply, usedGrammar, usedVocab[], nudge, stepSuccess, askRepeat, englishRetell.
-
-Return ONLY JSON:
-{"reply":"...","usedGrammar":true,"usedVocab":["pizza"],"nudge":"Try: I like pizza.","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
+${turnGuide}
+Fill say[] for TTS (pl/en split). JSON only:
+{"reply":"...","say":[{"lang":"pl","text":"..."},{"lang":"en","text":"..."}],"usedGrammar":true,"usedVocab":[],"nudge":"...","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
 
         const data = await fetchAi(prompt, { withImage: false });
+        hideTyping();
         state.loading = false;
 
         if (!data || data.__error || !data.reply) {
             state.messages.pop();
+            const log = chatLogEl();
+            const last = log?.querySelector('.review-bubble.you:last-of-type');
+            if (last) last.remove();
+            else render();
+            setBusy(false);
             setStatus(aiErr(data), 'error');
-            render();
             return;
         }
 
@@ -1466,24 +1554,17 @@ Return ONLY JSON:
         const pts = awardTurnPoints(data);
         const retell = String(data.englishRetell || '').trim();
         const askRepeat = !!data.askRepeat && !!retell;
-        state.lastRepeatLine = askRepeat ? retell : '';
-        state.lastBotReply = askRepeat ? retell : data.reply;
         state.messages.push({ role: 'assistant', text: data.reply });
-        render();
-        const nudge = rootEl()?.querySelector('#review-nudge');
-        if (nudge) {
-            const tip = askRepeat
-                ? (`Repeat: ${retell}` + (pts ? ` · +${pts}` : ''))
-                : ((data.nudge || '') + (pts ? ` · +${pts}` : ''));
-            nudge.textContent = tip;
-        }
-        if (askRepeat) maybeSpeak(retell, { lang: 'en', englishOnly: true });
-        else maybeSpeak(data.reply);
-
-        if (state.turns >= 8 && !state.ended) {
-            const n = rootEl()?.querySelector('#review-nudge');
-            if (n && !data.nudge && !askRepeat) n.textContent = 'Great practice — you can End session for a coach note.';
-        }
+        appendBubble(state.messages[state.messages.length - 1]);
+        rememberAndSpeakBot(data);
+        setBusy(false);
+        patchHud();
+        const tip = askRepeat
+            ? (`Repeat: ${retell}` + (pts ? ` · +${pts}` : ''))
+            : ((data.nudge || '') + (pts ? ` · +${pts}` : ''));
+        patchNudge(tip || (state.turns >= 8 ? 'Great practice — you can End session for a coach note.' : ''));
+        const nextInput = rootEl()?.querySelector('#review-input');
+        if (nextInput) nextInput.focus();
     }
 
     async function startMic() {
@@ -1503,8 +1584,8 @@ Return ONLY JSON:
             return;
         }
 
-        // Brief settle so echoCancellation and cancelled TTS do not eat the first words.
-        await new Promise((r) => setTimeout(r, 320));
+        // Short settle so cancelled TTS / AEC do not eat the first words.
+        await new Promise((r) => setTimeout(r, 140));
         if (state.loading || state.ended) {
             releaseMicStream();
             return;
@@ -1520,7 +1601,7 @@ Return ONLY JSON:
 
         state.recognition = rec;
         state.listening = true;
-        render();
+        patchListeningUi();
         setMicHint('Listening… speak clearly in English');
 
         rec.onresult = (ev) => {
@@ -1550,7 +1631,7 @@ Return ONLY JSON:
                 clearTimeout(micStopTimer);
                 micStopTimer = null;
             }
-            render();
+            patchListeningUi();
             if (code === 'not-allowed' || code === 'service-not-allowed') {
                 setStatus('Microphone blocked — allow mic access for this site, then try again.', 'error');
             } else if (code === 'audio-capture') {
@@ -1570,13 +1651,13 @@ Return ONLY JSON:
             }
             state.listening = false;
             releaseMicStream();
-            const text = (state.micFinal || state.micInterim || '').trim();
+            patchListeningUi();
+            const heard = (state.micFinal || state.micInterim || '').trim();
             state.micFinal = '';
             state.micInterim = '';
-            if (text) {
-                submitMessage(text);
+            if (heard) {
+                submitMessage(heard);
             } else {
-                render();
                 setStatus('Did not catch that — try Say it again a little louder, or type.', 'error');
                 setMicHint('');
             }
@@ -1592,7 +1673,7 @@ Return ONLY JSON:
         } catch {
             state.listening = false;
             releaseMicStream();
-            render();
+            patchListeningUi();
             setStatus('Could not start the mic. Try again or type your answer.', 'error');
             setMicHint('');
         }
@@ -1773,6 +1854,7 @@ Return ONLY JSON:
         state.vocabTouched = [];
         state.grammarHits = 0;
         state.lastBotReply = '';
+        state.lastSay = [];
         state.loading = false;
         state.listening = false;
         state.ended = false;
