@@ -143,6 +143,7 @@
         topicId: 'school',
         wordList: [],
         inputMode: 'text',
+        coachStyle: 'en', // 'en' = English teaching chat; 'pl' = Polish tutoring / quiz
         messages: [],
         turns: 0,
         difficultyStep: 0,
@@ -481,6 +482,7 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         const customEl = document.getElementById('review-setup-custom');
         const runEl = document.getElementById('review-setup-run-instructions');
         const modeEl = document.querySelector('input[name="review-setup-mode"]:checked');
+        const styleEl = document.querySelector('input[name="review-setup-coach-style"]:checked');
 
         state.age = ageEl ? ageEl.value : 'young';
         state.schoolYear = yearEl ? Math.max(1, Math.min(8, parseInt(yearEl.value, 10) || 4)) : 4;
@@ -490,6 +492,7 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         state.topicId = topicEl ? topicEl.value : 'school';
         if (state.topicId === 'family_home') state.topicId = 'family';
         state.inputMode = modeEl ? modeEl.value : 'text';
+        state.coachStyle = styleEl && styleEl.value === 'pl' ? 'pl' : 'en';
         state.runInstructions = sanitizeRunInstructions(runEl ? runEl.value : '');
         if (runEl && runEl.value !== state.runInstructions) runEl.value = state.runInstructions;
 
@@ -671,6 +674,10 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         return easeInfo(currentEaseIndex()).label;
     }
 
+    function isPolishTutor() {
+        return state.coachStyle === 'pl';
+    }
+
     function buildSystemRules() {
         const ageBand = state.age === 'young' ? '8–9' : '10–12';
         const gLabel = grammarLabel(state.grammarId);
@@ -692,6 +699,31 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
             : '';
         const runBit = runInstructionsPromptBlock();
         const maxW = ease.maxWords || 18;
+
+        if (isPolishTutor()) {
+            return `Jesteś trenerem angielskiego dla polskich dzieci — prowadzisz rozmowę PO POLSKU.
+Uczysz gramatyki "${gLabel}" i słówek [${vocab}] przez krótkie przepytywanie i modelowanie.
+Uczeń: wiek ${ageBand}, klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}.
+${profile.relevance}
+${topicBit} ${topicFocus}
+${pictureBit}
+${runBit}
+Ease: ${ease.guide}
+Scena: ${seed.setting}. Styl otwarcia: ${opening}.
+Input: ${state.inputMode}.
+
+ZASADY (tryb polski — krytyczne):
+1) TWOJE wypowiedzi są po POLSKU: krótko, ciepło, jak dobry nauczyciel — nie wykład. Max ~${maxW} słów na turę.
+2) Przepytuj i ucz: tłumacz po polsku, potem proś o angielskie słowo lub krótkie angielskie zdanie. Przykłady: „Jak po angielsku powiesz 'mama'?”, „Ułóż zdanie: To jest mój brat. Spróbuj: This is my brother.”
+3) Dopasuj język polski do wieku (klasa ${state.schoolYear}) i ease ${ease.label}: młodsze/łatwiejsze = bardzo proste słowa, mocne modelowanie angielskiego wzorca.
+4) Uczeń ma odpowiadać po ANGIELSKU (słowo lub krótkie pełne zdanie). Nie akceptuj samego A/B. Jeśli poda tylko jedno słowo, poproś o zdanie.
+5) Jedno pytanie na turę. Chwal próby. Max jedna łagodna korekta.
+6) Angielskie wzorce w reply trzymaj w cudzysłowie lub po „Spróbuj: …”. Pole englishRetell = dokładne angielskie zdanie do powtórzenia, gdy chcesz, by uczeń je powtórzył (askRepeat=true).
+7) Nie emoji. Nie wspominaj AI/JSON. Bezpieczne treści.
+8) Nie przechodź na angielski w roli trenera — prowadź po polsku; angielski tylko jako materiał do nauki/powtórzenia.
+
+Zwracaj TYLKO JSON każda tura.`;
+        }
 
         return `You are a Primary English TEACHING chatbot for Polish children.
 TEACH through short conversation: target grammar "${gLabel}" + vocab [${vocab}].
@@ -726,19 +758,22 @@ Return ONLY JSON each turn.`;
             .join('\n');
     }
 
-    /** Keep Polish on screen, but never send it to TTS. Strip emojis so they are never spoken. */
-    function englishForSpeech(text) {
-        let t = String(text || '').trim();
-        if (!t) return '';
-
-        // Never read emojis / pictographs aloud.
+    /** Strip emojis; for English coach mode drop Polish from TTS. Polish tutor mode keeps Polish. */
+    function stripEmojis(text) {
+        let t = String(text || '');
         try {
             t = t.replace(/\p{Extended_Pictographic}/gu, ' ');
         } catch {
             t = t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ');
         }
-        t = t.replace(/[\u{1F1E6}-\u{1F1FF}]/gu, ' '); // flag pairs
-        t = t.replace(/:[a-z0-9_+-]+:/gi, ' '); // :smile: style
+        t = t.replace(/[\u{1F1E6}-\u{1F1FF}]/gu, ' ');
+        t = t.replace(/:[a-z0-9_+-]+:/gi, ' ');
+        return t.replace(/\s+/g, ' ').trim();
+    }
+
+    function englishForSpeech(text) {
+        let t = stripEmojis(text);
+        if (!t) return '';
 
         // Drop explicit Polish-help blocks; keep the English that follows.
         t = t.replace(/po\s*polsku\s*[:\-–]?\s*/gi, '«PL»');
@@ -761,7 +796,6 @@ Return ONLY JSON each turn.`;
             .replace(/\s+/g, ' ')
             .trim();
 
-        // Safety: drop any remaining tokens with Polish letters.
         if (PL_CHAR_RE.test(out)) {
             out = out
                 .split(/\s+/)
@@ -774,17 +808,41 @@ Return ONLY JSON each turn.`;
         return out;
     }
 
-    function speakText(text) {
-        const spoken = englishForSpeech(text);
+    function polishForSpeech(text) {
+        return stripEmojis(text);
+    }
+
+    function listVoicesForLang(langPrefix) {
+        if (!global.speechSynthesis) return [];
+        const all = global.speechSynthesis.getVoices() || [];
+        const re = new RegExp('^' + langPrefix + '([-_]|$)', 'i');
+        return all
+            .filter((v) => re.test(v.lang || ''))
+            .slice()
+            .sort((a, b) => voiceNaturalScore(b) - voiceNaturalScore(a) || String(a.name).localeCompare(String(b.name)));
+    }
+
+    function pickVoice(lang) {
+        if (lang === 'pl') {
+            const pl = listVoicesForLang('pl');
+            return pl[0] || null;
+        }
+        return selectedVoice();
+    }
+
+    function speakText(text, opts) {
+        const forceLang = opts && opts.lang;
+        const wantPl = forceLang === 'pl' || (!forceLang && isPolishTutor() && !(opts && opts.englishOnly));
+        const spoken = wantPl ? polishForSpeech(text) : englishForSpeech(text);
         if (!spoken || !global.speechSynthesis) return;
         global.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(spoken);
-        const voice = selectedVoice();
+        const voice = pickVoice(wantPl ? 'pl' : 'en');
         if (voice) {
             u.voice = voice;
-            u.lang = voice.lang || 'en-GB';
+            u.lang = voice.lang || (wantPl ? 'pl-PL' : 'en-GB');
         } else {
-            u.lang = 'en-GB';
+            u.lang = wantPl ? 'pl-PL' : 'en-GB';
         }
         u.rate = 0.92;
         global.speechSynthesis.speak(u);
@@ -886,9 +944,9 @@ Return ONLY JSON each turn.`;
         releaseMicStream();
     }
 
-    function maybeSpeak(reply) {
+    function maybeSpeak(reply, opts) {
         if (state.inputMode === 'speech' || state.inputMode === 'both') {
-            speakText(reply);
+            speakText(reply, opts);
         }
     }
 
@@ -924,12 +982,13 @@ Return ONLY JSON each turn.`;
             : `Custom (${state.wordList.length})`;
         const profile = classProfile(state.schoolYear);
         const pic = state.sceneSrc ? ' · picture' : '';
+        const styleBit = isPolishTutor() ? ' · PL trener' : ' · EN chat';
         const brief = sanitizeRunInstructions(state.runInstructions);
         const briefHud = brief
             ? `<div class="review-hud-card review-hud-brief"><strong>Session focus</strong><span>${escapeHtml(brief.length > 120 ? brief.slice(0, 117) + '…' : brief)}</span></div>`
             : '';
         return `<div class="review-hud">
-            <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarLabel(state.grammarId))} · ${escapeHtml(vocabLabel)}${pic}</span></div>
+            <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarLabel(state.grammarId))} · ${escapeHtml(vocabLabel)}${pic}${styleBit}</span></div>
             ${briefHud}
             <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(difficultyLabel())} · ${state.age === 'young' ? '8–9' : '10–12'}</span></div>
             <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length}/${state.wordList.length} vocab · ${escapeHtml(profile.band)}</span></div>
@@ -941,7 +1000,7 @@ Return ONLY JSON each turn.`;
         const labels = (state.sceneLabels || []).slice(0, 12).join(', ');
         return `<div class="review-scene-panel">
             <img src="${escapeAttr(state.sceneSrc)}" alt="${escapeAttr(sceneTitleFromSrc(state.sceneSrc))}" loading="lazy">
-            <div class="review-scene-caption">Talk about the picture${labels ? ': ' + escapeHtml(labels) : ''}.</div>
+            <div class="review-scene-caption">${isPolishTutor() ? 'Opowiedz o obrazku' : 'Talk about the picture'}${labels ? ': ' + escapeHtml(labels) : ''}.</div>
         </div>`;
     }
 
@@ -993,8 +1052,8 @@ Return ONLY JSON each turn.`;
             </div>`;
         }
         const writeBlock = showWrite()
-            ? `<textarea id="review-input" placeholder="English — or mix in Polish if you need to…" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
-            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">Speech mode — wait for the coach to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.</p>`;
+            ? `<textarea id="review-input" placeholder="${isPolishTutor() ? 'Odpowiedz po angielsku (słowo lub krótkie zdanie)…' : 'English — or mix in Polish if you need to…'}" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
+            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">${isPolishTutor() ? 'Tryb mowy — poczekaj na trenera, potem tapnij Say it i odpowiedz po angielsku.' : 'Speech mode — wait for the coach to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.'}</p>`;
         const voiceBtn = showSpeak()
             ? `<div class="review-voice-wrap">
                 <button type="button" class="btn btn-outline" id="review-voice-btn" ${state.loading ? 'disabled' : ''} aria-expanded="${state.voiceMenuOpen ? 'true' : 'false'}" title="Choose voice">
@@ -1037,7 +1096,9 @@ Return ONLY JSON each turn.`;
         root.querySelector('#review-mic-btn')?.addEventListener('click', () => startMic());
         root.querySelector('#review-hear-btn')?.addEventListener('click', () => {
             const line = state.lastRepeatLine || state.lastBotReply;
-            if (line) speakText(line);
+            if (!line) return;
+            if (state.lastRepeatLine) speakText(line, { lang: 'en', englishOnly: true });
+            else speakText(line);
         });
         root.querySelector('#review-help-btn')?.addEventListener('click', () => askForHelp());
         root.querySelector('#review-end-btn')?.addEventListener('click', () => endSession());
@@ -1061,7 +1122,9 @@ Return ONLY JSON each turn.`;
                 if (voiceMenu) voiceMenu.classList.remove('open');
                 if (voiceBtn) voiceBtn.setAttribute('aria-expanded', 'false');
                 const line = state.lastRepeatLine || state.lastBotReply;
-                if (line) speakText(line);
+                if (!line) return;
+                if (state.lastRepeatLine) speakText(line, { lang: 'en', englishOnly: true });
+                else speakText(line);
             });
             voiceSel.addEventListener('click', (ev) => ev.stopPropagation());
         }
@@ -1159,11 +1222,20 @@ Return ONLY JSON each turn.`;
         const ease = easeInfo(currentEaseIndex());
         const focusWord = state.wordList[0] || 'friend';
         const pictureOpen = state.sceneSrc
-            ? 'A picture is attached this turn only. Point at something visible and teach with a short model + question.'
-            : 'No picture — teach from the topic/scene.';
-        const prompt = `${buildSystemRules()}
+            ? (isPolishTutor()
+                ? 'Jest obrazek (tylko ta tura). Wskaż coś na obrazku i naucz krótkim pytaniem po polsku + wzorcem EN.'
+                : 'A picture is attached this turn only. Point at something visible and teach with a short model + question.')
+            : (isPolishTutor() ? 'Bez obrazka — ucz z tematu/sceny.' : 'No picture — teach from the topic/scene.');
+        const openBit = isPolishTutor()
+            ? `START. ${pictureOpen}
+Otwórz jako trener po polsku. Wpleć gramatykę + jedno słówko (spróbuj "${focusWord}").
+Reply max ~${ease.maxWords || 18} słów PO POLSKU. Modeluj angielski wzorzec, potem poproś o angielską odpowiedź. Bez A/B, bez emoji.
+${state.runInstructions ? 'Uwzględnij SESSION FOCUS bez ogłaszania go.' : ''}
+nudge = krótka wskazówka, np. "Spróbuj: This is my mum."
 
-START. ${pictureOpen}
+Return ONLY JSON:
+{"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"Spróbuj: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`
+            : `START. ${pictureOpen}
 Open as the teaching coach. Use grammar + one vocab word (try "${focusWord}").
 Keep YOUR reply under ~${ease.maxWords || 18} words. Model then ask for a short full sentence. No yes/no opener, no A/B, no emojis.
 ${state.runInstructions ? 'Fit the SESSION FOCUS without announcing it.' : ''}
@@ -1171,6 +1243,10 @@ nudge = short tip like "Try: This is my mum."
 
 Return ONLY JSON:
 {"reply":"...","usedGrammar":false,"usedVocab":[],"nudge":"Try: …","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
+
+        const prompt = `${buildSystemRules()}
+
+${openBit}`;
 
         const data = await fetchAi(prompt, { withImage: !!state.sceneSrc });
         state.loading = false;
@@ -1226,7 +1302,15 @@ Return ONLY JSON:
         const needPolish = helpRequest || looksConfused(text);
         const mixed = !needPolish && (looksMixedPolishEnglish(text) || hasPolishContent(text));
         let supportBit = '';
-        if (helpRequest) {
+        if (isPolishTutor()) {
+            if (helpRequest || needPolish) {
+                supportBit = 'POMOC: Uczeń nie rozumie. Wyjaśnij prościej po polsku (1–2 zdania), daj łatwiejszy wzorzec EN. stepSuccess=false.';
+            } else if (mixed) {
+                supportBit = 'Odpowiedź mieszana: zaakceptuj sens, podaj czyste angielskie zdanie do powtórzenia (askRepeat + englishRetell).';
+            } else {
+                supportBit = 'Kontynuuj przepytywanie po polsku; wymagaj angielskiej odpowiedzi (słowo → potem krótkie zdanie).';
+            }
+        } else if (helpRequest) {
             supportBit = 'HELP: Student tapped Nie rozumiem. 1 short Polish tip about your last line, then simpler English + model. stepSuccess=false.';
         } else if (needPolish) {
             supportBit = 'Confused: brief Polish tip, then simpler English practice.';
@@ -1235,6 +1319,9 @@ Return ONLY JSON:
         }
 
         const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
+        const turnGuide = isPolishTutor()
+            ? `Odpowiedz jako trener PO POLSKU (max ~${ease.maxWords || 18} słów). Ucz gramatykę + słówka. Poproś o krótką pełną odpowiedź po angielsku.`
+            : `Reply as teaching coach. Keep teaching grammar + vocab with SHORT simple English. Ask for a short full sentence next.`;
         const prompt = `${buildSystemRules()}
 
 Chat (recent):
@@ -1244,7 +1331,7 @@ Turns: ${state.turns}. Ease now: ${ease.label} (max ~${ease.maxWords || 18} word
 Touched vocab: ${state.vocabTouched.join(', ') || 'none'}. Prefer next: ${unusedVocab.slice(0, 5).join(', ') || 'any'}.
 ${supportBit}
 
-Reply as teaching coach. Keep teaching grammar + vocab with SHORT simple English. Ask for a short full sentence next. No A/B letters, no emoji spam.
+${turnGuide} No A/B letters, no emoji spam.
 JSON fields: reply, usedGrammar, usedVocab[], nudge, stepSuccess, askRepeat, englishRetell.
 
 Return ONLY JSON:
@@ -1276,7 +1363,8 @@ Return ONLY JSON:
                 : ((data.nudge || '') + (pts ? ` · +${pts}` : ''));
             nudge.textContent = tip;
         }
-        maybeSpeak(askRepeat ? retell : data.reply);
+        if (askRepeat) maybeSpeak(retell, { lang: 'en', englishOnly: true });
+        else maybeSpeak(data.reply);
 
         if (state.turns >= 8 && !state.ended) {
             const n = rootEl()?.querySelector('#review-nudge');
@@ -1406,7 +1494,17 @@ Return ONLY JSON:
         state.loading = true;
         render();
 
-        const prompt = `Primary English coach note for klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}. Be brief and kind.
+        const prompt = isPolishTutor()
+            ? `Notatka trenera PE (po polsku, krótko i życzliwie) dla klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}.
+Gramatyka: ${grammarLabel(state.grammarId)}. Słówka: ${state.wordList.join(', ')}. Focus: ${sanitizeRunInstructions(state.runInstructions) || 'brak'}.
+Tury: ${state.turns}. Trafienia gramatyki: ${state.grammarHits}. Słówka: ${state.vocabTouched.join(', ') || 'brak'}.
+
+Transkrypt:
+${historyText(10)}
+
+Return ONLY JSON:
+{"summary":"2 krótkie zdania po polsku","strengths":["2–4 mocne strony po polsku"],"improvements":["2–4 wskazówki po polsku"]}`
+            : `Primary English coach note for klasa ${state.schoolYear}, ease ${easeInfo(state.ease).label}. Be brief and kind.
 Grammar: ${grammarLabel(state.grammarId)}. Vocab: ${state.wordList.join(', ')}. Focus: ${sanitizeRunInstructions(state.runInstructions) || 'none'}.
 Turns: ${state.turns}. Grammar hits: ${state.grammarHits}. Vocab touched: ${state.vocabTouched.join(', ') || 'none'}.
 
@@ -1451,6 +1549,7 @@ Return ONLY JSON:
                         topic: state.topicId,
                         scene: state.sceneId || null,
                         runInstructions: sanitizeRunInstructions(state.runInstructions) || null,
+                        coachStyle: state.coachStyle || 'en',
                         schoolYear: state.schoolYear,
                         ease: easeInfo(state.ease).id,
                         level: easeInfo(state.ease).id
