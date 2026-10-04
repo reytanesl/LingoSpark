@@ -38,6 +38,8 @@
         aiChecking: false
     };
 
+    let advanceTimer = null;
+
     const FEMALE = new Set([
         'girl', 'woman', 'grandmother', 'mother', 'mum', 'mom', 'sister'
     ]);
@@ -47,6 +49,23 @@
     const PEOPLE = new Set([
         ...FEMALE, ...MALE,
         'baby', 'teacher', 'cashier', 'chef', 'zookeeper', 'police officer'
+    ]);
+    /** Always plural / plural-only nouns — never take a/an. */
+    const ALWAYS_PLURAL = new Set([
+        'stairs', 'jeans', 'trousers', 'pants', 'shorts', 'glasses', 'goggles',
+        'sunglasses', 'scissors', 'clothes', 'binoculars', 'overalls', 'pajamas',
+        'pyjamas', 'shoes', 'boots', 'socks', 'sandals', 'mittens', 'gloves',
+        'trainers', 'flowers', 'grapes', 'people', 'children', 'teeth', 'feet',
+        'mice', 'sheep', 'roller skates'
+    ]);
+    /** End in -s/-ss/-us but are singular countable. */
+    const SINGULAR_S = new Set([
+        'bus', 'dress', 'glass', 'grass', 'class', 'circus', 'walrus', 'octopus',
+        'cactus', 'gas', 'plus', 'bonus'
+    ]);
+    const UNCOUNTABLE = new Set([
+        'water', 'milk', 'juice', 'rice', 'bread', 'cheese', 'butter', 'sand',
+        'money', 'weather', 'homework', 'furniture', 'food', 'soup', 'tea', 'coffee'
     ]);
     // Tiny / decorative labels that make poor circle targets on their own
     const SKIP_HOTSPOTS = new Set([
@@ -98,7 +117,7 @@
     }
 
     function article(word) {
-        const w = String(word || '').toLowerCase().replace(/^(a|an)\s+/, '');
+        const w = String(word || '').toLowerCase().replace(/^(a|an|the|some)\s+/, '');
         return /^[aeiou]/.test(w) ? 'an' : 'a';
     }
 
@@ -113,9 +132,72 @@
         return PEOPLE.has(String(word || '').toLowerCase());
     }
 
+    function isPluralNoun(word) {
+        const w = String(word || '').toLowerCase().trim();
+        if (!w) return false;
+        if (ALWAYS_PLURAL.has(w)) return true;
+        if (SINGULAR_S.has(w) || UNCOUNTABLE.has(w) || isPerson(w)) return false;
+        const last = w.split(/\s+/).pop();
+        if (ALWAYS_PLURAL.has(last)) return true;
+        if (SINGULAR_S.has(last)) return false;
+        // Regular plurals (flowers, grapes) — not bus/dress/glass
+        if (/s$/i.test(last) && !/(ss|us|is|oes|xes)$/i.test(last) && last.length > 3) return true;
+        if (/(ches|shes|xes|zes|oes)$/i.test(last)) return true;
+        return false;
+    }
+
+    function isUncountableNoun(word) {
+        return UNCOUNTABLE.has(String(word || '').toLowerCase().trim());
+    }
+
+    /** Object noun phrase after verbs like see/have/like — grammatically safe. */
     function withArticle(word) {
-        const w = String(word || '').toLowerCase();
+        const w = String(word || '').toLowerCase().trim();
+        if (!w) return w;
+        if (isPluralNoun(w) || isUncountableNoun(w)) return 'the ' + w;
         return article(w) + ' ' + w;
+    }
+
+    /** Predicate after be (It is / They are …). */
+    function beComplement(word) {
+        const w = String(word || '').toLowerCase().trim();
+        if (!w) return w;
+        if (isPluralNoun(w)) return w; // They are stairs.
+        if (isUncountableNoun(w)) return w; // It is water.
+        return article(w) + ' ' + w; // It is a desk.
+    }
+
+    function beSubject(word) {
+        return isPluralNoun(word) ? 'They' : 'It';
+    }
+
+    function beVerb(word) {
+        return isPluralNoun(word) ? 'are' : 'is';
+    }
+
+    /** Reject clear article/number mistakes (e.g. "It is a stairs"). */
+    function isClearlyUngrammatical(answer, hotspotWord) {
+        const n = normalize(answer);
+        if (!n) return false;
+        const w = String(hotspotWord || '').toLowerCase().trim();
+        // a/an + known plural noun anywhere
+        for (const pl of ALWAYS_PLURAL) {
+            if (new RegExp(`\\b(a|an)\\s+${pl.replace(/\s+/g, '\\s+')}\\b`).test(n)) return true;
+        }
+        if (w && isPluralNoun(w)) {
+            const wRe = w.replace(/\s+/g, '\\s+');
+            if (new RegExp(`\\b(a|an)\\s+${wRe}\\b`).test(n)) return true;
+            if (new RegExp(`\\b(it\\s+is|it's|this\\s+is)\\s+(a|an)\\s+${wRe}\\b`).test(n)) return true;
+            if (new RegExp(`\\bit\\s+is\\s+${wRe}\\b`).test(n) && !new RegExp(`\\bit\\s+is\\s+the\\s+${wRe}\\b`).test(n)) {
+                // "It is stairs" is weak; prefer they/these — still allow "it is the stairs"
+                if (!/\bthe\b/.test(n)) return true;
+            }
+        }
+        if (w && isUncountableNoun(w)) {
+            const wRe = w.replace(/\s+/g, '\\s+');
+            if (new RegExp(`\\b(a|an)\\s+${wRe}\\b`).test(n)) return true;
+        }
+        return false;
     }
 
     function tilesFromAnswer(answer) {
@@ -146,32 +228,49 @@
 
     function grammarCard(grammar, word) {
         const w = String(word || '').toLowerCase();
-        const art = withArticle(w);
+        const obj = withArticle(w); // the stairs / a desk / the water
+        const pred = beComplement(w); // stairs / a desk / water
+        const subj = beSubject(w); // They / It
+        const verb = beVerb(w); // are / is
         const pron = personPronoun(w);
         const person = isPerson(w);
+        const plural = isPluralNoun(w);
 
         if (grammar === 'be') {
             if (pron) {
                 return {
                     promptEn: 'Who is in the red circle? Use to be.',
                     promptPl: 'Kto jest w czerwonym kółku? Użyj to be.',
-                    answer: pron + ' is ' + art + '.',
-                    accept: [pron + "'s " + art + '.', 'This is ' + art + '.']
+                    answer: pron + ' is ' + obj + '.',
+                    accept: [pron + "'s " + obj + '.', 'This is ' + obj + '.']
                 };
             }
             if (person) {
                 return {
                     promptEn: 'Who is in the red circle? Use to be.',
                     promptPl: 'Kto jest w czerwonym kółku? Użyj to be.',
-                    answer: 'This is ' + art + '.',
-                    accept: ['It is ' + art + '.', "It's " + art + '.']
+                    answer: 'This is ' + obj + '.',
+                    accept: ['It is ' + obj + '.', "It's " + obj + '.']
+                };
+            }
+            if (plural) {
+                return {
+                    promptEn: 'What is in the red circle? Use to be.',
+                    promptPl: 'Co jest w czerwonym kółku? Użyj to be.',
+                    answer: 'They are ' + pred + '.',
+                    accept: [
+                        'These are ' + pred + '.',
+                        'Those are ' + pred + '.',
+                        'It is the ' + w + '.',
+                        "It's the " + w + '.'
+                    ]
                 };
             }
             return {
                 promptEn: 'What is in the red circle? Use to be.',
                 promptPl: 'Co jest w czerwonym kółku? Użyj to be.',
-                answer: 'It is ' + art + '.',
-                accept: ["It's " + art + '.', 'This is ' + art + '.']
+                answer: subj + ' ' + verb + ' ' + pred + '.',
+                accept: ["It's " + pred + '.', 'This is ' + pred + '.']
             };
         }
 
@@ -180,8 +279,8 @@
             return {
                 promptEn: 'Talk about the circled thing with have got.',
                 promptPl: 'Powiedz o zakreślonej rzeczy używając have got.',
-                answer: 'I have got ' + art + '.',
-                accept: ["I've got " + art + '.', 'I have ' + art + '.']
+                answer: 'I have got ' + obj + '.',
+                accept: ["I've got " + obj + '.', 'I have ' + obj + '.']
             };
         }
 
@@ -189,7 +288,7 @@
             return {
                 promptEn: 'Look at the circle. Say what you can see (use can).',
                 promptPl: 'Spójrz na kółko. Powiedz, co możesz zobaczyć (użyj can).',
-                answer: 'I can see ' + art + '.',
+                answer: 'I can see ' + obj + '.',
                 accept: ['I can see the ' + w + '.']
             };
         }
@@ -199,7 +298,7 @@
                 promptEn: 'Do you like the circled thing? Answer with like.',
                 promptPl: 'Czy lubisz to, co jest w kółku? Odpowiedz z like.',
                 answer: 'I like the ' + w + '.',
-                accept: ['I like ' + art + '.']
+                accept: plural || isUncountableNoun(w) ? ['I like ' + w + '.'] : ['I like ' + obj + '.']
             };
         }
 
@@ -207,49 +306,55 @@
             return {
                 promptEn: 'Look at the circle. Make a present simple sentence with see.',
                 promptPl: 'Spójrz na kółko. Zrób zdanie w present simple z see.',
-                answer: 'I see ' + art + '.',
+                answer: 'I see ' + obj + '.',
                 accept: ['I see the ' + w + '.']
             };
         }
 
         if (grammar === 'negatives') {
             if (person && pron) {
+                const base = pron + ' is ' + obj + '.';
                 return {
-                    promptEn: 'Make it negative: ' + pron + ' is ' + art + '.',
-                    promptPl: 'Zrób przeczenie: ' + pron + ' is ' + art + '.',
-                    answer: pron + ' is not ' + art + '.',
-                    accept: [pron + " isn't " + art + '.'],
-                    transformFrom: pron + ' is ' + art + '.',
+                    promptEn: 'Make it negative: ' + base,
+                    promptPl: 'Zrób przeczenie: ' + base,
+                    answer: pron + ' is not ' + obj + '.',
+                    accept: [pron + " isn't " + obj + '.'],
+                    transformFrom: base,
                     transformTo: 'negative'
                 };
             }
+            const base = subj + ' ' + verb + ' ' + pred + '.';
             return {
-                promptEn: 'Make it negative: It is ' + art + '.',
-                promptPl: 'Zrób przeczenie: It is ' + art + '.',
-                answer: 'It is not ' + art + '.',
-                accept: ["It isn't " + art + '.', "It's not " + art + '.'],
-                transformFrom: 'It is ' + art + '.',
+                promptEn: 'Make it negative: ' + base,
+                promptPl: 'Zrób przeczenie: ' + base,
+                answer: subj + ' ' + verb + ' not ' + pred + '.',
+                accept: plural
+                    ? ["They aren't " + pred + '.', "These aren't " + pred + '.', 'These are not ' + pred + '.']
+                    : ["It isn't " + pred + '.', "It's not " + pred + '.'],
+                transformFrom: base,
                 transformTo: 'negative'
             };
         }
 
         if (grammar === 'questions') {
             if (person && pron) {
+                const base = pron + ' is ' + obj + '.';
                 return {
-                    promptEn: 'Make a question: ' + pron + ' is ' + art + '.',
-                    promptPl: 'Zrób pytanie: ' + pron + ' is ' + art + '.',
-                    answer: 'Is ' + pron.toLowerCase() + ' ' + art + '?',
+                    promptEn: 'Make a question: ' + base,
+                    promptPl: 'Zrób pytanie: ' + base,
+                    answer: 'Is ' + pron.toLowerCase() + ' ' + obj + '?',
                     accept: [],
-                    transformFrom: pron + ' is ' + art + '.',
+                    transformFrom: base,
                     transformTo: 'question'
                 };
             }
+            const base = subj + ' ' + verb + ' ' + pred + '.';
             return {
-                promptEn: 'Make a question: It is ' + art + '.',
-                promptPl: 'Zrób pytanie: It is ' + art + '.',
-                answer: 'Is it ' + art + '?',
-                accept: [],
-                transformFrom: 'It is ' + art + '.',
+                promptEn: 'Make a question: ' + base,
+                promptPl: 'Zrób pytanie: ' + base,
+                answer: plural ? ('Are they ' + pred + '?') : ('Is it ' + pred + '?'),
+                accept: plural ? ['Are these ' + pred + '?', 'Are those ' + pred + '?'] : [],
+                transformFrom: base,
                 transformTo: 'question'
             };
         }
@@ -415,6 +520,7 @@
     function answersMatch(user, task) {
         const n = normalize(user);
         if (!n) return false;
+        if (isClearlyUngrammatical(user, task && task.hotspotWord)) return false;
         const opts = [task.answer].concat(task.accept || []);
         return opts.some((a) => normalize(a) === n);
     }
@@ -793,6 +899,7 @@
         root.querySelector('#tc-said-it')?.addEventListener('click', () => {
             // Classroom self-check: reveal model and award if path is speak-only or after hear
             const fb = root.querySelector('#tc-feedback');
+            if (state.checked || state.aiChecking) return;
             if (!state.speakHeard) {
                 if (fb) {
                     fb.className = 'tc-feedback info';
@@ -801,6 +908,45 @@
                 return;
             }
             state.speakOk = true;
+
+            // Tiles: validate (prefer built sentence; else accept spoken self-check), then auto-advance.
+            if (state.mode === 'tiles') {
+                const tiles = state.task && Array.isArray(state.task.tiles) ? state.task.tiles : [];
+                const user = getUserAnswer();
+                const built = normalize(user);
+                const target = normalize(tiles.join(' '));
+                const hasBuild = state.tileOrder.length > 0;
+                let ok = !hasBuild; // empty build → honour spoken model after Hear
+                let soft = !hasBuild;
+                if (hasBuild) {
+                    ok = built === target || answersMatch(user.replace(/\s+([.?!,])/g, '$1'), state.task);
+                    soft = false;
+                }
+                if (ok) {
+                    if (!hasBuild && tiles.length) {
+                        state.tileOrder = tiles.map((_, i) => i);
+                        const build = root.querySelector('#tc-build');
+                        if (build) {
+                            build.innerHTML = state.tileOrder.map((idx) => {
+                                const word = tiles[idx];
+                                const color = TILE_COLORS[idx % TILE_COLORS.length];
+                                return `<button type="button" class="tc-tile" data-built="${idx}" style="background:${color}">${escapeHtml(word)}</button>`;
+                            }).join('');
+                        }
+                    }
+                    finishCorrect(
+                        soft
+                            ? t('Nice speaking! Next task…', 'Świetnie! Następne zadanie…')
+                            : t('Correct! Next task…', 'Dobrze! Następne zadanie…'),
+                        soft
+                    );
+                    scheduleNextRound();
+                } else {
+                    markPictureWrong(user);
+                }
+                return;
+            }
+
             if (state.response === 'speak') {
                 finishCorrect(t('Nice speaking! Check with your teacher if unsure.', 'Świetnie! W razie wątpliwości sprawdź z nauczycielem.'), true);
             } else {
@@ -928,7 +1074,8 @@ ${focusNote}
 
 Rules:
 - The red circle marks one hotspot. The model answer names that hotspot with the selected grammar.
-- Accept ok=true when grammar is correct for the focus AND the student fairly names the same circled thing (synonyms OK: woman/mum/sister, boy/brother, bag/backpack, etc.).
+- Accept ok=true ONLY when grammar is fully correct for PE A1–A2 AND the student fairly names the same circled thing (synonyms OK: woman/mum/sister, boy/brother, bag/backpack, etc.).
+- REJECT ungrammatical article/number mistakes even if the object is right. Examples of REJECT: "It is a stairs", "This is a jeans", "It is a glasses", "I have got a shoes", "a scissors". For plural nouns use they/these/those are … or the … — never a/an + plural.
 - Reject answers about a different object than the circle, or wrong grammar for this focus.
 - Keep reasons kind and very short.`;
 
@@ -949,7 +1096,8 @@ Rules:
             markPictureWrong(user);
             return;
         }
-        if (data.ok === true || data.ok === 'true') {
+        if ((data.ok === true || data.ok === 'true')
+            && !isClearlyUngrammatical(user, state.task.hotspotWord)) {
             const note = state.lang === 'pl'
                 ? (data.reasonPl || data.reasonEn || '')
                 : (data.reasonEn || data.reasonPl || '');
@@ -957,6 +1105,14 @@ Rules:
                 ? t('Good reading of the picture! ', 'Dobre odczytanie obrazka! ') + note
                 : t('Good reading of the picture — that works too!', 'Dobre odczytanie obrazka — to też pasuje!');
             finishCorrect(msg, false);
+            return;
+        }
+        if ((data.ok === true || data.ok === 'true')
+            && isClearlyUngrammatical(user, state.task.hotspotWord)) {
+            markPictureWrong(user, t(
+                ' — Check a/an and singular/plural (e.g. They are stairs — not It is a stairs).',
+                ' — Sprawdź a/an oraz liczbę (np. They are stairs — nie It is a stairs).'
+            ));
             return;
         }
         const tip = state.lang === 'pl'
@@ -1125,8 +1281,26 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         box.textContent = typeof text === 'string' ? text : String(text);
     }
 
+    function scheduleNextRound(delayMs) {
+        if (advanceTimer) {
+            clearTimeout(advanceTimer);
+            advanceTimer = null;
+        }
+        const ms = delayMs == null ? 1100 : delayMs;
+        const token = state.task && state.task.id;
+        advanceTimer = setTimeout(() => {
+            advanceTimer = null;
+            // Only advance if we are still on the same completed task
+            if (state.checked && state.task && state.task.id === token) newRound();
+        }, ms);
+    }
+
     function newRound() {
         stopListening();
+        if (advanceTimer) {
+            clearTimeout(advanceTimer);
+            advanceTimer = null;
+        }
         state.task = pickTask();
         state.tileOrder = [];
         state.chosenMcq = null;
