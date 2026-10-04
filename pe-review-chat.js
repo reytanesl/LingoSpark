@@ -2181,9 +2181,11 @@ Return ONLY JSON:
         const mode = document.querySelector('input[name="review-setup-vocab-mode"]:checked');
         const topicWrap = document.getElementById('review-setup-topic-wrap');
         const customWrap = document.getElementById('review-setup-custom-wrap');
+        const sceneBlock = document.getElementById('review-setup-scene-block');
         const isCustom = mode && mode.value === 'custom';
         if (topicWrap) topicWrap.style.display = isCustom ? 'none' : 'block';
         if (customWrap) customWrap.style.display = isCustom ? 'block' : 'none';
+        if (sceneBlock) sceneBlock.style.display = isCustom ? 'none' : 'block';
     }
 
     function renderRunInstructionPresets() {
