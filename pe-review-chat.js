@@ -855,14 +855,30 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
     }
 
     function formatGapPhaseReply(data) {
+        // Prefer dedicated Polish meaning sentence (full clue for which English word fills the gap).
+        let plMeaning = applyPolishCaseFixes(stripEmojis(String(data && data.gapPolish || '').trim()));
+        plMeaning = plMeaning
+            .replace(/\b(?:She's|He's|It's|I'm|You're|We're|They're|This is|That is|I like|I can|I have|She is|He is|They are|We are)[^.!?]{0,80}[.!?]?/gi, ' ')
+            .replace(/_{2,}/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
         const rawPl = cleanPolishTutorReply(String(data && data.reply || ''));
-        // Strip leftover English full sentences from Polish intro (keep short cue).
         let pl = rawPl
             .replace(/\b(?:She's|He's|It's|I'm|You're|We're|They're|This is|That is|I like|I can|I have|She is|He is|They are|We are)[^.!?]{0,80}[.!?]?/gi, ' ')
             .replace(/_{2,}/g, ' ')
             .replace(/\s+/g, ' ')
             .trim();
-        if (!pl) pl = 'Uzupełnij lukę.';
+
+        // If AI put the full Polish sentence only in reply, keep it; otherwise compose from gapPolish.
+        if (plMeaning && pl && !pl.toLowerCase().includes(plMeaning.toLowerCase().replace(/[.!?]+$/, ''))) {
+            pl = `${plMeaning.replace(/[.!?]+$/, '')}. Uzupełnij lukę.`;
+        } else if (plMeaning && !pl) {
+            pl = `${plMeaning.replace(/[.!?]+$/, '')}. Uzupełnij lukę.`;
+        } else if (!pl) {
+            pl = plMeaning ? `${plMeaning.replace(/[.!?]+$/, '')}. Uzupełnij lukę.` : 'Uzupełnij lukę.';
+        }
+
         let gap = normalizeGapMarks(String(data && data.gapSentence || state.currentGapSentence || '').trim());
         const answer = String(data && data.gapAnswer || state.currentGapAnswer || '').trim();
         if (answer && gap && !/_{2,}/.test(gap)) {
@@ -870,6 +886,18 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         }
         if (!gap) return pl;
         return `${pl} ${gap}`.replace(/\s+/g, ' ').trim();
+    }
+
+    function polishGapClueForSpeech(data) {
+        const formatted = formatGapPhaseReply(data);
+        // Speak Polish clue only (drop English gapped sentence from PL TTS).
+        let pl = String(formatted || '')
+            .replace(/\b(?:She's|He's|It's|I'm|You're|We're|They're|This is|That is|I like|I can|I have|She is|He is|They are|We are|My \w+)[^.!?]{0,80}[.!?]?/gi, ' ')
+            .replace(/_{2,}/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        pl = polishForSpeech(pl);
+        return pl || 'Uzupełnij lukę.';
     }
 
     function buildSystemRules() {
@@ -906,14 +934,15 @@ ${runBit}
 
 ZASADY FAZY LUK (krytyczne):
 1) Każda tura = JEDNO angielskie zdanie z JEDNĄ luką _____ (słowo lub krótka fraza z listy).
-2) reply = TYLKO krótki poprawny polski (np. „Uzupełnij lukę.” / „Świetnie! Kolejne:”). BEZ etykiet Wzór/Twoja kolej. Angielskiego z luką NIE wklejaj w reply — idzie do gapSentence.
-3) gapSentence = angielskie zdanie z widoczną luką _____. Przykład: "She is _____."
-4) gapAnswer = poprawne słowo/fraza do luki (np. "happy"). NIGDY nie wstawiaj gapAnswer w say[] ani nie czytaj odpowiedzi w lukę.
-5) say: pl = krótka polska instrukcja; en = to samo zdanie co gapSentence Z LUKĄ _____ (system przeczyta lukę jako blank/beep/mmm). Przykład:
-   say:[{"lang":"pl","text":"Uzupełnij lukę."},{"lang":"en","text":"She is _____."}]
-6) Uczeń uzupełnia lukę mową lub pismem (słowo albo całe zdanie). Chwal; jedna łagodna korekta; potem NOWE zdanie z luką.
-7) Poprawna polszczyzna (przypadki!): przy torcie NIE tortcie. Polskie znaki.
-8) usedVocab = słówko z luką. phase="gaps". Bez emoji/AI. JSON only.
+2) gapPolish = PEŁNE poprawne zdanie po polsku (znaczenie całego zdania), żeby uczeń wiedział, jakiego angielskiego słowa użyć. Przykład: "Ona jest szczęśliwa."
+3) reply = krótki poprawny polski z tym pełnym zdaniem + prośba o lukę. Przykład: "Ona jest szczęśliwa. Uzupełnij lukę." BEZ etykiet Wzór/Twoja kolej. Angielskiego NIE wklejaj w reply.
+4) gapSentence = angielskie zdanie z widoczną luką _____. Przykład: "She is _____."
+5) gapAnswer = poprawne angielskie słowo/fraza do luki (np. "happy"). NIGDY nie wstawiaj gapAnswer w say[] ani nie czytaj odpowiedzi w lukę.
+6) say: pl = pełne polskie zdanie-znaczenie + „Uzupełnij lukę.”; en = gapSentence Z LUKĄ _____ (system przeczyta lukę jako blank/beep/mmm). Przykład:
+   say:[{"lang":"pl","text":"Ona jest szczęśliwa. Uzupełnij lukę."},{"lang":"en","text":"She is _____."}]
+7) Uczeń uzupełnia lukę mową lub pismem. Chwal; jedna łagodna korekta; potem NOWE zdanie (znowu z pełnym polskim znaczeniem).
+8) Poprawna polszczyzna (przypadki!): przy torcie NIE tortcie. Polskie znaki.
+9) usedVocab = słówko z luką. phase="gaps". Bez emoji/AI. JSON only.
 
 Zwracaj TYLKO JSON każda tura.`;
             }
@@ -1122,8 +1151,17 @@ Return ONLY JSON each turn.`;
             if (gapSent && !out.some((s) => s.lang === 'en')) {
                 out.push({ lang: 'en', text: expandGapsForSpeech(gapSent, gapAnswer) });
             }
+            const plClue = polishGapClueForSpeech(data);
             if (!out.some((s) => s.lang === 'pl')) {
-                out.unshift({ lang: 'pl', text: 'Uzupełnij lukę.' });
+                out.unshift({ lang: 'pl', text: plClue });
+            } else {
+                // Prefer full Polish meaning sentence over a bare "Uzupełnij lukę."
+                const plIdx = out.findIndex((s) => s.lang === 'pl');
+                if (plIdx >= 0 && plClue && /uzupełnij lukę/i.test(out[plIdx].text) && !/[ąćęłńóśźż]/i.test(out[plIdx].text.replace(/uzupełnij lukę/gi, ''))) {
+                    out[plIdx].text = plClue;
+                } else if (plIdx >= 0 && plClue && plClue.length > out[plIdx].text.length) {
+                    out[plIdx].text = plClue;
+                }
             }
             if (out.length) return out;
         }
@@ -1229,7 +1267,7 @@ Return ONLY JSON each turn.`;
         }
         if (isGapPhase() && state.currentGapSentence) {
             speakSegments([
-                { lang: 'pl', text: 'Uzupełnij lukę.' },
+                { lang: 'pl', text: polishGapClueForSpeech({ reply: state.lastBotReply, gapSentence: state.currentGapSentence, gapAnswer: state.currentGapAnswer }) },
                 { lang: 'en', text: expandGapsForSpeech(state.currentGapSentence, state.currentGapAnswer) }
             ]);
             return;
@@ -1536,10 +1574,10 @@ Return ONLY JSON each turn.`;
             </div>`;
         }
         const plPlaceholder = isGapPhase()
-            ? 'Uzupełnij lukę po angielsku (słowo lub całe zdanie)…'
+            ? 'Na podstawie polskiego zdania uzupełnij lukę po angielsku…'
             : 'Odpowiedz po angielsku (słowo lub krótkie zdanie)…';
         const plSpeechHint = isGapPhase()
-            ? 'Tryb mowy — usłyszysz zdanie z luką (blank / beep / mmm). Tapnij Say it i uzupełnij lukę po angielsku.'
+            ? 'Tryb mowy — usłyszysz pełne zdanie po polsku, potem angielskie z luką (blank / beep / mmm). Tapnij Say it i uzupełnij lukę.'
             : 'Tryb mowy — poczekaj na trenera, potem tapnij Say it i odpowiedz po angielsku.';
         const writeBlock = showWrite()
             ? `<textarea id="review-input" placeholder="${isPolishTutor() ? plPlaceholder : 'English — or mix in Polish if you need to…'}" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
@@ -1779,9 +1817,9 @@ ${openBit}`;
         const prompt = `${buildSystemRules()}
 
 START FAZY LUK. Preferowane słówka do luk: ${prefer || 'any from list'}.
-Podaj pierwsze zdanie z luką _____. reply po polsku krótko; gapSentence z _____; gapAnswer = brakujące słowo; say pl+en (en z luką, NIE z odpowiedzią).
+Podaj pierwsze zdanie: gapPolish = pełne zdanie po polsku (żeby uczeń wiedział, jakiego słowa użyć); reply z tym zdaniem + „Uzupełnij lukę.”; gapSentence z _____; gapAnswer; say pl (pełne PL) + en (z luką, NIE z odpowiedzią).
 JSON only:
-{"reply":"Uzupełnij lukę.","gapSentence":"She is _____.","gapAnswer":"happy","say":[{"lang":"pl","text":"Uzupełnij lukę."},{"lang":"en","text":"She is _____."}],"usedGrammar":true,"usedVocab":["happy"],"nudge":"…","stepSuccess":false,"askRepeat":false,"englishRetell":"","phase":"gaps"}`;
+{"reply":"Ona jest szczęśliwa. Uzupełnij lukę.","gapPolish":"Ona jest szczęśliwa.","gapSentence":"She is _____.","gapAnswer":"happy","say":[{"lang":"pl","text":"Ona jest szczęśliwa. Uzupełnij lukę."},{"lang":"en","text":"She is _____."}],"usedGrammar":true,"usedVocab":["happy"],"nudge":"…","stepSuccess":false,"askRepeat":false,"englishRetell":"","phase":"gaps"}`;
 
         const data = await fetchAi(prompt, { withImage: false });
         hideTyping();
@@ -1861,9 +1899,9 @@ JSON only:
         let supportBit = '';
         if (isGapPhase()) {
             if (helpRequest || needPolish) {
-                supportBit = 'POMOC (faza luk): krótko po polsku wyjaśnij, potem TO SAMO zdanie z luką _____ (bez podawania odpowiedzi w say). stepSuccess=false.';
+                supportBit = 'POMOC (faza luk): podaj znowu pełne zdanie po polsku (znaczenie) + to samo EN z luką _____ (bez odpowiedzi w say). stepSuccess=false.';
             } else {
-                supportBit = `Faza luk: oceń uzupełnienie luki (oczekiwane: "${state.currentGapAnswer || '?'}"). Potem NOWE zdanie z luką. Preferuj niewykorzystane: ${gapWordsRemaining().slice(0, 4).join(', ') || 'any'}.`;
+                supportBit = `Faza luk: oceń uzupełnienie (oczekiwane: "${state.currentGapAnswer || '?'}"). Potem NOWE: gapPolish=pełne PL zdanie, gapSentence z _____. Preferuj: ${gapWordsRemaining().slice(0, 4).join(', ') || 'any'}.`;
             }
         } else if (isPolishTutor()) {
             if (helpRequest || needPolish) {
@@ -1885,8 +1923,8 @@ JSON only:
         let turnGuide;
         let jsonExample;
         if (isGapPhase()) {
-            turnGuide = `FAZA LUK: reply po polsku krótko; gapSentence z _____; gapAnswer; say pl + en (en z luką — NIE czytaj odpowiedzi). Max ~${ease.maxWords || 18} słów w reply.`;
-            jsonExample = '{"reply":"Uzupełnij lukę.","gapSentence":"She is _____.","gapAnswer":"happy","say":[{"lang":"pl","text":"Uzupełnij lukę."},{"lang":"en","text":"She is _____."}],"usedGrammar":true,"usedVocab":["happy"],"nudge":"...","stepSuccess":true,"askRepeat":false,"englishRetell":"","phase":"gaps"}';
+            turnGuide = `FAZA LUK: gapPolish = pełne zdanie po polsku (znaczenie!); reply = to zdanie + „Uzupełnij lukę.”; gapSentence z _____; gapAnswer; say pl (pełne PL) + en (z luką — NIE czytaj odpowiedzi).`;
+            jsonExample = '{"reply":"Ona jest szczęśliwa. Uzupełnij lukę.","gapPolish":"Ona jest szczęśliwa.","gapSentence":"She is _____.","gapAnswer":"happy","say":[{"lang":"pl","text":"Ona jest szczęśliwa. Uzupełnij lukę."},{"lang":"en","text":"She is _____."}],"usedGrammar":true,"usedVocab":["happy"],"nudge":"...","stepSuccess":true,"askRepeat":false,"englishRetell":"","phase":"gaps"}';
         } else if (isPolishTutor()) {
             turnGuide = `Odpowiedz poprawną polszczyzną (max ~${ease.maxWords || 18} słów; przypadki!). reply bez „Wzór”/„Twoja kolej”; kończ „Powiedz po angielsku.” Angielski tylko w say[]. phase="vocab".`;
             jsonExample = '{"reply":"Siostra uśmiecha się przy torcie. Powiedz po angielsku.","say":[{"lang":"pl","text":"Siostra uśmiecha się przy torcie. Powiedz po angielsku."},{"lang":"en","text":"She\'s happy."}],"usedGrammar":true,"usedVocab":[],"nudge":"...","stepSuccess":false,"askRepeat":false,"englishRetell":"","phase":"vocab","gapSentence":"","gapAnswer":""}';
