@@ -179,8 +179,22 @@
         sceneId: '',
         sceneLabels: [],
         scenePayload: null,
-        runInstructions: ''
+        runInstructions: '',
+        practicePhase: 'vocab', // 'vocab' | 'gaps' (Polish tutor: quiz words, then gapped sentences)
+        gapSpeakIndex: 0,
+        gapsCompleted: 0,
+        gapWordsDone: [],
+        currentGapAnswer: '',
+        currentGapSentence: ''
     };
+
+    const GAP_SPEECH_FILLERS = ['blank', 'beep', 'mmm', 'blah blah', 'la la'];
+    function gapMarkRegex() {
+        return /_{2,}|\[\s*\]|\(\s*(?:\.\.\.|…|gap|blank)\s*\)|\{\{\s*gap\s*\}\}/gi;
+    }
+    function hasGapMark(text) {
+        return gapMarkRegex().test(String(text || ''));
+    }
 
     const MAX_RUN_INSTRUCTIONS = 500;
 
@@ -765,6 +779,99 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         return state.coachStyle === 'pl';
     }
 
+    function isGapPhase() {
+        return isPolishTutor() && state.practicePhase === 'gaps';
+    }
+
+    function unusedVocabList() {
+        const touched = new Set((state.vocabTouched || []).map((w) => String(w).toLowerCase()));
+        return (state.wordList || []).filter((w) => !touched.has(String(w).toLowerCase()));
+    }
+
+    function vocabCoverageReady() {
+        if (!isPolishTutor() || !(state.wordList || []).length) return false;
+        return unusedVocabList().length === 0;
+    }
+
+    function markVocabFromText(text) {
+        const lower = String(text || '').toLowerCase();
+        if (!lower) return;
+        (state.wordList || []).forEach((w) => {
+            const key = String(w || '').toLowerCase().trim();
+            if (key.length < 2) return;
+            if (lower.includes(key) && !state.vocabTouched.includes(key)) {
+                state.vocabTouched.push(key);
+            }
+        });
+    }
+
+    function escapeRegExp(s) {
+        return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function normalizeGapMarks(text) {
+        return String(text || '').replace(gapMarkRegex(), '_____');
+    }
+
+    function nextGapSpeechFiller() {
+        const filler = GAP_SPEECH_FILLERS[state.gapSpeakIndex % GAP_SPEECH_FILLERS.length];
+        state.gapSpeakIndex += 1;
+        return filler;
+    }
+
+    /** Read gaps aloud as blank / beep / mmm / blah blah — never the answer. */
+    function expandGapsForSpeech(text, answer) {
+        let t = String(text || '');
+        if (!t) return '';
+        if (hasGapMark(t)) {
+            t = t.replace(gapMarkRegex(), () => ` … ${nextGapSpeechFiller()} … `);
+        } else if (answer) {
+            const re = new RegExp(`\\b${escapeRegExp(answer)}\\b`, 'i');
+            if (re.test(t)) t = t.replace(re, ` … ${nextGapSpeechFiller()} … `);
+        }
+        return t.replace(/\s+/g, ' ').trim();
+    }
+
+    function gapWordsRemaining() {
+        const done = new Set((state.gapWordsDone || []).map((w) => String(w).toLowerCase()));
+        return (state.wordList || []).filter((w) => !done.has(String(w).toLowerCase()));
+    }
+
+    function rememberGapTarget(data) {
+        const answer = String(data && data.gapAnswer || '').trim();
+        let sentence = normalizeGapMarks(String(data && data.gapSentence || '').trim());
+        if (answer && sentence && !/_{2,}/.test(sentence)) {
+            sentence = sentence.replace(new RegExp(`\\b${escapeRegExp(answer)}\\b`, 'i'), '_____');
+        }
+        state.currentGapAnswer = answer;
+        state.currentGapSentence = sentence;
+        if (answer) {
+            const key = answer.toLowerCase();
+            // Prefer matching a list word contained in the answer
+            const hit = (state.wordList || []).find((w) => key.includes(String(w).toLowerCase()) || String(w).toLowerCase().includes(key));
+            const track = String(hit || answer).toLowerCase();
+            if (track && !state.gapWordsDone.includes(track)) state.gapWordsDone.push(track);
+        }
+    }
+
+    function formatGapPhaseReply(data) {
+        const rawPl = cleanPolishTutorReply(String(data && data.reply || ''));
+        // Strip leftover English full sentences from Polish intro (keep short cue).
+        let pl = rawPl
+            .replace(/\b(?:She's|He's|It's|I'm|You're|We're|They're|This is|That is|I like|I can|I have|She is|He is|They are|We are)[^.!?]{0,80}[.!?]?/gi, ' ')
+            .replace(/_{2,}/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        if (!pl) pl = 'Uzupełnij lukę.';
+        let gap = normalizeGapMarks(String(data && data.gapSentence || state.currentGapSentence || '').trim());
+        const answer = String(data && data.gapAnswer || state.currentGapAnswer || '').trim();
+        if (answer && gap && !/_{2,}/.test(gap)) {
+            gap = gap.replace(new RegExp(`\\b${escapeRegExp(answer)}\\b`, 'i'), '_____');
+        }
+        if (!gap) return pl;
+        return `${pl} ${gap}`.replace(/\s+/g, ' ').trim();
+    }
+
     function buildSystemRules() {
         const gLabel = grammarFocusText();
         const vocab = state.wordList.join(', ');
@@ -787,7 +894,32 @@ Honour this focus in natural teaching chat for klasa ${state.schoolYear} / ease 
         const maxW = ease.maxWords || 18;
 
         if (isPolishTutor()) {
+            const phase = state.practicePhase === 'gaps' ? 'gaps' : 'vocab';
+            const gapLeft = gapWordsRemaining().slice(0, 6).join(', ') || vocab;
+            if (phase === 'gaps') {
+                return `Jesteś trenerem angielskiego dla polskich dzieci — FAZA LUK (gapped sentences) PO POLSKU.
+Gramatyka: ${gLabel}. Słówka do luk (priorytet niewykorzystane): [${gapLeft}]. Pełna lista: [${vocab}].
+Uczeń: klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}. Input: ${state.inputMode} (mowa lub pismo).
+${topicBit} ${topicFocus}
+${pictureBit}
+${runBit}
+
+ZASADY FAZY LUK (krytyczne):
+1) Każda tura = JEDNO angielskie zdanie z JEDNĄ luką _____ (słowo lub krótka fraza z listy).
+2) reply = TYLKO krótki poprawny polski (np. „Uzupełnij lukę.” / „Świetnie! Kolejne:”). BEZ etykiet Wzór/Twoja kolej. Angielskiego z luką NIE wklejaj w reply — idzie do gapSentence.
+3) gapSentence = angielskie zdanie z widoczną luką _____. Przykład: "She is _____."
+4) gapAnswer = poprawne słowo/fraza do luki (np. "happy"). NIGDY nie wstawiaj gapAnswer w say[] ani nie czytaj odpowiedzi w lukę.
+5) say: pl = krótka polska instrukcja; en = to samo zdanie co gapSentence Z LUKĄ _____ (system przeczyta lukę jako blank/beep/mmm). Przykład:
+   say:[{"lang":"pl","text":"Uzupełnij lukę."},{"lang":"en","text":"She is _____."}]
+6) Uczeń uzupełnia lukę mową lub pismem (słowo albo całe zdanie). Chwal; jedna łagodna korekta; potem NOWE zdanie z luką.
+7) Poprawna polszczyzna (przypadki!): przy torcie NIE tortcie. Polskie znaki.
+8) usedVocab = słówko z luką. phase="gaps". Bez emoji/AI. JSON only.
+
+Zwracaj TYLKO JSON każda tura.`;
+            }
+
             return `Jesteś trenerem angielskiego dla polskich dzieci — prowadzisz rozmowę PO POLSKU.
+FAZA 1: przepytaj WSZYSTKIE słówka z listy, potem system przejdzie do fazy luk.
 Uczysz punktów gramatycznych: ${gLabel}. Słówka: [${vocab}]. Przepytuj i modeluj.
 Uczeń: klasa ${state.schoolYear} (${profile.band}), ease ${ease.label}.
 ${profile.relevance}
@@ -807,12 +939,12 @@ ZASADY (tryb polski — krytyczne):
 3) reply = TYLKO poprawny polski (1–2 zdania). Kończ prośbą „Powiedz po angielsku.” NIE pisz etykiet: „Wzór”, „Wzór:”, „Twoja kolej”, „Spróbuj:”, „Model:”. Angielski wzorzec NIE w reply — tylko w say[].
    Dobrze: „Siostra uśmiecha się przy torcie. Powiedz po angielsku.”
    Źle: „Siostra uśmiecha się przy tortcie. Wzór: She's happy. Twoja kolej — powiedz po angielsku.”
-4) Przepytuj: najpierw po polsku, potem uczeń odpowiada po angielsku. Po jednym słowie poproś o zdanie. Bez A/B.
+4) Przepytuj: najpierw po polsku, potem uczeń odpowiada po angielsku. Po jednym słowie poproś o zdanie. Bez A/B. W usedVocab oznacz przećwiczone słówka z listy — każde słówko powinno pojawić się zanim skończysz fazę 1.
 5) Dopasuj język do klasy ${state.schoolYear} i ease ${ease.label}: proste, ale POPRAWNE — nigdy „dzieciniej” błędną składnią.
 6) Jedno pytanie na turę. Chwal próby. Max jedna łagodna korekta.
 7) Pole say (obowiązkowe): pl = dokładnie to, co ma być przeczytane po polsku (jak reply, bez etykiet, poprawne przypadki); en = TYLKO angielski wzorzec.
    Przykład: say:[{"lang":"pl","text":"Siostra uśmiecha się przy torcie. Powiedz po angielsku."},{"lang":"en","text":"She's happy."}]
-8) englishRetell = dokładne angielskie zdanie (askRepeat=true), bez polskiego.
+8) englishRetell = dokładne angielskie zdanie (askRepeat=true), bez polskiego. phase="vocab". gapSentence="" gapAnswer="".
 9) Bez emoji, bez AI/JSON. Bezpieczne treści. W roli trenera nie mów po angielsku w reply — angielski tylko w say[].
 
 Zwracaj TYLKO JSON każda tura.`;
@@ -944,7 +1076,8 @@ Return ONLY JSON each turn.`;
         return t.replace(/\s+/g, ' ').replace(/\s+([.!?])/g, '$1').trim();
     }
 
-    function finalizeCoachReply(reply) {
+    function finalizeCoachReply(reply, data) {
+        if (isGapPhase() && data) return formatGapPhaseReply(data);
         const raw = String(reply || '').trim();
         if (!raw) return '';
         if (isPolishTutor()) return cleanPolishTutorReply(raw) || applyPolishCaseFixes(raw);
@@ -963,19 +1096,38 @@ Return ONLY JSON each turn.`;
 
     /** Trust AI "say" segments only — no heuristic language guessing. */
     function normalizeSaySegments(data, replyText) {
+        const gapAnswer = String(data && data.gapAnswer || state.currentGapAnswer || '').trim();
         const out = [];
         const raw = data && Array.isArray(data.say) ? data.say : [];
         raw.forEach((item) => {
             if (!item || typeof item !== 'object') return;
             const lang = item.lang === 'pl' || item.lang === 'en' ? item.lang : '';
             let text = stripEmojis(item.text);
-            if (lang === 'pl') text = polishForSpeech(text);
-            else if (lang === 'en') text = englishForSpeech(text) || text;
+            if (lang === 'pl') {
+                text = polishForSpeech(text);
+            } else if (lang === 'en') {
+                text = englishForSpeech(text) || text;
+                if (isGapPhase() || gapAnswer || hasGapMark(text)) {
+                    text = expandGapsForSpeech(text, gapAnswer);
+                }
+            }
             if (!lang || !text) return;
             const last = out[out.length - 1];
             if (last && last.lang === lang) last.text += ' ' + text;
             else out.push({ lang, text });
         });
+
+        if (isGapPhase()) {
+            const gapSent = String(data && data.gapSentence || state.currentGapSentence || '').trim();
+            if (gapSent && !out.some((s) => s.lang === 'en')) {
+                out.push({ lang: 'en', text: expandGapsForSpeech(gapSent, gapAnswer) });
+            }
+            if (!out.some((s) => s.lang === 'pl')) {
+                out.unshift({ lang: 'pl', text: 'Uzupełnij lukę.' });
+            }
+            if (out.length) return out;
+        }
+
         if (out.length) return out;
 
         // Safe fallback: one language for the whole reply (coach style). No mixed guessing.
@@ -1042,12 +1194,13 @@ Return ONLY JSON each turn.`;
 
     function rememberAndSpeakBot(data) {
         const retell = String(data && data.englishRetell || '').trim();
-        const askRepeat = !!(data && data.askRepeat) && !!retell;
-        const cleanReply = finalizeCoachReply(data && data.reply);
+        const askRepeat = !!(data && data.askRepeat) && !!retell && !isGapPhase();
+        if (isGapPhase()) rememberGapTarget(data);
+        const cleanReply = finalizeCoachReply(data && data.reply, data);
         if (data && cleanReply) data.reply = cleanReply;
         const segments = normalizeSaySegments(data, cleanReply);
         state.lastSay = segments.slice();
-        state.lastRepeatLine = askRepeat ? retell : '';
+        state.lastRepeatLine = askRepeat ? retell : (isGapPhase() ? String(data && data.gapSentence || state.currentGapSentence || '') : '');
         // Hear / lastBotReply: prefer English retell when practising; else full reply text
         state.lastBotReply = askRepeat ? retell : cleanReply;
 
@@ -1069,12 +1222,20 @@ Return ONLY JSON each turn.`;
     }
 
     function hearLastCoach() {
-        if (state.lastRepeatLine) {
-            speakText(state.lastRepeatLine, { lang: 'en', englishOnly: true });
-            return;
-        }
+        // Prefer stored say script (already expands gaps to blank/beep/mmm).
         if (state.lastSay && state.lastSay.length) {
             speakSegments(state.lastSay);
+            return;
+        }
+        if (isGapPhase() && state.currentGapSentence) {
+            speakSegments([
+                { lang: 'pl', text: 'Uzupełnij lukę.' },
+                { lang: 'en', text: expandGapsForSpeech(state.currentGapSentence, state.currentGapAnswer) }
+            ]);
+            return;
+        }
+        if (state.lastRepeatLine) {
+            speakText(state.lastRepeatLine, { lang: 'en', englishOnly: true });
             return;
         }
         if (state.lastBotReply) speakText(state.lastBotReply);
@@ -1193,6 +1354,9 @@ Return ONLY JSON each turn.`;
                 if (key && !state.vocabTouched.includes(key)) state.vocabTouched.push(key);
             });
         }
+        if (isGapPhase() && data && data.gapAnswer) {
+            state.gapsCompleted += 1;
+        }
         if (usedG && (usedV || state.wordList.length === 0) && data.stepSuccess) {
             const room = (EASE_STEPS.length - 1) - (Number(state.ease) || 0);
             if (state.difficultyStep < Math.min(1, room)) {
@@ -1224,7 +1388,7 @@ Return ONLY JSON each turn.`;
             <div class="review-hud-card"><strong>Focus</strong><span>${escapeHtml(grammarFocusText())} · ${escapeHtml(vocabLabel)}${pic}${styleBit}</span></div>
             ${briefHud}
             <div class="review-hud-card"><strong>Learner</strong><span>Klasa ${state.schoolYear} · ${escapeHtml(difficultyLabel())}</span></div>
-            <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length}/${state.wordList.length} vocab · ${escapeHtml(profile.band)}</span></div>
+            <div class="review-hud-card"><strong>Progress</strong><span>${state.turns} turns · ${state.vocabTouched.length}/${state.wordList.length} vocab${isPolishTutor() ? (isGapPhase() ? ` · lukowe ${state.gapsCompleted}/${Math.max(state.wordList.length, 1)}` : ' · słówka') : ''} · ${escapeHtml(profile.band)}</span></div>
         </div>`;
     }
 
@@ -1371,9 +1535,15 @@ Return ONLY JSON each turn.`;
                 </div>
             </div>`;
         }
+        const plPlaceholder = isGapPhase()
+            ? 'Uzupełnij lukę po angielsku (słowo lub całe zdanie)…'
+            : 'Odpowiedz po angielsku (słowo lub krótkie zdanie)…';
+        const plSpeechHint = isGapPhase()
+            ? 'Tryb mowy — usłyszysz zdanie z luką (blank / beep / mmm). Tapnij Say it i uzupełnij lukę po angielsku.'
+            : 'Tryb mowy — poczekaj na trenera, potem tapnij Say it i odpowiedz po angielsku.';
         const writeBlock = showWrite()
-            ? `<textarea id="review-input" placeholder="${isPolishTutor() ? 'Odpowiedz po angielsku (słowo lub krótkie zdanie)…' : 'English — or mix in Polish if you need to…'}" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
-            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">${isPolishTutor() ? 'Tryb mowy — poczekaj na trenera, potem tapnij Say it i odpowiedz po angielsku.' : 'Speech mode — wait for the coach to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.'}</p>`;
+            ? `<textarea id="review-input" placeholder="${isPolishTutor() ? plPlaceholder : 'English — or mix in Polish if you need to…'}" rows="2" ${state.loading ? 'disabled' : ''}></textarea>`
+            : `<p style="margin:0; color:var(--text-muted,#6b7280); text-align:center; font-size:0.9rem;">${isPolishTutor() ? plSpeechHint : 'Speech mode — wait for the coach to finish, then tap Say it. Use Voice for a natural voice. You can still type Polish + English if needed.'}</p>`;
         const voiceBtn = showSpeak()
             ? `<div class="review-voice-wrap">
                 <button type="button" class="btn btn-outline" id="review-voice-btn" ${state.loading ? 'disabled' : ''} aria-expanded="${state.voiceMenuOpen ? 'true' : 'false'}" title="Wybierz głosy EN / PL">
@@ -1580,7 +1750,7 @@ ${openBit}`;
             return;
         }
 
-        const replyText = finalizeCoachReply(data.reply);
+        const replyText = finalizeCoachReply(data.reply, data);
         state.messages.push({ role: 'assistant', text: replyText });
         appendBubble(state.messages[state.messages.length - 1]);
         rememberAndSpeakBot(Object.assign({}, data, { reply: replyText }));
@@ -1589,6 +1759,55 @@ ${openBit}`;
         if (data.nudge) patchNudge(data.nudge);
         const input = rootEl()?.querySelector('#review-input');
         if (input) input.focus();
+    }
+
+    async function startGapPhase() {
+        if (!isPolishTutor() || state.ended) return;
+        state.practicePhase = 'gaps';
+        state.messages.push({
+            role: 'system',
+            text: 'Nowa faza: zdania z luką. Uzupełnij brakujące słowo (mową lub pismem). Luka czytana jest jako blank / beep / mmm…'
+        });
+        appendBubble(state.messages[state.messages.length - 1]);
+        patchHud();
+
+        state.loading = true;
+        showTyping();
+        setBusy(true);
+
+        const prefer = gapWordsRemaining().slice(0, 4).join(', ') || state.wordList.slice(0, 4).join(', ');
+        const prompt = `${buildSystemRules()}
+
+START FAZY LUK. Preferowane słówka do luk: ${prefer || 'any from list'}.
+Podaj pierwsze zdanie z luką _____. reply po polsku krótko; gapSentence z _____; gapAnswer = brakujące słowo; say pl+en (en z luką, NIE z odpowiedzią).
+JSON only:
+{"reply":"Uzupełnij lukę.","gapSentence":"She is _____.","gapAnswer":"happy","say":[{"lang":"pl","text":"Uzupełnij lukę."},{"lang":"en","text":"She is _____."}],"usedGrammar":true,"usedVocab":["happy"],"nudge":"…","stepSuccess":false,"askRepeat":false,"englishRetell":"","phase":"gaps"}`;
+
+        const data = await fetchAi(prompt, { withImage: false });
+        hideTyping();
+        state.loading = false;
+
+        if (!data || data.__error || !data.reply) {
+            setBusy(false);
+            setStatus(aiErr(data) || 'Could not start gap practice.', 'error');
+            return;
+        }
+
+        state.turns += 1;
+        bumpDifficulty(data);
+        const replyText = finalizeCoachReply(data.reply, data);
+        state.messages.push({ role: 'assistant', text: replyText });
+        appendBubble(state.messages[state.messages.length - 1]);
+        rememberAndSpeakBot(Object.assign({}, data, { reply: replyText }));
+        setBusy(false);
+        patchHud();
+        patchNudge(data.nudge || 'Fill the gap in English.');
+        const nextInput = rootEl()?.querySelector('#review-input');
+        if (nextInput) {
+            // Re-render compose placeholder for gap phase
+            render();
+            rootEl()?.querySelector('#review-input')?.focus();
+        }
     }
 
     async function askForHelp() {
@@ -1611,9 +1830,15 @@ ${openBit}`;
 
         const helpRequest = !!(opts && opts.helpRequest);
         if (!helpRequest && isLetterOnlyAnswer(text)) {
-            setStatus('Say or type a short sentence — not just A or B.', 'error');
+            setStatus(isGapPhase()
+                ? 'Fill the gap with a word or sentence — not just A or B.'
+                : 'Say or type a short sentence — not just A or B.', 'error');
             const nudge = rootEl()?.querySelector('#review-nudge');
-            if (nudge) nudge.textContent = 'Use a short sentence (e.g. I like pizza), not a letter.';
+            if (nudge) {
+                nudge.textContent = isGapPhase()
+                    ? 'Type or say the missing word (or the full sentence).'
+                    : 'Use a short sentence (e.g. I like pizza), not a letter.';
+            }
             return;
         }
 
@@ -1628,17 +1853,25 @@ ${openBit}`;
         showTyping();
         setBusy(true);
 
+        if (!helpRequest) markVocabFromText(text);
+
         const ease = easeInfo(currentEaseIndex());
         const needPolish = helpRequest || looksConfused(text);
         const mixed = !needPolish && (looksMixedPolishEnglish(text) || hasPolishContent(text));
         let supportBit = '';
-        if (isPolishTutor()) {
+        if (isGapPhase()) {
+            if (helpRequest || needPolish) {
+                supportBit = 'POMOC (faza luk): krótko po polsku wyjaśnij, potem TO SAMO zdanie z luką _____ (bez podawania odpowiedzi w say). stepSuccess=false.';
+            } else {
+                supportBit = `Faza luk: oceń uzupełnienie luki (oczekiwane: "${state.currentGapAnswer || '?'}"). Potem NOWE zdanie z luką. Preferuj niewykorzystane: ${gapWordsRemaining().slice(0, 4).join(', ') || 'any'}.`;
+            }
+        } else if (isPolishTutor()) {
             if (helpRequest || needPolish) {
                 supportBit = 'POMOC: Uczeń nie rozumie. Wyjaśnij prościej poprawną polszczyzną (1–2 zdania, dobra fleksja), daj łatwiejszy wzorzec EN. stepSuccess=false.';
             } else if (mixed) {
                 supportBit = 'Odpowiedź mieszana: zaakceptuj sens, podaj czyste angielskie zdanie do powtórzenia (askRepeat + englishRetell).';
             } else {
-                supportBit = 'Kontynuuj przepytywanie poprawną polszczyzną; wymagaj angielskiej odpowiedzi (słowo → potem krótkie zdanie).';
+                supportBit = 'Kontynuuj przepytywanie poprawną polszczyzną; wymagaj angielskiej odpowiedzi (słowo → potem krótkie zdanie). Oznacz usedVocab ze słówek z listy.';
             }
         } else if (helpRequest) {
             supportBit = 'HELP: Student tapped Nie rozumiem. 1 short tip in correct natural Polish about your last line, then simpler English + model. stepSuccess=false.';
@@ -1648,20 +1881,30 @@ ${openBit}`;
             supportBit = 'Mixed PL/EN: retell as one English sentence; askRepeat=true + englishRetell.';
         }
 
-        const unusedVocab = state.wordList.filter((w) => !state.vocabTouched.includes(String(w).toLowerCase()));
-        const turnGuide = isPolishTutor()
-            ? `Odpowiedz poprawną polszczyzną (max ~${ease.maxWords || 18} słów; przypadki!). reply bez „Wzór”/„Twoja kolej”; kończ „Powiedz po angielsku.” Angielski tylko w say[].`
-            : `Reply short (max ~${ease.maxWords || 18} words). Teach grammar+vocab; ask for a short full sentence.`;
+        const unusedVocab = unusedVocabList();
+        let turnGuide;
+        let jsonExample;
+        if (isGapPhase()) {
+            turnGuide = `FAZA LUK: reply po polsku krótko; gapSentence z _____; gapAnswer; say pl + en (en z luką — NIE czytaj odpowiedzi). Max ~${ease.maxWords || 18} słów w reply.`;
+            jsonExample = '{"reply":"Uzupełnij lukę.","gapSentence":"She is _____.","gapAnswer":"happy","say":[{"lang":"pl","text":"Uzupełnij lukę."},{"lang":"en","text":"She is _____."}],"usedGrammar":true,"usedVocab":["happy"],"nudge":"...","stepSuccess":true,"askRepeat":false,"englishRetell":"","phase":"gaps"}';
+        } else if (isPolishTutor()) {
+            turnGuide = `Odpowiedz poprawną polszczyzną (max ~${ease.maxWords || 18} słów; przypadki!). reply bez „Wzór”/„Twoja kolej”; kończ „Powiedz po angielsku.” Angielski tylko w say[]. phase="vocab".`;
+            jsonExample = '{"reply":"Siostra uśmiecha się przy torcie. Powiedz po angielsku.","say":[{"lang":"pl","text":"Siostra uśmiecha się przy torcie. Powiedz po angielsku."},{"lang":"en","text":"She\'s happy."}],"usedGrammar":true,"usedVocab":[],"nudge":"...","stepSuccess":false,"askRepeat":false,"englishRetell":"","phase":"vocab","gapSentence":"","gapAnswer":""}';
+        } else {
+            turnGuide = `Reply short (max ~${ease.maxWords || 18} words). Teach grammar+vocab; ask for a short full sentence.`;
+            jsonExample = '{"reply":"...","say":[{"lang":"en","text":"..."}],"usedGrammar":true,"usedVocab":[],"nudge":"...","stepSuccess":false,"askRepeat":false,"englishRetell":""}';
+        }
+
         const prompt = `${buildSystemRules()}
 
 Recent chat:
 ${historyText(HISTORY_TURNS)}
 
-Turn ${state.turns + 1}. Prefer vocab: ${unusedVocab.slice(0, 4).join(', ') || 'any'}.
+Turn ${state.turns + 1}. Prefer vocab: ${unusedVocab.slice(0, 4).join(', ') || (isGapPhase() ? gapWordsRemaining().slice(0, 4).join(', ') || 'any' : 'any')}.
 ${supportBit}
 ${turnGuide}
-Fill say[] for TTS (pl = natural Polish to speak; en = English model only). JSON only:
-{"reply":"Siostra uśmiecha się przy torcie. Powiedz po angielsku.","say":[{"lang":"pl","text":"Siostra uśmiecha się przy torcie. Powiedz po angielsku."},{"lang":"en","text":"She's happy."}],"usedGrammar":true,"usedVocab":[],"nudge":"...","stepSuccess":false,"askRepeat":false,"englishRetell":""}`;
+Fill say[] for TTS. JSON only:
+${jsonExample}`;
 
         const data = await fetchAi(prompt, { withImage: false });
         hideTyping();
@@ -1680,10 +1923,11 @@ Fill say[] for TTS (pl = natural Polish to speak; en = English model only). JSON
 
         state.turns += 1;
         bumpDifficulty(data);
+        markVocabFromText([data.usedVocab].flat().join(' '));
         const pts = awardTurnPoints(data);
         const retell = String(data.englishRetell || '').trim();
-        const askRepeat = !!data.askRepeat && !!retell;
-        const replyText = finalizeCoachReply(data.reply);
+        const askRepeat = !!data.askRepeat && !!retell && !isGapPhase();
+        const replyText = finalizeCoachReply(data.reply, data);
         state.messages.push({ role: 'assistant', text: replyText });
         appendBubble(state.messages[state.messages.length - 1]);
         rememberAndSpeakBot(Object.assign({}, data, { reply: replyText }));
@@ -1693,6 +1937,13 @@ Fill say[] for TTS (pl = natural Polish to speak; en = English model only). JSON
             ? (`Repeat: ${retell}` + (pts ? ` · +${pts}` : ''))
             : ((data.nudge || '') + (pts ? ` · +${pts}` : ''));
         patchNudge(tip || (state.turns >= 8 ? 'Great practice — you can End session for a coach note.' : ''));
+
+        // After all target words/phrases: switch Polish tutor into gapped-sentence practice.
+        if (isPolishTutor() && state.practicePhase === 'vocab' && vocabCoverageReady()) {
+            await startGapPhase();
+            return;
+        }
+
         const nextInput = rootEl()?.querySelector('#review-input');
         if (nextInput) nextInput.focus();
     }
@@ -1999,6 +2250,12 @@ Return ONLY JSON:
         state.voiceURIPl = loadSavedVoiceURI(VOICE_STORAGE_KEY_PL);
         state.voiceMenuOpen = false;
         state.lastRepeatLine = '';
+        state.practicePhase = 'vocab';
+        state.gapSpeakIndex = 0;
+        state.gapsCompleted = 0;
+        state.gapWordsDone = [];
+        state.currentGapAnswer = '';
+        state.currentGapSentence = '';
         refreshVoices();
 
         injectCss();
