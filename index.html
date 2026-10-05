@@ -1388,8 +1388,6 @@
         #screen-home .category-header h2 { font-size: 2.3rem; }
         #screen-home .cat-icon { font-size: 2rem; }
         #screen-home .home-section > p { font-size: 1.2rem; }
-        #screen-home .card h2 { font-size: 1.78rem; }
-        #screen-home .card p { font-size: 1.2rem; }
         #screen-home .pe-pack-toggle { font-size: 1.58rem; }
         #screen-home .pe-pack-toggle .pe-pack-meta { font-size: 1.14rem; }
         .sub-section-header { text-align: center; margin: 2.5rem 0 1.25rem 0; }
@@ -1401,8 +1399,6 @@
             #screen-home .category-header h2 { font-size: clamp(1.85rem, 7vw, 2.4rem); }
             #screen-home .cat-icon { font-size: clamp(1.7rem, 6vw, 2.15rem); }
             #screen-home .home-section > p { font-size: clamp(1.12rem, 4.2vw, 1.3rem); }
-            #screen-home .card h2 { font-size: clamp(1.55rem, 5.8vw, 1.9rem); }
-            #screen-home .card p { font-size: clamp(1.08rem, 4vw, 1.25rem); }
             #screen-home .pe-pack-toggle { font-size: clamp(1.35rem, 5.2vw, 1.7rem); }
             #screen-home .pe-pack-toggle .pe-pack-meta { font-size: clamp(1.02rem, 3.8vw, 1.2rem); }
             #screen-home .sub-section-header h3 { font-size: clamp(1.6rem, 6vw, 2.1rem); }
@@ -1421,6 +1417,66 @@
         .icon-container { height: 70px; width: 70px; margin: 0 auto 1rem auto; background-color: rgba(1, 33, 105, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--royal-blue); font-size: 2rem; }
         .card h2 { font-size: 1.4rem; color: var(--royal-blue); margin-bottom: 1rem; }
         .card p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; flex-grow: 1; }
+
+        /* Compact, fully clickable game tiles on home sections */
+        #screen-home .home-section .grid {
+            grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+            gap: 0.85rem;
+            margin-top: 0.75rem;
+        }
+        #screen-home .home-section .grid > .card {
+            padding: 1rem 0.8rem 0.85rem;
+            border-radius: 10px;
+            border-top-width: 3px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-top-color 0.2s ease;
+        }
+        #screen-home .home-section .grid > .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.09);
+        }
+        #screen-home .home-section .grid > .card .icon-container {
+            height: 42px; width: 42px; margin: 0 auto 0.45rem; font-size: 1.2rem;
+        }
+        #screen-home .home-section .grid > .card h2 {
+            font-size: 0.98rem; margin-bottom: 0.3rem; line-height: 1.2;
+        }
+        #screen-home .home-section .grid > .card p {
+            font-size: 0.78rem; margin-bottom: 0.65rem; line-height: 1.35;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        #screen-home .home-section .grid > .card .card-corner-badge {
+            top: 0.4rem; right: 0.4rem; font-size: 0.58rem; padding: 0.15rem 0.4rem;
+        }
+        #screen-home .home-section .grid > .card > a.btn {
+            padding: 0.4rem 0.75rem; font-size: 0.8rem; margin-top: auto; align-self: center;
+            pointer-events: none;
+        }
+        #screen-home .home-section .grid > .card > a.btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: auto;
+        }
+        #screen-home .home-section .grid > .card:has(> a.btn:focus-visible) {
+            outline: 3px solid var(--royal-blue);
+            outline-offset: 2px;
+        }
+        #screen-home .home-section .grid > .card:hover > a.btn-outline {
+            background-color: var(--royal-blue); color: var(--bright-white);
+        }
+        #screen-home .home-section .grid > .card:hover > a.btn-blue {
+            background-color: #011648;
+        }
+        @media (max-width: 767px) {
+            #screen-home .home-section .grid {
+                grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+                gap: 0.7rem;
+            }
+            #screen-home .home-section .grid > .card h2 { font-size: 0.92rem; }
+            #screen-home .home-section .grid > .card p { font-size: 0.74rem; -webkit-line-clamp: 2; }
+        }
 
         /* BUTTONS */
         .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
