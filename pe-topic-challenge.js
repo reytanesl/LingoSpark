@@ -436,6 +436,7 @@
             pairCueEn: null,
             pairCuePl: null,
             hotspotWord: word,
+            cueImg: cueImgForText(word),
             sceneSrc: pick.src,
             sceneId: pick.id,
             highlightBoxes: [{ w: pick.h.w, b: pick.h.b }],
@@ -445,6 +446,24 @@
 
     function t(en, pl) {
         return state.lang === 'pl' ? (pl || en) : en;
+    }
+
+    function cueImgForText(text) {
+        if (typeof global.peTopicChallengeCueImg === 'function') {
+            return global.peTopicChallengeCueImg(text);
+        }
+        return null;
+    }
+
+    function taskCueHtml(task) {
+        const img = task.cueImg || cueImgForText(task.hotspotWord || task.answer || task.promptEn);
+        if (img) {
+            return `<div class="tc-cue tc-cue-img-wrap"><img class="tc-cue-img" src="${escapeAttr(img)}" alt="" loading="lazy"></div>`;
+        }
+        if (task.cue) {
+            return `<div class="tc-cue" aria-hidden="true">${task.cue}</div>`;
+        }
+        return '';
     }
 
     function injectCss() {
@@ -462,6 +481,9 @@
 .tc-streak { font-weight: 700; color: var(--tc-accent); }
 .tc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 1.1rem 1.15rem; box-shadow: 0 1px 0 rgba(15,23,42,0.04); }
 .tc-cue { font-size: 3.2rem; line-height: 1; text-align: center; margin: 0.35rem 0 0.75rem; }
+.tc-cue-img-wrap { font-size: 0; }
+.tc-cue-img { width: min(112px, 34vw); height: auto; display: inline-block; vertical-align: middle; }
+.tc-scene + .tc-cue-img-wrap .tc-cue-img { width: min(92px, 26vw); }
 .tc-scene { margin: 0 0 0.9rem; border-radius: 0.75rem; overflow: visible; border: 1px solid #e2e8f0; background: #f8fafc; }
 .tc-scene-frame { width: 100%; background: #f1f5f9; display: flex; justify-content: center; align-items: flex-start; padding: 0.5rem; }
 .tc-scene-stage { position: relative; display: block; width: 100%; max-width: 960px; line-height: 0; margin: 0 auto; }
@@ -682,6 +704,7 @@
         const pair = state.lang === 'pl' ? task.pairCuePl : task.pairCueEn;
 
         let body = '';
+        const cueHtml = taskCueHtml(task);
         if (state.mode === 'picture') {
             if (state.sceneSrc) {
                 const hasFocus = (state.highlightBoxes || []).length > 0;
@@ -697,9 +720,12 @@
                     </div>
                     <div class="tc-scene-caption"><strong>${escapeHtml(caption)}</strong></div>
                 </div>`;
-            } else {
-                body += `<div class="tc-cue" aria-hidden="true">${task.cue || '📝'}</div>`;
+                if (cueHtml) body += cueHtml;
+            } else if (cueHtml) {
+                body += cueHtml;
             }
+        } else if (cueHtml) {
+            body += cueHtml;
         }
         body += `<div class="tc-prompt">${escapeHtml(prompt)}</div>`;
         if (pair && showSpeak) {

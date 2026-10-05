@@ -74,7 +74,7 @@ function add(item) {
   const answer = item.answer.trim();
   const tiles = item.tiles || tilesFrom(answer);
   const modeHints = item.modeHints || ['picture', 'tiles', 'speak'];
-  RAW.push({
+  const row = {
     id: item.id,
     topic: item.topic,
     grammar: item.grammar,
@@ -92,7 +92,9 @@ function add(item) {
     transformTo: item.transformTo || null,
     pairCueEn: item.pairCueEn || null,
     pairCuePl: item.pairCuePl || null,
-  });
+  };
+  if (item.cueImg) row.cueImg = item.cueImg;
+  RAW.push(row);
 }
 
 function batch(topic, grammar, rows) {
@@ -559,50 +561,80 @@ batch('time', 'questions', [
 // Ensure speak is in modeHints for all non-transform-only; already included.
 // Add a few pure picture extras for denser picture mode (~add 0 — already 5 per cell = 315)
 
-const SCENES = {
-  school: [
-    'assets/vocab-scenes/school-classroom.jpg',
-    'assets/vocab-scenes/school-playground.jpg'
-  ],
-  family_home: [
-    'assets/vocab-scenes/family-livingroom.jpg',
-    'assets/vocab-scenes/family-picnic.jpg',
-    'assets/vocab-scenes/home-house.jpg',
-    'assets/vocab-scenes/home-kitchen.jpg'
-  ],
-  food: [
-    'assets/vocab-scenes/food-market.jpg',
-    'assets/vocab-scenes/food-restaurant.jpg',
-    'assets/vocab-scenes/food-supermarket.jpg'
-  ],
-  free_time: [
-    'assets/vocab-scenes/freetime-beach.jpg',
-    'assets/vocab-scenes/freetime-park.jpg'
-  ],
-  clothes_weather: [
-    'assets/vocab-scenes/clothes-bedroom.jpg',
-    'assets/vocab-scenes/clothes-shop.jpg',
-    'assets/vocab-scenes/weather-rainy.jpg',
-    'assets/vocab-scenes/weather-seasons.jpg'
-  ],
-  town: [
-    'assets/vocab-scenes/town-centre.jpg',
-    'assets/vocab-scenes/town-station.jpg'
-  ],
-  animals: [
-    'assets/vocab-scenes/animals-farm.jpg',
-    'assets/vocab-scenes/animals-forest.jpg',
-    'assets/vocab-scenes/animals-zoo.jpg'
-  ],
-  routines: [
-    'assets/vocab-scenes/routines-morning.jpg',
-    'assets/vocab-scenes/routines-evening.jpg'
-  ],
-  time: [
-    'assets/vocab-scenes/time-birthday.jpg',
-    'assets/vocab-scenes/time-schoolday.jpg'
-  ]
+const SCENE_IDS = {
+  school: ['school-classroom', 'school-playground'],
+  family_home: ['family-livingroom', 'family-picnic', 'home-house', 'home-kitchen'],
+  food: ['food-market', 'food-restaurant', 'food-supermarket'],
+  free_time: ['freetime-beach', 'freetime-park'],
+  clothes_weather: ['clothes-bedroom', 'clothes-shop', 'weather-rainy', 'weather-seasons'],
+  town: ['town-centre', 'town-station'],
+  animals: ['animals-farm', 'animals-forest', 'animals-zoo'],
+  routines: ['routines-morning', 'routines-evening'],
+  time: ['time-birthday', 'time-schoolday'],
 };
+
+function sceneAssetPath(id) {
+  const dir = path.join(__dirname, '..', 'assets/topic-scenes');
+  // Prefer whatever extension is present after import (tc/kws2 may be png or jpg).
+  for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
+    if (fs.existsSync(path.join(dir, id + ext))) return `assets/topic-scenes/${id}${ext}`;
+  }
+  return `assets/topic-scenes/${id}.png`;
+}
+
+const SCENES = Object.fromEntries(
+  Object.entries(SCENE_IDS).map(([topic, ids]) => [topic, ids.map(sceneAssetPath)])
+);
+
+const CUE_ALIASES = {
+  'school-microscope': ['microscope'],
+  'school-scissors': ['scissors'],
+  'school-protractor': ['protractor'],
+  'school-hole-punch': ['hole punch'],
+  'home-doorbell': ['doorbell'],
+  'home-blender': ['blender'],
+  'home-sewing-machine': ['sewing machine'],
+  'food-avocado': ['avocado'],
+  'food-croissant': ['croissant'],
+  'food-thermos': ['thermos', 'flask'],
+  'clothes-cardigan': ['cardigan'],
+  'clothes-dungarees': ['dungarees', 'overalls'],
+  'clothes-wellington-boot': ['wellington boot', 'wellington boots', 'wellingtons', 'rain boot', 'rain boots'],
+  'animals-flamingo': ['flamingo'],
+  'animals-donkey': ['donkey'],
+  'animals-koala': ['koala'],
+  'animals-meerkat': ['meerkat'],
+  'animals-peacock': ['peacock'],
+  'weather-lightning': ['lightning'],
+  'weather-snowflake': ['snowflake'],
+  'weather-sunflower': ['sunflower'],
+  'town-fire-engine': ['fire engine', 'fire truck'],
+  'town-lighthouse': ['lighthouse'],
+  'freetime-kayak': ['kayak'],
+  'freetime-trampoline': ['trampoline'],
+  'routines-hairbrush': ['hairbrush'],
+  'routines-night-light': ['night light'],
+  'time-hourglass': ['hourglass'],
+  'time-party-blower': ['party blower', 'party horn']
+};
+
+function cueImgForItem(item) {
+  const hay = [item.answer, item.promptEn, item.promptPl].join(' ').toLowerCase();
+  for (const [slug, words] of Object.entries(CUE_ALIASES)) {
+    for (const w of words) {
+      const needle = String(w).toLowerCase();
+      if (needle.length >= 3 && hay.includes(needle)) {
+        return `assets/topic-cues/${slug}.png`;
+      }
+    }
+  }
+  return null;
+}
+
+for (const item of RAW) {
+  const img = cueImgForItem(item);
+  if (img) item.cueImg = img;
+}
 
 const file = `/**
  * Topic Challenge — curated Primary English task bank (ages ~9–11).
