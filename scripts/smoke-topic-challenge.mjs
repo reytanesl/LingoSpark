@@ -91,3 +91,69 @@ const sceneFiles = Object.values(ctx.PE_TOPIC_CHALLENGE_SCENES || {}).flat();
 const missingScenes = sceneFiles.filter((p) => !fs.existsSync(p));
 console.log('scene files on disk', missingScenes.length ? `MISSING ${missingScenes.length}` : `${sceneFiles.length} ok`);
 console.log('hotspot scenes', Object.keys(ctx.PE_TOPIC_CHALLENGE_HOTSPOTS || {}).length);
+
+// Grammar purity of Spot & Say model answers (all hotspot labels × grammars)
+const ALWAYS_PLURAL = [
+  'stairs', 'jeans', 'trousers', 'pants', 'shorts', 'glasses', 'goggles',
+  'sunglasses', 'scissors', 'clothes', 'binoculars', 'shoes', 'boots', 'socks'
+];
+const grammarBugs = [];
+const hsMap = ctx.PE_TOPIC_CHALLENGE_HOTSPOTS || {};
+const allWords = [...new Set(Object.values(hsMap).flat().map((h) => String(h.w).toLowerCase()))];
+for (const w of allWords) {
+  for (const g of grammars) {
+    const card = api.grammarCard(g, w);
+    if (!card) continue;
+    const texts = [card.answer].concat(card.accept || []);
+    for (const t of texts) {
+      const n = String(t).toLowerCase();
+      for (const pl of ALWAYS_PLURAL) {
+        // Flag "a stairs." / "a jeans" but not compounds like "a clothes peg"
+        if (new RegExp(`\\b(a|an)\\s+${pl}(?=\\s*[.!?,]|$)`).test(n)) {
+          grammarBugs.push(`${w}×${g}: ${t}`);
+        }
+      }
+      if (/\bit is (a|an) .+\.$/i.test(t) && api.isPluralNoun(w) && !/\bthe\b/i.test(t)) {
+        grammarBugs.push(`plural-as-it ${w}×${g}: ${t}`);
+      }
+      if (/\bthey are (thermos|bus|dress|compass|hourglass|chest of drawers)\b/i.test(n)) {
+        grammarBugs.push(`false-plural ${w}×${g}: ${t}`);
+      }
+      if (/\b(a|an)\s+hour/i.test(n) && /\ba hour/i.test(n)) {
+        grammarBugs.push(`article ${w}×${g}: ${t}`);
+      }
+      if (/\ba hourglass\b/i.test(n) || /\ba hour\b/i.test(n)) {
+        grammarBugs.push(`article-h ${w}×${g}: ${t}`);
+      }
+      if (/\ba floss\b/i.test(n) || /\ban floss\b/i.test(n)) {
+        grammarBugs.push(`floss ${w}×${g}: ${t}`);
+      }
+    }
+  }
+}
+if (grammarBugs.length) {
+  console.error('grammar bugs in model answers:', grammarBugs.slice(0, 40));
+  process.exitCode = 1;
+} else {
+  console.log('spot-say grammar purity: ok (' + allWords.length + ' labels)');
+}
+// Spot checks for known fixes
+const expect = {
+  stairs: { be: 'They are stairs.' },
+  thermos: { be: 'It is a thermos.' },
+  hourglass: { be: 'It is an hourglass.' },
+  'chest of drawers': { be: 'It is a chest of drawers.' },
+  floss: { be: 'It is floss.' },
+  jeans: { be: 'They are jeans.' }
+};
+for (const [w, byG] of Object.entries(expect)) {
+  for (const [g, want] of Object.entries(byG)) {
+    const got = api.grammarCard(g, w)?.answer;
+    if (got !== want) {
+      console.error(`expected ${w}×${g} → ${want}, got ${got}`);
+      process.exitCode = 1;
+    }
+  }
+}
+if (!process.exitCode) console.log('known noun fixes: ok');
+

@@ -56,16 +56,26 @@
         'sunglasses', 'scissors', 'clothes', 'binoculars', 'overalls', 'pajamas',
         'pyjamas', 'shoes', 'boots', 'socks', 'sandals', 'mittens', 'gloves',
         'trainers', 'flowers', 'grapes', 'people', 'children', 'teeth', 'feet',
-        'mice', 'sheep', 'roller skates'
+        'mice', 'sheep', 'roller skates', 'dungarees', 'earmuffs', 'flippers',
+        'laces', 'leggings', 'slippers', 'speakers', 'wellington boots',
+        'roof tiles'
     ]);
     /** End in -s/-ss/-us but are singular countable. */
     const SINGULAR_S = new Set([
         'bus', 'dress', 'glass', 'grass', 'class', 'circus', 'walrus', 'octopus',
-        'cactus', 'gas', 'plus', 'bonus'
+        'cactus', 'gas', 'plus', 'bonus', 'thermos', 'compass', 'hourglass',
+        'atlas', 'virus', 'census', 'focus', 'status', 'iris', 'tennis'
+    ]);
+    /** Multi-word NPs that are singular even if a later word looks plural. */
+    const SINGULAR_PHRASES = new Set([
+        'chest of drawers', 'pair of scissors', 'pair of jeans', 'pair of trousers',
+        'pair of glasses', 'pair of shoes', 'pair of boots', 'wine glass',
+        'hour glass'
     ]);
     const UNCOUNTABLE = new Set([
         'water', 'milk', 'juice', 'rice', 'bread', 'cheese', 'butter', 'sand',
-        'money', 'weather', 'homework', 'furniture', 'food', 'soup', 'tea', 'coffee'
+        'money', 'weather', 'homework', 'furniture', 'food', 'soup', 'tea', 'coffee',
+        'floss'
     ]);
     // Tiny / decorative labels that make poor circle targets on their own
     const SKIP_HOTSPOTS = new Set([
@@ -118,6 +128,8 @@
 
     function article(word) {
         const w = String(word || '').toLowerCase().replace(/^(a|an|the|some)\s+/, '');
+        // Silent h (hour, hourglass) → an
+        if (/^(hour|honest|honou?r|heir)/.test(w)) return 'an';
         return /^[aeiou]/.test(w) ? 'an' : 'a';
     }
 
@@ -135,12 +147,21 @@
     function isPluralNoun(word) {
         const w = String(word || '').toLowerCase().trim();
         if (!w) return false;
+        if (SINGULAR_PHRASES.has(w) || SINGULAR_S.has(w)) return false;
         if (ALWAYS_PLURAL.has(w)) return true;
-        if (SINGULAR_S.has(w) || UNCOUNTABLE.has(w) || isPerson(w)) return false;
+        if (UNCOUNTABLE.has(w) || isPerson(w)) return false;
+        // "chest of drawers", "pair of jeans" — singular unit headed by of-phrase
+        if (/\sof\s/.test(w)) {
+            const head = w.split(/\sof\s/)[0].trim();
+            if (head && !ALWAYS_PLURAL.has(head)) {
+                const headLast = head.split(/\s+/).pop();
+                if (headLast && !ALWAYS_PLURAL.has(headLast) && !/s$/i.test(headLast)) return false;
+            }
+        }
         const last = w.split(/\s+/).pop();
         if (ALWAYS_PLURAL.has(last)) return true;
-        if (SINGULAR_S.has(last)) return false;
-        // Regular plurals (flowers, grapes) — not bus/dress/glass
+        if (SINGULAR_S.has(last) || SINGULAR_PHRASES.has(last)) return false;
+        // Regular plurals (flowers, grapes) — not bus/dress/glass/thermos
         if (/s$/i.test(last) && !/(ss|us|is|oes|xes)$/i.test(last) && last.length > 3) return true;
         if (/(ches|shes|xes|zes|oes)$/i.test(last)) return true;
         return false;
@@ -180,9 +201,10 @@
         const n = normalize(answer);
         if (!n) return false;
         const w = String(hotspotWord || '').toLowerCase().trim();
-        // a/an + known plural noun anywhere
+        // a/an + known plural noun as the whole NP (not "a clothes peg")
         for (const pl of ALWAYS_PLURAL) {
-            if (new RegExp(`\\b(a|an)\\s+${pl.replace(/\s+/g, '\\s+')}\\b`).test(n)) return true;
+            const plRe = pl.replace(/\s+/g, '\\s+');
+            if (new RegExp(`\\b(a|an)\\s+${plRe}(?=\\s*[.!?,]|$)`).test(n)) return true;
         }
         if (w && isPluralNoun(w)) {
             const wRe = w.replace(/\s+/g, '\\s+');
@@ -1368,6 +1390,10 @@ Explain in simple English (max 3 short sentences) why the model is right and wha
         setLang(lang) { state.lang = lang === 'pl' ? 'pl' : 'en'; render(); },
         getState() { return Object.assign({}, state); },
         buildPictureTask,
-        picturePoolSize
+        picturePoolSize,
+        grammarCard,
+        isPluralNoun,
+        withArticle,
+        beComplement
     };
 })(typeof window !== 'undefined' ? window : globalThis);
