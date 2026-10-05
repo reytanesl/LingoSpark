@@ -1473,6 +1473,37 @@
             #screen-home .home-section .grid > .card h2 { font-size: 0.92rem; }
             #screen-home .home-section .grid > .card p { font-size: 0.74rem; -webkit-line-clamp: 2; }
         }
+        /* Writing Suite game tiles — a bit larger than other home grids */
+        #section-writing .grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        #section-writing .grid > .card {
+            padding: 1.25rem 1rem 1.05rem;
+        }
+        #section-writing .grid > .card .icon-container {
+            height: 52px; width: 52px; margin: 0 auto 0.55rem; font-size: 1.4rem;
+        }
+        #section-writing .grid > .card h2 {
+            font-size: 1.12rem; margin-bottom: 0.4rem;
+        }
+        #section-writing .grid > .card p {
+            font-size: 0.88rem; margin-bottom: 0.8rem; -webkit-line-clamp: 4;
+        }
+        #section-writing .grid > .card > a.btn {
+            padding: 0.5rem 0.95rem; font-size: 0.88rem;
+        }
+        @media (max-width: 767px) {
+            #section-writing .grid {
+                grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+                gap: 0.85rem;
+            }
+            #section-writing .grid > .card h2 { font-size: 1.02rem; }
+            #section-writing .grid > .card p { font-size: 0.82rem; -webkit-line-clamp: 3; }
+            #section-writing .grid > .card .icon-container {
+                height: 46px; width: 46px; font-size: 1.25rem;
+            }
+        }
 
         /* BUTTONS */
         .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
