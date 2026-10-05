@@ -1388,8 +1388,6 @@
         #screen-home .category-header h2 { font-size: 2.3rem; }
         #screen-home .cat-icon { font-size: 2rem; }
         #screen-home .home-section > p { font-size: 1.2rem; }
-        #screen-home .pe-pack-toggle { font-size: 1.58rem; }
-        #screen-home .pe-pack-toggle .pe-pack-meta { font-size: 1.14rem; }
         .sub-section-header { text-align: center; margin: 2.5rem 0 1.25rem 0; }
         .sub-section-header h3 { font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; margin: 0; }
         .sub-section-header p { color: var(--text-muted); font-size: 1.1rem; margin-top: 0.35rem; }
@@ -1399,8 +1397,6 @@
             #screen-home .category-header h2 { font-size: clamp(1.85rem, 7vw, 2.4rem); }
             #screen-home .cat-icon { font-size: clamp(1.7rem, 6vw, 2.15rem); }
             #screen-home .home-section > p { font-size: clamp(1.12rem, 4.2vw, 1.3rem); }
-            #screen-home .pe-pack-toggle { font-size: clamp(1.35rem, 5.2vw, 1.7rem); }
-            #screen-home .pe-pack-toggle .pe-pack-meta { font-size: clamp(1.02rem, 3.8vw, 1.2rem); }
             #screen-home .sub-section-header h3 { font-size: clamp(1.6rem, 6vw, 2.1rem); }
             #screen-home .sub-section-header p { font-size: clamp(1.02rem, 3.8vw, 1.2rem); }
         }
@@ -1780,6 +1776,50 @@
         .pe-pack-toggle.open .chevron { transform: rotate(180deg); color: var(--royal-blue); }
         .pe-pack-grid { display: none; margin-top: 1.25rem; }
         .pe-pack-grid.open { display: grid; }
+        #section-writing .writing-pack-row {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem; margin-top: 1.1rem;
+        }
+        #section-writing .writing-pack-tile {
+            width: auto; margin-top: 0; padding: 1.35rem 1rem 1.1rem;
+            text-align: center; flex-direction: column; align-items: center; justify-content: flex-start;
+            gap: 0.45rem; border-top: 3px solid var(--royal-blue);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); font-size: 1.18rem; min-height: 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        #section-writing .writing-pack-tile--adv { border-top-color: var(--success-green); }
+        #section-writing .writing-pack-tile:hover {
+            transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.09);
+            border-color: var(--border-light); border-top-color: var(--pillarbox-red);
+        }
+        #section-writing .writing-pack-tile--adv:hover { border-top-color: var(--pillarbox-red); }
+        #section-writing .writing-pack-tile.open {
+            border-color: var(--royal-blue); border-top-color: var(--royal-blue);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.09);
+        }
+        #section-writing .writing-pack-tile--adv.open {
+            border-color: var(--success-green); border-top-color: var(--success-green);
+        }
+        #section-writing .writing-pack-icon {
+            height: 56px; width: 56px; margin: 0 auto 0.25rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background-color: rgba(1, 33, 105, 0.05); color: var(--royal-blue); font-size: 1.55rem;
+        }
+        #section-writing .writing-pack-icon--adv {
+            background-color: rgba(0, 130, 59, 0.08); color: var(--success-green);
+        }
+        #section-writing .writing-pack-label { display: block; line-height: 1.2; }
+        #section-writing .writing-pack-tile .pe-pack-meta {
+            font-size: 0.9rem; margin-top: 0; line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        #section-writing .writing-pack-tile .chevron { margin-top: 0.2rem; font-size: 0.95rem; }
+        @media (max-width: 520px) {
+            #section-writing .writing-pack-row { gap: 0.8rem; }
+            #section-writing .writing-pack-tile { padding: 1.1rem 0.7rem 0.95rem; font-size: 1.05rem; }
+            #section-writing .writing-pack-tile .pe-pack-meta { font-size: 0.8rem; -webkit-line-clamp: 2; }
+            #section-writing .writing-pack-icon { height: 48px; width: 48px; font-size: 1.3rem; }
+        }
         .pe-setup-compact { display: flex; flex-direction: column; gap: 0.85rem; }
         .pe-setup-row {
             display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
@@ -2651,16 +2691,22 @@
                 <div class="category-header">
                     <i class="fa-solid fa-pen-nib cat-icon"></i><h2>Writing Suite</h2>
                 </div>
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills.</p>
+                <p style="text-align: center; margin-bottom: 1.25rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills.</p>
 
-                <!-- Primary English -->
-                <button type="button" class="pe-pack-toggle" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
-                    <span>
-                        <i class="fa-solid fa-graduation-cap"></i> Primary English
-                        <span class="pe-pack-meta">Dictation, Colour Blocks, Vocab Scenes, Topic Challenge, Review Chatbot + AI writing games — choose A2 or B1 for AI games</span>
-                    </span>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
-                </button>
+                <div class="writing-pack-row">
+                    <button type="button" class="pe-pack-toggle writing-pack-tile" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
+                        <span class="writing-pack-icon" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></span>
+                        <span class="writing-pack-label">Primary English</span>
+                        <span class="pe-pack-meta">Dictation, blocks, scenes, Topic Challenge, Review Chatbot &amp; AI games</span>
+                        <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="pe-pack-toggle writing-pack-tile writing-pack-tile--adv" id="adv-pack-toggle" onclick="toggleAdvancedEnglishPack()">
+                        <span class="writing-pack-icon writing-pack-icon--adv" aria-hidden="true"><i class="fa-solid fa-feather-pointed"></i></span>
+                        <span class="writing-pack-label">Advanced English</span>
+                        <span class="pe-pack-meta">Essay tools, academic vocabulary, speaking missions &amp; Matura feedback</span>
+                        <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <div class="pe-level-row" id="pe-level-row">
                     <span>CEFR level (AI games):</span>
                     <button type="button" class="pe-level-btn" data-level="A2" onclick="selectPeLevel('A2')">A2</button>
@@ -2684,14 +2730,6 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
                 </div>
 
-                <!-- Advanced English -->
-                <button type="button" class="pe-pack-toggle" id="adv-pack-toggle" onclick="toggleAdvancedEnglishPack()">
-                    <span>
-                        <i class="fa-solid fa-feather-pointed" style="color: var(--pillarbox-red);"></i> Advanced English
-                        <span class="pe-pack-meta">Paragraph scramble plus 7 AI essay, writing and speaking tools for academic structure, vocabulary and fluency</span>
-                    </span>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
-                </button>
                 <div class="grid pe-pack-grid" id="adv-pack-grid">
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a ready-made essay paragraph — introduction, body or conclusion — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
@@ -6555,12 +6593,17 @@
             const targetTransition = randomCat.words[Math.floor(Math.random() * randomCat.words.length)];
             const R = wsRandomnessBlock();
 
-            const prompt = `Write two formal written sentences (${WS_LEVEL}) that are logically bridged ONLY by the transition "${targetTransition}" (relation: ${randomCat.type}).
+            const prompt = `Write two clear school-essay sentences that are logically bridged ONLY by the transition "${targetTransition}" (relation: ${randomCat.type}).
+LEVEL: solid B2 writing (upper-secondary practice). Formal enough for an essay, but easy to read.
+LANGUAGE RULES:
+- Medium sentences (about 12–20 words each). Precise B2 vocabulary a strong upper-secondary student knows well.
+- Avoid dense C1 jargon, stacked noun phrases, rare synonyms, and ornate academic padding.
+- Sound like a clear school essay or report, not a journal article.
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}. Never reuse near-identical pairs.
 CRITICAL: UI shows [s1] [button] [s2].
 's1' = first complete sentence ending in . or ;
 's2' = continuation AFTER the transition (leading comma/lowercase if needed). Do NOT include the transition in s2.
-Provide 3 plausible but logically wrong formal distractors.
+Provide 3 plausible but logically wrong distractors (same simple formal register as the correct option).
 Return ONLY JSON: {"s1":"...","s2":"...","correct":"${targetTransition}","options":["${targetTransition}","d1","d2","d3"]}`;
 
             const data = await fetchGenerativeAI(prompt);
@@ -6612,11 +6655,16 @@ Return ONLY JSON: {"s1":"...","s2":"...","correct":"${targetTransition}","option
             toggleLoading('devil', true);
             const R = wsRandomnessBlock();
 
-            const prompt = `Write a debate thesis in formal written English (${WS_LEVEL}).
+            const prompt = `Write a clear debate thesis for school writing practice (solid B2, upper-secondary).
+LANGUAGE RULES:
+- Thesis: ONE medium sentence (about 14–24 words). Precise B2 vocabulary a strong upper-secondary student can read easily.
+- Avoid dense C1 jargon, stacked noun phrases, rare synonyms, and ornate academic padding.
+- Sound like a clear school debate claim, not a journal abstract.
 RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}. Never reuse a near-identical thesis.
-Provide 3 options. ALL 3 must be equally sophisticated and elaborate.
+Provide 3 options. ALL 3 must be equally clear and concrete (same length and simple formal register).
 - ONE = strong logical counter-argument (rebuttal: true)
-- TWO = distractors that sound academic but are wrong as rebuttals (support/rephrase thesis or go off-topic) (rebuttal: false)
+- TWO = distractors that sound plausible but are wrong as rebuttals (support/rephrase thesis or go off-topic) (rebuttal: false)
+Each option: ONE medium sentence (about 12–22 words), plain B2 school English.
 Return ONLY JSON: {"thesis":"...","cards":[{"text":"...","rebuttal":true},{"text":"...","rebuttal":false},{"text":"...","rebuttal":false}]}`;
 
             const data = await fetchGenerativeAI(prompt);
