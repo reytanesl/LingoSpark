@@ -2749,7 +2749,7 @@
                 <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
                 <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
-                <div class="guide-item"><strong>Share a word list</strong><p>In Word Sets, open <strong>Share</strong> on a saved list to copy a link. Students open the link — the glossary loads into Vocab Review without signing in. Use the unlink button to turn sharing off.</p></div>
+                <div class="guide-item"><strong>Share or export a word list</strong><p>In Word Sets, use <strong>Share</strong> to copy a student link, or <strong>Export</strong> to download a clean glossary (<code>Term = Definition</code>, one per line). Students open a share link without signing in — the glossary loads into Vocab Review. Use the unlink button to turn sharing off.</p></div>
 
                 <h3>Live Spark</h3>
                 <div class="guide-item"><strong>Live Spark</strong><p>Teachers sign in and host a live classroom race. Choose Solo Race, Captain &amp; Crew, or Hot Spark Relay team mode. At least 2 players join with a room code and nickname (4+ for team modes). First team/player to reach 12 terms wins.</p></div>
@@ -5058,6 +5058,73 @@
             }).filter(Boolean).join('\n');
         }
 
+        function sanitizeGlossaryFilename(name) {
+            const base = String(name || 'word-list')
+                .trim()
+                .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '')
+                .slice(0, 60);
+            return (base || 'word-list') + '-glossary.txt';
+        }
+
+        function downloadGlossaryText(text, filename) {
+            const blob = new Blob([text.endsWith('\n') ? text : text + '\n'], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'glossary.txt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+        }
+
+        /** Clean glossary export: one line per entry as Term = Definition. */
+        async function exportGlossaryFromItems(name, items, opts = {}) {
+            const text = glossaryTextFromItems(items);
+            if (!text) {
+                appAlert('This list has no words to export.');
+                return false;
+            }
+            const filename = sanitizeGlossaryFilename(name);
+            downloadGlossaryText(text, filename);
+            if (opts.copy !== false) {
+                await copyTextToClipboard(text);
+            }
+            return true;
+        }
+
+        function exportDemoWordSet(demoId) {
+            const set = demoSetById(demoId);
+            if (!set) return;
+            exportGlossaryFromItems(set.name, set.items || []);
+        }
+
+        async function exportWordSet(id) {
+            if (!isLoggedIn()) { openAuthModal('login'); return; }
+            try {
+                const res = await fetch(`/api/word-sets/${id}`, { credentials: 'same-origin' });
+                const data = await res.json();
+                if (!res.ok || !data.set) {
+                    appAlert(data.error || 'Could not export this set.');
+                    return;
+                }
+                await exportGlossaryFromItems(data.set.name, data.set.items || []);
+            } catch (e) {
+                appAlert('Failed to export word list.');
+            }
+        }
+
+        function exportWordSetEditor() {
+            if (!wsEditor) return;
+            syncWsEditorFromDom();
+            const items = collectWsEditorItems();
+            const name = (wsEditor.name || '').trim() || 'word-list';
+            exportGlossaryFromItems(name, items);
+        }
+
         /** Push a loaded list into every Vocab Review / Live Spark entry point. */
         function syncGlossaryAcrossVocabGames(text) {
             const glossary = String(text || '').trim();
@@ -5116,6 +5183,7 @@
                     <div class="ws-card-meta">${esc(s.description || 'Ready-made set for every player')}</div>
                     <div class="ws-card-actions">
                         <button class="btn btn-blue" onclick="applyDemoWordSet('${esc(s.id)}', { closeMenu: true })"><i class="fa-solid fa-play"></i> Load</button>
+                        <button class="btn btn-outline" onclick="exportDemoWordSet('${esc(s.id)}')"><i class="fa-solid fa-download"></i> Export</button>
                         <button class="btn btn-outline" onclick="editDemoWordSet('${esc(s.id)}')"><i class="fa-solid fa-pen"></i> Edit</button>
                     </div>
                 </div>
@@ -5213,6 +5281,7 @@
                         <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
                         <div class="ws-card-actions">
                             <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
+                            <button class="btn btn-outline" onclick="exportWordSet(${s.id})"><i class="fa-solid fa-download"></i> Export</button>
                             <button class="btn btn-outline" onclick="shareWordSet(${s.id})"><i class="fa-solid fa-link"></i> ${s.share_token ? 'Copy link' : 'Share'}</button>
                             ${s.share_token ? `<button class="btn btn-grey" onclick="unshareWordSet(${s.id})" title="Stop sharing"><i class="fa-solid fa-link-slash"></i></button>` : ''}
                             <button class="btn btn-outline" onclick="editWordSet(${s.id})"><i class="fa-solid fa-pen"></i> Edit</button>
@@ -5464,6 +5533,7 @@
                 <div id="ws-editor-rows">${rows}</div>
                 <button type="button" class="ws-add-card" onclick="wsEditorAddRow()"><i class="fa-solid fa-plus"></i> Add a card</button>
                 <div class="ws-editor-actions">
+                    <button type="button" class="btn btn-outline" onclick="exportWordSetEditor()"><i class="fa-solid fa-download"></i> Export glossary</button>
                     <button type="button" class="btn btn-blue" id="ws-editor-save" onclick="saveWordSetEditor()"><i class="fa-solid fa-floppy-disk"></i> Save list</button>
                 </div>
             `;
