@@ -35,7 +35,7 @@ export const LANTERN_BASE = 100;
 export const LANTERN_DEFAULT_ROUNDS = 10;
 export const LANTERN_MIN_ROUNDS = 3;
 export const LANTERN_MAX_ROUNDS = 20;
-export const LANTERN_QUESTION_MS = 20_000;
+export const LANTERN_QUESTION_MS = 20_000; // default answer time; a room can override it (questionMs)
 export const LANTERN_REVIEW_MS = 12_000;
 export const LANTERN_PICK_MS = 12_000;
 
@@ -436,7 +436,7 @@ function beginRound(match, now) {
     match.choices = match.inputMode === 'choice'
         ? buildChoices(entry.term, match.deck.map((d) => d.term), match.level)
         : null;
-    match.phaseEndsAt = now + LANTERN_QUESTION_MS;
+    match.phaseEndsAt = now + (match.questionMs || LANTERN_QUESTION_MS);
 }
 
 function openPrompt(match) {
@@ -480,6 +480,7 @@ export function createLanternMatch({
     rounds = LANTERN_DEFAULT_ROUNDS,
     answerMode = 'randomise',
     level = 'intermediate',
+    questionMs = LANTERN_QUESTION_MS,
     now = Date.now(),
     rng = Math.random,
 }) {
@@ -496,6 +497,7 @@ export function createLanternMatch({
         deck,
         answerMode: mode,
         level: level || 'intermediate',
+        questionMs: Number(questionMs) > 0 ? Math.round(Number(questionMs)) : LANTERN_QUESTION_MS,
         phaseEndsAt: 0,
         reveal: null,
         revealSeq: 0,
@@ -789,6 +791,7 @@ export function lanternQuestionPayload(match) {
         round: match.roundIndex + 1,
         rounds: match.rounds,
         endsAt: match.phaseEndsAt,
+        timeLimitSec: Math.round((match.questionMs || LANTERN_QUESTION_MS) / 1000),
         isFinal: Boolean(match.isFinal),
         ...(match.inputMode === 'choice' ? { choices: match.choices } : {}),
     };
@@ -826,6 +829,7 @@ export function lanternPublicView(match, { playerId = null, forHost = false, con
         rounds: match.rounds,
         isFinal: Boolean(match.isFinal),
         phaseEndsAt: match.phaseEndsAt,
+        questionMs: match.questionMs || LANTERN_QUESTION_MS,
         questionId: match.questionId,
         inputMode: match.inputMode,
         // Same options every phone already gets; lets the projector draw the answer tiles.

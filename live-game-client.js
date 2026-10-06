@@ -1275,11 +1275,13 @@
         if (playing) {
             btn.textContent = 'Game in progress…';
             if (status) {
-                status.textContent = lanternGame
+                const timeSec = snapshot?.questionTimeSec ?? hostState?.questionTimeSec;
+                const timeNote = timeSec ? ` · ${timeSec} s per question` : '';
+                status.textContent = (lanternGame
                     ? `Lucky Lanterns — ${snapshot?.lanternRounds || hostState?.lanternRounds || 10} rounds`
                     : isTeamGame
                     ? `${gameFormatLabel(format, snapshot?.teamAssignment || hostState?.teamAssignment)} — teams race to 12!`
-                    : 'Race underway — first to 12 terms in a row wins!';
+                    : 'Race underway — first to 12 terms in a row wins!') + timeNote;
             }
         } else if (count < minPlayers) {
             btn.textContent = `Start game (need ${minPlayers}+ players)`;
@@ -1329,6 +1331,7 @@
             hostState.teamAssignment = data.snapshot?.teamAssignment || hostState?.teamAssignment || 'random';
             hostState.answerMode = data.snapshot?.answerMode || hostState?.answerMode || 'randomise';
             hostState.lanternRounds = data.snapshot?.lanternRounds || hostState?.lanternRounds || 10;
+            applyHostTiming(data.snapshot);
             if (data.snapshot?.phase === 'playing') {
                 if (isLuckyLanternsFormat(hostState.gameFormat)) setHostLanternMode(true);
                 else {
@@ -1358,6 +1361,7 @@
             hostState.teamAssignment = snap.teamAssignment || hostState?.teamAssignment || 'random';
             hostState.answerMode = snap.answerMode || hostState?.answerMode || 'randomise';
             hostState.lanternRounds = snap.lanternRounds || hostState?.lanternRounds || 10;
+            applyHostTiming(snap);
             hostState.phase = snap.phase || hostState?.phase || 'lobby';
             if (hostState?.phase === 'playing') {
                 // Race board is driven by progress-update (teams/players as race entities).
@@ -1374,7 +1378,9 @@
 
         s.on('live:host-answer', (data) => {
             if (hostState?.phase !== 'playing') return;
-            if (!data.challengeable) {
+            if (data.timedOut) {
+                spawnHostFeedbackBubble(data.playerId, false, data.progress, TERMS_TO_WIN, false, "Time's up");
+            } else if (!data.challengeable) {
                 spawnHostFeedbackBubble(data.playerId, data.correct, data.progress, TERMS_TO_WIN, data.won);
             }
             if (!data.correct && data.reset) hostState.lastFlashId = data.playerId;
@@ -1437,6 +1443,7 @@
             hostState.phase = 'playing';
             hostState.gameFormat = data.gameFormat || hostState.gameFormat || 'race';
             hostState.lanternRounds = data.lanternRounds || hostState.lanternRounds;
+            applyHostTiming(data);
             hostRaceColors = new Map();
             hostPendingChallenges = new Map();
             renderHostChallengePanel();
@@ -1519,6 +1526,7 @@
             hostState.teamAssignment = data.snapshot?.teamAssignment || hostState.teamAssignment || 'random';
             hostState.answerMode = data.snapshot?.answerMode || hostState.answerMode || 'randomise';
             hostState.lanternRounds = data.snapshot?.lanternRounds || hostState.lanternRounds || 10;
+            applyHostTiming(data.snapshot);
             hostPendingChallenges = new Map();
             document.body.classList.remove('live-lantern-player');
             clearTimeout(llHost.finishTimer);
@@ -1547,6 +1555,7 @@
             hostState.teamAssignment = data.teamAssignment || hostState.teamAssignment;
             hostState.answerMode = data.answerMode || hostState.answerMode;
             hostState.lanternRounds = data.lanternRounds || data.snapshot?.lanternRounds || hostState.lanternRounds;
+            applyHostTiming(data.snapshot || data);
             syncHostLobbySettingsUI(data.snapshot || data, data.settingsSeq);
             updateHostModeLabel();
             if (data.snapshot) {
@@ -1639,6 +1648,15 @@
             const resultEl = $('live-play-result');
             const teamLabel = isTeamMode() ? 'Team' : 'You';
 
+            if (result.timedOut) {
+                stopPlayTimer();
+                spawnPlayerFeedbackBubble(false, false);
+                showTimeUp(result);
+                setAnswerInputsEnabled(true);
+                if (result.nextQuestion && typeof result.nextQuestion === 'object') showPlayerQuestion(result.nextQuestion);
+                return;
+            }
+            stopPlayTimer();
             if (result.challengeable) {
                 playerState.progress = result.progress;
                 updateOwnProgress(result.progress, TERMS_TO_WIN, false);
@@ -1709,6 +1727,8 @@
         });
 
         s.on('live:game-finished', (data) => {
+            stopPlayTimer();
+            hideTimeUp();
             // Let the last Lucky Lanterns reveal finish on screen before the podium.
             clearTimeout(llPhone.finishTimer);
             const lanternFinish = Boolean(data.lantern) || isLuckyLanternsFormat(playerState?.gameFormat);
@@ -1864,6 +1884,45 @@
         if (roundsInput && document.activeElement !== roundsInput) {
             roundsInput.value = String(snap?.lanternRounds || hostState?.lanternRounds || 10);
         }
+        syncQuestionTimeUI(format, snap && 'questionSeconds' in snap ? snap.questionSeconds : hostState?.questionSeconds);
+    }
+
+    /** Host keeps the chosen seconds; '' means each format's own default (Lucky Lanterns 20 s, races untimed). */
+    function applyHostTiming(src) {
+        if (!hostState || !src) return;
+        if ('questionSeconds' in src) hostState.questionSeconds = src.questionSeconds ?? null;
+        if ('questionTimeSec' in src) hostState.questionTimeSec = src.questionTimeSec ?? null;
+    }
+
+    function syncQuestionTimeUI(format, seconds) {
+        const select = $('live-lobby-question-time');
+        if (!select) return;
+        const lantern = format === 'lucky-lanterns';
+        const defaultOption = select.querySelector('[data-default-option]');
+        if (defaultOption) defaultOption.textContent = lantern ? 'Default (20 seconds)' : 'Default (no time limit)';
+        if (document.activeElement !== select) {
+            const value = seconds ? String(seconds) : '';
+            if (value && !select.querySelector(`option[value="${value}"]`)) {
+                const opt = document.createElement('option');
+                opt.value = value;
+                opt.textContent = `${value} seconds`;
+                select.appendChild(opt);
+            }
+            select.value = value;
+        }
+        const hint = $('live-lobby-question-time-hint');
+        if (hint) {
+            const timed = Boolean(select.value);
+            hint.textContent = lantern
+                ? 'Time to answer before the lanterns open. Lantern picks keep their own 12 s.'
+                : !timed
+                    ? 'No limit: players take as long as they need.'
+                    : format === 'hot-spark-relay'
+                        ? "Time's up: no progress lost, a new question appears and the spark passes to the next teammate."
+                        : format === 'captain-crew'
+                            ? "Time's up before the captain submits: no progress lost, the crew gets a new question."
+                            : "Time's up: no progress lost, a new question appears.";
+        }
     }
 
     function emitHostLobbySettings() {
@@ -1886,8 +1945,12 @@
             || hostState.answerMode
             || 'randomise';
         const lanternRounds = Number($('live-lobby-rounds')?.value || hostState.lanternRounds || 10);
+        const timeValue = $('live-lobby-question-time')?.value || '';
+        const questionSeconds = timeValue ? Number(timeValue) : null;
+        hostState.questionSeconds = questionSeconds;
+        syncQuestionTimeUI(gameFormat, questionSeconds);
         const settingsSeq = ++lobbySettingsSeq;
-        ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode, lanternRounds, settingsSeq });
+        ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, settingsSeq });
     }
 
     function getFullscreenElement() {
@@ -2084,7 +2147,7 @@
         if (!text) return;
         playerCrewVote = text;
         showLiveError('');
-        ensureSocket().emit('live:crew-vote', { text });
+        ensureSocket().emit('live:crew-vote', { text, questionId: activeQuestionId || undefined });
         const container = $('live-play-choices');
         if (container) {
             container.querySelectorAll('button').forEach((btn) => {
@@ -2105,7 +2168,7 @@
         showLiveError('');
         answerPending = true;
         setAnswerInputsEnabled(false);
-        ensureSocket().emit('live:submit-answer', { text });
+        ensureSocket().emit('live:submit-answer', { text, questionId: activeQuestionId || undefined });
     }
 
     function submitPlayerAnswer(choiceText) {
@@ -2120,7 +2183,7 @@
         showLiveError('');
         answerPending = true;
         setAnswerInputsEnabled(false);
-        ensureSocket().emit('live:submit-answer', { text });
+        ensureSocket().emit('live:submit-answer', { text, questionId: activeQuestionId || undefined });
     }
 
     function showPlayerWaiting(msg, snap) {
@@ -2153,7 +2216,67 @@
         const crewVoteBtn = $('live-play-crew-vote-btn');
         if (crewVoteBtn) crewVoteBtn.hidden = true;
         if ($('live-play-type-section')) $('live-play-type-section').hidden = true;
+        stopPlayTimer();
+        hideTimeUp();
         syncPlayerLanternLobby(msg, snap);
+    }
+
+    // ---- per-question countdown for the race formats (Lucky Lanterns has its own ring) ----
+    let playTimerInterval = null;
+    let playTimerDeadline = 0;
+    let playTimerTotal = 0;
+    let playTimeUpTimer = null;
+
+    function stopPlayTimer() {
+        clearInterval(playTimerInterval);
+        playTimerInterval = null;
+        const el = $('live-play-timer');
+        if (el) el.hidden = true;
+    }
+
+    function paintPlayTimer() {
+        const el = $('live-play-timer');
+        if (!el) return;
+        const left = Math.max(0, playTimerDeadline - Date.now());
+        const secs = Math.ceil(left / 1000);
+        const num = el.querySelector('.live-play-timer-num');
+        const bar = el.querySelector('.live-play-timer-bar');
+        if (num) num.textContent = `${secs}s`;
+        if (bar) bar.style.transform = `scaleX(${playTimerTotal ? Math.max(0, Math.min(1, left / playTimerTotal)).toFixed(3) : 0})`;
+        el.classList.toggle('is-low', secs <= 5);
+        if (left <= 0) {
+            clearInterval(playTimerInterval);
+            playTimerInterval = null;
+        }
+    }
+
+    /** Server sends time left (not just a wall-clock deadline) so a phone with a wrong clock still counts correctly. */
+    function startPlayTimer(q) {
+        stopPlayTimer();
+        if (!q || q.timeLeftMs == null || !q.timeLimitSec) return;
+        playTimerTotal = Number(q.timeLimitSec) * 1000;
+        playTimerDeadline = Date.now() + Math.max(0, Number(q.timeLeftMs) || 0);
+        const el = $('live-play-timer');
+        if (!el) return;
+        el.hidden = false;
+        paintPlayTimer();
+        playTimerInterval = setInterval(paintPlayTimer, 200);
+    }
+
+    function showTimeUp(result) {
+        const el = $('live-play-timeup');
+        if (!el) return;
+        const relay = isHotSparkRelayMode();
+        el.innerHTML = `⏰ Time's up! It was <strong>${esc(result.correctTerm || '')}</strong>. ${relay ? 'The spark moves on.' : 'New question!'}`;
+        el.hidden = false;
+        clearTimeout(playTimeUpTimer);
+        playTimeUpTimer = setTimeout(() => { el.hidden = true; }, 2800);
+    }
+
+    function hideTimeUp() {
+        clearTimeout(playTimeUpTimer);
+        const el = $('live-play-timeup');
+        if (el) el.hidden = true;
     }
 
     function showPlayerQuestion(q) {
@@ -2179,6 +2302,8 @@
         const lanternMode = q.gameFormat === 'lucky-lanterns' || isLuckyLanternsFormat(playerState?.gameFormat);
         const choiceMode = q.inputMode === 'choice';
         if (lanternMode) document.body.classList.add('live-lantern-player');
+        if (lanternMode) stopPlayTimer();
+        else startPlayTimer(q);
         if (def) def.textContent = q.definition;
         if (def) def.hidden = false;
         $('live-play-team-lobby').hidden = true;
@@ -2799,7 +2924,7 @@
     function paintTimerRing(el, state) {
         if (!el || !state) return;
         const secs = state.phaseEndsAt ? Math.max(0, Math.ceil((state.phaseEndsAt - Date.now()) / 1000)) : null;
-        const total = LL_PHASE_MS[state.phase] || 20000;
+        const total = (state.phase === 'question' && state.questionMs) || LL_PHASE_MS[state.phase] || 20000;
         const frac = state.phaseEndsAt ? Math.max(0, Math.min(1, (state.phaseEndsAt - Date.now()) / total)) : 1;
         const num = el.querySelector('.ll-timer-num');
         const arc = el.querySelector('.ll-timer-arc');
@@ -4237,6 +4362,7 @@
             });
         });
         $('live-lobby-rounds')?.addEventListener('change', emitHostLobbySettings);
+        $('live-lobby-question-time')?.addEventListener('change', emitHostLobbySettings);
         bindHostLobbyBoard();
         $('live-play-submit')?.addEventListener('click', () => submitPlayerAnswer());
         $('live-play-captain-submit')?.addEventListener('click', submitCaptainAnswer);

@@ -1075,6 +1075,30 @@
         /* `.btn` sets display:inline-flex, which would otherwise override the hidden attribute. */
         #live-play-crew-vote-btn[hidden],
         #live-play-submit[hidden] { display: none !important; }
+        .live-time-row { margin: 0.65rem 0 0.2rem; }
+        .live-time-row label { display: block; font-weight: 700; color: var(--royal-blue); font-size: 0.92rem; margin-bottom: 0.3rem; }
+        .live-time-row select { max-width: 15rem; }
+        .live-time-row .live-muted { margin: 0.35rem 0 0; font-size: 0.82rem; }
+        .live-play-timer { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0.55rem; }
+        .live-play-timer[hidden], .live-play-timeup[hidden] { display: none !important; }
+        .live-play-timer-num {
+            min-width: 3.1rem; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums;
+            padding: 0.2rem 0.55rem; border-radius: 999px; background: var(--royal-blue, #012169); color: #fff; font-size: 0.95rem;
+        }
+        .live-play-timer-track { flex: 1; height: 10px; border-radius: 999px; background: rgba(1, 33, 105, 0.12); overflow: hidden; }
+        .live-play-timer-bar {
+            display: block; height: 100%; width: 100%; border-radius: inherit; background: #2bb673;
+            transform-origin: left center; transition: transform 0.2s linear, background-color 0.3s;
+        }
+        .live-play-timer.is-low .live-play-timer-num { background: #d7263d; }
+        .live-play-timer.is-low .live-play-timer-bar { background: #d7263d; }
+        .live-play-timeup {
+            margin: 0 0 0.55rem; padding: 0.5rem 0.75rem; border-radius: 12px; text-align: center; font-weight: 700;
+            background: #fff4e5; color: #8a3b00; border: 2px solid #ffb35c;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .live-play-timer-bar { transition: none; }
+        }
         #live-host-team-assignment-row { margin-top: 0.85rem; }
         .live-team-lobby {
             margin-top: 0.75rem;
@@ -4429,6 +4453,20 @@
                                     <span class="live-option-title">Randomise</span>
                                 </label>
                             </div>
+                            <div id="live-host-lobby-time-row" class="live-time-row">
+                                <label for="live-lobby-question-time"><i class="fa-solid fa-stopwatch"></i> Time per question</label>
+                                <select id="live-lobby-question-time" class="live-setup-select">
+                                    <option value="" data-default-option>Game default</option>
+                                    <option value="10">10 seconds</option>
+                                    <option value="15">15 seconds</option>
+                                    <option value="20">20 seconds</option>
+                                    <option value="30">30 seconds</option>
+                                    <option value="45">45 seconds</option>
+                                    <option value="60">60 seconds</option>
+                                    <option value="90">90 seconds</option>
+                                </select>
+                                <p id="live-lobby-question-time-hint" class="live-muted"></p>
+                            </div>
                         </div>
                     </div>
                     <div class="card" id="live-host-game-panel">
@@ -4560,6 +4598,11 @@
                 <div id="live-play-team-list" class="live-team-lobby"></div>
                 <button type="button" id="live-play-create-team" class="btn btn-blue" style="width:100%;margin-top:0.65rem;">Start a new team</button>
             </div>
+            <div id="live-play-timer" class="live-play-timer" hidden aria-live="off">
+                <span class="live-play-timer-num"></span>
+                <span class="live-play-timer-track"><i class="live-play-timer-bar"></i></span>
+            </div>
+            <div id="live-play-timeup" class="live-play-timeup" hidden role="status"></div>
             <div id="live-play-definition" class="word-prompt">Connecting…</div>
             <p id="live-play-crew-role" class="live-crew-role" hidden></p>
             <div id="live-play-choices" hidden></div>

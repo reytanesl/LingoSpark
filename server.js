@@ -632,6 +632,7 @@ async function start() {
                 answerMode,
                 gameFormat: req.body?.gameFormat,
                 teamAssignment: req.body?.teamAssignment,
+                questionSeconds: req.body?.questionSeconds,
             });
 
             const joinUrl = `${APP_BASE_URL}/#/live/join?code=${encodeURIComponent(room.code)}`;
