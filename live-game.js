@@ -28,15 +28,38 @@ import {
     skipLanternPrompt,
     submitLanternAnswer,
 } from './lucky-lanterns.js';
+import {
+    CANNON_DEFAULT_MINUTES,
+    CANNON_QUESTION_MS,
+    CANNON_TEAM_NAMES,
+    advanceCannon,
+    cannonPublicView,
+    cannonQuestionPayload,
+    cannonWinners,
+    closeCannonAnswering,
+    createCannonMatch,
+    expireCannonReview,
+    finishCannonEarly,
+    hostSkipCannon,
+    markCannonChallengePending,
+    normalizeGameMinutes,
+    renameCannonPlayer,
+    settleCannonChallenge,
+    skipCannonPrompt,
+    submitCannonAnswer,
+} from './word-cannon.js';
 
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
 export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
-export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay', 'lucky-lanterns'];
+export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay', 'lucky-lanterns', 'word-cannon'];
 export const LIVE_TEAM_ASSIGNMENT = ['random', 'pick'];
 export const LIVE_TEAM_MIN = 2;
 export const LIVE_TEAM_MAX = 4;
 export const LIVE_CAPTAIN_CREW_MIN_PLAYERS = 4;
+/** Word Cannon Battle: two fixed teams (Red, Blue), at least one player each. */
+export const LIVE_CANNON_TEAM_MAX = 20;
+export const LIVE_CANNON_MIN_PLAYERS = 2;
 /** Host-chosen time to answer each question. null = the format's default (see questionSecondsForRoom). */
 export const LIVE_QUESTION_SECONDS_MIN = 5;
 export const LIVE_QUESTION_SECONDS_MAX = 120;
@@ -156,11 +179,25 @@ function isTeamFormat(room) {
     return room?.gameFormat === 'captain-crew' || room?.gameFormat === 'hot-spark-relay';
 }
 
+function isWordCannon(room) {
+    return room?.gameFormat === 'word-cannon';
+}
+
+/** Formats whose lobby has teams (join / pick / random). */
+function usesTeamLobby(room) {
+    return isTeamFormat(room) || isWordCannon(room);
+}
+
+function teamMaxForRoom(room) {
+    return isWordCannon(room) ? LIVE_CANNON_TEAM_MAX : LIVE_TEAM_MAX;
+}
+
 function raceEntities(room) {
     return isTeamFormat(room) ? teamList(room) : playerList(room);
 }
 
 function minPlayersForRoom(room) {
+    if (isWordCannon(room)) return LIVE_CANNON_MIN_PLAYERS;
     if (isTeamFormat(room)) return LIVE_CAPTAIN_CREW_MIN_PLAYERS;
     return LIVE_MIN_PLAYERS;
 }
@@ -224,15 +261,70 @@ function lobbyTeamSnapshot(team, room) {
     const members = team.memberIds
         .map((id) => room.players.get(id))
         .filter(Boolean);
+    const max = teamMaxForRoom(room);
     return {
         id: team.id,
         name: team.name,
         memberIds: [...team.memberIds],
         memberNicknames: members.map((p) => p.nickname),
         memberCount: team.memberIds.length,
-        maxMembers: LIVE_TEAM_MAX,
-        canJoin: team.memberIds.length < LIVE_TEAM_MAX,
+        maxMembers: max,
+        canJoin: team.memberIds.length < max,
+        ...(team.fixed ? { fixed: true, color: team.id } : {}),
     };
+}
+
+/** Word Cannon keeps two fixed teams, Red and Blue, even when they are empty. */
+function createCannonTeam(room, teamId) {
+    const team = {
+        id: teamId,
+        name: CANNON_TEAM_NAMES[teamId],
+        fixed: true,
+        memberIds: [],
+        termIndex: 0,
+        terms: [],
+        finished: false,
+        questionForTermIndex: -1,
+        questionChoices: null,
+        questionId: 0,
+        answerLocked: false,
+        crewVotes: new Map(),
+        relayTurnIndex: 0,
+    };
+    room.teams.set(teamId, team);
+    return team;
+}
+
+function ensureCannonTeams(room) {
+    if (!room.teams) room.teams = new Map();
+    for (const [id, team] of [...room.teams.entries()]) {
+        if (!team.fixed) {
+            for (const memberId of team.memberIds) {
+                const p = room.players.get(memberId);
+                if (p) p.teamId = null;
+            }
+            room.teams.delete(id);
+        }
+    }
+    for (const id of ['red', 'blue']) {
+        if (!room.teams.has(id)) createCannonTeam(room, id);
+    }
+}
+
+/** Random Red/Blue split, alternating after a shuffle (sizes differ by at most one). */
+function buildRandomCannonTeams(room) {
+    const list = Array.from(room.players.values());
+    const players = shuffleDeck(list, list.length);
+    room.teams = new Map();
+    const red = createCannonTeam(room, 'red');
+    const blue = createCannonTeam(room, 'blue');
+    const first = Math.random() < 0.5 ? red : blue;
+    const second = first === red ? blue : red;
+    players.forEach((p, i) => {
+        const team = i % 2 === 0 ? first : second;
+        team.memberIds.push(p.id);
+        p.teamId = team.id;
+    });
 }
 
 function lobbyTeamsList(room) {
@@ -247,6 +339,17 @@ function unassignedPlayerList(room) {
 }
 
 function validateTeamsForStart(room) {
+    if (isWordCannon(room)) {
+        const red = room.teams?.get('red');
+        const blue = room.teams?.get('blue');
+        if (!red?.memberIds.length || !blue?.memberIds.length) {
+            return { ok: false, error: 'Red and Blue each need at least one player.' };
+        }
+        if (red.memberIds.length + blue.memberIds.length !== room.players.size) {
+            return { ok: false, error: 'Every player must join Red or Blue before starting.' };
+        }
+        return { ok: true };
+    }
     const teams = Array.from(room.teams?.values() || []);
     if (teams.length < 2) {
         return { ok: false, error: 'Need at least 2 teams before starting.' };
@@ -266,10 +369,10 @@ function validateTeamsForStart(room) {
 
 function canStartRoom(room) {
     if (room.phase !== 'lobby') return false;
-    if (!isTeamFormat(room)) return room.players.size >= LIVE_MIN_PLAYERS;
+    if (!usesTeamLobby(room)) return room.players.size >= LIVE_MIN_PLAYERS;
     if (validateTeamsForStart(room).ok) return true;
     if (room.teamAssignment === 'pick') return false;
-    return room.players.size >= LIVE_CAPTAIN_CREW_MIN_PLAYERS;
+    return room.players.size >= minPlayersForRoom(room);
 }
 
 function teamsCoverPlayers(room) {
@@ -287,7 +390,7 @@ function pruneEmptyTeams(room) {
     if (!room.teams) return;
     for (const [teamId, team] of [...room.teams.entries()]) {
         team.memberIds = team.memberIds.filter((id) => room.players.has(id));
-        if (!team.memberIds.length) room.teams.delete(teamId);
+        if (!team.memberIds.length && !team.fixed) room.teams.delete(teamId);
     }
 }
 
@@ -316,14 +419,15 @@ export function publicRoomSnapshot(room) {
         answerMode: room.answerMode,
         gameFormat: room.gameFormat || 'race',
         lanternRounds: room.lanternRounds || LANTERN_DEFAULT_ROUNDS,
+        gameMinutes: room.gameMinutes || CANNON_DEFAULT_MINUTES,
         questionSeconds: room.questionSeconds || null,
         questionTimeSec: questionSecondsForRoom(room),
         teamAssignment: room.teamAssignment || 'random',
-        teamMin: LIVE_TEAM_MIN,
-        teamMax: LIVE_TEAM_MAX,
+        teamMin: isWordCannon(room) ? 1 : LIVE_TEAM_MIN,
+        teamMax: teamMaxForRoom(room),
         players: playerList(room),
-        teams: room.phase === 'lobby' && isTeamFormat(room) ? lobbyTeamsList(room) : teamList(room),
-        unassignedPlayers: room.phase === 'lobby' && isTeamFormat(room) ? unassignedPlayerList(room) : [],
+        teams: room.phase === 'lobby' && usesTeamLobby(room) ? lobbyTeamsList(room) : teamList(room),
+        unassignedPlayers: room.phase === 'lobby' && usesTeamLobby(room) ? unassignedPlayerList(room) : [],
     };
 }
 
@@ -358,6 +462,7 @@ export function normalizeQuestionSeconds(value) {
  */
 export function questionSecondsForRoom(room) {
     if (isLuckyLanterns(room)) return room?.questionSeconds || LANTERN_QUESTION_MS / 1000;
+    if (isWordCannon(room)) return room?.questionSeconds || CANNON_QUESTION_MS / 1000;
     return room?.questionSeconds || null;
 }
 
@@ -571,6 +676,16 @@ function ensurePlayerQuestionState(player, room) {
 }
 
 function playerQuestionPayload(player, room) {
+    if (isWordCannon(room)) {
+        const match = room.cannon;
+        if (!match || match.phase !== 'question') return null;
+        const answer = match.answers?.[player.id];
+        if (answer?.submitted) return null;
+        const q = cannonQuestionPayload(match);
+        if (!q) return null;
+        const team = match.playerTeam[player.id];
+        return { ...q, progress: match.stats?.[player.id]?.correct || 0, team, teamName: CANNON_TEAM_NAMES[team] };
+    }
     if (isLuckyLanterns(room)) {
         const match = room.lantern;
         if (!match || match.phase !== 'question') return null;
@@ -975,6 +1090,10 @@ function emitPlayerSession(socket, room, player) {
         awaitingChallenge: false,
     };
     let question = null;
+    if (isWordCannon(room) && room.cannon && (room.phase === 'finished' || room.phase === 'playing')) {
+        emitCannonPlayerSession(socket, room, player, payload);
+        return;
+    }
     if (room.phase === 'finished' && isLuckyLanterns(room) && room.lantern) {
         socket.emit('live:player-joined', payload);
         socket.emit('live:game-finished', gameFinishedPayload(room));
@@ -1064,6 +1183,37 @@ function finishGame(room, winnerEntity, { isTeam = false } = {}) {
 }
 
 function gameFinishedPayload(room) {
+    if (isWordCannon(room) && room.cannon) {
+        const w = cannonWinners(room.cannon);
+        return {
+            winnerId: w.winner,
+            winnerNickname: w.winnerNickname,
+            gameFormat: 'word-cannon',
+            cannon: true,
+            teamMode: true,
+            winner: w.winner,
+            reason: w.reason,
+            hp: w.hp,
+            mvp: w.mvp,
+            teams: {
+                red: { id: 'red', name: CANNON_TEAM_NAMES.red, hp: w.hp.red, memberIds: [...room.cannon.teams.red.memberIds] },
+                blue: { id: 'blue', name: CANNON_TEAM_NAMES.blue, hp: w.hp.blue, memberIds: [...room.cannon.teams.blue.memberIds] },
+            },
+            termsToWin: 0,
+            players: w.players.map((row) => ({
+                id: row.id,
+                nickname: row.nickname,
+                team: row.team,
+                progress: row.hits,
+                hits: row.hits,
+                correct: row.correct,
+                damage: row.damage,
+                avgMs: row.avgMs,
+                rank: row.rank,
+                termsToWin: 0,
+            })),
+        };
+    }
     if (isLuckyLanterns(room) && room.lantern) {
         const winners = lanternWinners(room.lantern);
         return {
@@ -1116,7 +1266,7 @@ export function buildDeckFromRequest(body) {
     throw new Error('Invalid word source.');
 }
 
-export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds }) {
+export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds, gameMinutes }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
@@ -1131,7 +1281,7 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         level: level || 'intermediate',
         answerMode: normalizeAnswerMode(answerMode),
         gameFormat: normalizedFormat,
-        teamAssignment: isTeamFormat({ gameFormat: normalizedFormat }) ? normalizeTeamAssignment(teamAssignment) : 'random',
+        teamAssignment: usesTeamLobby({ gameFormat: normalizedFormat }) ? normalizeTeamAssignment(teamAssignment) : 'random',
         masterDeck: shuffleDeck(deck, deck.length),
         players: new Map(),
         teams: new Map(),
@@ -1146,7 +1296,11 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         questionSeconds: normalizeQuestionSeconds(questionSeconds),
         lantern: null,
         lanternTimer: null,
+        gameMinutes: normalizeGameMinutes(gameMinutes),
+        cannon: null,
+        cannonTimer: null,
     };
+    if (isWordCannon(room) && room.teamAssignment === 'pick') ensureCannonTeams(room);
     rooms.set(code, room);
     return room;
 }
@@ -1246,6 +1400,8 @@ export function hostUnassignPlayer(room, playerId) {
 export function resetRoomToLobby(room) {
     clearLanternTimer(room);
     room.lantern = null;
+    clearCannonTimer(room);
+    room.cannon = null;
     room.phase = 'lobby';
     room.winnerId = null;
     room.winnerNickname = null;
@@ -1274,7 +1430,7 @@ export function resetRoomToLobby(room) {
 }
 
 /** Lobby (or finished→lobby): change format / answer mode; keep room code + players. */
-export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds } = {}) {
+export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes } = {}) {
     if (room.phase === 'playing') {
         throw new Error('Settings can only be changed before the game starts.');
     }
@@ -1297,12 +1453,15 @@ export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, 
     if (lanternRounds != null) {
         room.lanternRounds = normalizeLanternRounds(lanternRounds);
     }
+    if (gameMinutes != null) {
+        room.gameMinutes = normalizeGameMinutes(gameMinutes);
+    }
     // undefined = not sent (keep); null / '' / 0 = back to the format default.
     if (questionSeconds !== undefined) {
         room.questionSeconds = normalizeQuestionSeconds(questionSeconds);
     }
 
-    if (!isTeamFormat(room)) {
+    if (!usesTeamLobby(room)) {
         // Solo race: drop team state so a later team mode starts clean.
         clearAllTeams(room);
         room.teamAssignment = 'random';
@@ -1319,8 +1478,13 @@ export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, 
             clearAllTeams(room);
         }
         // Pick mode with incomplete leftovers blocks Start — clear so players can re-form.
-        if (room.teamAssignment === 'pick' && !validateTeamsForStart(room).ok) {
+        // (Word Cannon's Red/Blue teams are fixed and may be half-empty in the lobby.)
+        if (room.teamAssignment === 'pick' && !isWordCannon(room) && !validateTeamsForStart(room).ok) {
             clearAllTeams(room);
+        }
+        if (isWordCannon(room)) {
+            if (room.teamAssignment === 'pick') ensureCannonTeams(room);
+            else clearAllTeams(room);
         }
     }
 
@@ -1344,7 +1508,7 @@ function leaveTeam(room, playerId, { skipBroadcast = false } = {}) {
     player.teamId = null;
     if (team) {
         team.memberIds = team.memberIds.filter((id) => id !== playerId);
-        if (!team.memberIds.length && room.phase === 'lobby') {
+        if (!team.memberIds.length && room.phase === 'lobby' && !team.fixed) {
             room.teams.delete(team.id);
         }
     }
@@ -1360,7 +1524,7 @@ function joinTeam(room, playerId, teamId) {
     if (!player) throw new Error('Player not found.');
     const team = room.teams.get(teamId);
     if (!team) throw new Error('Team not found.');
-    if (team.memberIds.length >= LIVE_TEAM_MAX) throw new Error('That team is full.');
+    if (team.memberIds.length >= teamMaxForRoom(room)) throw new Error('That team is full.');
     if (player.teamId === teamId) return team;
     leaveTeam(room, playerId, { skipBroadcast: true });
     team.memberIds.push(playerId);
@@ -1372,6 +1536,7 @@ function joinTeam(room, playerId, teamId) {
 
 function createPlayerTeam(room, playerId) {
     if (room.phase !== 'lobby') throw new Error('Teams can only be changed before the game starts.');
+    if (isWordCannon(room)) throw new Error('Word Cannon Battle has two teams: join Red or Blue.');
     if (room.teamAssignment !== 'pick') throw new Error('This room uses random team assignment.');
     const player = room.players.get(playerId);
     if (!player) throw new Error('Player not found.');
@@ -1596,7 +1761,7 @@ function assertCurrentQuestion(room, entity, questionId) {
 }
 
 function handleQuestionTimeouts(io, room, now = Date.now()) {
-    if (room.phase !== 'playing' || isLuckyLanterns(room) || !questionSecondsForRoom(room)) return;
+    if (room.phase !== 'playing' || isLuckyLanterns(room) || isWordCannon(room) || !questionSecondsForRoom(room)) return;
     const isTeam = isTeamFormat(room);
     const entities = isTeam ? Array.from(room.teams.values()) : Array.from(room.players.values());
     for (const entity of entities) {
@@ -1623,6 +1788,42 @@ function startGame(room) {
     const minPlayers = minPlayersForRoom(room);
     if (room.players.size < minPlayers) {
         throw new Error(`At least ${minPlayers} players are required to start.`);
+    }
+    if (isWordCannon(room)) {
+        if (room.teamAssignment === 'pick') {
+            ensureCannonTeams(room);
+            const check = validateTeamsForStart(room);
+            if (!check.ok) throw new Error(check.error);
+        } else {
+            buildRandomCannonTeams(room);
+        }
+        clearCannonTimer(room);
+        room.challenges = new Map();
+        const memberRows = (teamId) => room.teams.get(teamId).memberIds
+            .map((id) => room.players.get(id))
+            .filter(Boolean)
+            .map((p) => ({ id: p.id, nickname: p.nickname }));
+        room.cannon = createCannonMatch({
+            teams: { red: memberRows('red'), blue: memberRows('blue') },
+            deck: room.masterDeck,
+            answerMode: room.answerMode,
+            level: room.level,
+            questionMs: questionSecondsForRoom(room) * 1000,
+            gameMinutes: room.gameMinutes,
+            seed: room.cannonSeed ?? null,
+        });
+        for (const player of room.players.values()) {
+            player.pendingChallenge = null;
+            player.answerLocked = false;
+            player.finished = false;
+            player.termIndex = 0;
+        }
+        room.phase = 'playing';
+        room.startedAt = Date.now();
+        room.winnerId = null;
+        room.winnerNickname = null;
+        touchRoom(room);
+        return true;
     }
     if (isLuckyLanterns(room)) {
         clearLanternTimer(room);
@@ -1708,6 +1909,13 @@ function submitAnswer(room, playerId, rawText) {
 }
 
 function endGame(room) {
+    if (isWordCannon(room) && room.cannon) {
+        finishCannonEarly(room.cannon);
+        const w = cannonWinners(room.cannon);
+        room.winnerId = w.winner;
+        room.winnerNickname = w.winnerNickname;
+    }
+    clearCannonTimer(room);
     if (isLuckyLanterns(room) && room.lantern) {
         finishLanternEarly(room.lantern);
         const winners = lanternWinners(room.lantern);
@@ -1841,6 +2049,156 @@ function afterLanternChange(io, room, onGameEnd, { deliverQuestions = false } = 
     touchRoom(room);
 }
 
+// ---------------------------------------------------------------------------
+// Word Cannon Battle
+// ---------------------------------------------------------------------------
+
+function clearCannonTimer(room) {
+    if (!room?.cannonTimer) return;
+    clearTimeout(room.cannonTimer);
+    room.cannonTimer = null;
+}
+
+function cannonViewFor(room, opts) {
+    return cannonPublicView(room.cannon, { ...opts, connected: lanternConnectedMap(room), now: Date.now() });
+}
+
+function emitCannonState(io, room) {
+    if (!io || !room?.cannon) return;
+    if (room.hostSocketId) {
+        io.to(room.hostSocketId).emit('live:cannon-state', cannonViewFor(room, { forHost: true }));
+    }
+    for (const player of room.players.values()) {
+        if (!player.socketId) continue;
+        io.to(player.socketId).emit('live:cannon-state', cannonViewFor(room, { playerId: player.id }));
+    }
+}
+
+function deliverCannonQuestions(io, room) {
+    const match = room.cannon;
+    if (!match || match.phase !== 'question') return;
+    for (const player of room.players.values()) {
+        if (!player.socketId) continue;
+        if (match.answers[player.id]?.submitted) continue;
+        const q = playerQuestionPayload(player, room);
+        if (q) io.to(player.socketId).emit('live:your-question', q);
+    }
+}
+
+function finishCannonRoom(io, room, onGameEnd) {
+    if (!room?.cannon) return;
+    clearCannonTimer(room);
+    finishCannonEarly(room.cannon);
+    const w = cannonWinners(room.cannon);
+    room.phase = 'finished';
+    room.finishedAt = Date.now();
+    room.winnerId = w.winner;
+    room.winnerNickname = w.winnerNickname;
+    touchRoom(room);
+    emitCannonState(io, room);
+    io.to(`room:${room.code}`).emit('live:game-finished', gameFinishedPayload(room));
+    if (onGameEnd) onGameEnd(room);
+}
+
+function armCannonTimer(io, room, onGameEnd) {
+    clearCannonTimer(room);
+    const match = room?.cannon;
+    if (!match || room.phase !== 'playing' || match.phaseEndsAt == null) return;
+    const code = room.code;
+    const expectedPhase = match.phase;
+    const endsAt = match.phaseEndsAt;
+    room.cannonTimer = setTimeout(() => {
+        const live = getRoom(code);
+        if (!live?.cannon || live.phase !== 'playing') return;
+        if (live.cannon.phase !== expectedPhase || live.cannon.phaseEndsAt !== endsAt) return;
+        let skipped = [];
+        if (expectedPhase === 'question') closeCannonAnswering(live.cannon, Date.now());
+        else if (expectedPhase === 'review') skipped = expireCannonReview(live.cannon, Date.now()).skipped;
+        else advanceCannon(live.cannon, Date.now());
+        releaseCannonDecisions(io, live, skipped, { accept: false });
+        afterCannonChange(io, live, onGameEnd, { deliverQuestions: live.cannon.phase === 'question' });
+    }, Math.max(0, endsAt - Date.now()));
+}
+
+function releaseCannonDecisions(io, room, playerIds, { accept = false } = {}) {
+    for (const playerId of playerIds || []) {
+        const player = room.players.get(playerId);
+        if (!player) continue;
+        const challengeId = player.pendingChallenge?.challengeId || null;
+        if (challengeId) room.challenges.delete(challengeId);
+        clearPendingChallenge(player);
+        const result = {
+            cannon: true,
+            gameFormat: 'word-cannon',
+            correct: Boolean(accept),
+            reset: false,
+            challengeable: false,
+            challengeAccepted: Boolean(accept),
+            challengeDeclined: !accept,
+            progress: room.cannon?.stats?.[playerId]?.correct || 0,
+            won: false,
+            correctTerm: room.cannon?.entry?.term || '',
+            definition: room.cannon?.entry?.definition || '',
+        };
+        if (player.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+        if (room.hostSocketId && challengeId) {
+            io.to(room.hostSocketId).emit('live:challenge-resolved', {
+                id: challengeId,
+                accepted: Boolean(accept),
+                entityId: playerId,
+            });
+        }
+    }
+}
+
+function afterCannonChange(io, room, onGameEnd, { deliverQuestions = false } = {}) {
+    if (!room?.cannon) return;
+    if (room.cannon.phase === 'finished') {
+        finishCannonRoom(io, room, onGameEnd);
+        return;
+    }
+    if (deliverQuestions) deliverCannonQuestions(io, room);
+    emitCannonState(io, room);
+    armCannonTimer(io, room, onGameEnd);
+    touchRoom(room);
+}
+
+function emitCannonPlayerSession(socket, room, player, payload) {
+    const match = room.cannon;
+    renameCannonPlayer(match, player.id, player.nickname);
+    const answer = match.answers?.[player.id];
+    if (room.phase === 'finished') {
+        socket.emit('live:player-joined', payload);
+        socket.emit('live:cannon-state', cannonViewFor(room, { playerId: player.id }));
+        socket.emit('live:game-finished', gameFinishedPayload(room));
+        return;
+    }
+    if (answer?.decision === 'prompt' || answer?.decision === 'pending') payload.awaitingChallenge = true;
+    socket.emit('live:player-joined', payload);
+    socket.emit('live:cannon-state', cannonViewFor(room, { playerId: player.id }));
+    if (match.phase === 'question' && answer && !answer.submitted) {
+        const question = playerQuestionPayload(player, room);
+        if (question) socket.emit('live:your-question', question);
+    } else if (answer?.decision === 'prompt') {
+        socket.emit('live:answer-result', {
+            correct: false,
+            reset: false,
+            challengeable: true,
+            cannon: true,
+            gameFormat: 'word-cannon',
+            progress: match.stats[player.id]?.correct || 0,
+            won: false,
+            correctTerm: match.entry?.term || '',
+            answerText: answer.answerText || '',
+            definition: match.entry?.definition || '',
+            questionId: match.questionId,
+            team: match.playerTeam[player.id],
+        });
+    } else if (answer?.decision === 'pending') {
+        socket.emit('live:challenge-submitted', { challengeId: player.pendingChallenge?.challengeId || null });
+    }
+}
+
 export function broadcastLobbyUpdate(code) {
     const room = getRoom(code);
     if (!room || !liveIo) return;
@@ -1905,6 +2263,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     connected: lanternConnectedMap(room),
                 }));
             }
+            if (isWordCannon(room) && room.cannon && room.phase === 'playing') {
+                socket.emit('live:cannon-state', cannonViewFor(room, { forHost: true }));
+            }
         });
 
         socket.on('live:player-join', ({ code, playerId, playerToken }) => {
@@ -1924,6 +2285,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             if (isLuckyLanterns(room) && room.lantern && room.phase === 'playing') {
                 emitLanternState(io, room);
             }
+            if (isWordCannon(room) && room.cannon && room.phase === 'playing') {
+                emitCannonState(io, room);
+            }
         });
 
         socket.on('live:request-question', ({ code, playerId, playerToken }) => {
@@ -1940,6 +2304,14 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             if (room.phase !== 'playing') return;
             attachPlayerSocket(socket, room, player);
+            if (isWordCannon(room) && room.cannon) {
+                const answer = room.cannon.answers?.[player.id];
+                if (answer?.decision === 'prompt' || answer?.decision === 'pending') return;
+                const q = playerQuestionPayload(player, room);
+                if (q) socket.emit('live:your-question', q);
+                socket.emit('live:cannon-state', cannonViewFor(room, { playerId: player.id }));
+                return;
+            }
             if (isLuckyLanterns(room) && room.lantern) {
                 const answer = room.lantern.answers?.[player.id];
                 if (answer?.decision === 'prompt' || answer?.decision === 'pending') return;
@@ -2018,7 +2390,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
         });
 
-        socket.on('live:set-settings', ({ gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, settingsSeq }) => {
+        socket.on('live:set-settings', ({ gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, settingsSeq }) => {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
                 socket.emit('live:error', { error: 'Host only.' });
@@ -2026,7 +2398,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const wasFinished = room.phase === 'finished';
-                setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds });
+                setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes });
                 const snapshot = publicRoomSnapshot(room);
                 // Always refresh lobby for host + players (also covers finished → lobby).
                 io.to(`room:${room.code}`).emit('live:lobby-reset', {
@@ -2040,6 +2412,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     teamAssignment: room.teamAssignment,
                     answerMode: room.answerMode,
                     lanternRounds: room.lanternRounds,
+                    gameMinutes: room.gameMinutes,
                     questionSeconds: room.questionSeconds || null,
                     questionTimeSec: questionSecondsForRoom(room),
                     snapshot,
@@ -2093,8 +2466,14 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     code: room.code,
                     gameFormat: room.gameFormat || 'race',
                     lanternRounds: room.lanternRounds,
+                    gameMinutes: room.gameMinutes,
                     questionTimeSec: questionSecondsForRoom(room),
                 });
+                if (isWordCannon(room)) {
+                    broadcastLobbyUpdate(room.code);
+                    afterCannonChange(io, room, onGameEnd, { deliverQuestions: true });
+                    return;
+                }
                 if (isLuckyLanterns(room)) {
                     afterLanternChange(io, room, onGameEnd, { deliverQuestions: true });
                     return;
@@ -2135,6 +2514,24 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const player = room.players.get(socket.data.playerId);
+                if (isWordCannon(room)) {
+                    if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
+                    if (questionId != null && Number(questionId) !== room.cannon.questionId) {
+                        throw new Error("Time's up for that question. Try the new one!");
+                    }
+                    const { result } = submitCannonAnswer(room.cannon, socket.data.playerId, text ?? answer, Date.now());
+                    if (result.challengeable && player) {
+                        setPendingChallenge(player, {
+                            term: room.cannon.entry.term,
+                            definition: room.cannon.entry.definition,
+                        }, result.answerText);
+                        player.questionId = room.cannon.questionId;
+                        player.answerLocked = true;
+                    }
+                    socket.emit('live:answer-result', result);
+                    afterCannonChange(io, room, onGameEnd);
+                    return;
+                }
                 if (isLuckyLanterns(room)) {
                     if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
                     const { result } = submitLanternAnswer(room.lantern, socket.data.playerId, text ?? answer, Date.now());
@@ -2219,6 +2616,15 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                if (isWordCannon(room)) {
+                    if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
+                    const challenge = submitChallenge(room, socket.data.playerId);
+                    markCannonChallengePending(room.cannon, socket.data.playerId, Date.now());
+                    emitChallengePending(io, room, challenge);
+                    socket.emit('live:challenge-submitted', { challengeId: challenge.id });
+                    afterCannonChange(io, room, onGameEnd);
+                    return;
+                }
                 if (isLuckyLanterns(room)) {
                     if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
                     const challenge = submitChallenge(room, socket.data.playerId);
@@ -2254,6 +2660,14 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const player = room.players.get(socket.data.playerId);
+                if (isWordCannon(room)) {
+                    if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
+                    const { result } = skipCannonPrompt(room.cannon, socket.data.playerId, Date.now());
+                    if (player) clearPendingChallenge(player);
+                    if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    afterCannonChange(io, room, onGameEnd);
+                    return;
+                }
                 if (isLuckyLanterns(room)) {
                     if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
                     const { result } = skipLanternPrompt(room.lantern, socket.data.playerId, Date.now());
@@ -2282,6 +2696,26 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                if (isWordCannon(room)) {
+                    if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
+                    const id = String(challengeId || '');
+                    const challenge = room.challenges.get(id);
+                    if (!challenge || challenge.status !== 'pending') {
+                        throw new Error('Challenge not found or already resolved.');
+                    }
+                    const { result } = settleCannonChallenge(room.cannon, challenge.entityId, Boolean(accept), Date.now());
+                    const player = room.players.get(challenge.entityId);
+                    if (player) clearPendingChallenge(player);
+                    room.challenges.delete(id);
+                    if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    io.to(room.hostSocketId).emit('live:challenge-resolved', {
+                        id,
+                        accepted: Boolean(accept),
+                        entityId: challenge.entityId,
+                    });
+                    afterCannonChange(io, room, onGameEnd);
+                    return;
+                }
                 if (isLuckyLanterns(room)) {
                     if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
                     const id = String(challengeId || '');
@@ -2368,6 +2802,48 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
         });
 
+        socket.on('live:cannon-skip', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            if (!isWordCannon(room) || !room.cannon || room.phase !== 'playing') {
+                socket.emit('live:error', { error: 'Word Cannon Battle is not running.' });
+                return;
+            }
+            try {
+                const outcome = hostSkipCannon(room.cannon, Date.now());
+                releaseCannonDecisions(io, room, outcome.skipped, { accept: false });
+                releaseCannonDecisions(io, room, outcome.declined, { accept: false });
+                afterCannonChange(io, room, onGameEnd, { deliverQuestions: room.cannon.phase === 'question' });
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:cannon-next', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            if (!isWordCannon(room) || !room.cannon || room.phase !== 'playing') {
+                socket.emit('live:error', { error: 'Word Cannon Battle is not running.' });
+                return;
+            }
+            try {
+                if (room.cannon.phase !== 'volley' && room.cannon.phase !== 'intro') {
+                    socket.emit('live:error', { error: 'Next is available after the volley.' });
+                    return;
+                }
+                advanceCannon(room.cannon, Date.now());
+                afterCannonChange(io, room, onGameEnd, { deliverQuestions: room.cannon.phase === 'question' });
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
         socket.on('live:end-game', () => {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
@@ -2375,6 +2851,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             endGame(room);
+            if (isWordCannon(room) && room.cannon) emitCannonState(io, room);
             io.to(`room:${room.code}`).emit('live:game-finished', gameFinishedPayload(room));
             if (onGameEnd) onGameEnd(room);
         });
@@ -2417,6 +2894,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     emitProgress(io, room);
                     if (isLuckyLanterns(room) && room.lantern && room.phase === 'playing') {
                         emitLanternState(io, room);
+                    }
+                    if (isWordCannon(room) && room.cannon && room.phase === 'playing') {
+                        emitCannonState(io, room);
                     }
                 }
             }

@@ -633,6 +633,7 @@ async function start() {
                 gameFormat: req.body?.gameFormat,
                 teamAssignment: req.body?.teamAssignment,
                 questionSeconds: req.body?.questionSeconds,
+                gameMinutes: req.body?.gameMinutes,
             });
 
             const joinUrl = `${APP_BASE_URL}/#/live/join?code=${encodeURIComponent(room.code)}`;
@@ -641,6 +642,7 @@ async function start() {
                 hostToken: room.hostToken,
                 termsToWin: 12,
                 minPlayers: (room.gameFormat === 'captain-crew' || room.gameFormat === 'hot-spark-relay') ? 4 : 2,
+                gameMinutes: room.gameMinutes,
                 answerMode: room.answerMode,
                 gameFormat: room.gameFormat,
                 teamAssignment: room.teamAssignment,
