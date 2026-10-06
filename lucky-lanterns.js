@@ -828,6 +828,8 @@ export function lanternPublicView(match, { playerId = null, forHost = false, con
         phaseEndsAt: match.phaseEndsAt,
         questionId: match.questionId,
         inputMode: match.inputMode,
+        // Same options every phone already gets; lets the projector draw the answer tiles.
+        choices: match.inputMode === 'choice' && Array.isArray(match.choices) ? [...match.choices] : null,
         definition: match.phase === 'finished' ? (match.entry?.definition || '') : (match.entry?.definition || ''),
         answeredCount,
         playerCount: match.playerOrder.length,
