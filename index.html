@@ -1602,6 +1602,15 @@
         textarea:focus, input[type="text"]:focus, input[type="password"]:focus { outline: none; border-color: var(--royal-blue); }
         .form-group { margin-bottom: 1.5rem; background: var(--light-grey); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--royal-blue); text-align: left; }
         .form-group label { font-family: var(--font-primary); font-weight: 600; display: block; margin-bottom: 0.5rem; color: var(--royal-blue); }
+        /* Soft card style for in-game settings panels (Matura, Test Countdown, etc.) */
+        .engine-container .form-group {
+            background: #fff;
+            border: 1px solid var(--border-light);
+            border-left: none;
+            border-radius: 0.85rem;
+            padding: 1.05rem 1.15rem;
+            box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+        }
         .radio-group { display: flex; gap: 15px; flex-wrap: wrap; font-family: var(--font-secondary); }
         .radio-group label { font-weight: 400; color: var(--text-dark); display: flex; align-items: center; gap: 5px; cursor: pointer; margin-bottom: 0; }
         input.game-input { font-family: var(--font-secondary); width: 80%; max-width: 400px; padding: 1rem; font-size: 1.5rem; text-align: center; border: 3px solid var(--royal-blue); border-radius: 8px; margin-bottom: 1rem; display: block; margin-left: auto; margin-right: auto; }
@@ -1929,6 +1938,218 @@
             background: rgba(14,116,144,0.08); color: #0e7490; cursor: pointer; transition: 0.15s;
         }
         .review-setup-run-chip:hover { background: rgba(14,116,144,0.16); }
+        /* Shared setup screen polish (all games) */
+        #screen-setup {
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #screen-setup .top-bar {
+            max-width: none;
+            margin-bottom: 0.35rem;
+        }
+        #screen-setup .form-group {
+            background: #fff;
+            border: 1px solid var(--border-light);
+            border-left: none;
+            border-radius: 0.85rem;
+            padding: 1.05rem 1.15rem 1.1rem;
+            margin-bottom: 0.95rem;
+            box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+        }
+        #screen-setup .form-group > label:first-child,
+        #screen-setup .setup-section-title {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 1.02rem;
+            color: var(--royal-blue);
+            margin-bottom: 0.55rem;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        #screen-setup .setup-note {
+            background: rgba(1, 33, 105, 0.04);
+            border: 1px solid rgba(1, 33, 105, 0.1);
+            border-radius: 0.85rem;
+            padding: 0.85rem 1.05rem;
+            margin-bottom: 0.95rem;
+            text-align: left;
+            box-shadow: none;
+        }
+        #screen-setup .setup-note > label {
+            margin-bottom: 0.25rem;
+            font-size: 0.98rem;
+        }
+        #screen-setup .setup-note p {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.45;
+        }
+        #screen-setup .setup-lead {
+            margin: 0 0 0.85rem;
+            color: var(--text-dark);
+            font-size: 0.98rem;
+            line-height: 1.45;
+        }
+        #screen-setup .setup-formats {
+            margin: 0 0 0.85rem;
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+            padding: 0.65rem 0.8rem;
+            background: #f8fafc;
+            border-radius: 0.55rem;
+            border: 1px dashed var(--border-light);
+        }
+        #screen-setup .setup-formats code {
+            font-size: 0.8rem;
+            background: #fff;
+            padding: 0.05rem 0.3rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border-light);
+        }
+        #screen-setup #glossary-input {
+            height: 160px;
+            margin-bottom: 0.95rem;
+            border-radius: 0.65rem;
+            background: #fff;
+        }
+        #screen-setup .pe-setup-chips.radio-group,
+        #screen-setup .radio-group.pe-setup-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.15rem;
+        }
+        #screen-setup .pe-setup-chips.radio-group label,
+        #screen-setup .radio-group.pe-setup-chips label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin: 0;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            padding: 0.45rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-light);
+            background: #fff;
+            color: var(--text-dark);
+            transition: 0.15s;
+        }
+        #screen-setup .pe-setup-chips.radio-group label:has(input:checked),
+        #screen-setup .radio-group.pe-setup-chips label:has(input:checked) {
+            border-color: #0e7490;
+            background: rgba(14, 116, 144, 0.1);
+            color: #0e7490;
+        }
+        #screen-setup .pe-setup-chips input {
+            width: 0.95rem;
+            height: 0.95rem;
+            margin: 0;
+            accent-color: #0e7490;
+        }
+        #screen-setup .setup-choice-grid {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+        #screen-setup .setup-choice-grid--2 {
+            grid-template-columns: 1fr 1fr;
+        }
+        @media (max-width: 560px) {
+            #screen-setup .setup-choice-grid--2 { grid-template-columns: 1fr; }
+        }
+        #screen-setup .setup-choice {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
+            padding: 0.75rem 0.85rem;
+            border: 2px solid var(--border-light);
+            border-radius: 0.7rem;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+            margin: 0;
+            font-weight: 400;
+            color: var(--text-dark);
+        }
+        #screen-setup .setup-choice:hover {
+            border-color: rgba(1, 33, 105, 0.3);
+            background: rgba(1, 33, 105, 0.03);
+        }
+        #screen-setup .setup-choice input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+        #screen-setup .setup-choice:has(input:checked) {
+            border-color: var(--royal-blue);
+            background: rgba(1, 33, 105, 0.06);
+            box-shadow: 0 0 0 1px rgba(1, 33, 105, 0.1);
+        }
+        #screen-setup .setup-choice-title {
+            font-weight: 700;
+            color: var(--royal-blue);
+            font-size: 0.95rem;
+            line-height: 1.25;
+        }
+        #screen-setup .setup-choice-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+        #screen-setup .setup-inline-field {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.55rem;
+            margin-top: 0.35rem;
+        }
+        #screen-setup .setup-inline-field input[type="number"],
+        #screen-setup .setup-inline-field input[type="date"],
+        #screen-setup .setup-inline-field select {
+            padding: 0.55rem 0.7rem;
+            border: 2px solid var(--border-light);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            background: #fff;
+        }
+        #screen-setup .setup-inline-field input[type="number"]:focus,
+        #screen-setup .setup-inline-field input[type="date"]:focus,
+        #screen-setup .setup-inline-field select:focus {
+            outline: none;
+            border-color: var(--royal-blue);
+        }
+        #screen-setup .setup-actions {
+            text-align: center;
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            align-items: center;
+            padding-top: 0.25rem;
+        }
+        #screen-setup .setup-actions .btn-blue {
+            font-size: 1.1rem;
+            padding: 0.9rem 2.5rem;
+            min-width: min(100%, 280px);
+        }
+        #screen-setup .pe-setup-field select,
+        #screen-setup .pe-setup-field textarea,
+        #screen-setup .pe-setup-field input[type="range"] {
+            border-width: 2px;
+            border-radius: 0.5rem;
+        }
+        #screen-setup .pe-setup-details {
+            background: #f8fafc;
+        }
         .review-hud-brief { flex: 1 1 100%; }
         .pe-level-row {
             display: none; margin-top: 1.25rem; padding: 1rem 1.25rem; background: var(--light-grey);
@@ -2790,46 +3011,67 @@
             
             <!-- Vocab Tools Setup -->
             <div id="vocab-setup-section" style="display: none;">
-                <div class="form-group" id="demo-sets-setup" style="background: rgba(1, 33, 105, 0.04); border-left-color: var(--royal-blue);">
+                <div class="form-group" id="demo-sets-setup">
                     <label><i class="fa-solid fa-star"></i> Demo word sets</label>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.35rem;">Available to everyone — no account needed. Load a ready-made list, or paste your own below.</p>
+                    <p class="pe-setup-hint" style="margin-bottom: 0.55rem;">Ready-made lists — no account needed. Or paste your own below.</p>
                     <div class="demo-set-row" id="demo-set-buttons"></div>
                 </div>
-                <p style="margin-bottom: 0.5rem; color: var(--text-dark);"><strong>Paste your vocabulary list below.</strong></p>
-                <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
-                    Supported formats: <code>Term = Definition</code> | <code>Term - Definition</code> (spaces around the dash) | <code>Term : Definition</code><br>
-                    Hyphens inside words stay intact (e.g. <code>well-built</code>). Or paste the <strong>Term</strong> on one line and the <strong>Definition</strong> on the next.
+                <p class="setup-lead"><strong>Your word list</strong> — paste terms, then choose game options below.</p>
+                <p class="setup-formats">
+                    Formats: <code>Term = Definition</code> · <code>Term - Definition</code> · <code>Term : Definition</code><br>
+                    Hyphens inside words stay intact (e.g. <code>well-built</code>). Or put the term on one line and the definition on the next.
                 </p>
-                <textarea id="glossary-input" placeholder="Example formatting:&#10;Apple = A red fruit&#10;House - A place to live"></textarea>
+                <textarea id="glossary-input" placeholder="Example:&#10;Apple = A red fruit&#10;House - A place to live"></textarea>
                 
                 <div class="form-group" id="test-dir-settings">
-                    <label>Test Direction:</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="test-dir" value="def" checked> Prompt with Definition, Type Term</label>
-                        <label><input type="radio" name="test-dir" value="term"> Prompt with Term, Type Definition</label>
+                    <label><i class="fa-solid fa-right-left"></i> Test direction</label>
+                    <div class="setup-choice-grid setup-choice-grid--2">
+                        <label class="setup-choice">
+                            <input type="radio" name="test-dir" value="def" checked>
+                            <span class="setup-choice-title">Definition → Term</span>
+                            <span class="setup-choice-desc">See the meaning, type the word</span>
+                        </label>
+                        <label class="setup-choice">
+                            <input type="radio" name="test-dir" value="term">
+                            <span class="setup-choice-title">Term → Definition</span>
+                            <span class="setup-choice-desc">See the word, type the meaning</span>
+                        </label>
                     </div>
                 </div>
 
                 <div class="form-group" id="odyssey-settings" style="display: none;">
-                    <label><i class="fa-solid fa-compass"></i> Adventure Genre:</label>
-                    <select id="odyssey-genre" style="width: 100%; max-width: 320px; padding: 0.6rem; border: 2px solid var(--border-light); border-radius: 8px; font-size: 1rem; margin-top: 0.5rem;">
-                        <option value="Cyberpunk">Cyberpunk</option>
-                        <option value="Fantasy">Fantasy</option>
-                        <option value="Mystery">Mystery</option>
-                    </select>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Requires at least 4 vocabulary terms. The AI Game Master will draw 3 target words from your list each turn.</p>
+                    <label for="odyssey-genre"><i class="fa-solid fa-compass"></i> Adventure genre</label>
+                    <div class="setup-inline-field">
+                        <select id="odyssey-genre">
+                            <option value="Cyberpunk">Cyberpunk</option>
+                            <option value="Fantasy">Fantasy</option>
+                            <option value="Mystery">Mystery</option>
+                        </select>
+                    </div>
+                    <p class="pe-setup-hint">Needs at least 4 terms. Each turn, the AI picks 3 target words from your list.</p>
                 </div>
 
                 <div class="form-group" id="bomb-settings" style="display: none;">
-                    <label>Bomb Starting Time (Seconds):</label>
-                    <input type="number" id="bomb-time-input" value="60" min="10" max="300" style="padding: 0.5rem; width: 100px;">
+                    <label for="bomb-time-input"><i class="fa-solid fa-bomb"></i> Starting time</label>
+                    <div class="setup-inline-field">
+                        <input type="number" id="bomb-time-input" value="60" min="10" max="300">
+                        <span class="pe-setup-hint" style="margin:0;">seconds (10–300)</span>
+                    </div>
                 </div>
 
                 <div class="form-group" id="grid-settings" style="display: none;">
-                    <label><i class="fa-solid fa-border-all"></i> Grid Territory Mode:</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="grid-mode" value="bot" checked> Single player (vs bot) — you answer vocab; bot just plays</label>
-                        <label><input type="radio" name="grid-mode" value="pvp"> Two players — both teams answer to claim squares</label>
+                    <label><i class="fa-solid fa-border-all"></i> How to play</label>
+                    <div class="setup-choice-grid setup-choice-grid--2">
+                        <label class="setup-choice">
+                            <input type="radio" name="grid-mode" value="bot" checked>
+                            <span class="setup-choice-title">Solo vs bot</span>
+                            <span class="setup-choice-desc">You answer vocab; the bot just claims squares</span>
+                        </label>
+                        <label class="setup-choice">
+                            <input type="radio" name="grid-mode" value="pvp">
+                            <span class="setup-choice-title">Two players</span>
+                            <span class="setup-choice-desc">Both teams answer to claim squares</span>
+                        </label>
                     </div>
                 </div>
 
@@ -2837,11 +3079,11 @@
                     <label><i class="fa-solid fa-chart-bar"></i> Flashcard progress</label>
                     <div id="fc-setup-summary" class="fc-setup-summary">Study stats are saved in this browser for each word list.</div>
                     <div id="fc-revision-choice" style="display: none;">
-                        <p>You have studied this list before. Choose how to revise:</p>
-                        <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
-                            <label><input type="radio" name="fc-revision-mode" value="original" checked> Original list order</label>
-                            <label><input type="radio" name="fc-revision-mode" value="weakest"> Least familiar words first</label>
-                            <label><input type="radio" name="fc-revision-mode" value="fresh"> Start fresh (clear saved progress)</label>
+                        <p class="pe-setup-hint" style="margin-bottom: 0.45rem;">You’ve studied this list before — choose how to revise:</p>
+                        <div class="radio-group pe-setup-chips">
+                            <label><input type="radio" name="fc-revision-mode" value="original" checked> Original order</label>
+                            <label><input type="radio" name="fc-revision-mode" value="weakest"> Weakest first</label>
+                            <label><input type="radio" name="fc-revision-mode" value="fresh"> Start fresh</label>
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline" style="margin-top: 0.75rem;" onclick="openFcStatsFromSetup()"><i class="fa-solid fa-chart-bar"></i> View word stats</button>
@@ -2855,8 +3097,10 @@
                         </div>
                         <div class="pe-instr-en" id="tc-setup-helper">We’ll schedule new words and reviews so you’re sharp on the day.</div>
                     </div>
-                    <label id="tc-date-label"><i class="fa-solid fa-calendar-day"></i> Test date</label>
-                    <input type="date" id="tc-test-date" onchange="TestCountdown.onSetupDateChange()" style="padding:0.55rem 0.75rem;border:2px solid var(--border-light);border-radius:8px;font-size:1rem;margin-top:0.35rem;max-width:220px;display:block;">
+                    <label id="tc-date-label" for="tc-test-date"><i class="fa-solid fa-calendar-day"></i> Test date</label>
+                    <div class="setup-inline-field">
+                        <input type="date" id="tc-test-date" onchange="TestCountdown.onSetupDateChange()">
+                    </div>
                     <div id="tc-cram-warn" class="tc-warn" hidden></div>
 
                     <label id="tc-budget-label" style="display:block;margin-top:1rem;"><i class="fa-solid fa-clock"></i> Daily budget</label>
@@ -2867,7 +3111,10 @@
                         <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="custom" onchange="TestCountdown.onBudgetChange()"><span class="live-option-title" data-tc-i18n="custom">Custom</span></label>
                     </div>
                     <div id="tc-budget-custom-wrap" hidden style="margin-top:0.55rem;">
-                        <input type="number" id="tc-budget-custom" min="5" max="90" value="25" style="padding:0.5rem;width:100px;border:2px solid var(--border-light);border-radius:8px;"> <span data-tc-i18n="min">min</span>
+                        <div class="setup-inline-field">
+                            <input type="number" id="tc-budget-custom" min="5" max="90" value="25">
+                            <span data-tc-i18n="min">min</span>
+                        </div>
                     </div>
 
                     <label id="tc-intensity-label" style="display:block;margin-top:1rem;"><i class="fa-solid fa-gauge-high"></i> Intensity</label>
@@ -2880,58 +3127,94 @@
             </div>
 
             <div class="form-group" id="mission-settings" style="display: none;">
-                <label><i class="fa-solid fa-crosshairs"></i> Choose a Mission:</label>
+                <label><i class="fa-solid fa-crosshairs"></i> Choose a mission</label>
                 <div id="mission-picker" class="mission-picker"></div>
                 <div id="mission-custom-fields" style="display: none; margin-top: 1.25rem;">
-                    <label style="display:block; margin-bottom:0.4rem;">Mission title</label>
-                    <input type="text" id="mission-custom-title" placeholder="e.g. Lost suitcase at the airport" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem;">
-                    <label style="display:block; margin-bottom:0.4rem;">Your role</label>
-                    <input type="text" id="mission-custom-role" placeholder="e.g. A traveller whose bag is missing" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem;">
-                    <label style="display:block; margin-bottom:0.4rem;">AI persona</label>
-                    <input type="text" id="mission-custom-persona" placeholder="e.g. A tired but polite airline desk agent" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem;">
-                    <label style="display:block; margin-bottom:0.4rem;">Your goal</label>
-                    <textarea id="mission-custom-goal" rows="2" placeholder="What must the student achieve?" style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; margin-bottom:0.75rem; font-size:1rem; font-family:var(--font-secondary);"></textarea>
-                    <label style="display:block; margin-bottom:0.4rem;">Scenario / situation</label>
-                    <textarea id="mission-custom-scenario" rows="3" placeholder="Set the scene in a few sentences..." style="width:100%; padding:0.6rem; border:2px solid var(--border-light); border-radius:8px; font-size:1rem; font-family:var(--font-secondary);"></textarea>
+                    <div class="pe-setup-compact">
+                        <div class="pe-setup-field">
+                            <label for="mission-custom-title">Mission title</label>
+                            <input type="text" id="mission-custom-title" placeholder="e.g. Lost suitcase at the airport" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;">
+                        </div>
+                        <div class="pe-setup-row">
+                            <div class="pe-setup-field">
+                                <label for="mission-custom-role">Your role</label>
+                                <input type="text" id="mission-custom-role" placeholder="e.g. A traveller whose bag is missing" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;">
+                            </div>
+                            <div class="pe-setup-field">
+                                <label for="mission-custom-persona">AI persona</label>
+                                <input type="text" id="mission-custom-persona" placeholder="e.g. A tired but polite airline desk agent" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;">
+                            </div>
+                        </div>
+                        <div class="pe-setup-field">
+                            <label for="mission-custom-goal">Your goal</label>
+                            <textarea id="mission-custom-goal" rows="2" placeholder="What must the student achieve?" style="height:auto; margin-bottom:0;"></textarea>
+                        </div>
+                        <div class="pe-setup-field">
+                            <label for="mission-custom-scenario">Scenario / situation</label>
+                            <textarea id="mission-custom-scenario" rows="3" placeholder="Set the scene in a few sentences..." style="height:auto; margin-bottom:0;"></textarea>
+                        </div>
+                    </div>
                 </div>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">Fluency first: the AI never corrects grammar. Progress rises when you persuade, clarify, and use relevant language.</p>
+                <p class="pe-setup-hint" style="margin-top: 0.75rem;">Fluency first: the AI never corrects grammar. Progress rises when you persuade, clarify, and use relevant language.</p>
             </div>
 
-            <div id="dictation-setup-note" class="form-group" style="display:none; background: rgba(0,130,59,0.08); border-left-color: var(--success-green);">
+            <div id="dictation-setup-note" class="form-group setup-note" style="display:none; background: rgba(0,130,59,0.07); border-color: rgba(0,130,59,0.18);">
                 <label style="color: var(--success-green);"><i class="fa-solid fa-headphones"></i> Dictation</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Built-in sentence banks — no word list needed. Uses your browser's text-to-speech (en-GB).</p>
+                <p>Built-in sentence banks — no word list needed. Uses your browser’s text-to-speech (en-GB).</p>
             </div>
 
             <div class="form-group" id="pe-dictation-settings" style="display: none;">
-                <label><i class="fa-solid fa-layer-group"></i> Dictation level:</label>
-                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
-                    <label><input type="radio" name="dictation-level" value="beginner" checked> Beginner (Klasy 1–3)</label>
-                    <label><input type="radio" name="dictation-level" value="a1"> A1 (Klasy 4–5)</label>
-                    <label><input type="radio" name="dictation-level" value="a2"> A2</label>
-                </div>
-                <label style="margin-top: 1rem;"><i class="fa-solid fa-sliders"></i> Practice mode:</label>
-                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
-                    <label><input type="radio" name="dictation-mode" value="listen" checked> Listen &amp; repeat</label>
-                    <label><input type="radio" name="dictation-mode" value="gap"> Gap fill (verbs, adjectives, nouns, adverbs)</label>
+                <div class="pe-setup-compact">
+                    <div class="pe-setup-field">
+                        <label><i class="fa-solid fa-layer-group"></i> Level</label>
+                        <div class="radio-group pe-setup-chips">
+                            <label><input type="radio" name="dictation-level" value="beginner" checked> Beginner (1–3)</label>
+                            <label><input type="radio" name="dictation-level" value="a1"> A1 (4–5)</label>
+                            <label><input type="radio" name="dictation-level" value="a2"> A2</label>
+                        </div>
+                    </div>
+                    <div class="pe-setup-field">
+                        <label><i class="fa-solid fa-sliders"></i> Practice mode</label>
+                        <div class="setup-choice-grid setup-choice-grid--2">
+                            <label class="setup-choice">
+                                <input type="radio" name="dictation-mode" value="listen" checked>
+                                <span class="setup-choice-title">Listen &amp; repeat</span>
+                                <span class="setup-choice-desc">Hear the sentence and say it back</span>
+                            </label>
+                            <label class="setup-choice">
+                                <input type="radio" name="dictation-mode" value="gap">
+                                <span class="setup-choice-title">Gap fill</span>
+                                <span class="setup-choice-desc">Fill missing verbs, adjectives, nouns, adverbs</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="colour-setup-note" class="form-group" style="display:none; background: rgba(124,58,237,0.08); border-left-color: #7c3aed;">
+            <div id="colour-setup-note" class="form-group setup-note" style="display:none; background: rgba(124,58,237,0.07); border-color: rgba(124,58,237,0.18);">
                 <label style="color: #7c3aed;"><i class="fa-solid fa-cubes"></i> Colour Blocks</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Colour tiles: blue There is, green There are, purple have got, yellow a/an/the. Ages 8–9 also get can and like; 10–12 get must and have to (don’t + have to are two tiles). Things are grouped (food, furniture, school…). The Line Up tab is pictured scramble: drag tiles onto numbered boxes.</p>
+                <p>Build sentences with colour tiles. Ages 8–9: There is/are, have got, can, like. Ages 10–12: plus must / have to. Line Up is pictured scramble — drag tiles onto numbered boxes.</p>
             </div>
 
             <div class="form-group" id="pe-colour-settings" style="display: none;">
-                <label><i class="fa-solid fa-child"></i> Age band:</label>
-                <div class="radio-group" style="flex-direction: column; align-items: flex-start; gap: 0.45rem;">
-                    <label><input type="radio" name="colour-age" value="young" checked> 8–9 years — There is/are, have got, can, like, a/an; one picture at a time</label>
-                    <label><input type="radio" name="colour-age" value="older"> 10–12 years — plus must, have to, don’t have to; choose a goal then check</label>
+                <label><i class="fa-solid fa-child"></i> Age band</label>
+                <div class="setup-choice-grid setup-choice-grid--2">
+                    <label class="setup-choice">
+                        <input type="radio" name="colour-age" value="young" checked>
+                        <span class="setup-choice-title">8–9 years</span>
+                        <span class="setup-choice-desc">There is/are, have got, can, like — one picture at a time</span>
+                    </label>
+                    <label class="setup-choice">
+                        <input type="radio" name="colour-age" value="older">
+                        <span class="setup-choice-title">10–12 years</span>
+                        <span class="setup-choice-desc">Plus must / have to — choose a goal, then check</span>
+                    </label>
                 </div>
             </div>
 
-            <div id="topic-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
+            <div id="topic-setup-note" class="form-group setup-note" style="display:none; background: rgba(14,116,144,0.07); border-color: rgba(14,116,144,0.18);">
                 <label style="color: #0e7490;"><i class="fa-solid fa-layer-group"></i> Topic Challenge</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Topic + grammar, then Launch. Modes (Picture / Tiles / Transform) appear in the game.</p>
+                <p>Pick topic + grammar, then Launch. Picture / Tiles / Transform modes appear in the game.</p>
             </div>
 
             <div class="form-group" id="pe-topic-settings" style="display: none;">
@@ -2971,9 +3254,9 @@
                 </div>
             </div>
 
-            <div id="review-setup-note" class="form-group" style="display:none; background: rgba(14,116,144,0.08); border-left-color: #0e7490;">
+            <div id="review-setup-note" class="form-group setup-note" style="display:none; background: rgba(14,116,144,0.07); border-color: rgba(14,116,144,0.18);">
                 <label style="color: #0e7490;"><i class="fa-solid fa-comments"></i> Review Chatbot</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Class, ease, grammar and vocab — then chat in English or with a Polish tutor.</p>
+                <p>Class, ease, grammar and vocab — then chat in English or with a Polish tutor.</p>
             </div>
 
             <div class="form-group" id="pe-review-settings" style="display: none;">
@@ -3034,7 +3317,7 @@
                             </select>
                         </div>
                         <div id="review-setup-custom-wrap" style="display:none; margin-top:0.55rem;">
-                            <textarea id="review-setup-custom" rows="4" placeholder="One word or phrase per line (or Term = Meaning). At least 4 items."></textarea>
+                            <textarea id="review-setup-custom" rows="4" placeholder="One word or phrase per line (or Term = Meaning). At least 4 items." style="height:auto; margin-bottom:0;"></textarea>
                         </div>
                     </div>
 
@@ -3067,25 +3350,25 @@
                         <div class="pe-setup-field">
                             <label for="review-setup-run-instructions"><i class="fa-solid fa-bullseye"></i> Conversation focus</label>
                             <div id="review-setup-run-presets" class="review-setup-run-presets" aria-label="Quick focus presets"></div>
-                            <textarea id="review-setup-run-instructions" rows="2" maxlength="500" placeholder="e.g. Practise my / your / his / her with family words."></textarea>
+                            <textarea id="review-setup-run-instructions" rows="2" maxlength="500" placeholder="e.g. Practise my / your / his / her with family words." style="height:auto; margin-bottom:0;"></textarea>
                         </div>
                     </details>
                 </div>
             </div>
 
-            <div id="writing-setup-note" class="form-group" style="display:none; background: #e0e7ff; border-left-color: #4f46e5;">
+            <div id="writing-setup-note" class="form-group setup-note" style="display:none; background: rgba(79,70,229,0.07); border-color: rgba(79,70,229,0.18);">
                 <label style="color: #4f46e5;"><i class="fa-solid fa-robot"></i> Cursor AI Generation</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Writing Suite access required (sign in, then buy a plan — or teacher approval). Content is generated via Cursor AI on the server.</p>
+                <p>Writing Suite access required (sign in, then buy a plan — or teacher approval). Content is generated via Cursor AI on the server.</p>
             </div>
 
-            <div id="frank-setup-note" class="form-group" style="display:none; background: rgba(1,33,105,0.06); border-left-color: var(--royal-blue);">
+            <div id="frank-setup-note" class="form-group setup-note" style="display:none;">
                 <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
-                <p style="font-size: 0.85rem; margin-bottom: 0;">Ready-made essay paragraphs from a fixed bank — no AI. Each round names the paragraph type (introduction, body for, body against, body opinion, or conclusion). Scramble the sentences back into the original order.</p>
+                <p>Ready-made essay paragraphs — no AI. Each round names the paragraph type. Scramble the sentences back into the original order.</p>
             </div>
 
-            <div style="text-align: center; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.65rem; align-items: center;">
-                <button class="btn btn-blue" style="font-size: 1.2rem; padding: 1rem 3rem;" onclick="launchSelectedGame()">Launch Game <i class="fa-solid fa-rocket"></i></button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" id="vocab-setup-live-btn" onclick="hostLiveQuizFromVocab()" style="padding: 0.65rem 1.25rem;"><i class="fa-solid fa-bolt"></i> Host Live Spark with this list</button>
+            <div class="setup-actions">
+                <button class="btn btn-blue" onclick="launchSelectedGame()">Launch Game <i class="fa-solid fa-rocket"></i></button>
+                <button type="button" class="btn btn-outline live-vocab-live-btn" id="vocab-setup-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Host Live Spark with this list</button>
             </div>
         </div>
 
@@ -3975,8 +4258,8 @@
                         <p id="live-host-player-count" class="live-muted">0 players joined (minimum 2 to start)</p>
                         <p id="live-host-answer-mode" class="live-muted" hidden></p>
                         <div id="live-host-lobby-settings" class="live-host-lobby-settings" hidden>
-                            <h3 style="margin:1rem 0 0.45rem;font-size:1rem;">Game format</h3>
-                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Change format anytime — players stay in the room. Team modes default to random teams so you can start immediately.</p>
+                            <h3 style="margin:1rem 0 0.35rem;font-size:1.02rem;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-gamepad"></i> Game format</h3>
+                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Change anytime — players stay in the room. Team modes default to random teams.</p>
                             <div class="live-option-grid live-option-grid--3" style="margin-bottom:0.55rem;">
                                 <label class="live-option live-option--compact">
                                     <input type="radio" name="live-lobby-format" value="race">
