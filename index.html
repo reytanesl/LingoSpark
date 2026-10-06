@@ -1423,38 +1423,40 @@
         .card h2 { font-size: 1.4rem; color: var(--royal-blue); margin-bottom: 1rem; }
         .card p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; flex-grow: 1; }
 
-        /* Compact, fully clickable game tiles on home sections */
+        /* Game tiles sized like the three main hub squares */
         #screen-home .home-section .grid {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.05rem;
-            margin-top: 0.85rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+            justify-content: center;
+            gap: 1.75rem;
+            margin-top: 1.25rem;
         }
         #screen-home .home-section .grid > .card {
-            padding: 1.3rem 1rem 1.1rem;
-            border-radius: 10px;
-            border-top-width: 3px;
+            padding: 1.5rem 1.15rem;
+            border-radius: 12px;
+            border-top-width: 4px;
+            min-height: 320px;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-top-color 0.2s ease;
         }
         #screen-home .home-section .grid > .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.09);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
         }
         #screen-home .home-section .grid > .card .icon-container {
-            height: 52px; width: 52px; margin: 0 auto 0.55rem; font-size: 1.4rem;
+            height: 78px; width: 78px; margin: 0 auto 0.85rem; font-size: 2.1rem;
         }
         #screen-home .home-section .grid > .card h2 {
-            font-size: 1.12rem; margin-bottom: 0.4rem; line-height: 1.2;
+            font-size: 1.85rem; margin-bottom: 0.55rem; line-height: 1.15;
         }
         #screen-home .home-section .grid > .card p {
-            font-size: 0.88rem; margin-bottom: 0.8rem; line-height: 1.35;
-            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+            font-size: 1.15rem; margin-bottom: 1rem; line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
         }
         #screen-home .home-section .grid > .card .card-corner-badge {
-            top: 0.45rem; right: 0.45rem; font-size: 0.62rem; padding: 0.18rem 0.45rem;
+            top: 0.55rem; right: 0.55rem; font-size: 0.68rem; padding: 0.2rem 0.5rem;
         }
         #screen-home .home-section .grid > .card > a.btn {
-            padding: 0.5rem 0.9rem; font-size: 0.88rem; margin-top: auto; align-self: center;
+            padding: 0.65rem 1.2rem; font-size: 1rem; margin-top: auto; align-self: center;
             pointer-events: none;
         }
         #screen-home .home-section .grid > .card > a.btn::after {
@@ -1476,47 +1478,51 @@
         }
         @media (max-width: 767px) {
             #screen-home .home-section .grid {
-                grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
-                gap: 0.85rem;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1.15rem;
             }
-            #screen-home .home-section .grid > .card h2 { font-size: 1.02rem; }
-            #screen-home .home-section .grid > .card p { font-size: 0.82rem; -webkit-line-clamp: 2; }
+            #screen-home .home-section .grid > .card {
+                min-height: 280px; padding: 1.35rem 1rem;
+            }
+            #screen-home .home-section .grid > .card h2 { font-size: 1.55rem; }
+            #screen-home .home-section .grid > .card p { font-size: 1.05rem; -webkit-line-clamp: 3; }
             #screen-home .home-section .grid > .card .icon-container {
-                height: 46px; width: 46px; font-size: 1.25rem;
+                height: 64px; width: 64px; font-size: 1.75rem;
             }
         }
-        /* Writing Suite game tiles — a bit larger than other home grids */
+        /* Writing Suite uses the same hub-scale tiles */
         #section-writing .grid {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+            gap: 1.75rem;
         }
         #section-writing .grid > .card {
-            padding: 1.65rem 1.3rem 1.35rem;
+            padding: 1.5rem 1.15rem;
+            min-height: 320px;
         }
         #section-writing .grid > .card .icon-container {
-            height: 64px; width: 64px; margin: 0 auto 0.7rem; font-size: 1.7rem;
+            height: 78px; width: 78px; margin: 0 auto 0.85rem; font-size: 2.1rem;
         }
         #section-writing .grid > .card h2 {
-            font-size: 1.32rem; margin-bottom: 0.55rem;
+            font-size: 1.85rem; margin-bottom: 0.55rem;
         }
         #section-writing .grid > .card p {
-            font-size: 1rem; margin-bottom: 1.1rem; -webkit-line-clamp: 4;
+            font-size: 1.15rem; margin-bottom: 1rem; -webkit-line-clamp: 4;
         }
         #section-writing .grid > .card > a.btn {
-            padding: 0.6rem 1.15rem; font-size: 0.95rem;
+            padding: 0.65rem 1.2rem; font-size: 1rem;
         }
         @media (max-width: 767px) {
             #section-writing .grid {
-                grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1.15rem;
             }
             #section-writing .grid > .card {
-                padding: 1.4rem 1.05rem 1.15rem;
+                padding: 1.35rem 1rem; min-height: 280px;
             }
-            #section-writing .grid > .card h2 { font-size: 1.18rem; }
-            #section-writing .grid > .card p { font-size: 0.92rem; -webkit-line-clamp: 3; }
+            #section-writing .grid > .card h2 { font-size: 1.55rem; }
+            #section-writing .grid > .card p { font-size: 1.05rem; -webkit-line-clamp: 3; }
             #section-writing .grid > .card .icon-container {
-                height: 56px; width: 56px; font-size: 1.5rem;
+                height: 64px; width: 64px; font-size: 1.75rem;
             }
         }
 
@@ -1831,6 +1837,15 @@
         .pe-pack-toggle.open .chevron { transform: rotate(180deg); color: var(--royal-blue); }
         .pe-pack-grid { display: none; margin-top: 1.25rem; }
         .pe-pack-grid.open { display: grid; }
+        #adv-pack-grid.pe-pack-grid.open {
+            display: flex; flex-direction: column; gap: 1.75rem;
+        }
+        .adv-game-cat-title {
+            font-family: var(--font-primary); color: var(--royal-blue);
+            font-size: 1.45rem; font-weight: 700; text-align: center;
+            margin: 0 0 0.85rem; letter-spacing: 0.02em;
+        }
+        .adv-matura-row { margin-top: 0.25rem; }
         #section-writing .writing-pack-row {
             display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.15rem; margin-top: 1.2rem;
@@ -2999,16 +3014,33 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
                 </div>
 
-                <div class="grid pe-pack-grid" id="adv-pack-grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a ready-made essay paragraph — introduction, body or conclusion — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Slash redundancy in a formal, slightly padded sentence until it is clear and concise.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-pen-to-square"></i></div><h2>Tight Write</h2><p>Rewrite a wordy formal sentence into a clear, efficient one using full conciseness strategies.</p><a href="#/setup/tight" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap everyday words with precise academic terms. Each correct pair is saved to your Vocab Upgrade set.</p><a href="#/setup/vocab" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><a href="#/setup/odyssey" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — get strengths &amp; improvement feedback, then export a PDF.</p><a href="#/setup/mission" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-file-pen"></i></div><h2>Matura Writing Assessment</h2><p>Upload a photo or PDF of your essay, paste the exam task, and get detailed Matura rozszerzona criteria feedback.</p><a href="#/setup/matura" class="btn btn-outline">Assess Now</a></div>
+                <div class="pe-pack-grid adv-pack-panel" id="adv-pack-grid">
+                    <section class="adv-game-cat">
+                        <h3 class="adv-game-cat-title">Vocab</h3>
+                        <div class="grid">
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap everyday words with precise academic terms. Each correct pair is saved to your Vocab Upgrade set.</p><a href="#/setup/vocab" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><a href="#/setup/odyssey" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — get strengths &amp; improvement feedback, then export a PDF.</p><a href="#/setup/mission" class="btn btn-outline">Play Now</a></div>
+                        </div>
+                    </section>
+                    <section class="adv-game-cat">
+                        <h3 class="adv-game-cat-title">Arguing</h3>
+                        <div class="grid">
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a ready-made essay paragraph — introduction, body or conclusion — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
+                        </div>
+                    </section>
+                    <section class="adv-game-cat">
+                        <h3 class="adv-game-cat-title">Neatness</h3>
+                        <div class="grid">
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Slash redundancy in a formal, slightly padded sentence until it is clear and concise.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-pen-to-square"></i></div><h2>Tight Write</h2><p>Rewrite a wordy formal sentence into a clear, efficient one using full conciseness strategies.</p><a href="#/setup/tight" class="btn btn-outline">Play Now</a></div>
+                        </div>
+                    </section>
+                    <div class="grid adv-matura-row">
+                        <div class="card"><div class="icon-container"><i class="fa-solid fa-file-pen"></i></div><h2>Matura Writing Assessment</h2><p>Upload a photo or PDF of your essay, paste the exam task, and get detailed Matura rozszerzona criteria feedback.</p><a href="#/setup/matura" class="btn btn-outline">Assess Now</a></div>
+                    </div>
                 </div>
             </div>
 
@@ -5943,14 +5975,32 @@
             if (!applyingRoute) setAppHash('home');
         }
 
+        function closePrimaryEnglishPack() {
+            const btn = document.getElementById('pe-pack-toggle');
+            const grid = document.getElementById('pe-pack-grid');
+            const levels = document.getElementById('pe-level-row');
+            if (btn) btn.classList.remove('open');
+            if (grid) grid.classList.remove('open');
+            if (levels) levels.classList.remove('open');
+        }
+
+        function closeAdvancedEnglishPack() {
+            const btn = document.getElementById('adv-pack-toggle');
+            const grid = document.getElementById('adv-pack-grid');
+            if (btn) btn.classList.remove('open');
+            if (grid) grid.classList.remove('open');
+        }
+
         function togglePrimaryEnglishPack() {
             const btn = document.getElementById('pe-pack-toggle');
             const grid = document.getElementById('pe-pack-grid');
             const levels = document.getElementById('pe-level-row');
+            if (!btn || !grid || !levels) return;
             const opening = !btn.classList.contains('open');
-            btn.classList.toggle('open');
-            grid.classList.toggle('open');
-            levels.classList.toggle('open');
+            if (opening) closeAdvancedEnglishPack();
+            btn.classList.toggle('open', opening);
+            grid.classList.toggle('open', opening);
+            levels.classList.toggle('open', opening);
             if (opening) trackSectionOpen('section:primary-english');
         }
 
@@ -5959,8 +6009,9 @@
             const grid = document.getElementById('adv-pack-grid');
             if (!btn || !grid) return;
             const opening = !btn.classList.contains('open');
-            btn.classList.toggle('open');
-            grid.classList.toggle('open');
+            if (opening) closePrimaryEnglishPack();
+            btn.classList.toggle('open', opening);
+            grid.classList.toggle('open', opening);
             if (opening) trackSectionOpen('section:advanced-english');
         }
 
