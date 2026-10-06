@@ -1837,15 +1837,44 @@
         .pe-pack-toggle.open .chevron { transform: rotate(180deg); color: var(--royal-blue); }
         .pe-pack-grid { display: none; margin-top: 1.25rem; }
         .pe-pack-grid.open { display: grid; }
+        #pe-pack-grid.pe-pack-grid.open,
         #adv-pack-grid.pe-pack-grid.open {
-            display: flex; flex-direction: column; gap: 1.75rem;
+            display: flex; flex-direction: column; gap: 1rem;
         }
-        .adv-game-cat-title {
-            font-family: var(--font-primary); color: var(--royal-blue);
-            font-size: 1.45rem; font-weight: 700; text-align: center;
-            margin: 0 0 0.85rem; letter-spacing: 0.02em;
+        .ws-matura-row { margin: 0 0 0.35rem; }
+        .ws-game-cat { width: 100%; }
+        .ws-game-cat-btn {
+            width: 100%; display: flex; align-items: center; justify-content: space-between;
+            gap: 0.75rem; padding: 0.95rem 1.2rem; margin: 0;
+            border: 2px solid var(--royal-blue); border-radius: 12px;
+            background: var(--bright-white); color: var(--royal-blue);
+            font-family: var(--font-primary); font-size: 1.25rem; font-weight: 700;
+            cursor: pointer; text-align: left; transition: 0.2s;
         }
-        .adv-matura-row { margin-top: 0.25rem; }
+        .ws-game-cat-btn:hover {
+            border-color: var(--pillarbox-red); box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        }
+        .ws-game-cat.open .ws-game-cat-btn {
+            border-color: var(--royal-blue);
+            box-shadow: 0 4px 12px rgba(1, 33, 105, 0.08);
+        }
+        #adv-pack-grid .ws-game-cat-btn { border-color: var(--success-green); color: var(--success-green); }
+        #adv-pack-grid .ws-game-cat-btn:hover,
+        #adv-pack-grid .ws-game-cat.open .ws-game-cat-btn {
+            border-color: var(--pillarbox-red); color: var(--royal-blue);
+        }
+        .ws-game-cat-btn .chevron {
+            transition: transform 0.3s; color: var(--text-muted); font-size: 0.95rem;
+        }
+        .ws-game-cat.open .ws-game-cat-btn .chevron {
+            transform: rotate(180deg); color: var(--royal-blue);
+        }
+        .ws-game-cat-grid {
+            display: none; margin-top: 1rem;
+        }
+        .ws-game-cat.open .ws-game-cat-grid {
+            display: grid;
+        }
         #section-writing .writing-pack-row {
             display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.15rem; margin-top: 1.2rem;
@@ -3003,44 +3032,85 @@
                         <div class="pe-custom-status" id="pe-custom-status">No custom glossary applied yet.</div>
                     </div>
                 </div>
-                <div class="grid pe-pack-grid" id="pe-pack-grid">
-                    <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-image"></i></div><h2>Vocab Scenes</h2><p>Explore 46 classroom scenes — including Exclusive packs with richer vocabulary. Hover or tap objects to learn words, quiz yourself, and hear pronunciation.</p><a href="vocab-scenes.html" target="_blank" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-layer-group"></i></div><h2>Topic Challenge</h2><p>Scene pictures plus tiles, text and transforms on school topics — write, and optionally speak. Ages 9–11.</p><a href="#/setup/pe-topic" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Review Chatbot</h2><p>A teaching chatbot that drills grammar and vocab in short chat — English coach or Polish tutor mode, fitted to class and ease.</p><a href="#/setup/pe-review" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
+                <div class="pe-pack-grid" id="pe-pack-grid">
+                    <section class="ws-game-cat">
+                        <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
+                            <span>Words</span>
+                            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid ws-game-cat-grid">
+                            <div class="card"><span class="card-corner-badge">from A1</span><div class="icon-container"><i class="fa-solid fa-headphones"></i></div><h2>Dictation</h2><p>Listen and repeat, or fill gaps in sentences — Beginner, A1 or A2 school levels.</p><a href="#/setup/pe-dictation" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-cubes"></i></div><h2>Colour Blocks</h2><p>Build sentences with colour tiles, try text tasks, or Line Up — drag pictured tiles onto numbered boxes. Correct sentences are saved to your Colour Blocks set.</p><a href="#/setup/pe-colour" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><span class="card-corner-badge">from A0</span><div class="icon-container"><i class="fa-solid fa-image"></i></div><h2>Vocab Scenes</h2><p>Explore 46 classroom scenes — including Exclusive packs with richer vocabulary. Hover or tap objects to learn words, quiz yourself, and hear pronunciation.</p><a href="vocab-scenes.html" target="_blank" class="btn btn-outline">Play Now</a></div>
+                        </div>
+                    </section>
+                    <section class="ws-game-cat">
+                        <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
+                            <span>Talk</span>
+                            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid ws-game-cat-grid">
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-layer-group"></i></div><h2>Topic Challenge</h2><p>Scene pictures plus tiles, text and transforms on school topics — write, and optionally speak. Ages 9–11.</p><a href="#/setup/pe-topic" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Review Chatbot</h2><p>A teaching chatbot that drills grammar and vocab in short chat — English coach or Polish tutor mode, fitted to class and ease.</p><a href="#/setup/pe-review" class="btn btn-outline">Play Now</a></div>
+                        </div>
+                    </section>
+                    <section class="ws-game-cat">
+                        <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
+                            <span>Writing</span>
+                            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid ws-game-cat-grid">
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-magnifying-glass"></i></div><h2>Detail Detective</h2><p>Develop a short statement into a detailed sentence with clear evidence.</p><a href="#/setup/pe-detail" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Link Master</h2><p>Join two sentences with because or so — keep the logic correct.</p><a href="#/setup/pe-link" class="btn btn-outline">Play Now</a></div>
+                        </div>
+                    </section>
+                    <section class="ws-game-cat">
+                        <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
+                            <span>Exam</span>
+                            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid ws-game-cat-grid">
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
+                        </div>
+                    </section>
                 </div>
 
                 <div class="pe-pack-grid adv-pack-panel" id="adv-pack-grid">
-                    <section class="adv-game-cat">
-                        <h3 class="adv-game-cat-title">Vocab</h3>
-                        <div class="grid">
+                    <div class="grid ws-matura-row">
+                        <div class="card"><div class="icon-container"><i class="fa-solid fa-file-pen"></i></div><h2>Matura Writing Assessment</h2><p>Upload a photo or PDF of your essay, paste the exam task, and get detailed Matura rozszerzona criteria feedback.</p><a href="#/setup/matura" class="btn btn-outline">Assess Now</a></div>
+                    </div>
+                    <section class="ws-game-cat">
+                        <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
+                            <span>Vocab</span>
+                            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid ws-game-cat-grid">
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-language"></i></div><h2>Vocabulary Upgrade</h2><p>Swap everyday words with precise academic terms. Each correct pair is saved to your Vocab Upgrade set.</p><a href="#/setup/vocab" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-dragon"></i></div><h2>Word-Forged Odyssey</h2><p>AI-powered text adventure. Write actions using your flashcard vocabulary to survive and shape the story.</p><a href="#/setup/odyssey" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-comments"></i></div><h2>Mission: Chat</h2><p>Swap-in roleplay missions. Speak to achieve a goal — get strengths &amp; improvement feedback, then export a PDF.</p><a href="#/setup/mission" class="btn btn-outline">Play Now</a></div>
                         </div>
                     </section>
-                    <section class="adv-game-cat">
-                        <h3 class="adv-game-cat-title">Arguing</h3>
-                        <div class="grid">
+                    <section class="ws-game-cat">
+                        <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
+                            <span>Arguing</span>
+                            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid ws-game-cat-grid">
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a ready-made essay paragraph — introduction, body or conclusion — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
                         </div>
                     </section>
-                    <section class="adv-game-cat">
-                        <h3 class="adv-game-cat-title">Neatness</h3>
-                        <div class="grid">
+                    <section class="ws-game-cat">
+                        <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
+                            <span>Neatness</span>
+                            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="grid ws-game-cat-grid">
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-scissors"></i></div><h2>Bloat Slasher</h2><p>Slash redundancy in a formal, slightly padded sentence until it is clear and concise.</p><a href="#/setup/bloat" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-pen-to-square"></i></div><h2>Tight Write</h2><p>Rewrite a wordy formal sentence into a clear, efficient one using full conciseness strategies.</p><a href="#/setup/tight" class="btn btn-outline">Play Now</a></div>
                         </div>
                     </section>
-                    <div class="grid adv-matura-row">
-                        <div class="card"><div class="icon-container"><i class="fa-solid fa-file-pen"></i></div><h2>Matura Writing Assessment</h2><p>Upload a photo or PDF of your essay, paste the exam task, and get detailed Matura rozszerzona criteria feedback.</p><a href="#/setup/matura" class="btn btn-outline">Assess Now</a></div>
-                    </div>
                 </div>
             </div>
 
@@ -5975,12 +6045,39 @@
             if (!applyingRoute) setAppHash('home');
         }
 
+        function closeWsGameCats(panel) {
+            if (!panel) return;
+            panel.querySelectorAll('.ws-game-cat.open').forEach((cat) => {
+                cat.classList.remove('open');
+                const catBtn = cat.querySelector('.ws-game-cat-btn');
+                if (catBtn) catBtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        function toggleWsGameCat(btn) {
+            const cat = btn.closest('.ws-game-cat');
+            const panel = btn.closest('.pe-pack-grid');
+            if (!cat || !panel) return;
+            const opening = !cat.classList.contains('open');
+            panel.querySelectorAll('.ws-game-cat.open').forEach((other) => {
+                if (other === cat) return;
+                other.classList.remove('open');
+                const otherBtn = other.querySelector('.ws-game-cat-btn');
+                if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+            });
+            cat.classList.toggle('open', opening);
+            btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        }
+
         function closePrimaryEnglishPack() {
             const btn = document.getElementById('pe-pack-toggle');
             const grid = document.getElementById('pe-pack-grid');
             const levels = document.getElementById('pe-level-row');
             if (btn) btn.classList.remove('open');
-            if (grid) grid.classList.remove('open');
+            if (grid) {
+                grid.classList.remove('open');
+                closeWsGameCats(grid);
+            }
             if (levels) levels.classList.remove('open');
         }
 
@@ -5988,7 +6085,10 @@
             const btn = document.getElementById('adv-pack-toggle');
             const grid = document.getElementById('adv-pack-grid');
             if (btn) btn.classList.remove('open');
-            if (grid) grid.classList.remove('open');
+            if (grid) {
+                grid.classList.remove('open');
+                closeWsGameCats(grid);
+            }
         }
 
         function togglePrimaryEnglishPack() {
