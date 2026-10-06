@@ -80,15 +80,17 @@ test('ball loading and damage are fair across team sizes', () => {
 
 test('fast shots always hit; slow shots can miss into the sea', () => {
     const fast = resolveShot({ ms: 1200, questionMs: 20_000, teamSize: 2, rng: () => 0.999 });
-    assert.deepEqual(fast, { outcome: 'hit', tier: 'fast', damage: 18 });
-    const slowMiss = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, rng: () => 0.6 });
+    assert.deepEqual(fast, { outcome: 'hit', tier: 'fast', damage: 10 }); // budget 20 / 2
+    const slowMiss = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, rng: () => 0.4 });
     assert.equal(slowMiss.outcome, 'miss');
     assert.equal(slowMiss.damage, 0);
-    const slowHit = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, rng: () => 0.4 });
-    assert.deepEqual(slowHit, { outcome: 'hit', tier: 'slow', damage: 13 }); // 18 * 0.7 = 12.6
-    const goodHit = resolveShot({ ms: 9000, questionMs: 20_000, teamSize: 2, rng: () => 0.79 });
-    assert.deepEqual(goodHit, { outcome: 'hit', tier: 'good', damage: 15 }); // 18 * 0.85 = 15.3
-    assert.equal(resolveShot({ ms: 9000, questionMs: 20_000, teamSize: 2, rng: () => 0.81 }).outcome, 'miss');
+    const slowHit = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, rng: () => 0.39 });
+    assert.deepEqual(slowHit, { outcome: 'hit', tier: 'slow', damage: 2 }); // 10 * 0.2
+    const goodHit = resolveShot({ ms: 9000, questionMs: 20_000, teamSize: 2, rng: () => 0.74 });
+    assert.deepEqual(goodHit, { outcome: 'hit', tier: 'good', damage: 5 }); // 10 * 0.5
+    assert.equal(resolveShot({ ms: 9000, questionMs: 20_000, teamSize: 2, rng: () => 0.75 }).outcome, 'miss');
+    // Speed must clearly change the punch: FAST > GOOD > SLOW.
+    assert.ok(fast.damage > goodHit.damage && goodHit.damage > slowHit.damage);
 });
 
 test('the storm blows shots away or lands lucky hits', () => {
@@ -97,7 +99,7 @@ test('the storm blows shots away or lands lucky hits', () => {
     assert.equal(blown.damage, 0);
     const lucky = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, storm: true, rng: () => 0.3 });
     assert.equal(lucky.outcome, 'lucky');
-    assert.equal(lucky.damage, 19); // 12.6 * 1.5 = 18.9
+    assert.equal(lucky.damage, 3); // slow full 2 * 1.5
     const normal = resolveShot({ ms: 1000, questionMs: 20_000, teamSize: 2, storm: true, rng: () => 0.5 });
     assert.equal(normal.outcome, 'hit');
     // Over many seeded rolls roughly 20% blow away and 15% are lucky.
@@ -121,9 +123,9 @@ test('volleys alternate teams, fastest team first, and stop when a fort sinks', 
     assert.equal(v.first, 'blue');
     assert.deepEqual(v.shots.map((s) => s.team), ['blue', 'red', 'red', 'red']);
     assert.deepEqual(v.shots.map((s) => s.shooterId), ['b1', 'r2', 'r3', 'r1']);
-    assert.equal(v.shots[0].damage, 18);
-    assert.equal(v.shots[1].damage, 12);
-    assert.deepEqual(v.hpAfter, { red: 82, blue: 64 });
+    assert.equal(v.shots[0].damage, 10); // blue size 2, FAST
+    assert.equal(v.shots[1].damage, 7); // red size 3, FAST (20/3)
+    assert.deepEqual(v.hpAfter, { red: 90, blue: 79 }); // 100-10; 100-7-7-7
     assert.equal(v.shots[1].label, 'FAST 2.0s: HIT!');
     assert.ok(v.shots[1].at > v.shots[0].at);
 
@@ -136,7 +138,7 @@ test('volleys alternate teams, fastest team first, and stop when a fort sinks', 
     assert.equal(sink.shots.length, 3);
     assert.equal(sink.shots[2].final, true);
     assert.equal(sink.shots[2].hpAfter, 0);
-    assert.equal(sink.shots[2].damage, 2); // only what was left
+    assert.equal(sink.shots[2].damage, 10); // leftover HP after first FAST 10 on a 20 HP fort
     assert.equal(sink.sunk, 'blue');
     assert.ok(sink.shots[2].dur > sink.shots[0].dur, 'last shot plays in slow motion');
 });

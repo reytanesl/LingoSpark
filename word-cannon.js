@@ -8,8 +8,9 @@
  *
  * Aim depends on answer speed, measured as a share of the question time:
  * - FAST (<= 30% of the time): always hits, full damage
- * - GOOD (<= 60%):             80% hit chance, 85% damage
- * - SLOW (later):              50% hit chance, 70% damage
+ * - GOOD (<= 60%):             75% hit chance, half damage
+ * - SLOW (later):              40% hit chance, one-fifth damage
+ * Smaller hits keep forts alive longer; the big FAST/GOOD/SLOW gap rewards speed.
  *
  * Fairness: each team can deal the same damage per round whatever its size.
  * A team loads at most CANNON_MAX_BALLS balls; with more players than slots,
@@ -33,7 +34,7 @@ import { buildChoices, matchesTermAnswer, sanitizeAnswerText } from './vocab-qui
 export const CANNON_FORMAT = 'word-cannon';
 export const CANNON_MAX_HP = 100;
 export const CANNON_MAX_BALLS = 5;
-export const CANNON_ROUND_BUDGET = 36;
+export const CANNON_ROUND_BUDGET = 20;
 export const CANNON_QUESTION_MS = 20_000;
 export const CANNON_REVIEW_MS = 12_000;
 export const CANNON_INTRO_MS = 4_200;
@@ -56,8 +57,8 @@ export const VOLLEY_TIMING = {
 
 export const SPEED_TIERS = [
     { tier: 'fast', upTo: 0.3, hitChance: 1, factor: 1 },
-    { tier: 'good', upTo: 0.6, hitChance: 0.8, factor: 0.85 },
-    { tier: 'slow', upTo: Infinity, hitChance: 0.5, factor: 0.7 },
+    { tier: 'good', upTo: 0.6, hitChance: 0.75, factor: 0.5 },
+    { tier: 'slow', upTo: Infinity, hitChance: 0.4, factor: 0.2 },
 ];
 
 export const STORM_RULES = { blownBelow: 0.2, luckyBelow: 0.35, luckyFactor: 1.5 };
