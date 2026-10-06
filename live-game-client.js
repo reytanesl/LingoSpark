@@ -1603,6 +1603,7 @@
             llPhone.key = null;
             if (isLuckyLanternsFormat(playerState.gameFormat)) document.body.classList.add('live-lantern-player');
             setLiveGameActive(true);
+            syncPlayerLanternLobby();
             LiveAudio.startGame();
             showLiveError('');
             showPlayerWaiting('Starting…');
@@ -2152,6 +2153,7 @@
         const crewVoteBtn = $('live-play-crew-vote-btn');
         if (crewVoteBtn) crewVoteBtn.hidden = true;
         if ($('live-play-type-section')) $('live-play-type-section').hidden = true;
+        syncPlayerLanternLobby(msg, snap);
     }
 
     function showPlayerQuestion(q) {
@@ -2807,8 +2809,6 @@
         el.classList.toggle('is-low', secs != null && secs <= 5 && state.phase !== 'reveal');
     }
 
-    function lanternPodiumHtml(players) {
-        const ranked = llPodiumOrder(players).slice(0, 3);
     /** Same order as the server leaderboard: rank, then score, then name. The first entry is the single crowned winner. */
     function llPodiumOrder(players) {
         return [...(players || [])].sort((a, b) => (a.rank || 99) - (b.rank || 99)
@@ -2817,6 +2817,8 @@
             || String(a.id).localeCompare(String(b.id)));
     }
 
+    function lanternPodiumHtml(players) {
+        const ranked = llPodiumOrder(players).slice(0, 3);
         if (!ranked.length) return '';
         const order = [ranked[1], ranked[0], ranked[2]].filter(Boolean);
         const fx = window.LLFX;
@@ -3802,6 +3804,49 @@
     }
 
     // ---------------- phone ----------------
+    /** Festival-themed waiting screen for players who joined a Lucky Lanterns room before it starts. */
+    function syncPlayerLanternLobby(msg, snap) {
+        const el = $('ll-player-lobby');
+        const body = document.body;
+        const snapshot = snap || playerState?.lastSnapshot;
+        const on = Boolean(playerState) && isLuckyLanternsFormat(playerState?.gameFormat)
+            && !body.classList.contains('live-game-active') && !body.classList.contains('live-lantern-player')
+            && (snapshot?.phase || 'lobby') === 'lobby' && Boolean(window.LLFX);
+        body.classList.toggle('ll-player-lobby', on);
+        if (!el) return;
+        el.hidden = !on;
+        if (!on) return;
+        LLFX.ensureDefs();
+        llMountPhoneBackdrop();
+        if (!el.firstChild) {
+            const mini = (kind, label) => `<span class="llpl-lantern"><span class="llpl-lantern-art">${LLFX.lanternSvg(kind)}</span><span class="llpl-lantern-cap">${label}</span></span>`;
+            el.innerHTML = `
+                <div class="llpl-top"><span class="llp-logo">Lingo<span>Spark</span></span><span class="llpl-room">Room <b class="llpl-room-code"></b></span></div>
+                <div class="llpl-title">
+                    <div>${LLFX.lettersHtml('LUCKY', { delay: 0.1 })}</div>
+                    <div>${LLFX.lettersHtml('LANTERNS', { delay: 0.35 })}</div>
+                </div>
+                <div class="llpl-lanterns">${mini('safe', 'Play safe')}${mini('risk', 'Go big')}${mini('mystery', 'Surprise')}</div>
+                <div class="llpl-card">
+                    <span class="llpl-label">You're in as</span>
+                    <b class="llpl-name"></b>
+                    <div class="llpl-wait"><span class="llpl-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="llpl-msg"></span></div>
+                </div>
+                <p class="llpl-count"></p>`;
+        }
+        const code = playerState?.code || sessionStorage.getItem('ls_live_room_code') || '';
+        const codeEl = el.querySelector('.llpl-room-code');
+        if (codeEl) codeEl.textContent = code || '----';
+        const nameEl = el.querySelector('.llpl-name');
+        if (nameEl) nameEl.textContent = playerState?.nickname || sessionStorage.getItem('ls_live_nickname') || $('live-play-nickname')?.textContent || 'Player';
+        const msgEl = el.querySelector('.llpl-msg');
+        if (msgEl && msg) msgEl.textContent = msg;
+        else if (msgEl && !msgEl.textContent) msgEl.textContent = 'Waiting for the host to start…';
+        const count = (snapshot?.players || []).length;
+        const countEl = el.querySelector('.llpl-count');
+        if (countEl) countEl.textContent = count ? `${count} ${count === 1 ? 'player' : 'players'} in the room` : '';
+    }
+
     function llMountPhoneBackdrop() {
         const sky = $('ll-phone-sky');
         if (!sky || !window.LLFX) return;
