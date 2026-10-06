@@ -182,19 +182,19 @@
         @media (min-width: 768px) {
             .home-hub {
                 flex-direction: row; justify-content: center; align-items: stretch;
-                max-width: 960px; gap: 1.5rem; padding: 0 1rem; margin: 1.5rem auto 0.75rem;
+                max-width: 1080px; gap: 1.75rem; padding: 0 1rem; margin: 1.5rem auto 0.75rem;
             }
             .hub-square {
-                width: auto; flex: 1 1 0; max-width: 280px; min-width: 0;
-                aspect-ratio: 1 / 1; padding: 1.25rem 1rem; gap: 0.75rem;
+                width: auto; flex: 1 1 0; max-width: 320px; min-width: 0;
+                aspect-ratio: 1 / 1; padding: 1.5rem 1.15rem; gap: 0.85rem;
                 justify-content: center;
             }
-            .hub-square .hub-icon { height: 64px; width: 64px; font-size: 1.75rem; }
-            .hub-square .hub-title { font-size: 1.64rem; }
-            .hub-square .hub-sub { font-size: 1.11rem; max-width: none; }
+            .hub-square .hub-icon { height: 78px; width: 78px; font-size: 2.1rem; }
+            .hub-square .hub-title { font-size: 1.85rem; }
+            .hub-square .hub-sub { font-size: 1.2rem; max-width: none; }
         }
         .home-hub-wrap {
-            max-width: 960px; width: 100%; margin: 0.75rem auto 1.5rem; padding: 0 0.75rem;
+            max-width: 1080px; width: 100%; margin: 0.75rem auto 1.5rem; padding: 0 0.75rem;
             display: flex; flex-direction: column; align-items: center;
         }
         @media (min-width: 768px) {
@@ -1422,12 +1422,12 @@
 
         /* Compact, fully clickable game tiles on home sections */
         #screen-home .home-section .grid {
-            grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
-            gap: 0.85rem;
-            margin-top: 0.75rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.05rem;
+            margin-top: 0.85rem;
         }
         #screen-home .home-section .grid > .card {
-            padding: 1rem 0.8rem 0.85rem;
+            padding: 1.3rem 1rem 1.1rem;
             border-radius: 10px;
             border-top-width: 3px;
             cursor: pointer;
@@ -1438,20 +1438,20 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.09);
         }
         #screen-home .home-section .grid > .card .icon-container {
-            height: 42px; width: 42px; margin: 0 auto 0.45rem; font-size: 1.2rem;
+            height: 52px; width: 52px; margin: 0 auto 0.55rem; font-size: 1.4rem;
         }
         #screen-home .home-section .grid > .card h2 {
-            font-size: 0.98rem; margin-bottom: 0.3rem; line-height: 1.2;
+            font-size: 1.12rem; margin-bottom: 0.4rem; line-height: 1.2;
         }
         #screen-home .home-section .grid > .card p {
-            font-size: 0.78rem; margin-bottom: 0.65rem; line-height: 1.35;
+            font-size: 0.88rem; margin-bottom: 0.8rem; line-height: 1.35;
             display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
         }
         #screen-home .home-section .grid > .card .card-corner-badge {
-            top: 0.4rem; right: 0.4rem; font-size: 0.58rem; padding: 0.15rem 0.4rem;
+            top: 0.45rem; right: 0.45rem; font-size: 0.62rem; padding: 0.18rem 0.45rem;
         }
         #screen-home .home-section .grid > .card > a.btn {
-            padding: 0.4rem 0.75rem; font-size: 0.8rem; margin-top: auto; align-self: center;
+            padding: 0.5rem 0.9rem; font-size: 0.88rem; margin-top: auto; align-self: center;
             pointer-events: none;
         }
         #screen-home .home-section .grid > .card > a.btn::after {
@@ -1473,44 +1473,47 @@
         }
         @media (max-width: 767px) {
             #screen-home .home-section .grid {
-                grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-                gap: 0.7rem;
+                grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+                gap: 0.85rem;
             }
-            #screen-home .home-section .grid > .card h2 { font-size: 0.92rem; }
-            #screen-home .home-section .grid > .card p { font-size: 0.74rem; -webkit-line-clamp: 2; }
+            #screen-home .home-section .grid > .card h2 { font-size: 1.02rem; }
+            #screen-home .home-section .grid > .card p { font-size: 0.82rem; -webkit-line-clamp: 2; }
+            #screen-home .home-section .grid > .card .icon-container {
+                height: 46px; width: 46px; font-size: 1.25rem;
+            }
         }
-        /* Writing Suite game tiles — between compact home tiles and original large cards */
+        /* Writing Suite game tiles — a bit larger than other home grids */
         #section-writing .grid {
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 1.15rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
         }
         #section-writing .grid > .card {
-            padding: 1.5rem 1.2rem 1.25rem;
+            padding: 1.65rem 1.3rem 1.35rem;
         }
         #section-writing .grid > .card .icon-container {
-            height: 58px; width: 58px; margin: 0 auto 0.65rem; font-size: 1.55rem;
+            height: 64px; width: 64px; margin: 0 auto 0.7rem; font-size: 1.7rem;
         }
         #section-writing .grid > .card h2 {
-            font-size: 1.25rem; margin-bottom: 0.5rem;
+            font-size: 1.32rem; margin-bottom: 0.55rem;
         }
         #section-writing .grid > .card p {
-            font-size: 0.95rem; margin-bottom: 1rem; -webkit-line-clamp: 4;
+            font-size: 1rem; margin-bottom: 1.1rem; -webkit-line-clamp: 4;
         }
         #section-writing .grid > .card > a.btn {
-            padding: 0.55rem 1.05rem; font-size: 0.92rem;
+            padding: 0.6rem 1.15rem; font-size: 0.95rem;
         }
         @media (max-width: 767px) {
             #section-writing .grid {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: 0.95rem;
+                grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+                gap: 1rem;
             }
             #section-writing .grid > .card {
-                padding: 1.3rem 1rem 1.1rem;
+                padding: 1.4rem 1.05rem 1.15rem;
             }
-            #section-writing .grid > .card h2 { font-size: 1.12rem; }
-            #section-writing .grid > .card p { font-size: 0.88rem; -webkit-line-clamp: 3; }
+            #section-writing .grid > .card h2 { font-size: 1.18rem; }
+            #section-writing .grid > .card p { font-size: 0.92rem; -webkit-line-clamp: 3; }
             #section-writing .grid > .card .icon-container {
-                height: 52px; width: 52px; font-size: 1.4rem;
+                height: 56px; width: 56px; font-size: 1.5rem;
             }
         }
 
@@ -1827,13 +1830,13 @@
         .pe-pack-grid.open { display: grid; }
         #section-writing .writing-pack-row {
             display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1rem; margin-top: 1.1rem;
+            gap: 1.15rem; margin-top: 1.2rem;
         }
         #section-writing .writing-pack-tile {
-            width: auto; margin-top: 0; padding: 1.35rem 1rem 1.1rem;
+            width: auto; margin-top: 0; padding: 1.55rem 1.15rem 1.25rem;
             text-align: center; flex-direction: column; align-items: center; justify-content: flex-start;
-            gap: 0.45rem; border-top: 3px solid var(--royal-blue);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); font-size: 1.18rem; min-height: 0;
+            gap: 0.5rem; border-top: 3px solid var(--royal-blue);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); font-size: 1.32rem; min-height: 0;
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
         #section-writing .writing-pack-tile--adv { border-top-color: var(--success-green); }
@@ -1850,24 +1853,24 @@
             border-color: var(--success-green); border-top-color: var(--success-green);
         }
         #section-writing .writing-pack-icon {
-            height: 56px; width: 56px; margin: 0 auto 0.25rem; border-radius: 50%;
+            height: 64px; width: 64px; margin: 0 auto 0.3rem; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            background-color: rgba(1, 33, 105, 0.05); color: var(--royal-blue); font-size: 1.55rem;
+            background-color: rgba(1, 33, 105, 0.05); color: var(--royal-blue); font-size: 1.75rem;
         }
         #section-writing .writing-pack-icon--adv {
             background-color: rgba(0, 130, 59, 0.08); color: var(--success-green);
         }
         #section-writing .writing-pack-label { display: block; line-height: 1.2; }
         #section-writing .writing-pack-tile .pe-pack-meta {
-            font-size: 0.9rem; margin-top: 0; line-height: 1.4;
+            font-size: 0.98rem; margin-top: 0; line-height: 1.4;
             display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
         }
-        #section-writing .writing-pack-tile .chevron { margin-top: 0.2rem; font-size: 0.95rem; }
+        #section-writing .writing-pack-tile .chevron { margin-top: 0.25rem; font-size: 1rem; }
         @media (max-width: 520px) {
-            #section-writing .writing-pack-row { gap: 0.8rem; }
-            #section-writing .writing-pack-tile { padding: 1.1rem 0.7rem 0.95rem; font-size: 1.05rem; }
-            #section-writing .writing-pack-tile .pe-pack-meta { font-size: 0.8rem; -webkit-line-clamp: 2; }
-            #section-writing .writing-pack-icon { height: 48px; width: 48px; font-size: 1.3rem; }
+            #section-writing .writing-pack-row { gap: 0.9rem; }
+            #section-writing .writing-pack-tile { padding: 1.25rem 0.8rem 1.05rem; font-size: 1.12rem; }
+            #section-writing .writing-pack-tile .pe-pack-meta { font-size: 0.86rem; -webkit-line-clamp: 2; }
+            #section-writing .writing-pack-icon { height: 54px; width: 54px; font-size: 1.45rem; }
         }
         .pe-setup-compact { display: flex; flex-direction: column; gap: 0.85rem; }
         .pe-setup-row {
@@ -3583,7 +3586,7 @@
 
             <div class="setup-actions">
                 <button class="btn btn-blue" onclick="launchSelectedGame()">Launch Game <i class="fa-solid fa-rocket"></i></button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" id="vocab-setup-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Host Live Spark with this list</button>
+                <button type="button" class="btn btn-outline live-vocab-live-btn" id="vocab-setup-live-btn" onclick="hostLiveQuizFromVocab()" hidden><i class="fa-solid fa-bolt"></i> Host Live Spark with this list</button>
             </div>
         </div>
 
@@ -6841,6 +6844,9 @@
                 renderDemoSetButtons();
             }
             if (gameType === 'flashcard') updateFlashcardSetupUI();
+
+            const liveBtn = document.getElementById('vocab-setup-live-btn');
+            if (liveBtn) liveBtn.hidden = !vocabGames.includes(gameType);
 
             showScreen('setup');
         }
