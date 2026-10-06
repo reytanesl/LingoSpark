@@ -7,11 +7,31 @@ import {
     sanitizeAnswerText,
     shuffleDeck,
 } from './vocab-quiz-utils.js';
+import {
+    LANTERN_DEFAULT_ROUNDS,
+    advanceLantern,
+    closeLanternAnswering,
+    closeLanternPicks,
+    createLanternMatch,
+    expireLanternReview,
+    finishLanternEarly,
+    hostSkipLantern,
+    lanternPublicView,
+    lanternQuestionPayload,
+    lanternWinners,
+    markLanternChallengePending,
+    normalizeLanternRounds,
+    pickLantern,
+    renameLanternPlayer,
+    settleLanternChallenge,
+    skipLanternPrompt,
+    submitLanternAnswer,
+} from './lucky-lanterns.js';
 
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
 export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
-export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay'];
+export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay', 'lucky-lanterns'];
 export const LIVE_TEAM_ASSIGNMENT = ['random', 'pick'];
 export const LIVE_TEAM_MIN = 2;
 export const LIVE_TEAM_MAX = 4;
@@ -290,6 +310,7 @@ export function publicRoomSnapshot(room) {
         winnerNickname: room.winnerNickname,
         answerMode: room.answerMode,
         gameFormat: room.gameFormat || 'race',
+        lanternRounds: room.lanternRounds || LANTERN_DEFAULT_ROUNDS,
         teamAssignment: room.teamAssignment || 'random',
         teamMin: LIVE_TEAM_MIN,
         teamMax: LIVE_TEAM_MAX,
@@ -315,6 +336,10 @@ function isCaptainCrew(room) {
 
 function isHotSparkRelay(room) {
     return room?.gameFormat === 'hot-spark-relay';
+}
+
+function isLuckyLanterns(room) {
+    return room?.gameFormat === 'lucky-lanterns';
 }
 
 function resolveQuestionInputMode(room) {
@@ -503,6 +528,15 @@ function ensurePlayerQuestionState(player, room) {
 }
 
 function playerQuestionPayload(player, room) {
+    if (isLuckyLanterns(room)) {
+        const match = room.lantern;
+        if (!match || match.phase !== 'question') return null;
+        const answer = match.answers?.[player.id];
+        if (answer?.submitted) return null;
+        const q = lanternQuestionPayload(match);
+        if (!q) return null;
+        return { ...q, progress: match.scores?.[player.id] || 0 };
+    }
     if (isCaptainCrew(room) || isHotSparkRelay(room)) {
         const team = getPlayerTeam(room, player);
         if (!team) return null;
@@ -896,6 +930,44 @@ function emitPlayerSession(socket, room, player) {
         awaitingChallenge: false,
     };
     let question = null;
+    if (room.phase === 'finished' && isLuckyLanterns(room) && room.lantern) {
+        socket.emit('live:player-joined', payload);
+        socket.emit('live:game-finished', gameFinishedPayload(room));
+        return;
+    }
+    if (room.phase === 'playing' && isLuckyLanterns(room) && room.lantern) {
+        renameLanternPlayer(room.lantern, player.id, player.nickname);
+        const answer = room.lantern.answers?.[player.id];
+        if (answer?.decision === 'prompt' || answer?.decision === 'pending') {
+            payload.awaitingChallenge = true;
+        }
+        socket.emit('live:player-joined', payload);
+        socket.emit('live:lantern-state', lanternPublicView(room.lantern, {
+            playerId: player.id,
+            connected: lanternConnectedMap(room),
+        }));
+        if (room.lantern.phase === 'question' && answer && !answer.submitted) {
+            question = playerQuestionPayload(player, room);
+            if (question) socket.emit('live:your-question', question);
+        } else if (answer?.decision === 'prompt') {
+            socket.emit('live:answer-result', {
+                correct: false,
+                reset: false,
+                challengeable: true,
+                lantern: true,
+                gameFormat: 'lucky-lanterns',
+                progress: room.lantern.scores[player.id] || 0,
+                won: false,
+                correctTerm: room.lantern.entry?.term || '',
+                answerText: answer.answerText || '',
+                definition: room.lantern.entry?.definition || '',
+                questionId: room.lantern.questionId,
+            });
+        } else if (answer?.decision === 'pending') {
+            socket.emit('live:challenge-submitted', { challengeId: player.pendingChallenge?.challengeId || null });
+        }
+        return;
+    }
     if (room.phase === 'playing') {
         const entity = isTeamFormat(room) && team ? team : player;
         const isTeam = Boolean((isCaptainCrew(room) || isHotSparkRelay(room)) && team);
@@ -947,6 +1019,27 @@ function finishGame(room, winnerEntity, { isTeam = false } = {}) {
 }
 
 function gameFinishedPayload(room) {
+    if (isLuckyLanterns(room) && room.lantern) {
+        const winners = lanternWinners(room.lantern);
+        return {
+            winnerId: room.winnerId || winners.winnerId,
+            winnerNickname: room.winnerNickname || winners.winnerNickname,
+            tiedIds: winners.tiedIds,
+            termsToWin: room.lantern.rounds,
+            gameFormat: 'lucky-lanterns',
+            lantern: true,
+            players: winners.players.map((row) => ({
+                id: row.id,
+                nickname: row.nickname,
+                progress: row.score,
+                score: row.score,
+                rank: row.rank,
+                avatar: row.avatar,
+                shield: Boolean(row.shield),
+                termsToWin: room.lantern.rounds,
+            })),
+        };
+    }
     return {
         winnerId: room.winnerId,
         winnerNickname: room.winnerNickname,
@@ -978,7 +1071,7 @@ export function buildDeckFromRequest(body) {
     throw new Error('Invalid word source.');
 }
 
-export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment }) {
+export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
@@ -1004,6 +1097,9 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         startedAt: null,
         finishedAt: null,
         challenges: new Map(),
+        lanternRounds: normalizeLanternRounds(lanternRounds),
+        lantern: null,
+        lanternTimer: null,
     };
     rooms.set(code, room);
     return room;
@@ -1102,6 +1198,8 @@ export function hostUnassignPlayer(room, playerId) {
 }
 
 export function resetRoomToLobby(room) {
+    clearLanternTimer(room);
+    room.lantern = null;
     room.phase = 'lobby';
     room.winnerId = null;
     room.winnerNickname = null;
@@ -1130,7 +1228,7 @@ export function resetRoomToLobby(room) {
 }
 
 /** Lobby (or finished→lobby): change format / answer mode; keep room code + players. */
-export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode } = {}) {
+export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds } = {}) {
     if (room.phase === 'playing') {
         throw new Error('Settings can only be changed before the game starts.');
     }
@@ -1149,6 +1247,9 @@ export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode }
     }
     if (answerMode != null) {
         room.answerMode = normalizeAnswerMode(answerMode);
+    }
+    if (lanternRounds != null) {
+        room.lanternRounds = normalizeLanternRounds(lanternRounds);
     }
 
     if (!isTeamFormat(room)) {
@@ -1409,6 +1510,29 @@ function startGame(room) {
     if (room.players.size < minPlayers) {
         throw new Error(`At least ${minPlayers} players are required to start.`);
     }
+    if (isLuckyLanterns(room)) {
+        clearLanternTimer(room);
+        room.challenges = new Map();
+        room.lantern = createLanternMatch({
+            players: Array.from(room.players.values()).map((p) => ({ id: p.id, nickname: p.nickname })),
+            deck: room.masterDeck,
+            rounds: room.lanternRounds,
+            answerMode: room.answerMode,
+            level: room.level,
+        });
+        for (const player of room.players.values()) {
+            player.pendingChallenge = null;
+            player.answerLocked = false;
+            player.finished = false;
+            player.termIndex = 0;
+        }
+        room.phase = 'playing';
+        room.startedAt = Date.now();
+        room.winnerId = null;
+        room.winnerNickname = null;
+        touchRoom(room);
+        return true;
+    }
     if (isTeamFormat(room)) {
         if (room.teamAssignment === 'random' || !teamsCoverPlayers(room)) {
             if (room.teamAssignment === 'random') {
@@ -1469,12 +1593,137 @@ function submitAnswer(room, playerId, rawText) {
 }
 
 function endGame(room) {
+    if (isLuckyLanterns(room) && room.lantern) {
+        finishLanternEarly(room.lantern);
+        const winners = lanternWinners(room.lantern);
+        room.winnerId = winners.winnerId;
+        room.winnerNickname = winners.winnerNickname;
+    }
+    clearLanternTimer(room);
     room.phase = 'finished';
     room.finishedAt = Date.now();
     touchRoom(room);
 }
 
 let liveIo = null;
+
+function clearLanternTimer(room) {
+    if (!room?.lanternTimer) return;
+    clearTimeout(room.lanternTimer);
+    room.lanternTimer = null;
+}
+
+function lanternConnectedMap(room) {
+    const connected = {};
+    for (const player of room.players.values()) {
+        connected[player.id] = Boolean(player.socketId);
+    }
+    return connected;
+}
+
+function emitLanternState(io, room) {
+    if (!io || !room?.lantern) return;
+    const connected = lanternConnectedMap(room);
+    if (room.hostSocketId) {
+        io.to(room.hostSocketId).emit('live:lantern-state', lanternPublicView(room.lantern, { forHost: true, connected }));
+    }
+    for (const player of room.players.values()) {
+        if (!player.socketId) continue;
+        io.to(player.socketId).emit('live:lantern-state', lanternPublicView(room.lantern, {
+            playerId: player.id,
+            connected,
+        }));
+    }
+}
+
+function deliverLanternQuestions(io, room) {
+    const match = room.lantern;
+    if (!match || match.phase !== 'question') return;
+    for (const player of room.players.values()) {
+        if (!player.socketId) continue;
+        const answer = match.answers[player.id];
+        if (answer?.submitted) continue;
+        const q = playerQuestionPayload(player, room);
+        if (q) io.to(player.socketId).emit('live:your-question', q);
+    }
+}
+
+function finishLanternRoom(io, room, onGameEnd) {
+    if (!room?.lantern) return;
+    clearLanternTimer(room);
+    const winners = lanternWinners(room.lantern);
+    room.lantern.phase = 'finished';
+    room.phase = 'finished';
+    room.finishedAt = Date.now();
+    room.winnerId = winners.winnerId;
+    room.winnerNickname = winners.winnerNickname;
+    touchRoom(room);
+    const payload = gameFinishedPayload(room);
+    io.to(`room:${room.code}`).emit('live:game-finished', payload);
+    if (onGameEnd) onGameEnd(room);
+}
+
+function armLanternTimer(io, room, onGameEnd) {
+    clearLanternTimer(room);
+    const match = room?.lantern;
+    if (!match || room.phase !== 'playing' || match.phaseEndsAt == null) return;
+    const code = room.code;
+    const expectedPhase = match.phase;
+    const endsAt = match.phaseEndsAt;
+    room.lanternTimer = setTimeout(() => {
+        const live = getRoom(code);
+        if (!live?.lantern || live.phase !== 'playing') return;
+        if (live.lantern.phase !== expectedPhase || live.lantern.phaseEndsAt !== endsAt) return;
+        if (expectedPhase === 'question') closeLanternAnswering(live.lantern, Date.now());
+        else if (expectedPhase === 'review') expireLanternReview(live.lantern, Date.now());
+        else if (expectedPhase === 'picking') closeLanternPicks(live.lantern, Date.now());
+        else if (expectedPhase === 'reveal') advanceLantern(live.lantern, Date.now());
+        afterLanternChange(io, live, onGameEnd, { deliverQuestions: live.lantern.phase === 'question' });
+    }, Math.max(0, endsAt - Date.now()));
+}
+
+function releaseLanternDecisions(io, room, playerIds, { accept = false } = {}) {
+    for (const playerId of playerIds || []) {
+        const player = room.players.get(playerId);
+        if (!player) continue;
+        const challengeId = player.pendingChallenge?.challengeId || null;
+        if (challengeId) room.challenges.delete(challengeId);
+        clearPendingChallenge(player);
+        const result = {
+            lantern: true,
+            gameFormat: 'lucky-lanterns',
+            correct: Boolean(accept),
+            reset: false,
+            challengeable: false,
+            challengeAccepted: Boolean(accept),
+            challengeDeclined: !accept,
+            progress: room.lantern?.scores?.[playerId] || 0,
+            won: false,
+            correctTerm: room.lantern?.entry?.term || '',
+            definition: room.lantern?.entry?.definition || '',
+        };
+        if (player.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+        if (room.hostSocketId && challengeId) {
+            io.to(room.hostSocketId).emit('live:challenge-resolved', {
+                id: challengeId,
+                accepted: Boolean(accept),
+                entityId: playerId,
+            });
+        }
+    }
+}
+
+function afterLanternChange(io, room, onGameEnd, { deliverQuestions = false } = {}) {
+    if (!room?.lantern) return;
+    if (room.lantern.phase === 'finished') {
+        finishLanternRoom(io, room, onGameEnd);
+        return;
+    }
+    if (deliverQuestions) deliverLanternQuestions(io, room);
+    emitLanternState(io, room);
+    armLanternTimer(io, room, onGameEnd);
+    touchRoom(room);
+}
 
 export function broadcastLobbyUpdate(code) {
     const room = getRoom(code);
@@ -1491,7 +1740,7 @@ export function broadcastLobbyUpdate(code) {
 
 export function initLiveGame(io, { onGameEnd } = {}) {
     liveIo = io;
-    setInterval(() => {
+    const housekeeping = setInterval(() => {
         const now = Date.now();
         for (const [code, room] of rooms) {
             if (now - room.lastActivityAt > ROOM_TTL_MS) rooms.delete(code);
@@ -1500,6 +1749,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             if (now > entry.resetAt) joinRateByIp.delete(ip);
         }
     }, 5 * 60_000);
+    if (typeof housekeeping.unref === 'function') housekeeping.unref();
 
     io.on('connection', (socket) => {
         socket.on('live:host-join', ({ code, hostToken }) => {
@@ -1518,6 +1768,12 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 progress: progressSnapshot(room),
                 pendingChallenges: listPendingChallenges(room),
             });
+            if (isLuckyLanterns(room) && room.lantern && room.phase === 'playing') {
+                socket.emit('live:lantern-state', lanternPublicView(room.lantern, {
+                    forHost: true,
+                    connected: lanternConnectedMap(room),
+                }));
+            }
         });
 
         socket.on('live:player-join', ({ code, playerId, playerToken }) => {
@@ -1534,6 +1790,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             attachPlayerSocket(socket, room, player);
             emitPlayerSession(socket, room, player);
             broadcastLobbyUpdate(room.code);
+            if (isLuckyLanterns(room) && room.lantern && room.phase === 'playing') {
+                emitLanternState(io, room);
+            }
         });
 
         socket.on('live:request-question', ({ code, playerId, playerToken }) => {
@@ -1550,6 +1809,17 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             if (room.phase !== 'playing') return;
             attachPlayerSocket(socket, room, player);
+            if (isLuckyLanterns(room) && room.lantern) {
+                const answer = room.lantern.answers?.[player.id];
+                if (answer?.decision === 'prompt' || answer?.decision === 'pending') return;
+                const q = playerQuestionPayload(player, room);
+                if (q) socket.emit('live:your-question', q);
+                socket.emit('live:lantern-state', lanternPublicView(room.lantern, {
+                    playerId: player.id,
+                    connected: lanternConnectedMap(room),
+                }));
+                return;
+            }
             const team = getPlayerTeam(room, player);
             const entity = isCaptainCrew(room) && team ? team : player;
             if (entity?.pendingChallenge) return;
@@ -1617,7 +1887,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
         });
 
-        socket.on('live:set-settings', ({ gameFormat, teamAssignment, answerMode }) => {
+        socket.on('live:set-settings', ({ gameFormat, teamAssignment, answerMode, lanternRounds, settingsSeq }) => {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
                 socket.emit('live:error', { error: 'Host only.' });
@@ -1625,20 +1895,23 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const wasFinished = room.phase === 'finished';
-                setRoomSettings(room, { gameFormat, teamAssignment, answerMode });
+                setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds });
                 const snapshot = publicRoomSnapshot(room);
                 // Always refresh lobby for host + players (also covers finished → lobby).
                 io.to(`room:${room.code}`).emit('live:lobby-reset', {
                     snapshot,
                     progress: progressSnapshot(room),
+                    settingsSeq,
                 });
                 broadcastLobbyUpdate(room.code);
                 socket.emit('live:settings-updated', {
                     gameFormat: room.gameFormat,
                     teamAssignment: room.teamAssignment,
                     answerMode: room.answerMode,
+                    lanternRounds: room.lanternRounds,
                     snapshot,
                     resetFromFinished: wasFinished,
+                    settingsSeq,
                 });
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
@@ -1681,12 +1954,17 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 startGame(room);
                 const progress = progressSnapshot(room);
                 io.to(`room:${room.code}`).emit('live:game-started', {
-                    termsToWin: LIVE_TERMS_TO_WIN,
+                    termsToWin: isLuckyLanterns(room) ? (room.lantern?.rounds || room.lanternRounds) : LIVE_TERMS_TO_WIN,
                     minPlayers: minPlayersForRoom(room),
                     progress,
                     code: room.code,
                     gameFormat: room.gameFormat || 'race',
+                    lanternRounds: room.lanternRounds,
                 });
+                if (isLuckyLanterns(room)) {
+                    afterLanternChange(io, room, onGameEnd, { deliverQuestions: true });
+                    return;
+                }
                 await deliverQuestionsToAllPlayers(io, room);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
@@ -1722,6 +2000,21 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const player = room.players.get(socket.data.playerId);
+                if (isLuckyLanterns(room)) {
+                    if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
+                    const { result } = submitLanternAnswer(room.lantern, socket.data.playerId, text ?? answer, Date.now());
+                    if (result.challengeable && player) {
+                        setPendingChallenge(player, {
+                            term: room.lantern.entry.term,
+                            definition: room.lantern.entry.definition,
+                        }, result.answerText);
+                        player.questionId = room.lantern.questionId;
+                        player.answerLocked = true;
+                    }
+                    socket.emit('live:answer-result', result);
+                    afterLanternChange(io, room, onGameEnd);
+                    return;
+                }
                 if (isCaptainCrew(room)) {
                     const team = player ? getPlayerTeam(room, player) : null;
                     if (!team) throw new Error('You are not on a team.');
@@ -1788,6 +2081,15 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                if (isLuckyLanterns(room)) {
+                    if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
+                    const challenge = submitChallenge(room, socket.data.playerId);
+                    markLanternChallengePending(room.lantern, socket.data.playerId, Date.now());
+                    emitChallengePending(io, room, challenge);
+                    socket.emit('live:challenge-submitted', { challengeId: challenge.id });
+                    afterLanternChange(io, room, onGameEnd);
+                    return;
+                }
                 const challenge = submitChallenge(room, socket.data.playerId);
                 emitChallengePending(io, room, challenge);
                 const player = room.players.get(socket.data.playerId);
@@ -1814,6 +2116,14 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const player = room.players.get(socket.data.playerId);
+                if (isLuckyLanterns(room)) {
+                    if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
+                    const { result } = skipLanternPrompt(room.lantern, socket.data.playerId, Date.now());
+                    if (player) clearPendingChallenge(player);
+                    if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    afterLanternChange(io, room, onGameEnd);
+                    return;
+                }
                 const result = skipChallenge(room, socket.data.playerId);
                 if (isCaptainCrew(room) || isHotSparkRelay(room)) {
                     const team = player ? getPlayerTeam(room, player) : null;
@@ -1834,7 +2144,87 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
+                if (isLuckyLanterns(room)) {
+                    if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
+                    const id = String(challengeId || '');
+                    const challenge = room.challenges.get(id);
+                    if (!challenge || challenge.status !== 'pending') {
+                        throw new Error('Challenge not found or already resolved.');
+                    }
+                    const { result } = settleLanternChallenge(room.lantern, challenge.entityId, Boolean(accept), Date.now());
+                    const player = room.players.get(challenge.entityId);
+                    if (player) clearPendingChallenge(player);
+                    room.challenges.delete(id);
+                    if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    io.to(room.hostSocketId).emit('live:challenge-resolved', {
+                        id,
+                        accepted: Boolean(accept),
+                        entityId: challenge.entityId,
+                    });
+                    afterLanternChange(io, room, onGameEnd);
+                    return;
+                }
                 resolveChallenge(io, room, String(challengeId || ''), Boolean(accept), onGameEnd);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:lantern-pick', ({ pick, choice }) => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'player') {
+                socket.emit('live:error', { error: 'Players only.' });
+                return;
+            }
+            if (!isLuckyLanterns(room) || !room.lantern) {
+                socket.emit('live:error', { error: 'Lantern picks are only used in Lucky Lanterns.' });
+                return;
+            }
+            try {
+                pickLantern(room.lantern, socket.data.playerId, pick ?? choice, Date.now());
+                afterLanternChange(io, room, onGameEnd);
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:lantern-skip', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            if (!isLuckyLanterns(room) || !room.lantern) {
+                socket.emit('live:error', { error: 'Lucky Lanterns is not running.' });
+                return;
+            }
+            try {
+                const outcome = hostSkipLantern(room.lantern, Date.now());
+                releaseLanternDecisions(io, room, outcome.skipped, { accept: false });
+                releaseLanternDecisions(io, room, outcome.declined, { accept: false });
+                afterLanternChange(io, room, onGameEnd, { deliverQuestions: room.lantern.phase === 'question' });
+            } catch (err) {
+                socket.emit('live:error', { error: err.message });
+            }
+        });
+
+        socket.on('live:lantern-next', () => {
+            const room = getRoom(socket.data.roomCode);
+            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
+                socket.emit('live:error', { error: 'Host only.' });
+                return;
+            }
+            if (!isLuckyLanterns(room) || !room.lantern) {
+                socket.emit('live:error', { error: 'Lucky Lanterns is not running.' });
+                return;
+            }
+            try {
+                if (room.lantern.phase !== 'reveal') {
+                    socket.emit('live:error', { error: 'Next round is available after the reveal.' });
+                    return;
+                }
+                advanceLantern(room.lantern, Date.now());
+                afterLanternChange(io, room, onGameEnd, { deliverQuestions: room.lantern.phase === 'question' });
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }
@@ -1887,6 +2277,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     player.socketId = null;
                     player.connected = false;
                     emitProgress(io, room);
+                    if (isLuckyLanterns(room) && room.lantern && room.phase === 'playing') {
+                        emitLanternState(io, room);
+                    }
                 }
             }
         });

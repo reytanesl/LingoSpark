@@ -255,24 +255,28 @@
         raceBlobAnim.container = null;
     }
 
-    function rankingRowsHtml(players, winnerId, { limit = 0 } = {}) {
+    function rankingRowsHtml(players, winnerId, { limit = 0, scoreMode = false } = {}) {
         const ranked = [...(players || [])].sort(
-            (a, b) => (b.progress || 0) - (a.progress || 0) || String(a.nickname || '').localeCompare(String(b.nickname || ''))
+            (a, b) => (b.score ?? b.progress ?? 0) - (a.score ?? a.progress ?? 0) || String(a.nickname || '').localeCompare(String(b.nickname || ''))
         );
         const rows = limit > 0 ? ranked.slice(0, limit) : ranked;
         if (!rows.length) return '<li><span>No scores yet</span></li>';
         return rows.map((p, i) => {
-            const isWinner = p.id === winnerId;
+            const isWinner = p.id === winnerId || (scoreMode && (p.rank === 1));
             const members = Array.isArray(p.memberNicknames) && p.memberNicknames.length
                 ? `<span class="live-rank-members">${esc(p.memberNicknames.join(', '))}</span>`
                 : '';
+            const scoreLabel = scoreMode
+                ? formatLanternPoints(p.score ?? p.progress)
+                : `${p.progress || 0}/${p.termsToWin || TERMS_TO_WIN}`;
+            const avatar = scoreMode && p.avatar ? `${p.avatar} ` : '';
             return `<li class="${isWinner ? 'is-winner' : ''}">
                 <span>
-                    <span class="live-rank-pos">${i + 1}.</span>
-                    ${esc(p.nickname)}${isWinner ? ' 🏆' : ''}
+                    <span class="live-rank-pos">${p.rank || (i + 1)}.</span>
+                    ${avatar}${esc(p.nickname)}${isWinner ? ' 🏆' : ''}
                     ${members}
                 </span>
-                <span class="live-rank-score">${p.progress || 0}/${p.termsToWin || TERMS_TO_WIN}</span>
+                <span class="live-rank-score">${scoreLabel}</span>
             </li>`;
         }).join('');
     }
@@ -282,20 +286,25 @@
         const content = $('live-winner-content');
         if (!screen || !content || !winnerNickname) return;
         const teamMode = Boolean(options.teamMode);
+        const lantern = Boolean(options.lantern);
         const youMsg = isYou ? (teamMode ? " That's your team!" : " That's you!") : '';
         const ranking = options.ranking || [];
+        screen.classList.toggle('live-winner-screen--lanterns', lantern);
         LiveAudio.stopAll();
         LiveAudio.playFanfare();
         launchConfetti(12000);
+        const podium = lantern ? lanternPodiumHtml(ranking) : '';
+        const headline = lantern
+            ? `<h2>Festival champion</h2><p><strong>${esc(winnerNickname)}</strong> lit up the night.${youMsg}</p>${podium}`
+            : `<h2>🏆 Champion!</h2><p><strong>${esc(winnerNickname)}</strong> completed all 12 terms first!${youMsg}</p>`;
         content.innerHTML = `
-            <h2>🏆 Champion!</h2>
-            <p><strong>${esc(winnerNickname)}</strong> completed all 12 terms first!${youMsg}</p>
-            <ol class="live-winner-scores" aria-label="${teamMode ? 'Team scores' : 'Player scores'}">${rankingRowsHtml(ranking, options.winnerId)}</ol>
+            ${headline}
+            <ol class="live-winner-scores" aria-label="${teamMode ? 'Team scores' : 'Player scores'}">${rankingRowsHtml(ranking, options.winnerId, { scoreMode: lantern })}</ol>
             <button type="button" class="btn btn-blue" id="live-winner-dismiss" style="padding:0.75rem 2rem;">Continue</button>`;
         screen.hidden = false;
         $('live-winner-dismiss')?.addEventListener('click', () => {
             hideLiveWinnerScreen();
-            showLiveRankingScreen(ranking, options.winnerId, { teamMode });
+            showLiveRankingScreen(ranking, options.winnerId, { teamMode, lantern });
         }, { once: true });
     }
 
@@ -318,8 +327,8 @@
         const list = $('live-ranking-list');
         if (!screen || !list) return;
         const title = screen.querySelector('h2');
-        if (title) title.textContent = options.teamMode ? 'Final team ranking' : 'Final ranking';
-        list.innerHTML = rankingRowsHtml(players, winnerId);
+        if (title) title.textContent = options.lantern ? 'Lucky Lanterns ranking' : (options.teamMode ? 'Final team ranking' : 'Final ranking');
+        list.innerHTML = rankingRowsHtml(players, winnerId, { scoreMode: Boolean(options.lantern) });
         screen.hidden = false;
         const dismiss = $('live-ranking-dismiss');
         if (dismiss) {
@@ -513,6 +522,67 @@
             this.stopGame();
             this.stopFanfare();
         },
+
+        /** Short WebAudio cues for Lucky Lanterns. No extra audio files. */
+        playLanternSfx(name) {
+            try {
+                const ctx = this._ensureAudioCtx();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                const tone = (freq, start, dur, type = 'sine', volume = 0.18, slideTo = null) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, now + start);
+                    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, now + start + dur);
+                    gain.gain.setValueAtTime(0.0001, now + start);
+                    gain.gain.exponentialRampToValueAtTime(volume, now + start + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + start);
+                    osc.stop(now + start + dur + 0.02);
+                };
+                if (name === 'pick') {
+                    tone(660, 0, 0.09, 'triangle', 0.16);
+                    tone(880, 0.08, 0.14, 'triangle', 0.16);
+                } else if (name === 'safe') {
+                    tone(523.25, 0, 0.16, 'triangle', 0.2);
+                    tone(659.25, 0.12, 0.22, 'triangle', 0.2);
+                } else if (name === 'coin') {
+                    [0, 0.12, 0.24, 0.36].forEach((start, i) => tone(700 + i * 40, start, 0.08, 'square', 0.06));
+                } else if (name === 'double') {
+                    tone(523.25, 0, 0.12, 'triangle', 0.18);
+                    tone(659.25, 0.1, 0.12, 'triangle', 0.18);
+                    tone(783.99, 0.2, 0.22, 'triangle', 0.2);
+                } else if (name === 'bust') {
+                    tone(392, 0, 0.28, 'sawtooth', 0.08, 110);
+                } else if (name === 'mystery') {
+                    tone(880, 0, 0.1, 'sine', 0.14);
+                    tone(1174, 0.08, 0.12, 'sine', 0.14);
+                    tone(1568, 0.16, 0.2, 'triangle', 0.12);
+                } else if (name === 'drumroll') {
+                    const length = Math.floor(ctx.sampleRate * 1.15);
+                    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (0.25 + (i / length) * 0.75);
+                    const src = ctx.createBufferSource();
+                    src.buffer = buffer;
+                    const filter = ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 220;
+                    const gain = ctx.createGain();
+                    gain.gain.setValueAtTime(0.0001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.22, now + 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+                    src.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(ctx.destination);
+                    src.start(now);
+                    for (let i = 0; i < 7; i++) tone(140 + i * 8, i * 0.14, 0.09, 'square', 0.04);
+                }
+            } catch { /* ignore autoplay / AudioContext errors */ }
+        },
     };
 
     // --- Confetti ---
@@ -681,6 +751,9 @@
         const grid = document.querySelector('.live-host-grid');
         if (grid) grid.hidden = active;
         if (active) {
+            document.body.classList.remove('live-host-lanterns');
+            const lanterns = $('live-host-lanterns');
+            if (lanterns) lanterns.hidden = true;
             const code = hostState?.code || $('live-host-code')?.textContent || '';
             const codeEl = $('live-host-race-code');
             if (codeEl) codeEl.textContent = code;
@@ -692,9 +765,14 @@
             }
             startRaceBgBlobs(document.querySelector('#live-host-race .live-race-bg'));
         } else {
+            document.body.classList.remove('live-host-lanterns');
+            const lanterns = $('live-host-lanterns');
+            if (lanterns) lanterns.hidden = true;
             const bubbles = $('live-host-race-bubbles');
             if (bubbles) bubbles.innerHTML = '';
             stopRaceBgBlobs();
+            clearLanternReveal();
+            stopLanternClock();
         }
     }
 
@@ -1011,6 +1089,10 @@
         return format === 'captain-crew' || format === 'hot-spark-relay';
     }
 
+    function isLuckyLanternsFormat(format) {
+        return format === 'lucky-lanterns';
+    }
+
     function isCaptainCrewPickLobby(snap) {
         const s = snap || playerState;
         return isTeamFormatValue(s?.gameFormat) && s?.teamAssignment === 'pick';
@@ -1111,15 +1193,18 @@
         // After a game, Start still works (server resets lobby first).
         btn.disabled = playing ? true : (finished ? count < minPlayers : !canStart);
         if (finished && !playing) btn.hidden = false;
+        const lanternGame = isLuckyLanternsFormat(format);
         if (countEl) {
             countEl.textContent = playing
-                ? `${count} players · ${isTeamGame ? 'team race' : 'solo race'}`
+                ? `${count} players · ${lanternGame ? 'Lucky Lanterns' : (isTeamGame ? 'team race' : 'solo race')}`
                 : `${count} player${count === 1 ? '' : 's'} joined (minimum ${minPlayers} to start)`;
         }
         if (playing) {
             btn.textContent = 'Game in progress…';
             if (status) {
-                status.textContent = isTeamGame
+                status.textContent = lanternGame
+                    ? `Lucky Lanterns — ${snapshot?.lanternRounds || hostState?.lanternRounds || 10} rounds`
+                    : isTeamGame
                     ? `${gameFormatLabel(format, snapshot?.teamAssignment || hostState?.teamAssignment)} — teams race to 12!`
                     : 'Race underway — first to 12 terms in a row wins!';
             }
@@ -1134,7 +1219,9 @@
             if (status) {
                 status.textContent = finished
                     ? 'Game over — change format if you like, then Start game (players stay in the room).'
-                    : isPickTeams
+                    : lanternGame
+                        ? `${count} players ready for Lucky Lanterns.`
+                        : isPickTeams
                         ? 'All teams ready — start when you are.'
                         : `${count} players ready. Start when everyone has joined.`;
             }
@@ -1155,7 +1242,7 @@
     function bindHostSocket() {
         const s = ensureSocket();
         bindSocketReconnect('host');
-        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:lantern-state', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
@@ -1168,9 +1255,13 @@
             hostState.gameFormat = data.snapshot?.gameFormat || hostState?.gameFormat || 'race';
             hostState.teamAssignment = data.snapshot?.teamAssignment || hostState?.teamAssignment || 'random';
             hostState.answerMode = data.snapshot?.answerMode || hostState?.answerMode || 'randomise';
+            hostState.lanternRounds = data.snapshot?.lanternRounds || hostState?.lanternRounds || 10;
             if (data.snapshot?.phase === 'playing') {
-                setHostRaceMode(true);
-                renderHostRaceBoard(data.progress?.players || []);
+                if (isLuckyLanternsFormat(hostState.gameFormat)) setHostLanternMode(true);
+                else {
+                    setHostRaceMode(true);
+                    renderHostRaceBoard(data.progress?.players || []);
+                }
             } else {
                 setHostRaceMode(false);
                 renderHostLobbyFromSnapshot(data.snapshot);
@@ -1193,6 +1284,7 @@
             hostState.gameFormat = snap.gameFormat || hostState?.gameFormat || 'race';
             hostState.teamAssignment = snap.teamAssignment || hostState?.teamAssignment || 'random';
             hostState.answerMode = snap.answerMode || hostState?.answerMode || 'randomise';
+            hostState.lanternRounds = snap.lanternRounds || hostState?.lanternRounds || 10;
             hostState.phase = snap.phase || hostState?.phase || 'lobby';
             if (hostState?.phase === 'playing') {
                 // Race board is driven by progress-update (teams/players as race entities).
@@ -1246,9 +1338,11 @@
 
         s.on('live:progress-update', (data) => {
             if (hostState?.phase === 'playing') {
-                const board = $('live-host-race-board');
-                if (board) board._lastPlayers = data.players || [];
-                renderHostRaceBoard(data.players || [], { flashId: hostState.lastFlashId });
+                if (!isLuckyLanternsFormat(hostState?.gameFormat)) {
+                    const board = $('live-host-race-board');
+                    if (board) board._lastPlayers = data.players || [];
+                    renderHostRaceBoard(data.players || [], { flashId: hostState.lastFlashId });
+                }
                 hostState.lastFlashId = null;
             } else if (isTeamFormatValue(hostState?.gameFormat) && hostState?.teamAssignment === 'pick') {
                 /* teams view comes from live:room-state */
@@ -1269,6 +1363,7 @@
         s.on('live:game-started', (data) => {
             hostState.phase = 'playing';
             hostState.gameFormat = data.gameFormat || hostState.gameFormat || 'race';
+            hostState.lanternRounds = data.lanternRounds || hostState.lanternRounds;
             hostRaceColors = new Map();
             hostPendingChallenges = new Map();
             renderHostChallengePanel();
@@ -1280,10 +1375,22 @@
             stopHostLobbyPoll();
             LiveAudio.stopLobby();
             LiveAudio.startGame();
-            setHostRaceMode(true);
+            if (isLuckyLanternsFormat(hostState.gameFormat)) setHostLanternMode(true);
+            else {
+                setHostRaceMode(true);
+                renderHostRaceBoard(data.progress?.players || []);
+            }
             syncHostLobbySettingsUI({ phase: 'playing' });
-            renderHostRaceBoard(data.progress?.players || []);
             updateHostStartButton({ phase: 'playing', players: data.progress?.players, gameFormat: data.gameFormat, minPlayers: data.minPlayers });
+        });
+
+        s.on('live:lantern-state', (state) => {
+            if (!state || !hostState) return;
+            hostState.gameFormat = 'lucky-lanterns';
+            if (state.phase === 'finished') return;
+            hostState.phase = 'playing';
+            setHostLanternMode(true);
+            renderLanternHost(state);
         });
 
         s.on('live:game-finished', (data) => {
@@ -1296,6 +1403,7 @@
             if (data.winnerNickname) {
                 showLiveWinnerScreen(data.winnerNickname, false, {
                     teamMode: isTeamFormatValue(hostState?.gameFormat),
+                    lantern: Boolean(data.lantern) || isLuckyLanternsFormat(hostState?.gameFormat),
                     ranking: data.players || [],
                     winnerId: data.winnerId,
                 });
@@ -1318,18 +1426,22 @@
         });
 
         s.on('live:lobby-reset', (data) => {
+            noteLobbySettingsAck(data.settingsSeq);
             hostState.phase = 'lobby';
             hostState.gameFormat = data.snapshot?.gameFormat || hostState.gameFormat || 'race';
             hostState.teamAssignment = data.snapshot?.teamAssignment || hostState.teamAssignment || 'random';
             hostState.answerMode = data.snapshot?.answerMode || hostState.answerMode || 'randomise';
+            hostState.lanternRounds = data.snapshot?.lanternRounds || hostState.lanternRounds || 10;
             hostPendingChallenges = new Map();
+            document.body.classList.remove('live-lantern-player');
+            clearLanternReveal();
             renderHostChallengePanel();
             setHostRaceMode(false);
             hideLiveWinnerScreen();
             const ranking = $('live-ranking-screen');
             if (ranking) ranking.hidden = true;
             renderHostLobbyFromSnapshot(data.snapshot);
-            syncHostLobbySettingsUI(data.snapshot);
+            syncHostLobbySettingsUI(data.snapshot, data.settingsSeq);
             updateHostModeLabel();
             updateHostStartButton(data.snapshot);
             const playAgain = $('live-host-play-again');
@@ -1342,10 +1454,12 @@
 
         s.on('live:settings-updated', (data) => {
             if (!hostState) return;
+            noteLobbySettingsAck(data.settingsSeq);
             hostState.gameFormat = data.gameFormat || hostState.gameFormat;
             hostState.teamAssignment = data.teamAssignment || hostState.teamAssignment;
             hostState.answerMode = data.answerMode || hostState.answerMode;
-            syncHostLobbySettingsUI(data.snapshot || data);
+            hostState.lanternRounds = data.lanternRounds || data.snapshot?.lanternRounds || hostState.lanternRounds;
+            syncHostLobbySettingsUI(data.snapshot || data, data.settingsSeq);
             updateHostModeLabel();
             if (data.snapshot) {
                 renderHostLobbyFromSnapshot(data.snapshot);
@@ -1359,7 +1473,7 @@
     function bindPlayerSocket() {
         const s = ensureSocket();
         bindSocketReconnect('player');
-        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:lobby-reset', 'live:player-removed', 'live:challenge-submitted', 'live:challenge-resolved', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:lobby-reset', 'live:player-removed', 'live:challenge-submitted', 'live:challenge-resolved', 'live:lantern-state', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:player-joined', (data) => {
             showLiveError('');
@@ -1396,6 +1510,7 @@
             activeQuestionId = 0;
             answerPending = false;
             playerState.gameFormat = data.gameFormat || playerState.gameFormat || 'race';
+            if (isLuckyLanternsFormat(playerState.gameFormat)) document.body.classList.add('live-lantern-player');
             setLiveGameActive(true);
             LiveAudio.startGame();
             showLiveError('');
@@ -1413,8 +1528,20 @@
             if (q) showPlayerQuestion(q);
         });
 
+        s.on('live:lantern-state', (state) => {
+            if (!state || !playerState) return;
+            playerState.gameFormat = 'lucky-lanterns';
+            document.body.classList.add('live-lantern-player');
+            renderLanternPlayer(state);
+        });
+
         s.on('live:answer-result', (result) => {
             answerPending = false;
+            if (result?.lantern || result?.gameFormat === 'lucky-lanterns') {
+                if (result.challengeable) showChallengeActions(result);
+                else hideChallengeActions();
+                return;
+            }
             playerCrewVote = null;
             const status = $('live-play-status');
             const resultEl = $('live-play-result');
@@ -1461,6 +1588,11 @@
         });
 
         s.on('live:challenge-resolved', (result) => {
+            if (result?.lantern || result?.gameFormat === 'lucky-lanterns') {
+                hideChallengeActions();
+                answerPending = false;
+                return;
+            }
             applyChallengeResolved(result);
             if (result.won) {
                 LiveAudio.stopGame();
@@ -1488,12 +1620,19 @@
             LiveAudio.stopGame();
             setLiveGameActive(false);
             hideCrewPanel();
-            const isWinner = isTeamMode()
-                ? data.winnerId === playerState?.teamId
-                : data.winnerId === playerState?.playerId;
+            const lanternWin = Boolean(data.lantern) || isLuckyLanternsFormat(playerState?.gameFormat);
+            const isWinner = lanternWin
+                ? (data.tiedIds || [data.winnerId]).includes(playerState?.playerId)
+                : isTeamMode()
+                    ? data.winnerId === playerState?.teamId
+                    : data.winnerId === playerState?.playerId;
+            document.body.classList.remove('live-lantern-player');
+            const phone = $('live-play-lantern');
+            if (phone) phone.hidden = true;
             if (data.winnerNickname) {
                 showLiveWinnerScreen(data.winnerNickname, isWinner, {
                     teamMode: isTeamMode(),
+                    lantern: lanternWin,
                     ranking: data.players || [],
                     winnerId: data.winnerId,
                 });
@@ -1509,6 +1648,9 @@
             const ranking = $('live-ranking-screen');
             if (ranking) ranking.hidden = true;
             setLiveGameActive(false);
+            document.body.classList.remove('live-lantern-player');
+            const phone = $('live-play-lantern');
+            if (phone) phone.hidden = true;
             hideCrewPanel();
             hideChallengeActions();
             answerPending = false;
@@ -1567,6 +1709,7 @@
         race: 'Solo race',
         'captain-crew': 'Captain & Crew',
         'hot-spark-relay': 'Hot Spark Relay',
+        'lucky-lanterns': 'Lucky Lanterns',
     };
 
     function answerModeLabel(mode) {
@@ -1582,13 +1725,15 @@
             : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
     }
 
-    function syncHostLobbySettingsUI(snap) {
+    function syncHostLobbySettingsUI(snap, seq) {
         const panel = $('live-host-lobby-settings');
         if (!panel) return;
         const phase = hostState?.phase || snap?.phase || 'lobby';
         const canEdit = phase === 'lobby' || phase === 'finished';
         panel.hidden = !canEdit || !hostState?.code;
         if (!canEdit) return;
+        // A slower settings echo must not put an older round count back in the box.
+        if (settingsSnapshotIsStale(seq)) return;
 
         const format = snap?.gameFormat || hostState?.gameFormat || 'race';
         const teamAssignment = snap?.teamAssignment || hostState?.teamAssignment || 'random';
@@ -1605,6 +1750,12 @@
         });
         const teamRow = $('live-host-lobby-team-row');
         if (teamRow) teamRow.hidden = !isTeamFormatValue(format);
+        const lanternRow = $('live-host-lobby-lantern-row');
+        if (lanternRow) lanternRow.hidden = format !== 'lucky-lanterns';
+        const roundsInput = $('live-lobby-rounds');
+        if (roundsInput && document.activeElement !== roundsInput) {
+            roundsInput.value = String(snap?.lanternRounds || hostState?.lanternRounds || 10);
+        }
     }
 
     function emitHostLobbySettings() {
@@ -1626,7 +1777,9 @@
         const answerMode = document.querySelector('input[name="live-lobby-answer"]:checked')?.value
             || hostState.answerMode
             || 'randomise';
-        ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode });
+        const lanternRounds = Number($('live-lobby-rounds')?.value || hostState.lanternRounds || 10);
+        const settingsSeq = ++lobbySettingsSeq;
+        ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode, lanternRounds, settingsSeq });
     }
 
     function getFullscreenElement() {
@@ -1914,7 +2067,9 @@
         const status = $('live-play-status');
         const crewMode = q.gameFormat === 'captain-crew' || isCaptainCrewMode();
         const relayMode = q.gameFormat === 'hot-spark-relay' || isHotSparkRelayMode();
+        const lanternMode = q.gameFormat === 'lucky-lanterns' || isLuckyLanternsFormat(playerState?.gameFormat);
         const choiceMode = q.inputMode === 'choice';
+        if (lanternMode) document.body.classList.add('live-lantern-player');
         if (def) def.textContent = q.definition;
         if (def) def.hidden = false;
         $('live-play-team-lobby').hidden = true;
@@ -1931,12 +2086,15 @@
                 } else {
                     status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — waiting for ${holder}`;
                 }
+            } else if (lanternMode) {
+                const modeHint = choiceMode ? 'Tap the matching word' : 'Type the word';
+                status.textContent = `Round ${q.round || 1} of ${q.rounds || q.termsToWin || 10} — ${modeHint}`;
             } else {
                 const modeHint = choiceMode ? 'Tap the matching term' : 'Type the matching term';
                 status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — ${modeHint}`;
             }
         }
-        updateOwnProgress(q.progress || 0, q.termsToWin || TERMS_TO_WIN);
+        if (!lanternMode) updateOwnProgress(q.progress || 0, q.termsToWin || TERMS_TO_WIN);
         if (input) {
             input.value = '';
             delete input.dataset.captainTouched;
@@ -2447,6 +2605,357 @@
         if (source === 'wordset') loadWordSetsForHost({ force: false });
     }
 
+    let lobbySettingsSeq = 0;
+    let lobbySettingsAck = 0;
+
+    function settingsSnapshotIsStale(seq) {
+        if (lobbySettingsAck >= lobbySettingsSeq) return false;
+        return seq == null || Number(seq) < lobbySettingsSeq;
+    }
+
+    function noteLobbySettingsAck(seq) {
+        if (seq == null) return;
+        lobbySettingsAck = Math.max(lobbySettingsAck, Number(seq) || 0);
+    }
+
+    let lanternHostState = null;
+    let lanternPlayerState = null;
+    let lanternClockTimer = null;
+    let lanternRevealSeq = -1;
+    let lanternPlayerRevealSeq = -1;
+    let lanternRevealTimers = [];
+
+    function formatLanternPoints(value) {
+        return Math.max(0, Math.round(Number(value) || 0)).toLocaleString('en-US');
+    }
+
+    function lanternClockText(state) {
+        if (!state?.phaseEndsAt) return state?.phase === 'review' ? '…' : '0:00';
+        const seconds = Math.max(0, Math.ceil((state.phaseEndsAt - Date.now()) / 1000));
+        const mins = Math.floor(seconds / 60);
+        const rest = seconds % 60;
+        return `${mins}:${String(rest).padStart(2, '0')}`;
+    }
+
+    function lanternPodiumHtml(players) {
+        const ranked = [...(players || [])].sort((a, b) => (a.rank || 99) - (b.rank || 99)).slice(0, 3);
+        if (!ranked.length) return '';
+        const order = [ranked[1], ranked[0], ranked[2]].filter(Boolean);
+        return `<div class="ll-podium">${order.map((row) => `
+            <div class="ll-podium-slot place-${row.rank || 1}">
+                <span>${row.avatar || '🏮'}</span>
+                <b>${esc(row.nickname)}</b>
+                <span>${formatLanternPoints(row.score ?? row.progress)}</span>
+            </div>`).join('')}</div>`;
+    }
+
+    function clearLanternReveal() {
+        lanternRevealTimers.forEach((timer) => clearTimeout(timer));
+        lanternRevealTimers = [];
+    }
+
+    function startLanternClock() {
+        if (lanternClockTimer) return;
+        lanternClockTimer = setInterval(() => {
+            const hostTime = $('ll-timer');
+            if (hostTime && lanternHostState) {
+                hostTime.textContent = lanternClockText(lanternHostState);
+                const left = lanternHostState.phaseEndsAt ? lanternHostState.phaseEndsAt - Date.now() : 99999;
+                hostTime.classList.toggle('is-low', Boolean(lanternHostState.phaseEndsAt) && left < 5000);
+            }
+            const phoneTime = $('ll-phone-time');
+            if (phoneTime && lanternPlayerState) phoneTime.textContent = lanternClockText(lanternPlayerState);
+        }, 250);
+    }
+
+    function stopLanternClock() {
+        if (!lanternClockTimer) return;
+        clearInterval(lanternClockTimer);
+        lanternClockTimer = null;
+    }
+
+    function setHostLanternMode(active) {
+        const board = $('live-host-lanterns');
+        const race = $('live-host-race');
+        const grid = document.querySelector('.live-host-grid');
+        if (!active) {
+            if (board) board.hidden = true;
+            document.body.classList.remove('live-host-lanterns');
+            clearLanternReveal();
+            stopLanternClock();
+            return;
+        }
+        document.body.classList.add('live-host-race', 'live-host-lanterns');
+        if (race) race.hidden = true;
+        if (board) board.hidden = false;
+        if (grid) grid.hidden = true;
+        stopRaceBgBlobs();
+        startLanternClock();
+    }
+
+    function lanternFiguresHtml(highlight) {
+        const figs = [
+            { key: 'safe', name: 'SAFE', sub: '+100', cls: 'safe' },
+            { key: 'risk', name: 'x2', sub: 'or 0', cls: 'risk' },
+            { key: 'mystery', name: '?', sub: 'mystery', cls: 'mystery' },
+        ];
+        return figs.map((fig) => `
+            <div class="ll-fig ${fig.cls}${highlight && highlight !== fig.key ? ' is-dim' : ''}${highlight === fig.key ? ' is-hot' : ''}">
+                <div class="ll-fig-body"><strong>${fig.name}</strong><span>${fig.sub}</span></div>
+                <div class="ll-fig-tassel"></div>
+            </div>`).join('');
+    }
+
+    function renderLanternBoard(rows, { pop = false } = {}) {
+        const list = $('ll-board-list');
+        if (!list) return;
+        list.innerHTML = (rows || []).map((row) => `
+            <li class="ll-row${row.rank === 1 ? ' is-lead' : ''}${pop ? ' is-move' : ''}">
+                <span class="ll-rank">${row.rank || ''}</span>
+                <span class="ll-av">${row.avatar || '🏮'}</span>
+                <span class="ll-name">${esc(row.nickname || '')}${row.shield ? ' 🛡️' : ''}</span>
+                <span class="ll-score">${formatLanternPoints(row.score)}</span>
+            </li>`).join('') || '<li class="ll-row"><span class="ll-name">Waiting for players…</span></li>';
+    }
+
+    function renderLanternPicked(state) {
+        const strip = $('ll-picked');
+        if (!strip) return;
+        const picking = state.phase === 'picking' || state.phase === 'reveal';
+        const ids = new Set(picking ? (state.pickedIds || []) : []);
+        const people = (state.leaderboard || []).filter((row) => (
+            picking ? ids.has(row.id) : row.status && row.status !== 'answering'
+        ));
+        const label = picking ? '★ Already picked a lantern' : '★ Answered';
+        strip.innerHTML = `<span class="ll-picked-label">${label}</span>${
+            people.map((row) => `<span class="ll-chip" title="${esc(row.nickname)}">${row.avatar || '🏮'}</span>`).join('')
+            || '<span>Waiting…</span>'
+        }`;
+    }
+
+    function renderLanternStage(state) {
+        const card = $('ll-stage-card');
+        const row = $('ll-lantern-row');
+        if (row) row.innerHTML = lanternFiguresHtml(state.phase === 'question' || state.phase === 'review' ? null : null);
+        if (!card) return;
+        if (state.phase === 'question' || state.phase === 'review') {
+            if (row) row.classList.add('is-dim');
+            const mode = state.inputMode === 'choice' ? 'Recognise' : 'Realise';
+            const answer = state.correctTerm ? `<p class="ll-teacher-answer">Answer: <strong>${esc(state.correctTerm)}</strong></p>` : '';
+            const wait = state.phase === 'review'
+                ? '<p class="ll-qwait">Challenges first — lanterns open when the teacher is done, so nobody loses pick time.</p>'
+                : '';
+            card.innerHTML = `
+                <div class="ll-qcard">
+                    <div class="ll-qmeta"><span>${mode}</span><span>${state.answeredCount || 0} / ${state.playerCount || 0} answered</span></div>
+                    <p class="ll-qdef">${esc(state.definition || '')}</p>
+                    ${answer}${wait}
+                </div>`;
+            return;
+        }
+        if (row) row.classList.remove('is-dim');
+        if (state.phase === 'picking') {
+            card.innerHTML = `
+                <div class="ll-reveal-card">
+                    <p class="ll-reveal-kicker">${state.correctCount || 0} correct</p>
+                    <p class="ll-reveal-title">Pick a lantern</p>
+                    <p>${state.isFinal ? 'Final round — ALL IN is on the phones.' : 'Green is safe. Orange is a coin flip. Purple is a mystery.'}</p>
+                    ${state.correctTerm ? `<p class="ll-teacher-answer">Answer was <strong>${esc(state.correctTerm)}</strong></p>` : ''}
+                </div>`;
+        }
+    }
+
+    function revealCardHtml(steps) {
+        const cards = (steps || []).map((step) => {
+            const tone = step.tone || 'neutral';
+            const allin = step.group === 'allin' ? '<p class="ll-allin-label">ALL IN?</p>' : '';
+            return `<div class="ll-reveal-card ${tone}${step.group === 'allin' ? ' allin' : ''}">
+                ${allin}
+                <p class="ll-reveal-kicker">${esc(step.nickname || '')}</p>
+                <p class="ll-reveal-title">${esc(step.title || '')}</p>
+                <p>${esc(step.detail || '')}</p>
+            </div>`;
+        }).join('');
+        return cards || '<div class="ll-reveal-card"><p>No lanterns this round.</p></div>';
+    }
+
+    function playHostReveal(state) {
+        if (state.phase !== 'reveal' || !state.reveal) return;
+        if (lanternRevealSeq === state.reveal.seq) return;
+        clearLanternReveal();
+        lanternRevealSeq = state.reveal.seq;
+        const row = $('ll-lantern-row');
+        if (row) row.innerHTML = lanternFiguresHtml(null);
+        const card = $('ll-stage-card');
+        if (card) {
+            card.innerHTML = `<div class="ll-reveal-card"><p class="ll-reveal-kicker">Reveal</p><p class="ll-reveal-title">Watch the lanterns</p></div>`;
+        }
+        const steps = state.reveal.steps || [];
+        for (const beat of state.reveal.beats || []) {
+            lanternRevealTimers.push(setTimeout(() => {
+                const shown = (beat.stepIndexes || []).map((index) => steps[index]).filter(Boolean);
+                const highlight = shown[0]?.group === 'safe' ? 'safe' : shown[0]?.group === 'risk' ? 'risk' : shown[0]?.group === 'mystery' ? 'mystery' : null;
+                if (row) row.innerHTML = lanternFiguresHtml(highlight);
+                if (card) card.innerHTML = revealCardHtml(shown);
+                LiveAudio.playLanternSfx(beat.sfx);
+                const step = shown[0];
+                if (beat.sfx === 'coin' || beat.sfx === 'drumroll') {
+                    lanternRevealTimers.push(setTimeout(() => {
+                        LiveAudio.playLanternSfx(step?.tone === 'bust' && !step?.savedByShield ? 'bust' : 'double');
+                    }, beat.sfx === 'drumroll' ? 1500 : 650));
+                }
+            }, beat.at || 0));
+        }
+        lanternRevealTimers.push(setTimeout(() => {
+            renderLanternBoard(state.finalLeaderboard || state.leaderboard, { pop: true });
+            if (row) row.innerHTML = lanternFiguresHtml(null);
+        }, state.reveal.leaderboardAt || 0));
+    }
+
+    function renderLanternHost(state) {
+        lanternHostState = state;
+        if (state.phase !== 'reveal') clearLanternReveal();
+        const round = $('ll-round');
+        if (round) round.innerHTML = `Round <strong>${state.round || 1}</strong> of ${state.rounds || 10}`;
+        const timer = $('ll-timer');
+        if (timer) timer.textContent = lanternClockText(state);
+        renderLanternBoard(state.phase === 'reveal' ? state.leaderboard : (state.finalLeaderboard || state.leaderboard));
+        renderLanternPicked(state);
+        const skip = $('ll-skip');
+        const next = $('ll-next');
+        if (skip) {
+            skip.hidden = false;
+            skip.textContent = state.phase === 'reveal'
+                ? 'Skip reveal'
+                : state.phase === 'review'
+                    ? 'Resolve & continue'
+                    : 'Skip';
+        }
+        if (next) next.hidden = state.phase !== 'reveal';
+        if (state.phase === 'reveal') playHostReveal(state);
+        else renderLanternStage(state);
+        startLanternClock();
+    }
+
+    function paintPlayerResult(result) {
+        const body = $('ll-phone-body');
+        if (!body) return;
+        const title = result?.title || '0';
+        const detail = result?.detail || 'No points this round.';
+        body.innerHTML = `
+            <div class="ll-result-card">
+                <strong>${esc(title)}</strong>
+                <p>${esc(detail)}</p>
+                <p>Score ${formatLanternPoints(result?.finalScore ?? result?.scoreAfter)} · rank ${result?.rank || '—'}</p>
+            </div>`;
+    }
+
+    function schedulePlayerReveal(state) {
+        if (state.phase !== 'reveal' || !state.reveal) return;
+        if (lanternPlayerRevealSeq === state.reveal.seq) return;
+        clearLanternReveal();
+        lanternPlayerRevealSeq = state.reveal.seq;
+        const youId = state.you?.id;
+        const steps = state.reveal.steps || [];
+        const mine = steps.find((step) => step.playerId === youId);
+        for (const beat of state.reveal.beats || []) {
+            const hits = (beat.stepIndexes || []).some((index) => steps[index]?.playerId === youId);
+            if (!hits) continue;
+            lanternRevealTimers.push(setTimeout(() => {
+                paintPlayerResult(mine);
+                LiveAudio.playLanternSfx(beat.sfx);
+            }, beat.at || 0));
+        }
+        lanternRevealTimers.push(setTimeout(() => {
+            paintPlayerResult(state.you?.result);
+            const score = $('ll-phone-score');
+            const rank = $('ll-phone-rank');
+            if (score) score.textContent = formatLanternPoints(state.you?.finalScore);
+            if (rank) rank.textContent = state.you?.finalRank ? `#${state.you.finalRank}` : '—';
+        }, state.reveal.leaderboardAt || 0));
+    }
+
+    function syncLanternQuestionChrome(state) {
+        const you = state.you || {};
+        const asking = state.phase === 'question' && !you.decision;
+        const def = $('live-play-definition');
+        const typeSection = $('live-play-type-section');
+        const choices = $('live-play-choices');
+        if (asking) {
+            if (def) def.hidden = false;
+            return;
+        }
+        if (you.decision === 'prompt' || you.decision === 'pending') {
+            if (def) def.hidden = false;
+            if (typeSection) typeSection.hidden = true;
+            if (choices) choices.hidden = true;
+            setAnswerInputsEnabled(false);
+            return;
+        }
+        if (def) def.hidden = true;
+        if (typeSection) typeSection.hidden = true;
+        if (choices) choices.hidden = true;
+        setAnswerInputsEnabled(false);
+    }
+
+    function renderLanternPlayer(state) {
+        lanternPlayerState = state;
+        if (state.phase !== 'reveal') {
+            clearLanternReveal();
+            lanternPlayerRevealSeq = -1;
+        }
+        const root = $('live-play-lantern');
+        if (!root) return;
+        root.hidden = false;
+        document.body.classList.add('live-lantern-player');
+        const you = state.you || {};
+        const status = $('live-play-status');
+        let note = '';
+        if (state.phase === 'question' && !you.decision) note = 'Answer to earn a lantern.';
+        else if (you.decision === 'prompt') note = 'Marked wrong. Challenge it, or continue.';
+        else if (you.decision === 'pending') note = 'Waiting for the teacher.';
+        else if (you.status === 'ready') note = 'Correct! Lanterns open after any challenges.';
+        else if (you.status === 'out') note = 'No lantern this round.';
+        else if (state.phase === 'picking' && you.eligible && !you.pick) note = state.isFinal ? 'Final round — pick a lantern or go ALL IN.' : 'Pick a lantern.';
+        else if (you.pick) note = 'Lantern locked in. Watch the reveal.';
+        else if (state.phase === 'reveal') note = 'Reveal!';
+        if (status && note && !(state.phase === 'question' && !you.decision)) status.textContent = note;
+
+        const showPick = state.phase === 'picking' && you.eligible && !you.pick;
+        const asking = state.phase === 'question' && !you.decision;
+        const pickName = { safe: 'SAFE +100', risk: 'x2 or 0', mystery: '?', allin: 'ALL IN' };
+        root.innerHTML = `
+            <div class="ll-phone-top">
+                <span class="ll-phone-round">Round ${state.round || 1} of ${state.rounds || 10}</span>
+                <span id="ll-phone-time" class="ll-phone-time">${lanternClockText(state)}</span>
+            </div>
+            <div class="ll-phone-meta">
+                <span id="ll-phone-score">${formatLanternPoints(you.score)} pts${you.shield ? ' 🛡️' : ''}</span>
+                <span id="ll-phone-rank">${you.rank ? `#${you.rank}` : '—'}</span>
+            </div>
+            <div id="ll-phone-body">
+                ${showPick ? `
+                    <div class="ll-pick-grid">
+                        <button type="button" class="ll-lantern-btn" data-lantern="safe"><div class="ll-fig safe"><div class="ll-fig-body"><strong>SAFE</strong><span>+100</span></div><div class="ll-fig-tassel"></div></div></button>
+                        <button type="button" class="ll-lantern-btn" data-lantern="risk"><div class="ll-fig risk"><div class="ll-fig-body"><strong>x2</strong><span>or 0</span></div><div class="ll-fig-tassel"></div></div></button>
+                        <button type="button" class="ll-lantern-btn" data-lantern="mystery"><div class="ll-fig mystery"><div class="ll-fig-body"><strong>?</strong><span>mystery</span></div><div class="ll-fig-tassel"></div></div></button>
+                    </div>
+                    ${state.isFinal ? '<button type="button" class="ll-allin-btn" data-lantern="allin">ALL IN? Bet your score</button>' : ''}
+                ` : you.pick ? `<p class="ll-phone-note">You picked ${esc(pickName[you.pick] || you.pick)}.</p>` : (asking ? '' : `<p class="ll-phone-note">${esc(note)}</p>`)}
+            </div>`;
+        root.querySelectorAll('[data-lantern]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                LiveAudio.playLanternSfx('pick');
+                ensureSocket().emit('live:lantern-pick', { pick: btn.getAttribute('data-lantern') });
+                root.querySelectorAll('[data-lantern]').forEach((other) => { other.disabled = true; });
+            });
+        });
+        syncLanternQuestionChrome(state);
+        if (you.decision !== 'prompt' && you.decision !== 'pending') hideChallengeActions();
+        if (state.phase === 'reveal') schedulePlayerReveal(state);
+        startLanternClock();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('input[name="live-source"]').forEach((el) => {
             el.addEventListener('change', toggleLiveSourcePanels);
@@ -2458,6 +2967,8 @@
                         const teamRow = $('live-host-lobby-team-row');
                         const teamMode = isTeamFormatValue(el.value);
                         if (teamRow) teamRow.hidden = !teamMode;
+                        const lanternRow = $('live-host-lobby-lantern-row');
+                        if (lanternRow) lanternRow.hidden = el.value !== 'lucky-lanterns';
                         if (teamMode) {
                             // Prefer random teams when entering a team format so Start is not blocked.
                             const checked = document.querySelector('input[name="live-lobby-team"]:checked');
@@ -2498,6 +3009,18 @@
         $('live-host-play-again')?.addEventListener('click', hostPlayAgain);
         $('live-host-end')?.addEventListener('click', hostEnd);
         $('live-host-race-end')?.addEventListener('click', hostEnd);
+        $('ll-end')?.addEventListener('click', hostEnd);
+        $('ll-skip')?.addEventListener('click', () => {
+            if (lanternHostState?.phase === 'reveal') ensureSocket().emit('live:lantern-next');
+            else ensureSocket().emit('live:lantern-skip');
+        });
+        $('ll-next')?.addEventListener('click', () => ensureSocket().emit('live:lantern-next'));
+        $('ll-full')?.addEventListener('click', () => {
+            toggleLiveFullscreen($('live-host-lanterns') || document.documentElement).catch(() => {
+                showLiveError('Fullscreen is not available in this browser.');
+            });
+        });
+        $('live-lobby-rounds')?.addEventListener('change', emitHostLobbySettings);
         bindHostLobbyBoard();
         $('live-play-submit')?.addEventListener('click', () => submitPlayerAnswer());
         $('live-play-captain-submit')?.addEventListener('click', submitCaptainAnswer);

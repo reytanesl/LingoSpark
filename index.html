@@ -1293,6 +1293,9 @@
             display: grid;
             gap: 0.55rem;
         }
+        .live-option-grid--2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
         .live-option-grid--3 {
             grid-template-columns: repeat(3, 1fr);
         }
@@ -2460,6 +2463,216 @@
             background: rgba(1, 33, 105, 0.07); border-left: 4px solid var(--royal-blue); text-align: left;
         }
         .matura-viewing-banner.open { display: block; }
+
+        /* Lucky Lanterns — night festival host + phone */
+        .ll-rounds-row { margin: 0.35rem 0 0.7rem; }
+        .ll-rounds-row label { font-weight: 700; color: var(--royal-blue); font-size: 0.92rem; }
+        .ll-rounds-row input {
+            display: block; margin-top: 0.3rem; width: 6.5rem; padding: 0.45rem 0.6rem;
+            border: 2px solid var(--border-light); border-radius: 10px; font: inherit;
+        }
+        .ll-host {
+            position: fixed; inset: 0; z-index: 500; display: flex; flex-direction: column;
+            overflow: hidden; color: #fff;
+            background: radial-gradient(ellipse at 50% 0%, #4c2d86 0%, #241447 42%, #140b28 100%);
+            font-family: var(--font-secondary);
+        }
+        .ll-host[hidden] { display: none !important; }
+        .ll-sky { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+        .ll-sky::before {
+            content: ""; position: absolute; inset: 0;
+            background-image:
+                radial-gradient(2px 2px at 12% 18%, #fff, transparent),
+                radial-gradient(2px 2px at 28% 32%, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1.5px 1.5px at 70% 14%, #fff, transparent),
+                radial-gradient(2px 2px at 82% 28%, rgba(255,255,255,0.75), transparent),
+                radial-gradient(1.5px 1.5px at 48% 12%, #fff, transparent),
+                radial-gradient(2px 2px at 90% 48%, rgba(255,255,255,0.6), transparent);
+        }
+        .ll-float {
+            position: absolute; width: 54px; height: 68px; border-radius: 46% 46% 42% 42%;
+            opacity: 0.45; filter: blur(0.2px);
+            animation: llFloat 7s ease-in-out infinite;
+        }
+        .ll-float-a { left: 6%; top: 18%; background: #ff8aa0; }
+        .ll-float-b { right: 8%; top: 12%; background: #ffb45a; animation-delay: -2s; }
+        .ll-float-c { left: 18%; bottom: 16%; background: #c084fc; width: 36px; height: 46px; animation-delay: -4s; }
+        .ll-bunting {
+            position: absolute; left: 8%; right: 28%; top: 92px; height: 18px;
+            background: repeating-linear-gradient(90deg, #fb7185 0 18px, transparent 18px 26px, #fbbf24 26px 44px, transparent 44px 52px, #34d399 52px 70px, transparent 70px 78px, #60a5fa 78px 96px, transparent 96px 104px);
+            clip-path: polygon(0 0, 100% 0, 96% 100%, 4% 100%);
+            opacity: 0.9;
+        }
+        .ll-host-content {
+            position: relative; z-index: 1; display: flex; flex-direction: column;
+            height: 100%; padding: 0.85rem 1.1rem 0.8rem; min-height: 0;
+        }
+        .ll-host-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .ll-brand {
+            background: #fff; color: #7c3aed; font-family: var(--font-primary); font-weight: 800;
+            border-radius: 999px; padding: 0.35rem 0.85rem; letter-spacing: -0.02em;
+        }
+        .ll-brand span { color: #f59e0b; }
+        .ll-round {
+            background: #1a1033; color: #fff; border-radius: 999px; padding: 0.45rem 1.1rem;
+            font-family: var(--font-primary); font-weight: 800; font-size: clamp(1rem, 2vw, 1.35rem);
+            box-shadow: 0 8px 0 rgba(0,0,0,0.25);
+        }
+        .ll-round strong { color: #fbbf24; }
+        .ll-timer {
+            width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center;
+            background: #10233f; border: 6px solid #22c55e; color: #fff;
+            font-family: var(--font-primary); font-weight: 800; font-size: 1.15rem;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+        }
+        .ll-timer.is-low { border-color: #f97316; box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.3); }
+        .ll-title {
+            margin: 0.15rem 0 0.45rem; text-align: center;
+            font-family: var(--font-primary); font-weight: 800; letter-spacing: 0.04em;
+            font-size: clamp(2.1rem, 5.6vw, 4.6rem); line-height: 0.95; color: #ffe14a;
+            text-shadow: 0 4px 0 #6d28d9, 0 8px 0 #4c1d95, 0 14px 24px rgba(0,0,0,0.35);
+        }
+        .ll-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 320px); gap: 0.9rem; }
+        .ll-stage { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; }
+        .ll-qcard {
+            width: min(640px, 100%); background: rgba(255,255,255,0.96); color: #2d2148;
+            border-radius: 22px; padding: 1rem 1.15rem 1.1rem; text-align: center;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+        }
+        .ll-qmeta { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: #6d28d9; }
+        .ll-qdef { margin: 0.45rem 0 0; font-family: var(--font-primary); font-size: clamp(1.25rem, 2.4vw, 1.8rem); font-weight: 800; color: #1e1b4b; }
+        .ll-teacher-answer { margin: 0.45rem 0 0; font-size: 0.92rem; color: #5b21b6; }
+        .ll-qwait { margin: 0.4rem 0 0; font-weight: 700; color: #b45309; }
+        .ll-lantern-row { display: flex; justify-content: center; gap: clamp(0.6rem, 2vw, 1.4rem); width: 100%; }
+        .ll-lantern-row.is-dim .ll-fig { filter: saturate(0.75) brightness(0.82); transform: scale(0.94); }
+        .ll-fig { width: min(180px, 28%); text-align: center; transition: transform 0.35s ease, filter 0.35s ease; }
+        .ll-fig.is-dim { filter: saturate(0.7) brightness(0.75); transform: scale(0.92); }
+        .ll-fig.is-hot { transform: translateY(-8px) scale(1.06); }
+        .ll-fig-body {
+            border-radius: 48% 48% 42% 42%; min-height: 148px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: #fff; font-family: var(--font-primary);
+            font-weight: 800; line-height: 1.05; position: relative;
+        }
+        .ll-fig-body strong { font-size: clamp(1.4rem, 2.5vw, 2rem); }
+        .ll-fig-body span { font-size: clamp(1rem, 1.8vw, 1.35rem); }
+        .ll-fig.safe .ll-fig-body { background: radial-gradient(circle at 50% 28%, #d9ffb3, #4ade80 42%, #16a34a 78%); color: #14532d; box-shadow: 0 0 32px rgba(74, 222, 128, 0.75); }
+        .ll-fig.risk .ll-fig-body { background: radial-gradient(circle at 50% 28%, #ffd0a8, #fb923c 40%, #ea580c 78%); box-shadow: 0 0 32px rgba(251, 146, 60, 0.75); }
+        .ll-fig.mystery .ll-fig-body { background: radial-gradient(circle at 50% 28%, #f0d4ff, #c084fc 40%, #7e22ce 78%); box-shadow: 0 0 32px rgba(192, 132, 252, 0.8); }
+        .ll-fig-tassel { height: 22px; margin: 0 auto; width: 58%; background: repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 8px); opacity: 0.9; }
+        .ll-fig.safe { color: #166534; }
+        .ll-fig.risk { color: #c2410c; }
+        .ll-fig.mystery { color: #7e22ce; }
+        .ll-reveal-card {
+            width: min(560px, 100%); background: rgba(255,255,255,0.97); color: #1e1b4b;
+            border-radius: 24px; padding: 1rem 1.1rem; text-align: center;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.28); animation: llPop 0.45s cubic-bezier(.2,1.4,.4,1);
+        }
+        .ll-reveal-card.allin { background: linear-gradient(180deg, #fff7ed, #fff); }
+        .ll-reveal-kicker { margin: 0; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #7c3aed; }
+        .ll-reveal-title { margin: 0.15rem 0; font-family: var(--font-primary); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; }
+        .ll-reveal-card.win .ll-reveal-title { color: #15803d; }
+        .ll-reveal-card.bust .ll-reveal-title { color: #b91c1c; }
+        .ll-reveal-card.magic .ll-reveal-title { color: #7e22ce; }
+        .ll-reveal-card.neutral .ll-reveal-title { color: #c2410c; }
+        .ll-allin-label {
+            margin: 0; font-family: var(--font-primary); font-weight: 800; font-size: clamp(2rem, 5vw, 3.4rem);
+            color: #ea580c; animation: llPulse 0.7s ease-in-out infinite;
+        }
+        .ll-board {
+            background: linear-gradient(180deg, #fffaf0, #fff); color: #1e1b4b; border-radius: 26px;
+            border: 4px solid #7c3aed; box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+            padding: 0.75rem 0.7rem 0.85rem; display: flex; flex-direction: column; min-height: 0;
+        }
+        .ll-board h2 {
+            margin: 0 0 0.45rem; text-align: center; font-size: 1rem; letter-spacing: 0.08em;
+            color: #6d28d9;
+        }
+        .ll-board ol { list-style: none; margin: 0; padding: 0; overflow: auto; display: flex; flex-direction: column; gap: 0.35rem; }
+        .ll-row {
+            display: grid; grid-template-columns: 1.4rem 2rem minmax(0, 1fr) auto; gap: 0.35rem;
+            align-items: center; padding: 0.35rem 0.4rem; border-radius: 14px; background: rgba(124, 58, 237, 0.06);
+            transition: transform 0.45s ease, background 0.45s ease;
+        }
+        .ll-row.is-lead { background: #fef3c7; }
+        .ll-row.is-move { animation: llPop 0.45s ease; }
+        .ll-rank { font-weight: 800; color: #6d28d9; text-align: center; }
+        .ll-av { font-size: 1.25rem; text-align: center; }
+        .ll-name { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ll-score { font-family: var(--font-primary); font-weight: 800; color: #15803d; }
+        .ll-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; margin-top: 0.7rem; }
+        .ll-picked {
+            flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.4rem; overflow: auto;
+            background: rgba(16, 8, 32, 0.72); border: 2px solid rgba(251, 191, 36, 0.55);
+            border-radius: 999px; padding: 0.35rem 0.75rem; color: #fff;
+        }
+        .ll-picked-label { font-weight: 800; white-space: nowrap; color: #fde68a; }
+        .ll-chip {
+            width: 34px; height: 34px; border-radius: 50%; background: #fff; display: grid; place-items: center;
+            font-size: 1.15rem; flex: 0 0 auto;
+        }
+        .ll-host-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+        .ll-host-actions .btn { min-height: 42px; }
+        body.live-lantern-player #screen-live-play {
+            background: radial-gradient(ellipse at 50% -10%, #4c2d86, #160c2c 70%);
+            color: #fff;
+        }
+        body.live-lantern-player #screen-live-play .live-play-hero,
+        body.live-lantern-player #live-play-roster { display: none !important; }
+        body.live-lantern-player #screen-live-play .live-play-surface {
+            width: min(430px, 100%); margin: 0 auto; background: transparent;
+        }
+        body.live-lantern-player #live-play-status { color: #fde68a; }
+        body.live-lantern-player #live-play-definition.word-prompt {
+            background: rgba(255,255,255,0.96); color: #1e1b4b; border-radius: 16px;
+        }
+        .ll-phone { margin-bottom: 0.45rem; }
+        .ll-phone[hidden] { display: none !important; }
+        .ll-phone-top { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; color: #fff; }
+        .ll-phone-round { font-family: var(--font-primary); font-weight: 800; }
+        .ll-phone-time {
+            min-width: 3.2rem; text-align: center; background: #10233f; border: 3px solid #22c55e;
+            border-radius: 999px; padding: 0.15rem 0.45rem; font-weight: 800;
+        }
+        .ll-phone-meta { display: flex; justify-content: space-between; margin-top: 0.35rem; font-weight: 800; color: #fde68a; }
+        .ll-phone-note { margin: 0.55rem 0 0; text-align: center; font-weight: 700; }
+        .ll-pick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin-top: 0.7rem; }
+        .ll-lantern-btn {
+            appearance: none; border: 0; background: transparent; padding: 0; cursor: pointer; color: inherit;
+        }
+        .ll-lantern-btn:disabled { cursor: default; opacity: 0.7; }
+        .ll-lantern-btn .ll-fig { width: 100%; }
+        .ll-lantern-btn .ll-fig-body { min-height: 118px; }
+        .ll-allin-btn {
+            width: 100%; margin-top: 0.55rem; border: 0; border-radius: 16px; cursor: pointer;
+            background: linear-gradient(180deg, #fb923c, #ea580c); color: #fff;
+            font-family: var(--font-primary); font-weight: 800; font-size: 1.15rem; padding: 0.85rem 0.6rem;
+            box-shadow: 0 8px 0 #9a3412;
+        }
+        .ll-allin-btn:disabled { opacity: 0.65; cursor: default; }
+        .ll-result-card {
+            margin-top: 0.7rem; background: #fff; color: #1e1b4b; border-radius: 18px; padding: 0.9rem 0.8rem;
+            text-align: center;
+        }
+        .ll-result-card strong { display: block; font-family: var(--font-primary); font-size: 1.8rem; }
+        .live-winner-screen--lanterns { background: rgba(18, 8, 40, 0.72); }
+        .ll-podium { display: flex; align-items: flex-end; justify-content: center; gap: 0.45rem; margin: 0.8rem 0; }
+        .ll-podium-slot {
+            background: rgba(255,255,255,0.95); color: #1e1b4b; border-radius: 14px 14px 6px 6px;
+            min-width: 92px; padding: 0.45rem 0.4rem; text-align: center;
+        }
+        .ll-podium-slot.place-1 { min-height: 112px; background: #fef3c7; }
+        .ll-podium-slot.place-2 { min-height: 88px; }
+        .ll-podium-slot.place-3 { min-height: 72px; }
+        .ll-podium-slot b { display: block; }
+        @keyframes llFloat { 50% { transform: translateY(-12px); } }
+        @keyframes llPop { from { transform: scale(0.86); opacity: 0.4; } to { transform: scale(1); opacity: 1; } }
+        @keyframes llPulse { 50% { transform: scale(1.06); } }
+        @media (max-width: 860px) {
+            .ll-layout { grid-template-columns: 1fr; }
+            .ll-board { max-height: 30vh; }
+            .ll-bunting { display: none; }
+            .ll-foot { flex-direction: column; align-items: stretch; }
+        }
     </style>
 </head>
 <body>
@@ -3977,7 +4190,7 @@
                         <div id="live-host-lobby-settings" class="live-host-lobby-settings" hidden>
                             <h3 style="margin:1rem 0 0.45rem;font-size:1rem;">Game format</h3>
                             <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Change format anytime — players stay in the room. Team modes default to random teams so you can start immediately.</p>
-                            <div class="live-option-grid live-option-grid--3" style="margin-bottom:0.55rem;">
+                            <div class="live-option-grid live-option-grid--2" style="margin-bottom:0.55rem;">
                                 <label class="live-option live-option--compact">
                                     <input type="radio" name="live-lobby-format" value="race">
                                     <span class="live-option-title">Solo race</span>
@@ -3990,6 +4203,15 @@
                                     <input type="radio" name="live-lobby-format" value="hot-spark-relay">
                                     <span class="live-option-title">Hot Spark</span>
                                 </label>
+                                <label class="live-option live-option--compact">
+                                    <input type="radio" name="live-lobby-format" value="lucky-lanterns">
+                                    <span class="live-option-title">Lucky Lanterns</span>
+                                </label>
+                            </div>
+                            <div id="live-host-lobby-lantern-row" class="ll-rounds-row" hidden>
+                                <label for="live-lobby-rounds">Rounds</label>
+                                <input type="number" id="live-lobby-rounds" min="3" max="20" value="10">
+                                <p class="live-muted" style="margin:0.35rem 0 0;font-size:0.82rem;">Default 10. Correct answers pick a lantern. A missed pick scores 0. The last round adds ALL IN.</p>
                             </div>
                             <div id="live-host-lobby-team-row" hidden>
                                 <div class="live-option-grid live-option-grid--2" style="margin-bottom:0.55rem;">
@@ -4045,10 +4267,45 @@
                         </header>
                         <div id="live-host-race-board" class="live-host-race-board"></div>
                     </div>
-                    <div id="live-host-challenge-panel" class="live-host-challenge-panel" hidden aria-live="polite"></div>
                     <button type="button" id="live-host-race-end" class="live-host-race-end-float btn btn-grey">End game</button>
                     <div id="live-host-race-bubbles" class="live-host-race-bubbles" aria-hidden="true"></div>
                 </div>
+                <div id="live-host-lanterns" class="ll-host" hidden>
+                    <div class="ll-sky" aria-hidden="true">
+                        <span class="ll-float ll-float-a"></span>
+                        <span class="ll-float ll-float-b"></span>
+                        <span class="ll-float ll-float-c"></span>
+                        <div class="ll-bunting"></div>
+                    </div>
+                    <div class="ll-host-content">
+                        <header class="ll-host-bar">
+                            <div class="ll-brand">Lingo<span>Spark</span></div>
+                            <div id="ll-round" class="ll-round">Round <strong>1</strong> of 10</div>
+                            <div id="ll-timer" class="ll-timer">0:20</div>
+                        </header>
+                        <h1 class="ll-title">LUCKY LANTERNS</h1>
+                        <div class="ll-layout">
+                            <div class="ll-stage">
+                                <div id="ll-stage-card"></div>
+                                <div id="ll-lantern-row" class="ll-lantern-row"></div>
+                            </div>
+                            <aside class="ll-board">
+                                <h2>★ LEADERBOARD ★</h2>
+                                <ol id="ll-board-list"></ol>
+                            </aside>
+                        </div>
+                        <footer class="ll-foot">
+                            <div id="ll-picked" class="ll-picked"></div>
+                            <div class="ll-host-actions">
+                                <button type="button" id="ll-skip" class="btn btn-grey">Skip</button>
+                                <button type="button" id="ll-next" class="btn btn-blue">Next</button>
+                                <button type="button" id="ll-end" class="btn btn-grey">End game</button>
+                                <button type="button" id="ll-full" class="btn btn-grey">Fullscreen</button>
+                            </div>
+                        </footer>
+                    </div>
+                </div>
+                <div id="live-host-challenge-panel" class="live-host-challenge-panel" hidden aria-live="polite"></div>
             </div>
         </div>
 
@@ -4091,6 +4348,7 @@
             </div>
             <div class="live-play-body" style="flex:1;display:flex;flex-direction:column;min-height:0;">
             <div id="live-play-error" class="live-player-error" hidden></div>
+            <div id="live-play-lantern" class="ll-phone" hidden></div>
             <div class="live-play-hero" id="live-play-hero">
             <div class="live-own-progress">
                 <div class="live-own-progress-label">

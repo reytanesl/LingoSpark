@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "test": "node --test --test-concurrency=1 lucky-lanterns.test.js lucky-lanterns.integration.test.js",
     "packs": "node packs/build.mjs",
     "study-plan": "node packs/build-study-plan.mjs",
     "study-plan-pr": "node packs/build-matura-pr-study-plan.mjs"
@@ -28,5 +29,8 @@
     "passport-local": "^1.0.0",
     "pg": "^8.14.1",
     "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.3"
   }
 }
