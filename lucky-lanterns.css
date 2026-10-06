@@ -789,10 +789,8 @@ body.live-host-lanterns .live-game-logo,
 body.ll-winner .live-game-logo,
 body.live-lantern-player .live-game-logo { display: none !important; }
 
-/* Phone: typed answers sit straight on the night sky; `.btn` would otherwise un-hide hidden buttons. */
+/* Phone: typed answers sit straight on the night sky. */
 body.live-lantern-player #live-play-type-section { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
-body.live-lantern-player #live-play-crew-vote-btn[hidden],
-body.live-lantern-player #live-play-submit[hidden] { display: none !important; }
 
 /* Host: challenge review cards float above the caption bar in the festival look. */
 body.live-host-lanterns .live-host-challenge-panel {

@@ -1072,6 +1072,9 @@
             font-size: 1.05rem;
         }
         #live-play-captain-submit[hidden] { display: none !important; }
+        /* `.btn` sets display:inline-flex, which would otherwise override the hidden attribute. */
+        #live-play-crew-vote-btn[hidden],
+        #live-play-submit[hidden] { display: none !important; }
         #live-host-team-assignment-row { margin-top: 0.85rem; }
         .live-team-lobby {
             margin-top: 0.75rem;
