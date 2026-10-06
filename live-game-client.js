@@ -262,7 +262,8 @@
         const rows = limit > 0 ? ranked.slice(0, limit) : ranked;
         if (!rows.length) return '<li><span>No scores yet</span></li>';
         return rows.map((p, i) => {
-            const isWinner = p.id === winnerId || (scoreMode && (p.rank === 1));
+            // Score mode (Lucky Lanterns): ties share rank 1, but only one row gets the trophy.
+            const isWinner = winnerId != null ? p.id === winnerId : (scoreMode && i === 0 && p.rank === 1);
             const members = Array.isArray(p.memberNicknames) && p.memberNicknames.length
                 ? `<span class="live-rank-members">${esc(p.memberNicknames.join(', '))}</span>`
                 : '';
@@ -310,7 +311,7 @@
         } else {
             headline = `<h2>🏆 Champion!</h2><p><strong>${esc(winnerNickname)}</strong> completed all 12 terms first!${youMsg}</p>`;
         }
-        const podiumIds = new Set([...ranking].sort((a, b) => (a.rank || 99) - (b.rank || 99)).slice(0, 3).map((row) => row.id));
+        const podiumIds = new Set(llPodiumOrder(ranking).slice(0, 3).map((row) => row.id));
         const rest = lantern ? ranking.filter((row) => !podiumIds.has(row.id)) : ranking;
         content.innerHTML = `
             ${headline}
@@ -2807,7 +2808,15 @@
     }
 
     function lanternPodiumHtml(players) {
-        const ranked = [...(players || [])].sort((a, b) => (a.rank || 99) - (b.rank || 99)).slice(0, 3);
+        const ranked = llPodiumOrder(players).slice(0, 3);
+    /** Same order as the server leaderboard: rank, then score, then name. The first entry is the single crowned winner. */
+    function llPodiumOrder(players) {
+        return [...(players || [])].sort((a, b) => (a.rank || 99) - (b.rank || 99)
+            || (Number(b.score ?? b.progress) || 0) - (Number(a.score ?? a.progress) || 0)
+            || String(a.nickname || '').localeCompare(String(b.nickname || ''))
+            || String(a.id).localeCompare(String(b.id)));
+    }
+
         if (!ranked.length) return '';
         const order = [ranked[1], ranked[0], ranked[2]].filter(Boolean);
         const fx = window.LLFX;
@@ -2998,7 +3007,8 @@
             const nameEl = el.querySelector('.ll-name');
             const name = `${row.nickname || ''}${row.shield ? ' 🛡️' : ''}`;
             if (nameEl.textContent !== name) nameEl.textContent = name;
-            const crowned = row.rank === 1 && Number(row.score) > 0;
+            // Ties share rank 1, but only the first row (server order: score, then name) wears the crown.
+            const crowned = index === 0 && row.rank === 1 && Number(row.score) > 0;
             const rankHtml = crowned ? LL_SVG.crown : String(row.rank || index + 1);
             const rankEl = el.querySelector('.ll-rank');
             if (rankEl.dataset.v !== rankHtml) {
