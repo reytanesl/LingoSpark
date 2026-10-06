@@ -123,6 +123,15 @@
     box-shadow: 3px 7px 0 rgba(0,0,0,0.28); overflow: hidden; transition: transform 0.3s; }
 .wc-bar--red { left: 180px; top: 403px; }
 .wc-bar--blue { left: 1400px; top: 415px; }
+.wc-score { position: absolute; display: flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 999px;
+    background: #16163a; border: 4px solid #fff; color: #fff; font: 28px/1 var(--wc-ui); box-shadow: 3px 6px 0 rgba(0,0,0,0.35);
+    z-index: 4; }
+.wc-score--red { left: 180px; top: 472px; border-color: #ff6b6b; }
+.wc-score--blue { left: 1400px; top: 484px; border-color: #7fc8ff; }
+.wc-score-label { font-size: 18px; opacity: 0.85; letter-spacing: 0.04em; }
+.wc-score-num { font-size: 34px; color: #ffd23f; min-width: 1.2em; text-align: center; }
+.wc-score-kills { font-size: 18px; margin-left: 4px; }
+.wc-score.is-pop { animation: wcPopIn 0.4s cubic-bezier(.3,1.7,.6,1); }
 .wc-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transition: width 0.7s cubic-bezier(.2,.8,.3,1); }
 .wc-bar--red .wc-bar-fill { background: linear-gradient(#ff7a7a, #d62828 60%, #a51d1d); }
 .wc-bar--blue .wc-bar-fill { background: linear-gradient(#8fd0ff, #2f6bff 60%, #1f4fc9); }
@@ -438,6 +447,12 @@ body.live-cannon-player #live-play-error { position: relative; z-index: 2; }
 .wcp-team.is-red { background: linear-gradient(#ff6b6b, #d62828); }
 .wcp-team.is-blue { background: linear-gradient(#7fc8ff, #2f6bff); }
 .wcp-team small { font: 700 0.9rem var(--wc-body); opacity: 0.95; }
+.wc-win-team-stats { margin: 0.2rem 0 0.55rem; font: 700 0.95rem/1.2 var(--wc-body); opacity: 0.9; }
+.wcp-score { display: flex; justify-content: center; gap: 0.7rem; margin-top: 0.45rem; }
+.wcp-score b { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.75rem; border-radius: 999px;
+    background: rgba(22,22,58,0.75); border: 3px solid #fff; color: #ffd23f; font: 1.1rem/1.1 var(--wc-ui); }
+.wcp-score b.is-red { border-color: #ff6b6b; }
+.wcp-score b.is-blue { border-color: #7fc8ff; }
 .wcp-hp { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.6rem; }
 .wcp-bar { position: relative; height: 32px; border-radius: 16px; background: #fff; border: 3px solid var(--wc-navy); overflow: hidden; box-shadow: 2px 4px 0 rgba(0,0,0,0.25); }
 .wcp-bar i { position: absolute; left: 0; top: 0; bottom: 0; transition: width 0.7s cubic-bezier(.2,.8,.3,1); }

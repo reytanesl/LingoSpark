@@ -223,42 +223,49 @@ test('the storm arrives in the final minute', () => {
     assert.equal(cannonPublicView(m, { now: 152_000 }).storm, true);
 });
 
-test('a sunk fort ends the game with a LAST SHOT', () => {
+test('a sunk fort rebuilds and play continues with a kill bonus', () => {
     const m = newMatch();
     m.teams.blue.hp = 10;
     submitCannonAnswer(m, 'r1', 'cold', 500);
     closeCannonAnswering(m, 20_000);
     assert.equal(m.volley.sunk, 'blue');
-    assert.equal(m.volley.next, 'finished');
+    assert.equal(m.volley.rebuild, true);
+    assert.equal(m.volley.fortDown, 'blue');
+    assert.equal(m.volley.next, 'question');
+    assert.equal(m.volley.reason, 'fort-down');
     assert.equal(m.volley.shots.at(-1).final, true);
+    // +1 correct +10 damage (FAST, size 2) +20 fort kill
+    assert.equal(m.teams.red.points, 1 + 10 + 20);
+    assert.equal(m.teams.red.fortKills, 1);
+    assert.equal(m.teams.blue.hp, 100, 'fallen fort rebuilds for the next round');
     advanceCannon(m, m.phaseEndsAt);
-    assert.equal(m.phase, 'finished');
+    assert.equal(m.phase, 'question');
+    assert.equal(m.teams.blue.hp, 100);
     const view = cannonPublicView(m, { now: m.phaseEndsAt });
-    assert.equal(view.result.winner, 'red');
-    assert.equal(view.result.reason, 'sunk');
-    assert.equal(view.result.mvp.id, 'r1');
+    assert.equal(view.teams.red.points, 31);
+    assert.equal(view.teams.red.fortKills, 1);
 });
 
-test('time up: the healthier fort wins', () => {
+test('time up: the team with more points wins', () => {
     const m = newMatch({ gameMinutes: 2, rng: () => 0.9 });
-    m.teams.red.hp = 40;
-    m.teams.blue.hp = 70;
+    m.teams.red.points = 12;
+    m.teams.blue.points = 30;
     m.questionStartedAt = 121_000;
-    submitCannonAnswer(m, 'b1', 'cold', 122_000);
+    // Nobody answers this last round — blue already leads on points.
     closeCannonAnswering(m, 122_000);
     assert.equal(m.volley.timeUp, true);
     assert.equal(m.volley.next, 'finished');
     assert.equal(m.volley.winner, 'blue');
     assert.equal(m.volley.reason, 'time');
-    assert.ok(m.volley.shots[0].final, 'last hit on the losing fort plays in slow motion');
     advanceCannon(m, m.phaseEndsAt);
     assert.equal(m.phase, 'finished');
+    assert.equal(m.result.points.blue, 30);
 });
 
-test('time up on a tie goes to a sudden-death LAST SHOT', () => {
+test('time up on a points tie goes to a sudden-death LAST SHOT', () => {
     const m = newMatch({ gameMinutes: 2 });
-    m.teams.red.hp = 50;
-    m.teams.blue.hp = 50;
+    m.teams.red.points = 20;
+    m.teams.blue.points = 20;
     closeCannonAnswering(m, 125_000);
     assert.equal(m.volley.next, 'sudden');
     advanceCannon(m, m.phaseEndsAt);
@@ -282,7 +289,7 @@ test('time up on a tie goes to a sudden-death LAST SHOT', () => {
 
 test('sudden death without a correct answer ends in a draw after three tries', () => {
     const m = newMatch({ gameMinutes: 2 });
-    closeCannonAnswering(m, 125_000); // 100 vs 100
+    closeCannonAnswering(m, 125_000); // 0 vs 0 points
     for (let i = 0; i < 3; i++) {
         advanceCannon(m, m.phaseEndsAt);
         assert.equal(m.phase, 'question');
@@ -303,16 +310,29 @@ test('sudden death volley helper picks the fastest correct answer', () => {
     assert.equal(none.sunk, null);
 });
 
-test('host end: healthier fort wins, equal health is a draw', () => {
+test('host end: more points wins, equal points is a draw', () => {
     const a = newMatch();
-    a.teams.red.hp = 60;
+    a.teams.blue.points = 18;
+    a.teams.red.points = 7;
     finishCannonEarly(a);
     assert.equal(a.phase, 'finished');
     assert.equal(a.result.winner, 'blue');
+    assert.equal(a.result.reason, 'ended');
     const b = newMatch();
     finishCannonEarly(b);
     assert.equal(b.result.winner, null);
     assert.equal(b.result.reason, 'draw');
+});
+
+test('correct answers and damage both add team points', () => {
+    const m = newMatch({ rng: () => 0 }); // always hit
+    submitCannonAnswer(m, 'r1', 'cold', 1000); // FAST
+    submitCannonAnswer(m, 'b1', 'cold', 14_000); // SLOW
+    closeCannonAnswering(m, 20_000);
+    // red: +1 correct +10 damage; blue: +1 correct +2 damage
+    assert.equal(m.teams.red.points, 11);
+    assert.equal(m.teams.blue.points, 3);
+    assert.ok(m.teams.red.points > m.teams.blue.points);
 });
 
 test('host skip walks intro, question, review and volley', () => {

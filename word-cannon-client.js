@@ -77,7 +77,8 @@
     WCB.clearHostReveal = () => { H.revealDoneAt = 0; };
 
     function barHtml(team) {
-        return `<div class="wc-bar wc-bar--${team}" id="wc-bar-${team}"><div class="wc-bar-fill"></div><div class="wc-bar-text"><span>${team.toUpperCase()}</span><span class="wc-bar-pct">100%</span></div></div>`;
+        return `<div class="wc-bar wc-bar--${team}" id="wc-bar-${team}"><div class="wc-bar-fill"></div><div class="wc-bar-text"><span>${team.toUpperCase()}</span><span class="wc-bar-pct">100%</span></div></div>
+            <div class="wc-score wc-score--${team}" id="wc-score-${team}"><span class="wc-score-label">PTS</span><b class="wc-score-num">0</b><small class="wc-score-kills" hidden></small></div>`;
     }
     function ammoHtml(team) {
         return `<div class="wc-ammo wc-ammo--${team}" id="wc-ammo-${team}"><span class="wc-ammo-label">${team.toUpperCase()} AMMO</span><div class="wc-ammo-slots"></div></div>`;
@@ -182,7 +183,11 @@
         if (intro) { intro.hidden = true; intro.innerHTML = ''; intro.classList.remove('is-out'); }
         $('wc-stage')?.classList.remove('is-intro');
         document.querySelectorAll('#wc-scene .wc-flag').forEach((f) => f.classList.remove('is-falling', 'is-down'));
-        TEAMS.forEach((t) => { setBar(t, 100, { quiet: true }); FX().setFortDamage($('wc-scene'), t, 100); });
+        TEAMS.forEach((t) => {
+            setBar(t, 100, { quiet: true });
+            setScore(t, 0, 0);
+            FX().setFortDamage($('wc-scene'), t, 100);
+        });
     };
 
     function schedule(ms, fn) {
@@ -217,6 +222,27 @@
             bar.classList.remove('is-hit');
             void bar.offsetWidth;
             bar.classList.add('is-hit');
+        }
+    }
+
+    function setScore(team, points, fortKills = 0, { pop = false } = {}) {
+        const el = $(`wc-score-${team}`);
+        if (!el) return;
+        const num = el.querySelector('.wc-score-num');
+        const kills = el.querySelector('.wc-score-kills');
+        const pts = Math.max(0, Math.round(points || 0));
+        if (num && num.textContent !== String(pts)) {
+            num.textContent = String(pts);
+            if (pop) {
+                el.classList.remove('is-pop');
+                void el.offsetWidth;
+                el.classList.add('is-pop');
+            }
+        }
+        if (kills) {
+            const k = Math.max(0, Math.round(fortKills || 0));
+            kills.hidden = k <= 0;
+            kills.textContent = k ? `🏰 ${k}` : '';
         }
     }
 
@@ -270,17 +296,22 @@
     }
     function phaseCaption(state) {
         if (!state) return;
-        if (state.phase === 'intro') return caption('Every correct answer = one cannonball');
-        if (state.suddenDeath && state.phase !== 'volley') return caption('Sudden death: the fastest correct answer fires the LAST SHOT!');
+        if (state.phase === 'intro') return caption('Score points: correct answers, damage, and fort kills. Timer decides the winner!');
+        if (state.suddenDeath && state.phase !== 'volley') return caption('Points tied! Sudden death: the fastest correct answer fires the LAST SHOT!');
         if (state.phase === 'review') return caption('Checking challenges… the cannons are waiting');
         if (state.phase === 'volley') {
             const v = state.volley;
             if (v?.shots?.some((s) => s.final)) return; // the shot itself sets "Last shot decides the battle!"
             if (H.stormOn) return caption('Final minute: the storm makes every shot unpredictable');
-            return caption('Faster answers = better aim');
+            return caption('Faster answers = more damage = more points');
         }
         if (H.stormOn) return caption('Final minute: the storm makes every shot unpredictable');
-        caption(H.captionAlt % 2 ? 'Faster answers = better aim' : 'Every correct answer = one cannonball');
+        const tips = [
+            'Faster answers = more damage = more points',
+            'Destroy a fort for +20 points — it rebuilds and play goes on!',
+            'Most points when the timer ends wins',
+        ];
+        caption(tips[H.captionAlt % tips.length]);
     }
 
     function startHostClock() {
@@ -461,7 +492,7 @@
                 <div class="wc-vs-mid">VS</div>
                 <div class="wc-vs-team wc-vs-team--blue"><h3>BLUE TEAM</h3><p>${esc(names('blue'))}</p></div>
             </div>
-            <div class="wc-intro-sub">Answer fast · load your cannon · sink their fort!</div>`;
+            <div class="wc-intro-sub">Answer fast · score points · forts rebuild until time’s up!</div>`;
         intro.hidden = false;
         $('wc-stage')?.classList.add('is-intro');
         sfx('fanfare', { volume: 0.5 });
@@ -505,6 +536,13 @@
                 });
             }
         }
+        TEAMS.forEach((t) => {
+            const team = state.teams?.[t];
+            const prevPts = prev?.teams?.[t]?.points;
+            setScore(t, team?.points || 0, team?.fortKills || 0, {
+                pop: prev != null && (team?.points || 0) > (prevPts || 0),
+            });
+        });
         if (!inVolley && state.phase !== 'finished') {
             TEAMS.forEach((t) => {
                 const team = state.teams?.[t];
@@ -577,10 +615,19 @@
         }
         const last = v.shots[v.shots.length - 1];
         const endAt = last ? last.at + last.dur : 600;
+        if (v.rebuild && v.fortDown) {
+            const rebuildAt = endAt + 900;
+            schedule(rebuildAt - elapsed, () => rebuildFort(v.fortDown));
+            TEAMS.forEach((t) => {
+                const pts = v.points?.[t] ?? state.teams?.[t]?.points ?? 0;
+                const kills = state.teams?.[t]?.fortKills || 0;
+                setScore(t, pts, kills, { pop: true });
+            });
+        }
         if (v.next === 'finished') schedule(endAt - elapsed, () => endSequence(v));
         else if (v.next === 'sudden') {
             schedule(endAt - elapsed, () => {
-                banner('timeup', "TIME'S UP!", { pill: 'Dead even! SUDDEN DEATH', pillCls: '' });
+                banner('timeup', "TIME'S UP!", { pill: 'Points tied! SUDDEN DEATH', pillCls: '' });
                 sfx('thud');
             });
         }
@@ -598,8 +645,13 @@
         if (final) {
             $('wc-vignette')?.classList.add('is-on');
             $('wc-slowmo')?.classList.add('is-on');
-            banner('last', 'LAST SHOT!');
-            caption('Last shot decides the battle!');
+            if (shot.lastShot) {
+                banner('last', 'LAST SHOT!');
+                caption('Last shot decides the battle!');
+            } else {
+                banner('last', `${target.toUpperCase()} FORT DOWN!`);
+                caption('Fort down! +20 points — it rebuilds and the battle goes on');
+            }
             sfx('thud');
             setTimeout(() => sfx('thud', { volume: 0.8 }), 420);
         }
@@ -687,16 +739,31 @@
         setTimeout(() => { flag.classList.remove('is-falling'); flag.classList.add('is-down'); }, 1500);
     }
 
+    function raiseFlag(team) {
+        H.flagsDown.delete(team);
+        const flag = document.querySelector(`#wc-scene .wc-flag--${team}`);
+        if (!flag) return;
+        flag.classList.remove('is-falling', 'is-down');
+    }
+
+    function rebuildFort(team) {
+        raiseFlag(team);
+        setBar(team, 100, { hit: true });
+        FX().setFortDamage($('wc-scene'), team, 100);
+        sfx('chime', { volume: 0.6 });
+        caption('Fort rebuilt! Keep scoring until the timer ends');
+    }
+
     function endSequence(v) {
         const winner = v.winner;
         const go = () => {
             if (!winner) {
                 banner('win', "IT'S A DRAW!", { cls: 'is-draw' });
-                caption('A draw! Both forts are still standing');
+                caption("It's a draw on points!");
             } else {
-                downFlag(other(winner));
                 banner('win', `${winner.toUpperCase()} TEAM WINS!`, { cls: `is-${winner}` });
-                caption(`${NAMES[winner]} wins the battle!`);
+                const pts = v.points?.[winner];
+                caption(pts != null ? `${NAMES[winner]} wins with ${pts} points!` : `${NAMES[winner]} wins the battle!`);
             }
             sfx('fanfare');
             if (H.cancelConfetti) H.cancelConfetti();
@@ -908,6 +975,7 @@
             root.innerHTML = `
                 <div class="wcp-top"><span class="wcp-logo">Lingo<span>Spark</span></span><span class="wcp-storm" id="wcp-storm"></span></div>
                 <div class="wcp-team" id="wcp-team"></div>
+                <div class="wcp-score" id="wcp-score"><b class="is-red" id="wcp-pts-red">0</b><b class="is-blue" id="wcp-pts-blue">0</b></div>
                 <div class="wcp-hp">
                     <div class="wcp-bar is-red" id="wcp-bar-red"><i></i><span></span></div>
                     <div class="wcp-bar is-blue" id="wcp-bar-blue"><i></i><span></span></div>
@@ -930,6 +998,12 @@
             bar.querySelector('i').style.width = `${Math.max(0, Math.min(100, hp))}%`;
             bar.querySelector('span').textContent = `${t.toUpperCase()} ${Math.round(hp)}%`;
             bar.classList.toggle('is-mine', t === team);
+            const ptsEl = $(`wcp-pts-${t}`);
+            if (ptsEl) {
+                const pts = state.teams?.[t]?.points ?? 0;
+                const kills = state.teams?.[t]?.fortKills || 0;
+                ptsEl.textContent = kills ? `${pts} pts · 🏰${kills}` : `${pts} pts`;
+            }
         });
         if (inVolley && P.volleySeq !== state.volley.seq) {
             // Move the bars to the end of the volley once the shots land.
@@ -1079,15 +1153,22 @@
         const pid = String(playerId ?? '');
         const myTeamId = players.find((p) => String(p.id) === pid)?.team || null;
         const title = winner ? `${winner.toUpperCase()} TEAM WINS!` : "IT'S A DRAW!";
-        const reason = data?.reason === 'sunk' ? 'Fort sunk!' : data?.reason === 'sudden' ? 'Won with the LAST SHOT in sudden death!'
-            : data?.reason === 'time' ? 'The storm passed: the stronger fort wins.' : data?.reason === 'draw' ? 'Nobody fired the last shot.' : 'Battle over.';
+        const reason = data?.reason === 'sudden' ? 'Won with the LAST SHOT in sudden death!'
+            : data?.reason === 'time' ? "Time's up — most points wins!"
+            : data?.reason === 'ended' ? 'Host ended the battle — most points wins!'
+            : data?.reason === 'draw' ? 'Nobody fired the last shot.' : 'Battle over.';
         const you = myTeamId ? (winner === myTeamId ? ' That\'s your team!' : '') : '';
         const col = (t) => {
             const team = data?.teams?.[t] || {};
             const rows = players.filter((p) => p.team === t).sort((a, b) => (b.hits - a.hits) || (b.correct - a.correct) || String(a.nickname).localeCompare(String(b.nickname)));
             const list = rows.length ? rows.map((p) => `<li class="${String(p.id) === pid ? 'is-you' : ''}"><span>${esc(p.nickname)}${data?.mvp?.id === p.id ? ' ⭐' : ''}</span><span>🎯 ${p.hits || 0} · ✔ ${p.correct || 0}</span></li>`).join('') : '<li><span>—</span></li>';
+            const pts = Math.round(team.points ?? data?.points?.[t] ?? 0);
+            const kills = Math.round(team.fortKills || 0);
+            const dmg = Math.round(team.damageDealt || 0);
             return `<div class="wc-win-team wc-win-team--${t}${winner === t ? ' is-winner' : ''}">${winner === t ? '<span class="wc-crown" aria-hidden="true">👑</span>' : ''}
-                <h3>${t.toUpperCase()} TEAM <small>${Math.round(team.hp ?? data?.hp?.[t] ?? 0)}%</small></h3><ol>${list}</ol></div>`;
+                <h3>${t.toUpperCase()} TEAM <small>${pts} pts</small></h3>
+                <p class="wc-win-team-stats">🏰 ${kills} fort kill${kills === 1 ? '' : 's'} · 💥 ${dmg}% damage</p>
+                <ol>${list}</ol></div>`;
         };
         const mvp = data?.mvp;
         const mvpHtml = mvp ? `<div class="wc-mvp"><span class="wc-mvp-badge">MVP</span><span class="wc-mvp-ball">${FX().ballSvg()}</span>

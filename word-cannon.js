@@ -21,10 +21,14 @@
  * blows: 20% of shots are BLOWN AWAY (miss), 15% are a LUCKY HIT (sure hit,
  * x1.5 damage), the rest follow the speed rules.
  *
- * End: a fort at 0% sinks (that shot is the LAST SHOT). When time is up, the
- * round in progress finishes and the healthier fort wins. A tie goes to sudden
- * death: the team with the fastest correct answer fires one sure LAST SHOT.
- * After CANNON_SUDDEN_TRIES questions without a correct answer it is a draw.
+ * Scoring (kids-friendly):
+ * - +1 point per correct answer (and that loads a cannonball)
+ * - +1 point per HP of damage your team deals (so FAST hits score more)
+ * - +CANNON_FORT_KILL_BONUS when you destroy the other fort
+ * Destroying a fort is celebrated (slow-mo, flag falls) then that fort rebuilds
+ * to 100% and play continues until the game timer ends. Most points win.
+ * Points tie when time is up -> sudden death LAST SHOT. After
+ * CANNON_SUDDEN_TRIES empty sudden rounds it is a draw.
  *
  * All randomness comes from the match rng (seedable with mulberry32).
  */
@@ -35,6 +39,10 @@ export const CANNON_FORMAT = 'word-cannon';
 export const CANNON_MAX_HP = 100;
 export const CANNON_MAX_BALLS = 5;
 export const CANNON_ROUND_BUDGET = 20;
+/** Points: correct answer, each HP of damage dealt, fort kill bonus. */
+export const CANNON_POINTS_CORRECT = 1;
+export const CANNON_POINTS_PER_DAMAGE = 1;
+export const CANNON_FORT_KILL_BONUS = 20;
 export const CANNON_QUESTION_MS = 20_000;
 export const CANNON_REVIEW_MS = 12_000;
 export const CANNON_INTRO_MS = 4_200;
@@ -53,6 +61,8 @@ export const VOLLEY_TIMING = {
     outroMs: 1_500,
     emptyMs: 2_800,
     endHoldMs: 5_600,
+    /** Extra hold after a mid-game fort kill so the flag-fall can play before rebuild. */
+    fortDownMs: 2_800,
 };
 
 export const SPEED_TIERS = [
@@ -263,6 +273,34 @@ export function leaderByHp(hp) {
     return null;
 }
 
+/** Winner by points: 'red' | 'blue' | null (tie). */
+export function leaderByPoints(scores) {
+    const red = Number(scores?.red) || 0;
+    const blue = Number(scores?.blue) || 0;
+    if (red > blue) return 'red';
+    if (blue > red) return 'blue';
+    return null;
+}
+
+export function teamPointsSnapshot(match) {
+    return {
+        red: match?.teams?.red?.points || 0,
+        blue: match?.teams?.blue?.points || 0,
+    };
+}
+
+function addTeamPoints(match, teamId, amount) {
+    const team = match?.teams?.[teamId];
+    if (!team || !(amount > 0)) return;
+    team.points = (team.points || 0) + amount;
+}
+
+function awardCorrectPoints(match, playerId) {
+    const teamId = match.playerTeam[String(playerId)];
+    if (!teamId) return;
+    addTeamPoints(match, teamId, CANNON_POINTS_CORRECT);
+}
+
 // ---------------------------------------------------------------------------
 // Match flow
 // ---------------------------------------------------------------------------
@@ -365,23 +403,54 @@ function startVolley(match, now) {
     volley.answerTerm = match.entry?.term || '';
     volley.definition = match.entry?.definition || '';
     volley.timeUp = timeUp;
-    // Apply results.
+    // Apply HP from the volley (may rebuild a sunk fort below).
     for (const team of CANNON_TEAM_IDS) match.teams[team].hp = volley.hpAfter[team];
     for (const shot of volley.shots) {
         const s = match.stats[shot.shooterId];
-        if (!s) continue;
-        s.shots += 1;
-        if (shot.outcome === 'hit' || shot.outcome === 'lucky') s.hits += 1;
-        s.damage += shot.damage;
+        if (s) {
+            s.shots += 1;
+            if (shot.outcome === 'hit' || shot.outcome === 'lucky') s.hits += 1;
+            s.damage += shot.damage;
+        }
+        if (shot.damage > 0) {
+            const pts = shot.damage * CANNON_POINTS_PER_DAMAGE;
+            addTeamPoints(match, shot.team, pts);
+            match.teams[shot.team].damageDealt = (match.teams[shot.team].damageDealt || 0) + shot.damage;
+        }
     }
     // Decide what comes next.
     let next = 'question';
     let winner = null;
     let reason = null;
-    if (volley.sunk) {
+    volley.rebuild = false;
+    volley.fortDown = null;
+    if (volley.sunk && match.suddenDeath) {
+        // Only sudden death ends on a sunk fort.
         winner = otherTeam(volley.sunk);
-        reason = match.suddenDeath ? 'sudden' : 'sunk';
+        reason = 'sudden';
         next = 'finished';
+    } else if (volley.sunk) {
+        const killer = otherTeam(volley.sunk);
+        addTeamPoints(match, killer, CANNON_FORT_KILL_BONUS);
+        match.teams[killer].fortKills = (match.teams[killer].fortKills || 0) + 1;
+        // Rebuild the fallen fort so the battle continues until the timer ends.
+        match.teams[volley.sunk].hp = CANNON_MAX_HP;
+        volley.rebuild = true;
+        volley.fortDown = volley.sunk;
+        volley.durationMs += match.timing.fortDownMs || 0;
+        if (timeUp) {
+            winner = leaderByPoints(teamPointsSnapshot(match));
+            if (winner) {
+                next = 'finished';
+                reason = 'time';
+            } else {
+                next = 'sudden';
+                reason = 'tie';
+            }
+        } else {
+            next = 'question';
+            reason = 'fort-down';
+        }
     } else if (match.suddenDeath) {
         if (match.suddenTries >= CANNON_SUDDEN_TRIES) {
             next = 'finished';
@@ -390,16 +459,15 @@ function startVolley(match, now) {
             next = 'sudden';
         }
     } else if (timeUp) {
-        winner = leaderByHp(volley.hpAfter);
+        winner = leaderByPoints(teamPointsSnapshot(match));
         if (winner) {
             next = 'finished';
             reason = 'time';
-            // Slow-mo on the last hit that landed on the losing fort this volley.
-            const loser = otherTeam(winner);
-            const lastHit = [...volley.shots].reverse().find((s) => s.target === loser && s.damage > 0);
+            const lastHit = [...volley.shots].reverse().find((s) => s.damage > 0);
             if (lastHit && !lastHit.final) {
                 lastHit.final = true;
                 timeVolley(volley, match.timing);
+                if (volley.rebuild) volley.durationMs += match.timing.fortDownMs || 0;
             }
         } else {
             next = 'sudden';
@@ -409,13 +477,19 @@ function startVolley(match, now) {
     volley.next = next;
     volley.winner = winner;
     volley.reason = reason;
+    volley.points = teamPointsSnapshot(match);
     if (next === 'finished') volley.durationMs += match.timing.endHoldMs;
     if (next === 'sudden') volley.durationMs += 1_400;
     match.volley = volley;
     match.phase = 'volley';
     match.phaseEndsAt = now + volley.durationMs;
     if (next === 'finished') {
-        match.result = { winner, reason, hp: { ...volley.hpAfter } };
+        match.result = {
+            winner,
+            reason,
+            hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
+            points: teamPointsSnapshot(match),
+        };
     }
     return 'volley';
 }
@@ -478,8 +552,8 @@ export function createCannonMatch({
         questionStartedAt: null,
         timing,
         teams: {
-            red: { id: 'red', name: CANNON_TEAM_NAMES.red, memberIds: red.map((p) => p.id), hp: CANNON_MAX_HP },
-            blue: { id: 'blue', name: CANNON_TEAM_NAMES.blue, memberIds: blue.map((p) => p.id), hp: CANNON_MAX_HP },
+            red: { id: 'red', name: CANNON_TEAM_NAMES.red, memberIds: red.map((p) => p.id), hp: CANNON_MAX_HP, points: 0, fortKills: 0, damageDealt: 0 },
+            blue: { id: 'blue', name: CANNON_TEAM_NAMES.blue, memberIds: blue.map((p) => p.id), hp: CANNON_MAX_HP, points: 0, fortKills: 0, damageDealt: 0 },
         },
         playerOrder: [...red, ...blue].map((p) => p.id),
         playerTeam: {},
@@ -566,6 +640,7 @@ export function submitCannonAnswer(match, playerId, rawText, now = Date.now()) {
             stats.correct += 1;
             stats.totalMs += answer.ms;
         }
+        awardCorrectPoints(match, id);
     } else if (match.inputMode === 'typed') {
         answer.eligible = false;
         answer.decision = 'prompt';
@@ -597,6 +672,7 @@ export function settleCannonChallenge(match, playerId, accept, now = Date.now())
             stats.correct += 1;
             stats.totalMs += answer.ms || 0;
         }
+        awardCorrectPoints(match, id);
     } else {
         answer.decision = 'declined';
         answer.eligible = false;
@@ -688,13 +764,18 @@ export function advanceCannon(match, now = Date.now()) {
     return 'question';
 }
 
-/** Host ends the game: healthier fort wins, equal health is a draw. */
+/** Host ends the game: most points wins, equal points is a draw. */
 export function finishCannonEarly(match) {
     if (!match) return;
     if (!match.result) {
-        const hp = { red: match.teams.red.hp, blue: match.teams.blue.hp };
-        const winner = leaderByHp(hp);
-        match.result = { winner, reason: winner ? 'ended' : 'draw', hp };
+        const points = teamPointsSnapshot(match);
+        const winner = leaderByPoints(points);
+        match.result = {
+            winner,
+            reason: winner ? 'ended' : 'draw',
+            hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
+            points,
+        };
     }
     match.phase = 'finished';
     match.phaseEndsAt = null;
@@ -743,7 +824,8 @@ export function cannonMvp(match) {
 }
 
 export function cannonWinners(match) {
-    const result = match?.result || { winner: leaderByHp({ red: match.teams.red.hp, blue: match.teams.blue.hp }), reason: null };
+    const points = teamPointsSnapshot(match);
+    const result = match?.result || { winner: leaderByPoints(points), reason: null, points };
     const winner = result.winner || null;
     const rows = cannonPlayerRows(match);
     return {
@@ -752,6 +834,21 @@ export function cannonWinners(match) {
         winnerId: winner,
         winnerNickname: winner ? `${CANNON_TEAM_NAMES[winner]}` : "It's a draw",
         hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
+        points: result.points || points,
+        teams: {
+            red: {
+                hp: match.teams.red.hp,
+                points: match.teams.red.points || 0,
+                fortKills: match.teams.red.fortKills || 0,
+                damageDealt: match.teams.red.damageDealt || 0,
+            },
+            blue: {
+                hp: match.teams.blue.hp,
+                points: match.teams.blue.points || 0,
+                fortKills: match.teams.blue.fortKills || 0,
+                damageDealt: match.teams.blue.damageDealt || 0,
+            },
+        },
         mvp: cannonMvp(match),
         players: rows,
     };
@@ -802,6 +899,9 @@ export function cannonPublicView(match, { playerId = null, forHost = false, conn
             hp: team.hp,
             hpBefore: showVolley && match.phase === 'volley' ? match.volley.hpBefore[teamId] : team.hp,
             maxHp: CANNON_MAX_HP,
+            points: team.points || 0,
+            fortKills: team.fortKills || 0,
+            damageDealt: team.damageDealt || 0,
             slots: teamSlots(team.memberIds.length),
             loaded: match.phase === 'volley' ? match.volley.loaded[teamId] : ballsLoaded(loadedNow, team.memberIds.length),
             members: team.memberIds.map((id) => ({
@@ -847,6 +947,9 @@ export function cannonPublicView(match, { playerId = null, forHost = false, conn
             suddenDeath: Boolean(match.volley.suddenDeath),
             first: match.volley.first,
             loaded: match.volley.loaded,
+            rebuild: Boolean(match.volley.rebuild),
+            fortDown: match.volley.fortDown || null,
+            points: match.volley.points || teamPointsSnapshot(match),
             hpBefore: match.volley.hpBefore,
             hpAfter: match.volley.hpAfter,
             shots: match.volley.shots,
