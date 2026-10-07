@@ -195,6 +195,29 @@ test('mystery bonuses and a new shield do not drop the score', () => {
     assert.equal(shield.leaderboard[0].shield, true);
 });
 
+test('mystery can take points away, and a shield blocks the curse', () => {
+    const curse = resolveLanternRound([
+        player('a', 'Ada', { score: 180, pick: 'mystery' }),
+    ], { rng: rngOf([0]), pool: [{ id: 'minus100', weight: 1 }] });
+    assert.equal(curse.leaderboard[0].score, 80);
+    assert.equal(curse.steps[0].delta, -100);
+    assert.equal(curse.steps[0].tone, 'bust');
+
+    const soft = resolveLanternRound([
+        player('a', 'Ada', { score: 30, pick: 'mystery' }),
+    ], { rng: rngOf([0]), pool: [{ id: 'minus50', weight: 1 }] });
+    assert.equal(soft.leaderboard[0].score, 0);
+    assert.equal(soft.steps[0].delta, -30);
+
+    const blocked = resolveLanternRound([
+        player('a', 'Ada', { score: 200, shield: true, pick: 'mystery' }),
+    ], { rng: rngOf([0]), pool: [{ id: 'minus100', weight: 1 }] });
+    assert.equal(blocked.leaderboard[0].score, 200);
+    assert.equal(blocked.leaderboard[0].shield, false);
+    assert.equal(blocked.steps[0].savedByShield, true);
+    assert.equal(blocked.steps[0].delta, 0);
+});
+
 test('reveal order is safe, then risk, then mystery, then ALL IN', () => {
     const resolved = resolveLanternRound([
         player('m', 'Mia', { pick: 'mystery' }),

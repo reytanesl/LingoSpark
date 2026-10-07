@@ -309,14 +309,19 @@
 .wc-stage.is-intro .wc-hud, .wc-stage.is-intro .wc-question, .wc-stage.is-intro .wc-storm-chip { opacity: 0; }
 .wc-stage .wc-hud, .wc-stage .wc-question, .wc-stage .wc-storm-chip { transition: opacity 0.6s ease; }
 
-/* challenge cards on the projector */
-body.live-host-cannon .live-host-challenge-panel { bottom: calc(13vh + 1rem); width: min(820px, 64vw); max-height: 52vh; gap: 0.9rem; }
+/* challenge cards on the projector — mounted inside .wc-host for fullscreen */
+body.live-host-cannon .live-host-challenge-panel {
+    position: absolute; left: 50%; bottom: calc(13vh + 1rem); transform: translateX(-50%);
+    width: min(820px, 64vw); max-height: 52vh; gap: 0.9rem; z-index: 80; pointer-events: auto;
+}
 body.live-host-cannon .live-host-challenge-card {
     background: #fffaf0 !important; border: 5px solid var(--wc-gold) !important; border-radius: 24px !important; box-shadow: 4px 9px 0 rgba(0,0,0,0.35) !important;
     padding: clamp(0.8rem, 1.2vw, 1.4rem) !important; font-family: var(--wc-body); color: #2a1f4f; font-size: clamp(0.95rem, 1.15vw, 1.45rem);
 }
 body.live-host-cannon .live-host-challenge-card-head strong { font: clamp(1.2rem, 1.6vw, 2rem) var(--wc-ui); }
 body.live-host-cannon .live-host-challenge-badge { background: var(--wc-blue) !important; color: #fff !important; font-family: var(--wc-ui); border-radius: 999px; padding: 0.15em 0.8em; }
+body.live-host-cannon .live-host-challenge-term { font: clamp(1.15rem, 1.5vw, 1.85rem) var(--wc-ui); color: var(--wc-blue); margin: 0 0 0.3rem; }
+body.live-host-cannon .live-host-challenge-term strong { color: #2a1f4f; }
 body.live-host-cannon .live-host-challenge-actions .btn { border-radius: 999px !important; font: clamp(1rem, 1.3vw, 1.6rem) var(--wc-ui) !important; padding: 0.55em 1.6em !important; }
 body.live-host-cannon .live-challenge-accept { background: linear-gradient(#3bd16f, #22b357) !important; box-shadow: 0 5px 0 #157a3a !important; color: #fff !important; }
 body.live-host-cannon .live-challenge-decline { background: #e8ecf7 !important; box-shadow: 0 5px 0 #a8b0cc !important; color: #13204f !important; }

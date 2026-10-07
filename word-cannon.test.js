@@ -104,7 +104,8 @@ test('faster answers deal more damage; force is continuous', () => {
 test('the storm is more chaotic: more blown / lucky shots and wild damage', () => {
     const blown = resolveShot({ ms: 1000, questionMs: 20_000, teamSize: 2, storm: true, rng: () => 0.1 });
     assert.equal(blown.outcome, 'blown');
-    assert.equal(blown.damage, 0);
+    assert.equal(blown.friendly, true);
+    assert.ok(blown.damage > 0, 'blown shots damage own fort');
     const lucky = resolveShot({
         ms: 1000,
         questionMs: 20_000,
@@ -115,17 +116,17 @@ test('the storm is more chaotic: more blown / lucky shots and wild damage', () =
     assert.equal(lucky.outcome, 'lucky');
     assert.ok(lucky.damage > 10);
     const rng = mulberry32(1);
-    const counts = { blown: 0, lucky: 0, hit: 0, miss: 0 };
+    const counts = { blown: 0, lucky: 0, hit: 0, miss: 0, own: 0 };
     for (let i = 0; i < 4000; i++) {
         counts[resolveShot({ ms: 1000, questionMs: 20_000, teamSize: 2, storm: true, rng }).outcome] += 1;
     }
     assert.ok(counts.blown / 4000 > 0.25, JSON.stringify(counts));
     assert.ok(counts.lucky / 4000 > 0.15, JSON.stringify(counts));
     // Combined chaos should dominate calm play.
-    assert.ok((counts.blown + counts.lucky + counts.miss) / 4000 > 0.45, JSON.stringify(counts));
+    assert.ok((counts.blown + counts.lucky + counts.miss + counts.own) / 4000 > 0.45, JSON.stringify(counts));
 });
 
-test('volleys fire every correct answer, fastest team first, and stop when a fort sinks', () => {
+test('volleys fire every correct answer as a salvo, fastest team first, and stop when a fort sinks', () => {
     const v = buildVolley({
         shooters: {
             red: [{ id: 'r1', ms: 5000 }, { id: 'r2', ms: 2000 }, { id: 'r3', ms: 3000 }],
@@ -144,6 +145,10 @@ test('volleys fire every correct answer, fastest team first, and stop when a for
     assert.ok(v.shots[1].damage >= 6); // red size 3, near-full
     assert.equal(v.shots[1].label, 'FAST 2.0s: HIT!');
     assert.ok(v.shots[1].at > v.shots[0].at);
+    // Salvo: all shots start within a short window, not one-after-another.
+    const span = v.shots.at(-1).at - v.shots[0].at;
+    assert.ok(span < 600, `salvo stagger too long: ${span}`);
+    assert.ok(v.durationMs < 4_500, `volley should finish quickly: ${v.durationMs}`);
 
     const sink = buildVolley({
         shooters: { red: [{ id: 'r1', ms: 1000 }, { id: 'r2', ms: 1100 }], blue: [{ id: 'b1', ms: 1200 }] },
@@ -159,10 +164,42 @@ test('volleys fire every correct answer, fastest team first, and stop when a for
     assert.ok(sink.shots[2].dur > sink.shots[0].dur, 'last shot plays in slow motion');
 });
 
+test('stray / blown shots can hit the shooter’s own fort', () => {
+    const blown = buildVolley({
+        shooters: { red: [{ id: 'r1', ms: 800 }], blue: [] },
+        hp: { red: 100, blue: 100 },
+        sizes: { red: 2, blue: 2 },
+        storm: true,
+        inputMode: 'typed',
+        rng: () => 0.1,
+    });
+    assert.equal(blown.shots.length, 1);
+    assert.equal(blown.shots[0].outcome, 'blown');
+    assert.equal(blown.shots[0].target, 'red');
+    assert.equal(blown.shots[0].friendly, true);
+    assert.ok(blown.shots[0].damage > 0);
+    assert.ok(blown.hpAfter.red < 100);
+    assert.equal(blown.hpAfter.blue, 100);
+
+    const own = resolveShot({
+        ms: 9000,
+        questionMs: 20_000,
+        teamSize: 2,
+        storm: false,
+        inputMode: 'typed',
+        // miss (force hitChance low) then roll under calmStrayOwn
+        rng: (() => { let i = 0; return () => [0.99, 0.05, 0.5][i++] ?? 0.5; })(),
+    });
+    assert.equal(own.outcome, 'own');
+    assert.equal(own.friendly, true);
+    assert.ok(own.damage > 0);
+});
+
 test('shot labels match the concept wording', () => {
     assert.equal(shotLabel({ ms: 1234, tier: 'fast', outcome: 'hit' }), 'FAST 1.2s: HIT!');
     assert.equal(shotLabel({ ms: 8900, tier: 'slow', outcome: 'miss' }), 'SLOW 8.9s: MISS');
-    assert.equal(shotLabel({ ms: 100, tier: 'fast', outcome: 'blown' }), 'BLOWN AWAY!');
+    assert.equal(shotLabel({ ms: 100, tier: 'fast', outcome: 'blown' }), 'BLOWN BACK!');
+    assert.equal(shotLabel({ ms: 100, tier: 'fast', outcome: 'own' }), 'OWN FORT!');
     assert.equal(shotLabel({ ms: 100, tier: 'fast', outcome: 'lucky' }), 'LUCKY HIT!');
     assert.equal(shotLabel({ lastShot: true }), 'LAST SHOT!');
 });
@@ -239,7 +276,7 @@ test('the storm arrives in the final minute', () => {
     assert.equal(cannonPublicView(m, { now: 152_000 }).storm, true);
 });
 
-test('a sunk fort rebuilds and play continues with a kill bonus', () => {
+test('a sunk fort rebuilds and play continues with exactly 1 WIN', () => {
     const m = newMatch();
     m.teams.blue.hp = 10;
     submitCannonAnswer(m, 'r1', 'cold', 500);
@@ -252,7 +289,8 @@ test('a sunk fort rebuilds and play continues with a kill bonus', () => {
     assert.equal(m.volley.shots.at(-1).final, true);
     // +1 correct +10 damage (full force, size 2) +20 fort kill
     assert.equal(m.teams.red.points, 1 + 10 + 20);
-    assert.equal(m.teams.red.fortKills, 1);
+    assert.equal(m.teams.red.fortKills, 1, 'exactly one win per fort destruction');
+    assert.equal(m.teams.blue.fortKills, 0);
     assert.equal(m.teams.blue.hp, 100, 'fallen fort rebuilds for the next round');
     advanceCannon(m, m.phaseEndsAt);
     assert.equal(m.phase, 'question');
@@ -260,6 +298,24 @@ test('a sunk fort rebuilds and play continues with a kill bonus', () => {
     const view = cannonPublicView(m, { now: m.phaseEndsAt });
     assert.equal(view.teams.red.points, 31);
     assert.equal(view.teams.red.fortKills, 1);
+});
+
+test('sinking your own fort with a stray gives the other team 1 WIN', () => {
+    const stormMatch = newMatch({ gameMinutes: 2, introMs: 0, now: 0, seed: 1 });
+    stormMatch.teams.red.hp = 3;
+    stormMatch.rng = () => 0.1;
+    stormMatch.questionStartedAt = 2 * 60_000 - CANNON_STORM_MS + 1_000;
+    submitCannonAnswer(stormMatch, 'r1', 'cold', stormMatch.questionStartedAt + 400);
+    closeCannonAnswering(stormMatch, stormMatch.questionStartedAt + 20_000);
+    assert.equal(stormMatch.volley.storm, true);
+    assert.equal(stormMatch.volley.shots[0].target, 'red');
+    assert.ok(stormMatch.volley.shots[0].damage > 0);
+    assert.equal(stormMatch.volley.sunk, 'red');
+    assert.equal(stormMatch.teams.blue.fortKills, 1);
+    assert.equal(stormMatch.teams.red.fortKills, 0);
+    // Own-fort damage does not award damage points; kill bonus goes to blue.
+    assert.equal(stormMatch.teams.red.points, 1, 'only the correct-answer point');
+    assert.equal(stormMatch.teams.blue.points, 20);
 });
 
 test('time up: the team with more points wins', () => {

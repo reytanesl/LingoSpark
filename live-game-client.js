@@ -851,6 +851,7 @@
                     : 'First to 12 in a row wins!';
             }
             startRaceBgBlobs(document.querySelector('#live-host-race .live-race-bg'));
+            renderHostChallengePanel();
         } else {
             document.body.classList.remove('live-host-lanterns');
             const lanterns = $('live-host-lanterns');
@@ -927,8 +928,24 @@
         }).join('');
     }
 
-    function renderHostChallengePanel() {
+    /** Keep the challenge panel inside the active host stage so fullscreen still shows it. */
+    function mountHostChallengePanel() {
         const panel = $('live-host-challenge-panel');
+        if (!panel) return null;
+        const lanterns = $('live-host-lanterns');
+        const cannon = $('live-host-cannon');
+        const race = $('live-host-race');
+        let host = null;
+        if (lanterns && !lanterns.hidden) host = lanterns;
+        else if (cannon && !cannon.hidden) host = cannon;
+        else if (race && !race.hidden) host = race;
+        else host = panel.parentElement;
+        if (host && panel.parentElement !== host) host.appendChild(panel);
+        return panel;
+    }
+
+    function renderHostChallengePanel() {
+        const panel = mountHostChallengePanel();
         if (!panel) return;
         const challenges = Array.from(hostPendingChallenges.values());
         if (!challenges.length) {
@@ -937,23 +954,28 @@
             return;
         }
         panel.hidden = false;
-        panel.innerHTML = challenges.map((c) => `
+        panel.innerHTML = challenges.map((c) => {
+            const term = String(c.correctTerm || '').trim();
+            const def = String(c.definition || '').trim();
+            const submitted = String(c.answerText || '').trim();
+            return `
             <div class="live-host-challenge-card" data-challenge-id="${esc(c.id)}">
                 <div class="live-host-challenge-card-head">
                     <span class="live-host-challenge-badge">Challenge</span>
                     <strong>${esc(c.nickname)}</strong>
                 </div>
-                <p class="live-host-challenge-def">${esc(c.definition)}</p>
+                <p class="live-host-challenge-term">Term: <strong>${esc(term || '—')}</strong></p>
+                <p class="live-host-challenge-def">${esc(def || 'No definition')}</p>
                 <p class="live-host-challenge-answers">
-                    Submitted: <strong>${esc(c.answerText)}</strong>
-                    <span class="live-muted">· Expected: ${esc(c.correctTerm)}</span>
+                    Submitted: <strong>${esc(submitted || '—')}</strong>
+                    <span class="live-muted">· Expected: ${esc(term || '—')}</span>
                 </p>
                 <div class="live-host-challenge-actions">
                     <button type="button" class="btn btn-blue live-challenge-accept" data-challenge-id="${esc(c.id)}">Accept</button>
                     <button type="button" class="btn btn-grey live-challenge-decline" data-challenge-id="${esc(c.id)}">Decline</button>
                 </div>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
         panel.querySelectorAll('.live-challenge-accept').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const id = btn.getAttribute('data-challenge-id');
@@ -3178,6 +3200,7 @@
         stopRaceBgBlobs();
         ensureLanternHostScaffold();
         startLanternClock();
+        renderHostChallengePanel();
     }
 
     function llCaption(text) {
@@ -3746,6 +3769,8 @@
             title = 'SHIELD!';
         } else if (step.card === 'plus150' || step.card === 'plus50') {
             title = `${step.title} BONUS!`;
+        } else if (step.card === 'minus50' || step.card === 'minus100') {
+            title = step.savedByShield ? 'SHIELD SAVED YOU!' : `${step.title || 'CURSE'}!`;
         }
         return { title, detail, avs };
     }
@@ -4063,6 +4088,7 @@
         stopRaceBgBlobs();
         stopLanternClock();
         WCB.setHostMode(true);
+        renderHostChallengePanel();
     }
 
     /** Sea-battle waiting screen (with Red / Blue buttons when players choose teams). */
