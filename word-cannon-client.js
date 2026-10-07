@@ -640,14 +640,15 @@
             FX().smoke(H.fx, from, { dir, n: final ? 14 : 9 });
             sfx('boom', final ? { rate: 0.8 } : undefined);
             setTimeout(() => sfx('whoosh', final ? { rate: 0.7 } : undefined), 80);
-            if (shot.outcome === 'blown') setTimeout(() => sfx('wind'), 200);
+            if (shot.outcome === 'blown' || shot.outcome === 'own') setTimeout(() => sfx('wind'), 200);
             let to;
             let height = 300;
             let wobble = 0;
-            if (shot.outcome === 'hit' || shot.outcome === 'lucky') {
+            const friendly = Boolean(shot.friendly || shot.outcome === 'blown' || shot.outcome === 'own');
+            if (shot.outcome === 'hit' || shot.outcome === 'lucky' || (friendly && shot.damage > 0)) {
                 to = { x: G[target].hit.x + (Math.random() - 0.5) * 50, y: G[target].hit.y + (Math.random() - 0.5) * 30 };
-                height = shot.outcome === 'lucky' ? 420 : final ? 380 : 300;
-                if (v.storm || shot.outcome === 'lucky') wobble = 60;
+                height = shot.outcome === 'lucky' ? 420 : final ? 380 : friendly ? 360 : 300;
+                if (v.storm || shot.outcome === 'lucky' || friendly) wobble = friendly ? 140 : 60;
             } else if (shot.outcome === 'blown') {
                 to = { x: 960 + dir * (220 + Math.random() * 260), y: 700 + Math.random() * 60 };
                 height = 420;
@@ -668,14 +669,19 @@
     function land(shot, v, pos, final) {
         const team = shot.team;
         const target = shot.target;
-        const hitLike = shot.outcome === 'hit' || shot.outcome === 'lucky';
-        const tierCls = shot.lastShot ? 'is-last' : shot.outcome === 'blown' ? 'is-blown' : shot.outcome === 'lucky' ? 'is-lucky' : shot.outcome === 'miss' ? 'is-miss' : `is-${shot.tier || 'fast'}`;
+        const friendly = Boolean(shot.friendly || shot.outcome === 'blown' || shot.outcome === 'own');
+        const hitLike = shot.damage > 0 && (shot.outcome === 'hit' || shot.outcome === 'lucky' || friendly);
+        const tierCls = shot.lastShot ? 'is-last'
+            : shot.outcome === 'blown' || shot.outcome === 'own' ? 'is-blown'
+            : shot.outcome === 'lucky' ? 'is-lucky'
+            : shot.outcome === 'miss' ? 'is-miss'
+            : `is-${shot.tier || 'fast'}`;
         const who = shot.nickname ? `${shot.nickname}: ` : '';
         const text = shot.lastShot ? `LAST SHOT! ${who.replace(/: $/, '')}`.trim() : shot.label;
         label(LABEL_AT[team], text, tierCls, { long: final });
         if (hitLike) {
-            FX().explosion(H.fx, pos, { scale: final ? 1.7 : shot.outcome === 'lucky' ? 1.35 : 1 });
-            FX().smoke(H.fx, pos, { n: 10, spread: 90, color: '90,90,95', size: 46 });
+            FX().explosion(H.fx, pos, { scale: final ? 1.7 : shot.outcome === 'lucky' ? 1.35 : friendly ? 1.15 : 1 });
+            FX().smoke(H.fx, pos, { n: 10, drift: 90, color: '90,90,95', size: 46 });
             FX().shake($('wc-shake'), { power: final ? 36 : shot.outcome === 'lucky' ? 26 : 16, duration: final ? 900 : 500 });
             sfx('explosion', final ? { rate: 0.8 } : undefined);
             const fort = document.querySelector(`#wc-scene .wc-fort--${target}`);
@@ -687,6 +693,8 @@
                 FX().lightning(H.fx, { x: pos.x, toY: pos.y - 20 });
                 sfx('thunder', { volume: 0.8 });
                 banner('lucky', 'LUCKY HIT!');
+            } else if (friendly) {
+                banner('blown', shot.outcome === 'blown' ? 'BLOWN BACK!' : 'OWN FORT!');
             }
             if (final && shot.hpAfter <= 0) {
                 setTimeout(() => downFlag(target), 300);
@@ -694,7 +702,7 @@
         } else {
             FX().splash(H.fx, pos, { scale: shot.outcome === 'blown' ? 0.8 : 1 });
             sfx('splash');
-            if (shot.outcome === 'blown') banner('blown', 'BLOWN AWAY!');
+            if (shot.outcome === 'blown') banner('blown', 'BLOWN BACK!');
         }
         if (final) {
             setTimeout(() => {

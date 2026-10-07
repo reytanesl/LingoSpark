@@ -13,12 +13,15 @@
  *
  * Mystery cards:
  * - plus150 / plus50: flat bonuses
+ * - minus50 / minus100: take points away (scores never go below 0). A shield
+ *   blocks the curse (no loss, shield is used).
  * - steal100: take up to 100 from the player directly above (by current rank).
  *   A shield on that player blocks it (they keep the points, shield is used,
  *   the thief gets +50). If nobody is above, or they have 0, the thief gets +50.
  * - swapLeader: trade scores with the leader. Only one swap lands per round;
  *   extra swap cards, or a swap when you already lead, become +100.
- * - shield: immune to the next bust (risk 0 or ALL IN 0) and the next steal.
+ * - shield: immune to the next bust (risk 0 or ALL IN 0), the next steal, and
+ *   the next mystery point loss.
  *
  * ALL IN locks that player's score out of steals and swaps, so the bet is the
  * score they chose to risk. A shield earned this round protects later rounds,
@@ -43,11 +46,13 @@ export const LANTERN_AVATARS = ['🐼', '🐢', '🦊', '🐧', '🐰', '🐯', 
 
 /** Weighted mystery deck. Edit weights here; they do not need to sum to 100. */
 export const MYSTERY_POOL = [
-    { id: 'plus150', weight: 30 },
-    { id: 'plus50', weight: 25 },
-    { id: 'steal100', weight: 20 },
-    { id: 'shield', weight: 18 },
-    { id: 'swapLeader', weight: 7 },
+    { id: 'plus150', weight: 22 },
+    { id: 'plus50', weight: 18 },
+    { id: 'minus50', weight: 14 },
+    { id: 'minus100', weight: 10 },
+    { id: 'steal100', weight: 16 },
+    { id: 'shield', weight: 14 },
+    { id: 'swapLeader', weight: 6 },
 ];
 
 const PICKS = new Set(['safe', 'risk', 'mystery', 'allin']);
@@ -302,6 +307,27 @@ export function resolveLanternRound(players, options = {}) {
                 group: 'mystery', sub: 2, pick: 'mystery', card, tone: 'neutral', title: '+50',
                 detail: 'Mystery bonus. +50.', delta: 50, scoreBefore,
             });
+        } else if (card === 'minus50' || card === 'minus100') {
+            const loss = card === 'minus100' ? 100 : 50;
+            if (p.shield) {
+                p.shield = false;
+                addStep(steps, p, {
+                    group: 'mystery', sub: 2, pick: 'mystery', card, tone: 'neutral', title: 'Saved',
+                    detail: `Mystery curse (−${loss}) bounced off your shield.`,
+                    delta: 0, scoreBefore, savedByShield: true,
+                });
+            } else {
+                const taken = Math.min(loss, scoreBefore);
+                p.score = clampLanternScore(scoreBefore - taken);
+                addStep(steps, p, {
+                    group: 'mystery', sub: 2, pick: 'mystery', card, tone: 'bust',
+                    title: taken > 0 ? `−${taken}` : '0',
+                    detail: taken > 0
+                        ? `Mystery curse. −${taken}.`
+                        : 'Mystery curse, but you had no points to lose.',
+                    delta: -taken, scoreBefore,
+                });
+            }
         } else if (card === 'shield') {
             const had = p.shield;
             p.shield = true;
@@ -309,7 +335,7 @@ export function resolveLanternRound(players, options = {}) {
                 group: 'mystery', sub: 2, pick: 'mystery', card, tone: 'magic', title: 'Shield',
                 detail: had
                     ? 'Your shield is refreshed for the next bust.'
-                    : 'Shield! The next bust or steal cannot hurt you.',
+                    : 'Shield! The next bust, steal, or mystery curse cannot hurt you.',
                 delta: 0, scoreBefore,
             });
         }

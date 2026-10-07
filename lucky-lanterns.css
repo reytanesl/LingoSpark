@@ -792,10 +792,11 @@ body.live-lantern-player .live-game-logo { display: none !important; }
 /* Phone: typed answers sit straight on the night sky. */
 body.live-lantern-player #live-play-type-section { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
 
-/* Host: challenge review cards float above the caption bar in the festival look. */
+/* Host: challenge review cards float above the caption bar in the festival look.
+   Mounted as a direct child of .ll-host so fullscreen still includes them. */
 body.live-host-lanterns .live-host-challenge-panel {
-    bottom: calc(13vh + 1rem); width: min(820px, 64vw); max-height: 52vh; gap: 0.9rem;
-    left: 37.2%;
+    position: absolute; left: 37.2%; bottom: calc(13vh + 1rem); transform: translateX(-50%);
+    width: min(820px, 64vw); max-height: 52vh; gap: 0.9rem; z-index: 80; pointer-events: auto;
 }
 body.live-host-lanterns .live-host-challenge-card {
     background: #fffaf0 !important; border: 5px solid #ff4d6d !important; border-radius: 24px !important;
@@ -805,6 +806,8 @@ body.live-host-lanterns .live-host-challenge-card {
 }
 body.live-host-lanterns .live-host-challenge-card-head strong { font: clamp(1.2rem, 1.6vw, 2rem) var(--ll-ui); }
 body.live-host-lanterns .live-host-challenge-badge { background: #ff4d6d !important; color: #fff !important; font-family: var(--ll-ui); border-radius: 999px; padding: 0.15em 0.8em; }
+body.live-host-lanterns .live-host-challenge-term { font: clamp(1.15rem, 1.5vw, 1.85rem) var(--ll-ui); color: #5b2bd6; margin: 0 0 0.3rem; }
+body.live-host-lanterns .live-host-challenge-term strong { color: var(--ll-ink); }
 body.live-host-lanterns .live-host-challenge-def { font-weight: 700; }
 body.live-host-lanterns .live-host-challenge-answers strong { color: #c2185b; }
 body.live-host-lanterns .live-host-challenge-actions .btn { border-radius: 999px !important; font: clamp(1rem, 1.3vw, 1.6rem) var(--ll-ui) !important; padding: 0.55em 1.6em !important; letter-spacing: 0.02em; }
