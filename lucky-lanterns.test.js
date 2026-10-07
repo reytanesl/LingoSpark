@@ -4,6 +4,7 @@ import {
     LANTERN_BASE,
     MYSTERY_POOL,
     advanceLantern,
+    buildRevealBeats,
     closeLanternAnswering,
     closeLanternPicks,
     createLanternMatch,
@@ -384,4 +385,24 @@ test('multiple choice wrong answers are not challengeable, and review skip decli
     assert.deepEqual(forced.declined, ['ada']);
     assert.equal(pending.answers.ada.eligible, false);
     assert.equal(pending.phase, 'picking');
+});
+
+test('reveal beats batch every player under the same lantern together', () => {
+    const steps = [
+        { group: 'safe', playerId: 'a' },
+        { group: 'risk', playerId: 'b' },
+        { group: 'risk', playerId: 'c' },
+        { group: 'mystery', playerId: 'd' },
+        { group: 'mystery', playerId: 'e' },
+        { group: 'allin', playerId: 'f' },
+        { group: 'allin', playerId: 'g' },
+    ];
+    const { beats, holdMs } = buildRevealBeats(steps);
+    assert.equal(beats.length, 4);
+    assert.deepEqual(beats.map((beat) => beat.sfx), ['safe', 'coin', 'mystery', 'drumroll']);
+    assert.deepEqual(beats[0].stepIndexes, [0]);
+    assert.deepEqual(beats[1].stepIndexes, [1, 2]);
+    assert.deepEqual(beats[2].stepIndexes, [3, 4]);
+    assert.deepEqual(beats[3].stepIndexes, [5, 6]);
+    assert.equal(holdMs, 500 + 1500 + 1700 + 2000 + 2800 + 2000);
 });

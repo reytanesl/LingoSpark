@@ -385,25 +385,24 @@ export function resolveLanternRound(players, options = {}) {
     return { players: leaderboard, steps, beats, holdMs: beats.holdMs, leaderboard };
 }
 
-/** Timing shared by the server hold and the host animation. */
+/** Timing shared by the server hold and the host animation.
+ *  One beat per lantern group so all gain/win/loss notifications land together. */
 export function buildRevealBeats(steps) {
     const list = steps || [];
     const beats = [];
     let at = 500;
-    const safes = list.filter((s) => s.group === 'safe');
-    const rest = list.filter((s) => s.group !== 'safe');
-    if (safes.length) {
-        beats.push({ at, sfx: 'safe', stepIndexes: safes.map((s) => list.indexOf(s)) });
-        at += 1500;
-    }
-    for (const step of rest) {
-        const sfx = step.group === 'risk'
-            ? (step.coin === 'bust' && !step.savedByShield ? 'bust' : 'coin')
-            : step.group === 'allin'
-                ? 'drumroll'
-                : 'mystery';
-        beats.push({ at, sfx, stepIndexes: [list.indexOf(step)] });
-        at += step.group === 'allin' ? 2800 : 1700;
+    const groups = [
+        { group: 'safe', sfx: 'safe', gap: 1500 },
+        { group: 'risk', sfx: 'coin', gap: 1700 },
+        { group: 'mystery', sfx: 'mystery', gap: 2000 },
+        { group: 'allin', sfx: 'drumroll', gap: 2800 },
+    ];
+    for (const { group, sfx, gap } of groups) {
+        const indexes = [];
+        list.forEach((step, i) => { if (step.group === group) indexes.push(i); });
+        if (!indexes.length) continue;
+        beats.push({ at, sfx, stepIndexes: indexes });
+        at += gap;
     }
     const holdMs = list.length ? at + 2000 : 2400;
     return { beats, holdMs, leaderboardAt: Math.max(0, holdMs - 1800) };

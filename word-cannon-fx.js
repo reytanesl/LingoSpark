@@ -337,11 +337,9 @@
     WCFX.cannonSvg = function cannonSvg(team) {
         const blue = team === 'blue';
         const id = blue ? 'B' : 'R';
-        // Brighter, fully opaque metal so guns stay solid over sea + storm wash.
-        const barrel = blue
-            ? ['#8eb6ff', '#3d6df0', '#1a3a9e']
-            : ['#8a909c', '#3a3f4a', '#15181f'];
-        const under = blue ? '#2548b0' : '#2c313a';
+        // Solid grey metal for both teams — fully opaque over sea + storm wash.
+        const barrel = ['#9aa0aa', '#5a5f6a', '#2a2e36'];
+        const under = '#3a3f48';
         const art = `
             <defs>
                 <linearGradient id="wcBarrel${id}" x1="0" y1="0" x2="0" y2="1">
@@ -366,7 +364,7 @@
                 <rect x="60" y="68" width="14" height="64" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
                 <rect x="150" y="74" width="12" height="54" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
                 <rect x="244" y="78" width="10" height="44" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
-                <path d="M70,80 L250,88" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.35"/>
+                <path d="M70,80 L250,88" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.28"/>
                 <circle cx="118" cy="104" r="11" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
             </g>
             <!-- wheels -->

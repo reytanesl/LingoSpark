@@ -3693,7 +3693,7 @@
     function llDismissCard() {
         const layer = $('ll-card');
         if (layer) {
-            layer.querySelectorAll('.ll-mcard, .ll-center-note').forEach((card) => {
+            layer.querySelectorAll('.ll-mcard-slot, .ll-mcard, .ll-center-note').forEach((card) => {
                 card.classList.add('is-leaving');
                 setTimeout(() => card.remove(), 380);
             });
@@ -3723,45 +3723,60 @@
         });
     }
 
-    function llBeatRisk(step) {
+    function llBeatRisk(shown) {
+        const steps = shown || [];
+        if (!steps.length) return;
         const rig = llRig('risk');
         if (rig) llRestart(rig, 'is-flash');
-        const slot = llHost.slots.get(step.playerId);
-        if (slot) llRestart(slot.el, 'is-focus');
-        llBoardHighlight(step.playerId, true);
+        steps.forEach((step) => {
+            const slot = llHost.slots.get(step.playerId);
+            if (slot) llRestart(slot.el, 'is-focus');
+            llBoardHighlight(step.playerId, true);
+        });
         const fx = $('ll-fx');
+        const anyDouble = steps.some((step) => step.coin === 'double');
         const holder = document.createElement('div');
         holder.innerHTML = LLFX.coinHtml();
         const coin = holder.firstElementChild;
-        const double = step.coin === 'double';
-        coin.classList.add(double ? 'lands-x2' : 'lands-0');
+        coin.classList.add(anyDouble ? 'lands-x2' : 'lands-0');
         coin.style.left = `${LL_LX.risk}px`;
         coin.style.top = `${LL_LCY - 175}px`;
         fx?.appendChild(coin);
         LiveAudio.playLanternSfx('coin');
         llLater(() => {
-            const sx = slot ? slot.x : LL_LX.risk;
-            const sy = slot ? slot.y : LL_TRAY_Y;
-            if (double) {
-                LiveAudio.playLanternSfx('double');
-                llFloatText('x2!', sx, sy - 140, 'll-ft--x2', 'pop');
-                LLFX.sparkles(fx, sx, sy - 140, { color: '#ffd23f', n: 14, r0: 40, r1: 200, seed: 6 });
+            let playedDouble = false;
+            let playedBust = false;
+            let playedShield = false;
+            steps.forEach((step, i) => {
+                const slot = llHost.slots.get(step.playerId);
+                const sx = slot ? slot.x : LL_LX.risk + (i - (steps.length - 1) / 2) * 72;
+                const sy = slot ? slot.y : LL_TRAY_Y;
+                const delay = i * 70;
+                llLater(() => {
+                    if (step.coin === 'double') {
+                        if (!playedDouble) { LiveAudio.playLanternSfx('double'); playedDouble = true; }
+                        llFloatText('x2!', sx, sy - 140, 'll-ft--x2', 'pop');
+                        LLFX.sparkles(fx, sx, sy - 140, { color: '#ffd23f', n: 12, r0: 36, r1: 180, seed: 6 + i });
+                    } else if (step.savedByShield) {
+                        if (!playedShield) { LiveAudio.playLanternSfx('safe'); playedShield = true; }
+                        llFloatText('🛡️ +100', sx, sy - 140, 'll-ft--shield', 'pop');
+                    } else {
+                        if (!playedBust) { LiveAudio.playLanternSfx('bust'); playedBust = true; }
+                        llFloatText('0', sx, sy - 140, 'll-ft--zero', 'pop');
+                        LLFX.puff(fx, sx, sy);
+                        if (slot) {
+                            slot.el.classList.add('is-bust');
+                            llLater(() => slot.el.classList.remove('is-bust'), 1500);
+                        }
+                    }
+                    llApplyStep(step);
+                }, delay);
+            });
+            if (anyDouble) {
                 LLFX.sparkles(fx, LL_LX.risk, LL_LCY - 175, { color: '#ffe066', n: 12, r0: 70, r1: 220, seed: 2, ring: false });
-            } else if (step.savedByShield) {
-                LiveAudio.playLanternSfx('safe');
-                llFloatText('🛡️ +100', sx, sy - 140, 'll-ft--shield', 'pop');
-            } else {
-                LiveAudio.playLanternSfx('bust');
-                llFloatText('0', sx, sy - 140, 'll-ft--zero', 'pop');
-                LLFX.puff(fx, sx, sy);
-                if (slot) {
-                    slot.el.classList.add('is-bust');
-                    llLater(() => slot.el.classList.remove('is-bust'), 1500);
-                }
             }
-            llApplyStep(step);
         }, 820);
-        llLater(() => llBoardHighlight(step.playerId, false), 1600);
+        llLater(() => steps.forEach((step) => llBoardHighlight(step.playerId, false)), 1600);
         setTimeout(() => coin.remove(), 1700);
     }
 
@@ -3805,7 +3820,9 @@
         </div></div>`;
     }
 
-    function llBeatMystery(step) {
+    function llBeatMystery(shown) {
+        const steps = shown || [];
+        if (!steps.length) return;
         const rig = llRig('mystery');
         if (rig) {
             llRestart(rig, 'is-flash');
@@ -3814,15 +3831,38 @@
         ['safe', 'risk'].forEach((kind) => llRig(kind)?.classList.add('is-dim'));
         LiveAudio.playLanternSfx('mystery');
         LLFX.sparkles($('ll-fx'), LL_LX.mystery, LL_LCY, { color: '#e3b8ff', n: 18, r0: 60, r1: 300, seed: 8 });
-        const slot = llHost.slots.get(step.playerId);
-        if (slot) llRestart(slot.el, 'is-bounce');
-        llBoardHighlight(step.playerId, true);
-        $('ll-card')?.insertAdjacentHTML('beforeend', llMysteryCardHtml(step));
+        const layer = $('ll-card');
+        const n = steps.length;
+        steps.forEach((step, i) => {
+            const slot = llHost.slots.get(step.playerId);
+            if (slot) llRestart(slot.el, 'is-bounce');
+            llBoardHighlight(step.playerId, true);
+            if (!layer) return;
+            const offset = n === 1 ? 0 : (i - (n - 1) / 2) * Math.min(210, 520 / Math.max(1, n - 1));
+            const scale = n > 2 ? 0.72 : (n === 2 ? 0.82 : 1);
+            const wrap = document.createElement('div');
+            wrap.className = `ll-mcard-slot${n > 1 ? ' is-fan' : ''}`;
+            wrap.style.setProperty('--ll-fan-x', `${offset}px`);
+            wrap.style.setProperty('--ll-fan-s', String(scale));
+            wrap.style.zIndex = String(15 + i);
+            wrap.innerHTML = llMysteryCardHtml(step);
+            layer.appendChild(wrap);
+        });
         llLater(() => {
             LiveAudio.playLanternSfx('chime');
-            llApplyStep(step);
+            steps.forEach((step, i) => {
+                llLater(() => {
+                    const slot = llHost.slots.get(step.playerId);
+                    const sx = slot ? slot.x : LL_LX.mystery;
+                    const sy = slot ? slot.y : LL_TRAY_Y;
+                    const label = step.delta > 0 ? `+${step.delta}` : (step.delta < 0 ? `${step.delta}` : (step.title || '!'));
+                    const cls = step.delta > 0 ? 'll-ft--mini' : (step.delta < 0 || step.tone === 'bust' ? 'll-ft--zero' : 'll-ft--note');
+                    llFloatText(label, sx, sy - 78, cls, 'pop');
+                    llApplyStep(step);
+                }, i * 60);
+            });
         }, 820);
-        llLater(() => llBoardHighlight(step.playerId, false), 1600);
+        llLater(() => steps.forEach((step) => llBoardHighlight(step.playerId, false)), 1900);
     }
 
     function llClearAllIn() {
@@ -3842,7 +3882,9 @@
         return `<div class="ll-res-main">${LLFX.popTextHtml('BUST!')}</div><div class="ll-res-sub">${LLFX.popTextHtml('0')}</div>`;
     }
 
-    function llBeatAllIn(step, state) {
+    function llBeatAllIn(shown, state) {
+        const steps = shown || [];
+        if (!steps.length) return;
         const stage = $('ll-allin');
         if (!stage) return;
         if (!llHost.allinActive) {
@@ -3854,25 +3896,33 @@
             llHost.lanternsUp = false;
             $('ll-tray')?.classList.add('is-out');
         }
-        const row = llHost.working?.get(step.playerId) || (state.leaderboard || []).find((r) => r.id === step.playerId);
-        const name = step.nickname || row?.nickname || '';
+        const n = steps.length;
+        const playersHtml = steps.map((step, i) => {
+            const row = llHost.working?.get(step.playerId) || (state.leaderboard || []).find((r) => r.id === step.playerId);
+            const name = step.nickname || row?.nickname || '';
+            const offset = n === 1 ? 0 : (i - (n - 1) / 2) * Math.min(280, 900 / Math.max(1, n));
+            return `<div class="ll-allin-player" data-pid="${esc(step.playerId)}" style="--ll-ai-x:${offset}px">
+                <div class="ll-allin-av">${LLFX.avatarHtml(row?.avatar)}</div>
+                <div class="ll-allin-pill">${esc(name)} bets it all: ${formatLanternPoints(step.scoreBefore)}</div>
+                <div class="ll-allin-result"></div>
+            </div>`;
+        }).join('');
         stage.hidden = false;
         stage.innerHTML = `
             <div class="ll-allin-title is-slam">${LLFX.popTextHtml('ALL IN?')}</div>
-            <div class="ll-allin-av">${LLFX.avatarHtml(row?.avatar)}</div>
-            <div class="ll-allin-pill">${esc(name)} bets it all: ${formatLanternPoints(step.scoreBefore)}</div>
+            <div class="ll-allin-players${n > 1 ? ' is-multi' : ''}">${playersHtml}</div>
             ${LLFX.lanternRigHtml('allin')}
-            <div class="ll-allin-result"></div>`;
+            `;
         const rig = stage.querySelector('.ll-rig');
         rig?.classList.add('is-in');
         llCaption('Last round: go ALL IN for the win');
-        llBoardHighlight(step.playerId, true);
+        steps.forEach((step) => llBoardHighlight(step.playerId, true));
         LiveAudio.playLanternSfx('slam');
         const zoom = $('ll-zoom');
         const vignette = $('ll-vignette');
         llLater(() => {
             stage.querySelector('.ll-allin-title')?.classList.add('is-throb');
-            stage.querySelector('.ll-allin-av')?.classList.add('is-throb');
+            stage.querySelectorAll('.ll-allin-av').forEach((av) => av.classList.add('is-throb'));
             rig?.classList.add('is-pulse');
             zoom?.classList.add('is-drumroll');
             vignette?.classList.add('is-on');
@@ -3882,24 +3932,36 @@
             zoom?.classList.remove('is-drumroll');
             vignette?.classList.remove('is-on');
             stage.querySelector('.ll-allin-title')?.classList.add('is-gone');
-            stage.querySelector('.ll-allin-av')?.classList.remove('is-throb');
+            stage.querySelectorAll('.ll-allin-av').forEach((av) => av.classList.remove('is-throb'));
             rig?.classList.remove('is-pulse');
             rig?.classList.add('is-boom');
-            const result = stage.querySelector('.ll-allin-result');
-            const pill = stage.querySelector('.ll-allin-pill');
-            const win = step.coin === 'double' || step.tone === 'win';
-            const saved = !win && Boolean(step.savedByShield);
-            if (result) {
-                result.classList.add(win ? 'is-win' : (saved ? 'is-saved' : 'is-bust'));
-                result.innerHTML = llResultHtml(win, saved);
-            }
-            if (pill) {
-                pill.className = `ll-allin-pill ${win || saved ? 'is-result' : 'is-bust'}`;
-                pill.innerHTML = `${esc(name)}:&nbsp;<span class="ll-allin-score">${formatLanternPoints(step.scoreBefore)}</span>!`;
-                LLFX.countUp(pill.querySelector('.ll-allin-score'), Number(step.scoreBefore) || 0, Number(step.scoreAfter) || 0, 800);
-            }
             const fx = $('ll-fx');
-            if (win) {
+            let anyWin = false;
+            let anySaved = false;
+            let anyBust = false;
+            steps.forEach((step) => {
+                const block = [...stage.querySelectorAll('.ll-allin-player')].find((el) => el.dataset.pid === step.playerId);
+                const result = block?.querySelector('.ll-allin-result');
+                const pill = block?.querySelector('.ll-allin-pill');
+                const name = step.nickname || '';
+                const win = step.coin === 'double' || step.tone === 'win';
+                const saved = !win && Boolean(step.savedByShield);
+                if (win) anyWin = true;
+                else if (saved) anySaved = true;
+                else anyBust = true;
+                if (result) {
+                    result.classList.add(win ? 'is-win' : (saved ? 'is-saved' : 'is-bust'));
+                    result.innerHTML = llResultHtml(win, saved);
+                }
+                if (pill) {
+                    pill.className = `ll-allin-pill ${win || saved ? 'is-result' : 'is-bust'}`;
+                    pill.innerHTML = `${esc(name)}:&nbsp;<span class="ll-allin-score">${formatLanternPoints(step.scoreBefore)}</span>!`;
+                    LLFX.countUp(pill.querySelector('.ll-allin-score'), Number(step.scoreBefore) || 0, Number(step.scoreAfter) || 0, 800);
+                }
+                if (!win && !saved) block?.querySelector('.ll-allin-av')?.classList.add('is-bust');
+                llApplyStep(step);
+            });
+            if (anyWin) {
                 const flash = document.createElement('div');
                 flash.className = 'll-gold-flash';
                 fx?.appendChild(flash);
@@ -3908,16 +3970,14 @@
                 if (llHost.cancelConfetti) llHost.cancelConfetti();
                 llHost.cancelConfetti = LLFX.confetti($('ll-confetti'), { burst: { x: 990, y: 520 }, rain: true, duration: 4200, count: 150 });
                 LiveAudio.playLanternSfx('fanfare');
-            } else if (saved) {
+            } else if (anySaved) {
                 LiveAudio.playLanternSfx('safe');
-            } else {
+            } else if (anyBust) {
                 LLFX.puff(fx, 990, 520, { scale: 2 });
-                stage.querySelector('.ll-allin-av')?.classList.add('is-bust');
                 LiveAudio.playLanternSfx('bust');
             }
-            llApplyStep(step);
         }, 1500);
-        llLater(() => llBoardHighlight(step.playerId, false), 2700);
+        llLater(() => steps.forEach((step) => llBoardHighlight(step.playerId, false)), 2700);
     }
 
     function llPlayBeat(beat, steps, state) {
@@ -3926,9 +3986,9 @@
         if (!first) return;
         llDismissCard();
         if (first.group === 'safe') llBeatSafe(shown);
-        else if (first.group === 'risk') llBeatRisk(first);
-        else if (first.group === 'mystery') llBeatMystery(first);
-        else if (first.group === 'allin') llBeatAllIn(first, state);
+        else if (first.group === 'risk') llBeatRisk(shown);
+        else if (first.group === 'mystery') llBeatMystery(shown);
+        else if (first.group === 'allin') llBeatAllIn(shown, state);
     }
 
     function playHostReveal(state) {

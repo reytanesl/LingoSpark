@@ -383,7 +383,17 @@
 @keyframes llCoinSpinX2 { from { transform: rotateY(0); } to { transform: rotateY(1800deg); } }
 @keyframes llCoinSpin0 { from { transform: rotateY(0); } to { transform: rotateY(1980deg); } }
 
-/* mystery card */
+/* mystery card — fan slots when several mystery picks resolve together */
+.ll-mcard-slot {
+    position: absolute; left: 715px; top: 400px; width: 0; height: 0; z-index: 15;
+    transform: translateX(var(--ll-fan-x, 0px)) scale(var(--ll-fan-s, 1));
+    transform-origin: center center;
+}
+.ll-mcard-slot.is-leaving { animation: llCardLeave 0.35s ease-in both; }
+.ll-mcard-slot .ll-mcard {
+    position: absolute; left: 0; top: 0; width: 600px; height: 380px; margin: -190px 0 0 -300px; perspective: 1400px;
+    animation: llCardEmerge 0.55s cubic-bezier(.65,0,.35,1) both;
+}
 .ll-mcard {
     position: absolute; left: 715px; top: 400px; width: 600px; height: 380px; margin: -190px 0 0 -300px; perspective: 1400px; z-index: 15;
     animation: llCardEmerge 0.55s cubic-bezier(.65,0,.35,1) both;
@@ -418,25 +428,33 @@
 .ll-allin-title.is-slam { animation: llSlam 0.5s cubic-bezier(.2,.9,.3,1) both, llSlamShake 0.45s linear 0.42s both; }
 .ll-allin-title.is-throb .ll-pop { animation: llThrob 0.25s ease-in-out infinite alternate; }
 .ll-allin-title.is-gone { animation: llTitleGone 0.3s ease-in both; }
-.ll-allin-av { position: absolute; left: 440px; top: 520px; width: 0; height: 0; z-index: 5; }
+.ll-allin-players { position: absolute; inset: 0; pointer-events: none; }
+.ll-allin-player { position: absolute; left: 715px; top: 0; width: 0; height: 0; transform: translateX(var(--ll-ai-x, 0px)); }
+.ll-allin-av { position: absolute; left: -275px; top: 520px; width: 0; height: 0; z-index: 5; }
+.ll-allin-players.is-multi .ll-allin-av { left: 0; top: 500px; }
+.ll-allin-players.is-multi .ll-allin-av .ll-av { --av: 160px; left: -80px; top: -80px; }
 .ll-allin-av .ll-av { --av: 240px; position: absolute; left: -120px; top: -120px; animation: llPopIn 0.5s cubic-bezier(.34,1.8,.64,1) both; }
 .ll-allin-av.is-throb .ll-av { animation: llThrob 0.16s ease-in-out infinite alternate; }
 .ll-allin-av.is-bust .ll-av { animation: llShake 0.7s ease-out; filter: grayscale(0.85) brightness(0.7); }
 .ll-allin-pill {
-    position: absolute; left: 440px; top: 700px; transform: translate(-50%, -50%); white-space: nowrap; z-index: 5;
+    position: absolute; left: -275px; top: 700px; transform: translate(-50%, -50%); white-space: nowrap; z-index: 5;
     height: 70px; padding: 0 40px; border-radius: 35px; display: flex; align-items: center;
     background: #c2410c; border: 5px solid var(--ll-yellow); color: #fff; font: 700 44px/1 var(--ll-body);
     box-shadow: 4px 10px 0 rgba(0,0,0,0.3); animation: llFadeUp 0.4s ease-out 0.3s both;
 }
+.ll-allin-players.is-multi .ll-allin-pill { left: 0; top: 680px; font: 700 28px/1 var(--ll-body); height: 52px; padding: 0 18px; }
 .ll-allin-pill.is-result { background: var(--ll-yellow); border-color: #ff8c1a; color: #3b0f6b; font: 52px/1 var(--ll-ui); height: 84px; animation: llChipPopC 0.4s cubic-bezier(.34,1.8,.64,1) both; }
 .ll-allin-pill.is-bust { background: #3d3550; border-color: #9a93b5; color: #e5e1f2; font: 52px/1 var(--ll-ui); height: 84px; animation: llChipPopC 0.4s cubic-bezier(.34,1.8,.64,1) both; }
+.ll-allin-players.is-multi .ll-allin-pill.is-result,
+.ll-allin-players.is-multi .ll-allin-pill.is-bust { font: 32px/1 var(--ll-ui); height: 56px; }
 .ll-allin .ll-rig { left: 990px; top: -80px; height: 600px; }
 .ll-allin .ll-rig-string { height: 380px; }
 .ll-allin .ll-rig-glow { top: 285px; }
 .ll-allin .ll-rig-body { top: 400px; transform: scale(1.167); }
 .ll-allin .ll-rig.is-pulse .ll-rig-body { animation: llPulseBig 0.4s ease-in-out infinite; }
 .ll-allin .ll-rig.is-boom .ll-rig-body { animation: llBoomBig 0.35s ease-out both; }
-.ll-allin-result { position: absolute; left: 990px; top: 470px; width: 0; height: 0; z-index: 7; }
+.ll-allin-result { position: absolute; left: 275px; top: 470px; width: 0; height: 0; z-index: 7; }
+.ll-allin-players.is-multi .ll-allin-result { left: 0; top: 400px; }
 .ll-allin-result .ll-res-main { position: absolute; left: 0; top: -50px; width: 0; height: 0; display: flex; align-items: center; justify-content: center; white-space: nowrap; animation: llPopIn 0.45s cubic-bezier(.34,2,.64,1) both; }
 .ll-allin-result .ll-res-sub { position: absolute; left: 0; top: 110px; width: 0; height: 0; display: flex; align-items: center; justify-content: center; white-space: nowrap; animation: llPopIn 0.45s cubic-bezier(.34,2,.64,1) 0.12s both; }
 .ll-res-main .ll-pop { font: 170px/1 var(--ll-title); --pop-fill: linear-gradient(#fff3a0, #ff9a1a); --pop-stroke: #7a2d00; --pop-sw: 24px; --pop-shadow: 0 10px 0 rgba(0,0,0,0.45); }
