@@ -2706,28 +2706,32 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
         });
 
-        socket.on('live:resolve-challenge', ({ challengeId, accept }) => {
+        socket.on('live:resolve-challenge', (payload = {}) => {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
                 socket.emit('live:error', { error: 'Host only.' });
                 return;
             }
             try {
+                const challengeId = String(payload.challengeId || '');
+                // Explicit reject / decline always wins over a missing accept flag.
+                const accept = payload.reject || payload.decline
+                    ? false
+                    : Boolean(payload.accept);
                 if (isWordCannon(room)) {
                     if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
-                    const id = String(challengeId || '');
-                    const challenge = room.challenges.get(id);
+                    const challenge = room.challenges.get(challengeId);
                     if (!challenge || challenge.status !== 'pending') {
                         throw new Error('Challenge not found or already resolved.');
                     }
-                    const { result } = settleCannonChallenge(room.cannon, challenge.entityId, Boolean(accept), Date.now());
+                    const { result } = settleCannonChallenge(room.cannon, challenge.entityId, accept, Date.now());
                     const player = room.players.get(challenge.entityId);
                     if (player) clearPendingChallenge(player);
-                    room.challenges.delete(id);
+                    room.challenges.delete(challengeId);
                     if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
                     io.to(room.hostSocketId).emit('live:challenge-resolved', {
-                        id,
-                        accepted: Boolean(accept),
+                        id: challengeId,
+                        accepted: accept,
                         entityId: challenge.entityId,
                     });
                     afterCannonChange(io, room, onGameEnd);
@@ -2735,25 +2739,24 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 }
                 if (isLuckyLanterns(room)) {
                     if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
-                    const id = String(challengeId || '');
-                    const challenge = room.challenges.get(id);
+                    const challenge = room.challenges.get(challengeId);
                     if (!challenge || challenge.status !== 'pending') {
                         throw new Error('Challenge not found or already resolved.');
                     }
-                    const { result } = settleLanternChallenge(room.lantern, challenge.entityId, Boolean(accept), Date.now());
+                    const { result } = settleLanternChallenge(room.lantern, challenge.entityId, accept, Date.now());
                     const player = room.players.get(challenge.entityId);
                     if (player) clearPendingChallenge(player);
-                    room.challenges.delete(id);
+                    room.challenges.delete(challengeId);
                     if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
                     io.to(room.hostSocketId).emit('live:challenge-resolved', {
-                        id,
-                        accepted: Boolean(accept),
+                        id: challengeId,
+                        accepted: accept,
                         entityId: challenge.entityId,
                     });
                     afterLanternChange(io, room, onGameEnd);
                     return;
                 }
-                resolveChallenge(io, room, String(challengeId || ''), Boolean(accept), onGameEnd);
+                resolveChallenge(io, room, challengeId, accept, onGameEnd);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }

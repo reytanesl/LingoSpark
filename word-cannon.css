@@ -42,6 +42,14 @@
 .wc-scene > svg.wc-bg, .wc-scene > svg.wc-fg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
 .wc-fort, .wc-cannon, .wc-flag { position: absolute; }
 .wc-fort svg, .wc-cannon svg, .wc-flag svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.wc-flag { z-index: 2; }
+.wc-fort { z-index: 3; }
+/* Cannons sit above storm tint so they stay fully opaque; FX (balls) stay above cannons. */
+.wc-cannon {
+    z-index: 7; opacity: 1 !important; isolation: isolate;
+    filter: none; mix-blend-mode: normal; pointer-events: none;
+}
+.wc-cannon svg { opacity: 1 !important; }
 .wc-fort--red { left: 125px; top: 476px; width: 300px; height: 244px; }
 .wc-fort--blue { left: 1490px; top: 505px; width: 310px; height: 237px; }
 .wc-flag--red { left: 214px; top: 226px; width: 228px; height: 285px; transform-origin: 14px 285px; }
@@ -82,9 +90,9 @@
 .wc-foam { animation: wcFoam 3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
 @keyframes wcFoam { from { transform: scaleX(0.97); opacity: 0.45; } to { transform: scaleX(1.03); opacity: 0.7; } }
 
-/* storm */
-.wc-storm-tint { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 2.2s ease;
-    background: linear-gradient(rgba(38,40,78,0.78), rgba(60,66,110,0.55) 55%, rgba(20,40,80,0.55)); mix-blend-mode: multiply; }
+/* storm — keep below cannons (z-index 8) so guns stay solid */
+.wc-storm-tint { position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity 2.2s ease;
+    background: linear-gradient(rgba(38,40,78,0.55), rgba(60,66,110,0.4) 55%, rgba(20,40,80,0.4)); }
 .wc-storm-top { position: absolute; left: -40px; top: -40px; width: 2000px; height: 360px; pointer-events: none; opacity: 0; transform: translateY(-120px); transition: opacity 2s ease, transform 2.4s cubic-bezier(.2,.8,.3,1); }
 .wc-storm-top svg { width: 100%; height: 100%; display: block; }
 .is-storm .wc-storm-tint { opacity: 1; }
@@ -105,7 +113,7 @@
 .wc-host.is-storm { background: linear-gradient(#262a48 0%, #474d78 56%, #2e5c8a 59%, #0c2f5c 100%); }
 .wc-stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; }
 .wc-shake { position: absolute; inset: 0; }
-.wc-fx { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; z-index: 6; }
+.wc-fx { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; z-index: 9; }
 .wc-hud, .wc-labels, .wc-banners { position: absolute; inset: 0; pointer-events: none; }
 .wc-hud { z-index: 8; }
 .wc-labels { z-index: 9; }
@@ -217,7 +225,7 @@
 
 /* CSS rain sheet (on top of canvas rain) — keeps the storm readable on projectors */
 .wc-rain-layer {
-    position: absolute; inset: 0; pointer-events: none; z-index: 7; opacity: 0; transition: opacity 1.2s ease;
+    position: absolute; inset: 0; pointer-events: none; z-index: 6; opacity: 0; transition: opacity 1.2s ease;
     background:
         repeating-linear-gradient(105deg, rgba(220,235,255,0) 0 10px, rgba(220,235,255,0.22) 10px 12px, rgba(220,235,255,0) 12px 28px),
         repeating-linear-gradient(112deg, rgba(200,220,255,0) 0 16px, rgba(200,220,255,0.16) 16px 17px, rgba(200,220,255,0) 17px 40px);
@@ -323,7 +331,7 @@
 .wc-stage.is-intro .wc-hud, .wc-stage.is-intro .wc-question, .wc-stage.is-intro .wc-storm-chip { opacity: 0; }
 .wc-stage .wc-hud, .wc-stage .wc-question, .wc-stage .wc-storm-chip { transition: opacity 0.6s ease; }
 
-/* challenge cards on the projector — mounted inside .wc-host for fullscreen */
+/* challenge Accept/Reject — mounted inside .wc-host for fullscreen */
 body.live-host-cannon .live-host-challenge-panel {
     position: absolute; left: 50%; bottom: calc(13vh + 1rem); transform: translateX(-50%);
     width: min(820px, 64vw); max-height: 52vh; gap: 0.9rem; z-index: 80; pointer-events: auto;
@@ -331,14 +339,15 @@ body.live-host-cannon .live-host-challenge-panel {
 body.live-host-cannon .live-host-challenge-card {
     background: #fffaf0 !important; border: 5px solid var(--wc-gold) !important; border-radius: 24px !important; box-shadow: 4px 9px 0 rgba(0,0,0,0.35) !important;
     padding: clamp(0.8rem, 1.2vw, 1.4rem) !important; font-family: var(--wc-body); color: #2a1f4f; font-size: clamp(0.95rem, 1.15vw, 1.45rem);
+    pointer-events: auto;
 }
 body.live-host-cannon .live-host-challenge-card-head strong { font: clamp(1.2rem, 1.6vw, 2rem) var(--wc-ui); }
 body.live-host-cannon .live-host-challenge-badge { background: var(--wc-blue) !important; color: #fff !important; font-family: var(--wc-ui); border-radius: 999px; padding: 0.15em 0.8em; }
 body.live-host-cannon .live-host-challenge-term { font: clamp(1.15rem, 1.5vw, 1.85rem) var(--wc-ui); color: var(--wc-blue); margin: 0 0 0.3rem; }
 body.live-host-cannon .live-host-challenge-term strong { color: #2a1f4f; }
-body.live-host-cannon .live-host-challenge-actions .btn { border-radius: 999px !important; font: clamp(1rem, 1.3vw, 1.6rem) var(--wc-ui) !important; padding: 0.55em 1.6em !important; }
+body.live-host-cannon .live-host-challenge-actions .btn { border-radius: 999px !important; font: clamp(1rem, 1.3vw, 1.6rem) var(--wc-ui) !important; padding: 0.55em 1.6em !important; pointer-events: auto; }
 body.live-host-cannon .live-challenge-accept { background: linear-gradient(#3bd16f, #22b357) !important; box-shadow: 0 5px 0 #157a3a !important; color: #fff !important; }
-body.live-host-cannon .live-challenge-decline { background: #e8ecf7 !important; box-shadow: 0 5px 0 #a8b0cc !important; color: #13204f !important; }
+body.live-host-cannon .live-challenge-reject { background: linear-gradient(#ff6b6b, #d62828) !important; box-shadow: 0 5px 0 #7a0f0f !important; color: #fff !important; border: 0 !important; }
 body.live-host-cannon .live-game-logo, body.wc-winner .live-game-logo, body.live-cannon-player .live-game-logo, body.wc-player-lobby .live-game-logo { display: none !important; }
 
 /* ---------- host lobby (format = Word Cannon Battle) ---------- */

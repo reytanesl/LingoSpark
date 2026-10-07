@@ -928,7 +928,7 @@
         }).join('');
     }
 
-    /** Keep the challenge panel inside the active host stage so fullscreen still shows it. */
+    /** Keep challenge Accept/Reject inside the active host stage so fullscreen still works. */
     function mountHostChallengePanel() {
         const panel = $('live-host-challenge-panel');
         if (!panel) return null;
@@ -942,6 +942,16 @@
         else host = panel.parentElement;
         if (host && panel.parentElement !== host) host.appendChild(panel);
         return panel;
+    }
+
+    function resolveHostChallenge(challengeId, accept) {
+        const id = String(challengeId || '').trim();
+        if (!id) return;
+        ensureSocket().emit('live:resolve-challenge', {
+            challengeId: id,
+            accept: Boolean(accept),
+            reject: !accept,
+        });
     }
 
     function renderHostChallengePanel() {
@@ -972,20 +982,22 @@
                 </p>
                 <div class="live-host-challenge-actions">
                     <button type="button" class="btn btn-blue live-challenge-accept" data-challenge-id="${esc(c.id)}">Accept</button>
-                    <button type="button" class="btn btn-grey live-challenge-decline" data-challenge-id="${esc(c.id)}">Decline</button>
+                    <button type="button" class="btn live-challenge-reject" data-challenge-id="${esc(c.id)}">Reject</button>
                 </div>
             </div>`;
         }).join('');
         panel.querySelectorAll('.live-challenge-accept').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-challenge-id');
-                if (id) ensureSocket().emit('live:resolve-challenge', { challengeId: id, accept: true });
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                resolveHostChallenge(btn.getAttribute('data-challenge-id'), true);
             });
         });
-        panel.querySelectorAll('.live-challenge-decline').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-challenge-id');
-                if (id) ensureSocket().emit('live:resolve-challenge', { challengeId: id, accept: false });
+        panel.querySelectorAll('.live-challenge-reject').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                resolveHostChallenge(btn.getAttribute('data-challenge-id'), false);
             });
         });
     }
@@ -1095,7 +1107,7 @@
             }
         } else if (result.reset) {
             spawnPlayerFeedbackBubble(false, false);
-            if (status) status.textContent = `Challenge declined — ${teamLabel.toLowerCase()} back to the start!`;
+            if (status) status.textContent = `Challenge rejected — ${teamLabel.toLowerCase()} back to the start!`;
             if (resultEl) {
                 resultEl.innerHTML = `<div class="live-choice wrong">The answer was <strong>${esc(result.correctTerm)}</strong>. ${teamLabel} ${teamLabel === 'Team' ? 'is' : 'are'} back at term 1.</div>`;
                 resultEl.classList.add('live-play-result--visible');
