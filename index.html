@@ -656,6 +656,13 @@
             margin-bottom: 0.35rem;
             color: var(--royal-blue);
         }
+        .live-host-challenge-term {
+            margin: 0 0 0.25rem;
+            font-weight: 700;
+            color: var(--royal-blue);
+            font-size: 1.05rem;
+        }
+        .live-host-challenge-term strong { color: var(--text-dark); }
         .live-host-challenge-def {
             margin: 0 0 0.35rem;
             font-weight: 600;
@@ -675,6 +682,14 @@
         .live-host-challenge-actions .btn {
             flex: 1 1 8rem;
             min-height: 42px;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        .live-challenge-reject {
+            background: linear-gradient(#ff6b6b, #d62828) !important;
+            box-shadow: 0 5px 0 #7a0f0f !important;
+            color: #fff !important;
+            border: 0 !important;
         }
         .live-race-bubbles,
         .live-host-race-bubbles {

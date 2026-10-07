@@ -348,7 +348,9 @@
                 <linearGradient id="wcGold${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset="0.5" stop-color="#e0a92e"/><stop offset="1" stop-color="#8a5a10"/></linearGradient>
                 <linearGradient id="wcWood${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b07a44"/><stop offset="1" stop-color="#6e4520"/></linearGradient>
             </defs>
-            <ellipse cx="140" cy="210" rx="120" ry="12" fill="#000" opacity="0.22"/>
+            <!-- solid underpaint so the gun never reads as see-through -->
+            <ellipse cx="140" cy="160" rx="118" ry="58" fill="${blue ? '#0f2463' : '#1e2129'}"/>
+            <ellipse cx="140" cy="210" rx="120" ry="12" fill="#000" opacity="0.35"/>
             <!-- carriage -->
             <path d="M40,150 L70,110 L190,110 L215,150 L215,178 L40,178Z" fill="url(#wcWood${id})" stroke="#3e2410" stroke-width="5" stroke-linejoin="round"/>
             <path d="M52,160 L205,160" stroke="#4a2c12" stroke-width="3"/>
@@ -362,7 +364,7 @@
                 <rect x="60" y="68" width="14" height="64" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
                 <rect x="150" y="74" width="12" height="54" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
                 <rect x="244" y="78" width="10" height="44" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
-                <path d="M70,80 L250,88" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.28"/>
+                <path d="M70,80 L250,88" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.35"/>
                 <circle cx="118" cy="104" r="11" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
             </g>
             <!-- wheels -->
@@ -560,17 +562,26 @@
     WCFX.FxCanvas = FxCanvas;
 
     function drawBall(ctx, x, y, r = 22) {
-        const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
-        g.addColorStop(0, '#a3a9b6');
-        g.addColorStop(0.35, '#3b3f49');
-        g.addColorStop(1, '#040506');
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+        // Opaque core first so the ball never looks washed out over the sea.
+        ctx.fillStyle = '#1a1d24';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.08, x, y, r);
+        g.addColorStop(0, '#c4cad6');
+        g.addColorStop(0.4, '#4a505c');
+        g.addColorStop(1, '#0a0b0e');
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
+        ctx.restore();
     }
 
     /** Ballistic arc with optional wind wobble. Returns point at t (0..1). */
