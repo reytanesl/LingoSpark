@@ -38,6 +38,10 @@ export const LANTERN_MAX_ROUNDS = 20;
 export const LANTERN_QUESTION_MS = 20_000; // default answer time; a room can override it (questionMs)
 export const LANTERN_REVIEW_MS = 12_000;
 export const LANTERN_PICK_MS = 12_000;
+/** Pre-game how-to (lanterns + ALL IN). Host Skip ends it early. */
+export const LANTERN_INTRO_MS = 14_000;
+/** How long the score summary stays after the leaderboard moves. */
+export const LANTERN_RESULT_HOLD_MS = 3_800;
 
 export const LANTERN_AVATARS = ['🐼', '🐢', '🦊', '🐧', '🐰', '🐯', '🐸', '🦉', '🐨', '🦁', '🐵', '🦄', '🐻', '🐤'];
 
@@ -379,8 +383,11 @@ export function buildRevealBeats(steps) {
         beats.push({ at, sfx, stepIndexes: [list.indexOf(step)] });
         at += step.group === 'allin' ? 2800 : 1700;
     }
-    const holdMs = list.length ? at + 2000 : 2400;
-    return { beats, holdMs, leaderboardAt: Math.max(0, holdMs - 1800) };
+    // Leaderboard / personal result appear shortly after the last beat, then linger
+    // so players can read their points before the next round.
+    const leadIn = 200;
+    const holdMs = list.length ? at + leadIn + LANTERN_RESULT_HOLD_MS : 2_400 + LANTERN_RESULT_HOLD_MS;
+    return { beats, holdMs, leaderboardAt: Math.max(0, holdMs - LANTERN_RESULT_HOLD_MS) };
 }
 
 export function personalLanternResult(resolved, playerId) {
@@ -481,6 +488,7 @@ export function createLanternMatch({
     answerMode = 'randomise',
     level = 'intermediate',
     questionMs = LANTERN_QUESTION_MS,
+    introMs = LANTERN_INTRO_MS,
     now = Date.now(),
     rng = Math.random,
 }) {
@@ -491,14 +499,14 @@ export function createLanternMatch({
     const match = {
         rounds: normalizeLanternRounds(rounds),
         roundIndex: 0,
-        phase: 'question',
+        phase: 'intro',
         questionId: 0,
         cursor: 0,
         deck,
         answerMode: mode,
         level: level || 'intermediate',
         questionMs: Number(questionMs) > 0 ? Math.round(Number(questionMs)) : LANTERN_QUESTION_MS,
-        phaseEndsAt: 0,
+        phaseEndsAt: null,
         reveal: null,
         revealSeq: 0,
         isFinal: false,
@@ -520,7 +528,13 @@ export function createLanternMatch({
         match.scores[p.id] = 0;
         match.shields[p.id] = false;
     });
-    beginRound(match, now);
+    const intro = Number(introMs);
+    if (intro > 0) {
+        match.phase = 'intro';
+        match.phaseEndsAt = now + Math.round(intro);
+    } else {
+        beginRound(match, now);
+    }
     return match;
 }
 
@@ -718,6 +732,10 @@ export function closeLanternPicks(match, now = Date.now()) {
 
 export function advanceLantern(match, now = Date.now()) {
     if (!match) return null;
+    if (match.phase === 'intro') {
+        beginRound(match, now);
+        return 'question';
+    }
     if (match.phase !== 'reveal') return match.phase;
     if (match.roundIndex >= match.rounds - 1) {
         match.phase = 'finished';
@@ -883,6 +901,7 @@ export function lanternPublicView(match, { playerId = null, forHost = false, con
 
 export function hostSkipLantern(match, now = Date.now()) {
     if (!match) throw new Error('No lantern match.');
+    if (match.phase === 'intro') return { phase: advanceLantern(match, now), declined: [], skipped: [] };
     if (match.phase === 'question') return { phase: closeLanternAnswering(match, now), declined: [], skipped: [] };
     if (match.phase === 'review') return forceLanternReview(match, now);
     if (match.phase === 'picking') return { phase: closeLanternPicks(match, now), declined: [], skipped: [] };

@@ -2015,7 +2015,8 @@ function armLanternTimer(io, room, onGameEnd) {
         const live = getRoom(code);
         if (!live?.lantern || live.phase !== 'playing') return;
         if (live.lantern.phase !== expectedPhase || live.lantern.phaseEndsAt !== endsAt) return;
-        if (expectedPhase === 'question') closeLanternAnswering(live.lantern, Date.now());
+        if (expectedPhase === 'intro') advanceLantern(live.lantern, Date.now());
+        else if (expectedPhase === 'question') closeLanternAnswering(live.lantern, Date.now());
         else if (expectedPhase === 'review') expireLanternReview(live.lantern, Date.now());
         else if (expectedPhase === 'picking') closeLanternPicks(live.lantern, Date.now());
         else if (expectedPhase === 'reveal') advanceLantern(live.lantern, Date.now());
@@ -2492,7 +2493,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     return;
                 }
                 if (isLuckyLanterns(room)) {
-                    afterLanternChange(io, room, onGameEnd, { deliverQuestions: true });
+                    afterLanternChange(io, room, onGameEnd, {
+                        deliverQuestions: room.lantern?.phase === 'question',
+                    });
                     return;
                 }
                 await deliverQuestionsToAllPlayers(io, room);
@@ -2779,12 +2782,20 @@ export function initLiveGame(io, { onGameEnd } = {}) {
 
         socket.on('live:lantern-skip', () => {
             const room = getRoom(socket.data.roomCode);
-            if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
-                socket.emit('live:error', { error: 'Host only.' });
+            if (!room || !isLuckyLanterns(room) || !room.lantern) {
+                socket.emit('live:error', { error: 'Lucky Lanterns is not running.' });
                 return;
             }
-            if (!isLuckyLanterns(room) || !room.lantern) {
-                socket.emit('live:error', { error: 'Lucky Lanterns is not running.' });
+            const isHost = socket.data.liveRole === 'host' && socket.id === room.hostSocketId;
+            const isPlayer = socket.data.liveRole === 'player' && room.players.has(socket.data.playerId);
+            // Anyone in the room can skip the how-to; later skips stay host-only.
+            if (room.lantern.phase === 'intro') {
+                if (!isHost && !isPlayer) {
+                    socket.emit('live:error', { error: 'Join the room to skip the how-to.' });
+                    return;
+                }
+            } else if (!isHost) {
+                socket.emit('live:error', { error: 'Host only.' });
                 return;
             }
             try {

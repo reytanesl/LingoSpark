@@ -2,13 +2,16 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
     LANTERN_BASE,
+    LANTERN_RESULT_HOLD_MS,
     MYSTERY_POOL,
     advanceLantern,
+    buildRevealBeats,
     closeLanternAnswering,
     closeLanternPicks,
     createLanternMatch,
     expireLanternReview,
     forceLanternReview,
+    hostSkipLantern,
     markLanternChallengePending,
     normalizeLanternRounds,
     personalLanternResult,
@@ -217,6 +220,35 @@ const DECK = [
     { term: 'harbour', definition: 'A place where boats stay' },
 ];
 
+test('games open with a skippable how-to intro before the first question', () => {
+    const now = 50_000;
+    const match = createLanternMatch({
+        players: [
+            { id: 'ada', nickname: 'Ada' },
+            { id: 'bea', nickname: 'Bea' },
+        ],
+        deck: DECK,
+        rounds: 3,
+        answerMode: 'realise',
+        now,
+        rng: () => 0.1,
+    });
+    assert.equal(match.phase, 'intro');
+    assert.equal(match.entry, null);
+    assert.equal(match.phaseEndsAt, now + 14_000);
+    assert.equal(hostSkipLantern(match, now + 500).phase, 'question');
+    assert.ok(match.entry?.term);
+    assert.equal(match.roundIndex, 0);
+});
+
+test('reveal hold leaves the score summary on screen longer', () => {
+    const beats = buildRevealBeats([
+        { group: 'safe', playerId: 'a' },
+        { group: 'risk', playerId: 'b' },
+    ]);
+    assert.equal(beats.holdMs - beats.leaderboardAt, LANTERN_RESULT_HOLD_MS);
+});
+
 test('a realise round waits for a challenge before lanterns, and Accept earns a pick', () => {
     const now = 1_000_000;
     const match = createLanternMatch({
@@ -229,6 +261,7 @@ test('a realise round waits for a challenge before lanterns, and Accept earns a 
         answerMode: 'realise',
         now,
         rng: rngOf([0.1, 0.1, 0.1]),
+        introMs: 0,
     });
     assert.equal(match.inputMode, 'typed');
     const term = match.entry.term;
@@ -275,6 +308,7 @@ test('a declined challenge and a missed answer score nothing, and the last round
         answerMode: 'realise',
         now,
         rng: rngOf([0.9]),
+        introMs: 0,
     });
     submitLanternAnswer(match, 'ada', 'nope', now);
     markLanternChallengePending(match, 'ada', now);
@@ -318,6 +352,7 @@ test('multiple choice wrong answers are not challengeable, and review skip decli
         answerMode: 'recognise',
         now,
         rng: () => 0,
+        introMs: 0,
     });
     assert.equal(match.inputMode, 'choice');
     const wrongChoice = match.choices.find((choice) => choice.toLowerCase() !== match.entry.term.toLowerCase());
@@ -335,6 +370,7 @@ test('multiple choice wrong answers are not challengeable, and review skip decli
         answerMode: 'realise',
         now,
         rng: () => 0,
+        introMs: 0,
     });
     submitLanternAnswer(typed, 'ada', 'almost', now);
     submitLanternAnswer(typed, 'bea', typed.entry.term, now);
@@ -353,6 +389,7 @@ test('multiple choice wrong answers are not challengeable, and review skip decli
         answerMode: 'realise',
         now,
         rng: () => 0,
+        introMs: 0,
     });
     submitLanternAnswer(pending, 'ada', 'almost', now);
     submitLanternAnswer(pending, 'bea', pending.entry.term, now);

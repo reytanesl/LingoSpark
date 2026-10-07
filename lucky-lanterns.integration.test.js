@@ -91,11 +91,16 @@ test('Lucky Lanterns runs a question, challenge, pick, reveal, and finish', asyn
         }
 
         const startedPromise = once(host, 'live:game-started');
-        const openingPromise = once(host, 'live:lantern-state');
-        const adaQuestionPromise = once(adaSock, 'live:your-question');
+        const introPromise = once(host, 'live:lantern-state');
         host.emit('live:start-game');
         const started = await startedPromise;
         assert.equal(started.gameFormat, 'lucky-lanterns');
+        const intro = await introPromise;
+        assert.equal(intro.phase, 'intro');
+
+        const openingPromise = waitFor(host, 'live:lantern-state', (state) => state.phase === 'question');
+        const adaQuestionPromise = once(adaSock, 'live:your-question');
+        host.emit('live:lantern-skip');
         const opening = await openingPromise;
         assert.equal(opening.phase, 'question');
         assert.equal(opening.inputMode, 'typed');

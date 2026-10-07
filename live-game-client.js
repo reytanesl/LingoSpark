@@ -3192,7 +3192,9 @@
         const el = $('ll-round');
         if (!el) return;
         const final = Boolean(state.isFinal);
-        const text = final ? 'FINAL ROUND' : `Round ${state.round || 1} of ${state.rounds || 10}`;
+        const text = state.phase === 'intro'
+            ? 'HOW TO PLAY'
+            : (final ? 'FINAL ROUND' : `Round ${state.round || 1} of ${state.rounds || 10}`);
         if (el.textContent !== text) {
             el.textContent = text;
             if (final) {
@@ -3922,44 +3924,69 @@
             llHost.working = null;
             renderLanternBoard(finalRows, { animate: true });
         }, boardAt);
-        llHost.revealDoneAt = Date.now() + boardAt + (state.isFinal ? 2600 : 1500);
+        llHost.revealDoneAt = Date.now() + LL_LEAD_MS + (state.reveal.holdMs || (boardAt + 2000));
     }
 
-    function llPlayIntro(state) {
+    function llTutorialHtml(state, { phone = false } = {}) {
+        const rounds = state.rounds || 10;
+        return `
+            <div class="ll-howto${phone ? ' ll-howto--phone' : ''}">
+                <p class="ll-howto-kicker">How to play · ${rounds} rounds</p>
+                <h2 class="ll-howto-title">Lucky Lanterns</h2>
+                <ol class="ll-howto-steps">
+                    <li><strong>Answer</strong> the word to earn a lantern pick.</li>
+                    <li><strong>Pick a lantern:</strong> green is SAFE +100, orange is x2 or 0, purple is a mystery surprise.</li>
+                    <li><strong>Last round — ALL IN?</strong> Bet your whole score on a coin flip: double it, or drop to 0.</li>
+                </ol>
+                <p class="ll-howto-note">Missed picks score 0. A shield can save you once from a bust or steal.</p>
+                <button type="button" class="ll-howto-skip" data-ll-skip-intro>Skip</button>
+            </div>`;
+    }
+
+    function llBindHowtoSkip(root) {
+        root?.querySelectorAll('[data-ll-skip-intro]').forEach((btn) => {
+            if (btn.dataset.bound) return;
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', () => ensureSocket().emit('live:lantern-skip'));
+        });
+    }
+
+    function llShowHowto(state) {
         const el = $('ll-intro');
         const stage = $('ll-stage');
-        if (!el || !stage || !window.LLFX || LLFX.reduced()) return;
-        const star = document.querySelector('.ll-logo svg')?.outerHTML || '';
-        el.innerHTML = `
-            <div class="ll-intro-logo"><div class="ll-logo">Lingo<span>Spark</span>${star}</div></div>
-            ${LLFX.lanternRigHtml('safe')}${LLFX.lanternRigHtml('mystery')}
-            <div class="ll-intro-title">
-                <div class="ll-intro-line">${LLFX.lettersHtml('LUCKY', { delay: 0.15 })}</div>
-                <div class="ll-intro-line">${LLFX.lettersHtml('LANTERNS', { delay: 0.4 })}</div>
-            </div>
-            <div class="ll-intro-pill">${state.rounds || 10} rounds · answer, pick, reveal!</div>`;
-        el.querySelectorAll('.ll-rig').forEach((rig, i) => {
-            rig.style.left = i === 0 ? '300px' : '1620px';
-            rig.style.setProperty('--i', String(i));
-            rig.classList.add('is-in');
-        });
+        if (!el || !stage) return;
+        if (el.dataset.phase === 'howto' && !el.hidden) {
+            llBindHowtoSkip(el);
+            return;
+        }
+        el.dataset.phase = 'howto';
+        el.innerHTML = llTutorialHtml(state);
         el.hidden = false;
         el.classList.remove('is-out');
         stage.classList.add('is-intro');
-        LiveAudio.playLanternSfx('whoosh');
-        setTimeout(() => LiveAudio.playLanternSfx('chime'), 900);
-        setTimeout(() => {
-            LLFX.sparkles(el, 960, 450, { color: '#ffe066', n: 18, r0: 200, r1: 700, size: 22, dur: 1000, ring: false, seed: 3 });
-        }, 1000);
-        setTimeout(() => {
-            el.classList.add('is-out');
-            stage.classList.remove('is-intro');
-        }, 2350);
+        llBindHowtoSkip(el);
+        if (!llHost.introDone) {
+            llHost.introDone = true;
+            LiveAudio.playLanternSfx('whoosh');
+            setTimeout(() => LiveAudio.playLanternSfx('chime'), 500);
+        }
+    }
+
+    function llHideHowto() {
+        const el = $('ll-intro');
+        const stage = $('ll-stage');
+        if (!el || el.hidden) {
+            stage?.classList.remove('is-intro');
+            return;
+        }
+        el.classList.add('is-out');
+        stage?.classList.remove('is-intro');
         setTimeout(() => {
             el.hidden = true;
             el.innerHTML = '';
             el.classList.remove('is-out');
-        }, 2800);
+            delete el.dataset.phase;
+        }, 420);
     }
 
     function renderLanternHost(state) {
@@ -3970,10 +3997,8 @@
             lanternRevealSeq = -1;
             llHost.working = null;
         }
-        if (!llHost.introDone) {
-            llHost.introDone = true;
-            if (state.round === 1 && state.phase === 'question' && !state.answeredCount) llPlayIntro(state);
-        }
+        if (state.phase === 'intro') llShowHowto(state);
+        else if (llHost.introDone || $('ll-intro')?.dataset.phase === 'howto') llHideHowto();
         llSetRound(state);
         const side = $('ll-side-timer');
         if (side) side.hidden = !(state.phase === 'picking' || (state.phase === 'review' && state.phaseEndsAt));
@@ -3982,9 +4007,21 @@
         const next = $('ll-next');
         if (skip) {
             skip.hidden = false;
-            skip.textContent = state.phase === 'reveal' ? 'Skip reveal' : state.phase === 'review' ? 'Resolve & continue' : 'Skip';
+            skip.textContent = state.phase === 'intro'
+                ? 'Skip how-to'
+                : state.phase === 'reveal'
+                    ? 'Skip reveal'
+                    : state.phase === 'review'
+                        ? 'Resolve & continue'
+                        : 'Skip';
         }
         if (next) next.hidden = state.phase !== 'reveal';
+        if (state.phase === 'intro') {
+            llCaption('Quick how-to — Skip when everyone is ready');
+            renderLanternBoard(state.finalLeaderboard || state.leaderboard);
+            startLanternClock();
+            return;
+        }
         if (state.phase === 'question' || state.phase === 'review') {
             llCaption(state.phase === 'review' ? 'Checking challenges — lanterns open next' : 'Answer correctly to earn a lantern pick');
             llShowQuestion(state);
@@ -4331,7 +4368,7 @@
                 rank.classList.toggle('is-lead', state.you?.finalRank === 1 && Number(state.you?.finalScore) > 0);
             }
         }, boardAt);
-        llPhone.revealDoneAt = Date.now() + boardAt + (state.isFinal ? 2600 : 1400);
+        llPhone.revealDoneAt = Date.now() + LL_LEAD_MS + (state.reveal.holdMs || (boardAt + 2000));
     }
 
     function syncLanternQuestionChrome(state) {
@@ -4374,7 +4411,8 @@
         const avatar = llPhone.avatar;
         const status = $('live-play-status');
         let note = '';
-        if (state.phase === 'question' && !you.decision) note = 'Answer to earn a lantern.';
+        if (state.phase === 'intro') note = 'Quick how-to — tap Skip when ready.';
+        else if (state.phase === 'question' && !you.decision) note = 'Answer to earn a lantern.';
         else if (you.decision === 'prompt') note = 'Marked wrong. Challenge it, or continue.';
         else if (you.decision === 'pending') note = 'Waiting for the teacher.';
         else if (you.status === 'ready') note = 'Correct! Lanterns open after any challenges.';
@@ -4393,8 +4431,10 @@
         }
         const roundEl = root.querySelector('.llp-round');
         if (roundEl) {
-            roundEl.textContent = state.isFinal ? 'FINAL ROUND' : `Round ${state.round || 1} of ${state.rounds || 10}`;
-            roundEl.classList.toggle('is-final', Boolean(state.isFinal));
+            roundEl.textContent = state.phase === 'intro'
+                ? 'HOW TO PLAY'
+                : (state.isFinal ? 'FINAL ROUND' : `Round ${state.round || 1} of ${state.rounds || 10}`);
+            roundEl.classList.toggle('is-final', Boolean(state.isFinal) || state.phase === 'intro');
         }
         const avEl = root.querySelector('.llp-av');
         if (avEl && avEl.dataset.av !== String(avatar || '')) {
@@ -4424,7 +4464,10 @@
         const key = [state.questionId, state.phase, showPick ? 'pick' : '', you.pick || '', you.status || '', you.decision || '', state.reveal?.seq ?? ''].join('|');
         if (body && llPhone.key !== key) {
             llPhone.key = key;
-            body.innerHTML = llPhoneBodyHtml(state, you, avatar);
+            body.innerHTML = state.phase === 'intro'
+                ? llTutorialHtml(state, { phone: true })
+                : llPhoneBodyHtml(state, you, avatar);
+            if (state.phase === 'intro') llBindHowtoSkip(body);
         }
         body?.querySelectorAll('[data-lantern]').forEach((btn) => {
             if (btn.dataset.bound) return;
@@ -4440,8 +4483,19 @@
                 btn.classList.add('is-chosen');
             });
         });
-        syncLanternQuestionChrome(state);
-        if (you.decision !== 'prompt' && you.decision !== 'pending') hideChallengeActions();
+        if (state.phase === 'intro') {
+            const def = $('live-play-definition');
+            const typeSection = $('live-play-type-section');
+            const choices = $('live-play-choices');
+            if (def) def.hidden = true;
+            if (typeSection) typeSection.hidden = true;
+            if (choices) choices.hidden = true;
+            setAnswerInputsEnabled(false);
+            hideChallengeActions();
+        } else {
+            syncLanternQuestionChrome(state);
+            if (you.decision !== 'prompt' && you.decision !== 'pending') hideChallengeActions();
+        }
         if (state.phase === 'reveal') schedulePlayerReveal(state);
         startLanternClock();
     }
