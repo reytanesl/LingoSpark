@@ -461,10 +461,15 @@
     }
 
     // ---------------- intro ----------------
+    function skipIntroTutorial() {
+        hideIntro();
+        if (H.state?.phase === 'intro') ctx.emit('live:cannon-skip');
+    }
+
     function showIntro(state) {
         const intro = $('wc-intro');
         if (!intro) return;
-        const left = Math.max(800, (state.phaseEndsAt || 0) - (Date.now() + H.offset));
+        const left = Math.max(1200, (state.phaseEndsAt || 0) - (Date.now() + H.offset));
         const names = (t) => (state.teams?.[t]?.members || []).map((m) => m.nickname).join(' · ') || '—';
         intro.classList.remove('is-out');
         intro.innerHTML = `${FX().logoHtml()}${FX().titleHtml(['WORD CANNON', 'BATTLE'])}
@@ -473,12 +478,26 @@
                 <div class="wc-vs-mid">VS</div>
                 <div class="wc-vs-team wc-vs-team--blue"><h3>BLUE TEAM</h3><p>${esc(names('blue'))}</p></div>
             </div>
-            <div class="wc-intro-sub">Answer right · fire faster for more force · WINS for fort takedowns!</div>`;
+            <div class="wc-tutorial-card">
+                <p class="wc-tutorial-kicker">Quick tutorial</p>
+                <ul class="wc-tutorial-list">
+                    <li><strong>Answer</strong> the shared question — each correct answer fires a cannonball in the next salvo.</li>
+                    <li><strong>Faster answers</strong> = more force and damage. <strong>WINS</strong> = each time you destroy the other fort.</li>
+                    <li><strong>Storm</strong> (last minute): wild shots — some can blow back onto your own fort.</li>
+                    <li><strong>Challenge</strong> typed answers if the teacher should review them.</li>
+                </ul>
+                <div class="wc-tutorial-actions">
+                    <button type="button" class="btn btn-grey" id="wc-intro-skip">Skip</button>
+                    <button type="button" class="btn btn-blue" id="wc-intro-go">Let's battle!</button>
+                </div>
+            </div>`;
         intro.hidden = false;
         $('wc-stage')?.classList.add('is-intro');
         sfx('fanfare', { volume: 0.5 });
         clearTimeout(H.introTimer);
-        H.introTimer = setTimeout(() => hideIntro(), left - 500);
+        $('wc-intro-skip')?.addEventListener('click', () => skipIntroTutorial());
+        $('wc-intro-go')?.addEventListener('click', () => skipIntroTutorial());
+        H.introTimer = setTimeout(() => skipIntroTutorial(), left - 400);
     }
     function hideIntro() {
         const intro = $('wc-intro');
@@ -888,7 +907,14 @@
         const r = P.result && P.result.questionId === state.questionId ? P.result : null;
         const ball = `<span class="wcp-ball">${FX().ballSvg()}</span>`;
         if (phase === 'intro') {
-            return `<div class="wcp-card is-good">${ball}<b>Battle stations!</b><p>You're on the <strong>${esc(NAMES[team] || 'crew')}</strong>. Answer correctly — faster answers hit harder.</p></div>`;
+            return `<div class="wcp-card is-good wcp-tutorial">${ball}<b>Quick tutorial</b>
+                <p>You're on <strong>${esc(NAMES[team] || 'crew')}</strong>.</p>
+                <ul class="wcp-tutorial-list">
+                    <li>Answer correctly to load a shot for your team.</li>
+                    <li>Faster answers hit harder.</li>
+                    <li>Each fort you destroy = <strong>1 WIN</strong> for your team.</li>
+                </ul>
+                <p class="wcp-tutorial-note">Watch the big screen — the host will start the battle.</p></div>`;
         }
         if (phase === 'question' || phase === 'review') {
             if (you.decision === 'prompt' || you.decision === 'pending') return '';

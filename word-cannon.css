@@ -304,6 +304,20 @@
 .wc-vs-team p { margin: 0; font: 700 32px/1.25 var(--wc-body); color: #fff; }
 .wc-vs-mid { align-self: center; font: 90px/1 var(--wc-title); color: var(--wc-yellow); -webkit-text-stroke: 14px var(--wc-navy); paint-order: stroke fill; }
 .wc-intro-sub { font: 700 44px/1.2 var(--wc-body); color: #fff; text-shadow: 0 4px 0 rgba(0,0,0,0.4); animation: wcFadeUp 0.6s 0.7s both; }
+.wc-tutorial-card {
+    max-width: min(980px, 92%); background: #fffaf0; color: #2a1f4f; border: 6px solid var(--wc-gold); border-radius: 28px;
+    box-shadow: 4px 10px 0 rgba(0,0,0,0.35); padding: 22px 28px 20px; text-align: left; animation: wcFadeUp 0.6s 0.55s both;
+}
+.wc-tutorial-kicker { margin: 0 0 8px; font: 700 28px/1.1 var(--wc-body); color: #5a4a8a; text-transform: uppercase; letter-spacing: 0.06em; }
+.wc-tutorial-list { margin: 0 0 16px; padding-left: 1.15em; font: 700 30px/1.35 var(--wc-body); }
+.wc-tutorial-list li { margin: 0.3em 0; }
+.wc-tutorial-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.wc-tutorial-actions .btn { border-radius: 999px !important; font: 700 34px/1 var(--wc-ui) !important; padding: 0.45em 1.3em !important; min-width: 160px; border: 0 !important; }
+.wc-tutorial-actions .btn-grey { background: #e8ecf7 !important; box-shadow: 0 5px 0 #a8b0cc !important; color: #13204f !important; }
+.wc-tutorial-actions .btn-blue { background: linear-gradient(#3bd16f, #22b357) !important; box-shadow: 0 5px 0 #157a3a !important; color: #fff !important; }
+.wcp-tutorial-list { margin: 0.5rem 0 0.65rem; padding-left: 1.1em; text-align: left; font: 600 0.95rem/1.45 var(--wc-body); color: #4a3f72; }
+.wcp-tutorial-list li { margin: 0.2em 0; }
+.wcp-tutorial-note { margin: 0; font-size: 0.92rem !important; color: #5a4a8a !important; }
 
 /* fade / visibility while the intro covers the stage */
 .wc-stage.is-intro .wc-hud, .wc-stage.is-intro .wc-question, .wc-stage.is-intro .wc-storm-chip { opacity: 0; }
