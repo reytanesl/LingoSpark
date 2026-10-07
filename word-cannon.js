@@ -2,29 +2,24 @@
  * Word Cannon Battle — match flow and scoring for Live Spark.
  *
  * Two fixed teams (Red and Blue) defend forts that start at 100% health.
- * Every round has a shared question. Each correct answer loads one cannonball
- * into the team's ammo panel. After the question (and any Challenge review),
- * a volley fires the loaded balls, alternating teams.
+ * Every round has a shared question. Each correct answer fires one shot in the
+ * following volley (teams alternate, fastest team first).
  *
- * Aim depends on answer speed, measured as a share of the question time:
- * - FAST (<= 30% of the time): always hits, full damage
- * - GOOD (<= 60%):             75% hit chance, half damage
- * - SLOW (later):              40% hit chance, one-fifth damage
- * Smaller hits keep forts alive longer; the big FAST/GOOD/SLOW gap rewards speed.
+ * Shot force and damage fall with answer time in 0.1 s steps. The decay curve
+ * depends on the question type so multiple-choice (faster) and type-in (slower)
+ * stay fair: MC loses power sooner; typed keeps power longer.
  *
- * Fairness: each team can deal the same damage per round whatever its size.
- * A team loads at most CANNON_MAX_BALLS balls; with more players than slots,
- * the share of correct answers decides how many balls load (fastest shooters
- * fire). Ball damage = CANNON_ROUND_BUDGET / slots, times the speed factor.
+ * Fairness: full-power damage per shot = CANNON_ROUND_BUDGET / team size, so a
+ * whole team answering well deals about the same budget whatever its size.
  *
- * Storm: the host picks a game length. In the final CANNON_STORM_MS the storm
- * blows: 20% of shots are BLOWN AWAY (miss), 15% are a LUCKY HIT (sure hit,
- * x1.5 damage), the rest follow the speed rules.
+ * Storm (final CANNON_STORM_MS): rain, wild outcomes — many shots BLOWN AWAY or
+ * LUCKY HIT, and remaining hits get a random damage multiplier. Players should
+ * focus on getting answers right early, before the weather takes over.
  *
  * Scoring (kids-friendly):
- * - +1 point per correct answer (and that loads a cannonball)
- * - +1 point per HP of damage your team deals (so FAST hits score more)
- * - +CANNON_FORT_KILL_BONUS when you destroy the other fort
+ * - +1 point per correct answer (and that fires a shot)
+ * - +1 point per HP of damage your team deals (faster = more damage)
+ * - +CANNON_FORT_KILL_BONUS when you destroy the other fort (tracked as WINS)
  * Destroying a fort is celebrated (slow-mo, flag falls) then that fort rebuilds
  * to 100% and play continues until the game timer ends. Most points win.
  * Points tie when time is up -> sudden death LAST SHOT. After
@@ -37,6 +32,7 @@ import { buildChoices, matchesTermAnswer, sanitizeAnswerText } from './vocab-qui
 
 export const CANNON_FORMAT = 'word-cannon';
 export const CANNON_MAX_HP = 100;
+/** Kept for older callers; every correct answer now fires (no ammo cap). */
 export const CANNON_MAX_BALLS = 5;
 export const CANNON_ROUND_BUDGET = 20;
 /** Points: correct answer, each HP of damage dealt, fort kill bonus. */
@@ -65,13 +61,26 @@ export const VOLLEY_TIMING = {
     fortDownMs: 2_800,
 };
 
-export const SPEED_TIERS = [
-    { tier: 'fast', upTo: 0.3, hitChance: 1, factor: 1 },
-    { tier: 'good', upTo: 0.6, hitChance: 0.75, factor: 0.5 },
-    { tier: 'slow', upTo: Infinity, hitChance: 0.4, factor: 0.2 },
-];
+/** Force drops once every FORCE_STEP_MS after a short full-power window. */
+export const FORCE_STEP_MS = 100;
+/**
+ * Per input mode: keep full force for `fullMs`, then decay to `floor` over `decayMs`.
+ * Multiple choice is answered faster → steeper curve. Type-in is slower → gentler.
+ */
+export const FORCE_WINDOWS = {
+    choice: { fullMs: 700, decayMs: 6_500, floor: 0.12 },
+    typed: { fullMs: 2_200, decayMs: 13_000, floor: 0.12 },
+};
 
-export const STORM_RULES = { blownBelow: 0.2, luckyBelow: 0.35, luckyFactor: 1.5 };
+/** Storm: more chaos so late game rewards early correctness over aim gaming. */
+export const STORM_RULES = {
+    blownBelow: 0.32,
+    luckyBelow: 0.52,
+    luckyFactor: 1.8,
+    /** Remaining shots: damage multiplied by this random band around force. */
+    wildMin: 0.25,
+    wildMax: 1.55,
+};
 
 /** Small, fast, seedable PRNG. */
 export function mulberry32(seed) {
@@ -95,16 +104,42 @@ export function otherTeam(teamId) {
     return teamId === 'red' ? 'blue' : 'red';
 }
 
-/** Speed tier for an answer given after `ms` of a `questionMs` question. */
-export function speedTier(ms, questionMs = CANNON_QUESTION_MS) {
-    const total = Math.max(1, Number(questionMs) || CANNON_QUESTION_MS);
-    const share = Math.max(0, Number(ms) || 0) / total;
-    return SPEED_TIERS.find((t) => share <= t.upTo) || SPEED_TIERS[SPEED_TIERS.length - 1];
+/** Normalize choice / typed / recognise aliases. */
+export function normalizeInputMode(inputMode) {
+    if (inputMode === 'choice' || inputMode === 'recognise') return 'choice';
+    return 'typed';
 }
 
-/** Ball slots for a team: never more than CANNON_MAX_BALLS, never fewer than 1. */
+/**
+ * Shot force in 0..1. Full power for a short window, then −1 step every 0.1 s
+ * until the floor. Window length depends on multiple-choice vs type-in.
+ */
+export function shotForce(ms, inputMode = 'typed') {
+    const cfg = FORCE_WINDOWS[normalizeInputMode(inputMode)] || FORCE_WINDOWS.typed;
+    const elapsed = Math.max(0, Number(ms) || 0);
+    if (elapsed <= cfg.fullMs) return 1;
+    const steps = Math.floor((elapsed - cfg.fullMs) / FORCE_STEP_MS);
+    const totalSteps = Math.max(1, Math.ceil(cfg.decayMs / FORCE_STEP_MS));
+    const force = 1 - (steps / totalSteps) * (1 - cfg.floor);
+    return Math.max(cfg.floor, Math.min(1, force));
+}
+
+/**
+ * Label band for UI (FAST / GOOD / SLOW) derived from continuous force.
+ * `questionMs` kept for call-site compatibility; decay uses inputMode instead.
+ */
+export function speedTier(ms, questionMs = CANNON_QUESTION_MS, inputMode = 'typed') {
+    void questionMs;
+    const force = shotForce(ms, inputMode);
+    const factor = force;
+    if (force >= 0.72) return { tier: 'fast', force, factor, hitChance: 1 };
+    if (force >= 0.38) return { tier: 'good', force, factor, hitChance: 0.7 + 0.25 * force };
+    return { tier: 'slow', force, factor, hitChance: 0.28 + 0.45 * force };
+}
+
+/** Team size used for damage dilution (and leftover HUD slots). */
 export function teamSlots(teamSize) {
-    return Math.max(1, Math.min(CANNON_MAX_BALLS, Math.floor(Number(teamSize) || 0)));
+    return Math.max(1, Math.floor(Number(teamSize) || 0));
 }
 
 /** Damage of one hit at full power for a team of this size. */
@@ -112,36 +147,56 @@ export function baseDamage(teamSize) {
     return CANNON_ROUND_BUDGET / teamSlots(teamSize);
 }
 
-/**
- * How many balls load: one per correct answer up to the slots. Bigger teams load
- * by share so a big class does not out-shoot a small one.
- */
-export function ballsLoaded(correctCount, teamSize) {
-    const correct = Math.max(0, Math.floor(correctCount || 0));
-    const size = Math.max(1, Math.floor(teamSize || 0));
-    if (!correct) return 0;
-    if (size <= CANNON_MAX_BALLS) return Math.min(correct, size);
-    return Math.max(1, Math.min(CANNON_MAX_BALLS, Math.round((CANNON_MAX_BALLS * correct) / size)));
+/** One shot per correct answer — no ammo cap. */
+export function ballsLoaded(correctCount, _teamSize) {
+    return Math.max(0, Math.floor(correctCount || 0));
 }
 
 /**
  * Resolve one shot. Pure apart from the rng.
- * Returns { outcome: 'hit'|'miss'|'blown'|'lucky', tier, damage }.
+ * Returns { outcome, tier, force, damage }.
  */
-export function resolveShot({ ms, questionMs, teamSize, storm = false, rng = Math.random }) {
-    const tier = speedTier(ms, questionMs);
-    const full = baseDamage(teamSize) * tier.factor;
+export function resolveShot({
+    ms,
+    questionMs = CANNON_QUESTION_MS,
+    teamSize,
+    storm = false,
+    inputMode = 'typed',
+    rng = Math.random,
+}) {
+    const tierInfo = speedTier(ms, questionMs, inputMode);
+    const force = tierInfo.force;
+    const full = baseDamage(teamSize) * force;
     if (storm) {
         const roll = rng();
-        if (roll < STORM_RULES.blownBelow) return { outcome: 'blown', tier: tier.tier, damage: 0 };
-        if (roll < STORM_RULES.luckyBelow) {
-            return { outcome: 'lucky', tier: tier.tier, damage: Math.max(1, Math.round(full * STORM_RULES.luckyFactor)) };
+        if (roll < STORM_RULES.blownBelow) {
+            return { outcome: 'blown', tier: tierInfo.tier, force, damage: 0 };
         }
+        if (roll < STORM_RULES.luckyBelow) {
+            return {
+                outcome: 'lucky',
+                tier: tierInfo.tier,
+                force,
+                damage: Math.max(1, Math.round(full * STORM_RULES.luckyFactor)),
+            };
+        }
+        // Wild remaining shot: often weak or strong, hit chance no longer trustworthy.
+        const wild = STORM_RULES.wildMin + rng() * (STORM_RULES.wildMax - STORM_RULES.wildMin);
+        const hitChance = 0.35 + 0.4 * force;
+        if (rng() >= hitChance) {
+            return { outcome: 'miss', tier: tierInfo.tier, force, damage: 0 };
+        }
+        return {
+            outcome: 'hit',
+            tier: tierInfo.tier,
+            force,
+            damage: Math.max(1, Math.round(full * wild)),
+        };
     }
-    const hit = tier.hitChance >= 1 || rng() < tier.hitChance;
+    const hit = tierInfo.hitChance >= 1 || rng() < tierInfo.hitChance;
     return hit
-        ? { outcome: 'hit', tier: tier.tier, damage: Math.max(1, Math.round(full)) }
-        : { outcome: 'miss', tier: tier.tier, damage: 0 };
+        ? { outcome: 'hit', tier: tierInfo.tier, force, damage: Math.max(1, Math.round(full)) }
+        : { outcome: 'miss', tier: tierInfo.tier, force, damage: 0 };
 }
 
 /** Shot label like "FAST 1.2s: HIT!" (the client shows the same text). */
@@ -161,7 +216,16 @@ export function shotLabel(shot) {
  * Teams alternate, starting with the team that had the fastest correct answer.
  * Damage is applied in order and the volley stops when a fort sinks.
  */
-export function buildVolley({ shooters, hp, sizes, questionMs = CANNON_QUESTION_MS, storm = false, rng = Math.random, timing = VOLLEY_TIMING }) {
+export function buildVolley({
+    shooters,
+    hp,
+    sizes,
+    questionMs = CANNON_QUESTION_MS,
+    storm = false,
+    inputMode = 'typed',
+    rng = Math.random,
+    timing = VOLLEY_TIMING,
+}) {
     const queues = {};
     const loaded = {};
     for (const team of CANNON_TEAM_IDS) {
@@ -183,12 +247,20 @@ export function buildVolley({ shooters, hp, sizes, questionMs = CANNON_QUESTION_
         order.push({ team: turn, shooter: queues[turn].shift() });
         turn = otherTeam(turn);
     }
+    const mode = normalizeInputMode(inputMode);
     const shots = [];
     let sunk = null;
     for (const { team, shooter } of order) {
         if (sunk) break;
         const target = otherTeam(team);
-        const r = resolveShot({ ms: shooter.ms, questionMs, teamSize: sizes?.[team] || 1, storm, rng });
+        const r = resolveShot({
+            ms: shooter.ms,
+            questionMs,
+            teamSize: sizes?.[team] || 1,
+            storm,
+            inputMode: mode,
+            rng,
+        });
         const before = hpNow[target];
         const after = Math.max(0, before - r.damage);
         hpNow[target] = after;
@@ -200,6 +272,7 @@ export function buildVolley({ shooters, hp, sizes, questionMs = CANNON_QUESTION_
             nickname: shooter.nickname || '',
             ms: Math.round(shooter.ms),
             tier: r.tier,
+            force: r.force,
             outcome: r.outcome,
             damage: before - after,
             hpBefore: before,
@@ -211,7 +284,7 @@ export function buildVolley({ shooters, hp, sizes, questionMs = CANNON_QUESTION_
         shots.push(shot);
         if (after <= 0) sunk = target;
     }
-    return timeVolley({ shots, loaded, hpBefore, hpAfter: hpNow, storm, first, sunk }, timing);
+    return timeVolley({ shots, loaded, hpBefore, hpAfter: hpNow, storm, first, sunk, inputMode: mode }, timing);
 }
 
 /** Add `at`/`dur` beats and the total duration. */
@@ -252,6 +325,7 @@ export function buildSuddenDeathVolley({ shooters, hp, timing = VOLLEY_TIMING })
             nickname: best.nickname || '',
             ms: Math.round(best.ms),
             tier: 'fast',
+            force: 1,
             outcome: 'hit',
             damage: before,
             hpBefore: before,
@@ -396,7 +470,16 @@ function startVolley(match, now) {
         volley = buildSuddenDeathVolley({ shooters, hp, timing: match.timing });
         match.suddenTries += 1;
     } else {
-        volley = buildVolley({ shooters, hp, sizes, questionMs: match.questionMs, storm, rng: match.rng, timing: match.timing });
+        volley = buildVolley({
+            shooters,
+            hp,
+            sizes,
+            questionMs: match.questionMs,
+            storm,
+            inputMode: match.inputMode,
+            rng: match.rng,
+            timing: match.timing,
+        });
     }
     volley.round = match.roundIndex;
     volley.seq = ++match.volleySeq;
@@ -588,7 +671,9 @@ export function renameCannonPlayer(match, playerId, nickname) {
 }
 
 function resultPayload(match, playerId, answer) {
-    const tier = answer.eligible && answer.ms != null ? speedTier(answer.ms, match.questionMs).tier : null;
+    const tierInfo = answer.eligible && answer.ms != null
+        ? speedTier(answer.ms, match.questionMs, match.inputMode)
+        : null;
     const team = match.playerTeam[playerId];
     return {
         correct: Boolean(answer.correct),
@@ -605,7 +690,8 @@ function resultPayload(match, playerId, answer) {
         questionId: match.questionId,
         round: match.roundIndex,
         ms: answer.ms,
-        tier,
+        tier: tierInfo?.tier || null,
+        force: tierInfo?.force ?? null,
         team,
         teamName: CANNON_TEAM_NAMES[team],
         suddenDeath: Boolean(match.suddenDeath),
@@ -979,7 +1065,12 @@ export function cannonPublicView(match, { playerId = null, forHost = false, conn
             status: statusFor(match, id),
             eligible: Boolean(answer.eligible),
             ms: answer.ms,
-            tier: answer.eligible && answer.ms != null ? speedTier(answer.ms, match.questionMs).tier : null,
+            tier: answer.eligible && answer.ms != null
+                ? speedTier(answer.ms, match.questionMs, match.inputMode).tier
+                : null,
+            force: answer.eligible && answer.ms != null
+                ? shotForce(answer.ms, match.inputMode)
+                : null,
             stats: { ...(match.stats[id] || blankStats()) },
             shots: showVolley ? match.volley.shots.filter((s) => s.shooterId === id) : [],
         };

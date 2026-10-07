@@ -506,8 +506,15 @@
         setRain(on) {
             if (on && !this.rain) {
                 const rnd = seeded(91);
-                const n = WCFX.reduced() ? 90 : 260;
-                this.rain = Array.from({ length: n }, () => ({ x: rnd() * this.W, y: rnd() * this.H, l: 22 + rnd() * 26, v: 26 + rnd() * 18 }));
+                const n = WCFX.reduced() ? 120 : 420;
+                this.rain = Array.from({ length: n }, () => ({
+                    x: rnd() * this.W,
+                    y: rnd() * this.H,
+                    l: 28 + rnd() * 40,
+                    v: 30 + rnd() * 28,
+                    a: 0.35 + rnd() * 0.4,
+                }));
+                this.wind = -0.42 - rnd() * 0.18;
                 this.start();
             } else if (!on) {
                 this.rain = null;
@@ -520,9 +527,7 @@
             ctx.clearRect(0, 0, this.W, this.H);
             if (this.rain) {
                 const still = WCFX.reduced();
-                ctx.strokeStyle = 'rgba(210,225,255,0.55)';
-                ctx.lineWidth = 2.4;
-                ctx.beginPath();
+                ctx.lineCap = 'round';
                 for (const d of this.rain) {
                     if (!still) {
                         d.y += d.v;
@@ -530,10 +535,13 @@
                         if (d.y > this.H) { d.y = -d.l; d.x = Math.random() * (this.W + 400); }
                         if (d.x < -40) d.x += this.W + 80;
                     }
+                    ctx.strokeStyle = `rgba(210,225,255,${d.a.toFixed(2)})`;
+                    ctx.lineWidth = 2.2 + d.l * 0.02;
+                    ctx.beginPath();
                     ctx.moveTo(d.x, d.y);
                     ctx.lineTo(d.x - d.l * this.wind, d.y - d.l);
+                    ctx.stroke();
                 }
-                ctx.stroke();
             }
             this.items = this.items.filter((it) => {
                 const t = now - it.t0;

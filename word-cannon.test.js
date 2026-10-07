@@ -4,6 +4,7 @@ import {
     CANNON_MAX_HP,
     CANNON_ROUND_BUDGET,
     CANNON_STORM_MS,
+    FORCE_STEP_MS,
     advanceCannon,
     ballsLoaded,
     baseDamage,
@@ -21,6 +22,7 @@ import {
     mulberry32,
     resolveShot,
     settleCannonChallenge,
+    shotForce,
     shotLabel,
     skipCannonPrompt,
     speedTier,
@@ -38,7 +40,6 @@ const teams = {
     red: [{ id: 'r1', nickname: 'Ada' }, { id: 'r2', nickname: 'Ben' }],
     blue: [{ id: 'b1', nickname: 'Cleo' }, { id: 'b2', nickname: 'Dan' }],
 };
-const seq = (...values) => { let i = 0; return () => values[i++ % values.length]; };
 
 function newMatch(extra = {}) {
     return createCannonMatch({ teams, deck, answerMode: 'realise', questionMs: 20_000, gameMinutes: 5, introMs: 0, now: 0, seed: 7, ...extra });
@@ -54,63 +55,77 @@ test('mulberry32 is deterministic for a seed', () => {
     for (const x of xs) assert.ok(x >= 0 && x < 1);
 });
 
-test('speed tiers scale with the question time', () => {
-    assert.equal(speedTier(1200, 20_000).tier, 'fast');
-    assert.equal(speedTier(6000, 20_000).tier, 'fast');
-    assert.equal(speedTier(6001, 20_000).tier, 'good');
-    assert.equal(speedTier(12_000, 20_000).tier, 'good');
-    assert.equal(speedTier(15_000, 20_000).tier, 'slow');
-    // 10 s questions: 4 s is already "good"
-    assert.equal(speedTier(4000, 10_000).tier, 'good');
+test('shot force drops every 0.1s and is steeper for multiple choice than type-in', () => {
+    assert.equal(FORCE_STEP_MS, 100);
+    assert.equal(shotForce(0, 'choice'), 1);
+    assert.equal(shotForce(0, 'typed'), 1);
+    // After the same delay, MC has less force left than typed.
+    const lateChoice = shotForce(5_000, 'choice');
+    const lateTyped = shotForce(5_000, 'typed');
+    assert.ok(lateChoice < 1 && lateTyped < 1);
+    assert.ok(lateChoice < lateTyped, `${lateChoice} vs ${lateTyped}`);
+    // Each 0.1 s step after the full-power window lowers force.
+    const a = shotForce(2_500, 'typed');
+    const b = shotForce(2_600, 'typed');
+    const c = shotForce(2_700, 'typed');
+    assert.ok(a > b && b > c);
+    // Labels still map force bands to FAST / GOOD / SLOW.
+    assert.equal(speedTier(500, 20_000, 'choice').tier, 'fast');
+    assert.equal(speedTier(18_000, 20_000, 'typed').tier, 'slow');
 });
 
-test('ball loading and damage are fair across team sizes', () => {
+test('every correct answer fires; damage dilutes by team size', () => {
     assert.equal(ballsLoaded(0, 3), 0);
     assert.equal(ballsLoaded(2, 3), 2);
-    assert.equal(ballsLoaded(9, 3), 3);
-    assert.equal(ballsLoaded(10, 10), 5);
-    assert.equal(ballsLoaded(5, 10), 3); // round(2.5)
-    assert.equal(ballsLoaded(1, 10), 1);
-    // A whole team answering fast deals the same budget, whatever its size.
+    assert.equal(ballsLoaded(9, 3), 9);
+    assert.equal(ballsLoaded(10, 10), 10);
     for (const size of [1, 2, 3, 4, 5, 8, 20]) {
-        const balls = ballsLoaded(size, size);
-        assert.ok(Math.abs(balls * baseDamage(size) - CANNON_ROUND_BUDGET) < 1e-9, `size ${size}`);
+        assert.ok(Math.abs(baseDamage(size) * size - CANNON_ROUND_BUDGET) < 1e-9, `size ${size}`);
     }
 });
 
-test('fast shots always hit; slow shots can miss into the sea', () => {
-    const fast = resolveShot({ ms: 1200, questionMs: 20_000, teamSize: 2, rng: () => 0.999 });
-    assert.deepEqual(fast, { outcome: 'hit', tier: 'fast', damage: 10 }); // budget 20 / 2
-    const slowMiss = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, rng: () => 0.4 });
-    assert.equal(slowMiss.outcome, 'miss');
-    assert.equal(slowMiss.damage, 0);
-    const slowHit = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, rng: () => 0.39 });
-    assert.deepEqual(slowHit, { outcome: 'hit', tier: 'slow', damage: 2 }); // 10 * 0.2
-    const goodHit = resolveShot({ ms: 9000, questionMs: 20_000, teamSize: 2, rng: () => 0.74 });
-    assert.deepEqual(goodHit, { outcome: 'hit', tier: 'good', damage: 5 }); // 10 * 0.5
-    assert.equal(resolveShot({ ms: 9000, questionMs: 20_000, teamSize: 2, rng: () => 0.75 }).outcome, 'miss');
-    // Speed must clearly change the punch: FAST > GOOD > SLOW.
-    assert.ok(fast.damage > goodHit.damage && goodHit.damage > slowHit.damage);
+test('faster answers deal more damage; force is continuous', () => {
+    const fast = resolveShot({ ms: 400, questionMs: 20_000, teamSize: 2, inputMode: 'typed', rng: () => 0.999 });
+    assert.equal(fast.outcome, 'hit');
+    assert.equal(fast.tier, 'fast');
+    assert.equal(fast.force, 1);
+    assert.equal(fast.damage, 10); // budget 20 / 2
+    const mid = resolveShot({ ms: 8_000, questionMs: 20_000, teamSize: 2, inputMode: 'typed', rng: () => 0 });
+    const slow = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, inputMode: 'typed', rng: () => 0 });
+    assert.ok(fast.damage > mid.damage && mid.damage > slow.damage);
+    assert.ok(mid.force > slow.force);
+    // Multiple choice decays faster: same time → weaker shot.
+    const mc = resolveShot({ ms: 5_000, questionMs: 20_000, teamSize: 2, inputMode: 'choice', rng: () => 0 });
+    const typed = resolveShot({ ms: 5_000, questionMs: 20_000, teamSize: 2, inputMode: 'typed', rng: () => 0 });
+    assert.ok(mc.force < typed.force);
+    assert.ok(mc.damage <= typed.damage);
 });
 
-test('the storm blows shots away or lands lucky hits', () => {
+test('the storm is more chaotic: more blown / lucky shots and wild damage', () => {
     const blown = resolveShot({ ms: 1000, questionMs: 20_000, teamSize: 2, storm: true, rng: () => 0.1 });
     assert.equal(blown.outcome, 'blown');
     assert.equal(blown.damage, 0);
-    const lucky = resolveShot({ ms: 18_000, questionMs: 20_000, teamSize: 2, storm: true, rng: () => 0.3 });
+    const lucky = resolveShot({
+        ms: 1000,
+        questionMs: 20_000,
+        teamSize: 2,
+        storm: true,
+        rng: (() => { let i = 0; return () => [0.4, 0][i++] ?? 0; })(),
+    });
     assert.equal(lucky.outcome, 'lucky');
-    assert.equal(lucky.damage, 3); // slow full 2 * 1.5
-    const normal = resolveShot({ ms: 1000, questionMs: 20_000, teamSize: 2, storm: true, rng: () => 0.5 });
-    assert.equal(normal.outcome, 'hit');
-    // Over many seeded rolls roughly 20% blow away and 15% are lucky.
+    assert.ok(lucky.damage > 10);
     const rng = mulberry32(1);
     const counts = { blown: 0, lucky: 0, hit: 0, miss: 0 };
-    for (let i = 0; i < 4000; i++) counts[resolveShot({ ms: 1000, questionMs: 20_000, teamSize: 2, storm: true, rng }).outcome] += 1;
-    assert.ok(Math.abs(counts.blown / 4000 - 0.2) < 0.03, JSON.stringify(counts));
-    assert.ok(Math.abs(counts.lucky / 4000 - 0.15) < 0.03, JSON.stringify(counts));
+    for (let i = 0; i < 4000; i++) {
+        counts[resolveShot({ ms: 1000, questionMs: 20_000, teamSize: 2, storm: true, rng }).outcome] += 1;
+    }
+    assert.ok(counts.blown / 4000 > 0.25, JSON.stringify(counts));
+    assert.ok(counts.lucky / 4000 > 0.15, JSON.stringify(counts));
+    // Combined chaos should dominate calm play.
+    assert.ok((counts.blown + counts.lucky + counts.miss) / 4000 > 0.45, JSON.stringify(counts));
 });
 
-test('volleys alternate teams, fastest team first, and stop when a fort sinks', () => {
+test('volleys fire every correct answer, fastest team first, and stop when a fort sinks', () => {
     const v = buildVolley({
         shooters: {
             red: [{ id: 'r1', ms: 5000 }, { id: 'r2', ms: 2000 }, { id: 'r3', ms: 3000 }],
@@ -118,14 +133,15 @@ test('volleys alternate teams, fastest team first, and stop when a fort sinks', 
         },
         hp: { red: 100, blue: 100 },
         sizes: { red: 3, blue: 2 },
+        inputMode: 'typed',
         rng: () => 0,
     });
     assert.equal(v.first, 'blue');
     assert.deepEqual(v.shots.map((s) => s.team), ['blue', 'red', 'red', 'red']);
     assert.deepEqual(v.shots.map((s) => s.shooterId), ['b1', 'r2', 'r3', 'r1']);
-    assert.equal(v.shots[0].damage, 10); // blue size 2, FAST
-    assert.equal(v.shots[1].damage, 7); // red size 3, FAST (20/3)
-    assert.deepEqual(v.hpAfter, { red: 90, blue: 79 }); // 100-10; 100-7-7-7
+    assert.equal(v.shots[0].damage, 10); // blue size 2, full force
+    assert.ok(v.shots[0].force === 1);
+    assert.ok(v.shots[1].damage >= 6); // red size 3, near-full
     assert.equal(v.shots[1].label, 'FAST 2.0s: HIT!');
     assert.ok(v.shots[1].at > v.shots[0].at);
 
@@ -133,12 +149,12 @@ test('volleys alternate teams, fastest team first, and stop when a fort sinks', 
         shooters: { red: [{ id: 'r1', ms: 1000 }, { id: 'r2', ms: 1100 }], blue: [{ id: 'b1', ms: 1200 }] },
         hp: { red: 50, blue: 20 },
         sizes: { red: 2, blue: 2 },
+        inputMode: 'typed',
         rng: () => 0,
     });
     assert.equal(sink.shots.length, 3);
     assert.equal(sink.shots[2].final, true);
     assert.equal(sink.shots[2].hpAfter, 0);
-    assert.equal(sink.shots[2].damage, 10); // leftover HP after first FAST 10 on a 20 HP fort
     assert.equal(sink.sunk, 'blue');
     assert.ok(sink.shots[2].dur > sink.shots[0].dur, 'last shot plays in slow motion');
 });
@@ -151,7 +167,7 @@ test('shot labels match the concept wording', () => {
     assert.equal(shotLabel({ lastShot: true }), 'LAST SHOT!');
 });
 
-test('a round loads cannonballs, fires a volley and moves on', () => {
+test('a round fires a shot per correct answer and moves on', () => {
     const m = newMatch();
     assert.equal(m.phase, 'question');
     submitCannonAnswer(m, 'r1', 'cold', 1200);
@@ -166,6 +182,7 @@ test('a round loads cannonballs, fires a volley and moves on', () => {
     skipCannonPrompt(m, 'b2', 3100);
     const { result } = submitCannonAnswer(m, 'r2', 'cold', 15_000);
     assert.equal(result.tier, 'slow');
+    assert.ok(result.force < 0.5);
     assert.equal(result.ms, 15_000);
     assert.equal(m.phase, 'volley');
     assert.equal(m.volley.shots.length, 3);
@@ -179,7 +196,7 @@ test('a round loads cannonballs, fires a volley and moves on', () => {
     assert.equal(m.entry.term, 'tall');
 });
 
-test('a challenged answer pauses the storm clock and an accepted one loads a ball', () => {
+test('a challenged answer pauses the storm clock and an accepted one fires a shot', () => {
     const m = newMatch();
     submitCannonAnswer(m, 'r1', 'cold', 1000);
     submitCannonAnswer(m, 'r2', 'cold', 1000);
@@ -215,7 +232,6 @@ test('the storm arrives in the final minute', () => {
     assert.equal(isStormActive(m, 0), false);
     assert.equal(isStormActive(m, 3 * 60_000 - CANNON_STORM_MS - 1), false);
     assert.equal(isStormActive(m, 3 * 60_000 - CANNON_STORM_MS), true);
-    // Fire a volley inside the storm: it is flagged as a storm volley.
     m.questionStartedAt = 150_000;
     submitCannonAnswer(m, 'r1', 'cold', 151_000);
     closeCannonAnswering(m, 152_000);
@@ -234,7 +250,7 @@ test('a sunk fort rebuilds and play continues with a kill bonus', () => {
     assert.equal(m.volley.next, 'question');
     assert.equal(m.volley.reason, 'fort-down');
     assert.equal(m.volley.shots.at(-1).final, true);
-    // +1 correct +10 damage (FAST, size 2) +20 fort kill
+    // +1 correct +10 damage (full force, size 2) +20 fort kill
     assert.equal(m.teams.red.points, 1 + 10 + 20);
     assert.equal(m.teams.red.fortKills, 1);
     assert.equal(m.teams.blue.hp, 100, 'fallen fort rebuilds for the next round');
@@ -251,7 +267,6 @@ test('time up: the team with more points wins', () => {
     m.teams.red.points = 12;
     m.teams.blue.points = 30;
     m.questionStartedAt = 121_000;
-    // Nobody answers this last round — blue already leads on points.
     closeCannonAnswering(m, 122_000);
     assert.equal(m.volley.timeUp, true);
     assert.equal(m.volley.next, 'finished');
@@ -289,7 +304,7 @@ test('time up on a points tie goes to a sudden-death LAST SHOT', () => {
 
 test('sudden death without a correct answer ends in a draw after three tries', () => {
     const m = newMatch({ gameMinutes: 2 });
-    closeCannonAnswering(m, 125_000); // 0 vs 0 points
+    closeCannonAnswering(m, 125_000);
     for (let i = 0; i < 3; i++) {
         advanceCannon(m, m.phaseEndsAt);
         assert.equal(m.phase, 'question');
@@ -326,12 +341,11 @@ test('host end: more points wins, equal points is a draw', () => {
 
 test('correct answers and damage both add team points', () => {
     const m = newMatch({ rng: () => 0 }); // always hit
-    submitCannonAnswer(m, 'r1', 'cold', 1000); // FAST
-    submitCannonAnswer(m, 'b1', 'cold', 14_000); // SLOW
+    submitCannonAnswer(m, 'r1', 'cold', 1000); // full force
+    submitCannonAnswer(m, 'b1', 'cold', 14_000); // weak
     closeCannonAnswering(m, 20_000);
-    // red: +1 correct +10 damage; blue: +1 correct +2 damage
-    assert.equal(m.teams.red.points, 11);
-    assert.equal(m.teams.blue.points, 3);
+    assert.equal(m.teams.red.points, 1 + m.volley.shots.find((s) => s.team === 'red').damage);
+    assert.equal(m.teams.blue.points, 1 + m.volley.shots.find((s) => s.team === 'blue').damage);
     assert.ok(m.teams.red.points > m.teams.blue.points);
 });
 
