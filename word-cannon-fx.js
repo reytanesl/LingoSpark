@@ -339,7 +339,6 @@
         const id = blue ? 'B' : 'R';
         // Solid grey metal for both teams — fully opaque over sea + storm wash.
         const barrel = ['#9aa0aa', '#5a5f6a', '#2a2e36'];
-        const under = '#3a3f48';
         const art = `
             <defs>
                 <linearGradient id="wcBarrel${id}" x1="0" y1="0" x2="0" y2="1">
@@ -348,8 +347,6 @@
                 <linearGradient id="wcGold${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset="0.5" stop-color="#e0a92e"/><stop offset="1" stop-color="#8a5a10"/></linearGradient>
                 <linearGradient id="wcWood${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8894a"/><stop offset="1" stop-color="#7a4a20"/></linearGradient>
             </defs>
-            <!-- solid underpaint so the gun never reads as see-through -->
-            <ellipse cx="140" cy="160" rx="118" ry="58" fill="${under}"/>
             <ellipse cx="140" cy="210" rx="120" ry="12" fill="#000" opacity="0.35"/>
             <!-- carriage -->
             <path d="M40,150 L70,110 L190,110 L215,150 L215,178 L40,178Z" fill="url(#wcWood${id})" stroke="#3e2410" stroke-width="5" stroke-linejoin="round"/>
