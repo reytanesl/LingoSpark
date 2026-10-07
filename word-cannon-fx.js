@@ -337,19 +337,21 @@
     WCFX.cannonSvg = function cannonSvg(team) {
         const blue = team === 'blue';
         const id = blue ? 'B' : 'R';
+        // Brighter, fully opaque metal so guns stay solid over sea + storm wash.
         const barrel = blue
-            ? ['#5a8cff', '#2348b8', '#0f2463']
-            : ['#5b6070', '#1e2129', '#07080b'];
+            ? ['#8eb6ff', '#3d6df0', '#1a3a9e']
+            : ['#8a909c', '#3a3f4a', '#15181f'];
+        const under = blue ? '#2548b0' : '#2c313a';
         const art = `
             <defs>
                 <linearGradient id="wcBarrel${id}" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0" stop-color="${barrel[0]}"/><stop offset="0.38" stop-color="${barrel[1]}"/><stop offset="1" stop-color="${barrel[2]}"/>
                 </linearGradient>
                 <linearGradient id="wcGold${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset="0.5" stop-color="#e0a92e"/><stop offset="1" stop-color="#8a5a10"/></linearGradient>
-                <linearGradient id="wcWood${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b07a44"/><stop offset="1" stop-color="#6e4520"/></linearGradient>
+                <linearGradient id="wcWood${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8894a"/><stop offset="1" stop-color="#7a4a20"/></linearGradient>
             </defs>
             <!-- solid underpaint so the gun never reads as see-through -->
-            <ellipse cx="140" cy="160" rx="118" ry="58" fill="${blue ? '#0f2463' : '#1e2129'}"/>
+            <ellipse cx="140" cy="160" rx="118" ry="58" fill="${under}"/>
             <ellipse cx="140" cy="210" rx="120" ry="12" fill="#000" opacity="0.35"/>
             <!-- carriage -->
             <path d="M40,150 L70,110 L190,110 L215,150 L215,178 L40,178Z" fill="url(#wcWood${id})" stroke="#3e2410" stroke-width="5" stroke-linejoin="round"/>
