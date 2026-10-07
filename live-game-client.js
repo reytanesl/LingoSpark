@@ -1664,6 +1664,7 @@
             clearTimeout(llPhone.finishTimer);
             llPhone.revealDoneAt = 0;
             llPhone.key = null;
+            llPhone.tutorialDone = false;
             window.WCB?.resetPhone();
             if (isLuckyLanternsFormat(playerState.gameFormat)) document.body.classList.add('live-lantern-player');
             if (isWordCannonFormat(playerState.gameFormat)) document.body.classList.add('live-cannon-player');
@@ -1855,6 +1856,7 @@
             clearTimeout(llPhone.finishTimer);
             llPhone.revealDoneAt = 0;
             llPhone.key = null;
+            llPhone.tutorialDone = false;
             hideLiveWinnerScreen();
             const ranking = $('live-ranking-screen');
             if (ranking) ranking.hidden = true;
@@ -3006,13 +3008,14 @@
         answered: new Map(),
         working: null,
         introDone: false,
+        tutorialTimer: null,
         allinActive: false,
         revealDoneAt: 0,
         cancelConfetti: null,
         lastBlip: 0,
         finishTimer: null,
     };
-    const llPhone = { key: null, revealDoneAt: 0, avatar: null, cancelConfetti: null, finishTimer: null };
+    const llPhone = { key: null, revealDoneAt: 0, avatar: null, cancelConfetti: null, finishTimer: null, tutorialDone: false };
 
     function llRestart(el, cls) {
         if (!el) return;
@@ -3140,6 +3143,8 @@
         llHost.answered.clear();
         llHost.working = null;
         llHost.introDone = false;
+        clearTimeout(llHost.tutorialTimer);
+        llHost.tutorialTimer = null;
         llHost.allinActive = false;
         llHost.revealDoneAt = 0;
         if (llHost.cancelConfetti) llHost.cancelConfetti();
@@ -3925,41 +3930,63 @@
         llHost.revealDoneAt = Date.now() + boardAt + (state.isFinal ? 2600 : 1500);
     }
 
-    function llPlayIntro(state) {
+    function llDismissTutorial() {
         const el = $('ll-intro');
         const stage = $('ll-stage');
-        if (!el || !stage || !window.LLFX || LLFX.reduced()) return;
-        const star = document.querySelector('.ll-logo svg')?.outerHTML || '';
-        el.innerHTML = `
-            <div class="ll-intro-logo"><div class="ll-logo">Lingo<span>Spark</span>${star}</div></div>
-            ${LLFX.lanternRigHtml('safe')}${LLFX.lanternRigHtml('mystery')}
-            <div class="ll-intro-title">
-                <div class="ll-intro-line">${LLFX.lettersHtml('LUCKY', { delay: 0.15 })}</div>
-                <div class="ll-intro-line">${LLFX.lettersHtml('LANTERNS', { delay: 0.4 })}</div>
-            </div>
-            <div class="ll-intro-pill">${state.rounds || 10} rounds · answer, pick, reveal!</div>`;
-        el.querySelectorAll('.ll-rig').forEach((rig, i) => {
-            rig.style.left = i === 0 ? '300px' : '1620px';
-            rig.style.setProperty('--i', String(i));
-            rig.classList.add('is-in');
-        });
-        el.hidden = false;
-        el.classList.remove('is-out');
-        stage.classList.add('is-intro');
-        LiveAudio.playLanternSfx('whoosh');
-        setTimeout(() => LiveAudio.playLanternSfx('chime'), 900);
-        setTimeout(() => {
-            LLFX.sparkles(el, 960, 450, { color: '#ffe066', n: 18, r0: 200, r1: 700, size: 22, dur: 1000, ring: false, seed: 3 });
-        }, 1000);
-        setTimeout(() => {
-            el.classList.add('is-out');
-            stage.classList.remove('is-intro');
-        }, 2350);
+        clearTimeout(llHost.tutorialTimer);
+        llHost.tutorialTimer = null;
+        if (!el || el.hidden) {
+            stage?.classList.remove('is-intro');
+            return;
+        }
+        el.classList.add('is-out');
+        stage?.classList.remove('is-intro');
         setTimeout(() => {
             el.hidden = true;
             el.innerHTML = '';
             el.classList.remove('is-out');
-        }, 2800);
+        }, 420);
+    }
+
+    function llPlayTutorial(state) {
+        const el = $('ll-intro');
+        const stage = $('ll-stage');
+        if (!el || !stage || !window.LLFX) return;
+        const reduced = LLFX.reduced();
+        const star = document.querySelector('.ll-logo svg')?.outerHTML || '';
+        const rounds = state.rounds || 10;
+        el.innerHTML = `
+            <div class="ll-intro-logo"><div class="ll-logo">Lingo<span>Spark</span>${star}</div></div>
+            ${reduced ? '' : `${LLFX.lanternRigHtml('safe')}${LLFX.lanternRigHtml('mystery')}`}
+            <div class="ll-tutorial-card">
+                <p class="ll-tutorial-kicker">Quick tutorial · ${rounds} rounds</p>
+                <h2 class="ll-tutorial-title">Lucky Lanterns</h2>
+                <ul class="ll-tutorial-list">
+                    <li><strong>Answer</strong> the definition on your phone. Get it right to earn a lantern pick.</li>
+                    <li><strong>SAFE</strong> +100 · <strong>RISK</strong> coin flip ×2 or 0 · <strong>MYSTERY</strong> surprise card (can help or hurt).</li>
+                    <li><strong>Challenge</strong> a typed answer if the teacher should review it.</li>
+                </ul>
+                <p class="ll-tutorial-allin"><span>ALL IN</span> — final round only: double your score or lose it all (🛡️ shield can save you).</p>
+                <div class="ll-tutorial-actions">
+                    <button type="button" class="btn btn-grey" id="ll-tutorial-skip">Skip</button>
+                    <button type="button" class="btn btn-blue" id="ll-tutorial-go">Let's play!</button>
+                </div>
+            </div>`;
+        if (!reduced) {
+            el.querySelectorAll('.ll-rig').forEach((rig, i) => {
+                rig.style.left = i === 0 ? '300px' : '1620px';
+                rig.style.setProperty('--i', String(i));
+                rig.classList.add('is-in');
+            });
+        }
+        el.hidden = false;
+        el.classList.remove('is-out');
+        stage.classList.add('is-intro');
+        LiveAudio.playLanternSfx('whoosh');
+        $('ll-tutorial-skip')?.addEventListener('click', () => llDismissTutorial());
+        $('ll-tutorial-go')?.addEventListener('click', () => llDismissTutorial());
+        clearTimeout(llHost.tutorialTimer);
+        llHost.tutorialTimer = setTimeout(() => llDismissTutorial(), reduced ? 4000 : 8500);
     }
 
     function renderLanternHost(state) {
@@ -3972,7 +3999,7 @@
         }
         if (!llHost.introDone) {
             llHost.introDone = true;
-            if (state.round === 1 && state.phase === 'question' && !state.answeredCount) llPlayIntro(state);
+            if (state.round === 1 && state.phase === 'question' && !state.answeredCount) llPlayTutorial(state);
         }
         llSetRound(state);
         const side = $('ll-side-timer');
@@ -4151,10 +4178,26 @@
         return `<div class="llp-big" style="--glow:${LLFX.rgba(c.main, 0.5)}">${LLFX.lanternSvg(kind === 'allin' ? 'allin' : (kind || 'grey'))}</div>`;
     }
 
+    function llPhoneTutorialHtml() {
+        return `<div class="llp-tutorial">
+            <p class="llp-tutorial-kicker">Quick tutorial</p>
+            <h3 class="llp-tutorial-title">How to play</h3>
+            <ul class="llp-tutorial-list">
+                <li>Answer the definition on your phone.</li>
+                <li>If you're right, pick <strong>SAFE</strong>, <strong>RISK</strong>, or <strong>MYSTERY</strong>.</li>
+                <li>Final round: <strong>ALL IN</strong> doubles your score—or you lose it all.</li>
+            </ul>
+            <button type="button" class="btn btn-blue llp-tutorial-go">Got it!</button>
+        </div>`;
+    }
+
     function llPhoneBodyHtml(state, you, avatar) {
         const mini = (kind) => `<span class="llp-mini">${LLFX.lanternSvg(kind)}</span>`;
         const outCard = (text) => `<div class="llp-card llp-card--out"><span class="llp-greylantern">${LLFX.lanternSvg('grey', { label: ['–'] })}</span>
                 <b>No lantern this round</b><p>${esc(text)}</p></div>`;
+        if (state.round === 1 && state.phase === 'question' && !you.decision && !llPhone.tutorialDone) {
+            return llPhoneTutorialHtml();
+        }
         if (state.phase === 'picking' && you.eligible && !you.pick) {
             return `<div class="llp-hint">${LLFX.popTextHtml('Pick a lantern!')}</div>
                 <div class="llp-lanterns">
@@ -4422,10 +4465,17 @@
         const body = $('ll-phone-body');
         const showPick = state.phase === 'picking' && you.eligible && !you.pick;
         const key = [state.questionId, state.phase, showPick ? 'pick' : '', you.pick || '', you.status || '', you.decision || '', state.reveal?.seq ?? ''].join('|');
-        if (body && llPhone.key !== key) {
-            llPhone.key = key;
+        const tutorialKey = llPhone.tutorialDone ? '1' : '0';
+        const bodyKey = `${key}|t${tutorialKey}`;
+        if (body && llPhone.key !== bodyKey) {
+            llPhone.key = bodyKey;
             body.innerHTML = llPhoneBodyHtml(state, you, avatar);
         }
+        body?.querySelector('.llp-tutorial-go')?.addEventListener('click', () => {
+            llPhone.tutorialDone = true;
+            llPhone.key = null;
+            renderLanternPlayer(state);
+        });
         body?.querySelectorAll('[data-lantern]').forEach((btn) => {
             if (btn.dataset.bound) return;
             btn.dataset.bound = '1';
@@ -4508,6 +4558,11 @@
         });
         $('ll-skip')?.addEventListener('click', () => {
             llHost.revealDoneAt = 0;
+            const intro = $('ll-intro');
+            if (intro && !intro.hidden) {
+                llDismissTutorial();
+                return;
+            }
             if (lanternHostState?.phase === 'reveal') ensureSocket().emit('live:lantern-next');
             else ensureSocket().emit('live:lantern-skip');
         });

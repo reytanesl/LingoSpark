@@ -507,8 +507,34 @@
 .ll-intro .ll-rig-string { height: 350px; }
 .ll-intro .ll-rig-glow { top: 215px; }
 .ll-intro .ll-rig-body { top: 330px; transform: scale(0.867); }
+.ll-tutorial-card {
+    position: absolute; left: 960px; top: 430px; transform: translate(-50%, -50%); width: min(920px, 88%);
+    background: #fffaf0; color: var(--ll-ink); border: 6px solid var(--ll-yellow); border-radius: 28px;
+    box-shadow: 4px 10px 0 rgba(0,0,0,0.35); padding: 28px 34px 26px; text-align: left;
+    animation: llChipPopC 0.45s cubic-bezier(.34,1.8,.64,1) 0.35s both;
+}
+.ll-tutorial-kicker { margin: 0 0 6px; font: 700 36px/1.1 var(--ll-body); color: #6a5a9a; text-transform: uppercase; letter-spacing: 0.06em; }
+.ll-tutorial-title { margin: 0 0 14px; font: 72px/1 var(--ll-ui); color: #5b2bd6; }
+.ll-tutorial-list { margin: 0 0 14px; padding-left: 1.15em; font: 700 34px/1.35 var(--ll-body); }
+.ll-tutorial-list li { margin: 0.35em 0; }
+.ll-tutorial-allin { margin: 0 0 18px; padding: 12px 16px; border-radius: 18px; background: #efe7ff; font: 700 30px/1.35 var(--ll-body); }
+.ll-tutorial-allin span { color: #c2185b; font-family: var(--ll-ui); font-size: 1.08em; }
+.ll-tutorial-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.ll-tutorial-actions .btn { border-radius: 999px !important; font: 700 38px/1 var(--ll-ui) !important; padding: 0.45em 1.35em !important; min-width: 180px; }
+.ll-tutorial-actions .btn-grey { background: #ece6f7 !important; box-shadow: 0 5px 0 #b3a8cc !important; color: #3a2a6b !important; border: 0 !important; }
+.ll-tutorial-actions .btn-blue { background: linear-gradient(#34e3a8, #06c98f) !important; box-shadow: 0 5px 0 #04835d !important; border: 0 !important; color: #fff !important; }
 @keyframes llIntroOut { to { transform: scale(1.15); opacity: 0; } }
 @keyframes llFadeDown { from { transform: translateY(-120px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.llp-tutorial {
+    background: #fffaf0; color: var(--ll-ink); border: 4px solid var(--ll-yellow); border-radius: 22px;
+    box-shadow: 3px 7px 0 rgba(0,0,0,0.35); padding: 1rem 1rem 1.1rem; text-align: left; animation: llPopIn 0.4s cubic-bezier(.34,1.6,.64,1) both;
+}
+.llp-tutorial-kicker { margin: 0 0 0.25rem; font: 700 0.85rem var(--ll-body); color: #6a5a9a; letter-spacing: 0.08em; text-transform: uppercase; }
+.llp-tutorial-title { margin: 0 0 0.55rem; font: 1.55rem/1.1 var(--ll-ui); color: #5b2bd6; }
+.llp-tutorial-list { margin: 0 0 0.85rem; padding-left: 1.1em; font: 600 0.98rem/1.45 var(--ll-body); color: #4b3f75; }
+.llp-tutorial-list li { margin: 0.25em 0; }
+.llp-tutorial-go { width: 100%; border-radius: 999px !important; font: 1.15rem var(--ll-ui) !important; box-shadow: 0 5px 0 #04835d !important; }
 
 /* ---------- host lobby (format = Lucky Lanterns) ---------- */
 #ll-lobby-backdrop { display: none; }

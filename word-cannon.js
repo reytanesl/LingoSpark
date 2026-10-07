@@ -41,7 +41,8 @@ export const CANNON_POINTS_PER_DAMAGE = 1;
 export const CANNON_FORT_KILL_BONUS = 20;
 export const CANNON_QUESTION_MS = 20_000;
 export const CANNON_REVIEW_MS = 12_000;
-export const CANNON_INTRO_MS = 4_200;
+/** Host quick tutorial (skippable) before round 1. */
+export const CANNON_INTRO_MS = 9_000;
 export const CANNON_GAME_MINUTES = [3, 5, 8, 10];
 export const CANNON_DEFAULT_MINUTES = 5;
 export const CANNON_STORM_MS = 60_000;
