@@ -487,28 +487,69 @@
 .ll-stage.is-intro .ll-caption { transform: translateY(140px); }
 .ll-stage.is-intro .ll-question, .ll-stage.is-intro .ll-side-timer { visibility: hidden; }
 
-/* intro title card */
-.ll-intro { position: absolute; inset: 0; z-index: 25; }
+/* Pre-game how-to (host projector + phone). Explains lanterns + ALL IN; Skip ends early. */
+.ll-intro { position: absolute; inset: 0; z-index: 25; display: grid; place-items: center; padding: 40px 48px 180px; box-sizing: border-box; }
 .ll-intro[hidden] { display: none; }
 .ll-intro.is-out { animation: llIntroOut 0.42s cubic-bezier(.55,0,.75,.2) both; }
-.ll-intro-logo { position: absolute; left: 960px; top: 75px; transform: translateX(-50%); }
-.ll-intro-logo .ll-logo { position: static; display: inline-flex; animation: llFadeDown 0.5s ease-out 0.6s both; }
-.ll-intro-title { position: absolute; left: 0; right: 0; top: 0; text-align: center; font: 190px/1 var(--ll-title); }
-.ll-intro-line { position: absolute; left: 0; right: 0; }
-.ll-intro-line:nth-child(1) { top: 270px; }
-.ll-intro-line:nth-child(2) { top: 470px; }
-.ll-intro-pill {
-    position: absolute; left: 960px; top: 740px; transform: translate(-50%, -50%); white-space: nowrap;
-    height: 92px; padding: 0 40px; border-radius: 46px; background: var(--ll-purple); border: 5px solid var(--ll-yellow);
-    display: flex; align-items: center; font: 700 56px/1 var(--ll-body); color: #fff; box-shadow: 4px 10px 0 rgba(0,0,0,0.3);
-    animation: llChipPopC 0.45s cubic-bezier(.34,1.8,.64,1) 1s both;
+.ll-howto {
+    width: min(980px, 92%); max-width: 980px; box-sizing: border-box;
+    background: #fff4dc; color: var(--ll-ink); border: 8px solid var(--ll-purple); border-radius: 34px;
+    box-shadow: 4px 12px 0 rgba(0,0,0,0.35); padding: 36px 48px 40px;
+    animation: llPopIn 0.45s cubic-bezier(.34,1.6,.64,1) both;
 }
-.ll-intro .ll-rig { top: -60px; height: 530px; }
-.ll-intro .ll-rig-string { height: 350px; }
-.ll-intro .ll-rig-glow { top: 215px; }
-.ll-intro .ll-rig-body { top: 330px; transform: scale(0.867); }
-@keyframes llIntroOut { to { transform: scale(1.15); opacity: 0; } }
-@keyframes llFadeDown { from { transform: translateY(-120px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ll-howto-kicker {
+    margin: 0; font: 700 28px/1.2 var(--ll-body); color: #6a5a9a; letter-spacing: 0.02em;
+}
+.ll-howto-title {
+    margin: 8px 0 22px; font: 72px/1 var(--ll-title); color: #5b2bd6; letter-spacing: 0.01em;
+}
+.ll-howto-steps {
+    margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px;
+    counter-reset: ll-step;
+}
+.ll-howto-steps li {
+    position: relative; padding: 16px 20px 16px 72px; background: #fffaf0; border: 3px solid rgba(123,63,228,0.28);
+    border-radius: 18px; font: 700 28px/1.3 var(--ll-body); color: var(--ll-ink);
+}
+.ll-howto-steps li::before {
+    content: counter(ll-step); counter-increment: ll-step;
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    width: 42px; height: 42px; border-radius: 50%; background: var(--ll-purple); color: #fff;
+    font: 26px/42px var(--ll-ui); text-align: center;
+}
+.ll-howto-steps li strong { color: #5b2bd6; }
+.ll-howto-steps li:nth-child(3) {
+    background: linear-gradient(135deg, #fff0f6, #ffe1ec); border-color: #ff7aa8;
+}
+.ll-howto-steps li:nth-child(3) strong { color: #c2185b; }
+.ll-howto-note {
+    margin: 18px 0 0; font: 700 22px/1.35 var(--ll-body); color: #6a5a9a;
+}
+.ll-howto-skip {
+    appearance: none; display: block; margin: 22px auto 0; min-width: 200px; height: 64px; padding: 0 36px;
+    border: 4px solid #ff8c1a; border-radius: 32px; cursor: pointer;
+    background: linear-gradient(#ffd23f, #ffb347); color: #3b0f6b;
+    font: 32px/1 var(--ll-ui); box-shadow: 0 6px 0 #b8360a; letter-spacing: 0.02em;
+}
+.ll-howto-skip:active { transform: translateY(2px); box-shadow: 0 4px 0 #b8360a; }
+.ll-howto--phone {
+    width: 100%; max-width: none; border-width: 5px; border-radius: 22px; padding: 1.05rem 1rem 1.15rem;
+    box-shadow: 3px 8px 0 rgba(0,0,0,0.35); animation: llPhoneIn 0.4s cubic-bezier(.34,1.5,.64,1) both;
+}
+.ll-howto--phone .ll-howto-kicker { font-size: 0.95rem; }
+.ll-howto--phone .ll-howto-title { font-size: clamp(2rem, 9vw, 2.6rem); margin: 0.2rem 0 0.75rem; }
+.ll-howto--phone .ll-howto-steps { gap: 0.55rem; }
+.ll-howto--phone .ll-howto-steps li {
+    padding: 0.7rem 0.75rem 0.7rem 2.7rem; border-width: 2px; border-radius: 14px; font-size: clamp(0.98rem, 3.8vw, 1.12rem);
+}
+.ll-howto--phone .ll-howto-steps li::before {
+    left: 0.55rem; width: 1.55rem; height: 1.55rem; font: 0.95rem/1.55rem var(--ll-ui);
+}
+.ll-howto--phone .ll-howto-note { margin-top: 0.7rem; font-size: 0.92rem; }
+.ll-howto--phone .ll-howto-skip {
+    margin-top: 0.9rem; min-width: 0; width: 100%; height: 3.1rem; font-size: 1.35rem; border-width: 3px;
+}
+@keyframes llIntroOut { to { transform: scale(1.08); opacity: 0; } }
 
 /* ---------- host lobby (format = Lucky Lanterns) ---------- */
 #ll-lobby-backdrop { display: none; }
@@ -590,8 +631,14 @@ body.live-lantern-player #live-play-roster,
 body.live-lantern-player #live-play-race-bg,
 body.live-lantern-player #live-play-bubbles,
 body.live-lantern-player .live-game-logo { display: none !important; }
+body.live-lantern-player #screen-live-play,
+body.live-lantern-player.live-player-mode #screen-live-play {
+    max-width: min(720px, 100%) !important;
+    padding-left: clamp(0.55rem, 2.2vw, 1rem) !important;
+    padding-right: clamp(0.55rem, 2.2vw, 1rem) !important;
+}
 body.live-lantern-player #screen-live-play .live-play-surface {
-    position: relative; z-index: 1; width: min(440px, 100%); margin: 0 auto; background: transparent !important; box-shadow: none !important; border: 0 !important;
+    position: relative; z-index: 1; width: min(640px, 100%); margin: 0 auto; background: transparent !important; box-shadow: none !important; border: 0 !important;
 }
 body.live-lantern-player #live-play-status {
     font: 700 1rem/1.2 var(--ll-body) !important; color: #ffe58a !important; text-align: center; text-shadow: 0 2px 0 rgba(0,0,0,0.35); margin: 0.5rem 0 0.6rem !important;
@@ -599,7 +646,7 @@ body.live-lantern-player #live-play-status {
 body.live-lantern-player #live-play-definition.word-prompt {
     position: relative; background: #fffaf0 !important; color: var(--ll-ink) !important; border: 4px solid #ffc531 !important;
     border-radius: 20px !important; box-shadow: 3px 7px 0 rgba(0,0,0,0.35) !important;
-    font: 700 1.3rem/1.2 var(--ll-body) !important; padding: 1.3rem 0.9rem 0.95rem !important; margin-top: 1.1rem !important; text-align: center;
+    font: 700 clamp(1.35rem, 4.8vw, 1.65rem)/1.2 var(--ll-body) !important; padding: 1.4rem 1rem 1.05rem !important; margin-top: 1.1rem !important; text-align: center;
     overflow: visible !important; max-height: none !important;
 }
 body.live-lantern-player #live-play-definition[hidden] { display: none !important; }
@@ -609,8 +656,8 @@ body.live-lantern-player #live-play-definition.word-prompt::before {
 }
 body.live-lantern-player #live-play-choices:not([hidden]) { display: grid !important; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin-top: 0.9rem; }
 body.live-lantern-player #live-play-choices .live-answer-btn {
-    position: relative; min-height: 112px; margin: 0 !important; border: 0 !important; border-radius: 18px !important;
-    padding: 2.2rem 0.5rem 0.75rem !important; color: #fff !important; font: 1.35rem/1.1 var(--ll-ui) !important; letter-spacing: 0.01em;
+    position: relative; min-height: 124px; margin: 0 !important; border: 0 !important; border-radius: 18px !important;
+    padding: 2.35rem 0.55rem 0.85rem !important; color: #fff !important; font: clamp(1.4rem, 5vw, 1.7rem)/1.1 var(--ll-ui) !important; letter-spacing: 0.01em;
     overflow-wrap: anywhere; text-shadow: 0 2px 0 rgba(0,0,0,0.28), 0 0 2px rgba(0,0,0,0.3); width: 100%;
     transition: transform 0.12s ease, filter 0.2s;
 }
@@ -692,7 +739,7 @@ body.live-lantern-player #live-play-error { position: relative; z-index: 2; }
 .llp-greylantern { width: 84px; margin: 0 auto 0.2rem; display: block; opacity: 0.85; }
 .llp-hint { text-align: center; margin: 0.2rem 0 0.4rem; }
 .llp-hint .ll-pop { font: 2.1rem/1 var(--ll-title); --pop-sw: 8px; --pop-shadow: 0 4px 0 rgba(0,0,0,0.4); }
-.llp-lanterns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
+.llp-lanterns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem; }
 .llp-lantern-btn {
     appearance: none; border: 0; background: transparent; padding: 0; cursor: pointer; color: #fff; position: relative;
     display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;
@@ -707,11 +754,11 @@ body.live-lantern-player #live-play-error { position: relative; z-index: 2; }
 .llp-lantern-btn.is-faded { opacity: 0.35; }
 .llp-lantern-btn:disabled { cursor: default; }
 .llp-allin {
-    width: 100%; margin-top: 0.7rem; border: 4px solid var(--ll-yellow); border-radius: 22px; cursor: pointer; color: #fff;
-    background: linear-gradient(#ff7aa8, #e0306a 60%, #a3134b); box-shadow: 0 7px 0 #6b0f33; padding: 0.55rem 0.6rem 0.65rem;
+    width: 100%; margin-top: 0.85rem; border: 4px solid var(--ll-yellow); border-radius: 22px; cursor: pointer; color: #fff;
+    background: linear-gradient(#ff7aa8, #e0306a 60%, #a3134b); box-shadow: 0 7px 0 #6b0f33; padding: 0.7rem 0.7rem 0.8rem;
     display: flex; flex-direction: column; align-items: center; animation: llPhoneIn 0.45s cubic-bezier(.34,1.5,.64,1) 0.35s both;
 }
-.llp-allin .ll-pop { font: 2.3rem/1 var(--ll-title); --pop-fill: linear-gradient(#fff, #ffe1f0); --pop-stroke: #3b0f6b; --pop-sw: 9px; --pop-shadow: 0 4px 0 rgba(0,0,0,0.35); }
+.llp-allin .ll-pop { font: 2.55rem/1 var(--ll-title); --pop-fill: linear-gradient(#fff, #ffe1f0); --pop-stroke: #3b0f6b; --pop-sw: 9px; --pop-shadow: 0 4px 0 rgba(0,0,0,0.35); }
 .llp-allin small { font: 700 0.92rem var(--ll-body); margin-top: 0.15rem; }
 .llp-allin:disabled { opacity: 0.6; }
 .llp-stage { position: relative; height: 330px; margin-top: 0.2rem; }
@@ -777,7 +824,7 @@ body.live-lantern-player #live-play-error { position: relative; z-index: 2; }
     }
     .ll-sky-lantern { display: none; }
     .ll-letter, .ll-rig.is-in, .ll-qcard, .ll-tile, .ll-typed, .ll-answers, .ll-mcard, .ll-allin-title.is-slam,
-    .llp-lantern-btn, .llp-card, .llp-allin, .ll-podium-slot, .ll-podium-crown, .ll-intro-pill, .ll-intro-logo .ll-logo {
+    .llp-lantern-btn, .llp-card, .llp-allin, .ll-podium-slot, .ll-podium-crown, .ll-howto {
         animation-duration: 0.01s !important; animation-delay: 0s !important;
     }
     .ll-row, .ll-zoom, .ll-zoom.is-drumroll { transition-duration: 0.01s !important; }

@@ -115,9 +115,9 @@ test('defaults keep the old timers: races untimed, Lucky Lanterns 20 s', () => {
 
 test('Lucky Lanterns question phase uses the configured time', () => {
     const players = [{ id: 'a', nickname: 'A' }, { id: 'b', nickname: 'B' }];
-    const def = createLanternMatch({ players, deck: DECK, now: 1000 });
+    const def = createLanternMatch({ players, deck: DECK, now: 1000, introMs: 0 });
     assert.equal(def.phaseEndsAt, 1000 + LANTERN_QUESTION_MS);
-    const match = createLanternMatch({ players, deck: DECK, questionMs: 45_000, now: 1000 });
+    const match = createLanternMatch({ players, deck: DECK, questionMs: 45_000, now: 1000, introMs: 0 });
     assert.equal(match.phaseEndsAt, 46_000);
     assert.equal(lanternQuestionPayload(match).timeLimitSec, 45);
     assert.equal(lanternPublicView(match).questionMs, 45_000);
@@ -250,10 +250,13 @@ test('Lucky Lanterns room uses the host time for the question phase', async () =
         configure: (room) => setRoomSettings(room, { questionSeconds: 45 }),
     });
     try {
+        const intro = waitFor(ctx.host, 'live:lantern-state', (s) => s.phase === 'intro');
+        ctx.host.emit('live:start-game');
+        assert.equal((await intro).phase, 'intro');
         const state = waitFor(ctx.host, 'live:lantern-state', (s) => s.phase === 'question');
         const q = waitFor(ctx.socks[0], 'live:your-question');
         const before = Date.now();
-        ctx.host.emit('live:start-game');
+        ctx.host.emit('live:lantern-skip');
         const view = await state;
         assert.equal(view.questionMs, 45_000);
         assert.ok(view.phaseEndsAt - before >= 44_000 && view.phaseEndsAt - before <= 46_000);
