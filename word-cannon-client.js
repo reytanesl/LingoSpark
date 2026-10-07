@@ -90,8 +90,9 @@
     function buildHost() {
         const root = $('live-host-cannon');
         if (!root || !FX()) return false;
-        // Rebuild if an older scaffold (ammo trays) is still mounted.
-        if (H.built && root.querySelector('#wc-wins-red, .wc-wins, #wc-rain-layer')) return true;
+        const fresh = root.querySelector('.wc-wins') && root.querySelector('#wc-rain-layer') && !root.querySelector('#wc-ammo-red');
+        if (H.built && fresh) return true;
+        if (H.built) { root.innerHTML = ''; H.fx = null; }
         H.built = true;
         root.innerHTML = `
             <div class="wc-stage" id="wc-stage">
