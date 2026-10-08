@@ -57,6 +57,16 @@
         const ref = c.pausedAt || (Date.now() + offset);
         return Math.max(0, c.gameEndsAt - ref);
     }
+    /** Shrink text until it fits its box (max-height / width) — no clipped questions. */
+    function fitText(el, max = 54, min = 24) {
+        if (!el) return;
+        let size = max;
+        el.style.fontSize = `${size}px`;
+        while (size > min && (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1)) {
+            size -= 2;
+            el.style.fontSize = `${size}px`;
+        }
+    }
     function textSizeClass(text) {
         const n = String(text || '').length;
         return n > 150 ? 'is-xs' : n > 95 ? 'is-sm' : n > 55 ? 'is-md' : '';
@@ -79,7 +89,7 @@
     function barHtml(team) {
         return `<div class="wc-bar wc-bar--${team}" id="wc-bar-${team}"><div class="wc-bar-fill"></div><div class="wc-bar-text"><span>${team.toUpperCase()}</span><span class="wc-bar-pct">100%</span></div></div>
             <div class="wc-score wc-score--${team}" id="wc-score-${team}">
-                <span class="wc-wins" id="wc-wins-${team}"><span class="wc-wins-label">WINS</span><b class="wc-wins-num">0</b></span>
+                <span class="wc-wins" id="wc-wins-${team}" title="Forts destroyed"><span class="wc-wins-ic" aria-hidden="true">🏆</span><b class="wc-wins-num">0</b><span class="wc-wins-label">WINS</span></span>
                 <span class="wc-score-label">PTS</span><b class="wc-score-num">0</b>
             </div>`;
     }
@@ -90,7 +100,7 @@
     function buildHost() {
         const root = $('live-host-cannon');
         if (!root || !FX()) return false;
-        const fresh = root.querySelector('.wc-wins') && root.querySelector('#wc-rain-layer') && !root.querySelector('#wc-ammo-red');
+        const fresh = root.querySelector('.wc-wins-ic') && root.querySelector('#wc-rain-layer') && !root.querySelector('#wc-ammo-red');
         if (H.built && fresh) return true;
         if (H.built) { root.innerHTML = ''; H.fx = null; }
         H.built = true;
@@ -205,6 +215,11 @@
         H.timers = [];
         $('wc-vignette')?.classList.remove('is-on');
         $('wc-slowmo')?.classList.remove('is-on');
+        cardAway(false);
+    }
+    /** Slide the question card out while a big banner (slow-mo, fort down, time up, winner) owns the sky. */
+    function cardAway(on) {
+        $('wc-stage')?.classList.toggle('is-cardless', Boolean(on));
     }
 
     function setBar(team, hp, { hit = false, quiet = false } = {}) {
@@ -277,20 +292,23 @@
     }
     function phaseCaption(state) {
         if (!state) return;
-        if (state.phase === 'intro') return caption('Score points: correct answers, damage, and fort WINS. Timer decides the winner!');
-        if (state.suddenDeath && state.phase !== 'volley') return caption('Points tied! Sudden death: the fastest correct answer fires the LAST SHOT!');
+        if (state.phase === 'intro') return caption('Destroy the other fort for a 🏆 WIN. Most WINS when the timer ends wins!');
+        if (state.suddenDeath && state.phase !== 'volley') return caption('Tied on WINS and points! Sudden death: the fastest correct answer fires the LAST SHOT!');
         if (state.phase === 'review') return caption('Checking challenges… the cannons are waiting');
         if (state.phase === 'volley') {
             const v = state.volley;
             if (v?.shots?.some((s) => s.final)) return; // the shot itself sets "Last shot decides the battle!"
-            if (H.stormOn) return caption('STORM! Shots are wild — get answers right before the weather hits');
+            if (H.stormOn || v?.storm) {
+                const g = v?.gust;
+                return caption(g ? `STORM gust ×${Number(g).toFixed(1)}: ${g >= 1.15 ? 'wild wind — slow shots blow back!' : g <= 0.85 ? 'calmer gust — aim holds better' : 'shots are wild'}` : 'STORM! Shots are wild — get answers right before the weather hits');
+            }
             return caption('Every 0.1s weaker force — faster answers hit harder');
         }
         if (H.stormOn) return caption('STORM! Shots are wild — get answers right before the weather hits');
         const tips = [
             'Every 0.1s weaker force — faster answers hit harder',
             'Destroy a fort for a WIN (+20 pts) — it rebuilds and play goes on!',
-            'Most points when the timer ends wins',
+            'Time up: most 🏆 WINS takes it — points break a tie',
         ];
         caption(tips[H.captionAlt % tips.length]);
     }
@@ -363,16 +381,23 @@
         H.stormTimer = setTimeout(strike, 3500);
     }
 
+    /** Banners sharing a screen position replace each other (no "BOWN FORT!!" double text). */
+    const BANNER_LANE = { blown: 'low', lucky: 'low', last: 'top', win: 'top', timeup: 'top', storm: 'mid' };
+
     function banner(kind, text, { cls = '', pill = '', pillCls = '' } = {}) {
         const box = $('wc-banners');
         if (!box) return null;
+        const lane = BANNER_LANE[kind] || kind;
+        box.querySelectorAll(`[data-lane="${lane}"]`).forEach((old) => old.remove());
         const el = document.createElement('div');
+        el.dataset.lane = lane;
         el.className = `wc-banner wc-banner--${kind} ${cls}`;
         el.innerHTML = popText(text);
         box.appendChild(el);
         let pillEl = null;
         if (pill) {
             pillEl = document.createElement('div');
+            pillEl.dataset.lane = lane;
             pillEl.className = `wc-banner-pill ${pillCls}`;
             pillEl.textContent = pill;
             box.appendChild(pillEl);
@@ -384,16 +409,26 @@
         return el;
     }
 
-    function label(at, text, cls, { long = false } = {}) {
+    function label(at, text, cls, { long = false, detail = '', compact = false } = {}) {
         const box = $('wc-labels');
         if (!box) return;
         const el = document.createElement('div');
-        el.className = `wc-label ${cls}${long ? ' is-long' : ''}`;
+        el.className = `wc-label ${cls}${long ? ' is-long' : ''}${compact ? ' is-compact' : ''}`;
         el.style.left = `${at.x}px`;
         el.style.top = `${at.y}px`;
-        el.textContent = text;
+        el.innerHTML = `<span class="wc-label-main">${esc(text)}</span>${detail ? `<span class="wc-label-detail">${esc(detail)}</span>` : ''}`;
         box.appendChild(el);
         setTimeout(() => el.remove(), long ? 3900 : 2000);
+    }
+    /** Each ball of a salvo gets its own label slot (stacked per team) so labels never pile up. */
+    function labelSlot(shot, v) {
+        const mine = (v.shots || []).filter((s) => s.team === shot.team);
+        const idx = Math.max(0, mine.indexOf(shot));
+        const compact = mine.length > 4;
+        const rows = compact ? 6 : 4;
+        const gap = compact ? 70 : 100;
+        const base = LABEL_AT[shot.team];
+        return { at: { x: base.x, y: base.y + (idx % rows) * gap }, compact };
     }
     function damageNumber(team, dmg, lucky) {
         const box = $('wc-labels');
@@ -432,6 +467,9 @@
                     <div class="wc-ring"${volley ? ' hidden' : ''}>${ringSvg()}<span class="wc-ring-num"></span></div>
                 </div>
                 <div class="wc-qmeta" id="wc-qmeta"></div>`;
+            const textEl = box.querySelector('.wc-qcard-text');
+            fitText(textEl);
+            document.fonts?.ready?.then(() => { if (textEl.isConnected) fitText(textEl); });
             if (volley) {
                 const term = volley.answerTerm || '';
                 if (term) {
@@ -536,11 +574,16 @@
                 });
             }
         }
+        // During a volley keep the score / WIN chips at their pre-volley values until the
+        // balls land (playVolley updates them), so a WIN never appears before the fort falls.
+        const holdScore = inVolley && state.volley.pointsBefore && H.scoreHeldSeq !== -state.volley.seq;
         TEAMS.forEach((t) => {
             const team = state.teams?.[t];
             const prevPts = prev?.teams?.[t]?.points;
-            setScore(t, team?.points || 0, team?.fortKills || 0, {
-                pop: prev != null && (team?.points || 0) > (prevPts || 0),
+            const pts = holdScore ? (state.volley.pointsBefore[t] ?? 0) : (team?.points || 0);
+            const kills = holdScore ? (state.volley.winsBefore?.[t] ?? 0) : (team?.fortKills || 0);
+            setScore(t, pts, kills, {
+                pop: !holdScore && prev != null && (team?.points || 0) > (prevPts || 0),
             });
         });
         if (!inVolley && state.phase === 'question' && prev?.phase === 'question') {
@@ -567,7 +610,7 @@
 
     // ---------------- volley choreography ----------------
     const MISS_SPOT = { red: { x: 1150, y: 846 }, blue: { x: 770, y: 840 } };
-    const LABEL_AT = { red: { x: 760, y: 500 }, blue: { x: 1170, y: 520 } };
+    const LABEL_AT = { red: { x: 780, y: 420 }, blue: { x: 1140, y: 420 } };
 
     function playVolley(state) {
         clearVolley();
@@ -611,19 +654,31 @@
         }
         const last = v.shots[v.shots.length - 1];
         const endAt = last ? last.at + last.dur : 600;
-        if (v.rebuild && v.fortDown) {
-            const rebuildAt = endAt + 900;
-            schedule(rebuildAt - elapsed, () => rebuildFort(v.fortDown));
+        // Score + WIN chips update when the balls land (final shot: when the fort falls).
+        const finalShot = v.shots.find((s) => s.final);
+        const scoreAt = finalShot ? finalShot.at + 3200 : (last ? last.at + 1000 : 0);
+        H.scoreHeldSeq = v.seq;
+        schedule(scoreAt - elapsed, () => {
+            H.scoreHeldSeq = -v.seq;
             TEAMS.forEach((t) => {
                 const pts = v.points?.[t] ?? state.teams?.[t]?.points ?? 0;
-                const kills = state.teams?.[t]?.fortKills || 0;
+                const kills = v.wins?.[t] ?? state.teams?.[t]?.fortKills ?? 0;
                 setScore(t, pts, kills, { pop: true });
             });
+            if (v.fortDown && v.wins) {
+                const killer = other(v.fortDown);
+                caption(`${NAMES[killer]} destroyed the fort: +1 🏆 WIN (${v.wins[killer]} total)!`);
+            }
+        });
+        if (v.rebuild && v.fortDown) {
+            const rebuildAt = endAt + 700;
+            schedule(rebuildAt - elapsed, () => rebuildFort(v.fortDown));
         }
         if (v.next === 'finished') schedule(endAt - elapsed, () => endSequence(v));
         else if (v.next === 'sudden') {
             schedule(endAt - elapsed, () => {
-                banner('timeup', "TIME'S UP!", { pill: 'Points tied! SUDDEN DEATH', pillCls: '' });
+                cardAway(true);
+                banner('timeup', "TIME'S UP!", { pill: 'Tied! SUDDEN DEATH', pillCls: '' });
                 sfx('thud');
             });
         }
@@ -639,14 +694,19 @@
         const flight = final ? (reduced ? 1400 : 2400) : 950;
         const delay = final ? 700 : 0;
         if (final) {
+            cardAway(true);
             $('wc-vignette')?.classList.add('is-on');
             $('wc-slowmo')?.classList.add('is-on');
             if (shot.lastShot) {
                 banner('last', 'LAST SHOT!');
                 caption('Last shot decides the battle!');
-            } else {
+            } else if ((shot.hpAfter ?? 1) <= 0) {
                 banner('last', `${target.toUpperCase()} FORT DOWN!`);
-                caption('Fort down! +20 points — it rebuilds and the battle goes on');
+                caption(v.next === 'finished' ? 'Fort down with the last salvo!' : 'Fort down! +20 points — it rebuilds and the battle goes on');
+            } else {
+                // Time-up replay of the last real hit (the fort survives).
+                banner('last', 'FINAL HIT!');
+                caption("Time's up — the last hit of the battle");
             }
             sfx('thud');
             setTimeout(() => sfx('thud', { volume: 0.8 }), 420);
@@ -696,8 +756,9 @@
             : shot.outcome === 'miss' ? 'is-miss'
             : `is-${shot.tier || 'fast'}`;
         const who = shot.nickname ? `${shot.nickname}: ` : '';
-        const text = shot.lastShot ? `LAST SHOT! ${who.replace(/: $/, '')}`.trim() : shot.label;
-        label(LABEL_AT[team], text, tierCls, { long: final });
+        const text = shot.lastShot ? `LAST SHOT! ${who.replace(/: $/, '')}`.trim() : `${who}${shot.label}`;
+        const slot = labelSlot(shot, v);
+        label(slot.at, text, tierCls, { long: final, detail: shot.lastShot ? '' : (shot.detail || ''), compact: slot.compact });
         if (hitLike) {
             FX().explosion(H.fx, pos, { scale: final ? 1.7 : shot.outcome === 'lucky' ? 1.35 : friendly ? 1.15 : 1 });
             FX().smoke(H.fx, pos, { n: 10, drift: 90, color: '90,90,95', size: 46 });
@@ -727,7 +788,8 @@
             setTimeout(() => {
                 $('wc-vignette')?.classList.remove('is-on');
                 $('wc-slowmo')?.classList.remove('is-on');
-            }, 1100);
+                if (v.next !== 'finished') cardAway(false);
+            }, 1700);
         }
     }
 
@@ -759,6 +821,7 @@
 
     function endSequence(v) {
         const winner = v.winner;
+        cardAway(true);
         const go = () => {
             if (!winner) {
                 banner('win', "IT'S A DRAW!", { cls: 'is-draw' });
@@ -766,7 +829,10 @@
             } else {
                 banner('win', `${winner.toUpperCase()} TEAM WINS!`, { cls: `is-${winner}` });
                 const pts = v.points?.[winner];
-                caption(pts != null ? `${NAMES[winner]} wins with ${pts} points!` : `${NAMES[winner]} wins the battle!`);
+                const w = v.wins || {};
+                const byWins = (w.red ?? 0) !== (w.blue ?? 0);
+                caption(byWins ? `${NAMES[winner]} wins with ${w[winner]} 🏆 WIN${w[winner] === 1 ? '' : 'S'}!`
+                    : pts != null ? `${NAMES[winner]} wins on points: ${pts}!` : `${NAMES[winner]} wins the battle!`);
             }
             sfx('fanfare');
             if (H.cancelConfetti) H.cancelConfetti();
@@ -891,6 +957,7 @@
         P.key = null;
         P.result = null;
         P.volleySeq = null;
+        P.scoreSeq = null;
         P.shotTimers.forEach(clearTimeout);
         P.shotTimers = [];
         clearInterval(P.timer);
@@ -960,9 +1027,9 @@
             P.shotTimers.push(setTimeout(() => {
                 const el = document.querySelector(`#live-play-cannon [data-shot="${i}"]`);
                 if (!el) return;
-                const cls = s.outcome === 'hit' || s.outcome === 'lucky' ? 'is-hit' : s.outcome === 'blown' ? 'is-blown' : 'is-miss';
+                const cls = s.outcome === 'hit' || s.outcome === 'lucky' ? 'is-hit' : s.outcome === 'blown' || s.outcome === 'own' ? 'is-blown' : 'is-miss';
                 el.className = `wcp-shot ${cls}`;
-                el.textContent = `${s.label}${s.damage > 0 ? `  −${Math.round(s.damage)}%` : ''}`;
+                el.innerHTML = `<b>${esc(s.label)}</b><small>${esc(s.detail || '')}</small>`;
                 sfx(cls === 'is-hit' ? 'explosion' : 'splash', { volume: 0.5 });
                 if (navigator.vibrate && cls === 'is-hit') { try { navigator.vibrate(60); } catch (_) { /* optional */ } }
             }, Math.max(0, wait)));
@@ -1003,34 +1070,39 @@
             if (teamEl.dataset.html !== html) { teamEl.dataset.html = html; teamEl.innerHTML = html; }
         }
         const inVolley = state.phase === 'volley' && state.volley;
+        // Score / WIN chips: during a volley show the pre-volley numbers until the balls land
+        // (same moment as the host), then the new totals. Updated in place — no lag, no flicker.
+        const holdScore = inVolley && state.volley.pointsBefore && P.scoreSeq !== state.volley.seq;
         TEAMS.forEach((t) => {
             const bar = $(`wcp-bar-${t}`);
             if (!bar) return;
             const hp = inVolley ? (state.volley.hpBefore?.[t] ?? 100) : (state.teams?.[t]?.hp ?? 100);
-            bar.querySelector('i').style.width = `${Math.max(0, Math.min(100, hp))}%`;
-            bar.querySelector('span').textContent = `${t.toUpperCase()} ${Math.round(hp)}%`;
-            bar.classList.toggle('is-mine', t === team);
-            const ptsEl = $(`wcp-pts-${t}`);
-            if (ptsEl) {
-                const pts = state.teams?.[t]?.points ?? 0;
-                const kills = state.teams?.[t]?.fortKills || 0;
-                ptsEl.innerHTML = `<span class="wcp-wins">${kills}W</span><span>${pts} pts</span>`;
+            if (!inVolley || P.volleySeq !== state.volley.seq) {
+                bar.querySelector('i').style.width = `${Math.max(0, Math.min(100, hp))}%`;
+                bar.querySelector('span').textContent = `${t.toUpperCase()} ${Math.round(hp)}%`;
             }
+            bar.classList.toggle('is-mine', t === team);
+            const pts = holdScore ? (state.volley.pointsBefore[t] ?? 0) : (state.teams?.[t]?.points ?? 0);
+            const kills = holdScore ? (state.volley.winsBefore?.[t] ?? 0) : (state.teams?.[t]?.fortKills || 0);
+            setPhoneScore(t, pts, kills);
         });
         if (inVolley && P.volleySeq !== state.volley.seq) {
-            // Move the bars to the end of the volley once the shots land.
+            // Move the bars + scores to the end of the volley once the shots land.
             const v = state.volley;
             const start = (state.phaseEndsAt || 0) - (v.durationMs || 0);
             const last = v.shots[v.shots.length - 1];
-            const landAt = last ? last.at + (last.final ? 3100 : 950) : 0;
+            const finalShot = v.shots.find((s) => s.final);
+            const landAt = finalShot ? finalShot.at + 3200 : last ? last.at + 1000 : 0;
             const wait = start + landAt - (Date.now() + P.offset);
             P.shotTimers.push(setTimeout(() => {
+                P.scoreSeq = v.seq;
                 TEAMS.forEach((t) => {
                     const bar = $(`wcp-bar-${t}`);
                     if (!bar) return;
                     const hp = v.hpAfter?.[t] ?? 100;
                     bar.querySelector('i').style.width = `${Math.max(0, hp)}%`;
                     bar.querySelector('span').textContent = `${t.toUpperCase()} ${Math.round(hp)}%`;
+                    setPhoneScore(t, v.points?.[t] ?? 0, v.wins?.[t] ?? 0, true);
                 });
             }, Math.max(0, wait)));
         }
@@ -1056,7 +1128,12 @@
             if (typeSection) typeSection.hidden = true;
             if (choices) choices.hidden = true;
             if (ctx.setAnswerInputsEnabled) ctx.setAnswerInputsEnabled(false);
-        } else if (def) def.hidden = false;
+        } else {
+            if (def) def.hidden = false;
+            // Self-heal: make sure this phone shows the answer buttons / box for the live
+            // question (a stale render or a missed live:your-question used to leave it blank).
+            ctx.ensureQuestion?.(state.questionId, state.inputMode);
+        }
         const status = $('live-play-status');
         if (status) {
             let note = '';
@@ -1070,6 +1147,17 @@
         if (!P.timer) P.timer = setInterval(tickPhone, 250);
         tickPhone();
     };
+
+    function setPhoneScore(t, pts, kills, pop = false) {
+        const el = $(`wcp-pts-${t}`);
+        if (!el) return;
+        const key = `${kills}|${pts}`;
+        if (el.dataset.key === key) return;
+        const grew = el.dataset.key != null && pop;
+        el.dataset.key = key;
+        el.innerHTML = `<span class="wcp-wins" title="Forts destroyed">🏆 ${Math.round(kills)}</span><span>${Math.round(pts)} pts</span>`;
+        if (grew) { el.classList.remove('is-pop'); void el.offsetWidth; el.classList.add('is-pop'); }
+    }
 
     function tickPhone() {
         const state = P.state;
@@ -1086,6 +1174,13 @@
             chip.classList.toggle('is-storm', storm || state.suddenDeath);
         }
         document.body.classList.toggle('wc-phone-storm', storm);
+        // Self-heal every tick (not only on state pushes): while this phone may still answer,
+        // keep its answer box / buttons on screen for the live question.
+        const me = state.you || {};
+        if (state.phase === 'question' && !me.decision && me.status !== 'out'
+            && (state.phaseEndsAt || 0) > Date.now() + P.offset) {
+            ctx.ensureQuestion?.(state.questionId, state.inputMode);
+        }
         const ring = $('wcp-ring');
         if (ring) {
             const asking = state.phase === 'question';
@@ -1165,9 +1260,11 @@
         const pid = String(playerId ?? '');
         const myTeamId = players.find((p) => String(p.id) === pid)?.team || null;
         const title = winner ? `${winner.toUpperCase()} TEAM WINS!` : "IT'S A DRAW!";
+        const w = data?.wins || { red: data?.teams?.red?.fortKills || 0, blue: data?.teams?.blue?.fortKills || 0 };
+        const rule = winner && (w.red ?? 0) !== (w.blue ?? 0) ? 'most 🏆 WINS wins' : 'WINS tied — most points wins';
         const reason = data?.reason === 'sudden' ? 'Won with the LAST SHOT in sudden death!'
-            : data?.reason === 'time' ? "Time's up — most points wins!"
-            : data?.reason === 'ended' ? 'Host ended the battle — most points wins!'
+            : data?.reason === 'time' ? `Time's up — ${rule}!`
+            : data?.reason === 'ended' ? `Host ended the battle — ${rule}!`
             : data?.reason === 'draw' ? 'Nobody fired the last shot.' : 'Battle over.';
         const you = myTeamId ? (winner === myTeamId ? ' That\'s your team!' : '') : '';
         const col = (t) => {
@@ -1179,13 +1276,13 @@
             const dmg = Math.round(team.damageDealt || 0);
             return `<div class="wc-win-team wc-win-team--${t}${winner === t ? ' is-winner' : ''}">${winner === t ? '<span class="wc-crown" aria-hidden="true">👑</span>' : ''}
                 <h3>${t.toUpperCase()} TEAM <small>${pts} pts</small></h3>
-                <p class="wc-win-team-stats">🏆 ${kills} WIN${kills === 1 ? '' : 'S'} · 💥 ${dmg}% damage</p>
+                <p class="wc-win-team-stats"><span class="wc-win-wins">🏆 ${kills} WIN${kills === 1 ? '' : 'S'}</span><span>💥 ${dmg} damage</span></p>
                 <ol>${list}</ol></div>`;
         };
         const mvp = data?.mvp;
         const mvpHtml = mvp ? `<div class="wc-mvp"><span class="wc-mvp-badge">MVP</span><span class="wc-mvp-ball">${FX().ballSvg()}</span>
                 <span class="wc-mvp-name">${esc(mvp.nickname)}</span><span class="wc-mvp-team is-${esc(mvp.team)}">${esc(NAMES[mvp.team] || '')}</span>
-                <div class="wc-mvp-stats"><span>🎯 ${mvp.hits || 0} hits</span><span>💥 ${Math.round(mvp.damage || 0)}% damage</span><span>✔ ${mvp.correct || 0} correct</span></div></div>`
+                <div class="wc-mvp-stats"><span>🎯 ${mvp.hits || 0} hits</span><span>💥 ${Math.round(mvp.damage || 0)} damage</span><span>✔ ${mvp.correct || 0} correct</span></div></div>`
             : '<div class="wc-mvp"><span class="wc-mvp-badge">MVP</span><span class="wc-mvp-name">—</span></div>';
         return `<h2 class="wc-win-title ${winner ? `is-${winner}` : ''}">${popText(title)}</h2>
             <p class="wc-win-sub">${esc(reason)}${esc(you)}</p>

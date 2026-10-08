@@ -147,10 +147,11 @@ test('Lucky Lanterns runs a question, challenge, pick, reveal, and finish', asyn
         const round2 = await waitFor(host, 'live:lantern-state', (state) => state.phase === 'question' && state.round === 2);
         assert.equal(round2.leaderboard.every((row) => row.score === 100), true);
 
+        // Nobody answered round 2: skipping the question jumps straight to the board (no empty pick window).
         host.emit('live:lantern-skip');
-        await waitFor(host, 'live:lantern-state', (state) => state.phase === 'picking' && state.round === 2);
-        host.emit('live:lantern-skip');
-        await waitFor(host, 'live:lantern-state', (state) => state.phase === 'reveal' && state.round === 2);
+        const emptyReveal = await waitFor(host, 'live:lantern-state', (state) => state.phase !== 'question' && state.round === 2);
+        assert.equal(emptyReveal.phase, 'reveal');
+        assert.equal(emptyReveal.reveal.steps.length, 0);
         host.emit('live:lantern-next');
         const finalRound = await waitFor(host, 'live:lantern-state', (state) => state.phase === 'question' && state.round === 3);
         assert.equal(finalRound.isFinal, true);

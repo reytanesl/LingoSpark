@@ -153,6 +153,39 @@
         else s.once('connect', send);
     }
 
+    /**
+     * Word Cannon self-heal: while the server says this phone should be answering, make sure
+     * the answer buttons / type box for that question are on screen and enabled. If the phone
+     * never got the question payload, ask the server again (throttled).
+     */
+    let cannonQuestionAskedAt = 0;
+    window.__liveDebug = () => ({ answerPending, activeQuestionId, currentQuestionId: currentQuestion?.questionId ?? null, challengePending: playerChallengePending });
+
+    function ensureCannonQuestion(questionId) {
+        if (!playerState || answerPending || questionId == null) return;
+        const q = currentQuestion;
+        if (q && q.questionId === questionId) {
+            const choices = $('live-play-choices');
+            const typeSection = $('live-play-type-section');
+            if (q.inputMode === 'choice') {
+                const missing = !choices || choices.hidden || !choices.querySelector('button');
+                if (missing) {
+                    applyQuestionInputMode(q.inputMode, q);
+                    renderChoiceButtons(q.choices || []);
+                }
+                if (missing || choices?.querySelector('button:disabled')) setAnswerInputsEnabled(true);
+            } else if (typeSection && (typeSection.hidden || $('live-play-answer')?.disabled)) {
+                applyQuestionInputMode(q.inputMode, q);
+                setAnswerInputsEnabled(true);
+            }
+            return;
+        }
+        const now = Date.now();
+        if (now - cannonQuestionAskedAt < 1500) return;
+        cannonQuestionAskedAt = now;
+        requestPlayerQuestion();
+    }
+
     function requestPlayerQuestion() {
         if (!playerState) return;
         emitWhenConnected('live:request-question', {
@@ -974,15 +1007,14 @@
                     <span class="live-host-challenge-badge">Challenge</span>
                     <strong>${esc(c.nickname)}</strong>
                 </div>
-                <p class="live-host-challenge-term">Term: <strong>${esc(term || '—')}</strong></p>
-                <p class="live-host-challenge-def">${esc(def || 'No definition')}</p>
-                <p class="live-host-challenge-answers">
-                    Submitted: <strong>${esc(submitted || '—')}</strong>
-                    <span class="live-muted">· Expected: ${esc(term || '—')}</span>
-                </p>
+                <p class="live-host-challenge-def"><span class="live-host-challenge-q">Question</span>${esc(def || 'No definition')}</p>
+                <div class="live-host-challenge-compare">
+                    <div class="live-host-challenge-box is-submitted"><span>Submitted</span><strong>${esc(submitted || '—')}</strong></div>
+                    <div class="live-host-challenge-box is-expected"><span>Expected</span><strong>${esc(term || '—')}</strong></div>
+                </div>
                 <div class="live-host-challenge-actions">
-                    <button type="button" class="btn btn-blue live-challenge-accept" data-challenge-id="${esc(c.id)}">Accept</button>
-                    <button type="button" class="btn live-challenge-reject" data-challenge-id="${esc(c.id)}">Reject</button>
+                    <button type="button" class="btn btn-blue live-challenge-accept" data-challenge-id="${esc(c.id)}">✓ Accept</button>
+                    <button type="button" class="btn live-challenge-reject" data-challenge-id="${esc(c.id)}">✗ Reject</button>
                 </div>
             </div>`;
         }).join('');
@@ -3657,9 +3689,41 @@
         el.style.top = `${y}px`;
         el.innerHTML = LLFX.popTextHtml(text);
         layer.appendChild(el);
-        // +2 s linger (was 1600 / 1150) so points stay readable; CSS holds them before fading.
-        setTimeout(() => el.remove(), mode === 'pop' ? 3600 : 3150);
+        // Readable for ~2.8 s (one reveal window is >= 3 s), so a group never outlives its window.
+        setTimeout(() => el.remove(), 2900);
         return el;
+    }
+
+    /** Fade out every notice from the previous lantern group before the next one starts. */
+    function llClearNotices() {
+        document.querySelectorAll('#ll-fx .ll-ft, #ll-fx .ll-gnote').forEach((el) => {
+            if (el.classList.contains('is-leaving')) return;
+            el.classList.add('is-leaving');
+            setTimeout(() => el.remove(), 260);
+        });
+    }
+
+    /**
+     * One collective notice per lantern: a headline plus a chip per player, anchored between the
+     * lantern and its avatars. Replaces the per-avatar floats, which overlapped when avatars sit
+     * 72-96 px apart.
+     */
+    function llGroupNotice(kind, headline, rows, tone = '') {
+        const layer = $('ll-fx');
+        if (!layer) return null;
+        const el = document.createElement('div');
+        const many = rows.length > 4;
+        el.className = `ll-gnote ll-gnote--${kind}${tone ? ` is-${tone}` : ''}${many ? ' is-many' : ''}`;
+        el.style.left = `${LL_LX[kind] || 715}px`;
+        el.innerHTML = `<div class="ll-gnote-head">${LLFX.popTextHtml(headline)}</div>
+            <div class="ll-gnote-rows">${rows.map((row) => `<span class="ll-gnote-chip is-${row.tone || 'plain'}"><b>${esc(row.name)}</b>${esc(row.text)}</span>`).join('')}</div>`;
+        layer.appendChild(el);
+        return el;
+    }
+
+    function llSigned(delta) {
+        const n = Number(delta) || 0;
+        return n > 0 ? `+${formatLanternPoints(n)}` : (n < 0 ? `−${formatLanternPoints(-n)}` : '0');
     }
 
     // ---------------- incremental scores during the reveal ----------------
@@ -3713,16 +3777,14 @@
         }
         LiveAudio.playLanternSfx('safe');
         const fx = $('ll-fx');
-        llFloatText(`+${shown[0].delta || 100}`, LL_LX.safe, LL_LCY - 60, 'll-ft--safe', 'rise');
         LLFX.sparkles(fx, LL_LX.safe, LL_LCY, { color: '#c6ff7a', n: 16, r0: 60, r1: 260, seed: 4 });
+        const same = shown.every((step) => (step.delta || 0) === (shown[0].delta || 0));
+        llGroupNotice('safe', same ? `+${shown[0].delta || 100}` : 'SAFE!', shown.map((step) => ({
+            name: step.nickname || '', text: llSigned(step.delta || 0), tone: 'win',
+        })), 'safe');
         shown.forEach((step, i) => {
             const slot = llHost.slots.get(step.playerId);
-            if (slot) {
-                llLater(() => {
-                    llRestart(slot.el, 'is-bounce');
-                    llFloatText(`+${step.delta || 0}`, slot.x, slot.y - 78, 'll-ft--mini', 'rise');
-                }, 120 + i * 60);
-            }
+            if (slot) llLater(() => llRestart(slot.el, 'is-bounce'), 120 + i * 60);
             llApplyStep(step);
         });
     }
@@ -3751,6 +3813,14 @@
             let playedDouble = false;
             let playedBust = false;
             let playedShield = false;
+            const doubles = steps.filter((step) => step.coin === 'double').length;
+            const busts = steps.filter((step) => step.coin !== 'double' && !step.savedByShield).length;
+            const headline = doubles === steps.length ? 'x2!' : (busts === steps.length ? '0' : 'FLIP!');
+            llGroupNotice('risk', headline, steps.map((step) => {
+                if (step.coin === 'double') return { name: step.nickname || '', text: `x2 ${llSigned(step.delta)}`, tone: 'gold' };
+                if (step.savedByShield) return { name: step.nickname || '', text: '🛡️ +100', tone: 'shield' };
+                return { name: step.nickname || '', text: '0', tone: 'bust' };
+            }), doubles === steps.length ? 'gold' : (busts === steps.length ? 'bust' : 'mixed'));
             steps.forEach((step, i) => {
                 const slot = llHost.slots.get(step.playerId);
                 const sx = slot ? slot.x : LL_LX.risk + (i - (steps.length - 1) / 2) * 72;
@@ -3759,14 +3829,13 @@
                 llLater(() => {
                     if (step.coin === 'double') {
                         if (!playedDouble) { LiveAudio.playLanternSfx('double'); playedDouble = true; }
-                        llFloatText('x2!', sx, sy - 140, 'll-ft--x2', 'pop');
-                        LLFX.sparkles(fx, sx, sy - 140, { color: '#ffd23f', n: 12, r0: 36, r1: 180, seed: 6 + i });
+                        if (slot) llRestart(slot.el, 'is-bounce');
+                        LLFX.sparkles(fx, sx, sy - 60, { color: '#ffd23f', n: 10, r0: 30, r1: 120, seed: 6 + i });
                     } else if (step.savedByShield) {
                         if (!playedShield) { LiveAudio.playLanternSfx('safe'); playedShield = true; }
-                        llFloatText('🛡️ +100', sx, sy - 140, 'll-ft--shield', 'pop');
+                        if (slot) llRestart(slot.el, 'is-bounce');
                     } else {
                         if (!playedBust) { LiveAudio.playLanternSfx('bust'); playedBust = true; }
-                        llFloatText('0', sx, sy - 140, 'll-ft--zero', 'pop');
                         LLFX.puff(fx, sx, sy);
                         if (slot) {
                             slot.el.classList.add('is-bust');
@@ -3806,7 +3875,7 @@
         } else if (step.card === 'plus150' || step.card === 'plus50') {
             title = `${step.title} BONUS!`;
         } else if (step.card === 'minus50' || step.card === 'minus100') {
-            title = step.savedByShield ? 'SHIELD SAVED YOU!' : `${step.title || 'CURSE'}!`;
+            title = step.savedByShield ? 'SHIELD SAVED YOU!' : (Number(step.delta) < 0 ? `${step.title || 'CURSE'}!` : 'CURSE!');
         }
         return { title, detail, avs };
     }
@@ -3842,12 +3911,21 @@
             if (slot) llRestart(slot.el, 'is-bounce');
             llBoardHighlight(step.playerId, true);
             if (!layer) return;
-            const offset = n === 1 ? 0 : (i - (n - 1) / 2) * Math.min(210, 520 / Math.max(1, n - 1));
-            const scale = n > 2 ? 0.72 : (n === 2 ? 0.82 : 1);
+            // Cards sit side by side (never overlapping): one row up to 4, two rows above that.
+            const rowsN = n > 4 ? 2 : 1;
+            const perRow = Math.ceil(n / rowsN);
+            const r = Math.floor(i / perRow);
+            const inRow = Math.min(perRow, n - r * perRow);
+            const col = i - r * perRow;
+            const gap = 28;
+            const w = Math.min(600, (1300 - gap * (perRow - 1)) / perRow);
+            const scale = Math.min(w / 600, rowsN === 2 ? 0.55 : 1);
+            const offset = (col - (inRow - 1) / 2) * (600 * scale + gap);
             const wrap = document.createElement('div');
             wrap.className = `ll-mcard-slot${n > 1 ? ' is-fan' : ''}`;
             wrap.style.setProperty('--ll-fan-x', `${offset}px`);
             wrap.style.setProperty('--ll-fan-s', String(scale));
+            if (rowsN === 2) wrap.style.top = `${290 + r * 240}px`;
             wrap.style.zIndex = String(15 + i);
             wrap.innerHTML = llMysteryCardHtml(step);
             layer.appendChild(wrap);
@@ -3856,12 +3934,10 @@
             LiveAudio.playLanternSfx('chime');
             steps.forEach((step, i) => {
                 llLater(() => {
+                    // The flipped card is the notice (title + delta); the avatar just reacts.
                     const slot = llHost.slots.get(step.playerId);
-                    const sx = slot ? slot.x : LL_LX.mystery;
-                    const sy = slot ? slot.y : LL_TRAY_Y;
-                    const label = step.delta > 0 ? `+${step.delta}` : (step.delta < 0 ? `${step.delta}` : (step.title || '!'));
-                    const cls = step.delta > 0 ? 'll-ft--mini' : (step.delta < 0 || step.tone === 'bust' ? 'll-ft--zero' : 'll-ft--note');
-                    llFloatText(label, sx, sy - 78, cls, 'pop');
+                    if (slot) llRestart(slot.el, step.delta < 0 ? 'is-bust' : 'is-bounce');
+                    if (slot && step.delta < 0) llLater(() => slot.el.classList.remove('is-bust'), 1200);
                     llApplyStep(step);
                 }, i * 60);
             });
@@ -3901,10 +3977,16 @@
             $('ll-tray')?.classList.add('is-out');
         }
         const n = steps.length;
+        // Several ALL IN players: each gets a column whose result text is sized to fit it, so the
+        // WIN!/BUST! headlines can never run into each other ("BUSWIN!").
+        const spacing = n === 1 ? 0 : Math.min(320, 1240 / n);
+        const multiVars = n > 1
+            ? `--ll-ai-f:${Math.round(Math.max(40, Math.min(96, (spacing - 30) / 3.9)))}px;--ll-ai-pill:${Math.round(Math.max(20, Math.min(32, spacing / 9)))}px;--ll-ai-w:${Math.round(spacing - 16)}px`
+            : '';
         const playersHtml = steps.map((step, i) => {
             const row = llHost.working?.get(step.playerId) || (state.leaderboard || []).find((r) => r.id === step.playerId);
             const name = step.nickname || row?.nickname || '';
-            const offset = n === 1 ? 0 : (i - (n - 1) / 2) * Math.min(280, 900 / Math.max(1, n));
+            const offset = n === 1 ? 0 : (i - (n - 1) / 2) * spacing;
             return `<div class="ll-allin-player" data-pid="${esc(step.playerId)}" style="--ll-ai-x:${offset}px">
                 <div class="ll-allin-av">${LLFX.avatarHtml(row?.avatar)}</div>
                 <div class="ll-allin-pill">${esc(name)} bets it all: ${formatLanternPoints(step.scoreBefore)}</div>
@@ -3914,7 +3996,7 @@
         stage.hidden = false;
         stage.innerHTML = `
             <div class="ll-allin-title is-slam">${LLFX.popTextHtml('ALL IN?')}</div>
-            <div class="ll-allin-players${n > 1 ? ' is-multi' : ''}">${playersHtml}</div>
+            <div class="ll-allin-players${n > 1 ? ' is-multi' : ''}" style="${multiVars}">${playersHtml}</div>
             ${LLFX.lanternRigHtml('allin')}
             `;
         const rig = stage.querySelector('.ll-rig');
@@ -3965,6 +4047,17 @@
                 if (!win && !saved) block?.querySelector('.ll-allin-av')?.classList.add('is-bust');
                 llApplyStep(step);
             });
+            if (n > 1) {
+                // One combined headline instead of several giant ones.
+                const wins = steps.filter((step) => step.coin === 'double' || step.tone === 'win').length;
+                const saves = steps.filter((step) => !(step.coin === 'double' || step.tone === 'win') && step.savedByShield).length;
+                const busts = n - wins - saves;
+                const parts = [];
+                if (wins) parts.push(`${wins} WIN${wins > 1 ? 'S' : ''}`);
+                if (saves) parts.push(`${saves} SAVED`);
+                if (busts) parts.push(`${busts} BUST${busts > 1 ? 'S' : ''}`);
+                stage.insertAdjacentHTML('beforeend', `<div class="ll-allin-sum">${LLFX.popTextHtml(parts.join(' · '))}</div>`);
+            }
             if (anyWin) {
                 const flash = document.createElement('div');
                 flash.className = 'll-gold-flash';
@@ -3989,6 +4082,7 @@
         const first = shown[0];
         if (!first) return;
         llDismissCard();
+        llClearNotices();
         if (first.group === 'safe') llBeatSafe(shown);
         else if (first.group === 'risk') llBeatRisk(shown);
         else if (first.group === 'mystery') llBeatMystery(shown);
@@ -4025,6 +4119,7 @@
         const boardAt = LL_LEAD_MS + (state.reveal.leaderboardAt || 0);
         llLater(() => {
             llDismissCard();
+            llClearNotices();
             llHost.working = null;
             renderLanternBoard(finalRows, { animate: true });
         }, boardAt);
@@ -4413,7 +4508,26 @@
         llPhone.cancelConfetti = LLFX.confetti(canvas, { burst: { x: window.innerWidth / 2, y: window.innerHeight * 0.4 }, rain: true, count: 70, duration: 3200 });
     }
 
+    /** Count the phone's score chip to `value` from whatever it shows now (no jump, no lag). */
+    function llPhoneScoreTo(value, ms = 700) {
+        const el = $('ll-phone-score');
+        const to = Number(value);
+        if (!el || !Number.isFinite(to)) return;
+        const from = Number.isFinite(llPhone.shownScore) ? llPhone.shownScore : to;
+        llPhone.shownScore = to;
+        if (from === to) {
+            el.textContent = formatLanternPoints(to);
+            return;
+        }
+        LLFX.countUp(el, from, to, ms);
+        llRestart(el, 'is-pop');
+    }
+
     function llPhoneBeat(step, sfx) {
+        // The score chip follows the player's own result as soon as it lands on screen, instead of
+        // waiting for the whole reveal (all groups) to finish.
+        const landAt = step?.group === 'safe' ? 150 : (step?.group === 'allin' ? 1550 : 900);
+        if (step && Number.isFinite(Number(step.scoreAfter))) llLater(() => llPhoneScoreTo(step.scoreAfter), landAt);
         const stage = $('llp-stage');
         const fx = $('llp-fx');
         const caption = $('llp-caption');
@@ -4513,11 +4627,11 @@
         }
         const boardAt = LL_LEAD_MS + (state.reveal.leaderboardAt || 0);
         const entering = Number(state.you?.score) || 0;
+        llPhone.shownScore = entering;
         llLater(() => {
             paintPlayerResult(state.you?.result, entering);
-            const score = $('ll-phone-score');
             const rank = $('ll-phone-rank');
-            if (score) LLFX.countUp(score, entering, Number(state.you?.finalScore) || 0, 800);
+            llPhoneScoreTo(Number(state.you?.finalScore) || 0, 600);
             if (rank) {
                 rank.textContent = state.you?.finalRank ? `#${state.you.finalRank}` : '—';
                 rank.classList.toggle('is-lead', state.you?.finalRank === 1 && Number(state.you?.finalScore) > 0);
@@ -4574,10 +4688,13 @@
         else if (you.decision === 'pending') note = 'Waiting for the teacher.';
         else if (you.status === 'ready') note = 'Correct! Lanterns open after any challenges.';
         else if (you.status === 'out') note = 'No lantern this round.';
+        else if (state.phase === 'reveal') note = '';
         else if (state.phase === 'picking' && you.eligible && !you.pick) note = state.isFinal ? 'Final round — pick a lantern or go ALL IN.' : 'Pick a lantern.';
         else if (you.pick) note = 'Lantern locked in. Watch the reveal.';
-        else if (state.phase === 'reveal') note = 'Reveal!';
-        if (status && note && !(state.phase === 'question' && !you.decision)) status.textContent = note;
+        // Always overwrite (an empty note clears the stale "Lantern locked in" line under the results).
+        if (status && !(state.phase === 'question' && !you.decision)) {
+            status.textContent = note;
+        }
 
         if (!root.querySelector('.llp-top')) {
             root.innerHTML = `
@@ -4603,6 +4720,7 @@
         if (!revealing) {
             const scoreEl = $('ll-phone-score');
             const rankEl = $('ll-phone-rank');
+            llPhone.shownScore = Number(you.score) || 0;
             if (scoreEl) {
                 scoreEl.textContent = formatLanternPoints(you.score);
                 scoreEl.style.color = LLFX.avatarScoreColor(avatar);
@@ -4733,6 +4851,7 @@
             roomCode: () => hostState?.code || $('live-host-code')?.textContent || '',
             setAnswerInputsEnabled,
             hideChallengeActions,
+            ensureQuestion: ensureCannonQuestion,
         });
         $('live-lobby-question-time')?.addEventListener('change', emitHostLobbySettings);
         bindHostLobbyBoard();

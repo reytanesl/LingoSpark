@@ -12,10 +12,11 @@
  * Fairness: full-power damage per shot = CANNON_ROUND_BUDGET / team size, so a
  * whole team answering well deals about the same budget whatever its size.
  *
- * Storm (final CANNON_STORM_MS): rain, wild outcomes — many shots BLOWN BACK
- * onto your own fort, LUCKY HIT, or stray misses that can also hit own fort.
- * Remaining hits get a random damage multiplier. Players should focus on
- * getting answers right early, before the weather takes over.
+ * Storm (final CANNON_STORM_MS): rain and a random wind GUST per volley
+ * (STORM_RULES.gustMin..gustMax). Slow shots are the ones that get BLOWN BACK
+ * onto their own fort (chance grows with gust and with lost force); LUCKY HITs
+ * deal a random 1.4–2.2× and the remaining hits a random 0.25–1.55×.
+ * Own-fort hits are rare outside the storm: only a slow miss can clip it.
  *
  * Volleys fire as a salvo (all shots in one tight burst) to keep the pace up.
  *
@@ -24,8 +25,9 @@
  * - +1 point per HP of damage dealt to the opposing fort (faster = more damage)
  * - +1 WIN (+CANNON_FORT_KILL_BONUS points) each time a team destroys the other fort
  * Destroying a fort is celebrated (slow-mo, flag falls) then that fort rebuilds
- * to 100% and play continues until the game timer ends. Most points win.
- * Points tie when time is up -> sudden death LAST SHOT. After
+ * to 100% and play continues until the game timer ends.
+ * Winner when time is up (or the host ends): most WINS (forts destroyed);
+ * equal WINS -> most points; equal points -> sudden death LAST SHOT. After
  * CANNON_SUDDEN_TRIES empty sudden rounds it is a draw.
  *
  * All randomness comes from the match rng (seedable with mulberry32).
@@ -43,9 +45,10 @@ export const CANNON_POINTS_CORRECT = 1;
 export const CANNON_POINTS_PER_DAMAGE = 1;
 export const CANNON_FORT_KILL_BONUS = 20;
 export const CANNON_QUESTION_MS = 20_000;
-export const CANNON_REVIEW_MS = 12_000;
+/** Time a player gets to decide whether to challenge a typed answer (host review pauses the clock). */
+export const CANNON_REVIEW_MS = 8_000;
 /** Host quick tutorial (skippable) before round 1. */
-export const CANNON_INTRO_MS = 9_000;
+export const CANNON_INTRO_MS = 7_000;
 export const CANNON_GAME_MINUTES = [3, 5, 8, 10];
 export const CANNON_DEFAULT_MINUTES = 5;
 export const CANNON_STORM_MS = 60_000;
@@ -55,16 +58,18 @@ export const CANNON_TEAM_NAMES = { red: 'Red Team', blue: 'Blue Team' };
 
 /** Volley pacing (ms). Shots fire as a salvo; the client plays the same beats. */
 export const VOLLEY_TIMING = {
-    introMs: 700,
+    introMs: 450,
     /** Tiny stagger so balls leave nearly together without stacking perfectly. */
     salvoStaggerMs: 140,
     shotMs: 1_100,
     finalShotMs: 3_600,
-    outroMs: 1_000,
-    emptyMs: 2_200,
-    endHoldMs: 5_600,
+    outroMs: 600,
+    emptyMs: 1_500,
+    endHoldMs: 4_400,
     /** Extra hold after a mid-game fort kill so the flag-fall can play before rebuild. */
-    fortDownMs: 2_800,
+    fortDownMs: 2_200,
+    /** Extra beat before a sudden-death round. */
+    suddenMs: 1_100,
 };
 
 /** Force drops once every FORCE_STEP_MS after a short full-power window. */
@@ -78,22 +83,54 @@ export const FORCE_WINDOWS = {
     typed: { fullMs: 2_200, decayMs: 13_000, floor: 0.12 },
 };
 
-/** Storm: more chaos so late game rewards early correctness over aim gaming. */
+/**
+ * Storm: more chaos so late game rewards early correctness over aim gaming.
+ * Every storm volley rolls a wind gust in [gustMin, gustMax]; the gust scales
+ * blow-back chance and lowers aim, so two storm rounds rarely feel the same.
+ */
 export const STORM_RULES = {
-    blownBelow: 0.32,
-    luckyBelow: 0.52,
-    luckyFactor: 1.8,
-    /** Remaining shots: damage multiplied by this random band around force. */
+    gustMin: 0.6,
+    gustMax: 1.4,
+    /**
+     * Blow-back chance = blownBase × gust × (blownSlope − force)², clamped. Squared so fast shots
+     * almost never blow back (force 1 → 1–2 %) while slow ones often do (force 0.3 → 20–40 %).
+     */
+    blownBase: 0.35,
+    blownSlope: 1.2,
+    blownMinChance: 0.01,
+    blownMaxChance: 0.45,
+    luckyChance: 0.2,
+    /** LUCKY HIT damage multiplier band. */
+    luckyMin: 1.4,
+    luckyMax: 2.2,
+    /** Remaining hits: damage multiplied by this random band. */
     wildMin: 0.25,
     wildMax: 1.55,
-    /** Blowback / stray damage to own fort (fraction of full power). */
+    /** Blowback / stray damage to own fort (fraction of the shot's power). */
     blownOwnMin: 0.35,
     blownOwnMax: 0.85,
-    /** Chance a storm miss curves back into own fort. */
-    stormStrayOwn: 0.45,
-    /** Chance a calm miss still clips own fort. */
+    /** Storm miss curves back into own fort: stormStrayOwn × (1.1 − force). */
+    stormStrayOwn: 0.35,
+    /** Calm miss clips own fort: calmStrayOwn × (1 − force) — only slow shots, rare. */
     calmStrayOwn: 0.12,
 };
+
+/** Random wind gust for one storm volley. */
+export function rollStormGust(rng = Math.random) {
+    return Math.round((STORM_RULES.gustMin + rng() * (STORM_RULES.gustMax - STORM_RULES.gustMin)) * 100) / 100;
+}
+
+function clamp(x, lo, hi) {
+    return Math.max(lo, Math.min(hi, x));
+}
+
+/** Chance (0..1) that a storm shot with this force is blown back by this gust. */
+export function stormBlownChance(force, gust = 1) {
+    const f = clamp(Number(force) || 0, 0, 1);
+    const g = clamp(Number(gust) || 1, STORM_RULES.gustMin, STORM_RULES.gustMax);
+    const lost = Math.max(0, STORM_RULES.blownSlope - f);
+    return clamp(STORM_RULES.blownBase * g * lost * lost, STORM_RULES.blownMinChance, STORM_RULES.blownMaxChance);
+}
 
 /** Small, fast, seedable PRNG. */
 export function mulberry32(seed) {
@@ -175,12 +212,14 @@ function ownFortDamage(full, rng) {
  * Resolve one shot. Pure apart from the rng.
  * Returns { outcome, tier, force, damage, friendly? }.
  * `friendly` / outcome `blown` / `own` means the ball hits the shooter's fort.
+ * `gust` (storm only) is the volley's wind strength, see rollStormGust().
  */
 export function resolveShot({
     ms,
     questionMs = CANNON_QUESTION_MS,
     teamSize,
     storm = false,
+    gust = 1,
     inputMode = 'typed',
     rng = Math.random,
 }) {
@@ -188,63 +227,38 @@ export function resolveShot({
     const force = tierInfo.force;
     const full = baseDamage(teamSize) * force;
     if (storm) {
+        const g = clamp(Number(gust) || 1, STORM_RULES.gustMin, STORM_RULES.gustMax);
+        const blown = stormBlownChance(force, g);
         const roll = rng();
-        if (roll < STORM_RULES.blownBelow) {
-            return {
-                outcome: 'blown',
-                tier: tierInfo.tier,
-                force,
-                damage: ownFortDamage(full, rng),
-                friendly: true,
-            };
+        if (roll < blown) {
+            return { outcome: 'blown', tier: tierInfo.tier, force, damage: ownFortDamage(full, rng), friendly: true };
         }
-        if (roll < STORM_RULES.luckyBelow) {
-            return {
-                outcome: 'lucky',
-                tier: tierInfo.tier,
-                force,
-                damage: Math.max(1, Math.round(full * STORM_RULES.luckyFactor)),
-            };
+        if (roll < blown + STORM_RULES.luckyChance) {
+            const lucky = STORM_RULES.luckyMin + rng() * (STORM_RULES.luckyMax - STORM_RULES.luckyMin);
+            return { outcome: 'lucky', tier: tierInfo.tier, force, damage: Math.max(1, Math.round(full * lucky)) };
         }
-        // Wild remaining shot: often weak or strong, hit chance no longer trustworthy.
-        const wild = STORM_RULES.wildMin + rng() * (STORM_RULES.wildMax - STORM_RULES.wildMin);
-        const hitChance = 0.35 + 0.4 * force;
+        // Wild remaining shot: stronger gusts spoil the aim; damage is a random band.
+        const hitChance = clamp(0.35 + 0.4 * force - 0.25 * (g - 1), 0.1, 0.95);
         if (rng() >= hitChance) {
-            if (rng() < STORM_RULES.stormStrayOwn) {
-                return {
-                    outcome: 'own',
-                    tier: tierInfo.tier,
-                    force,
-                    damage: ownFortDamage(full, rng),
-                    friendly: true,
-                };
+            if (rng() < STORM_RULES.stormStrayOwn * Math.max(0, 1.1 - force)) {
+                return { outcome: 'own', tier: tierInfo.tier, force, damage: ownFortDamage(full, rng), friendly: true };
             }
             return { outcome: 'miss', tier: tierInfo.tier, force, damage: 0 };
         }
-        return {
-            outcome: 'hit',
-            tier: tierInfo.tier,
-            force,
-            damage: Math.max(1, Math.round(full * wild)),
-        };
+        const wild = STORM_RULES.wildMin + rng() * (STORM_RULES.wildMax - STORM_RULES.wildMin);
+        return { outcome: 'hit', tier: tierInfo.tier, force, damage: Math.max(1, Math.round(full * wild)) };
     }
     const hit = tierInfo.hitChance >= 1 || rng() < tierInfo.hitChance;
     if (hit) {
         return { outcome: 'hit', tier: tierInfo.tier, force, damage: Math.max(1, Math.round(full)) };
     }
-    if (rng() < STORM_RULES.calmStrayOwn) {
-        return {
-            outcome: 'own',
-            tier: tierInfo.tier,
-            force,
-            damage: ownFortDamage(full, rng),
-            friendly: true,
-        };
+    if (rng() < STORM_RULES.calmStrayOwn * (1 - force)) {
+        return { outcome: 'own', tier: tierInfo.tier, force, damage: ownFortDamage(full, rng), friendly: true };
     }
     return { outcome: 'miss', tier: tierInfo.tier, force, damage: 0 };
 }
 
-/** Shot label like "FAST 1.2s: HIT!" (the client shows the same text). */
+/** Shot headline like "FAST 1.2s: HIT!" (the client shows the same text). */
 export function shotLabel(shot) {
     if (shot.lastShot) return 'LAST SHOT!';
     const secs = `${(Math.max(0, shot.ms || 0) / 1000).toFixed(1)}s`;
@@ -253,6 +267,16 @@ export function shotLabel(shot) {
     if (shot.outcome === 'own') return 'OWN FORT!';
     if (shot.outcome === 'lucky') return 'LUCKY HIT!';
     return `${tier} ${secs}: ${shot.outcome === 'hit' ? 'HIT!' : 'MISS'}`;
+}
+
+/** Second label line: answer time, force and damage, e.g. "1.2s · 92% force · −9". */
+export function shotDetail(shot) {
+    const secs = `${(Math.max(0, shot.ms || 0) / 1000).toFixed(1)}s`;
+    const force = `${Math.round(Math.max(0, Math.min(1, shot.force ?? 0)) * 100)}% force`;
+    const dmg = shot.damage > 0
+        ? (shot.target && shot.team && shot.target === shot.team ? `−${Math.round(shot.damage)} own fort` : `−${Math.round(shot.damage)}`)
+        : 'no damage';
+    return `${secs} · ${force} · ${dmg}`;
 }
 
 /**
@@ -269,10 +293,12 @@ export function buildVolley({
     sizes,
     questionMs = CANNON_QUESTION_MS,
     storm = false,
+    gust = null,
     inputMode = 'typed',
     rng = Math.random,
     timing = VOLLEY_TIMING,
 }) {
+    const stormGust = storm ? (gust ?? rollStormGust(rng)) : null;
     const queues = {};
     const loaded = {};
     for (const team of CANNON_TEAM_IDS) {
@@ -304,6 +330,7 @@ export function buildVolley({
             questionMs,
             teamSize: sizes?.[team] || 1,
             storm,
+            gust: stormGust ?? 1,
             inputMode: mode,
             rng,
         });
@@ -330,10 +357,11 @@ export function buildVolley({
             lastShot: false,
         };
         shot.label = shotLabel(shot);
+        shot.detail = shotDetail(shot);
         shots.push(shot);
         if (after <= 0) sunk = target;
     }
-    return timeVolley({ shots, loaded, hpBefore, hpAfter: hpNow, storm, first, sunk, inputMode: mode }, timing);
+    return timeVolley({ shots, loaded, hpBefore, hpAfter: hpNow, storm, gust: stormGust, first, sunk, inputMode: mode }, timing);
 }
 
 /** Add `at`/`dur` beats. All shots fire in one salvo (tiny stagger only). */
@@ -386,6 +414,7 @@ export function buildSuddenDeathVolley({ shooters, hp, timing = VOLLEY_TIMING })
             lastShot: true,
         };
         shot.label = shotLabel(shot);
+        shot.detail = shotDetail(shot);
         shots.push(shot);
         sunk = target;
     }
@@ -406,6 +435,27 @@ export function leaderByPoints(scores) {
     if (red > blue) return 'red';
     if (blue > red) return 'blue';
     return null;
+}
+
+/**
+ * Battle winner: most WINS (forts destroyed) first, then most points.
+ * Returns 'red' | 'blue' | null (tie on both).
+ */
+export function leaderByWinsThenPoints(teams) {
+    const kills = (t) => Number(teams?.[t]?.fortKills) || 0;
+    if (kills('red') !== kills('blue')) return kills('red') > kills('blue') ? 'red' : 'blue';
+    return leaderByPoints({ red: teams?.red?.points, blue: teams?.blue?.points });
+}
+
+function matchLeader(match) {
+    return leaderByWinsThenPoints(match?.teams);
+}
+
+export function teamWinsSnapshot(match) {
+    return {
+        red: match?.teams?.red?.fortKills || 0,
+        blue: match?.teams?.blue?.fortKills || 0,
+    };
 }
 
 export function teamPointsSnapshot(match) {
@@ -517,6 +567,8 @@ function startVolley(match, now) {
     const sizes = { red: match.teams.red.memberIds.length, blue: match.teams.blue.memberIds.length };
     const timeUp = cannonTimeLeft(match, now) <= 0;
     const storm = !match.suddenDeath && isStormActive(match, now);
+    const pointsBefore = teamPointsSnapshot(match);
+    const winsBefore = teamWinsSnapshot(match);
     let volley;
     if (match.suddenDeath) {
         volley = buildSuddenDeathVolley({ shooters, hp, timing: match.timing });
@@ -538,6 +590,8 @@ function startVolley(match, now) {
     volley.answerTerm = match.entry?.term || '';
     volley.definition = match.entry?.definition || '';
     volley.timeUp = timeUp;
+    volley.pointsBefore = pointsBefore;
+    volley.winsBefore = winsBefore;
     // Apply HP from the volley (may rebuild a sunk fort below).
     for (const team of CANNON_TEAM_IDS) match.teams[team].hp = volley.hpAfter[team];
     for (const shot of volley.shots) {
@@ -577,7 +631,7 @@ function startVolley(match, now) {
         volley.fortDown = volley.sunk;
         volley.durationMs += match.timing.fortDownMs || 0;
         if (timeUp) {
-            winner = leaderByPoints(teamPointsSnapshot(match));
+            winner = matchLeader(match);
             if (winner) {
                 next = 'finished';
                 reason = 'time';
@@ -597,11 +651,12 @@ function startVolley(match, now) {
             next = 'sudden';
         }
     } else if (timeUp) {
-        winner = leaderByPoints(teamPointsSnapshot(match));
+        winner = matchLeader(match);
         if (winner) {
             next = 'finished';
             reason = 'time';
-            const lastHit = [...volley.shots].reverse().find((s) => s.damage > 0);
+            // Slow-mo only on a real hit on the enemy fort — never on a blown-back / own-fort ball.
+            const lastHit = [...volley.shots].reverse().find((s) => s.damage > 0 && !s.friendly && s.target !== s.team);
             if (lastHit && !lastHit.final) {
                 lastHit.final = true;
                 timeVolley(volley, match.timing);
@@ -616,8 +671,9 @@ function startVolley(match, now) {
     volley.winner = winner;
     volley.reason = reason;
     volley.points = teamPointsSnapshot(match);
+    volley.wins = teamWinsSnapshot(match);
     if (next === 'finished') volley.durationMs += match.timing.endHoldMs;
-    if (next === 'sudden') volley.durationMs += 1_400;
+    if (next === 'sudden') volley.durationMs += match.timing.suddenMs ?? 1_100;
     match.volley = volley;
     match.phase = 'volley';
     match.phaseEndsAt = now + volley.durationMs;
@@ -627,6 +683,7 @@ function startVolley(match, now) {
             reason,
             hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
             points: teamPointsSnapshot(match),
+            wins: teamWinsSnapshot(match),
         };
     }
     return 'volley';
@@ -905,17 +962,18 @@ export function advanceCannon(match, now = Date.now()) {
     return 'question';
 }
 
-/** Host ends the game: most points wins, equal points is a draw. */
+/** Host ends the game: most WINS, then most points; equal on both is a draw. */
 export function finishCannonEarly(match) {
     if (!match) return;
     if (!match.result) {
         const points = teamPointsSnapshot(match);
-        const winner = leaderByPoints(points);
+        const winner = matchLeader(match);
         match.result = {
             winner,
             reason: winner ? 'ended' : 'draw',
             hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
             points,
+            wins: teamWinsSnapshot(match),
         };
     }
     match.phase = 'finished';
@@ -966,7 +1024,7 @@ export function cannonMvp(match) {
 
 export function cannonWinners(match) {
     const points = teamPointsSnapshot(match);
-    const result = match?.result || { winner: leaderByPoints(points), reason: null, points };
+    const result = match?.result || { winner: matchLeader(match), reason: null, points };
     const winner = result.winner || null;
     const rows = cannonPlayerRows(match);
     return {
@@ -976,6 +1034,7 @@ export function cannonWinners(match) {
         winnerNickname: winner ? `${CANNON_TEAM_NAMES[winner]}` : "It's a draw",
         hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
         points: result.points || points,
+        wins: teamWinsSnapshot(match),
         teams: {
             red: {
                 hp: match.teams.red.hp,
@@ -1091,6 +1150,10 @@ export function cannonPublicView(match, { playerId = null, forHost = false, conn
             rebuild: Boolean(match.volley.rebuild),
             fortDown: match.volley.fortDown || null,
             points: match.volley.points || teamPointsSnapshot(match),
+            pointsBefore: match.volley.pointsBefore || null,
+            wins: match.volley.wins || teamWinsSnapshot(match),
+            winsBefore: match.volley.winsBefore || null,
+            gust: match.volley.gust ?? null,
             hpBefore: match.volley.hpBefore,
             hpAfter: match.volley.hpAfter,
             shots: match.volley.shots,

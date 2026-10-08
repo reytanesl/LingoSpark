@@ -347,8 +347,8 @@
 /* floating results */
 .ll-ft { position: absolute; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap; z-index: 8; }
 .ll-ft .ll-pop { font-family: var(--ll-ui); }
-.ll-ft.is-rise { animation: llFtRise 3.05s ease-out both; }
-.ll-ft.is-pop { animation: llFtPop 3.5s ease-out both; }
+.ll-ft.is-rise { animation: llFtRise 2.85s ease-out both; }
+.ll-ft.is-pop { animation: llFtPop 2.85s ease-out both; }
 .ll-ft--safe .ll-pop { font-size: 96px; --pop-fill: linear-gradient(#b6ff6b, #b6ff6b); --pop-stroke: #1f5c08; --pop-sw: 16px; }
 .ll-ft--mini .ll-pop { font-size: 46px; --pop-fill: linear-gradient(#b6ff6b, #b6ff6b); --pop-stroke: #1f5c08; --pop-sw: 10px; }
 .ll-ft--x2 .ll-pop { font: 110px var(--ll-title); --pop-fill: linear-gradient(#ffd23f, #ffd23f); --pop-stroke: #7a2d00; --pop-sw: 18px; }
@@ -1076,3 +1076,43 @@ body.ll-player-lobby #live-play-roster .live-play-roster-tile.is-you { backgroun
     .llp-tut-go { margin-top: 0.45rem; padding: 0.55rem 1rem; font-size: 1.15rem; }
     .llp-tut-foot { margin-top: 0.35rem; font-size: 0.8rem; }
 }
+
+/* Challenge review: Submitted vs Expected side by side, big enough to read from the back row. */
+body.live-host-lanterns .live-host-challenge-compare { gap: 0.8rem; margin: 0.5rem 0 0.9rem; }
+body.live-host-lanterns .live-host-challenge-box { border-width: 4px; border-radius: 18px; padding: 0.5em 0.8em; }
+body.live-host-lanterns .live-host-challenge-box span { font: clamp(0.8rem, 0.95vw, 1.15rem) var(--ll-ui); letter-spacing: 0.08em; }
+body.live-host-lanterns .live-host-challenge-box strong { font: clamp(1.4rem, 2.1vw, 2.6rem)/1.1 var(--ll-ui); }
+body.live-host-lanterns .live-host-challenge-def { font-size: clamp(1rem, 1.2vw, 1.5rem); margin-bottom: 0.2rem; }
+
+/* Collective per-lantern notice (one per group, cleared when the next group starts). */
+.ll-gnote { position: absolute; top: 690px; width: 380px; transform: translate(-50%, -100%); z-index: 9; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; animation: llGnoteIn 0.35s cubic-bezier(.34,1.6,.64,1) both; }
+.ll-gnote.is-leaving { animation: llGnoteOut 0.25s ease-in both; }
+.ll-gnote-head .ll-pop { font: 96px/1 var(--ll-title); --pop-fill: linear-gradient(#b6ff6b, #b6ff6b); --pop-stroke: #1f5c08; --pop-sw: 16px; }
+.ll-gnote.is-gold .ll-gnote-head .ll-pop { --pop-fill: linear-gradient(#ffd23f, #ffd23f); --pop-stroke: #7a2d00; }
+.ll-gnote.is-bust .ll-gnote-head .ll-pop { --pop-fill: linear-gradient(#c9c9d6, #c9c9d6); --pop-stroke: #2c2c3a; }
+.ll-gnote.is-mixed .ll-gnote-head .ll-pop { --pop-fill: linear-gradient(#fff, #ffe9a8); --pop-stroke: #3b0f6b; font-size: 80px; }
+.ll-gnote-rows { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 8px; max-width: 380px; }
+.ll-gnote-chip { display: inline-flex; align-items: center; gap: 8px; max-width: 370px; padding: 5px 14px; border-radius: 999px; border: 3px solid #1f5c08;
+    background: #f3ffe4; color: #1f3d0a; font: 26px/1.1 var(--ll-ui); box-shadow: 0 4px 0 rgba(0,0,0,0.35); white-space: nowrap; }
+.ll-gnote-chip b { font: 700 22px/1.1 var(--ll-body); max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+.ll-gnote-chip.is-gold { background: #fff6cf; border-color: #b45309; color: #7a2d00; }
+.ll-gnote-chip.is-bust { background: #ecebf3; border-color: #4b4a5e; color: #2c2c3a; }
+.ll-gnote-chip.is-shield { background: #e0f2ff; border-color: #1e3a8a; color: #1e3a8a; }
+.ll-gnote.is-many .ll-gnote-chip { font-size: 21px; padding: 3px 10px; }
+.ll-gnote.is-many .ll-gnote-chip b { font-size: 18px; max-width: 120px; }
+@keyframes llGnoteIn { from { transform: translate(-50%, -100%) scale(0.4); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
+@keyframes llGnoteOut { to { transform: translate(-50%, -100%) scale(0.6); opacity: 0; } }
+
+/* ALL IN with several players: per-column results sized by JS (--ll-ai-f), plus one combined headline. */
+.ll-allin-players.is-multi .ll-allin-result .ll-res-main { top: -110px; }
+.ll-allin-players.is-multi .ll-allin-result .ll-res-main .ll-pop { font-size: var(--ll-ai-f, 72px); --pop-sw: 12px; --pop-shadow: 0 6px 0 rgba(0,0,0,0.45); }
+.ll-allin-players.is-multi .ll-allin-result .ll-res-sub { top: calc(-110px + var(--ll-ai-f, 72px) * 0.95); }
+.ll-allin-players.is-multi .ll-allin-result .ll-res-sub .ll-pop { font-size: calc(var(--ll-ai-f, 72px) * 0.6); --pop-sw: 9px; }
+.ll-allin-players.is-multi .ll-allin-pill, .ll-allin-players.is-multi .ll-allin-pill.is-result, .ll-allin-players.is-multi .ll-allin-pill.is-bust {
+    font-size: var(--ll-ai-pill, 28px); max-width: var(--ll-ai-w, 300px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box; }
+.ll-allin-sum { position: absolute; left: 715px; top: 150px; transform: translate(-50%, -50%); z-index: 8; white-space: nowrap; animation: llPopIn 0.45s cubic-bezier(.34,2,.64,1) both; }
+.ll-allin-sum .ll-pop { font: 92px/1 var(--ll-title); --pop-fill: linear-gradient(#fff3a0, #ff9a1a); --pop-stroke: #7a2d00; --pop-sw: 16px; --pop-shadow: 0 8px 0 rgba(0,0,0,0.45); }
+body.live-lantern-player #live-play-status:empty { display: none; }
+.llp-score.is-pop { animation: llpScorePop 0.45s cubic-bezier(.34,1.8,.64,1); }
+@keyframes llpScorePop { 40% { transform: scale(1.3); } }

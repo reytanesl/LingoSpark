@@ -336,32 +336,25 @@
     /** Cannon on a wooden carriage. Local 0..300 x 0..220, muzzle at (288, 66) for red; mirrored for blue. */
     WCFX.cannonSvg = function cannonSvg(team) {
         const blue = team === 'blue';
-        const id = blue ? 'B' : 'R';
-        // Solid grey metal for both teams — fully opaque over sea + storm wash.
-        const barrel = ['#9aa0aa', '#5a5f6a', '#2a2e36'];
+        // Solid grey metal for both teams — flat opaque fills (no gradient ids), so the
+        // barrel can never render see-through when several scenes share the page.
         const art = `
-            <defs>
-                <linearGradient id="wcBarrel${id}" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="${barrel[0]}"/><stop offset="0.38" stop-color="${barrel[1]}"/><stop offset="1" stop-color="${barrel[2]}"/>
-                </linearGradient>
-                <linearGradient id="wcGold${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset="0.5" stop-color="#e0a92e"/><stop offset="1" stop-color="#8a5a10"/></linearGradient>
-                <linearGradient id="wcWood${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8894a"/><stop offset="1" stop-color="#7a4a20"/></linearGradient>
-            </defs>
             <!-- carriage -->
-            <path d="M40,150 L70,110 L190,110 L215,150 L215,178 L40,178Z" fill="url(#wcWood${id})" stroke="#3e2410" stroke-width="5" stroke-linejoin="round"/>
+            <path d="M40,150 L70,110 L190,110 L215,150 L215,178 L40,178Z" fill="#a8693a" stroke="#3e2410" stroke-width="5" stroke-linejoin="round"/>
             <path d="M52,160 L205,160" stroke="#4a2c12" stroke-width="3"/>
-            <g fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="2"><circle cx="64" cy="168" r="5"/><circle cx="196" cy="168" r="5"/><circle cx="130" cy="168" r="5"/></g>
+            <g fill="#e0a92e" stroke="#6b4a10" stroke-width="2"><circle cx="64" cy="168" r="5"/><circle cx="196" cy="168" r="5"/><circle cx="130" cy="168" r="5"/></g>
             <!-- barrel (pivot ~ (120,100)) -->
             <g class="wc-barrel" transform="rotate(-11 120 100)">
-                <path d="M32,72 Q14,100 32,128 L60,130 L262,116 L262,84 L60,70Z" fill="url(#wcBarrel${id})" stroke="#05060a" stroke-width="5" stroke-linejoin="round"/>
-                <circle cx="24" cy="100" r="14" fill="url(#wcBarrel${id})" stroke="#05060a" stroke-width="5"/>
-                <rect x="250" y="76" width="30" height="48" rx="8" fill="url(#wcBarrel${id})" stroke="#05060a" stroke-width="5"/>
+                <path d="M32,72 Q14,100 32,128 L60,130 L262,116 L262,84 L60,70Z" fill="#6b717c" stroke="#05060a" stroke-width="5" stroke-linejoin="round"/>
+                <path d="M34,108 Q28,118 34,125 L60,127 L259,113 L259,102 L60,110 Z" fill="#4a4f59"/>
+                <circle cx="24" cy="100" r="14" fill="#6b717c" stroke="#05060a" stroke-width="5"/>
+                <rect x="250" y="76" width="30" height="48" rx="8" fill="#6b717c" stroke="#05060a" stroke-width="5"/>
                 <ellipse cx="282" cy="100" rx="9" ry="21" fill="#05060a"/>
-                <rect x="60" y="68" width="14" height="64" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
-                <rect x="150" y="74" width="12" height="54" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
-                <rect x="244" y="78" width="10" height="44" rx="3" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
-                <path d="M70,80 L250,88" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.28"/>
-                <circle cx="118" cy="104" r="11" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
+                <rect x="60" y="68" width="14" height="64" rx="3" fill="#e0a92e" stroke="#6b4a10" stroke-width="3"/>
+                <rect x="150" y="74" width="12" height="54" rx="3" fill="#e0a92e" stroke="#6b4a10" stroke-width="3"/>
+                <rect x="244" y="78" width="10" height="44" rx="3" fill="#e0a92e" stroke="#6b4a10" stroke-width="3"/>
+                <path d="M70,80 L250,88" stroke="#c9ced6" stroke-width="7" stroke-linecap="round"/>
+                <circle cx="118" cy="104" r="11" fill="#e0a92e" stroke="#6b4a10" stroke-width="3"/>
             </g>
             <!-- wheels -->
             ${[[78, 172, 36], [180, 176, 32]].map(([cx, cy, r]) => `
@@ -369,7 +362,7 @@
                     <circle cx="${cx}" cy="${cy}" r="${r}" fill="#8a5a2b" stroke="#3e2410" stroke-width="5"/>
                     <circle cx="${cx}" cy="${cy}" r="${r - 9}" fill="none" stroke="#5e3a18" stroke-width="4"/>
                     ${[0, 45, 90, 135].map((a) => `<line x1="${cx + Math.cos(a * Math.PI / 180) * (r - 6)}" y1="${cy + Math.sin(a * Math.PI / 180) * (r - 6)}" x2="${cx - Math.cos(a * Math.PI / 180) * (r - 6)}" y2="${cy - Math.sin(a * Math.PI / 180) * (r - 6)}" stroke="#4a2c12" stroke-width="4"/>`).join('')}
-                    <circle cx="${cx}" cy="${cy}" r="9" fill="url(#wcGold${id})" stroke="#6b4a10" stroke-width="3"/>
+                    <circle cx="${cx}" cy="${cy}" r="9" fill="#e0a92e" stroke="#6b4a10" stroke-width="3"/>
                 </g>`).join('')}`;
         return `<svg class="wc-cannon-svg" viewBox="0 0 300 220" aria-hidden="true">${blue ? `<g transform="translate(300 0) scale(-1 1)">${art}</g>` : art}</svg>`;
     };
@@ -425,7 +418,8 @@
     };
 
     WCFX.ballSvg = function ballSvg() {
-        return '<svg viewBox="-20 -20 40 40" aria-hidden="true"><defs><radialGradient id="wcBallG" cx="0.35" cy="0.3" r="0.75"><stop offset="0" stop-color="#9aa0ad"/><stop offset="0.35" stop-color="#3b3f49"/><stop offset="1" stop-color="#050608"/></radialGradient></defs><circle r="17" fill="url(#wcBallG)" stroke="#000" stroke-width="2"/><ellipse cx="-6" cy="-7" rx="5" ry="3.5" fill="#fff" opacity="0.55"/></svg>';
+        const gid = `wcBallG${++uidSeq}`;
+        return '<svg viewBox="-20 -20 40 40" aria-hidden="true"><defs><radialGradient id="' + gid + '" cx="0.35" cy="0.3" r="0.75"><stop offset="0" stop-color="#9aa0ad"/><stop offset="0.35" stop-color="#3b3f49"/><stop offset="1" stop-color="#050608"/></radialGradient></defs><circle r="17" fill="url(#' + gid + ')" stroke="#000" stroke-width="2"/><ellipse cx="-6" cy="-7" rx="5" ry="3.5" fill="#fff" opacity="0.55"/></svg>';
     };
 
     WCFX.stormIconSvg = function stormIconSvg() {
@@ -441,6 +435,38 @@
     };
 
     /** Mount the full scene (bg, flags, forts, cannons, fg) into a container sized 1920x1080. */
+    /**
+     * Give every SVG id inside `root` a per-mount suffix and rewrite url(#id) / href refs.
+     * The scene is mounted several times (host stage, lobby + winner backdrops, phone
+     * lobby); with shared ids Chrome resolves url(#wcBarrelR) to the first copy — often a
+     * hidden one — and the fill disappears (the "transparent cannon" bug).
+     */
+    let uidSeq = 0;
+    WCFX.uniqueIds = function uniqueIds(root) {
+        if (!root?.querySelectorAll) return root;
+        const suffix = `-m${++uidSeq}`;
+        const map = new Map();
+        root.querySelectorAll('[id]').forEach((node) => {
+            const old = node.getAttribute('id');
+            if (!old || old.endsWith(suffix)) return;
+            map.set(old, old + suffix);
+            node.setAttribute('id', old + suffix);
+        });
+        if (!map.size) return root;
+        const fix = (val) => val.replace(/url\(#([^)]+)\)/g, (m, id) => (map.has(id) ? `url(#${map.get(id)})` : m));
+        root.querySelectorAll('*').forEach((node) => {
+            for (const attr of ['fill', 'stroke', 'clip-path', 'mask', 'filter', 'style']) {
+                const v = node.getAttribute(attr);
+                if (v && v.includes('url(#')) node.setAttribute(attr, fix(v));
+            }
+            for (const attr of ['href', 'xlink:href']) {
+                const v = node.getAttribute(attr);
+                if (v && v.startsWith('#') && map.has(v.slice(1))) node.setAttribute(attr, `#${map.get(v.slice(1))}`);
+            }
+        });
+        return root;
+    };
+
     WCFX.mountScene = function mountScene(el) {
         if (!el || el.dataset.wcScene) return;
         el.dataset.wcScene = '1';
@@ -455,6 +481,7 @@
             ${WCFX.sceneFgSvg()}
             <div class="wc-storm-tint"></div>
             <div class="wc-storm-top">${WCFX.stormCloudsSvg()}</div>`;
+        WCFX.uniqueIds(el);
     };
 
     WCFX.setFortDamage = function setFortDamage(root, team, hp) {
@@ -504,15 +531,28 @@
         setRain(on) {
             if (on && !this.rain) {
                 const rnd = seeded(91);
-                const n = WCFX.reduced() ? 120 : 420;
-                this.rain = Array.from({ length: n }, () => ({
-                    x: rnd() * this.W,
-                    y: rnd() * this.H,
-                    l: 28 + rnd() * 40,
-                    v: 30 + rnd() * 28,
-                    a: 0.35 + rnd() * 0.4,
-                }));
-                this.wind = -0.42 - rnd() * 0.18;
+                const n = WCFX.reduced() ? 110 : 300;
+                // Three depth layers (far / mid / near): one batched path per layer per frame
+                // keeps the storm cheap on classroom PCs; speed is time-based (px/s) so the
+                // rain visibly falls instead of flickering at high frame rates.
+                this.rainLayers = [
+                    { a: 0.32, w: 2, v: [900, 1150], l: [26, 40] },
+                    { a: 0.5, w: 2.8, v: [1200, 1500], l: [40, 60] },
+                    { a: 0.7, w: 3.6, v: [1550, 1900], l: [58, 84] },
+                ];
+                this.rain = Array.from({ length: n }, (_, i) => {
+                    const layer = i % 3;
+                    const L = this.rainLayers[layer];
+                    return {
+                        layer,
+                        x: rnd() * (this.W + 400),
+                        y: rnd() * this.H,
+                        l: L.l[0] + rnd() * (L.l[1] - L.l[0]),
+                        v: L.v[0] + rnd() * (L.v[1] - L.v[0]),
+                    };
+                });
+                this.wind = -0.38 - rnd() * 0.16;
+                this.rainT = null;
                 this.start();
             } else if (!on) {
                 this.rain = null;
@@ -525,19 +565,26 @@
             ctx.clearRect(0, 0, this.W, this.H);
             if (this.rain) {
                 const still = WCFX.reduced();
+                const dt = this.rainT == null ? 16 : Math.min(60, Math.max(0, now - this.rainT));
+                this.rainT = now;
                 ctx.lineCap = 'round';
-                for (const d of this.rain) {
-                    if (!still) {
-                        d.y += d.v;
-                        d.x += d.v * this.wind;
-                        if (d.y > this.H) { d.y = -d.l; d.x = Math.random() * (this.W + 400); }
-                        if (d.x < -40) d.x += this.W + 80;
-                    }
-                    ctx.strokeStyle = `rgba(210,225,255,${d.a.toFixed(2)})`;
-                    ctx.lineWidth = 2.2 + d.l * 0.02;
+                for (let layer = 0; layer < this.rainLayers.length; layer++) {
+                    const L = this.rainLayers[layer];
+                    ctx.strokeStyle = `rgba(214,228,255,${L.a})`;
+                    ctx.lineWidth = L.w;
                     ctx.beginPath();
-                    ctx.moveTo(d.x, d.y);
-                    ctx.lineTo(d.x - d.l * this.wind, d.y - d.l);
+                    for (const d of this.rain) {
+                        if (d.layer !== layer) continue;
+                        if (!still) {
+                            const step = (d.v * dt) / 1000;
+                            d.y += step;
+                            d.x += step * this.wind;
+                            if (d.y > this.H + d.l) { d.y = -d.l - Math.random() * 120; d.x = Math.random() * (this.W + 400); }
+                            if (d.x < -60) d.x += this.W + 120;
+                        }
+                        ctx.moveTo(d.x, d.y);
+                        ctx.lineTo(d.x - d.l * this.wind, d.y - d.l);
+                    }
                     ctx.stroke();
                 }
             }

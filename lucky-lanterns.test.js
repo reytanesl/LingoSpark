@@ -406,16 +406,19 @@ test('reveal beats batch every player under the same lantern together', () => {
     assert.deepEqual(beats[1].stepIndexes, [1, 2]);
     assert.deepEqual(beats[2].stepIndexes, [3, 4]);
     assert.deepEqual(beats[3].stepIndexes, [5, 6]);
-    // every group gap and the summary trail carry the +2 s notification linger
-    assert.deepEqual(beats.map((beat) => beat.at), [500, 500 + 3500, 500 + 3500 + 3700, 500 + 3500 + 3700 + 4000]);
-    assert.equal(holdMs, 500 + 3500 + 3700 + 4000 + 4800 + 4000);
+    // every group gets its own readable window (>= 3 s incl. the +2 s linger), then a 3.5 s board
+    assert.deepEqual(beats.map((beat) => beat.at), [500, 500 + 3000, 500 + 3000 + 3200, 500 + 3000 + 3200 + 3500]);
+    assert.equal(holdMs, 500 + 3000 + 3200 + 3500 + 4200 + 3500);
+    // before this round: 500 + 3500 + 3700 + 4000 + 4800 + 4000 = 20 500 ms
+    assert.ok(holdMs <= 17_900);
 });
 
-test('reveal notifications and summary linger +2s for readable phones', () => {
-    // before: empty hold 2400 / board at 600; safe-only hold 4000 / board at 2200
+test('reveal windows stay readable (>= 3 s each) while dead time is cut', () => {
+    // before: empty hold 4400 / board at 600; safe-only hold 8000 / board at 4200
     const empty = buildRevealBeats([]);
-    assert.equal(empty.holdMs, 4400);
-    assert.equal(empty.leaderboardAt, 600);
+    assert.equal(empty.holdMs, 3400);
+    assert.equal(empty.leaderboardAt, 400);
+    assert.ok(empty.holdMs - empty.leaderboardAt >= 3000);
 
     const safes = buildRevealBeats([
         { group: 'safe', playerId: 'a' },
@@ -423,10 +426,14 @@ test('reveal notifications and summary linger +2s for readable phones', () => {
     ]);
     assert.equal(safes.beats.length, 1);
     assert.equal(safes.beats[0].at, 500);
-    assert.equal(safes.leaderboardAt, 4200); // +100 floats stay 2 s longer (was 2200)
-    assert.equal(safes.holdMs, 8000); // was 4000
-    assert.equal(safes.holdMs - safes.leaderboardAt, 3800); // summary window was 1800
+    assert.equal(safes.leaderboardAt, 3500); // +100 floats readable for 3.0 s
+    assert.equal(safes.holdMs, 7000); // was 8000
+    assert.equal(safes.holdMs - safes.leaderboardAt, 3500); // summary window (was 3800)
     assert.equal(LANTERN_NOTICE_LINGER_MS, 2000);
+    const all = buildRevealBeats(['safe', 'risk', 'mystery', 'allin'].map((group, i) => ({ group, playerId: String(i) })));
+    const windows = all.beats.map((b, i) => (all.beats[i + 1]?.at ?? all.leaderboardAt) - b.at);
+    assert.deepEqual(windows, [3000, 3200, 3500, 4200]);
+    assert.ok(windows.every((w) => w >= 3000));
 });
 
 test('round 1 gets extra answer time for the skippable tutorial; later rounds do not', () => {
@@ -438,4 +445,38 @@ test('round 1 gets extra answer time for the skippable tutorial; later rounds do
     const tut = createLanternMatch({ players, deck, questionMs: 10_000, tutorialMs: LANTERN_TUTORIAL_MS, now, rng: () => 0.5 });
     assert.equal(tut.phaseEndsAt, now + 10_000 + LANTERN_TUTORIAL_MS);
     assert.equal(tut.questionMs, 10_000);
+});
+
+test('mystery curses take points but never push a score below 0', () => {
+    const curses = MYSTERY_POOL.filter((c) => c.id === 'minus50' || c.id === 'minus100');
+    assert.equal(curses.length, 2, 'both curses are in the default pool');
+    assert.ok(curses.every((c) => c.weight > 0));
+    for (const [id, loss] of [['minus50', 50], ['minus100', 100]]) {
+        for (const start of [0, 20, 50, 99, 100, 250]) {
+            const r = resolveLanternRound([player('a', 'Ada', { score: start, pick: 'mystery' })], { rng: rngOf([0]), pool: [{ id, weight: 1 }] });
+            const expected = Math.max(0, start - loss);
+            assert.equal(r.leaderboard[0].score, expected, `${id} from ${start}`);
+            assert.equal(r.steps[0].delta, expected - start);
+            assert.ok(r.leaderboard[0].score >= 0);
+        }
+    }
+    // Several cursed players in one round: every score stays >= 0 and the round still batches them.
+    const many = resolveLanternRound([
+        player('a', 'Ada', { score: 10, pick: 'mystery' }),
+        player('b', 'Bea', { score: 300, pick: 'mystery' }),
+        player('c', 'Cam', { score: 0, pick: 'mystery' }),
+    ], { rng: rngOf([0.99]), pool: [{ id: 'minus100', weight: 1 }] });
+    assert.deepEqual(many.leaderboard.map((r) => r.score).sort((x, y) => x - y), [0, 0, 200]);
+    assert.equal(many.beats.beats.length, 1);
+    assert.equal(many.beats.beats[0].stepIndexes.length, 3);
+});
+
+test('a round where nobody earns a lantern skips the empty pick window', () => {
+    const deck = [{ term: 'a', definition: 'A' }, { term: 'b', definition: 'B' }];
+    const players = [{ id: 'ada', nickname: 'Ada' }, { id: 'bea', nickname: 'Bea' }];
+    const m = createLanternMatch({ players, deck, answerMode: 'recognise', questionMs: 10_000, now: 0, rng: () => 0.5 });
+    closeLanternAnswering(m, 10_000);
+    assert.equal(m.phase, 'reveal');
+    assert.equal(m.reveal.steps.length, 0);
+    assert.equal(m.phaseEndsAt, 10_000 + 3400);
 });

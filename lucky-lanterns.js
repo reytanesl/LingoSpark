@@ -39,8 +39,8 @@ export const LANTERN_DEFAULT_ROUNDS = 10;
 export const LANTERN_MIN_ROUNDS = 3;
 export const LANTERN_MAX_ROUNDS = 20;
 export const LANTERN_QUESTION_MS = 20_000; // default answer time; a room can override it (questionMs)
-export const LANTERN_REVIEW_MS = 12_000;
-export const LANTERN_PICK_MS = 12_000;
+export const LANTERN_REVIEW_MS = 8_000;
+export const LANTERN_PICK_MS = 10_000;
 /** Quick how-to card shown before round 1; round 1 gets this much extra answer time so the card never eats it. */
 export const LANTERN_TUTORIAL_MS = 9_000;
 /** Extra time every reveal notification (+points, x2, bust, mystery card, score summary) stays up. */
@@ -329,7 +329,7 @@ export function resolveLanternRound(players, options = {}) {
                     detail: taken > 0
                         ? `Mystery curse. −${taken}.`
                         : 'Mystery curse, but you had no points to lose.',
-                    delta: -taken, scoreBefore,
+                    delta: taken > 0 ? -taken : 0, scoreBefore,
                 });
             }
         } else if (card === 'shield') {
@@ -396,12 +396,14 @@ export function buildRevealBeats(steps) {
     const beats = [];
     let at = 500;
     const groups = [
-        // Each gap carries +2000 ms (was 1500 / 1700 / 2000 / 2800) so +100, x2, bust and
-        // mystery-card text stay readable 2 s longer before the next lantern opens.
-        { group: 'safe', sfx: 'safe', gap: 1500 + LANTERN_NOTICE_LINGER_MS },
-        { group: 'risk', sfx: 'coin', gap: 1700 + LANTERN_NOTICE_LINGER_MS },
-        { group: 'mystery', sfx: 'mystery', gap: 2000 + LANTERN_NOTICE_LINGER_MS },
-        { group: 'allin', sfx: 'drumroll', gap: 2800 + LANTERN_NOTICE_LINGER_MS },
+        // Each lantern group gets its own window and the next group only opens after it,
+        // so notifications never overlap. Every window keeps >= 3 s of readable result
+        // text (base + LANTERN_NOTICE_LINGER_MS): safe 3.0 s, x2/0 3.2 s, mystery 3.5 s,
+        // ALL IN 4.2 s (was 3.5 / 3.7 / 4.0 / 4.8 s).
+        { group: 'safe', sfx: 'safe', gap: 1000 + LANTERN_NOTICE_LINGER_MS },
+        { group: 'risk', sfx: 'coin', gap: 1200 + LANTERN_NOTICE_LINGER_MS },
+        { group: 'mystery', sfx: 'mystery', gap: 1500 + LANTERN_NOTICE_LINGER_MS },
+        { group: 'allin', sfx: 'drumroll', gap: 2200 + LANTERN_NOTICE_LINGER_MS },
     ];
     for (const { group, sfx, gap } of groups) {
         const indexes = [];
@@ -410,10 +412,10 @@ export function buildRevealBeats(steps) {
         beats.push({ at, sfx, stepIndexes: indexes });
         at += gap;
     }
-    // After the last group: leaderboard lands 200 ms later as before, then the personal
-    // score summary / leaderboard stays 3800 ms (was 1800) before the next question.
-    const holdMs = list.length ? at + 2000 + LANTERN_NOTICE_LINGER_MS : 2400 + LANTERN_NOTICE_LINGER_MS;
-    return { beats, holdMs, leaderboardAt: Math.max(0, holdMs - 1800 - LANTERN_NOTICE_LINGER_MS) };
+    // After the last group's window the leaderboard / personal summary shows for 3.5 s
+    // (was 3.8 s) and the next question starts. No picks at all: board for 3.0 s.
+    if (!list.length) return { beats, holdMs: 1400 + LANTERN_NOTICE_LINGER_MS, leaderboardAt: 400 };
+    return { beats, holdMs: at + 1500 + LANTERN_NOTICE_LINGER_MS, leaderboardAt: at };
 }
 
 export function personalLanternResult(resolved, playerId) {
@@ -488,6 +490,8 @@ function startPicking(match, now) {
     match.phase = 'picking';
     match.phaseEndsAt = now + LANTERN_PICK_MS;
     match.picks = {};
+    // Nobody earned a lantern: skip the empty pick window and go straight to the board.
+    if (!match.playerOrder.some((id) => match.answers[id]?.eligible)) return closeLanternPicks(match, now);
     return 'picking';
 }
 
@@ -700,8 +704,7 @@ export function forceLanternReview(match, now = Date.now()) {
             declined.push(id);
         }
     }
-    startPicking(match, now);
-    return { phase: 'picking', declined, skipped };
+    return { phase: startPicking(match, now), declined, skipped };
 }
 
 export function pickLantern(match, playerId, choice, now = Date.now()) {

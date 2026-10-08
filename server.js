@@ -29,6 +29,7 @@ import {
     expireUserIfNeeded,
     applyPendingBmcPayments,
     startAnalyticsVisit,
+    normalizeAnalyticsPageKey,
     updateAnalyticsDwell,
     endAnalyticsVisit,
     getGamePopularityStats,
@@ -336,6 +337,9 @@ async function start() {
     app.post('/api/analytics/enter', async (req, res) => {
         try {
             if (!dbReady) return res.json({ ok: false, disabled: true });
+            // Screens outside the analytics allowlist (live host / join / play, auction…) are
+            // simply not tracked — answer 200 instead of a console-visible 400.
+            if (!normalizeAnalyticsPageKey(req.body?.pageKey)) return res.json({ ok: false, ignored: true });
             const visit = await startAnalyticsVisit({
                 visitorSessionId: req.body?.visitorSessionId,
                 userId: req.user?.id || null,
@@ -1073,7 +1077,17 @@ app.get('/api/health', (_req, res) => {
     initLiveGame(io, {
         onGameEnd(room) {
             if (!room.hostUserId) return;
-            const topScore = Array.from(room.players.values()).reduce((m, p) => Math.max(m, p.score), 0);
+            // Lucky Lanterns / Word Cannon players have no race `score`, which made this NaN and
+            // broke the integer insert. Use each format's own score and never pass NaN.
+            const finite = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+            let topScore = Array.from(room.players.values()).reduce((m, p) => Math.max(m, finite(p.score)), 0);
+            if (room.lantern?.scores) {
+                topScore = Math.max(topScore, ...Object.values(room.lantern.scores).map(finite));
+            }
+            if (room.cannon?.teams) {
+                topScore = Math.max(topScore, finite(room.cannon.teams.red?.points), finite(room.cannon.teams.blue?.points));
+            }
+            topScore = Math.round(topScore);
             recordGameSession(room.hostUserId, {
                 gameKey: 'live_host',
                 score: room.players.size,

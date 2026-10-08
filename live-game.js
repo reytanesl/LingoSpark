@@ -1196,6 +1196,7 @@ function gameFinishedPayload(room) {
             reason: w.reason,
             hp: w.hp,
             points: w.points,
+            wins: w.wins,
             mvp: w.mvp,
             teams: {
                 red: {
@@ -1828,7 +1829,8 @@ function startGame(room) {
             level: room.level,
             questionMs: questionSecondsForRoom(room) * 1000,
             gameMinutes: room.gameMinutes,
-            seed: room.cannonSeed ?? null,
+            // LIVE_CANNON_SEED: optional fixed battle seed for demos / inspection recordings.
+            seed: room.cannonSeed ?? (process.env.LIVE_CANNON_SEED ? Number(process.env.LIVE_CANNON_SEED) : null),
         });
         for (const player of room.players.values()) {
             player.pendingChallenge = null;
