@@ -41,6 +41,10 @@ export const LANTERN_MAX_ROUNDS = 20;
 export const LANTERN_QUESTION_MS = 20_000; // default answer time; a room can override it (questionMs)
 export const LANTERN_REVIEW_MS = 12_000;
 export const LANTERN_PICK_MS = 12_000;
+/** Quick how-to card shown before round 1; round 1 gets this much extra answer time so the card never eats it. */
+export const LANTERN_TUTORIAL_MS = 9_000;
+/** Extra time every reveal notification (+points, x2, bust, mystery card, score summary) stays up. */
+export const LANTERN_NOTICE_LINGER_MS = 2_000;
 
 export const LANTERN_AVATARS = ['🐼', '🐢', '🦊', '🐧', '🐰', '🐯', '🐸', '🦉', '🐨', '🦁', '🐵', '🦄', '🐻', '🐤'];
 
@@ -392,10 +396,12 @@ export function buildRevealBeats(steps) {
     const beats = [];
     let at = 500;
     const groups = [
-        { group: 'safe', sfx: 'safe', gap: 1500 },
-        { group: 'risk', sfx: 'coin', gap: 1700 },
-        { group: 'mystery', sfx: 'mystery', gap: 2000 },
-        { group: 'allin', sfx: 'drumroll', gap: 2800 },
+        // Each gap carries +2000 ms (was 1500 / 1700 / 2000 / 2800) so +100, x2, bust and
+        // mystery-card text stay readable 2 s longer before the next lantern opens.
+        { group: 'safe', sfx: 'safe', gap: 1500 + LANTERN_NOTICE_LINGER_MS },
+        { group: 'risk', sfx: 'coin', gap: 1700 + LANTERN_NOTICE_LINGER_MS },
+        { group: 'mystery', sfx: 'mystery', gap: 2000 + LANTERN_NOTICE_LINGER_MS },
+        { group: 'allin', sfx: 'drumroll', gap: 2800 + LANTERN_NOTICE_LINGER_MS },
     ];
     for (const { group, sfx, gap } of groups) {
         const indexes = [];
@@ -404,8 +410,10 @@ export function buildRevealBeats(steps) {
         beats.push({ at, sfx, stepIndexes: indexes });
         at += gap;
     }
-    const holdMs = list.length ? at + 2000 : 2400;
-    return { beats, holdMs, leaderboardAt: Math.max(0, holdMs - 1800) };
+    // After the last group: leaderboard lands 200 ms later as before, then the personal
+    // score summary / leaderboard stays 3800 ms (was 1800) before the next question.
+    const holdMs = list.length ? at + 2000 + LANTERN_NOTICE_LINGER_MS : 2400 + LANTERN_NOTICE_LINGER_MS;
+    return { beats, holdMs, leaderboardAt: Math.max(0, holdMs - 1800 - LANTERN_NOTICE_LINGER_MS) };
 }
 
 export function personalLanternResult(resolved, playerId) {
@@ -506,6 +514,7 @@ export function createLanternMatch({
     answerMode = 'randomise',
     level = 'intermediate',
     questionMs = LANTERN_QUESTION_MS,
+    tutorialMs = 0,
     now = Date.now(),
     rng = Math.random,
 }) {
@@ -546,6 +555,8 @@ export function createLanternMatch({
         match.shields[p.id] = false;
     });
     beginRound(match, now);
+    const grace = Math.max(0, Math.round(Number(tutorialMs) || 0));
+    if (grace) match.phaseEndsAt += grace;
     return match;
 }
 

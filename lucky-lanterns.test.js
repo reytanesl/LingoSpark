@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
     LANTERN_BASE,
+    LANTERN_NOTICE_LINGER_MS,
+    LANTERN_TUTORIAL_MS,
     MYSTERY_POOL,
     advanceLantern,
     buildRevealBeats,
@@ -404,5 +406,36 @@ test('reveal beats batch every player under the same lantern together', () => {
     assert.deepEqual(beats[1].stepIndexes, [1, 2]);
     assert.deepEqual(beats[2].stepIndexes, [3, 4]);
     assert.deepEqual(beats[3].stepIndexes, [5, 6]);
-    assert.equal(holdMs, 500 + 1500 + 1700 + 2000 + 2800 + 2000);
+    // every group gap and the summary trail carry the +2 s notification linger
+    assert.deepEqual(beats.map((beat) => beat.at), [500, 500 + 3500, 500 + 3500 + 3700, 500 + 3500 + 3700 + 4000]);
+    assert.equal(holdMs, 500 + 3500 + 3700 + 4000 + 4800 + 4000);
+});
+
+test('reveal notifications and summary linger +2s for readable phones', () => {
+    // before: empty hold 2400 / board at 600; safe-only hold 4000 / board at 2200
+    const empty = buildRevealBeats([]);
+    assert.equal(empty.holdMs, 4400);
+    assert.equal(empty.leaderboardAt, 600);
+
+    const safes = buildRevealBeats([
+        { group: 'safe', playerId: 'a' },
+        { group: 'safe', playerId: 'b' },
+    ]);
+    assert.equal(safes.beats.length, 1);
+    assert.equal(safes.beats[0].at, 500);
+    assert.equal(safes.leaderboardAt, 4200); // +100 floats stay 2 s longer (was 2200)
+    assert.equal(safes.holdMs, 8000); // was 4000
+    assert.equal(safes.holdMs - safes.leaderboardAt, 3800); // summary window was 1800
+    assert.equal(LANTERN_NOTICE_LINGER_MS, 2000);
+});
+
+test('round 1 gets extra answer time for the skippable tutorial; later rounds do not', () => {
+    const deck = [{ term: 'a', definition: 'A' }, { term: 'b', definition: 'B' }];
+    const players = [{ id: 'ada', nickname: 'Ada' }, { id: 'bea', nickname: 'Bea' }];
+    const now = 1_000_000;
+    const plain = createLanternMatch({ players, deck, questionMs: 10_000, now, rng: () => 0.5 });
+    assert.equal(plain.phaseEndsAt, now + 10_000);
+    const tut = createLanternMatch({ players, deck, questionMs: 10_000, tutorialMs: LANTERN_TUTORIAL_MS, now, rng: () => 0.5 });
+    assert.equal(tut.phaseEndsAt, now + 10_000 + LANTERN_TUTORIAL_MS);
+    assert.equal(tut.questionMs, 10_000);
 });

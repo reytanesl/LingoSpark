@@ -10,6 +10,7 @@ import {
 import {
     LANTERN_DEFAULT_ROUNDS,
     LANTERN_QUESTION_MS,
+    LANTERN_TUTORIAL_MS,
     advanceLantern,
     closeLanternAnswering,
     closeLanternPicks,
@@ -1852,6 +1853,7 @@ function startGame(room) {
             answerMode: room.answerMode,
             level: room.level,
             questionMs: questionSecondsForRoom(room) * 1000,
+            tutorialMs: LANTERN_TUTORIAL_MS,
         });
         for (const player of room.players.values()) {
             player.pendingChallenge = null;

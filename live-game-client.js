@@ -1865,6 +1865,7 @@
                     ? data.winnerId === playerState?.teamId
                     : data.winnerId === playerState?.playerId;
             document.body.classList.remove('live-lantern-player');
+            llDismissPhoneTutorial(true);
             const phone = $('live-play-lantern');
             if (phone) phone.hidden = true;
             const cannonWin = Boolean(data.cannon) || isWordCannonFormat(playerState?.gameFormat);
@@ -1891,6 +1892,7 @@
             llPhone.revealDoneAt = 0;
             llPhone.key = null;
             llPhone.tutorialDone = false;
+            llDismissPhoneTutorial(true);
             hideLiveWinnerScreen();
             const ranking = $('live-ranking-screen');
             if (ranking) ranking.hidden = true;
@@ -3049,7 +3051,7 @@
         lastBlip: 0,
         finishTimer: null,
     };
-    const llPhone = { key: null, revealDoneAt: 0, avatar: null, cancelConfetti: null, finishTimer: null, tutorialDone: false };
+    const llPhone = { key: null, revealDoneAt: 0, avatar: null, cancelConfetti: null, finishTimer: null, tutorialDone: false, tutorialTimers: [] };
 
     function llRestart(el, cls) {
         if (!el) return;
@@ -3177,8 +3179,9 @@
         llHost.answered.clear();
         llHost.working = null;
         llHost.introDone = false;
-        clearTimeout(llHost.tutorialTimer);
-        llHost.tutorialTimer = null;
+        llDismissTutorial(true);
+        llPhone.tutorialDone = false;
+        llDismissPhoneTutorial(true);
         llHost.allinActive = false;
         llHost.revealDoneAt = 0;
         if (llHost.cancelConfetti) llHost.cancelConfetti();
@@ -3654,7 +3657,8 @@
         el.style.top = `${y}px`;
         el.innerHTML = LLFX.popTextHtml(text);
         layer.appendChild(el);
-        setTimeout(() => el.remove(), mode === 'pop' ? 1600 : 1150);
+        // +2 s linger (was 1600 / 1150) so points stay readable; CSS holds them before fading.
+        setTimeout(() => el.remove(), mode === 'pop' ? 3600 : 3150);
         return el;
     }
 
@@ -4024,10 +4028,52 @@
             llHost.working = null;
             renderLanternBoard(finalRows, { animate: true });
         }, boardAt);
-        llHost.revealDoneAt = Date.now() + boardAt + (state.isFinal ? 2600 : 1500);
+        llHost.revealDoneAt = Date.now() + boardAt + (state.isFinal ? 4600 : 3500);
     }
 
-    function llDismissTutorial() {
+    /** Matches LANTERN_TUTORIAL_MS on the server: round 1 gets this much extra answer time. */
+    const LL_TUTORIAL_AUTO_MS = 9000;
+
+    function llTutorialStepsHtml(phone) {
+        const mini = (kind, label) => window.LLFX
+            ? `<span>${LLFX.lanternSvg(kind)}<em>${label}</em></span>`
+            : `<span><em>${label}</em></span>`;
+        const num = phone ? 'llp-tut-num' : 'll-tut-num';
+        const step = phone ? 'llp-tut-step' : 'll-tut-step';
+        const lanterns = phone ? 'llp-tut-lanterns' : 'll-tut-lanterns';
+        return `
+            <div class="${step}" style="--i:0"><div class="${phone ? 'llp-tut-step-h' : ''}"><span class="${num}">1</span><h3>Answer</h3></div>
+                <p>Get the question right to earn a lantern pick this round.</p></div>
+            <div class="${step}" style="--i:1"><div class="${phone ? 'llp-tut-step-h' : ''}"><span class="${num}">2</span><h3>Pick a lantern</h3></div>
+                <p>SAFE is +100. RISK flips a coin: ×2 or 0. MYSTERY is a surprise card that can help or hurt.</p>
+                <div class="${lanterns}">${mini('safe', 'SAFE')}${mini('risk', '×2 / 0')}${mini('mystery', 'Mystery')}</div></div>
+            <div class="${step}" style="--i:2"><div class="${phone ? 'llp-tut-step-h' : ''}"><span class="${num}">3</span><h3>Watch the reveal</h3></div>
+                <p>Lanterns open on the big screen, lantern by lantern — then your score updates.</p></div>
+            <div class="${step} is-allin" style="--i:3"><div class="${phone ? 'llp-tut-step-h' : ''}"><span class="${num}">!</span><h3>ALL IN (final round)</h3></div>
+                <p>Last round only: bet your whole score. Win and it doubles — bust and you lose it all (a 🛡️ shield saves you).</p></div>`;
+    }
+
+    function llDismissPhoneTutorial(instant) {
+        const el = $('llp-tutorial');
+        if (llPhone.tutorialTimers) {
+            llPhone.tutorialTimers.forEach(clearTimeout);
+            llPhone.tutorialTimers = [];
+        }
+        if (!el) return;
+        const finish = () => {
+            el.hidden = true;
+            el.classList.remove('is-out');
+            el.innerHTML = '';
+        };
+        if (instant || el.hidden) {
+            finish();
+            return;
+        }
+        el.classList.add('is-out');
+        llPhone.tutorialTimers = [setTimeout(finish, 320)];
+    }
+
+    function llDismissTutorial(instant) {
         const el = $('ll-intro');
         const stage = $('ll-stage');
         clearTimeout(llHost.tutorialTimer);
@@ -4036,54 +4082,75 @@
             stage?.classList.remove('is-intro');
             return;
         }
-        el.classList.add('is-out');
-        stage?.classList.remove('is-intro');
-        setTimeout(() => {
+        const finish = () => {
             el.hidden = true;
             el.innerHTML = '';
-            el.classList.remove('is-out');
-        }, 420);
+            el.classList.remove('is-out', 'll-tut');
+        };
+        stage?.classList.remove('is-intro');
+        if (instant) {
+            finish();
+            return;
+        }
+        el.classList.add('is-out');
+        llHost.tutorialTimer = setTimeout(finish, 360);
     }
 
+    /** Host: festival "How to play" card. Skip / Let's play dismiss at once; auto-closes after LL_TUTORIAL_AUTO_MS. */
     function llPlayTutorial(state) {
         const el = $('ll-intro');
         const stage = $('ll-stage');
         if (!el || !stage || !window.LLFX) return;
-        const reduced = LLFX.reduced();
-        const star = document.querySelector('.ll-logo svg')?.outerHTML || '';
         const rounds = state.rounds || 10;
+        el.className = 'll-intro ll-tut';
         el.innerHTML = `
-            <div class="ll-intro-logo"><div class="ll-logo">Lingo<span>Spark</span>${star}</div></div>
-            ${reduced ? '' : `${LLFX.lanternRigHtml('safe')}${LLFX.lanternRigHtml('mystery')}`}
-            <div class="ll-tutorial-card">
-                <p class="ll-tutorial-kicker">Quick tutorial · ${rounds} rounds</p>
-                <h2 class="ll-tutorial-title">Lucky Lanterns</h2>
-                <ul class="ll-tutorial-list">
-                    <li><strong>Answer</strong> the definition on your phone. Get it right to earn a lantern pick.</li>
-                    <li><strong>SAFE</strong> +100 · <strong>RISK</strong> coin flip ×2 or 0 · <strong>MYSTERY</strong> surprise card (can help or hurt).</li>
-                    <li><strong>Challenge</strong> a typed answer if the teacher should review it.</li>
-                </ul>
-                <p class="ll-tutorial-allin"><span>ALL IN</span> — final round only: double your score or lose it all (🛡️ shield can save you).</p>
-                <div class="ll-tutorial-actions">
-                    <button type="button" class="btn btn-grey" id="ll-tutorial-skip">Skip</button>
-                    <button type="button" class="btn btn-blue" id="ll-tutorial-go">Let's play!</button>
-                </div>
-            </div>`;
-        if (!reduced) {
-            el.querySelectorAll('.ll-rig').forEach((rig, i) => {
-                rig.style.left = i === 0 ? '300px' : '1620px';
-                rig.style.setProperty('--i', String(i));
-                rig.classList.add('is-in');
-            });
-        }
+            <button type="button" class="ll-tut-skip" id="ll-tutorial-skip">Skip</button>
+            <div class="ll-tut-title">${LLFX.popTextHtml('HOW TO PLAY')}</div>
+            <p class="ll-tut-sub">${rounds} rounds · answer → pick a lantern → reveal</p>
+            <div class="ll-tut-steps">${llTutorialStepsHtml(false)}</div>
+            <button type="button" class="ll-tut-go" id="ll-tutorial-go">Let's play!</button>
+            <p class="ll-tut-foot">Skip anytime — this closes on its own.</p>`;
         el.hidden = false;
         el.classList.remove('is-out');
         stage.classList.add('is-intro');
         LiveAudio.playLanternSfx('whoosh');
-        $('ll-tutorial-skip')?.addEventListener('click', () => llDismissTutorial());
-        $('ll-tutorial-go')?.addEventListener('click', () => llDismissTutorial());
+        $('ll-tutorial-skip')?.addEventListener('click', () => llDismissTutorial(), { once: true });
+        $('ll-tutorial-go')?.addEventListener('click', () => llDismissTutorial(), { once: true });
         clearTimeout(llHost.tutorialTimer);
-        llHost.tutorialTimer = setTimeout(() => llDismissTutorial(), reduced ? 4000 : 8500);
+        llHost.tutorialTimer = setTimeout(() => llDismissTutorial(), LL_TUTORIAL_AUTO_MS);
+    }
+
+    /** Phone: full-screen festival overlay with a big Skip; auto-closes with the host card. */
+    function llPlayPhoneTutorial(state) {
+        if (llPhone.tutorialDone || !window.LLFX) return;
+        llPhone.tutorialDone = true;
+        let el = $('llp-tutorial');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'llp-tutorial';
+            el.className = 'llp-tut';
+            el.hidden = true;
+            document.body.appendChild(el);
+        }
+        const rounds = state.rounds || 10;
+        el.className = 'llp-tut';
+        el.innerHTML = `
+            <div class="llp-tut-bar">
+                <span class="llp-tut-brand">Lingo<span>Spark</span></span>
+                <button type="button" class="llp-tut-skip" data-ll-tut-skip>Skip</button>
+            </div>
+            <div class="llp-tut-title">${LLFX.popTextHtml('HOW TO PLAY')}</div>
+            <p class="llp-tut-sub">${rounds} rounds · answer → pick → reveal</p>
+            <div class="llp-tut-steps">${llTutorialStepsHtml(true)}</div>
+            <button type="button" class="llp-tut-go" data-ll-tut-skip>Got it!</button>
+            <p class="llp-tut-foot">Skip anytime — closes automatically.</p>`;
+        el.hidden = false;
+        el.classList.remove('is-out');
+        el.querySelectorAll('[data-ll-tut-skip]').forEach((btn) => btn.addEventListener('click', () => llDismissPhoneTutorial(false), { once: true }));
+        if (llPhone.tutorialTimers) llPhone.tutorialTimers.forEach(clearTimeout);
+        llPhone.tutorialTimers = [
+            setTimeout(() => llDismissPhoneTutorial(false), LL_TUTORIAL_AUTO_MS),
+        ];
     }
 
     function renderLanternHost(state) {
@@ -4276,26 +4343,10 @@
         return `<div class="llp-big" style="--glow:${LLFX.rgba(c.main, 0.5)}">${LLFX.lanternSvg(kind === 'allin' ? 'allin' : (kind || 'grey'))}</div>`;
     }
 
-    function llPhoneTutorialHtml() {
-        return `<div class="llp-tutorial">
-            <p class="llp-tutorial-kicker">Quick tutorial</p>
-            <h3 class="llp-tutorial-title">How to play</h3>
-            <ul class="llp-tutorial-list">
-                <li>Answer the definition on your phone.</li>
-                <li>If you're right, pick <strong>SAFE</strong>, <strong>RISK</strong>, or <strong>MYSTERY</strong>.</li>
-                <li>Final round: <strong>ALL IN</strong> doubles your score—or you lose it all.</li>
-            </ul>
-            <button type="button" class="btn btn-blue llp-tutorial-go">Got it!</button>
-        </div>`;
-    }
-
     function llPhoneBodyHtml(state, you, avatar) {
         const mini = (kind) => `<span class="llp-mini">${LLFX.lanternSvg(kind)}</span>`;
         const outCard = (text) => `<div class="llp-card llp-card--out"><span class="llp-greylantern">${LLFX.lanternSvg('grey', { label: ['–'] })}</span>
                 <b>No lantern this round</b><p>${esc(text)}</p></div>`;
-        if (state.round === 1 && state.phase === 'question' && !you.decision && !llPhone.tutorialDone) {
-            return llPhoneTutorialHtml();
-        }
         if (state.phase === 'picking' && you.eligible && !you.pick) {
             return `<div class="llp-hint">${LLFX.popTextHtml('Pick a lantern!')}</div>
                 <div class="llp-lanterns">
@@ -4472,7 +4523,7 @@
                 rank.classList.toggle('is-lead', state.you?.finalRank === 1 && Number(state.you?.finalScore) > 0);
             }
         }, boardAt);
-        llPhone.revealDoneAt = Date.now() + boardAt + (state.isFinal ? 2600 : 1400);
+        llPhone.revealDoneAt = Date.now() + boardAt + (state.isFinal ? 4600 : 3400);
     }
 
     function syncLanternQuestionChrome(state) {
@@ -4509,6 +4560,9 @@
         root.hidden = false;
         document.body.classList.add('live-lantern-player');
         llMountPhoneBackdrop();
+        if (!llPhone.tutorialDone && state.round === 1 && state.phase === 'question' && !state.answeredCount) {
+            llPlayPhoneTutorial(state);
+        }
         const you = state.you || {};
         const me = (state.leaderboard || []).find((row) => row.id === you.id);
         if (me?.avatar) llPhone.avatar = me.avatar;
@@ -4563,17 +4617,10 @@
         const body = $('ll-phone-body');
         const showPick = state.phase === 'picking' && you.eligible && !you.pick;
         const key = [state.questionId, state.phase, showPick ? 'pick' : '', you.pick || '', you.status || '', you.decision || '', state.reveal?.seq ?? ''].join('|');
-        const tutorialKey = llPhone.tutorialDone ? '1' : '0';
-        const bodyKey = `${key}|t${tutorialKey}`;
-        if (body && llPhone.key !== bodyKey) {
-            llPhone.key = bodyKey;
+        if (body && llPhone.key !== key) {
+            llPhone.key = key;
             body.innerHTML = llPhoneBodyHtml(state, you, avatar);
         }
-        body?.querySelector('.llp-tutorial-go')?.addEventListener('click', () => {
-            llPhone.tutorialDone = true;
-            llPhone.key = null;
-            renderLanternPlayer(state);
-        });
         body?.querySelectorAll('[data-lantern]').forEach((btn) => {
             if (btn.dataset.bound) return;
             btn.dataset.bound = '1';

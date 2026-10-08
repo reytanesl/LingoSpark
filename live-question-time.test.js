@@ -15,7 +15,7 @@ import {
     questionSecondsForRoom,
     setRoomSettings,
 } from './live-game.js';
-import { LANTERN_QUESTION_MS, createLanternMatch, lanternPublicView, lanternQuestionPayload } from './lucky-lanterns.js';
+import { LANTERN_QUESTION_MS, LANTERN_TUTORIAL_MS, createLanternMatch, lanternPublicView, lanternQuestionPayload } from './lucky-lanterns.js';
 
 const DECK = [
     ['school', 'A place where children learn'],
@@ -256,7 +256,9 @@ test('Lucky Lanterns room uses the host time for the question phase', async () =
         ctx.host.emit('live:start-game');
         const view = await state;
         assert.equal(view.questionMs, 45_000);
-        assert.ok(view.phaseEndsAt - before >= 44_000 && view.phaseEndsAt - before <= 46_000);
+        // Round 1 adds the skippable tutorial window on top of the host's answer time.
+        const grace = LANTERN_TUTORIAL_MS;
+        assert.ok(view.phaseEndsAt - before >= 44_000 + grace && view.phaseEndsAt - before <= 46_000 + grace);
         assert.equal((await q).timeLimitSec, 45);
     } finally {
         await ctx.close();
