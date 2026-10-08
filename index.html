@@ -1592,6 +1592,75 @@
         .btn-outline:hover { background-color: var(--royal-blue); color: var(--bright-white); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+
+        /* In-game Setup bar — secondary chrome collapsed by default */
+        .game-setup-bar {
+            margin-bottom: 1.25rem;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            background: var(--bright-white);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .game-setup-bar-row {
+            display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;
+            padding: 0.65rem 0.85rem;
+            border-bottom: 1px solid transparent;
+        }
+        .game-setup-bar.open .game-setup-bar-row {
+            border-bottom-color: var(--border-light);
+        }
+        .game-setup-bar-title {
+            flex: 1 1 auto; min-width: 0;
+            font-family: var(--font-primary); font-weight: 700;
+            font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+            color: var(--royal-blue); line-height: 1.2;
+            display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem;
+        }
+        .game-setup-bar-title .live-badge,
+        .game-setup-bar-title .pe-level-badge { font-size: 0.72rem; }
+        .game-setup-bar-right {
+            display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: auto;
+        }
+        .game-setup-bar-right .pe-points { margin-left: 0; }
+        .game-setup-bar-toggle {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-family: var(--font-primary); font-weight: 700; font-size: 0.92rem;
+            padding: 0.45rem 0.85rem; border-radius: 999px; cursor: pointer;
+            border: 2px solid var(--royal-blue); background: transparent; color: var(--royal-blue);
+            transition: 0.2s;
+        }
+        .game-setup-bar-toggle:hover { background: rgba(1,33,105,0.06); }
+        .game-setup-bar.open .game-setup-bar-toggle {
+            background: var(--royal-blue); color: #fff;
+        }
+        .game-setup-bar-toggle .chevron { font-size: 0.78rem; transition: transform 0.25s; }
+        .game-setup-bar.open .game-setup-bar-toggle .chevron { transform: rotate(180deg); }
+        .game-setup-panel {
+            display: none; padding: 0.85rem 1rem 1rem;
+            background: #f8fafc;
+        }
+        .game-setup-bar.open .game-setup-panel { display: block; }
+        .game-setup-actions {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .game-setup-actions:empty { display: none; margin: 0; }
+        .game-setup-panel .game-desc { margin-bottom: 0.75rem; font-size: 0.98rem; }
+        .game-setup-panel .pe-instr { margin-bottom: 0; }
+        .game-setup-panel .tight-strategies { margin-bottom: 0; }
+        .game-setup-actions .live-vocab-live-btn {
+            margin-left: 0 !important;
+        }
+        .game-setup-hint {
+            margin: 0; color: var(--text-muted); font-size: 0.9rem;
+        }
+        @media (max-width: 640px) {
+            .game-setup-bar-row { padding: 0.55rem 0.7rem; }
+            .game-setup-bar-title { width: 100%; order: 2; font-size: 1.05rem; }
+            .game-setup-bar-right { width: 100%; order: 3; margin-left: 0; justify-content: space-between; }
+        }
+
         /* GAME UI */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid #eee; padding-bottom: 1rem; }
         .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
@@ -3540,14 +3609,19 @@
 
         <!-- WRITING SUITE: FRANKENSTEIN BUILDER -->
         <div id="screen-frank" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title"><span id="frank-title">Frankenstein Builder</span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2 id="frank-title">Frankenstein Builder</h2>
-                <button class="btn btn-outline" onclick="initFrankenstein()" id="frank-btn">New Paragraph <i class="fa-solid fa-rotate"></i></button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initFrankenstein()" id="frank-btn">New Paragraph <i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <p class="game-desc" id="frank-game-desc">Put the scrambled sentences back into the original paragraph order.</p>
             </div>
-            <p class="game-desc" id="frank-game-desc">Put the scrambled sentences back into the original paragraph order.</p>
+        </div>
             <div id="frank-type-card" class="frank-type-card" hidden>
                 <p class="frank-type-name" id="frank-type-name"></p>
                 <p class="frank-type-topic" id="frank-type-topic"></p>
@@ -3563,12 +3637,16 @@
 
         <!-- WRITING SUITE: TRANSITION MATCHER -->
         <div id="screen-trans" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title"><span id="trans-title">Transition Matcher <span class="live-badge">Cursor AI</span></span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header"><h2 id="trans-title">Transition Matcher <span class="live-badge">Cursor AI</span></h2></div>
-            <p class="game-desc">Select the ideal logical discourse marker to bridge the two generated sentences.</p>
-            
+            <div class="game-setup-panel">
+                <p class="game-desc">Select the ideal logical discourse marker to bridge the two generated sentences.</p>
+            </div>
+        </div>
             <div id="trans-loading" class="loading-spinner" style="display:none;"></div>
             <div id="trans-content">
                 <div class="trans-box">
@@ -3581,15 +3659,19 @@
 
         <!-- WRITING SUITE: DEVIL'S ADVOCATE -->
         <div id="screen-devil" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title"><span id="devil-title">The Devil's Advocate <span class="live-badge">Cursor AI</span></span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2 id="devil-title">The Devil's Advocate <span class="live-badge">Cursor AI</span></h2>
-                <button class="btn btn-outline" onclick="initDevil()" id="devil-btn">Next Case <i class="fa-solid fa-arrow-right"></i></button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initDevil()" id="devil-btn">Next Case <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <p class="game-desc">Review the target thesis and select the strongest academic counter-argument.</p>
             </div>
-            <p class="game-desc">Review the target thesis and select the strongest academic counter-argument.</p>
-            
+        </div>
             <div id="devil-loading" class="loading-spinner" style="display:none;"></div>
             <div id="devil-content">
                 <div class="devil-thesis-box">
@@ -3603,15 +3685,19 @@
 
         <!-- WRITING SUITE: BLOAT SLASHER -->
         <div id="screen-bloat" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title"><span id="bloat-title">Bloat Slasher <span class="live-badge">Cursor AI</span></span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2 id="bloat-title">Bloat Slasher <span class="live-badge">Cursor AI</span></h2>
-                <button class="btn btn-outline" onclick="initBloat()" id="bloat-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initBloat()" id="bloat-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <p class="game-desc">Click words to delete over-worded academic filler. Maintain full grammatical correctness and logic!</p>
             </div>
-            <p class="game-desc">Click words to delete over-worded academic filler. Maintain full grammatical correctness and logic!</p>
-            
+        </div>
             <div id="bloat-loading" class="loading-spinner" style="display:none;"></div>
             <div id="bloat-content">
                 <div class="bloat-stats">
@@ -3627,27 +3713,31 @@
 
         <!-- WRITING SUITE: TIGHT WRITE -->
         <div id="screen-tight" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title"><span id="tight-title">Tight Write <span class="live-badge">Cursor AI</span></span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2 id="tight-title">Tight Write <span class="live-badge">Cursor AI</span></h2>
-                <button class="btn btn-outline" onclick="initTight()" id="tight-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initTight()" id="tight-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <p class="game-desc">Rewrite the padded sentence below so it is clear and concise. Keep the meaning; cut the fat.</p>
+                <div class="tight-strategies">
+                    <strong>Conciseness strategies</strong>
+                    <ul>
+                        <li>Eliminate redundancy (e.g. <em>future plans</em> → <em>plans</em>)</li>
+                        <li>Use strong verbs (e.g. <em>conduct an investigation</em> → <em>investigate</em>)</li>
+                        <li>Prefer active voice</li>
+                        <li>Cut fillers (<em>very</em>, <em>really</em>, <em>in order to</em>, <em>the fact that</em>)</li>
+                        <li>Shorten phrases (<em>at this point in time</em> → <em>now</em>)</li>
+                        <li>Avoid nominalizations (turn noun phrases back into verbs)</li>
+                        <li>Simplify long, complex sentence structure</li>
+                    </ul>
+                </div>
             </div>
-            <p class="game-desc">Rewrite the padded sentence below so it is clear and concise. Keep the meaning; cut the fat.</p>
-            <div class="tight-strategies">
-                <strong>Conciseness strategies</strong>
-                <ul>
-                    <li>Eliminate redundancy (e.g. <em>future plans</em> → <em>plans</em>)</li>
-                    <li>Use strong verbs (e.g. <em>conduct an investigation</em> → <em>investigate</em>)</li>
-                    <li>Prefer active voice</li>
-                    <li>Cut fillers (<em>very</em>, <em>really</em>, <em>in order to</em>, <em>the fact that</em>)</li>
-                    <li>Shorten phrases (<em>at this point in time</em> → <em>now</em>)</li>
-                    <li>Avoid nominalizations (turn noun phrases back into verbs)</li>
-                    <li>Simplify long, complex sentence structure</li>
-                </ul>
-            </div>
-
+        </div>
             <div id="tight-loading" class="loading-spinner" style="display:none;"></div>
             <div id="tight-content">
                 <div class="tight-stats">
@@ -3667,15 +3757,19 @@
 
         <!-- WRITING SUITE: VOCAB UPGRADE -->
         <div id="screen-vocab" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title"><span id="vocab-title">Vocabulary Upgrade <span class="live-badge">Cursor AI</span></span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2 id="vocab-title">Vocabulary Upgrade <span class="live-badge">Cursor AI</span></h2>
-                <button class="btn btn-outline" onclick="initVocab()" id="vocab-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initVocab()" id="vocab-btn">Next Sentence <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <p class="game-desc">Click the highlighted basic word to swap it with precise academic terminology. Signed-in players save each informal → formal pair to a <strong>Vocab Upgrade</strong> set in My Sets.</p>
             </div>
-            <p class="game-desc">Click the highlighted basic word to swap it with precise academic terminology. Signed-in players save each informal → formal pair to a <strong>Vocab Upgrade</strong> set in My Sets.</p>
-            
+        </div>
             <div id="vocab-loading" class="loading-spinner" style="display:none;"></div>
             <div id="vocab-content">
                 <div id="vocab-box" class="vocab-container"></div>
@@ -3686,15 +3780,19 @@
 
         <!-- WRITING SUITE: WORD-FORGED ODYSSEY -->
         <div id="screen-odyssey" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button class="btn btn-outline" onclick="initOdyssey()" id="odyssey-btn"><i class="fa-solid fa-rotate"></i> New Adventure</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Word-Forged Odyssey <span class="live-badge">Cursor AI</span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Word-Forged Odyssey <span class="live-badge">Cursor AI</span></h2>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initOdyssey()" id="odyssey-btn"><i class="fa-solid fa-rotate"></i> New Adventure</button>
+                </div>
+                <p class="game-desc">An interactive text adventure powered by AI. Use at least one target word from your glossary in each action. The Game Master judges grammar, logic, and vocabulary use.</p>
             </div>
-            <p class="game-desc">An interactive text adventure powered by AI. Use at least one target word from your glossary in each action. The Game Master judges grammar, logic, and vocabulary use.</p>
-
+        </div>
             <div id="odyssey-loading" class="loading-spinner" style="display:none;"></div>
             <div id="odyssey-content">
                 <div class="odyssey-hud">
@@ -3730,15 +3828,19 @@
 
         <!-- WRITING SUITE: MISSION CHAT -->
         <div id="screen-mission" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button class="btn btn-outline" onclick="initMissionChat()" id="mission-btn"><i class="fa-solid fa-rotate"></i> Restart Mission</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Mission: Chat <span class="live-badge">Cursor AI</span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Mission: Chat <span class="live-badge">Cursor AI</span></h2>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initMissionChat()" id="mission-btn"><i class="fa-solid fa-rotate"></i> Restart Mission</button>
+                </div>
+                <p class="game-desc">Stay in character and achieve your goal. Fluency first during the chat — afterwards you get strengths &amp; improvement feedback, and you can export a PDF.</p>
             </div>
-            <p class="game-desc">Stay in character and achieve your goal. Fluency first during the chat — afterwards you get strengths &amp; improvement feedback, and you can export a PDF.</p>
-
+        </div>
             <div id="mission-loading" class="loading-spinner" style="display:none;"></div>
             <div id="mission-content">
                 <div class="mission-hud">
@@ -3800,15 +3902,19 @@
 
         <!-- WRITING SUITE: MATURA WRITING ASSESSMENT -->
         <div id="screen-matura" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button class="btn btn-outline" onclick="resetMaturaAssessment()" id="matura-btn"><i class="fa-solid fa-rotate"></i> New Assessment</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Matura Writing Assessment <span class="live-badge">Cursor AI</span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Matura Writing Assessment <span class="live-badge">Cursor AI</span></h2>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="resetMaturaAssessment()" id="matura-btn"><i class="fa-solid fa-rotate"></i> New Assessment</button>
+                </div>
+                <p class="game-desc">Upload a photo or PDF of a handwritten or printed essay, paste the exam task, and receive detailed Matura rozszerzona criteria feedback — including conciseness coaching (redundancy, strong verbs, active voice, fillers, shorter phrases, nominalizations, simpler structure).</p>
             </div>
-            <p class="game-desc">Upload a photo or PDF of a handwritten or printed essay, paste the exam task, and receive detailed Matura rozszerzona criteria feedback — including conciseness coaching (redundancy, strong verbs, active voice, fillers, shorter phrases, nominalizations, simpler structure).</p>
-
+        </div>
             <div id="matura-loading" class="loading-spinner" style="display:none;"></div>
             <div id="matura-content">
                 <div id="matura-viewing-banner" class="matura-viewing-banner">
@@ -3918,22 +4024,26 @@
 
         <!-- PRIMARY ENGLISH: BORING TO BRILLIANT -->
         <div id="screen-pe-boring" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-boring">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Boring to Brilliant <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-boring">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Boring to Brilliant <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
-                <button class="btn btn-outline" onclick="initPeBoring()" id="pe-boring-btn">New Prompt <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initPeBoring()" id="pe-boring-btn">New Prompt <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en">Upgrade the highlighted bland words so the text sounds more interesting. They may be adjectives, verbs, adverbs or nouns — not only adjectives. Keep the sentence natural and the same meaning. Type two improved English words below, separated by a comma — or ask for help (e.g. a hint, an explanation, or what to replace).</div>
-                <div class="pe-instr-pl">Ulepsz pogrubione słowa, aby tekst brzmiał ciekawiej. To mogą być przymiotniki, czasowniki, przysłówki lub rzeczowniki — nie tylko przymiotniki. Zdanie ma pozostać naturalne i z tym samym sensem. Wpisz dwie propozycje po angielsku (przecinek) — albo poproś o pomoc.</div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en">Upgrade the highlighted bland words so the text sounds more interesting. They may be adjectives, verbs, adverbs or nouns — not only adjectives. Keep the sentence natural and the same meaning. Type two improved English words below, separated by a comma — or ask for help (e.g. a hint, an explanation, or what to replace).</div>
+                    <div class="pe-instr-pl">Ulepsz pogrubione słowa, aby tekst brzmiał ciekawiej. To mogą być przymiotniki, czasowniki, przysłówki lub rzeczowniki — nie tylko przymiotniki. Zdanie ma pozostać naturalne i z tym samym sensem. Wpisz dwie propozycje po angielsku (przecinek) — albo poproś o pomoc.</div>
+                </div>
             </div>
+        </div>
             <div id="pe-boring-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-boring-content">
                 <div class="pe-prompt-box" id="pe-boring-prompt">Loading...</div>
@@ -3945,22 +4055,26 @@
 
         <!-- PRIMARY ENGLISH: DETAIL DETECTIVE -->
         <div id="screen-pe-detail" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-detail">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Detail Detective <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-detail">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Detail Detective <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
-                <button class="btn btn-outline" onclick="initPeDetail()" id="pe-detail-btn">New Case <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initPeDetail()" id="pe-detail-btn">New Case <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en">Detective, you need more information! Read the tip under the sentence — it tells you what to develop, expand or explain. Write one fuller English sentence with those details.</div>
-                <div class="pe-instr-pl">Detektywie, masz za mało informacji! Przeczytaj wskazówkę pod zdaniem — mówi, co rozwinąć, uzupełnić lub wyjaśnić. Napisz jedno pełniejsze zdanie po angielsku z tymi szczegółami.</div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en">Detective, you need more information! Read the tip under the sentence — it tells you what to develop, expand or explain. Write one fuller English sentence with those details.</div>
+                    <div class="pe-instr-pl">Detektywie, masz za mało informacji! Przeczytaj wskazówkę pod zdaniem — mówi, co rozwinąć, uzupełnić lub wyjaśnić. Napisz jedno pełniejsze zdanie po angielsku z tymi szczegółami.</div>
+                </div>
             </div>
+        </div>
             <div id="pe-detail-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-detail-content">
                 <div class="pe-prompt-box" id="pe-detail-prompt">Loading...</div>
@@ -3984,22 +4098,26 @@
 
         <!-- PRIMARY ENGLISH: LINK MASTER -->
         <div id="screen-pe-link" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-link">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Link Master <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-link">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Link Master <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
-                <button class="btn btn-outline" onclick="initPeLink()" id="pe-link-btn">New Pair <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initPeLink()" id="pe-link-btn">New Pair <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en" id="pe-link-instr-en">Join the two sentences into one coherent English sentence using a suitable linker for your level.</div>
-                <div class="pe-instr-pl" id="pe-link-instr-pl">Połącz te dwa zdania w jedno spójne zdanie po angielsku, używając spójnika odpowiedniego do Twojego poziomu.</div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en" id="pe-link-instr-en">Join the two sentences into one coherent English sentence using a suitable linker for your level.</div>
+                    <div class="pe-instr-pl" id="pe-link-instr-pl">Połącz te dwa zdania w jedno spójne zdanie po angielsku, używając spójnika odpowiedniego do Twojego poziomu.</div>
+                </div>
             </div>
+        </div>
             <div id="pe-link-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-link-content">
                 <div class="pe-prompt-box" id="pe-link-prompt">Loading...</div>
@@ -4011,22 +4129,26 @@
 
         <!-- PRIMARY ENGLISH: EXAM SIMULATOR -->
         <div id="screen-pe-exam" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-exam">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Exam Simulator <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-exam">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Exam Simulator <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></h2>
-                <button class="btn btn-outline" onclick="initPeExam()" id="pe-exam-btn">New AI Task <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initPeExam()" id="pe-exam-btn">New AI Task <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en" id="pe-exam-instr-en">Write the email according to the exam task (or upload a photo/PDF of your handwritten email — same as Advanced English). Follow the word limit and cover every bullet point.</div>
-                <div class="pe-instr-pl" id="pe-exam-instr-pl">Napisz e-mail zgodnie z poleceniem (albo wgraj zdjęcie/PDF odręcznej pracy — tak jak w Advanced English). Długość: 50–120 słów. Rozwiń wszystkie podpunkty.</div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en" id="pe-exam-instr-en">Write the email according to the exam task (or upload a photo/PDF of your handwritten email — same as Advanced English). Follow the word limit and cover every bullet point.</div>
+                    <div class="pe-instr-pl" id="pe-exam-instr-pl">Napisz e-mail zgodnie z poleceniem (albo wgraj zdjęcie/PDF odręcznej pracy — tak jak w Advanced English). Długość: 50–120 słów. Rozwiń wszystkie podpunkty.</div>
+                </div>
             </div>
+        </div>
             <div id="pe-exam-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-exam-content">
                 <button class="btn btn-outline" type="button" id="pe-exam-translate-btn" onclick="togglePeExamTaskLanguage()">Show task in Polish 🇵🇱</button>
@@ -4075,30 +4197,34 @@
 
         <!-- PRIMARY ENGLISH: DICTATION -->
         <div id="screen-pe-dictation" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-dictation">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Dictation <span class="pe-level-badge" id="dictation-level-badge">Beginner</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-dictation">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Dictation <span class="pe-level-badge" id="dictation-level-badge">Beginner</span></h2>
-                <button class="btn btn-outline" onclick="dictationNextSentence()" id="pe-dictation-btn">New sentence <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr" id="dictation-instr-listen">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="dictationNextSentence()" id="pe-dictation-btn">New sentence <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en">Press the speaker to hear the sentence. Repeat it aloud, then click Show sentence to check the text.</div>
-                <div class="pe-instr-pl">Naciśnij głośnik, aby usłyszeć zdanie. Powtórz je na głos, a potem kliknij Show sentence, aby zobaczyć tekst.</div>
-            </div>
-            <div class="pe-instr" id="dictation-instr-gap" style="display:none;">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                <div class="pe-instr" id="dictation-instr-listen">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en">Press the speaker to hear the sentence. Repeat it aloud, then click Show sentence to check the text.</div>
+                    <div class="pe-instr-pl">Naciśnij głośnik, aby usłyszeć zdanie. Powtórz je na głos, a potem kliknij Show sentence, aby zobaczyć tekst.</div>
                 </div>
-                <div class="pe-instr-en">Listen to the sentence, then type the missing words. Spelling must match exactly — capital letters do not matter. Gaps hide verbs, adjectives, nouns or adverbs.</div>
-                <div class="pe-instr-pl">Posłuchaj zdania i wpisz brakujące słowa. Pisownia musi być identyczna — wielkość liter nie ma znaczenia. Luki zakrywają czasowniki, przymiotniki, rzeczowniki lub przysłówki.</div>
+                <div class="pe-instr" id="dictation-instr-gap" style="display:none;">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en">Listen to the sentence, then type the missing words. Spelling must match exactly — capital letters do not matter. Gaps hide verbs, adjectives, nouns or adverbs.</div>
+                    <div class="pe-instr-pl">Posłuchaj zdania i wpisz brakujące słowa. Pisownia musi być identyczna — wielkość liter nie ma znaczenia. Luki zakrywają czasowniki, przymiotniki, rzeczowniki lub przysłówki.</div>
+                </div>
             </div>
+        </div>
             <div class="dictation-progress" id="dictation-progress">Sentence 1</div>
             <div class="dictation-play-row">
                 <button type="button" class="dictation-speaker-btn" onclick="playDictationSentence()" id="dictation-play-btn">
@@ -4129,74 +4255,94 @@
 
         <!-- PRIMARY ENGLISH: COLOUR BLOCKS -->
         <div id="screen-pe-colour" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-colour">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Colour Blocks <span class="pe-level-badge" id="colour-age-badge">8–9</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-colour">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Colour Blocks <span class="pe-level-badge" id="colour-age-badge">8–9</span></h2>
-                <button class="btn btn-outline" onclick="initColourBlocks()" id="pe-colour-btn">New round <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initColourBlocks()" id="pe-colour-btn">New round <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en">Each word is its own tile (a and an are separate; have to is one tile; don’t have to is don’t + have to). Creator also has to be (am / is / are), and / or, question words, and ending tiles . or ?. Ages 10–12: play/do/go collocations, daily routines, parts of the day, and clock time (o’clock, half, quarter, past, to, at + numbers). Fill the gaps: drag the right tile into each blank. When you pick singular or plural, you see and hear that form. Persons: I, You, We, They, He, She. Same colours everywhere. Things are grouped — food, furniture, school, clothes… Open or close a category. After a wrong Check, Ask why / Dopytaj AI explains in simple language for this age. Use EN | PL for help text, and PL tiles on/off to show Polish words on the tiles. Signed-in players save each correct sentence (with a Polish translation) to a Colour Blocks set in My Sets.</div>
-                <div class="pe-instr-pl">Każde słowo to osobny kafel (a i an osobno; have to to jeden kafel; don’t have to to don’t + have to). W trybie Twórca są też to be (am / is / are), and / or, słowa pytające oraz końcówki . albo ?. Wiek 10–12: kolokacje play/do/go, codzienne rutyny, pory dnia i zegar (o’clock, half, quarter, past, to, at + liczby). Uzupełnij: przeciągnij właściwy kafel w lukę. Przy wyborze liczby pojedynczej lub mnogiej widać i słychać wybraną formę. Osoby: I, You, We, They, He, She. Kolory są zawsze te same. Rzeczy są w kategoriach — jedzenie, meble, szkoła, ubrania… Po błędnym Sprawdź przycisk Dopytaj AI tłumaczy prosto. EN | PL zmienia pomoc, a PL na kafelkach pokazuje polskie słowa. Po zalogowaniu poprawne zdania trafiają do zestawu Colour Blocks w My Sets.</div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en">Each word is its own tile (a and an are separate; have to is one tile; don’t have to is don’t + have to). Creator also has to be (am / is / are), and / or, question words, and ending tiles . or ?. Ages 10–12: play/do/go collocations, daily routines, parts of the day, and clock time (o’clock, half, quarter, past, to, at + numbers). Fill the gaps: drag the right tile into each blank. When you pick singular or plural, you see and hear that form. Persons: I, You, We, They, He, She. Same colours everywhere. Things are grouped — food, furniture, school, clothes… Open or close a category. After a wrong Check, Ask why / Dopytaj AI explains in simple language for this age. Use EN | PL for help text, and PL tiles on/off to show Polish words on the tiles. Signed-in players save each correct sentence (with a Polish translation) to a Colour Blocks set in My Sets.</div>
+                    <div class="pe-instr-pl">Każde słowo to osobny kafel (a i an osobno; have to to jeden kafel; don’t have to to don’t + have to). W trybie Twórca są też to be (am / is / are), and / or, słowa pytające oraz końcówki . albo ?. Wiek 10–12: kolokacje play/do/go, codzienne rutyny, pory dnia i zegar (o’clock, half, quarter, past, to, at + liczby). Uzupełnij: przeciągnij właściwy kafel w lukę. Przy wyborze liczby pojedynczej lub mnogiej widać i słychać wybraną formę. Osoby: I, You, We, They, He, She. Kolory są zawsze te same. Rzeczy są w kategoriach — jedzenie, meble, szkoła, ubrania… Po błędnym Sprawdź przycisk Dopytaj AI tłumaczy prosto. EN | PL zmienia pomoc, a PL na kafelkach pokazuje polskie słowa. Po zalogowaniu poprawne zdania trafiają do zestawu Colour Blocks w My Sets.</div>
+                </div>
             </div>
+        </div>
             <div id="colour-blocks-root"></div>
         </div>
 
         <!-- PRIMARY ENGLISH: TOPIC CHALLENGE -->
         <div id="screen-pe-topic" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-topic">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Topic Challenge <span class="pe-level-badge">9–11</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-topic">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Topic Challenge <span class="pe-level-badge">9–11</span></h2>
-                <button class="btn btn-outline" onclick="initTopicChallenge()" id="pe-topic-btn">New round <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initTopicChallenge()" id="pe-topic-btn">New round <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en">Picture mode is Spot &amp; Say: a red circle marks one thing in the scene, and the question is always about that thing (using your chosen grammar). Fair synonyms can still pass via AI (e.g. sister vs mum). Also available: Tiles and Transform when they match the grammar. Speak: Hear the model, then Say it (mic) or I said it. After a wrong Check, Ask why can explain simply.</div>
-                <div class="pe-instr-pl">Tryb Obrazek to Spot &amp; Say: czerwone kółko oznacza jedną rzecz na scenie, a pytanie zawsze dotyczy właśnie jej (w wybranej gramatyce). Fair synonimy AI może uznać (np. sister vs mum). Dostępne też: Kafelki i Przekształć, gdy pasują do gramatyki. Mówienie: Posłuchaj wzoru, potem Powiedz (mikrofon) lub Powiedziałem/am. Po błędnym Sprawdź możesz Dopytać AI.</div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en">Picture mode is Spot &amp; Say: a red circle marks one thing in the scene, and the question is always about that thing (using your chosen grammar). Fair synonyms can still pass via AI (e.g. sister vs mum). Also available: Tiles and Transform when they match the grammar. Speak: Hear the model, then Say it (mic) or I said it. After a wrong Check, Ask why can explain simply.</div>
+                    <div class="pe-instr-pl">Tryb Obrazek to Spot &amp; Say: czerwone kółko oznacza jedną rzecz na scenie, a pytanie zawsze dotyczy właśnie jej (w wybranej gramatyce). Fair synonimy AI może uznać (np. sister vs mum). Dostępne też: Kafelki i Przekształć, gdy pasują do gramatyki. Mówienie: Posłuchaj wzoru, potem Powiedz (mikrofon) lub Powiedziałem/am. Po błędnym Sprawdź możesz Dopytać AI.</div>
+                </div>
             </div>
+        </div>
             <div id="topic-challenge-root"></div>
         </div>
 
         <!-- PRIMARY ENGLISH: REVIEW CHATBOT -->
         <div id="screen-pe-review" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <span class="pe-points">Points: <span id="pe-points-review">0</span></span>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Review Chatbot <span class="pe-level-badge">PE</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-review">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
-            <div class="game-header">
-                <h2>Review Chatbot <span class="pe-level-badge">PE</span></h2>
-                <button class="btn btn-outline" onclick="initPeReview()" id="pe-review-btn">New chat <i class="fa-solid fa-rotate"></i></button>
-            </div>
-            <div class="pe-instr">
-                <div class="pe-instr-head">
-                    <strong>Instructions</strong>
-                    <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initPeReview()" id="pe-review-btn">New chat <i class="fa-solid fa-rotate"></i></button>
                 </div>
-                <div class="pe-instr-en">A teaching coach practises your grammar and vocabulary for your class and ease. Choose English chat or Polish tutor (quizzes in Polish; you answer in English). Optional focus and picture. Tap Nie rozumiem for help. Voice / Hear. End session for a coach note.</div>
-                <div class="pe-instr-pl">Trener uczy gramatyki i słownictwa dopasowanych do klasy i poziomu. Wybierz czat po angielsku albo trenera po polsku (przepytuje po polsku; Ty odpowiadasz po angielsku). Opcjonalny cel i obrazek. Nie rozumiem — pomoc. Voice / Hear. Zakończ sesję po notatkę.</div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en">A teaching coach practises your grammar and vocabulary for your class and ease. Choose English chat or Polish tutor (quizzes in Polish; you answer in English). Optional focus and picture. Tap Nie rozumiem for help. Voice / Hear. End session for a coach note.</div>
+                    <div class="pe-instr-pl">Trener uczy gramatyki i słownictwa dopasowanych do klasy i poziomu. Wybierz czat po angielsku albo trenera po polsku (przepytuje po polsku; Ty odpowiadasz po angielsku). Opcjonalny cel i obrazek. Nie rozumiem — pomoc. Voice / Hear. Zakończ sesję po notatkę.</div>
+                </div>
             </div>
+        </div>
             <div id="review-chat-root"></div>
             <div id="review-status" class="feedback"></div>
         </div>
 
         <!-- CORE VOCAB: BOMB DEFUSAL -->
         <div id="screen-bomb" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Vocabulary Bomb Defusal</div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
+                </div>
+            </div>
+        </div>
             <i id="bomb-icon" class="fa-solid fa-bomb bomb-icon pulse"></i>
             <div id="timer-display">60</div>
             <div class="word-prompt" id="bomb-prompt">Loading...</div>
@@ -4209,24 +4355,40 @@
 
         <!-- CORE VOCAB: GRID TERRITORY -->
         <div id="screen-grid" class="screen engine-container">
-            <div class="top-bar">
-                <button class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
-                <button class="btn btn-outline" onclick="initGridTerritory()"><i class="fa-solid fa-rotate-right"></i> Reset Board</button>
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Grid Territory</div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
+                    <button class="btn btn-outline" onclick="initGridTerritory()"><i class="fa-solid fa-rotate-right"></i> Reset Board</button>
+                </div>
+            </div>
+        </div>
             <div id="turn-display" class="turn-indicator turn-blue">Team 1's Turn (X)</div>
             <div class="grid-board" id="tic-tac-toe-board"></div>
         </div>
 
         <!-- CORE VOCAB: FLASHCARDS -->
         <div id="screen-flashcard" class="screen engine-container">
-            <div class="top-bar">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
-                <button type="button" class="btn btn-outline" onclick="showFcStatsModal()"><i class="fa-solid fa-chart-bar"></i> Stats</button>
+                <div class="game-setup-bar-title">Classic Flashcards</div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
+                    <button type="button" class="btn btn-outline" onclick="showFcStatsModal()"><i class="fa-solid fa-chart-bar"></i> Stats</button>
+                </div>
+                <p class="game-setup-hint">Tap card to flip either way</p>
+            </div>
+        </div>
             <div class="fc-counter" id="fc-counter">Cards left in deck: 0</div>
-            <p style="text-align:center; color: var(--text-muted); font-size: 0.9rem; margin: -1rem 0 1rem;">Tap card to flip either way</p>
             <div class="flip-card" id="fc-card" onclick="flipCard()">
                 <div class="flip-card-inner">
                     <div class="flip-card-front" id="fc-front">Prompt</div>
@@ -4242,11 +4404,19 @@
 
         <!-- CORE VOCAB: TEST COUNTDOWN -->
         <div id="screen-test-countdown" class="screen engine-container">
-            <div class="top-bar">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
                 <button type="button" class="btn btn-grey" onclick="TestCountdown.exitToVocab()"><i class="fa-solid fa-arrow-left"></i> <span data-tc-i18n="exit">Exit</span></button>
-                <button type="button" class="pe-flag-btn" id="tc-lang-btn" title="EN / PL" onclick="TestCountdown.toggleLang()">🇵🇱</button>
-                <button type="button" class="btn btn-outline" onclick="goToSetup('test-countdown')"><i class="fa-solid fa-sliders"></i> <span data-tc-i18n="editSetup">Change settings</span></button>
+                <div class="game-setup-bar-title">Test Countdown</div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button type="button" class="pe-flag-btn" id="tc-lang-btn" title="EN / PL" onclick="TestCountdown.toggleLang()">🇵🇱</button>
+                    <button type="button" class="btn btn-outline" onclick="goToSetup('test-countdown')"><i class="fa-solid fa-sliders"></i> <span data-tc-i18n="editSetup">Change settings</span></button>
+                </div>
+            </div>
+        </div>
 
             <div id="tc-panel-home">
                 <div class="tc-home-stats">
@@ -4307,11 +4477,19 @@
 
         <!-- CORE VOCAB: MEMORY FLIP -->
         <div id="screen-memory-flip" class="screen engine-container">
-            <div class="top-bar">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
-                <button type="button" class="btn btn-outline" onclick="initMemoryFlip()"><i class="fa-solid fa-rotate-right"></i> New Round</button>
+                <div class="game-setup-bar-title">Memory Flip</div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
+                    <button type="button" class="btn btn-outline" onclick="initMemoryFlip()"><i class="fa-solid fa-rotate-right"></i> New Round</button>
+                </div>
+            </div>
+        </div>
             <div id="mf-status" class="turn-indicator turn-blue">Match terms with definitions.</div>
             <div id="mf-meta" style="text-align:center;color:var(--text-muted);font-size:0.9rem;margin-bottom:0.8rem;">Attempts: 0 · Matches: 0</div>
             <div id="mf-board" class="grid-board" style="grid-template-columns: repeat(4, minmax(120px, 1fr)); max-width: 760px; gap: 12px;"></div>
@@ -4319,11 +4497,19 @@
 
         <!-- CORE VOCAB: WORD REPAIR -->
         <div id="screen-word-repair" class="screen engine-container">
-            <div class="top-bar">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
-                <button type="button" class="btn btn-outline" onclick="initWordRepair()"><i class="fa-solid fa-rotate-right"></i> New Round</button>
+                <div class="game-setup-bar-title">Word Repair</div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
+                    <button type="button" class="btn btn-outline" onclick="initWordRepair()"><i class="fa-solid fa-rotate-right"></i> New Round</button>
+                </div>
+            </div>
+        </div>
             <div id="wr-progress" class="turn-indicator turn-blue">Round 1 / 10 · Streak: 0 · Score: 0</div>
             <div class="word-prompt" id="wr-clue">Loading...</div>
             <div style="text-align:center;margin:-0.5rem 0 0.9rem;color:var(--pillarbox-red);font-weight:700;">Broken term: <span id="wr-broken">—</span></div>
@@ -4337,11 +4523,19 @@
 
         <!-- CORE VOCAB: SPEED MATCH SPRINT -->
         <div id="screen-speed-match" class="screen engine-container">
-            <div class="top-bar">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
-                <button type="button" class="btn btn-outline" onclick="initSpeedMatch()"><i class="fa-solid fa-rotate-right"></i> New Sprint</button>
+                <div class="game-setup-bar-title">Speed Match Sprint</div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button type="button" class="btn btn-outline live-vocab-live-btn" onclick="hostLiveQuizFromVocab()"><i class="fa-solid fa-bolt"></i> Live Spark</button>
+                    <button type="button" class="btn btn-outline" onclick="initSpeedMatch()"><i class="fa-solid fa-rotate-right"></i> New Sprint</button>
+                </div>
+            </div>
+        </div>
             <div id="sm-progress" class="turn-indicator turn-blue">Time: 60s · Score: 0 · Streak: 0</div>
             <div class="word-prompt" id="sm-clue">Loading...</div>
             <p style="text-align:center;color:var(--text-muted);margin:-0.35rem 0 0.85rem;font-weight:600;">Tap the matching answer</p>
@@ -6134,6 +6328,15 @@
             syncAuthBarNavActive();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (!applyingRoute) setAppHash('home');
+        }
+
+
+        function toggleGameSetupBar(btn) {
+            const bar = btn.closest('.game-setup-bar');
+            if (!bar) return;
+            const open = !bar.classList.contains('open');
+            bar.classList.toggle('open', open);
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
 
         function closeWsGameCats(panel) {
