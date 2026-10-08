@@ -670,7 +670,7 @@
                 caption(`${NAMES[killer]} destroyed the fort: +1 🏆 WIN (${v.wins[killer]} total)!`);
             }
         });
-        if (v.rebuild && v.fortDown) {
+        if (v.rebuild && v.fortDown && v.next !== 'finished') {
             const rebuildAt = endAt + 700;
             schedule(rebuildAt - elapsed, () => rebuildFort(v.fortDown));
         }
