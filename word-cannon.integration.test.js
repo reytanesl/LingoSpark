@@ -216,3 +216,67 @@ test('Word Cannon random teams split players evenly', async () => {
         await new Promise((resolve) => httpServer.close(resolve));
     }
 });
+
+test('Word Cannon: a player who lets the timer run out gets a wrong-answer "time\'s up" result', async () => {
+    const httpServer = createServer();
+    const io = new Server(httpServer);
+    initLiveGame(io);
+    await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
+    const url = `http://127.0.0.1:${httpServer.address().port}`;
+    const room = createRoom('host-3', { deck: DECK, answerMode: 'realise', gameFormat: 'word-cannon', teamAssignment: 'pick' });
+    room.cannonSeed = 99;
+    room.questionSeconds = 1; // test-only: below the 5 s UI minimum so the real timer fires fast
+    const joined = ['Ada', 'Bea'].map((n, i) => joinRoom(room.code, n, `10.4.0.${i + 1}`));
+    const host = ioClient(url, { transports: ['websocket'] });
+    const socks = joined.map(() => ioClient(url, { transports: ['websocket'] }));
+    try {
+        await Promise.all([host, ...socks].map((s) => waitFor(s, 'connect')));
+        host.emit('live:host-join', { code: room.code, hostToken: room.hostToken });
+        await waitFor(host, 'live:host-joined');
+        for (const [i, sock] of socks.entries()) {
+            sock.emit('live:player-join', { code: room.code, playerId: joined[i].player.id, playerToken: joined[i].player.playerToken });
+            await waitFor(sock, 'live:player-joined');
+            const update = waitFor(host, 'live:room-state', (s) => s.teams.find((t) => t.id === (i ? 'blue' : 'red'))?.memberIds.includes(joined[i].player.id));
+            sock.emit('live:join-team', { teamId: i ? 'blue' : 'red' });
+            await update;
+        }
+        const intro = waitFor(host, 'live:cannon-state', (s) => s.phase === 'intro');
+        host.emit('live:start-game');
+        await intro;
+        const opening = waitFor(host, 'live:cannon-state', (s) => s.phase === 'question');
+        host.emit('live:cannon-skip');
+        const q = await opening;
+
+        const beaRes = waitFor(socks[1], 'live:answer-result');
+        const beaVolley = waitFor(socks[1], 'live:cannon-state', (s) => s.phase === 'volley');
+        socks[0].emit('live:submit-answer', { text: q.correctTerm, questionId: q.questionId });
+        const result = await beaRes;
+        assert.equal(result.timedOut, true);
+        assert.equal(result.correct, false);
+        assert.equal(result.eligible, false);
+        assert.equal(result.challengeable, false);
+        assert.equal(result.answerText, '');
+        assert.equal(result.correctTerm, q.correctTerm);
+        assert.equal(result.cannon, true);
+        assert.equal(result.team, 'blue');
+        const state = await beaVolley;
+        assert.equal(state.you.status, 'out');
+        assert.equal(state.you.decision, 'wrong');
+        assert.equal(state.you.timedOut, true);
+        assert.equal(state.you.correctTerm, q.correctTerm);
+        assert.equal(state.you.stats.answered, 1, 'counted like any wrong answer');
+        assert.equal(state.you.stats.correct, 0);
+        assert.equal(state.volley.loaded.blue, 0, 'no shot');
+        assert.equal(state.volley.loaded.red, 1);
+        const challengeErr = waitFor(socks[1], 'live:error');
+        socks[1].emit('live:challenge-answer');
+        assert.ok((await challengeErr).error);
+    } finally {
+        clearTimeout(room.cannonTimer);
+        host.close();
+        socks.forEach((s) => s.close());
+        destroyRoom(room.code, room.hostToken);
+        io.close();
+        await new Promise((resolve) => httpServer.close(resolve));
+    }
+});

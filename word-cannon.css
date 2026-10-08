@@ -546,6 +546,8 @@ body.live-cannon-player #live-play-error { position: relative; z-index: 2; }
 .wcp-card p { margin: 0.35rem 0 0; font-weight: 600; }
 .wcp-card.is-good { border-color: var(--wc-green); }
 .wcp-card.is-bad { border-color: var(--wc-orange); }
+.wcp-card .wcp-timeup { margin: 0 0 .6rem; padding: .45rem .6rem; border-radius: 10px; background: rgba(255, 138, 61, .16); border: 1px solid var(--wc-orange); }
+.wcp-card .wcp-timeup b { display: inline; font-size: 1.05rem; color: var(--wc-orange); }
 .wcp-card.is-hit { border-color: var(--wc-green); background: #effff4; }
 .wcp-card.is-miss { border-color: #3aa8e6; background: #eef8ff; }
 .wcp-ball { display: inline-block; width: 70px; height: 70px; margin: 0.2rem auto 0; animation: wcBallDrop 0.7s cubic-bezier(.3,1.7,.6,1); }

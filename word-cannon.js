@@ -488,7 +488,7 @@ function resolveInputMode(answerMode, rng) {
 }
 
 function blankAnswer() {
-    return { submitted: false, correct: false, eligible: false, answerText: '', decision: null, ms: null };
+    return { submitted: false, correct: false, eligible: false, answerText: '', decision: null, ms: null, timedOut: false, timeoutNotified: false };
 }
 
 function blankStats() {
@@ -791,6 +791,7 @@ function resultPayload(match, playerId, answer) {
         correct: Boolean(answer.correct),
         reset: false,
         challengeable: answer.decision === 'prompt',
+        timedOut: Boolean(answer.timedOut),
         progress: match.stats[playerId]?.correct || 0,
         won: false,
         correctTerm: match.entry?.term || '',
@@ -891,17 +892,43 @@ export function skipCannonPrompt(match, playerId, now = Date.now()) {
     return { phase, result };
 }
 
+/**
+ * Question time is over: everyone who has not answered gets a WRONG answer (blank text,
+ * counted in stats like any wrong answer, no shot). A blank answer can never be challenged,
+ * so timed-out players never hold up the round.
+ */
 export function closeCannonAnswering(match, now = Date.now()) {
     if (!match || match.phase !== 'question') return match?.phase || null;
     for (const id of match.playerOrder) {
         const answer = match.answers[id];
         if (answer.submitted) continue;
         answer.submitted = true;
+        answer.answerText = '';
         answer.correct = false;
         answer.eligible = false;
         answer.decision = 'wrong';
+        answer.timedOut = true;
+        answer.ms = match.questionMs;
+        const stats = match.stats[id];
+        if (stats) stats.answered += 1;
     }
     return syncPhase(match, now);
+}
+
+/**
+ * Wrong-answer results for players who timed out and have not been told yet
+ * (each player is returned once). Same payload as a wrong answer plus `timedOut`.
+ */
+export function cannonTimeoutResults(match) {
+    if (!match) return [];
+    const out = [];
+    for (const id of match.playerOrder) {
+        const answer = match.answers[id];
+        if (!answer?.timedOut || answer.timeoutNotified) continue;
+        answer.timeoutNotified = true;
+        out.push({ playerId: id, result: { ...resultPayload(match, id, answer), challengeable: false, timedOut: true } });
+    }
+    return out;
 }
 
 export function expireCannonReview(match, now = Date.now()) {
@@ -1181,6 +1208,11 @@ export function cannonPublicView(match, { playerId = null, forHost = false, conn
             teamName: CANNON_TEAM_NAMES[team],
             decision: answer.decision || null,
             status: statusFor(match, id),
+            timedOut: Boolean(answer.timedOut),
+            // Only once this player's answer is final and wrong (they can no longer answer).
+            correctTerm: answer.submitted && !answer.eligible && ['wrong', 'skipped', 'declined'].includes(answer.decision)
+                ? (match.entry?.term || '')
+                : null,
             eligible: Boolean(answer.eligible),
             ms: answer.ms,
             tier: answer.eligible && answer.ms != null

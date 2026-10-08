@@ -13,6 +13,7 @@ import {
     LANTERN_TUTORIAL_MS,
     advanceLantern,
     closeLanternAnswering,
+    lanternTimeoutResults,
     closeLanternPicks,
     createLanternMatch,
     expireLanternReview,
@@ -38,6 +39,7 @@ import {
     cannonQuestionPayload,
     cannonWinners,
     closeCannonAnswering,
+    cannonTimeoutResults,
     createCannonMatch,
     expireCannonReview,
     finishCannonEarly,
@@ -2008,6 +2010,14 @@ function finishLanternRoom(io, room, onGameEnd) {
     if (onGameEnd) onGameEnd(room);
 }
 
+/** Tell every player who ran out of time: same wrong-answer result as a wrong answer ("Time's up"). */
+function emitTimeoutResults(io, room, items) {
+    for (const { playerId, result } of items || []) {
+        const player = room.players.get(playerId);
+        if (player?.socketId) io.to(player.socketId).emit('live:answer-result', result);
+    }
+}
+
 function armLanternTimer(io, room, onGameEnd) {
     clearLanternTimer(room);
     const match = room?.lantern;
@@ -2019,8 +2029,10 @@ function armLanternTimer(io, room, onGameEnd) {
         const live = getRoom(code);
         if (!live?.lantern || live.phase !== 'playing') return;
         if (live.lantern.phase !== expectedPhase || live.lantern.phaseEndsAt !== endsAt) return;
-        if (expectedPhase === 'question') closeLanternAnswering(live.lantern, Date.now());
-        else if (expectedPhase === 'review') expireLanternReview(live.lantern, Date.now());
+        if (expectedPhase === 'question') {
+            closeLanternAnswering(live.lantern, Date.now());
+            emitTimeoutResults(io, live, lanternTimeoutResults(live.lantern));
+        } else if (expectedPhase === 'review') expireLanternReview(live.lantern, Date.now());
         else if (expectedPhase === 'picking') closeLanternPicks(live.lantern, Date.now());
         else if (expectedPhase === 'reveal') advanceLantern(live.lantern, Date.now());
         afterLanternChange(io, live, onGameEnd, { deliverQuestions: live.lantern.phase === 'question' });
@@ -2133,8 +2145,10 @@ function armCannonTimer(io, room, onGameEnd) {
         if (!live?.cannon || live.phase !== 'playing') return;
         if (live.cannon.phase !== expectedPhase || live.cannon.phaseEndsAt !== endsAt) return;
         let skipped = [];
-        if (expectedPhase === 'question') closeCannonAnswering(live.cannon, Date.now());
-        else if (expectedPhase === 'review') skipped = expireCannonReview(live.cannon, Date.now()).skipped;
+        if (expectedPhase === 'question') {
+            closeCannonAnswering(live.cannon, Date.now());
+            emitTimeoutResults(io, live, cannonTimeoutResults(live.cannon));
+        } else if (expectedPhase === 'review') skipped = expireCannonReview(live.cannon, Date.now()).skipped;
         else advanceCannon(live.cannon, Date.now());
         releaseCannonDecisions(io, live, skipped, { accept: false });
         afterCannonChange(io, live, onGameEnd, { deliverQuestions: live.cannon.phase === 'question' });
@@ -2796,6 +2810,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const outcome = hostSkipLantern(room.lantern, Date.now());
+                emitTimeoutResults(io, room, lanternTimeoutResults(room.lantern));
                 releaseLanternDecisions(io, room, outcome.skipped, { accept: false });
                 releaseLanternDecisions(io, room, outcome.declined, { accept: false });
                 afterLanternChange(io, room, onGameEnd, { deliverQuestions: room.lantern.phase === 'question' });
@@ -2838,6 +2853,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const outcome = hostSkipCannon(room.cannon, Date.now());
+                emitTimeoutResults(io, room, cannonTimeoutResults(room.cannon));
                 releaseCannonDecisions(io, room, outcome.skipped, { accept: false });
                 releaseCannonDecisions(io, room, outcome.declined, { accept: false });
                 afterCannonChange(io, room, onGameEnd, { deliverQuestions: room.cannon.phase === 'question' });

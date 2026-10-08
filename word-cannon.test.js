@@ -21,6 +21,7 @@ import {
     cannonPublicView,
     cannonTimeLeft,
     closeCannonAnswering,
+    cannonTimeoutResults,
     createCannonMatch,
     finishCannonEarly,
     hostSkipCannon,
@@ -638,4 +639,71 @@ test('pacing: volleys and holds are short so players wait less', () => {
         rng: () => 0,
     });
     assert.ok(v.durationMs <= 2_700, `4-ball salvo should take < 2.7 s, got ${v.durationMs}`);
+});
+
+test('running out of time counts as a wrong answer: no shot, counted in stats, Time\'s up result, never challengeable', () => {
+    const m = newMatch();
+    submitCannonAnswer(m, 'r1', 'cold', 1000);
+    submitCannonAnswer(m, 'b1', 'warm', 2000); // a real wrong answer…
+    skipCannonPrompt(m, 'b1', 2100); // …that is not challenged
+    assert.equal(m.phase, 'question', 'still waiting for r2 and b2');
+    assert.deepEqual(cannonTimeoutResults(m), []);
+
+    closeCannonAnswering(m, 20_000);
+    for (const id of ['r2', 'b2']) {
+        const a = m.answers[id];
+        assert.equal(a.submitted, true);
+        assert.equal(a.correct, false);
+        assert.equal(a.eligible, false);
+        assert.equal(a.decision, 'wrong');
+        assert.equal(a.answerText, '');
+        assert.equal(a.timedOut, true);
+        assert.equal(a.ms, 20_000);
+        assert.equal(m.stats[id].answered, 1, 'counted as an answered (wrong) question, like b1');
+        assert.equal(m.stats[id].correct, 0);
+        assert.throws(() => markCannonChallengePending(m, id, 20_100), /no answer to challenge/);
+    }
+    assert.equal(m.answers.b1.timedOut, false);
+    assert.equal(m.stats.b1.answered, 1);
+    // Blank answers are not challengeable, so nobody holds the round: straight to the volley.
+    assert.equal(m.phase, 'volley');
+    assert.equal(m.volley.shots.length, 1, 'only the correct answer fires');
+    assert.equal(m.volley.loaded.red, 1);
+    assert.equal(m.volley.loaded.blue, 0);
+
+    const results = cannonTimeoutResults(m);
+    assert.deepEqual(results.map((r) => r.playerId).sort(), ['b2', 'r2']);
+    for (const { result } of results) {
+        assert.equal(result.correct, false);
+        assert.equal(result.eligible, false);
+        assert.equal(result.challengeable, false);
+        assert.equal(result.timedOut, true);
+        assert.equal(result.correctTerm, 'cold');
+        assert.equal(result.cannon, true);
+    }
+    assert.deepEqual(cannonTimeoutResults(m), [], 'each timeout is reported once');
+
+    const r2 = cannonPublicView(m, { playerId: 'r2', now: 20_000 }).you;
+    const b1 = cannonPublicView(m, { playerId: 'b1', now: 20_000 }).you;
+    assert.equal(r2.status, b1.status, 'same status as a wrong answer');
+    assert.equal(r2.timedOut, true);
+    assert.equal(b1.timedOut, false);
+    assert.equal(r2.correctTerm, 'cold');
+    assert.equal(b1.correctTerm, 'cold');
+    assert.equal(cannonPublicView(m, { playerId: 'r1', now: 20_000 }).you.correctTerm, null);
+});
+
+test('host skip of a question counts silent players as wrong; everyone answering still fires at once', () => {
+    const m = newMatch();
+    submitCannonAnswer(m, 'r1', 'cold', 1000);
+    hostSkipCannon(m, 1500);
+    assert.deepEqual(cannonTimeoutResults(m).map((r) => r.playerId).sort(), ['b1', 'b2', 'r2']);
+    assert.equal(m.phase, 'volley');
+    advanceCannon(m, m.phaseEndsAt);
+    assert.equal(m.phase, 'question');
+    const t = m.questionStartedAt;
+    for (const id of ['r1', 'r2', 'b1', 'b2']) submitCannonAnswer(m, id, m.entry.term, t + 1000);
+    assert.equal(m.phase, 'volley', 'everyone answered -> no waiting for the timer');
+    assert.deepEqual(cannonTimeoutResults(m), []);
+    assert.equal(m.stats.r2.answered, 2);
 });

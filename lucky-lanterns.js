@@ -453,7 +453,7 @@ function resolveInputMode(answerMode, rng) {
 }
 
 function blankAnswer() {
-    return { submitted: false, correct: false, eligible: false, answerText: '', decision: null };
+    return { submitted: false, correct: false, eligible: false, answerText: '', decision: null, timedOut: false, timeoutNotified: false };
 }
 
 function beginRound(match, now) {
@@ -577,6 +577,7 @@ function resultPayload(match, playerId, answer) {
         correct: Boolean(answer.correct),
         reset: false,
         challengeable: answer.decision === 'prompt',
+        timedOut: Boolean(answer.timedOut),
         progress: match.scores[playerId] || 0,
         won: false,
         correctTerm: match.entry?.term || '',
@@ -657,17 +658,40 @@ export function skipLanternPrompt(match, playerId, now = Date.now()) {
     return { phase, result: { ...resultPayload(match, String(playerId), answer), challengeDeclined: true } };
 }
 
+/**
+ * Question time is over: everyone who has not answered gets a WRONG answer (blank text,
+ * no lantern, 0 points this round). A blank answer can never be challenged, so timed-out
+ * players never hold up the round.
+ */
 export function closeLanternAnswering(match, now = Date.now()) {
     if (!match || match.phase !== 'question') return match?.phase || null;
     for (const id of match.playerOrder) {
         const answer = match.answers[id];
         if (answer.submitted) continue;
         answer.submitted = true;
+        answer.answerText = '';
         answer.correct = false;
         answer.eligible = false;
         answer.decision = 'wrong';
+        answer.timedOut = true;
     }
     return syncPhase(match, now);
+}
+
+/**
+ * Wrong-answer results for players who timed out and have not been told yet
+ * (each player is returned once). Same payload as a wrong answer plus `timedOut`.
+ */
+export function lanternTimeoutResults(match) {
+    if (!match) return [];
+    const out = [];
+    for (const id of match.playerOrder) {
+        const answer = match.answers[id];
+        if (!answer?.timedOut || answer.timeoutNotified) continue;
+        answer.timeoutNotified = true;
+        out.push({ playerId: id, result: { ...resultPayload(match, id, answer), challengeable: false, timedOut: true } });
+    }
+    return out;
 }
 
 export function expireLanternReview(match, now = Date.now()) {
@@ -914,6 +938,12 @@ export function lanternPublicView(match, { playerId = null, forHost = false, con
             pick: match.picks[id] || null,
             decision: match.answers[id]?.decision || null,
             status: statusFor(match, id),
+            timedOut: Boolean(match.answers[id]?.timedOut),
+            // Only once this player's answer is final and wrong (they can no longer answer).
+            correctTerm: match.answers[id]?.submitted && !match.answers[id]?.eligible
+                && ['wrong', 'skipped', 'declined'].includes(match.answers[id]?.decision)
+                ? (match.entry?.term || '')
+                : null,
             result,
         };
     }

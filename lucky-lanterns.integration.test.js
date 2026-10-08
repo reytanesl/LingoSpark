@@ -230,3 +230,83 @@ test('a solo race room still marks a wrong typed answer as challengeable', async
         await new Promise((resolve) => httpServer.close(resolve));
     }
 });
+
+test('a player who lets the timer run out gets a wrong-answer "time\'s up" result (timer and host skip)', async () => {
+    const httpServer = createServer();
+    const io = new Server(httpServer);
+    initLiveGame(io);
+    await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
+    const url = `http://127.0.0.1:${httpServer.address().port}`;
+    const room = createRoom('host-3', { deck: DECK, answerMode: 'realise', gameFormat: 'lucky-lanterns', lanternRounds: 3 });
+    setRoomSettings(room, { gameFormat: 'lucky-lanterns', answerMode: 'realise', lanternRounds: 3 });
+    room.questionSeconds = 1; // test-only: below the 5 s UI minimum so the real timer fires fast
+    const ada = joinRoom(room.code, 'Ada', '10.3.0.1');
+    const bea = joinRoom(room.code, 'Bea', '10.3.0.2');
+    const host = ioClient(url, { transports: ['websocket'] });
+    const adaSock = ioClient(url, { transports: ['websocket'] });
+    const beaSock = ioClient(url, { transports: ['websocket'] });
+    try {
+        await Promise.all([host, adaSock, beaSock].map((sock) => once(sock, 'connect')));
+        host.emit('live:host-join', { code: room.code, hostToken: room.hostToken });
+        await once(host, 'live:host-joined');
+        for (const [sock, joined] of [[adaSock, ada], [beaSock, bea]]) {
+            sock.emit('live:player-join', { code: room.code, playerId: joined.player.id, playerToken: joined.player.playerToken });
+            await once(sock, 'live:player-joined');
+        }
+        const opening = waitFor(host, 'live:lantern-state', (s) => s.phase === 'question');
+        host.emit('live:start-game');
+        const q1 = await opening;
+
+        // Round 1 (long tutorial grace): Ada answers, the host skips the question -> Bea counts as wrong.
+        const adaRes = once(adaSock, 'live:answer-result');
+        adaSock.emit('live:submit-answer', { text: q1.correctTerm });
+        assert.equal((await adaRes).correct, true);
+        const skipRes = once(beaSock, 'live:answer-result');
+        host.emit('live:lantern-skip');
+        const skipped = await skipRes;
+        assert.equal(skipped.timedOut, true);
+        assert.equal(skipped.correct, false);
+        assert.equal(skipped.challengeable, false);
+        assert.equal(skipped.correctTerm, q1.correctTerm);
+        await waitFor(host, 'live:lantern-state', (s) => s.phase === 'picking');
+        adaSock.emit('live:lantern-pick', { pick: 'safe' });
+        await waitFor(host, 'live:lantern-state', (s) => s.phase === 'reveal');
+        const round2 = waitFor(host, 'live:lantern-state', (s) => s.phase === 'question' && s.round === 2);
+        host.emit('live:lantern-skip');
+        const q2 = await round2;
+
+        // Round 2: the real 1 s timer runs out on Bea.
+        const beaRes = once(beaSock, 'live:answer-result');
+        const beaState = waitFor(beaSock, 'live:lantern-state', (s) => s.round === 2 && s.phase !== 'question');
+        adaSock.emit('live:submit-answer', { text: q2.correctTerm });
+        const timedOut = await beaRes;
+        assert.equal(timedOut.timedOut, true);
+        assert.equal(timedOut.correct, false);
+        assert.equal(timedOut.eligible, false);
+        assert.equal(timedOut.challengeable, false);
+        assert.equal(timedOut.answerText, '');
+        assert.equal(timedOut.correctTerm, q2.correctTerm);
+        assert.equal(timedOut.lantern, true);
+        const state = await beaState;
+        assert.equal(state.phase, 'picking', 'the timed-out player does not hold the round');
+        assert.equal(state.you.status, 'out');
+        assert.equal(state.you.decision, 'wrong');
+        assert.equal(state.you.timedOut, true);
+        assert.equal(state.you.correctTerm, q2.correctTerm);
+        // A blank answer cannot be challenged, and earns no lantern.
+        const challengeErr = once(beaSock, 'live:error');
+        beaSock.emit('live:challenge-answer');
+        assert.ok((await challengeErr).error);
+        const pickErr = once(beaSock, 'live:error');
+        beaSock.emit('live:lantern-pick', { pick: 'safe' });
+        assert.ok((await pickErr).error);
+    } finally {
+        clearTimeout(room.lanternTimer);
+        host.close();
+        adaSock.close();
+        beaSock.close();
+        destroyRoom(room.code, room.hostToken);
+        await new Promise((resolve) => io.close(resolve));
+        await new Promise((resolve) => httpServer.close(resolve));
+    }
+});

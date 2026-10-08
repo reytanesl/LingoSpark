@@ -12,6 +12,9 @@ import {
     createLanternMatch,
     expireLanternReview,
     forceLanternReview,
+    hostSkipLantern,
+    lanternPublicView,
+    lanternTimeoutResults,
     markLanternChallengePending,
     normalizeLanternRounds,
     personalLanternResult,
@@ -19,6 +22,7 @@ import {
     pickWeighted,
     resolveLanternRound,
     settleLanternChallenge,
+    skipLanternPrompt,
     submitLanternAnswer,
 } from './lucky-lanterns.js';
 
@@ -479,4 +483,97 @@ test('a round where nobody earns a lantern skips the empty pick window', () => {
     assert.equal(m.phase, 'reveal');
     assert.equal(m.reveal.steps.length, 0);
     assert.equal(m.phaseEndsAt, 10_000 + 3400);
+});
+
+test('running out of time counts as a wrong answer: no lantern, 0 points, Time\'s up result, never challengeable', () => {
+    const now = 50_000;
+    const match = createLanternMatch({
+        players: [
+            { id: 'ada', nickname: 'Ada' },
+            { id: 'bea', nickname: 'Bea' },
+            { id: 'cam', nickname: 'Cam' },
+        ],
+        deck: DECK,
+        rounds: 3,
+        answerMode: 'realise',
+        now,
+        rng: rngOf([0.1]),
+    });
+    const term = match.entry.term;
+    // Ada answers wrong (and continues), Bea is right, Cam never answers.
+    submitLanternAnswer(match, 'ada', 'nope', now + 1000);
+    skipLanternPrompt(match, 'ada', now + 1100);
+    submitLanternAnswer(match, 'bea', term, now + 2000);
+    assert.equal(match.phase, 'question', 'still waiting for Cam');
+    assert.deepEqual(lanternTimeoutResults(match), [], 'nobody timed out yet');
+
+    closeLanternAnswering(match, now + 20_000);
+    const cam = match.answers.cam;
+    assert.equal(cam.submitted, true);
+    assert.equal(cam.correct, false);
+    assert.equal(cam.eligible, false);
+    assert.equal(cam.decision, 'wrong');
+    assert.equal(cam.answerText, '');
+    assert.equal(cam.timedOut, true);
+    assert.equal(match.answers.ada.timedOut, false, 'a real wrong answer is not a timeout');
+    // A blank answer can never be challenged, so it does not hold up the round.
+    assert.throws(() => markLanternChallengePending(match, 'cam', now + 20_100), /no answer to challenge/);
+    assert.equal(match.phase, 'picking', 'straight to lanterns — timed-out players block nothing');
+
+    const results = lanternTimeoutResults(match);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].playerId, 'cam');
+    assert.equal(results[0].result.correct, false);
+    assert.equal(results[0].result.challengeable, false);
+    assert.equal(results[0].result.eligible, false);
+    assert.equal(results[0].result.timedOut, true);
+    assert.equal(results[0].result.correctTerm, term);
+    assert.equal(results[0].result.lantern, true);
+    assert.deepEqual(lanternTimeoutResults(match), [], 'each timeout is reported once');
+
+    const camView = lanternPublicView(match, { playerId: 'cam' }).you;
+    const adaView = lanternPublicView(match, { playerId: 'ada' }).you;
+    assert.equal(camView.status, 'out');
+    assert.equal(camView.status, adaView.status, 'same status as a wrong answer');
+    assert.equal(camView.timedOut, true);
+    assert.equal(camView.correctTerm, term);
+    assert.equal(adaView.correctTerm, term, 'wrong answers also see the right answer');
+    assert.equal(lanternPublicView(match, { playerId: 'bea' }).you.correctTerm, null);
+    assert.equal(lanternPublicView(match, { playerId: 'cam' }).answeredCount, 3);
+
+    assert.throws(() => pickLantern(match, 'cam', 'safe', now + 21_000), /correct answer/);
+    pickLantern(match, 'bea', 'safe', now + 21_000);
+    assert.equal(match.phase, 'reveal');
+    assert.equal(match.scores.cam, 0);
+    assert.equal(match.scores.ada, 0);
+    const finalBoard = lanternPublicView(match, { playerId: 'cam' }).you.result;
+    const adaResult = lanternPublicView(match, { playerId: 'ada' }).you.result;
+    assert.equal(finalBoard.outcome, adaResult.outcome, 'same per-round result as a wrong answer');
+});
+
+test('host skip of a question also counts the silent players as wrong; everyone answering still advances at once', () => {
+    const now = 90_000;
+    const match = createLanternMatch({
+        players: [{ id: 'ada', nickname: 'Ada' }, { id: 'bea', nickname: 'Bea' }],
+        deck: DECK,
+        rounds: 3,
+        answerMode: 'realise',
+        now,
+        rng: rngOf([0.1]),
+    });
+    submitLanternAnswer(match, 'ada', match.entry.term, now + 500);
+    hostSkipLantern(match, now + 600);
+    assert.equal(match.answers.bea.timedOut, true);
+    assert.equal(match.answers.bea.decision, 'wrong');
+    assert.deepEqual(lanternTimeoutResults(match).map((r) => r.playerId), ['bea']);
+    assert.equal(match.phase, 'picking');
+
+    pickLantern(match, 'ada', 'safe', now + 700);
+    advanceLantern(match, match.phaseEndsAt);
+    assert.equal(match.phase, 'question');
+    assert.equal(match.answers.bea.timedOut, false, 'fresh answer slot every round');
+    submitLanternAnswer(match, 'ada', match.entry.term, now + 800);
+    submitLanternAnswer(match, 'bea', match.entry.term, now + 900);
+    assert.equal(match.phase, 'picking', 'everyone answered -> no waiting for the timer');
+    assert.deepEqual(lanternTimeoutResults(match), []);
 });

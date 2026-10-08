@@ -1773,6 +1773,9 @@
             if (result?.lantern || result?.gameFormat === 'lucky-lanterns') {
                 if (result.challengeable) showChallengeActions(result);
                 else hideChallengeActions();
+                // Time ran out: blank answer = wrong (never challengeable). Lock the inputs right away;
+                // the lantern state that follows paints the "Time's up! / The answer was …" card.
+                if (result.timedOut) setAnswerInputsEnabled(false);
                 return;
             }
             if (result?.cannon || result?.gameFormat === 'word-cannon') {
@@ -4440,8 +4443,10 @@
 
     function llPhoneBodyHtml(state, you, avatar) {
         const mini = (kind) => `<span class="llp-mini">${LLFX.lanternSvg(kind)}</span>`;
+        // Wrong answer and timeout look the same; a timeout just says "Time's up!". Both show the right answer.
+        const answerLine = you.correctTerm ? `<p class="llp-answer">The answer was <strong>${esc(you.correctTerm)}</strong>.</p>` : '';
         const outCard = (text) => `<div class="llp-card llp-card--out"><span class="llp-greylantern">${LLFX.lanternSvg('grey', { label: ['–'] })}</span>
-                <b>No lantern this round</b><p>${esc(text)}</p></div>`;
+                <b>${you.timedOut ? '⏰ Time\'s up! No lantern this round' : 'No lantern this round'}</b>${answerLine}<p>${esc(text)}</p></div>`;
         if (state.phase === 'picking' && you.eligible && !you.pick) {
             return `<div class="llp-hint">${LLFX.popTextHtml('Pick a lantern!')}</div>
                 <div class="llp-lanterns">
@@ -4687,7 +4692,7 @@
         else if (you.decision === 'prompt') note = 'Marked wrong. Challenge it, or continue.';
         else if (you.decision === 'pending') note = 'Waiting for the teacher.';
         else if (you.status === 'ready') note = 'Correct! Lanterns open after any challenges.';
-        else if (you.status === 'out') note = 'No lantern this round.';
+        else if (you.status === 'out') note = you.timedOut ? 'Time\'s up — counted as wrong. No lantern this round.' : 'No lantern this round.';
         else if (state.phase === 'reveal') note = '';
         else if (state.phase === 'picking' && you.eligible && !you.pick) note = state.isFinal ? 'Final round — pick a lantern or go ALL IN.' : 'Pick a lantern.';
         else if (you.pick) note = 'Lantern locked in. Watch the reveal.';
@@ -4734,7 +4739,7 @@
 
         const body = $('ll-phone-body');
         const showPick = state.phase === 'picking' && you.eligible && !you.pick;
-        const key = [state.questionId, state.phase, showPick ? 'pick' : '', you.pick || '', you.status || '', you.decision || '', state.reveal?.seq ?? ''].join('|');
+        const key = [state.questionId, state.phase, showPick ? 'pick' : '', you.pick || '', you.status || '', you.decision || '', you.timedOut ? 't' : '', you.correctTerm || '', state.reveal?.seq ?? ''].join('|');
         if (body && llPhone.key !== key) {
             llPhone.key = key;
             body.innerHTML = llPhoneBodyHtml(state, you, avatar);

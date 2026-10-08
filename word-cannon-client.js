@@ -941,6 +941,8 @@
                     ms: result.ms ?? P.state.you?.ms ?? null,
                     tier: result.tier ?? P.state.you?.tier ?? null,
                     status: result.challengeable ? 'deciding' : (result.eligible ? 'loaded' : 'out'),
+                    timedOut: Boolean(result.timedOut || P.state.you?.timedOut),
+                    correctTerm: (!result.eligible && !result.challengeable ? result.correctTerm : null) ?? P.state.you?.correctTerm ?? null,
                 },
             };
         }
@@ -995,8 +997,10 @@
                     <p>${forcePct ? `${forcePct}. ` : ''}${tier === 'fast' ? 'Full power!' : tier === 'good' ? 'Solid shot.' : 'Weaker shot — answer faster next time.'}</p></div>`;
             }
             if (you.status === 'out' || (r && !r.eligible && !r.challengeable)) {
-                const term = r?.correctTerm ? `<p>The answer was <strong>${esc(r.correctTerm)}</strong>.</p>` : '';
-                return `<div class="wcp-card is-bad"><b>No shot this time</b>${term}<p>Get the next one!</p></div>`;
+                const correctTerm = r?.correctTerm || you.correctTerm;
+                const term = correctTerm ? `<p>The answer was <strong>${esc(correctTerm)}</strong>.</p>` : '';
+                const head = you.timedOut || r?.timedOut ? '⏰ Time\'s up! No shot this time' : 'No shot this time';
+                return `<div class="wcp-card is-bad"><b>${head}</b>${term}<p>Get the next one!</p></div>`;
             }
             if (phase === 'review') return '<div class="wcp-card"><b>Hold fire…</b><p>The teacher is checking a challenge.</p></div>';
             return '';
@@ -1006,7 +1010,13 @@
             const mine = (v.shots || []).filter((s) => String(s.shooterId) === String(you.id || ctx.playerId()));
             const teamShots = (v.shots || []).filter((s) => s.team === team).length;
             const rows = mine.map((s, i) => `<div class="wcp-shot is-wait" data-shot="${i}">🔥 Your shot is flying…</div>`).join('');
-            return `<div class="wcp-card ${mine.length ? 'is-good' : ''}"><b>${v.suddenDeath ? 'LAST SHOT!' : 'FIRE!'}</b>
+            // A timeout goes straight to the volley, so the wrong-answer feedback rides on this card.
+            const timedOut = !mine.length && (you.timedOut || r?.timedOut);
+            const correctTerm = r?.correctTerm || you.correctTerm;
+            const timeUp = timedOut
+                ? `<p class="wcp-timeup"><b>⏰ Time's up!</b> ${correctTerm ? `The answer was <strong>${esc(correctTerm)}</strong>. ` : ''}No shot from you this round.</p>`
+                : '';
+            return `<div class="wcp-card ${mine.length ? 'is-good' : ''}">${timeUp}<b>${v.suddenDeath ? 'LAST SHOT!' : 'FIRE!'}</b>
                 <p>${teamShots ? `Your team fires ${teamShots} shot${teamShots === 1 ? '' : 's'}.` : 'Your team has no shots this round.'} Watch the big screen!</p>
                 ${rows ? `<div class="wcp-shots">${rows}</div>` : ''}</div>`;
         }
@@ -1107,7 +1117,7 @@
             }, Math.max(0, wait)));
         }
         const body = $('wcp-body');
-        const key = [state.questionId, state.phase, you.status || '', you.decision || '', you.eligible ? 1 : 0, state.volley?.seq ?? '', P.result?.questionId === state.questionId ? (P.result.eligible ? 'y' : 'n') : ''].join('|');
+        const key = [state.questionId, state.phase, you.status || '', you.decision || '', you.eligible ? 1 : 0, you.timedOut ? 't' : '', state.volley?.seq ?? '', P.result?.questionId === state.questionId ? (P.result.eligible ? 'y' : 'n') : ''].join('|');
         if (body && P.key !== key) {
             P.key = key;
             body.innerHTML = phoneBodyHtml(state, you, team);
