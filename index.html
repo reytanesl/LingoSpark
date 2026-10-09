@@ -2948,6 +2948,7 @@
 
         /* Lucky Lanterns styles live in lucky-lanterns.css */
     </style>
+    <link rel="stylesheet" href="site-design.css">
     <link rel="stylesheet" href="live-room.css">
 </head>
 <body>
@@ -2965,18 +2966,17 @@
                 </a>
             </div>
             <div class="header-side header-side--right" aria-hidden="true"></div>
+            <div class="auth-bar" id="auth-bar">
+                <div class="auth-bar-left" id="auth-bar-left">
+                    <a href="/shop.html" class="auth-nav-btn" id="auth-nav-shop"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
+                    <a href="https://buymeacoffee.com/lingospark/extras" id="auth-nav-premium" class="auth-nav-btn auth-premium-btn" target="_blank" rel="noopener" style="display:none;"><i class="fa-solid fa-crown"></i> Go Premium</a>
+                    <button type="button" class="auth-nav-btn" id="auth-nav-mysets" onclick="openWordSets()" style="display:none;"><i class="fa-solid fa-book"></i> Word Sets</button>
+                    <button type="button" class="auth-nav-btn" id="auth-nav-progress" onclick="openMyProgress()" style="display:none;"><i class="fa-solid fa-chart-line"></i> My Progress</button>
+                </div>
+                <div class="auth-bar-right" id="auth-bar-right"></div>
+            </div>
         </div>
     </header>
-
-    <div class="auth-bar" id="auth-bar">
-        <div class="auth-bar-left" id="auth-bar-left">
-            <a href="/shop.html" class="auth-nav-btn" id="auth-nav-shop"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
-            <a href="https://buymeacoffee.com/lingospark/extras" id="auth-nav-premium" class="auth-nav-btn auth-premium-btn" target="_blank" rel="noopener" style="display:none;"><i class="fa-solid fa-crown"></i> Go Premium</a>
-            <button type="button" class="auth-nav-btn" id="auth-nav-mysets" onclick="openWordSets()" style="display:none;"><i class="fa-solid fa-book"></i> Word Sets</button>
-            <button type="button" class="auth-nav-btn" id="auth-nav-progress" onclick="openMyProgress()" style="display:none;"><i class="fa-solid fa-chart-line"></i> My Progress</button>
-        </div>
-        <div class="auth-bar-right" id="auth-bar-right"></div>
-    </div>
 
     <div class="about-panel" id="about-panel" aria-hidden="true">
         <div class="menu-nav" role="tablist" aria-label="Menu sections">
@@ -3063,6 +3063,22 @@
         <div id="screen-home" class="screen active">
 
             <div class="home-hub-wrap">
+            <section class="sd-hero" aria-labelledby="sd-hero-title">
+                <span class="sd-badge">Vocab games stay free forever</span>
+                <h1 class="sd-hero-title" id="sd-hero-title">Gamify your <span class="sd-hl">words</span></h1>
+                <p class="sd-hero-sub">ESL vocab building and confidence boosting website.</p>
+                <div class="sd-hero-actions">
+                    <a href="#/live/host" class="sd-btn sd-btn--primary" onclick="return window.LiveGame ? (LiveGame.openHost({ fresh: true }), false) : true"><i class="fa-solid fa-bolt"></i> Host Live Spark</a>
+                    <a href="#/live/join" class="sd-btn sd-btn--secondary">Join with Code</a>
+                </div>
+                <div class="sd-chips" aria-label="Free games">
+                    <a class="sd-chip" href="#/setup/flashcard">Flashcards</a>
+                    <a class="sd-chip" href="#/setup/bomb">Bomb Defusal</a>
+                    <a class="sd-chip" href="#/setup/grid">Grid Territory</a>
+                    <a class="sd-chip" href="#/auction">Vocab Auction</a>
+                    <a class="sd-chip" href="#/penalty-match">Penalty Match</a>
+                </div>
+            </section>
             <div id="home-hub" class="home-hub active">
                 <a href="#/vocab" class="hub-square">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
@@ -3154,15 +3170,15 @@
                     <button type="button" class="btn btn-outline" onclick="openWordSets()"><i class="fa-solid fa-book"></i> Manage word sets</button>
                 </div>
                 <div class="grid">
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-hourglass-half"></i></div><h2>Test Countdown</h2><p>Set a vocab test date and get a daily plan of new words and reviews that peaks on the day.</p><a href="#/setup/test-countdown" class="btn btn-outline">Plan Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-table-cells-large"></i></div><h2>Memory Flip</h2><p>Flip cards to match terms with definitions. Fewer attempts means a stronger score.</p><a href="#/setup/memory-flip" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-screwdriver-wrench"></i></div><h2>Word Repair</h2><p>Fix broken spellings and rebuild the correct term from the definition clue.</p><a href="#/setup/word-repair" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-gauge-high"></i></div><h2>Speed Match Sprint</h2><p>Tap the matching term as fast as you can. Correct answers add time; mistakes burn the clock.</p><a href="#/setup/speed-match" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word or phrase that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own list.</p><a href="#/auction" class="btn btn-outline">Play Now</a></div>
-                    <div class="card"><div class="icon-container"><i class="fa-solid fa-hand-pointer"></i></div><h2>Penalty Match</h2><p>Two words flash up — tap MATCH when they really belong together. Wrong taps and missed pairs cost points. Race to 100 with a built-in level, a demo set or your own list.</p><a href="#/penalty-match" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-clone"></i></div><h2>Classic Flashcards</h2><p>Study in 12-card batches with smart review — harder words come back first until you master them.</p><div class="sd-tags"><span>Free</span><span>Solo</span><span>Smart review</span></div><a href="#/setup/flashcard" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-hourglass-half"></i></div><h2>Test Countdown</h2><p>Set a vocab test date and get a daily plan of new words and reviews that peaks on the day.</p><div class="sd-tags"><span>Free</span><span>Daily plan</span></div><a href="#/setup/test-countdown" class="btn btn-outline">Plan Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-table-cells-large"></i></div><h2>Memory Flip</h2><p>Flip cards to match terms with definitions. Fewer attempts means a stronger score.</p><div class="sd-tags"><span>Free</span><span>Matching</span></div><a href="#/setup/memory-flip" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-screwdriver-wrench"></i></div><h2>Word Repair</h2><p>Fix broken spellings and rebuild the correct term from the definition clue.</p><div class="sd-tags"><span>Free</span><span>Spelling</span></div><a href="#/setup/word-repair" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-gauge-high"></i></div><h2>Speed Match Sprint</h2><p>Tap the matching term as fast as you can. Correct answers add time; mistakes burn the clock.</p><div class="sd-tags"><span>Free</span><span>Timed</span></div><a href="#/setup/speed-match" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><div class="sd-tags"><span>Free</span><span>Timed</span></div><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Claim squares by answering correctly.</p><div class="sd-tags"><span>Free</span><span>vs bot</span><span>2 players</span></div><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word or phrase that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own list.</p><div class="sd-tags"><span>Free</span><span>Solo / 2 players</span><span>Built-in levels</span></div><a href="#/auction" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-hand-pointer"></i></div><h2>Penalty Match</h2><p>Two words flash up — tap MATCH when they really belong together. Wrong taps and missed pairs cost points. Race to 100 with a built-in level, a demo set or your own list.</p><div class="sd-tags"><span>Free</span><span>Race to 100</span><span>Built-in levels</span></div><a href="#/penalty-match" class="btn btn-outline">Play Now</a></div>
                 </div>
             </div>
 
@@ -7056,15 +7072,15 @@
                     <div class="auth-user">
                         ${authState.user.picture ? `<img src="${authState.user.picture}" alt="">` : '<i class="fa-solid fa-user"></i>'}
                         <span>${authState.user.name || authState.user.email}</span>
-                        ${authState.hasAccess ? '<span style="color:var(--success-green);font-weight:700;">Premium</span>' : ''}
+                        ${authState.hasAccess ? '<span class="auth-user-premium">Premium</span>' : ''}
                     </div>
-                    ${authState.isAdmin ? '<a class="btn btn-outline" href="/admin.html" style="padding:0.4rem 1rem;font-size:0.85rem;border-color:#fff;color:#fff;"><i class="fa-solid fa-shield-halved"></i> Admin</a>' : ''}
-                    <button class="btn btn-grey" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="logoutAuth()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    ${authState.isAdmin ? '<a class="btn btn-outline auth-bar-btn auth-admin-btn" href="/admin.html"><i class="fa-solid fa-shield-halved"></i> Admin</a>' : ''}
+                    <button class="btn btn-grey auth-bar-btn auth-logout-btn" onclick="logoutAuth()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
                     ${menuBtn}
                 `;
             } else {
                 right.innerHTML = `
-                    <button class="btn btn-red" style="padding:0.4rem 1rem;font-size:0.85rem;" onclick="openAuthModal('login')">
+                    <button class="btn btn-red auth-bar-btn auth-signin-btn" onclick="openAuthModal('login')">
                         <i class="fa-solid fa-right-to-bracket"></i> Sign in
                     </button>
                     ${menuBtn}
