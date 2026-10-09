@@ -22,7 +22,7 @@ function measure() {
     const out = [];
     const roots = document.querySelectorAll('.screen.active');
     for (const root of roots) {
-        root.querySelectorAll('button, input, select, textarea, h1, h2, h3, p, label, a, .word-prompt').forEach((el) => {
+        root.querySelectorAll('button, input, select, textarea, h1, h2, h3, p, li, label, a, span, .word-prompt').forEach((el) => {
             if (!el.getClientRects().length) return;
             const cs = getComputedStyle(el);
             if (cs.visibility === 'hidden' || cs.display === 'none' || cs.position === 'fixed') return;

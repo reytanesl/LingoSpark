@@ -3025,11 +3025,31 @@
         const barCode = $('lsp-room-code');
         if (barCode) barCode.textContent = code;
         $('live-play-champion').hidden = true;
+        clearPreviousRoomUi();
         setLiveGameActive(false);
         showPlayerWaiting('Connecting…');
         bindPlayerSocket();
         emitPlayerJoin();
         if (typeof showScreen === 'function') showScreen('live-play');
+    }
+
+    /** Joining another room in the same tab: drop the last game's pending podium and themed phone UI. */
+    function clearPreviousRoomUi() {
+        clearTimeout(llPhone.finishTimer);
+        llPhone.finishTimer = null;
+        llPhone.revealDoneAt = 0;
+        llPhone.key = null;
+        llDismissPhoneTutorial(true);
+        hideLiveWinnerScreen();
+        const ranking = $('live-ranking-screen');
+        if (ranking) ranking.hidden = true;
+        document.body.classList.remove('live-lantern-player', 'live-cannon-player', 'll-player-lobby', 'wc-player-lobby');
+        const lanternPhone = $('live-play-lantern');
+        if (lanternPhone) lanternPhone.hidden = true;
+        window.WCB?.resetPhone();
+        hideCrewPanel();
+        hideChallengeActions();
+        activeQuestionId = 0;
     }
 
     function hostStartGame() {

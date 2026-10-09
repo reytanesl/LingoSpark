@@ -346,3 +346,22 @@ html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(
 }
 html body.live-player-mode .live-play-body:has(#live-play-team-lobby:not([hidden])) .lsp-you-buddy { width: 52px; height: 52px; font-size: 30px; }
 html body.live-player-mode .live-play-body:has(#live-play-team-lobby:not([hidden])) .lsp-you-text b { font-size: 22px; }
+
+/* Word Cannon phone lobby: keep the theme, but fit short phones (375x667 and smaller) without scrolling. */
+@media (max-height: 760px) {
+    html body.wc-player-lobby .wcpl { padding-bottom: 0.4rem; }
+    html body.wc-player-lobby .wcpl .wc-title { margin: 0.45rem 0 0.15rem; }
+    html body.wc-player-lobby .wcpl .wc-title-line { font-size: 2.75rem; }
+    html body.wc-player-lobby .wcpl-cannon { width: 145px; }
+    html body.wc-player-lobby .wcpl-card { padding: 0.7rem 0.8rem; margin-top: 0.4rem; }
+    html body.wc-player-lobby .wcpl-name { font-size: 1.75rem; }
+    html body.wc-player-lobby .wcpl-pick { margin-top: 0.5rem; }
+    html body.wc-player-lobby .wcpl-pick button { padding: 0.5rem 0.4rem; }
+    html body.wc-player-lobby .wcpl-wait, html body.wc-player-lobby .wcpl-count { margin-top: 0.45rem; }
+    html body.wc-player-lobby .wcpl-rules { gap: 0.25rem; margin-top: 0.45rem; font-size: 0.86rem; }
+    html body.wc-player-lobby .wcpl-rules span { padding: 0.25rem 0.6rem; }
+}
+@media (max-height: 660px) {
+    html body.wc-player-lobby .wcpl .wc-title-line { font-size: 2.4rem; }
+    html body.wc-player-lobby .wcpl-cannon { width: 115px; }
+}
