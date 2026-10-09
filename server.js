@@ -72,6 +72,7 @@ import {
 } from './live-game.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
+import { staticAllowlist } from './static-allowlist.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -1116,7 +1117,10 @@ app.get('/api/health', (_req, res) => {
         res.status(404).type('text/plain').send('Not found');
     });
 
-    app.use(express.static(__dirname));
+    // Only files on the allowlist (pages, client JS/CSS, images, audio) are served;
+    // server code, tests, package/deploy files, dotfiles, data/, scripts/ etc. 404.
+    app.use(staticAllowlist());
+    app.use(express.static(__dirname, { dotfiles: 'deny', index: ['index.html'] }));
 
     const httpServer = http.createServer(app);
     const io = new SocketIOServer(httpServer, {
