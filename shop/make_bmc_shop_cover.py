@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "bmc-shop-cover.png"
-LOGO = ROOT.parent / "Projekt bez nazwy.png"
+LOGO = ROOT.parent / "assets" / "brand" / "lingospark-logo-red.png"
 
 NAVY = (1, 33, 105)
 WHITE = (255, 255, 255)

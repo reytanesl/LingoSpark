@@ -37,4 +37,6 @@ Exam-topic vocab packs for Teachers Pay Teachers, Etsy, or Polish teacher groups
 | `billing.js` | Buy Me a Coffee webhook handling |
 | `packs/` | Sellable exam lesson packs (TPT / Etsy / teacher groups) |
 | `assets/brand/lingospark-logo-red.svg` | Header logo (red plaque, "Gamify Your Words") |
-| `Projekt bez nazwy.png` | Previous logo (still used by Live game screen + shop page) |
+| `assets/brand/lingospark-logo-red.png` | Raster logo (shop cover script) |
+| `favicon.ico`, `favicon.png`, `apple-touch-icon.png`, `lingospark-icon.png` | Square "LS" app icon in the red plaque style |
+| `Projekt bez nazwy.png` | Old logo, no longer referenced (kept for external links) |

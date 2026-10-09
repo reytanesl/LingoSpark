@@ -65,6 +65,11 @@
             display: block;
             background: #FFFFFF;
         }
+        .main-logo-container img.main-logo-img {
+            width: clamp(190px, 24vw, 300px);
+            max-height: none;
+            background: transparent;
+        }
 
         .auth-bar {
             display: flex; justify-content: space-between; align-items: center; gap: 12px;
@@ -372,7 +377,7 @@
     <header>
         <div class="header-inner">
             <div class="main-logo-container">
-                <a href="/"><img src="Projekt bez nazwy.png" alt="LingoSpark"></a>
+                <a href="/"><img class="main-logo-img" src="assets/brand/lingospark-logo-red.svg" alt="LingoSpark — Gamify Your Words" width="604" height="223"></a>
             </div>
         </div>
     </header>
