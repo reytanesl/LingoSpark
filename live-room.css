@@ -1,0 +1,348 @@
+/* Live Spark room screens in the style of the join/host entry page (live-entry.css):
+   - host room lobby (#screen-live-host) after "Create room"
+   - generic phone screens (#screen-live-play): lobby wait + race / Captain & Crew / Hot Spark question UI.
+   Lucky Lanterns and Word Cannon keep their own themed phone screens and host lobby skins; only layout
+   and sizing are adjusted here so everything fits one screen (1366x768+, 375x667+) without page scrolling. */
+
+#screen-live-host.live-room, html body.live-player-mode {
+    --lse-navy: #012169; --lse-red: #C8102E; --lse-red-deep: #4E0A1E; --lse-burgundy: #7A1230;
+    --lse-fill-top: #FFF7F6; --lse-fill-bot: #FBE6E4; --lse-ink: #1E1B3A; --lse-muted: #5B6075; --lse-line: #E3E1EA;
+    --lse-ok: #18A35B; --lse-ok-bg: #E8F8EF; --lse-err: #D61F3B; --lse-err-bg: #FFECEF; --lse-gold: #FFC93C;
+    --lse-head: 'Poppins', system-ui, sans-serif; --lse-ui: 'Fredoka', 'Poppins', system-ui, sans-serif; --lse-body: 'Inter', system-ui, sans-serif;
+    --lse-bg:
+        radial-gradient(420px 320px at 8% 18%, rgba(255, 201, 60, .30), transparent 70%),
+        radial-gradient(460px 360px at 92% 12%, rgba(64, 140, 255, .22), transparent 70%),
+        radial-gradient(520px 380px at 85% 92%, rgba(200, 16, 46, .16), transparent 70%),
+        radial-gradient(420px 320px at 10% 95%, rgba(24, 163, 91, .18), transparent 70%),
+        linear-gradient(180deg, #F5F7FF, #FDF6F7);
+}
+
+/* =====================================================================
+   HOST ROOM
+   ===================================================================== */
+html body #screen-live-host.live-room.active {
+    display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 50;
+    margin: 0; padding: 0; max-width: none; width: auto; min-height: 0; border-radius: 0; box-shadow: none;
+    overflow: hidden; animation: none; isolation: isolate;
+    font-family: var(--lse-body); color: var(--lse-ink); background: var(--lse-bg);
+}
+html body.ll-lobby #screen-live-host.live-room.active, html body.wc-lobby #screen-live-host.live-room.active { background: transparent; color: var(--lse-ink); }
+/* During a game the fixed race / lantern / cannon overlays take over the whole screen. */
+html body.live-host-race #screen-live-host.live-room.active { background: transparent; }
+body.live-host-race #screen-live-host .lsr-bar { display: none !important; }
+#screen-live-host.live-room *, #screen-live-host.live-room *::before, #screen-live-host.live-room *::after { box-sizing: border-box; }
+
+#screen-live-host .lsr-bar {
+    flex: none; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: clamp(8px, 1.4vh, 14px) clamp(14px, 2.4vw, 32px); position: relative; z-index: 1;
+}
+#screen-live-host .lsr-logo { height: clamp(38px, 6.2vh, 60px); width: auto; display: block; flex: none; }
+#screen-live-host .lsr-heading { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 12px; }
+#screen-live-host .lsr-heading h1 { margin: 0; font: 800 clamp(20px, 3.3vh, 32px)/1.1 var(--lse-head); color: var(--lse-navy); white-space: nowrap; }
+#screen-live-host .lsr-heading h1 i { color: var(--lse-red); margin-right: 4px; }
+#screen-live-host .lsr-pill { font: 600 clamp(13px, 1.7vh, 16px)/1 var(--lse-ui); color: var(--lse-navy); background: #fff; border: 2px solid var(--lse-line); border-radius: 999px; padding: 7px 12px; white-space: nowrap; }
+#screen-live-host .lsr-pill:empty { display: none; }
+#screen-live-host .lsr-back { flex: none; font: 600 15px/1 var(--lse-ui); color: var(--lse-navy); display: inline-flex; gap: 8px; align-items: center; padding: 10px 14px; border-radius: 999px; background: rgba(255, 255, 255, .8); border: 2px solid var(--lse-line); cursor: pointer; }
+#screen-live-host .lsr-back:hover { background: #fff; border-color: var(--lse-navy); }
+#screen-live-host .lsr-back:focus-visible { outline: 3px solid var(--lse-gold); outline-offset: 2px; }
+body.ll-lobby #screen-live-host .lsr-heading h1, body.wc-lobby #screen-live-host .lsr-heading h1 { color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
+body.ll-lobby #screen-live-host .lsr-heading h1 i, body.wc-lobby #screen-live-host .lsr-heading h1 i { color: #FFD23F; }
+body.ll-lobby #screen-live-host .lsr-logo, body.wc-lobby #screen-live-host .lsr-logo { filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .25)); }
+
+#screen-live-host #live-error-banner { flex: none; margin: 0 clamp(14px, 2.4vw, 32px) 8px; }
+#screen-live-host #live-error-banner:empty { display: none; }
+html body #screen-live-host.live-room #live-host-room-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 clamp(14px, 2.4vw, 32px) clamp(12px, 2.2vh, 24px); position: relative; z-index: 1; }
+html body #screen-live-host.live-room #live-host-room-panel[hidden] { display: none; }
+
+html body #screen-live-host.live-room .live-host-grid {
+    flex: 1; min-height: 0; width: 100%; max-width: 1760px; margin: 0 auto;
+    display: grid; gap: clamp(12px, 1.4vw, 22px);
+    grid-template-columns: minmax(250px, .82fr) minmax(0, 1.3fr) minmax(350px, 1fr);
+}
+html body #screen-live-host.live-room .live-host-grid[hidden] { display: none; }
+
+/* cards (themed lobbies keep their own card colours from lucky-lanterns.css / word-cannon.css) */
+#screen-live-host.live-room .lsr-card {
+    margin: 0; min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: clamp(8px, 1.3vh, 14px);
+    padding: clamp(12px, 2vh, 22px) clamp(14px, 1.4vw, 22px); text-align: left;
+    background: #fff; border: 3px solid var(--lse-red); border-radius: 26px;
+    box-shadow: 0 0 0 5px var(--lse-fill-bot), 0 18px 40px rgba(78, 10, 30, .14);
+}
+#screen-live-host.live-room .lsr-card-title { margin: 0; flex: none; display: flex; align-items: center; gap: 10px; font: 800 clamp(17px, 2.4vh, 22px)/1.1 var(--lse-head); color: var(--lse-navy); }
+#screen-live-host.live-room .lsr-num { width: 30px; height: 30px; flex: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font: 700 16px/1 var(--lse-ui); background: var(--lse-fill-bot); color: var(--lse-red); border: 2px solid var(--lse-red); }
+
+/* 1 · join */
+#screen-live-host.live-room .lsr-join { align-items: stretch; }
+#screen-live-host.live-room .lsr-board {
+    flex: none; background: var(--lse-navy); color: #fff; border-radius: 18px; padding: clamp(10px, 1.6vh, 16px) 14px;
+    box-shadow: 0 6px 0 #00113D; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+}
+#screen-live-host.live-room .lsr-k { font: 600 12px/1 var(--lse-ui); opacity: .8; letter-spacing: .08em; text-transform: uppercase; }
+#screen-live-host.live-room .lsr-link { color: #fff; font: 600 clamp(13px, 1.7vh, 16px)/1.25 var(--lse-ui); word-break: break-all; margin-bottom: 6px; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .4); }
+html body #screen-live-host.live-room .lsr-code { margin: 0; font: 700 clamp(46px, 9vh, 104px)/1 var(--lse-ui); letter-spacing: .14em; padding-left: .14em; color: var(--lse-gold); text-align: center; }
+#screen-live-host.live-room .lsr-card p { flex-grow: 0; margin-bottom: 0; }
+#screen-live-host.live-room .lsr-qr-wrap { flex: 1; min-height: 0; container-type: size; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+#screen-live-host.live-room #live-host-qr { --qr: clamp(110px, calc(100vh - 560px), 300px); display: block; flex: none; width: var(--qr); height: var(--qr); max-width: 100%; object-fit: contain; border-radius: 12px; border: 6px solid #fff; box-shadow: 0 0 0 2px var(--lse-line); background: #fff; }
+body.ll-lobby #screen-live-host.live-room #live-host-qr, body.wc-lobby #screen-live-host.live-room #live-host-qr { --qr: clamp(100px, calc(100vh - 690px), 260px); }
+@supports (container-type: size) {
+    html body #screen-live-host.live-room #live-host-qr { --qr: max(90px, min(320px, 100cqw, calc(100cqh - 26px))); }
+}
+#screen-live-host.live-room #live-host-qr[hidden] { display: none; }
+#screen-live-host.live-room .lsr-qr-cap { font: 500 13px/1.2 var(--lse-body); color: var(--lse-muted); }
+#screen-live-host.live-room .lsr-count { margin: 0; flex: none; text-align: center; font: 600 14px/1.3 var(--lse-body); color: var(--lse-navy); }
+#screen-live-host.live-room .lsr-mode { margin: 0; flex: none; text-align: center; font: 500 12.5px/1.3 var(--lse-body); color: var(--lse-muted); }
+
+/* 2 · players */
+#screen-live-host.live-room .lsr-status { margin: 0; flex: none; font: 600 clamp(14px, 1.8vh, 16px)/1.35 var(--lse-body); color: var(--lse-muted); background: var(--lse-fill-top); border: 2px solid var(--lse-fill-bot); border-radius: 14px; padding: 8px 12px; }
+#screen-live-host.live-room .lsr-board-list { flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 2px; scrollbar-width: thin; }
+#screen-live-host.live-room .lsr-board-list > .live-muted { margin: 0; padding: 18px 8px; text-align: center; font: 500 15px/1.35 var(--lse-body); }
+#screen-live-host.live-room .lsr-board-list .live-lobby-player-tiles { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+#screen-live-host.live-room .lsr-board-list .live-lobby-player-tile { background: #fff; border: 2px solid var(--lse-line); border-radius: 16px; padding: 10px 10px 10px 12px; box-shadow: 0 3px 0 var(--lse-line); animation: lsr-pop .35s cubic-bezier(.34, 1.56, .64, 1) both; }
+#screen-live-host.live-room .lsr-board-list .live-lobby-player-tile strong { font: 600 clamp(15px, 2vh, 19px)/1.2 var(--lse-ui); color: var(--lse-ink); }
+#screen-live-host.live-room .lsr-board-list .live-buddy { font-size: 1.35em; vertical-align: -.15em; }
+#screen-live-host.live-room .lsr-board-list .live-team-lobby { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+#screen-live-host.live-room .lsr-board-list .live-team-card { border-radius: 16px; border: 2px solid var(--lse-line); background: #fff; margin: 0; }
+#screen-live-host.live-room .lsr-board-list .live-team-unassigned { margin: 12px 0 6px; font: 600 14px/1.2 var(--lse-body); color: var(--lse-muted); }
+@keyframes lsr-pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #screen-live-host.live-room .lsr-board-list .live-lobby-player-tile { animation: none; } }
+
+/* 3 · game settings + actions */
+#screen-live-host.live-room .lsr-game { gap: clamp(6px, 1vh, 12px); }
+html body #screen-live-host.live-room .live-host-lobby-settings { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0; padding: 0 2px 2px; border: 0; display: flex; flex-direction: column; gap: clamp(5px, .9vh, 10px); scrollbar-width: thin; }
+html body #screen-live-host.live-room .live-host-lobby-settings[hidden] { display: none; }
+#screen-live-host.live-room .lsr-label { margin: 2px 0 0; font: 700 clamp(13.5px, 1.75vh, 16px)/1.1 var(--lse-head); color: var(--lse-navy); display: flex; align-items: baseline; gap: 6px; }
+#screen-live-host.live-room .lsr-label i { color: var(--lse-red); font-size: .9em; }
+#screen-live-host.live-room .lsr-label small { margin-left: auto; font: 500 12px/1.2 var(--lse-body); color: var(--lse-muted); }
+html body #screen-live-host.live-room .live-option-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+html body #screen-live-host.live-room .live-option {
+    position: relative; display: inline-flex; flex-direction: row; align-items: center; min-height: 0; gap: 4px;
+    padding: clamp(6px, 1vh, 9px) clamp(10px, .9vw, 13px); border-radius: 999px; border: 2px solid var(--lse-line); background: #fff; box-shadow: none;
+}
+html body #screen-live-host.live-room .live-option:hover { border-color: var(--lse-navy); }
+html body #screen-live-host.live-room .live-option .live-option-title { font: 600 clamp(13px, 1.75vh, 15px)/1.1 var(--lse-ui); color: var(--lse-muted); white-space: nowrap; }
+html body #screen-live-host.live-room .live-option:has(input:checked) { background: var(--lse-navy); border-color: var(--lse-navy); }
+html body #screen-live-host.live-room .live-option:has(input:checked) .live-option-title { color: #fff; }
+html body #screen-live-host.live-room .live-option:has(input:focus-visible) { outline: 3px solid var(--lse-gold); outline-offset: 2px; }
+html body #screen-live-host.live-room .live-option--wide { grid-column: auto; }
+html body #screen-live-host.live-room .live-option--wide .live-option-title::after { vertical-align: .1em; }
+#screen-live-host.live-room .wc-length-row, #screen-live-host.live-room .ll-rounds-row, #screen-live-host.live-room .live-time-row {
+    margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 10px;
+}
+#screen-live-host.live-room .wc-length-row[hidden], #screen-live-host.live-room .ll-rounds-row[hidden], #screen-live-host.live-room #live-host-lobby-team-row[hidden] { display: none; }
+#screen-live-host.live-room #live-host-lobby-team-row { display: flex; flex-direction: column; gap: inherit; }
+#screen-live-host.live-room .wc-length-row label, #screen-live-host.live-room .ll-rounds-row label, #screen-live-host.live-room .live-time-row label {
+    margin: 0; display: inline-flex; gap: 6px; align-items: center; font: 700 clamp(13.5px, 1.75vh, 16px)/1.1 var(--lse-head); color: var(--lse-navy);
+}
+#screen-live-host.live-room .wc-length-row label i, #screen-live-host.live-room .live-time-row label i { color: var(--lse-red); }
+#screen-live-host.live-room .live-setup-select, #screen-live-host.live-room #live-lobby-rounds {
+    margin: 0; width: 100%; max-width: 220px; height: clamp(36px, 5vh, 44px); border-radius: 12px; border: 2px solid var(--lse-line); background: #FBFBFE;
+    padding: 0 10px; font: 600 15px/1 var(--lse-ui); color: var(--lse-ink);
+}
+#screen-live-host.live-room #live-lobby-rounds { max-width: 90px; }
+#screen-live-host.live-room .lsr-row-hint, #screen-live-host.live-room #live-lobby-question-time-hint {
+    grid-column: 1 / -1; margin: 0; font: 500 12.5px/1.3 var(--lse-body); color: var(--lse-muted);
+}
+#screen-live-host.live-room .lsr-actions { flex: none; display: flex; flex-wrap: nowrap; gap: 10px; margin: 0; padding-top: 4px; }
+html body #screen-live-host.live-room .lsr-actions .btn { margin: 0; border-radius: 999px; height: clamp(50px, 7.4vh, 64px); font: 700 clamp(16px, 2.3vh, 21px)/1 var(--lse-ui); display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html body #screen-live-host.live-room .lsr-actions .lsr-start, html body #screen-live-host.live-room .lsr-actions .lsr-again { flex: 1 1 auto; min-width: 0; border: 0; color: #fff; background: linear-gradient(180deg, #E3203F, var(--lse-red)); box-shadow: 0 6px 0 var(--lse-red-deep), 0 12px 22px rgba(200, 16, 46, .25); }
+html body #screen-live-host.live-room .lsr-actions .lsr-start:disabled { background: #E7E6EE; color: #8D90A3; box-shadow: 0 6px 0 #C9C8D3; opacity: 1; cursor: not-allowed; font-size: clamp(14px, 1.9vh, 17px); }
+html body #screen-live-host.live-room .lsr-actions .lsr-start:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 var(--lse-red-deep); }
+html body #screen-live-host.live-room .lsr-actions .lsr-end { flex: none; background: #fff; color: var(--lse-ink); border: 2px solid var(--lse-line); box-shadow: none; font-size: clamp(14px, 1.9vh, 16px); }
+html body #screen-live-host.live-room .lsr-actions .lsr-end:hover { border-color: var(--lse-navy); }
+html body #screen-live-host.live-room .lsr-actions .btn:focus-visible { outline: 3px solid var(--lse-gold); outline-offset: 3px; }
+
+/* themed lobbies: compact title band between the bar and the cards */
+html body.ll-lobby #screen-live-host.live-room.active #ll-lobby-title,
+html body.wc-lobby #screen-live-host.live-room.active #wc-lobby-title { flex: none; margin: calc(-1 * clamp(4px, 1vh, 10px)) 0 clamp(6px, 1.2vh, 14px); }
+html body.ll-lobby #screen-live-host.live-room #ll-lobby-title .ll-lobby-letters { font-size: clamp(34px, 7.4vh, 84px); --let-sw: clamp(8px, 1.2vh, 16px); }
+html body.ll-lobby #screen-live-host.live-room #ll-lobby-title .ll-lobby-row { margin-top: 2px; }
+html body.ll-lobby #screen-live-host.live-room #ll-lobby-title .ll-mini-lantern { width: clamp(44px, 8vh, 96px); }
+html body.ll-lobby #screen-live-host.live-room #ll-lobby-title p { margin-top: 2px; font-size: clamp(13px, 1.8vh, 17px); }
+html body.wc-lobby #screen-live-host.live-room #wc-lobby-title .wc-title-line { font-size: clamp(34px, 7.4vh, 84px); }
+html body.wc-lobby #screen-live-host.live-room #wc-lobby-title .wc-title-line::before { -webkit-text-stroke: clamp(8px, 1.3vh, 16px) var(--wc-navy); }
+html body.wc-lobby #screen-live-host.live-room #wc-lobby-title p { margin-top: 4px; padding: 4px 14px; font-size: clamp(12.5px, 1.7vh, 16px); border-width: 2px; }
+html body.ll-lobby #screen-live-host.live-room .lsr-card, html body.wc-lobby #screen-live-host.live-room .lsr-card { border-width: 5px; border-radius: 24px; }
+html body.ll-lobby #screen-live-host.live-room .lsr-card-title, html body.wc-lobby #screen-live-host.live-room .lsr-card-title { font-size: clamp(17px, 2.4vh, 22px); }
+html body.ll-lobby #screen-live-host.live-room .lsr-code { color: #FFD23F; font-family: var(--ll-ui, var(--lse-ui)); }
+html body.wc-lobby #screen-live-host.live-room .lsr-code { color: #FFD23F; font-family: var(--wc-ui, var(--lse-ui)); }
+html body.ll-lobby #screen-live-host.live-room .lsr-board { background: #3b0f6b; box-shadow: 0 6px 0 #1a0c45; }
+html body.wc-lobby #screen-live-host.live-room .lsr-board { background: var(--wc-navy, #16163a); box-shadow: 0 6px 0 #07071c; }
+html body.ll-lobby #screen-live-host.live-room .lsr-status, html body.wc-lobby #screen-live-host.live-room .lsr-status { background: rgba(255, 255, 255, .7); border-color: rgba(0, 0, 0, .06); }
+html body.ll-lobby #screen-live-host.live-room .live-option:has(input:checked) { background: #5b2bd6; border-color: #5b2bd6; }
+html body.wc-lobby #screen-live-host.live-room .live-option:has(input:checked) { background: var(--wc-blue, #2f6bff); border-color: var(--wc-blue, #2f6bff); }
+html body.ll-lobby #screen-live-host.live-room .live-option:has(input:checked) .live-option-title,
+html body.wc-lobby #screen-live-host.live-room .live-option:has(input:checked) .live-option-title { color: #fff; }
+html body.ll-lobby #screen-live-host.live-room .lsr-actions #live-host-start:not(:disabled),
+html body.wc-lobby #screen-live-host.live-room .lsr-actions #live-host-start:not(:disabled) { background: linear-gradient(#ffb347, #ff7a1a); box-shadow: 0 6px 0 #b8360a; text-shadow: 0 2px 0 rgba(0, 0, 0, .25); }
+html body.wc-lobby #screen-live-host.live-room .wc-lobby-team { min-height: 0; padding: 10px 12px; }
+html body.wc-lobby #screen-live-host.live-room .wc-lobby-team h4 { font-size: clamp(17px, 2.4vh, 22px); }
+@media (max-height: 860px) {
+    html body.ll-lobby #screen-live-host.live-room #ll-lobby-title .ll-lobby-row { display: none; }
+}
+
+/* short or narrow host screens: stack and let the page scroll (phones / tablets in portrait) */
+@media (max-width: 1100px) {
+    html body #screen-live-host.live-room.active { overflow-y: auto; }
+    html body #screen-live-host.live-room #live-host-room-panel { flex: none; }
+    html body #screen-live-host.live-room .live-host-grid { grid-template-columns: minmax(0, 1fr); }
+    html body #screen-live-host.live-room .lsr-board-list, html body #screen-live-host.live-room .live-host-lobby-settings { overflow: visible; }
+    #screen-live-host.live-room #live-host-qr { max-height: 200px; }
+    #screen-live-host .lsr-heading h1 { font-size: 20px; }
+    #screen-live-host .lsr-pill, #screen-live-host .lsr-back span { display: none; }
+}
+@media (max-width: 1100px) and (min-width: 721px) {
+    html body #screen-live-host.live-room .live-host-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    html body #screen-live-host.live-room .lsr-game { grid-column: 1 / -1; }
+}
+
+/* =====================================================================
+   PHONE / PLAYER (generic formats; themed Lucky Lanterns + Word Cannon views are left alone)
+   ===================================================================== */
+.lsp-bar, .lsp-you { display: none; }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) {
+    background: var(--lse-bg); background-attachment: fixed;
+}
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .container { background: transparent; }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #screen-live-play.active {
+    max-width: none; width: 100%; height: 100dvh; min-height: 0; max-height: 100dvh; margin: 0; padding: 0; background: transparent; box-shadow: none; overflow: hidden;
+    font-family: var(--lse-body); color: var(--lse-ink);
+}
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #screen-live-play .live-play-surface {
+    position: relative; z-index: 1; width: 100%; max-width: 480px; margin: 0 auto; flex: 1; min-height: 0; display: flex; flex-direction: column;
+    padding: 0 clamp(12px, 4vw, 18px) max(12px, env(safe-area-inset-bottom, 12px));
+}
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-race-bg,
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-game-logo,
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-room-code { display: none !important; }
+
+/* top bar: logo · me · room */
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .lsp-bar {
+    flex: none; display: flex; align-items: center; gap: 8px; padding: max(10px, env(safe-area-inset-top, 10px)) 0 8px;
+}
+.lsp-logo { height: 34px; width: auto; flex: none; display: block; }
+.lsp-me { flex: 1; min-width: 0; display: flex; justify-content: center; }
+.lsp-me strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 15px/1 var(--lse-ui); color: var(--lse-navy); background: #fff; border: 2px solid var(--lse-line); border-radius: 999px; padding: 7px 12px; }
+.lsp-room { flex: none; font: 600 11px/1 var(--lse-ui); letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .85); background: var(--lse-navy); border-radius: 999px; padding: 7px 11px; box-shadow: 0 3px 0 #00113D; }
+.lsp-room b { font-size: 15px; color: var(--lse-gold); letter-spacing: .14em; margin-left: 3px; }
+.lsp-room b:empty { display: none; }
+.lsp-fs { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--lse-line); background: #fff; color: var(--lse-navy); cursor: pointer; }
+
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #screen-live-play .live-play-body {
+    flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(8px, 1.4vh, 12px); overflow-y: auto; overflow-x: hidden; padding: 4px 2px 6px;
+}
+
+/* ---- waiting in the lobby ---- */
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .lsp-you {
+    order: 1; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: auto;
+    padding: clamp(14px, 3vh, 26px) 16px clamp(12px, 2vh, 18px); background: #fff; border: 3px solid var(--lse-red); border-radius: 26px;
+    box-shadow: 0 0 0 5px var(--lse-fill-bot), 0 14px 30px rgba(78, 10, 30, .12); text-align: center;
+}
+.lsp-you-buddy { width: clamp(64px, 12vh, 92px); height: clamp(64px, 12vh, 92px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: clamp(36px, 7vh, 54px); line-height: 1; background: var(--lse-fill-bot); border: 3px solid var(--lse-red); animation: lsp-bob 2.4s ease-in-out infinite; }
+.lsp-you-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; max-width: 100%; }
+.lsp-you-text small { font: 600 14px/1 var(--lse-ui); color: var(--lse-ok); text-transform: uppercase; letter-spacing: .08em; }
+.lsp-you-text b { font: 800 clamp(22px, 4vh, 30px)/1.1 var(--lse-head); color: var(--lse-navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes lsp-bob { 50% { transform: translateY(-4px) rotate(-3deg); } }
+@media (prefers-reduced-motion: reduce) { .lsp-you-buddy, #live-play-definition.word-prompt::before { animation: none !important; } }
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-hero { display: none; }
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #screen-live-play .live-play-body::after { content: ''; order: 99; flex: none; margin-top: auto; }
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-definition.word-prompt {
+    order: 2; flex: none; align-self: center; min-height: 0; max-width: 100%; margin: 0; padding: 10px 18px; border-radius: 999px; border: 0;
+    background: #EEF2FF; color: var(--lse-navy); font: 600 15px/1.3 var(--lse-ui); box-shadow: none; text-align: center; display: block;
+}
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-definition.word-prompt::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 9px; border-radius: 50%; background: var(--lse-ok); vertical-align: .05em; animation: lsp-pulse 1.4s ease-in-out infinite; }
+@keyframes lsp-pulse { 50% { opacity: .25; transform: scale(.7); } }
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-status { order: 3; flex: none; margin: 0 !important; font: 600 15px/1.3 var(--lse-ui) !important; color: var(--lse-navy); }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-status:empty { display: none; }
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-roster { order: 4; flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-team-lobby { order: 4; flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-champion,
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-error { order: 5; }
+.live-play-roster-head { margin: 4px 0 8px; text-align: center; font: 600 13px/1 var(--lse-ui, 'Fredoka', sans-serif); color: var(--lse-muted, #5B6075); text-transform: uppercase; letter-spacing: .08em; }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-roster .live-play-roster-tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0; }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-roster .live-play-roster-tile {
+    max-width: 46%; padding: 7px 12px; border-radius: 999px; background: #fff; border: 2px solid var(--lse-line); font: 600 14px/1.1 var(--lse-ui); color: var(--lse-ink);
+}
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-roster .live-play-roster-tile.is-you { border-color: var(--lse-red); background: var(--lse-fill-bot); color: var(--lse-red-deep); }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-team-lobby {
+    background: #fff; border: 3px solid var(--lse-red); border-radius: 22px; padding: 12px; box-shadow: 0 0 0 4px var(--lse-fill-bot);
+}
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-team-lobby h3 { margin: 0 0 8px; font: 800 18px/1.1 var(--lse-head); color: var(--lse-navy); text-align: center; }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-team-lobby .live-team-card { border-radius: 16px; }
+html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-team-lobby .btn { border-radius: 999px; font-family: var(--lse-ui); }
+
+/* ---- question / answer ---- */
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-hero {
+    flex: none; padding: 10px 12px; gap: 0; background: #fff; border: 2px solid var(--lse-line); border-radius: 18px; box-shadow: 0 3px 0 var(--lse-line);
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-own-progress-label { margin: 0 0 6px; font: 600 14px/1 var(--lse-ui); color: var(--lse-navy); }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-own-progress .live-progress-track { height: 16px; border-radius: 999px; background: #EEF0F7; box-shadow: inset 0 1px 3px rgba(1, 33, 105, .12); overflow: hidden; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-progress-bar { border-radius: 999px; box-shadow: none; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-status { flex: none; margin: 0 !important; font: 600 14px/1.3 var(--lse-ui) !important; color: var(--lse-navy); text-align: center; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-timer { margin: 0; flex: none; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-definition.word-prompt {
+    flex: 0 1 auto; min-height: clamp(76px, 14vh, 130px); max-height: 32vh; margin: 0; padding: 14px 16px; overflow-y: auto;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    background: #fff; border: 3px solid var(--lse-red); border-radius: 22px; box-shadow: 0 0 0 4px var(--lse-fill-bot), 0 10px 24px rgba(78, 10, 30, .10);
+    font: 700 clamp(18px, 5.2vw, 23px)/1.3 var(--lse-head); color: var(--lse-navy);
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-crew-role { margin: 0; font: 600 14px/1.3 var(--lse-ui); color: var(--lse-burgundy); }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-choices { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; flex: none; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-choices[hidden] { display: none; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-choices .live-answer-btn {
+    margin: 0; width: 100%; min-height: clamp(48px, 7.4vh, 60px); padding: 8px 14px; border-radius: 16px; border: 3px solid transparent;
+    font: 600 clamp(17px, 4.8vw, 20px)/1.15 var(--lse-ui); box-shadow: 0 4px 0 rgba(30, 27, 58, .14); transition: transform .1s, box-shadow .1s;
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-choices .live-answer-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(30, 27, 58, .14); }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-choices .live-answer-btn.crew-voted { border-color: var(--lse-navy); outline: 0; box-shadow: 0 0 0 3px rgba(1, 33, 105, .18), 0 4px 0 rgba(30, 27, 58, .14); }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-crew-panel { margin: 0; flex: none; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-crew-votes { margin: 0 0 6px; border-radius: 14px; border: 2px solid var(--lse-line); background: #fff; font: 600 13.5px/1.3 var(--lse-body); color: var(--lse-muted); }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-type-section {
+    flex: none; display: flex; flex-direction: column; gap: 8px; padding: 0; background: transparent; border: 0; box-shadow: none;
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-type-section[hidden] { display: none; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-type-section .live-type-or-label { margin: 0; font: 600 13px/1 var(--lse-ui); color: var(--lse-muted); }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-answer.game-input {
+    margin: 0 !important; width: 100%; height: 54px; min-height: 0; border-radius: 16px; border: 3px solid var(--lse-line); background: #fff; padding: 0 16px;
+    font: 600 20px/1 var(--lse-ui); color: var(--lse-ink); text-align: center; box-shadow: none;
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-answer.game-input:focus { border-color: var(--lse-navy); box-shadow: 0 0 0 4px rgba(1, 33, 105, .15); outline: none; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-submit,
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-captain-submit {
+    margin: 0 !important; width: 100%; height: 56px; min-height: 0; padding: 0 16px !important; border: 0; border-radius: 999px; color: #fff;
+    background: linear-gradient(180deg, #E3203F, var(--lse-red)); box-shadow: 0 6px 0 var(--lse-red-deep), 0 10px 18px rgba(200, 16, 46, .25);
+    font: 700 21px/1 var(--lse-ui) !important;
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-submit:disabled,
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-captain-submit:disabled { background: #E7E6EE; color: #8D90A3; box-shadow: 0 6px 0 #C9C8D3; opacity: 1; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-crew-vote-btn {
+    margin: 0 !important; width: 100%; height: 50px; padding: 0 16px !important; border-radius: 999px; border: 2px solid var(--lse-line); background: #fff; color: var(--lse-navy); font: 600 18px/1 var(--lse-ui) !important;
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-crew-vote-btn[hidden],
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-captain-submit[hidden],
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-submit[hidden] { display: none !important; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-result .live-choice,
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-challenge-actions { border-radius: 16px; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-timeup { border-radius: 14px; }
+@media (max-height: 700px) {
+    .lsp-logo { height: 28px; }
+    html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-choices .live-answer-btn { min-height: 48px; }
+    html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-hero { padding: 8px 10px; }
+}
+@media (max-width: 1100px) {
+    html body #screen-live-host.live-room .lsr-qr-wrap { container-type: normal; flex: none; }
+    html body #screen-live-host.live-room #live-host-qr { --qr: 200px; }
+}
+html body.live-player-mode #screen-live-play #live-play-definition[hidden], html body.live-player-mode #screen-live-play #live-play-hero[hidden] { display: none !important; }
+#live-play-create-team[hidden] { display: none !important; }
+/* typed answers: input first, then the captain's "Submit team answer" */
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.live-cannon-player) #live-play-type-section { order: 5; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.live-cannon-player) #live-play-crew-panel { order: 6; }
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.live-cannon-player) #live-play-result,
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.live-cannon-player) #live-play-challenge-actions,
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.live-cannon-player) #live-play-champion { order: 7; }
+/* choosing a team: smaller "You're in" card so the team list has room */
+html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-body:has(#live-play-team-lobby:not([hidden])) .lsp-you {
+    flex-direction: row; justify-content: center; gap: 14px; padding: 10px 16px; margin-top: 4px; text-align: left;
+}
+html body.live-player-mode .live-play-body:has(#live-play-team-lobby:not([hidden])) .lsp-you-buddy { width: 52px; height: 52px; font-size: 30px; }
+html body.live-player-mode .live-play-body:has(#live-play-team-lobby:not([hidden])) .lsp-you-text b { font-size: 22px; }

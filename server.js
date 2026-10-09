@@ -55,7 +55,9 @@ import {
     getMaturaAssessAvailability,
     recordMaturaAssessUsage,
 } from './db.js';
-import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin } from './auth.js';
+import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
+import { createMailer } from './mailer.js';
+import { registerPasswordResetRoutes, createPgResetStore } from './password-reset.js';
 import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, checkoutUrls } from './billing.js';
 import {
     buildDeckFromRequest,
@@ -244,6 +246,20 @@ async function start() {
                 });
             });
         })(req, res, next);
+    });
+
+    const mailer = createMailer();
+    console.log(mailer.configured
+        ? `Email: sending via ${mailer.provider} as ${mailer.from}`
+        : 'Email: no provider configured (RESEND_API_KEY or SMTP_HOST) — password reset links are only logged in development.');
+    registerPasswordResetRoutes(app, {
+        // isReady() answers 503 before the store is touched when the database is down.
+        store: createPgResetStore(dbReady ? getPool() : { query: async () => { throw new Error('Database not available'); } }),
+        mailer,
+        baseUrl: APP_BASE_URL,
+        hashPassword,
+        minPasswordLength: MIN_PASSWORD_LENGTH,
+        isReady: () => dbReady,
     });
 
     app.post('/auth/logout', (req, res, next) => {

@@ -111,6 +111,10 @@ export async function registerLocalAccount({ email, password, name }) {
     });
 }
 
+export function hashPassword(password) {
+    return bcrypt.hash(String(password), BCRYPT_ROUNDS);
+}
+
 export function requireLogin(req, res, next) {
     if (req.isAuthenticated?.() && req.user) return next();
     return res.status(401).json({ error: 'Sign in required.' });

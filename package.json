@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test --test-concurrency=1 lucky-lanterns.test.js lucky-lanterns.integration.test.js live-question-time.test.js word-cannon.test.js word-cannon.integration.test.js vocab-auction-chips.test.js live-entry.test.js",
+    "test": "node --test --test-concurrency=1 lucky-lanterns.test.js lucky-lanterns.integration.test.js live-question-time.test.js word-cannon.test.js word-cannon.integration.test.js vocab-auction-chips.test.js live-entry.test.js password-reset.test.js live-room.test.js live-layout-fit.test.js",
     "packs": "node packs/build.mjs",
     "study-plan": "node packs/build-study-plan.mjs",
-    "study-plan-pr": "node packs/build-matura-pr-study-plan.mjs"
+    "study-plan-pr": "node packs/build-matura-pr-study-plan.mjs",
+    "test:layout": "node --test --test-concurrency=1 live-layout-fit.test.js"
   },
   "engines": {
     "node": ">=22.13.0"
@@ -24,6 +25,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-session": "^1.18.1",
+    "nodemailer": "^10.0.16",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",

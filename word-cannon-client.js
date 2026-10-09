@@ -14,7 +14,8 @@
     const other = (t) => (t === 'red' ? 'blue' : 'red');
     const RING_C = 2 * Math.PI * 38;
     /** Lobby team snapshot -> [{id, nickname}] */
-    const teamMembers = (team) => (team?.memberIds || []).map((id, i) => ({ id, nickname: team.memberNicknames?.[i] || 'Player' }));
+    const teamMembers = (team) => (team?.memberIds || []).map((id, i) => ({ id, nickname: team.memberNicknames?.[i] || 'Player', avatar: team.memberAvatars?.[i] || '' }));
+    const buddy = (av) => (av ? `<span class="live-buddy" aria-hidden="true">${esc(av)}</span>` : '');
 
     let ctx = {
         emit: () => {},
@@ -876,7 +877,7 @@
         const col = (id) => {
             const members = teamMembers(byId[id]);
             const rows = members.length
-                ? members.map((m) => `<div class="live-team-member-row"><span>${esc(m.nickname)}</span>${removable ? `<button type="button" class="live-remove-player-btn" data-remove-player="${esc(m.id)}" title="Remove player" aria-label="Remove ${esc(m.nickname)}">✕</button>` : ''}</div>`).join('')
+                ? members.map((m) => `<div class="live-team-member-row"><span>${buddy(m.avatar)}${esc(m.nickname)}</span>${removable ? `<button type="button" class="live-remove-player-btn" data-remove-player="${esc(m.id)}" title="Remove player" aria-label="Remove ${esc(m.nickname)}">✕</button>` : ''}</div>`).join('')
                 : '<em>No sailors yet</em>';
             return `<div class="wc-lobby-team wc-lobby-team--${id}"><h4>${id.toUpperCase()} TEAM <small>${members.length} ${members.length === 1 ? 'player' : 'players'}</small></h4>${rows}</div>`;
         };

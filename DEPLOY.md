@@ -70,6 +70,17 @@ URL example: `https://lingospark.onrender.com`
 | `BMC_YEAR_URL` | optional direct Extra for the year plan |
 | `BMC_WEBHOOK_SECRET` | from BMC Integrations → Webhooks |
 | `NODE_ENV` | `production` |
+| `MAIL_FROM` | sender for password-reset emails, e.g. `LingoSpark <no-reply@yourdomain.com>` |
+| `RESEND_API_KEY` | option A: Resend API key (sender domain must be verified in Resend) |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_SECURE` | option B: any SMTP server (port 587 default, `SMTP_SECURE=true` or port 465 for TLS) |
+
+### Password reset emails
+
+"Forgot password?" sends a single-use link (valid 1 hour) to `APP_BASE_URL/#/reset-password?token=…`.
+Set **either** `RESEND_API_KEY` **or** `SMTP_HOST` (+ `SMTP_USER`/`SMTP_PASS`), plus `MAIL_FROM`.
+If `RESEND_API_KEY` is set it wins. With neither set, development prints the link to the server log;
+production sends nothing and logs a warning (the user still sees the neutral "If an account exists…" message).
+The `password_reset_tokens` table is created automatically on start (`CREATE TABLE IF NOT EXISTS`).
 
 ### Google OAuth setup
 

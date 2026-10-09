@@ -851,7 +851,7 @@
         }
         const sorted = [...list].sort((a, b) => String(a.nickname || '').localeCompare(String(b.nickname || '')));
         host.hidden = false;
-        host.innerHTML = `<div class="live-play-roster-tiles">${sorted.map((p) => {
+        host.innerHTML = `<p class="live-play-roster-head">${sorted.length} ${sorted.length === 1 ? 'player' : 'players'} in the room</p><div class="live-play-roster-tiles">${sorted.map((p) => {
             const isYou = p.id && playerState?.playerId && p.id === playerState.playerId;
             const offline = p.connected === false ? ' (offline)' : '';
             return `<div class="live-play-roster-tile${isYou ? ' is-you' : ''}" title="${esc(p.nickname)}${offline}">${buddyHtml(p.avatar)}${esc(p.nickname)}</div>`;
@@ -2016,6 +2016,8 @@
         modeEl.textContent = usesTeamLobbyValue(hostState.gameFormat)
             ? `Format: ${gameFormatLabel(hostState.gameFormat, hostState.teamAssignment)} · ${answerModeLabel(hostState.answerMode)}`
             : `Mode: ${answerModeLabel(hostState.answerMode)} · ${gameFormatLabel(hostState.gameFormat)}`;
+        const pill = $('lsr-format-pill');
+        if (pill) pill.textContent = `Room ${hostState.code || ''} · ${GAME_FORMAT_LABELS[hostState.gameFormat] || GAME_FORMAT_LABELS.race}`;
         syncLanternLobbyTheme();
         syncCannonLobbyTheme();
     }
@@ -2389,7 +2391,8 @@
             }
         } else {
             $('live-play-team-lobby').hidden = true;
-            if (status) status.textContent = pickLobby ? '' : msg;
+            // The waiting message is shown once, in the card under "You're in" (see live-room.css).
+            if (status) status.textContent = '';
             const roster = snap?.players || playerState?.lastSnapshot?.players || [];
             renderPlayerRosterTiles(roster);
         }
@@ -3013,7 +3016,14 @@
             progress: 0,
         };
         const myBuddy = sessionStorage.getItem('ls_live_avatar') || '';
-        $('live-play-nickname').textContent = `${myBuddy ? `${myBuddy} ` : ''}${sessionStorage.getItem('ls_live_nickname') || 'Player'}`;
+        const myName = sessionStorage.getItem('ls_live_nickname') || 'Player';
+        $('live-play-nickname').textContent = `${myBuddy ? `${myBuddy} ` : ''}${myName}`;
+        const youBuddy = $('lsp-you-buddy');
+        if (youBuddy) youBuddy.textContent = myBuddy || '🙂';
+        const youName = $('lsp-you-name');
+        if (youName) youName.textContent = myName;
+        const barCode = $('lsp-room-code');
+        if (barCode) barCode.textContent = code;
         $('live-play-champion').hidden = true;
         setLiveGameActive(false);
         showPlayerWaiting('Connecting…');

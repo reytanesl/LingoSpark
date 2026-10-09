@@ -33,6 +33,20 @@ services:
         sync: false
       - key: BMC_WEBHOOK_SECRET
         sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
 
 databases:
   - name: lingospark-db

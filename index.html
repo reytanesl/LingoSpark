@@ -36,6 +36,7 @@
     <script src="word-cannon-fx.js" defer></script>
     <script src="word-cannon-client.js" defer></script>
     <script src="live-entry.js" defer></script>
+    <script src="password-reset-client.js" defer></script>
     <script src="live-game-client.js" defer></script>
     
     <style>
@@ -784,7 +785,13 @@
         body.live-host-mode .auth-bar,
         body.live-host-mode .about-panel,
         body.live-host-mode .site-copyright,
-        body.live-host-mode #ls-premium-float {
+        body.live-host-mode #ls-premium-float,
+        body.reset-mode header,
+        body.reset-mode .main-logo-container,
+        body.reset-mode .auth-bar,
+        body.reset-mode .about-panel,
+        body.reset-mode .site-copyright,
+        body.reset-mode #ls-premium-float {
             display: none !important;
         }
         #live-host-play-again[hidden] { display: none !important; }
@@ -2709,6 +2716,11 @@
         }
         .auth-form input:focus { outline: none; border-color: var(--royal-blue); }
         .auth-error { color: var(--pillarbox-red); font-size: 0.85rem; min-height: 1.2em; margin: 0.25rem 0 0.5rem; text-align: left; }
+        .auth-form[hidden], .auth-tabs[hidden], .auth-forgot[hidden], .auth-ok[hidden] { display: none !important; }
+        .auth-forgot { margin: -0.25rem 0 0; text-align: right; font-size: 0.85rem; }
+        .auth-forgot a { color: var(--royal-blue); font-weight: 700; }
+        .auth-forgot-intro { margin: 0 0 0.25rem; font-size: 0.9rem; color: var(--text-muted); text-align: left; }
+        .auth-ok { margin: 0; padding: 0.6rem 0.75rem; border-radius: 10px; background: #E8F8EF; color: #12784A; font-size: 0.88rem; font-weight: 600; text-align: left; }
         .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); font-size: 0.8rem; margin: 0.75rem 0; }
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #dde3ea; }
 
@@ -2922,6 +2934,7 @@
 
         /* Lucky Lanterns styles live in lucky-lanterns.css */
     </style>
+    <link rel="stylesheet" href="live-room.css">
 </head>
 <body>
 
@@ -4619,12 +4632,65 @@
             <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank" scrolling="no" allow="fullscreen" allowfullscreen></iframe>
         </div>
 
+        <!-- PASSWORD RESET (link from the "Forgot password?" email: #/reset-password?token=…) -->
+        <div id="screen-reset-password" class="screen live-entry">
+            <div class="lse-app">
+                <div class="lse-bar" role="banner">
+                    <img class="lse-logo" src="assets/brand/lingospark-logo-red.svg" alt="LingoSpark — Gamify Your Words" width="604" height="223">
+                    <a href="#/home" class="lse-back" id="rp-back"><i class="fa-solid fa-arrow-left"></i> <span>Back to LingoSpark</span></a>
+                </div>
+                <main class="lse-main">
+                    <div class="lse-title">
+                        <h1><i class="fa-solid fa-key"></i>Choose a new password</h1>
+                        <p>For your LingoSpark account. The link works once and expires after 1 hour.</p>
+                    </div>
+                    <section class="lse-card lse-card--single" id="rp-card">
+                        <form class="lse-form" id="rp-form" novalidate hidden>
+                            <div id="rp-error" class="lse-banner err" role="alert" hidden><i class="fa-solid fa-triangle-exclamation"></i><span id="rp-error-text"></span></div>
+                            <div class="lse-step lse-step--plain" id="rp-step-password">
+                                <label class="lse-label" for="rp-password">New password <small>at least 8 characters</small></label>
+                                <div class="lse-pw">
+                                    <input type="password" id="rp-password" class="lse-input" autocomplete="new-password" placeholder="New password" maxlength="200">
+                                    <button type="button" class="lse-eye" id="rp-eye" aria-label="Show password" aria-pressed="false"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                                <p class="lse-hint" id="rp-password-hint"><i class="fa-solid fa-circle-info"></i><span>Use 8+ characters. A short sentence is easy to remember.</span></p>
+                            </div>
+                            <div class="lse-step lse-step--plain" id="rp-step-confirm">
+                                <label class="lse-label" for="rp-confirm">Repeat new password</label>
+                                <input type="password" id="rp-confirm" class="lse-input" autocomplete="new-password" placeholder="Type it again" maxlength="200">
+                                <p class="lse-hint" id="rp-confirm-hint" hidden></p>
+                            </div>
+                            <button type="submit" id="rp-submit" class="lse-primary"><i class="fa-solid fa-lock"></i> Save new password</button>
+                        </form>
+                        <div class="lse-form lse-state" id="rp-checking">
+                            <p class="lse-fine"><i class="fa-solid fa-spinner fa-spin"></i> Checking your link…</p>
+                        </div>
+                        <div class="lse-form lse-state" id="rp-invalid" hidden>
+                            <div class="lse-state-icon err" aria-hidden="true"><i class="fa-solid fa-link-slash"></i></div>
+                            <h2>This link doesn't work any more</h2>
+                            <p>Reset links work once and expire after 1 hour. Ask for a new one and use the newest email.</p>
+                            <button type="button" class="lse-primary" id="rp-new-link"><i class="fa-solid fa-paper-plane"></i> Send a new link</button>
+                        </div>
+                        <div class="lse-form lse-state" id="rp-done" hidden>
+                            <div class="lse-state-icon ok" aria-hidden="true"><i class="fa-solid fa-check"></i></div>
+                            <h2>Password changed</h2>
+                            <p>You can sign in with your new password now. For safety, other devices were signed out.</p>
+                            <button type="button" class="lse-primary" id="rp-signin"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </div>
+
         <!-- LIVE GAME: HOST -->
-        <div id="screen-live-host" class="screen engine-container">
-            <div class="top-bar">
-                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-                <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-chalkboard-user"></i> Host Live Spark</h2>
-                <div style="width:80px;"></div>
+        <div id="screen-live-host" class="screen engine-container live-room">
+            <div class="lsr-bar" role="banner">
+                <img class="lsr-logo" src="assets/brand/lingospark-logo-red.svg" alt="LingoSpark — Gamify Your Words" width="604" height="223">
+                <div class="lsr-heading">
+                    <h1><i class="fa-solid fa-bolt" aria-hidden="true"></i> Live Spark room</h1>
+                    <span id="lsr-format-pill" class="lsr-pill"></span>
+                </div>
+                <button type="button" class="lsr-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> <span>Back</span></button>
             </div>
             <div id="ll-lobby-backdrop" aria-hidden="true"></div>
             <div id="ll-lobby-title" aria-hidden="true"></div>
@@ -4633,18 +4699,31 @@
             <div id="live-error-banner" hidden></div>
             <div id="live-host-room-panel" hidden>
                 <div class="live-host-grid">
-                    <div class="card live-host-code-card">
-                        <h2>Room code</h2>
-                        <div id="live-host-code" class="live-room-code">----</div>
-                        <p style="text-align:center;"><a id="live-host-join-link" href="#" target="_blank" rel="noopener"></a></p>
-                        <p style="text-align:center;"><img id="live-host-qr" alt="Join QR code" width="140" height="140" hidden style="margin:0 auto;display:block;border-radius:8px;"></p>
-                        <h3 style="margin-top:1rem;">Players</h3>
-                        <p id="live-host-player-count" class="live-muted">0 players joined (minimum 2 to start)</p>
-                        <p id="live-host-answer-mode" class="live-muted" hidden></p>
+                    <div class="card live-host-code-card lsr-card lsr-join">
+                        <h2 class="lsr-card-title"><span class="lsr-num">1</span> Join the game</h2>
+                        <div class="lsr-board">
+                            <span class="lsr-k">Go to</span>
+                            <a id="live-host-join-link" class="lsr-link" href="#" target="_blank" rel="noopener"></a>
+                            <span class="lsr-k">Room code</span>
+                            <div id="live-host-code" class="live-room-code lsr-code">----</div>
+                        </div>
+                        <div class="lsr-qr-wrap">
+                            <img id="live-host-qr" alt="Join QR code" width="160" height="160" hidden>
+                            <span class="lsr-qr-cap"><i class="fa-solid fa-qrcode" aria-hidden="true"></i> or scan with a phone camera</span>
+                        </div>
+                        <p id="live-host-player-count" class="live-muted lsr-count">0 players joined (minimum 2 to start)</p>
+                        <p id="live-host-answer-mode" class="live-muted lsr-mode" hidden></p>
+                    </div>
+                    <div class="card lsr-card lsr-players" id="live-host-game-panel">
+                        <h2 class="lsr-card-title"><span class="lsr-num">2</span> Players</h2>
+                        <p id="live-host-status" class="live-muted lsr-status">Waiting for at least 2 players to join.</p>
+                        <div id="live-host-progress-board" class="lsr-board-list"></div>
+                    </div>
+                    <div class="card lsr-card lsr-game">
+                        <h2 class="lsr-card-title"><span class="lsr-num">3</span> Game</h2>
                         <div id="live-host-lobby-settings" class="live-host-lobby-settings" hidden>
-                            <h3 style="margin:1rem 0 0.35rem;font-size:1.02rem;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-gamepad"></i> Game format</h3>
-                            <p class="live-muted" style="margin:0 0 0.55rem;font-size:0.82rem;">Change anytime — players stay in the room. Team modes default to random teams.</p>
-                            <div class="live-option-grid live-option-grid--2" style="margin-bottom:0.55rem;">
+                            <p class="lsr-label"><i class="fa-solid fa-gamepad" aria-hidden="true"></i> Game format <small>change anytime, players stay</small></p>
+                            <div class="live-option-grid live-option-grid--2 lsr-formats">
                                 <label class="live-option live-option--compact">
                                     <input type="radio" name="live-lobby-format" value="race">
                                     <span class="live-option-title">Solo race</span>
@@ -4674,15 +4753,16 @@
                                     <option value="8">8 minutes</option>
                                     <option value="10">10 minutes</option>
                                 </select>
-                                <p class="live-muted" style="margin:0.35rem 0 0;font-size:0.82rem;">Red vs Blue race for points: +1 per correct answer, +1 per damage dealt, +20 for destroying a fort (it rebuilds!). Most points when the timer ends wins. Faster answers aim better; storm hits in the final minute.</p>
+                                <p class="live-muted lsr-row-hint">Red vs Blue race for points: +1 per correct answer, +1 per damage dealt, +20 for destroying a fort (it rebuilds!). Most points when the timer ends wins. Faster answers aim better; storm hits in the final minute.</p>
                             </div>
                             <div id="live-host-lobby-lantern-row" class="ll-rounds-row" hidden>
                                 <label for="live-lobby-rounds">Rounds</label>
                                 <input type="number" id="live-lobby-rounds" min="3" max="20" value="10">
-                                <p class="live-muted" style="margin:0.35rem 0 0;font-size:0.82rem;">Default 10. Correct answers pick a lantern. A missed pick scores 0. The last round adds ALL IN.</p>
+                                <p class="live-muted lsr-row-hint">Default 10. Correct answers pick a lantern. A missed pick scores 0. The last round adds ALL IN.</p>
                             </div>
                             <div id="live-host-lobby-team-row" hidden>
-                                <div class="live-option-grid live-option-grid--2" style="margin-bottom:0.55rem;">
+                                <p class="lsr-label"><i class="fa-solid fa-people-group" aria-hidden="true"></i> Teams</p>
+                                <div class="live-option-grid live-option-grid--2 lsr-teams">
                                     <label class="live-option live-option--compact">
                                         <input type="radio" name="live-lobby-team" value="random">
                                         <span class="live-option-title">Random teams</span>
@@ -4693,7 +4773,8 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="live-option-grid live-option-grid--3">
+                            <p class="lsr-label"><i class="fa-solid fa-keyboard" aria-hidden="true"></i> Answers <small>choose, type or mix</small></p>
+                            <div class="live-option-grid live-option-grid--3 lsr-answers">
                                 <label class="live-option live-option--compact">
                                     <input type="radio" name="live-lobby-answer" value="recognise">
                                     <span class="live-option-title">Recognise</span>
@@ -4722,15 +4803,10 @@
                                 <p id="live-lobby-question-time-hint" class="live-muted"></p>
                             </div>
                         </div>
-                    </div>
-                    <div class="card" id="live-host-game-panel">
-                        <h2 style="margin-top:0;">Live race</h2>
-                        <p id="live-host-status" class="live-muted">Waiting for at least 2 players to join.</p>
-                        <div id="live-host-progress-board" style="margin-top:1rem;"></div>
-                        <div class="btn-group" style="margin-top:1.25rem;">
-                            <button type="button" id="live-host-start" class="btn btn-blue" disabled>Start game (need 2+ players)</button>
-                            <button type="button" id="live-host-play-again" class="btn btn-blue" hidden>Play again</button>
-                            <button type="button" id="live-host-end" class="btn btn-grey">End game</button>
+                        <div class="btn-group lsr-actions">
+                            <button type="button" id="live-host-start" class="btn btn-blue lsr-start" disabled>Start game (need 2+ players)</button>
+                            <button type="button" id="live-host-play-again" class="btn btn-blue lsr-again" hidden>Play again</button>
+                            <button type="button" id="live-host-end" class="btn btn-grey lsr-end">End game</button>
                         </div>
                     </div>
                 </div>
@@ -4864,11 +4940,25 @@
                                 <input type="email" id="lse-email" class="lse-input" autocomplete="username" placeholder="you@school.edu" spellcheck="false">
                             </div>
                             <div class="lse-step lse-step--plain" id="lse-step-password">
-                                <label class="lse-label" for="lse-password">Password</label>
+                                <div class="lse-label"><label for="lse-password">Password</label><a href="#" id="lse-forgot-link" class="lse-forgot-link">Forgot password?</a></div>
                                 <input type="password" id="lse-password" class="lse-input" autocomplete="current-password" placeholder="Your password">
                             </div>
                             <button type="submit" id="lse-signin-btn" class="lse-primary"><i class="fa-solid fa-right-to-bracket"></i> Sign in &amp; host</button>
                             <p class="lse-fine">New teacher? <a href="#" id="lse-register-link">Create a free account</a> · Students don't need one.</p>
+                        </form>
+                        <form class="lse-form" id="lse-forgot-form" novalidate hidden>
+                            <div class="lse-forgot-head">
+                                <h2><i class="fa-solid fa-key" aria-hidden="true"></i> Forgot your password?</h2>
+                                <p>Type the email you sign in with. We'll email you a link to choose a new password.</p>
+                            </div>
+                            <div id="lse-forgot-error" class="lse-banner err" role="alert" hidden><i class="fa-solid fa-triangle-exclamation"></i><span id="lse-forgot-error-text"></span></div>
+                            <div id="lse-forgot-ok" class="lse-banner ok" role="status" hidden><i class="fa-solid fa-envelope-circle-check"></i><span id="lse-forgot-ok-text"></span></div>
+                            <div class="lse-step lse-step--plain" id="lse-step-forgot-email">
+                                <label class="lse-label" for="lse-forgot-email">Email</label>
+                                <input type="email" id="lse-forgot-email" class="lse-input" autocomplete="email" placeholder="you@school.edu" spellcheck="false">
+                            </div>
+                            <button type="submit" id="lse-forgot-btn" class="lse-primary"><i class="fa-solid fa-paper-plane"></i> Send reset link</button>
+                            <p class="lse-fine"><a href="#" id="lse-forgot-back"><i class="fa-solid fa-arrow-left"></i> Back to sign in</a></p>
                         </form>
                         <form id="live-host-setup-form" class="lse-form" hidden onsubmit="return false;">
                             <div class="lse-hello">
@@ -4941,9 +5031,11 @@
             <div id="live-play-race-bg" class="live-race-bg" aria-hidden="true"></div>
             <div id="live-play-bubbles" class="live-race-bubbles" aria-hidden="true"></div>
             <div class="live-play-surface">
-            <div class="top-bar live-desktop-only">
-                <span class="live-muted">Playing as <strong id="live-play-nickname">Player</strong></span>
-                <button type="button" id="live-play-fullscreen-btn" class="btn btn-grey live-fullscreen-btn" title="Fullscreen">
+            <div class="lsp-bar" id="lsp-bar">
+                <img class="lsp-logo" src="assets/brand/lingospark-logo-red.svg" alt="LingoSpark" width="604" height="223">
+                <span class="lsp-me" title="Playing as"><strong id="live-play-nickname">Player</strong></span>
+                <span class="lsp-room">Room <b id="lsp-room-code"></b></span>
+                <button type="button" id="live-play-fullscreen-btn" class="lsp-fs live-desktop-only" title="Fullscreen">
                     <i class="fa-solid fa-expand"></i>
                 </button>
             </div>
@@ -4965,6 +5057,10 @@
                 <span class="live-play-room-label">Room</span>
                 <span id="live-play-room-code-value" class="live-play-room-code-value"></span>
             </div>
+            </div>
+            <div id="lsp-you" class="lsp-you" aria-hidden="true">
+                <span id="lsp-you-buddy" class="lsp-you-buddy">🙂</span>
+                <span class="lsp-you-text"><small>You're in!</small><b id="lsp-you-name">Player</b></span>
             </div>
             <div id="live-play-status" style="text-align:center;font-weight:600;margin-bottom:0.35rem;font-size:0.92rem;"></div>
             <div id="live-play-roster" class="live-play-roster" hidden></div>
@@ -5075,8 +5171,18 @@
                 <input type="email" id="auth-email" name="email" required autocomplete="email">
                 <label for="auth-password">Password</label>
                 <input type="password" id="auth-password" name="password" required autocomplete="current-password" minlength="8">
+                <p class="auth-forgot" id="auth-forgot-wrap"><a href="#" id="auth-forgot-link" onclick="return openForgotPassword(event)">Forgot password?</a></p>
                 <p class="auth-error" id="auth-error"></p>
                 <button type="submit" class="btn btn-blue" id="auth-submit-btn" style="width:100%;">Sign in</button>
+            </form>
+            <form class="auth-form" id="auth-forgot-form" novalidate hidden onsubmit="return submitForgotPassword(event)">
+                <p class="auth-forgot-intro">Type the email you sign in with. We'll email you a link to choose a new password.</p>
+                <label for="auth-forgot-email">Email</label>
+                <input type="email" id="auth-forgot-email" name="email" autocomplete="email">
+                <p class="auth-ok" id="auth-forgot-ok" role="status" hidden></p>
+                <p class="auth-error" id="auth-forgot-error"></p>
+                <button type="submit" class="btn btn-blue" id="auth-forgot-btn" style="width:100%;">Send reset link</button>
+                <p class="auth-forgot"><a href="#" onclick="setAuthTab('login'); return false;">&larr; Back to sign in</a></p>
             </form>
             <div id="auth-google-wrap" style="display:none;">
                 <div class="auth-divider">or</div>
@@ -5326,6 +5432,7 @@
                 setAppHash(code.length === 4 ? `live/join?code=${encodeURIComponent(code)}` : 'live/join');
             }
             else if (screenId === 'live-play') setAppHash('live/play');
+            else if (screenId === 'reset-password') { /* hash is managed by password-reset-client.js */ }
             else setAppHash('game/' + screenId);
         }
 
@@ -5347,6 +5454,9 @@
                 if (root === 'home') {
                     showScreen('home');
                     closeHomeSection();
+                } else if (root === 'reset-password') {
+                    if (window.PasswordReset) window.PasswordReset.openResetPage(hash);
+                    else showScreen('reset-password');
                 } else if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'live' || root === 'mysets' || root === 'progress') {
                     showScreen('home');
                     if (root === 'live' && arg) {
@@ -6708,6 +6818,7 @@
             document.body.classList.toggle('live-player-mode', screenId === 'live-join' || screenId === 'live-play');
             // Live Spark routes (#/live, #/live/join, #/live/host) run without the site header, Premium chip and footer.
             document.body.classList.toggle('live-host-mode', screenId === 'live-host');
+            document.body.classList.toggle('reset-mode', screenId === 'reset-password');
             if (screenId !== 'live-play') document.body.classList.remove('live-game-active');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
             const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match', 'test-countdown'];
@@ -6919,7 +7030,13 @@
         }
 
         function setAuthTab(tab) {
+            const forgot = tab === 'forgot';
             authTab = tab === 'register' ? 'register' : 'login';
+            document.getElementById('auth-form').hidden = forgot;
+            document.getElementById('auth-forgot-form').hidden = !forgot;
+            document.querySelector('#auth-overlay .auth-tabs').hidden = forgot;
+            document.getElementById('auth-forgot-wrap').hidden = authTab !== 'login';
+            document.getElementById('auth-google-wrap').style.display = !forgot && authState.googleConfigured ? 'block' : 'none';
             document.getElementById('auth-tab-login').classList.toggle('active', authTab === 'login');
             document.getElementById('auth-tab-register').classList.toggle('active', authTab === 'register');
             document.getElementById('auth-title').textContent = authTab === 'register' ? 'Create account' : 'Sign in';
@@ -6927,6 +7044,7 @@
             document.getElementById('auth-submit-btn').textContent = authTab === 'register' ? 'Create account' : 'Sign in';
             document.getElementById('auth-password').autocomplete = authTab === 'register' ? 'new-password' : 'current-password';
             document.getElementById('auth-error').textContent = '';
+            if (forgot) document.getElementById('auth-title').textContent = 'Reset password';
         }
 
         function openAuthModal(tab) {

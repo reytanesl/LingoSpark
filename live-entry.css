@@ -205,3 +205,42 @@
 
 /* Buddy emoji next to player names (lobby tiles, race rows, rankings). Global on purpose. */
 .live-buddy { display: inline-block; margin-right: .3em; font-size: 1.05em; line-height: 1; vertical-align: -0.05em; font-style: normal; }
+
+/* "Forgot password?" (teacher sign-in) and the reset page (#screen-reset-password reuses .live-entry) */
+#screen-reset-password.live-entry.active {
+    display: block; position: fixed; inset: 0; z-index: 50; overflow: hidden; animation: none;
+    font-family: var(--lse-body); color: var(--lse-ink);
+    background:
+        radial-gradient(420px 320px at 8% 18%, rgba(255, 201, 60, .30), transparent 70%),
+        radial-gradient(460px 360px at 92% 12%, rgba(64, 140, 255, .22), transparent 70%),
+        radial-gradient(520px 380px at 85% 92%, rgba(200, 16, 46, .16), transparent 70%),
+        radial-gradient(420px 320px at 10% 95%, rgba(24, 163, 91, .18), transparent 70%),
+        linear-gradient(180deg, #F5F7FF, #FDF6F7);
+}
+.live-entry .lse-forgot-link { font: 600 13.5px/1 var(--lse-body); color: var(--lse-navy); text-decoration: underline; text-underline-offset: 2px; }
+.live-entry .lse-forgot-link:hover { color: var(--lse-red); }
+.live-entry .lse-label label { cursor: pointer; }
+.live-entry .lse-forgot-head h2 { margin: 0 0 6px; font: 800 clamp(19px, 2.6vh, 23px)/1.15 var(--lse-head); color: var(--lse-navy); }
+.live-entry .lse-forgot-head h2 i { color: var(--lse-red); margin-right: 4px; }
+.live-entry .lse-forgot-head p { margin: 0; font: 500 14.5px/1.4 var(--lse-body); color: var(--lse-muted); }
+.live-entry .lse-fine a i { font-size: .85em; margin-right: 3px; }
+.live-entry .lse-banner.ok { background: var(--lse-ok-bg); color: #12784A; border: 2px solid rgba(24, 163, 91, .25); }
+.live-entry .lse-card--single { width: min(520px, 100%); grid-template-columns: minmax(0, 1fr); }
+.live-entry .lse-pw { position: relative; }
+.live-entry .lse-pw .lse-input { padding-right: 54px; }
+.live-entry .lse-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; color: var(--lse-muted); cursor: pointer; font-size: 17px; }
+.live-entry .lse-eye:hover, .live-entry .lse-eye[aria-pressed="true"] { color: var(--lse-navy); background: #F3F4FA; }
+.live-entry .lse-eye:focus-visible { outline: 3px solid var(--lse-gold); }
+.live-entry .lse-state { align-items: center; text-align: center; justify-content: center; }
+.live-entry .lse-state h2 { margin: 0; font: 800 clamp(20px, 3vh, 26px)/1.15 var(--lse-head); color: var(--lse-navy); }
+.live-entry .lse-state p { margin: 0; font: 500 15px/1.45 var(--lse-body); color: var(--lse-muted); max-width: 38ch; }
+.live-entry .lse-state-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; }
+.live-entry .lse-state-icon.ok { background: var(--lse-ok); box-shadow: 0 0 0 6px var(--lse-ok-bg); }
+.live-entry .lse-state-icon.err { background: var(--lse-err); box-shadow: 0 0 0 6px var(--lse-err-bg); }
+.live-entry .lse-state .lse-primary { margin-top: 6px; }
+@media (max-width: 720px) {
+    .live-entry .lse-forgot-head p { font-size: 13.5px; }
+    #screen-reset-password .lse-card { flex: none; }
+    #screen-reset-password .lse-main { justify-content: center; }
+}
+.live-entry .lse-step--plain .lse-hint { grid-column: 1; }

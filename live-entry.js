@@ -445,8 +445,11 @@
         const signedIn = isSignedIn();
         const signin = $('lse-signin-form');
         const setup = $('live-host-setup-form');
-        if (signin) signin.hidden = signedIn;
+        const forgot = $('lse-forgot-form');
+        if (forgot && signedIn) forgot.hidden = true;
+        if (signin) signin.hidden = signedIn || Boolean(forgot && !forgot.hidden);
         if (setup) setup.hidden = !signedIn;
+        if (!signedIn) applySigninPrefill();
         const google = window.authState?.googleConfigured;
         if ($('lse-google-btn')) $('lse-google-btn').hidden = !google;
         if ($('lse-or')) $('lse-or').hidden = !google;
@@ -564,6 +567,92 @@
         }
     }
 
+    /** After a password reset ("Sign in" on the reset page) the email is already filled in. */
+    function applySigninPrefill() {
+        let email = '';
+        let openForgot = false;
+        try {
+            email = sessionStorage.getItem('ls_signin_prefill') || '';
+            openForgot = sessionStorage.getItem('ls_live_open_forgot') === '1';
+            sessionStorage.removeItem('ls_signin_prefill');
+            sessionStorage.removeItem('ls_live_open_forgot');
+        } catch { /* ignore */ }
+        const input = $('lse-email');
+        if (email && !openForgot && $('lse-forgot-form') && !$('lse-forgot-form').hidden) {
+            $('lse-forgot-form').hidden = true;
+            if ($('lse-signin-form')) $('lse-signin-form').hidden = false;
+        }
+        if (email && input) {
+            input.value = email;
+            requestAnimationFrame(() => $('lse-password')?.focus({ preventScroll: true }));
+        }
+        if (openForgot) showForgot(true);
+    }
+
+    // ---- "Forgot password?" (inline in the teacher card) ----
+    function setForgotBanner(kind, text) {
+        const err = $('lse-forgot-error');
+        const ok = $('lse-forgot-ok');
+        if (err) err.hidden = kind !== 'err' || !text;
+        if (ok) ok.hidden = kind !== 'ok' || !text;
+        if (kind === 'err' && text) $('lse-forgot-error-text').textContent = text;
+        if (kind === 'ok' && text) $('lse-forgot-ok-text').textContent = text;
+        $('lse-step-forgot-email')?.classList.toggle('bad', kind === 'err' && Boolean(text));
+    }
+
+    function showForgot(on) {
+        const signin = $('lse-signin-form');
+        const forgot = $('lse-forgot-form');
+        if (!forgot) return;
+        if (on && isSignedIn()) return;
+        forgot.hidden = !on;
+        if (signin) signin.hidden = on || isSignedIn();
+        if (on) {
+            const typed = $('lse-email')?.value.trim() || '';
+            const input = $('lse-forgot-email');
+            if (input && typed) input.value = typed;
+            setForgotBanner('', '');
+            const btn = $('lse-forgot-btn');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send reset link'; }
+            requestAnimationFrame(() => input?.focus({ preventScroll: true }));
+        } else {
+            const email = $('lse-forgot-email')?.value.trim();
+            if (email && $('lse-email') && !$('lse-email').value) $('lse-email').value = email;
+            requestAnimationFrame(() => ($('lse-email')?.value ? $('lse-password') : $('lse-email'))?.focus({ preventScroll: true }));
+        }
+    }
+
+    async function onForgot(e) {
+        e.preventDefault();
+        const input = $('lse-forgot-email');
+        const email = input.value.trim();
+        const valid = window.PasswordReset?.looksLikeEmail
+            ? window.PasswordReset.looksLikeEmail(email)
+            : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (!valid) {
+            setForgotBanner('err', 'Please enter a valid email address.');
+            input.focus();
+            return;
+        }
+        const btn = $('lse-forgot-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
+        setForgotBanner('', '');
+        const r = window.PasswordReset
+            ? await window.PasswordReset.requestReset(email, 'live')
+            : { ok: false, error: 'Please reload the page and try again.' };
+        btn.disabled = false;
+        if (r.ok) {
+            setForgotBanner('ok', r.message);
+            btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Send again';
+            try { sessionStorage.setItem('ls_signin_prefill', email); } catch { /* ignore */ }
+            if ($('lse-email')) $('lse-email').value = email;
+        } else {
+            setForgotBanner('err', r.error);
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send reset link';
+        }
+    }
+
     async function onNotYou(e) {
         e.preventDefault();
         try { await fetch('/auth/logout', { method: 'POST', credentials: 'include' }); } catch { /* ignore */ }
@@ -636,7 +725,7 @@
         if (opts.focus !== false) {
             requestAnimationFrame(() => {
                 if (state.role === 'teacher') {
-                    if (!isSignedIn()) $('lse-email')?.focus({ preventScroll: true });
+                    if (!isSignedIn()) ($('lse-email')?.value ? $('lse-password') : $('lse-email'))?.focus({ preventScroll: true });
                 } else if (isComplete(state.chars)) {
                     $('live-join-nickname')?.focus({ preventScroll: true });
                 } else {
@@ -682,6 +771,10 @@
             $(role === 'student' ? 'lse-role-student' : 'lse-role-teacher')?.focus();
         });
         $('lse-signin-form')?.addEventListener('submit', onSignin);
+        $('lse-forgot-form')?.addEventListener('submit', onForgot);
+        $('lse-forgot-link')?.addEventListener('click', (e) => { e.preventDefault(); showForgot(true); });
+        $('lse-forgot-back')?.addEventListener('click', (e) => { e.preventDefault(); showForgot(false); });
+        $('lse-forgot-email')?.addEventListener('input', () => { if (!$('lse-forgot-error')?.hidden) setForgotBanner('', ''); });
         ['lse-email', 'lse-password'].forEach((id) => $(id)?.addEventListener('input', () => setSigninError('')));
         $('lse-register-link')?.addEventListener('click', (e) => {
             e.preventDefault();
@@ -706,7 +799,7 @@
     else init();
 
     window.LiveEntry = {
-        open, setRole, getRole, renderTeacher, syncPasteDone, renderStudent, handleJoinError, checkResume, syncHash,
+        open, setRole, getRole, renderTeacher, syncPasteDone, renderStudent, handleJoinError, checkResume, syncHash, showForgot,
         getAvatar: () => state.avatar,
         getCode: () => codeFromChars(state.chars),
     };
