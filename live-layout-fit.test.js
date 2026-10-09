@@ -18,6 +18,7 @@ const freePort = () => new Promise((resolve) => { const s = net.createServer(); 
 
 /** Page must not scroll and no visible control may sit outside the viewport (unless inside an inner scroller). */
 function measure() {
+    const INNER_SCROLLERS = '#live-host-progress-board, .lsr-board-list, #live-play-roster, #live-play-team-list, .word-prompt';
     const vw = innerWidth; const vh = innerHeight; const doc = document.documentElement;
     const out = [];
     const roots = document.querySelectorAll('.screen.active');
@@ -31,7 +32,8 @@ function measure() {
             if (r.width < 2 || r.height < 2) return;
             if (r.bottom > vh + 1 || r.right > vw + 1 || r.top < -1 || r.left < -1) {
                 let p = el.parentElement; let scroller = false;
-                while (p && p !== root) { const o = getComputedStyle(p).overflowY; if (o === 'auto' || o === 'scroll') { scroller = true; break; } p = p.parentElement; }
+                // Only deliberate inner lists may scroll (big rooms); a scrolling screen/body still counts as not fitting.
+                while (p && p !== root) { const o = getComputedStyle(p).overflowY; if ((o === 'auto' || o === 'scroll') && p.matches(INNER_SCROLLERS)) { scroller = true; break; } p = p.parentElement; }
                 if (!scroller) out.push(`${el.tagName.toLowerCase()}#${el.id}.${String(el.className).split(' ')[0]} ${Math.round(r.top)}..${Math.round(r.bottom)}`);
             }
         });
@@ -100,6 +102,22 @@ test('Live Spark screens fit one screen', { skip, timeout: 600000 }, async (t) =
             for (const [i, p] of phones.slice(0, 2).entries()) {
                 const m = await p.evaluate(measure);
                 await t.test(`${format} phone question ${PHONE_VIEWPORTS[i].width}x${PHONE_VIEWPORTS[i].height}`, () => { assert.ok(m.answering, 'answer controls visible'); assert.equal(m.scrollY, 0); assert.deepEqual(m.out, []); });
+            }
+            if (format === 'captain-crew') {
+                // Tallest generic phone state: the captain sees answer buttons AND the typed box, crew votes and Submit.
+                const m = await phones[0].evaluate((measureSrc) => {
+                    const $ = (id) => document.getElementById(id);
+                    const choices = $('live-play-choices');
+                    if (!choices.querySelector('.live-answer-btn')) choices.innerHTML = ['window', 'mirror', 'rocket', 'river'].map((w) => `<button type="button" class="live-answer-btn">${w}</button>`).join('');
+                    choices.hidden = false;
+                    $('live-play-definition').textContent = 'a fairly long definition sentence that wraps over several lines on a small phone';
+                    for (const id of ['live-play-type-section', 'live-play-crew-panel', 'live-play-captain-submit', 'live-play-crew-role']) { const el = $(id); if (el) el.hidden = false; }
+                    $('live-play-crew-role').textContent = 'Red team - You are the captain this round';
+                    $('live-play-crew-votes').textContent = '3 / 4 voted - 3x window';
+                    $('live-play-submit').hidden = true; $('live-play-crew-vote-btn').hidden = true;
+                    return (0, eval)(`(${measureSrc})`)();
+                }, measure.toString());
+                await t.test('captain-crew captain with answers + typed box 375x667', () => { assert.equal(m.scrollY, 0); assert.deepEqual(m.out, []); });
             }
             await host.evaluate(() => document.getElementById('live-host-end')?.click());
             for (const p of phones) await p.context().close();

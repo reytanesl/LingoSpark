@@ -365,3 +365,14 @@ html body.live-player-mode .live-play-body:has(#live-play-team-lobby:not([hidden
     html body.wc-player-lobby .wcpl .wc-title-line { font-size: 2.4rem; }
     html body.wc-player-lobby .wcpl-cannon { width: 115px; }
 }
+
+/* Captain Crew captain: answer buttons AND the typed box + crew votes + submit on one phone screen → 2x2 answers, tighter prompt. */
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-body:has(#live-play-type-section:not([hidden])) #live-play-choices:not([hidden]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-body:has(#live-play-type-section:not([hidden])) #live-play-choices .live-answer-btn {
+    min-height: 46px; padding: 6px 10px; font-size: clamp(15px, 4.2vw, 18px); overflow-wrap: anywhere;
+}
+html body.live-game-active.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) .live-play-body:has(#live-play-choices:not([hidden])):has(#live-play-type-section:not([hidden])) #live-play-definition.word-prompt {
+    min-height: clamp(60px, 10vh, 110px); padding: 10px 14px;
+}
