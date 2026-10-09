@@ -353,6 +353,22 @@ button { font: inherit; color: inherit; }
 .va-lock svg { width: 1em; height: 1em; }
 .va-actions .hint-cost-note { text-align: center; max-width: 30ch; min-height: 1.3em; }
 
+/* Fullscreen toggle */
+.va-round-row { display: flex; align-items: center; gap: 10px; }
+.va-fs-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; white-space: nowrap;
+    height: clamp(40px, 4.4vh, 52px); padding: 0 16px; border-radius: 999px;
+    background: rgba(4, 22, 15, .78); color: var(--gold-light); border: 3px solid var(--gold);
+    font: clamp(13px, 1vw, 18px)/1 var(--f-ui); letter-spacing: .04em; box-shadow: var(--toy-shadow);
+    transition: transform .12s ease, background .12s ease;
+}
+.va-fs-btn[hidden] { display: none; }
+.va-fs-btn i { font-size: 1.15em; }
+.va-fs-btn:hover { background: var(--burgundy); transform: translateY(-1px); }
+.va-fs-btn:focus-visible { outline: 4px solid var(--gold-light); outline-offset: 3px; }
+.va-fs-corner { position: absolute; top: 0; right: 0; z-index: 3; }
+.va-menu, .va-gameover { position: relative; }
+
 /* loading */
 .loading-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 50vh; font: 24px/1 var(--f-ui); color: var(--ivory); }
 .loading-overlay i { font-size: 46px; color: var(--gold-light); animation: vaSpin 1s linear infinite; }
@@ -431,6 +447,11 @@ html.embed-root, body.embed { height: 100%; overflow: hidden; }
     .va-bank { display: none; }
     .va-round-info { flex-direction: row; align-items: center; gap: 6px; }
     .va-pill { font-size: 17px; padding: 7px 13px; border-width: 2px; box-shadow: none; }
+    .va-round-row { gap: 6px; }
+    .va-fs-btn { height: 36px; border-width: 2px; box-shadow: none; padding: 0 12px; font-size: 13px; }
+    .va-fs-round { width: 36px; padding: 0; }
+    .va-fs-round .va-fs-label { display: none; }
+    .va-fs-corner { top: 10px; right: 0; }
     .va-badges .mode-badge { display: none; }
     .va-badge { font-size: 11px; padding: 5px 9px; }
     .va-players { order: 1; }

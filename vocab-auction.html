@@ -29,6 +29,7 @@
 
     <!-- ========== MAIN MENU ========== -->
     <section id="screen-menu" class="screen active va-menu">
+        <button type="button" class="va-fs-btn va-fs-corner" title="Fullscreen" aria-label="Fullscreen" aria-pressed="false" hidden><i class="fa-solid fa-expand" aria-hidden="true"></i><span class="va-fs-label">Fullscreen</span></button>
         <div class="va-menu-head">
             <div class="va-logo-plaque va-logo-lg"><div class="brand">Lingo<span>Spark</span></div><div class="va-logo-sub">VOCAB AUCTION</div></div>
             <div class="va-menu-chips" aria-hidden="true" id="va-menu-chips"></div>
@@ -98,7 +99,10 @@
                     <div class="va-bank-label">THE BANK</div>
                 </div>
                 <div class="va-round-info hud" id="hud">
-                    <div class="va-pill" id="hud-round-pill">ROUND <b id="hud-round">1</b></div>
+                    <div class="va-round-row">
+                        <div class="va-pill" id="hud-round-pill">ROUND <b id="hud-round">1</b></div>
+                        <button type="button" class="va-fs-btn va-fs-round" title="Fullscreen" aria-label="Fullscreen" aria-pressed="false" hidden><i class="fa-solid fa-expand" aria-hidden="true"></i><span class="va-fs-label">Fullscreen</span></button>
+                    </div>
                     <div class="va-badges">
                         <span id="mode-badge" class="va-badge mode-badge">Multiple Choice</span>
                         <span id="turn-banner" class="va-badge va-turn turn-banner" aria-live="polite"><span id="turn-name">Player 1</span>'s turn</span>
@@ -188,6 +192,7 @@
 
     <!-- ========== GAME OVER ========== -->
     <section id="screen-gameover" class="screen va-gameover">
+        <button type="button" class="va-fs-btn va-fs-corner" title="Fullscreen" aria-label="Fullscreen" aria-pressed="false" hidden><i class="fa-solid fa-expand" aria-hidden="true"></i><span class="va-fs-label">Fullscreen</span></button>
         <div class="va-logo-plaque"><div class="brand">Lingo<span>Spark</span></div><div class="va-logo-sub">VOCAB AUCTION</div></div>
         <div id="gameover-icon" class="gameover-icon">
             <i class="fa-solid fa-trophy"></i>
@@ -1978,6 +1983,49 @@ window.matchMedia("(max-width: 720px)").addEventListener("change", () => {
     state.choices.forEach((w) => paintSpot(spotFor(w), state.bets[w] || 0));
     if (state.isTypedRound) paintSpot(els.typedSpot, state.typedBet);
 });
+
+/* Fullscreen toggle (same expand/compress pattern as the Live games).
+   Works standalone and inside the #/auction iframe (allowfullscreen); hidden where the
+   Fullscreen API is unavailable (e.g. iPhone Safari), where the embed already fills the screen. */
+(function setupFullscreen() {
+    const doc = document;
+    const buttons = Array.from(doc.querySelectorAll(".va-fs-btn"));
+    const fsElement = () => doc.fullscreenElement || doc.webkitFullscreenElement || null;
+    const root = doc.documentElement;
+    const canRequest = !!(root.requestFullscreen || root.webkitRequestFullscreen);
+    const enabled = doc.fullscreenEnabled !== undefined ? doc.fullscreenEnabled : !!doc.webkitFullscreenEnabled;
+    if (!canRequest || !enabled) return;   // buttons stay hidden
+    const sync = () => {
+        const on = !!fsElement();
+        doc.body.classList.toggle("va-is-fullscreen", on);
+        buttons.forEach((b) => {
+            b.setAttribute("aria-pressed", on ? "true" : "false");
+            b.title = on ? "Exit fullscreen" : "Fullscreen";
+            b.setAttribute("aria-label", b.title);
+            b.querySelector("i").className = `fa-solid ${on ? "fa-compress" : "fa-expand"}`;
+            b.querySelector(".va-fs-label").textContent = on ? "Exit full" : "Fullscreen";
+        });
+        if (state.screen === "round" && !state.animating) {
+            renderPlayerPanel();
+            state.choices.forEach((w) => paintSpot(spotFor(w), state.bets[w] || 0));
+        }
+    };
+    const toggle = async () => {
+        try {
+            if (fsElement()) {
+                await (doc.exitFullscreen ? doc.exitFullscreen() : doc.webkitExitFullscreen());
+            } else {
+                await (root.requestFullscreen ? root.requestFullscreen({ navigationUI: "hide" }) : root.webkitRequestFullscreen());
+            }
+        } catch (_) {
+            appAlert("Fullscreen is not available in this browser.", "Fullscreen");
+        }
+    };
+    buttons.forEach((b) => { b.hidden = false; b.addEventListener("click", toggle); });
+    doc.addEventListener("fullscreenchange", sync);
+    doc.addEventListener("webkitfullscreenchange", sync);
+    sync();
+})();
 
 /* Embed mode when loaded inside LingoSpark (iframe ?embed=1) */
 if (new URLSearchParams(location.search).get("embed") === "1") {
