@@ -2739,6 +2739,25 @@
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #dde3ea; }
 
         /* Word-Forged Odyssey */
+        .odyssey-level-pills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; margin: 0.15rem 0 0.35rem; }
+        .odyssey-level-pill, .form-group .odyssey-level-pill { position: relative; margin: 0; cursor: pointer; }
+        .odyssey-level-pill input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+        .odyssey-level-pill span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; min-height: 58px; padding: 0.45rem 0.4rem; border-radius: 999px; background: #fff; border: 2px solid #F3CFCB; color: var(--royal-blue); text-align: center; transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s; }
+        .odyssey-level-pill b { font-family: var(--font-primary); font-weight: 800; font-size: 1.15rem; line-height: 1; }
+        .odyssey-level-pill small { font-family: var(--font-secondary); font-size: 0.74rem; line-height: 1.1; color: #5B5566; }
+        .odyssey-level-pill:hover span { border-color: var(--pillarbox-red); }
+        .odyssey-level-pill input:checked + span { background: linear-gradient(180deg, #E23A52 0%, var(--pillarbox-red) 100%); border-color: var(--pillarbox-red); color: #fff; box-shadow: 0 4px 0 #8E0B22, 0 8px 16px rgba(200, 16, 46, 0.22); }
+        .odyssey-level-pill input:checked + span small { color: rgba(255, 255, 255, 0.92); }
+        .odyssey-level-pill input:focus-visible + span { outline: 3px solid #FFC93C; outline-offset: 2px; }
+        .odyssey-level-desc { margin: 0.2rem 0 0.9rem; font-size: 0.86rem; color: var(--text-muted); }
+        .odyssey-level-chip { display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.4rem; padding: 0.22rem 0.7rem; border-radius: 999px; background: #FFF0EE; border: 1.5px solid #F3CFCB; color: var(--pillarbox-red); font-family: var(--font-primary); font-weight: 800; font-size: 0.78rem; vertical-align: middle; white-space: nowrap; }
+        .odyssey-story-log .odyssey-target { color: #FFD45C; font-weight: 700; }
+        @media (max-width: 560px) {
+            .odyssey-level-pills { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem; }
+            .odyssey-level-pill span { flex-direction: row; gap: 0.45rem; min-height: 46px; padding: 0.4rem 0.6rem; }
+            .odyssey-level-pill b { font-size: 1.05rem; }
+            .odyssey-level-pill small { font-size: 0.78rem; }
+        }
         .odyssey-hud { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
         .odyssey-stat { flex: 1; min-width: 140px; background: var(--light-grey); border-radius: 10px; padding: 0.75rem 1rem; border-top: 3px solid var(--royal-blue); font-size: 0.9rem; }
         .odyssey-stat strong { display: block; font-family: var(--font-primary); color: var(--royal-blue); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
@@ -3050,7 +3069,7 @@
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Cut redundant words and phrases without losing meaning. Aim for clear, concise writing.</p></div>
                 <div class="guide-item"><strong>Tight Write</strong><p>Rewrite a padded formal sentence using conciseness strategies: cut redundancy, use strong verbs, prefer active voice, drop fillers, shorten phrases, avoid nominalizations, and simplify structure.</p></div>
                 <div class="guide-item"><strong>Vocabulary Upgrade</strong><p>Replace everyday words with more precise academic alternatives. Signed-in players collect each informal → formal pair in a Vocab Upgrade set.</p></div>
-                <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a genre, then write story actions that use the highlighted target words each turn.</p></div>
+                <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a language level (A2, B1, B2 or C1) and a genre, then write story actions that use the highlighted target words each turn. The story, questions and feedback are written at your level; the target words always stay in.</p></div>
                 <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
                 <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments, and also coaches conciseness (cut redundancy, strong verbs, active voice, fillers, shorter phrases, avoid nominalizations, simplify structure). Premium includes one assessment every 4 hours; unlock 4 more for 5 zł / $1 when you need them sooner.</p></div>
             </div>
@@ -3384,6 +3403,14 @@
                 </div>
 
                 <div class="form-group" id="odyssey-settings" style="display: none;">
+                    <label id="odyssey-level-label"><i class="fa-solid fa-signal"></i> Language level</label>
+                    <div class="odyssey-level-pills" role="radiogroup" aria-labelledby="odyssey-level-label">
+                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="A2"><span><b>A2</b><small>Elementary</small></span></label>
+                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="B1" checked><span><b>B1</b><small>Intermediate</small></span></label>
+                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="B2"><span><b>B2</b><small>Upper-int.</small></span></label>
+                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="C1"><span><b>C1</b><small>Advanced</small></span></label>
+                    </div>
+                    <p class="odyssey-level-desc" id="odyssey-level-desc">The story, questions and feedback are written at this level. Your target words always stay in.</p>
                     <label for="odyssey-genre"><i class="fa-solid fa-compass"></i> Adventure genre</label>
                     <div class="setup-inline-field">
                         <select id="odyssey-genre">
@@ -3894,7 +3921,7 @@
             <div class="game-setup-bar">
             <div class="game-setup-bar-row">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <div class="game-setup-bar-title">Word-Forged Odyssey <span class="live-badge">Cursor AI</span></div>
+                <div class="game-setup-bar-title">Word-Forged Odyssey <span class="odyssey-level-chip" id="odyssey-level-chip" title="Story language level"><i class="fa-solid fa-signal" aria-hidden="true"></i> <span id="odyssey-level-chip-text">B1</span></span> <span class="live-badge">Cursor AI</span></div>
                 <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
             <div class="game-setup-panel">
@@ -7348,6 +7375,7 @@
             const tcSettings = document.getElementById('test-countdown-settings');
             if (tcSettings) tcSettings.style.display = (gameType === 'test-countdown') ? 'block' : 'none';
             document.getElementById('odyssey-settings').style.display = (gameType === 'odyssey') ? 'block' : 'none';
+            if (gameType === 'odyssey') syncOdysseyLevelSetup();
             document.getElementById('mission-settings').style.display = (gameType === 'mission') ? 'block' : 'none';
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType) || gameType === 'test-countdown') ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('pe-dictation-settings').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
@@ -8427,9 +8455,86 @@ Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...",
         // 6. WORD-FORGED ODYSSEY
         let odysseyState = null;
 
+        /** CEFR levels for the story (prompts with the concrete constraints live in odyssey-prompts.js on the server). */
+        const ODYSSEY_LEVELS_UI = {
+            A2: { name: 'Elementary', desc: 'Short, simple sentences and everyday words. Easy questions and very simple feedback.', minWords: 4, example: 'I open the door and go inside.' },
+            B1: { name: 'Intermediate', desc: 'Clear everyday English with a few linking words. Choices are offered as simple questions.', minWords: 5, example: 'I carefully open the old door and step inside.' },
+            B2: { name: 'Upper-intermediate', desc: 'Richer, varied sentences and genre vocabulary. Feedback names grammar and collocations.', minWords: 6, example: 'Having checked the corridor, I quietly force the lock and slip inside.' },
+            C1: { name: 'Advanced', desc: 'Nuanced, idiomatic storytelling. Demanding feedback on accuracy, register and style.', minWords: 8, example: 'Barely daring to breathe, I ease the warped door open and slip into the gloom beyond.' },
+        };
+        const ODYSSEY_LEVEL_KEY = 'ls_odyssey_level';
+        /** Demo sets that imply a level: Matura podstawowa ≈ B1, Matura rozszerzona ≈ B2. */
+        const ODYSSEY_DEMO_LEVELS = { 'matura-czlowiek': 'B1', 'matura-rozszerzona-czlowiek': 'B2' };
+
+        function odysseyDefaultLevel() {
+            try {
+                const saved = localStorage.getItem(ODYSSEY_LEVEL_KEY);
+                if (saved && ODYSSEY_LEVELS_UI[saved]) return saved;
+            } catch (_) { /* ignore */ }
+            const demo = document.querySelector('.demo-set-btn.active');
+            const derived = demo && ODYSSEY_DEMO_LEVELS[demo.dataset.demoId];
+            return derived || 'B1';
+        }
+
+        function getOdysseyLevel() {
+            const checked = document.querySelector('input[name="odyssey-level"]:checked');
+            return checked && ODYSSEY_LEVELS_UI[checked.value] ? checked.value : odysseyDefaultLevel();
+        }
+
+        function renderOdysseyLevelUi(level) {
+            const meta = ODYSSEY_LEVELS_UI[level] || ODYSSEY_LEVELS_UI.B1;
+            const desc = document.getElementById('odyssey-level-desc');
+            if (desc) desc.textContent = `${meta.desc} Your target words always stay in the story.`;
+            const chip = document.getElementById('odyssey-level-chip-text');
+            if (chip) chip.textContent = `${level} · ${meta.name}`;
+            const input = document.getElementById('odyssey-action-input');
+            if (input) input.placeholder = `Write a full sentence describing your action (e.g. ${meta.example})`;
+        }
+
+        function syncOdysseyLevelSetup() {
+            const level = odysseyDefaultLevel();
+            const radio = document.querySelector(`input[name="odyssey-level"][value="${level}"]`);
+            if (radio) radio.checked = true;
+            renderOdysseyLevelUi(level);
+        }
+
+        document.querySelectorAll('input[name="odyssey-level"]').forEach((radio) => {
+            radio.addEventListener('change', () => {
+                try { localStorage.setItem(ODYSSEY_LEVEL_KEY, radio.value); } catch (_) { /* ignore */ }
+                renderOdysseyLevelUi(radio.value);
+            });
+        });
+
+        async function fetchOdyssey(payload) {
+            try {
+                const response = await fetch('/api/odyssey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) return { __error: data.error || 'Generation failed' };
+                return data;
+            } catch (e) {
+                return { __error: 'Cannot reach the LingoSpark server. Open http://localhost:3000 after running npm start.' };
+            }
+        }
+
+        function odysseyHighlight(text) {
+            let html = esc(text || '');
+            const terms = (odysseyState?.highlightTerms || []).filter(Boolean).sort((a, b) => b.length - a.length);
+            for (const t of terms) {
+                const safe = esc(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                html = html.replace(new RegExp(`\\b(${safe}[a-z]*)`, 'gi'), '<span class="odyssey-target">$1</span>');
+            }
+            return html;
+        }
+
         function createOdysseyState() {
             return {
                 genre: document.getElementById('odyssey-genre').value,
+                level: getOdysseyLevel(),
                 hp: 100,
                 maxHp: 100,
                 morale: 100,
@@ -8505,9 +8610,9 @@ Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...",
         function renderOdysseyStoryLog() {
             const log = document.getElementById('odyssey-story-log');
             log.innerHTML = odysseyState.storyHistory.map(entry => {
-                if (entry.type === 'player') return `<p class="story-player"><strong>&gt; You:</strong> ${entry.text}</p>`;
-                if (entry.type === 'gm') return `<p>${entry.text}</p>`;
-                return `<p class="story-beat">${entry.text}</p>`;
+                if (entry.type === 'player') return `<p class="story-player"><strong>&gt; You:</strong> ${odysseyHighlight(entry.text)}</p>`;
+                if (entry.type === 'gm') return `<p>${odysseyHighlight(entry.text)}</p>`;
+                return `<p class="story-beat">${odysseyHighlight(entry.text)}</p>`;
             }).join('');
             log.scrollTop = log.scrollHeight;
         }
@@ -8559,6 +8664,8 @@ Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...",
         async function initOdyssey() {
             odysseyState = createOdysseyState();
             odysseyState.targetWords = rollOdysseyTargetWords();
+            odysseyState.highlightTerms = odysseyState.targetWords.map(w => w.term);
+            renderOdysseyLevelUi(odysseyState.level);
             document.getElementById('odyssey-action-input').value = '';
             document.getElementById('odyssey-status').textContent = '';
             document.getElementById('odyssey-action-panel').style.opacity = '1';
@@ -8577,15 +8684,12 @@ Return ONLY JSON: {"baseText":"...","target":"...","rest":"...","correct":"...",
 
             setOdysseyLoading(true);
 
-            const wordList = odysseyState.targetWords.map(w => `${w.term} (${w.def})`).join(', ');
-            const prompt = `You are a concise Game Master for an ESL text adventure (${WS_LEVEL}). Genre: ${odysseyState.genre}.
-Create an opening scene: a clear quest objective and one immediate obstacle.
-KEEP IT SHORT — max 2 sentences for the story beat, max 2 sentences for the situation. No long descriptions.
-Target ENGLISH vocabulary for turn 1 (player must use at least one later): ${wordList}.
-Return ONLY JSON:
-{"questTitle":"Short quest name","situation":"1-2 concise sentences: the obstacle","storyBeat":"1-2 concise sentences: scene-setting"}`;
-
-            const data = await fetchGenerativeAI(prompt);
+            const data = await fetchOdyssey({
+                phase: 'open',
+                level: odysseyState.level,
+                genre: odysseyState.genre,
+                words: odysseyState.targetWords.map(w => ({ term: w.term, def: w.def }))
+            });
             setOdysseyLoading(false);
 
             if (!data || data.__error || !data.situation) {
@@ -8614,40 +8718,31 @@ Return ONLY JSON:
                 return;
             }
             const wordCount = action.split(/\s+/).length;
-            if (wordCount < 5 || !/[.!?]$/.test(action)) {
+            const minWords = (ODYSSEY_LEVELS_UI[odysseyState.level] || ODYSSEY_LEVELS_UI.B1).minWords;
+            if (wordCount < minWords || !/[.!?]$/.test(action)) {
                 document.getElementById('odyssey-status').className = 'feedback error';
-                document.getElementById('odyssey-status').textContent = 'Write at least one full sentence (5+ words, ending with . ! or ?).';
+                document.getElementById('odyssey-status').textContent = `Write at least one full sentence (${minWords}+ words at ${odysseyState.level}, ending with . ! or ?).`;
                 return;
             }
 
-            const targetWords = odysseyState.targetWords.map(w => w.term);
-            const targetDetails = odysseyState.targetWords.map(w => `${w.term}: ${w.def}`).join('; ');
             setOdysseyLoading(true);
             document.getElementById('odyssey-status').textContent = '';
 
             odysseyState.storyHistory.push({ type: 'player', text: action });
             renderOdysseyStoryLog();
 
-            const prompt = `You are a CONCISE Game Master for an ESL text adventure (${WS_LEVEL}). Genre: ${odysseyState.genre}.
-Quest: ${odysseyState.quest}
-Situation: ${odysseyState.situation}
-Stats: HP ${odysseyState.hp}/100, Morale ${odysseyState.morale}/100, XP ${odysseyState.xp}
-Target ENGLISH words only (with defs): ${targetDetails}
-Player action: "${action}"
-
-Evaluate: did the player use at least ONE target ENGLISH word correctly (inflected forms OK)? Ignore non-English glossary text.
-Rules:
-- success=true → continue story based on their action. success=false → no target word or wrong usage or grammar breaks meaning.
-- Failure: hpChange -10 to -25, moraleChange -5 to -15.
-- Success: xpEarned=50; bonusXp=20 if 2+ words used well; small heal; morale up.
-- gameOver=true only if HP would hit 0.
-
-KEEP PROSE SHORT — storyContinuation max 2 sentences, newSituation max 1-2 sentences. No long paragraphs.
-
-Return ONLY JSON:
-{"success":true/false,"storyContinuation":"1-2 concise sentences","languageFeedback":"Short feedback","wordsUsedCorrectly":["word1"],"xpEarned":50,"bonusXp":0,"bonusObjective":"or empty","hpChange":0,"moraleChange":5,"newSituation":"1-2 sentences","gameOver":false,"gameOverReason":""}`;
-
-            const data = await fetchGenerativeAI(prompt);
+            const data = await fetchOdyssey({
+                phase: 'turn',
+                level: odysseyState.level,
+                genre: odysseyState.genre,
+                words: odysseyState.targetWords.map(w => ({ term: w.term, def: w.def })),
+                action,
+                quest: odysseyState.quest,
+                situation: odysseyState.situation,
+                hp: odysseyState.hp,
+                morale: odysseyState.morale,
+                xp: odysseyState.xp
+            });
             setOdysseyLoading(false);
 
             if (!data || data.__error) {
@@ -8659,7 +8754,7 @@ Return ONLY JSON:
             }
 
             const feedbackItems = [
-                { type: 'feedback', text: `<strong>AI Language Feedback:</strong> ${data.languageFeedback || '—'}` }
+                { type: 'feedback', text: `<strong>AI Language Feedback (${odysseyState.level}):</strong> ${esc(data.languageFeedback || '—')}` }
             ];
             if (data.wordsUsedCorrectly && data.wordsUsedCorrectly.length) {
                 feedbackItems.push({ type: 'feedback', text: `Words used well: ${data.wordsUsedCorrectly.join(', ')}` });
@@ -8700,6 +8795,7 @@ Return ONLY JSON:
                 document.getElementById('odyssey-action-panel').style.opacity = '0.5';
             } else {
                 odysseyState.targetWords = rollOdysseyTargetWords();
+                odysseyState.highlightTerms = [...new Set([...(odysseyState.highlightTerms || []), ...odysseyState.targetWords.map(w => w.term)])];
                 renderOdysseyWordCards();
                 document.getElementById('odyssey-action-input').value = '';
                 document.getElementById('odyssey-action-panel').style.opacity = '1';

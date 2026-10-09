@@ -71,6 +71,7 @@ import {
     destroyRoom,
 } from './live-game.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
+import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -905,6 +906,32 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         const status = /Unsupported image|too large|valid JSON/i.test(error.message || '') ? 400 : 500;
         res.status(status).json({ error: error.message || 'Failed to generate content' });
     }
+    });
+
+    /**
+     * Word-Forged Odyssey: the client sends a whitelisted CEFR level (A2-C1), genre, target words and
+     * game state; the Game Master prompt (with the level's constraints) is built on the server.
+     */
+    app.post('/api/odyssey', requireWritingAccess, async (req, res) => {
+        const checked = validateOdysseyRequest(req.body);
+        if (!checked.ok) return res.status(400).json({ error: checked.error });
+        const apiKey = process.env.CURSOR_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+        }
+        const v = checked.value;
+        try {
+            const parsed = await runVisionJsonPrompt({ apiKey, prompt: buildOdysseyPrompt(v), label: `odyssey-${v.phase}-${v.level}` });
+            const out = parsed && typeof parsed === 'object' ? parsed : {};
+            out.level = v.level;
+            out.targetWordsInStory = v.phase === 'open'
+                ? targetWordsFound(v.words, out.storyBeat, out.situation)
+                : targetWordsFound(v.words, out.storyContinuation, out.newSituation);
+            res.json(out);
+        } catch (error) {
+            console.error('Odyssey generation error:', error);
+            res.status(500).json({ error: error.message || 'Failed to generate the story' });
+        }
     });
 
     /**
