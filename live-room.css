@@ -8,7 +8,7 @@
     --lse-navy: #012169; --lse-red: #C8102E; --lse-red-deep: #4E0A1E; --lse-burgundy: #7A1230;
     --lse-fill-top: #FFF7F6; --lse-fill-bot: #FBE6E4; --lse-ink: #1E1B3A; --lse-muted: #5B6075; --lse-line: #E3E1EA;
     --lse-ok: #18A35B; --lse-ok-bg: #E8F8EF; --lse-err: #D61F3B; --lse-err-bg: #FFECEF; --lse-gold: #FFC93C;
-    --lse-head: 'Poppins', system-ui, sans-serif; --lse-ui: 'Fredoka', 'Poppins', system-ui, sans-serif; --lse-body: 'Inter', system-ui, sans-serif;
+    --lse-head: 'Poppins', system-ui, sans-serif; --lse-ui: 'Poppins', system-ui, sans-serif; --lse-body: 'Nunito', system-ui, sans-serif;
     --lse-bg:
         radial-gradient(420px 320px at 8% 18%, rgba(255, 201, 60, .30), transparent 70%),
         radial-gradient(460px 360px at 92% 12%, rgba(64, 140, 255, .22), transparent 70%),
@@ -96,9 +96,9 @@ body.ll-lobby #screen-live-host.live-room #live-host-qr, body.wc-lobby #screen-l
 #screen-live-host.live-room .lsr-status { margin: 0; flex: none; font: 600 clamp(14px, 1.8vh, 16px)/1.35 var(--lse-body); color: var(--lse-muted); background: var(--lse-fill-top); border: 2px solid var(--lse-fill-bot); border-radius: 14px; padding: 8px 12px; }
 #screen-live-host.live-room .lsr-board-list { flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 2px; scrollbar-width: thin; }
 #screen-live-host.live-room .lsr-board-list > .live-muted { margin: 0; padding: 18px 8px; text-align: center; font: 500 15px/1.35 var(--lse-body); }
-#screen-live-host.live-room .lsr-board-list .live-lobby-player-tiles { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+#screen-live-host.live-room .lsr-board-list .live-lobby-player-tiles { grid-template-columns: repeat(auto-fill, minmax(172px, 1fr)); gap: 10px; }
 #screen-live-host.live-room .lsr-board-list .live-lobby-player-tile { background: #fff; border: 2px solid var(--lse-line); border-radius: 16px; padding: 10px 10px 10px 12px; box-shadow: 0 3px 0 var(--lse-line); animation: lsr-pop .35s cubic-bezier(.34, 1.56, .64, 1) both; }
-#screen-live-host.live-room .lsr-board-list .live-lobby-player-tile strong { font: 600 clamp(15px, 2vh, 19px)/1.2 var(--lse-ui); color: var(--lse-ink); }
+#screen-live-host.live-room .lsr-board-list .live-lobby-player-tile strong { font: 700 clamp(15px, 1.8vh, 18px)/1.2 var(--lse-ui); color: var(--lse-ink); }
 #screen-live-host.live-room .lsr-board-list .live-buddy { font-size: 1.35em; vertical-align: -.15em; }
 #screen-live-host.live-room .lsr-board-list .live-team-lobby { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
 #screen-live-host.live-room .lsr-board-list .live-team-card { border-radius: 16px; border: 2px solid var(--lse-line); background: #fff; margin: 0; }
@@ -257,7 +257,7 @@ html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(
 html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-team-lobby { order: 4; flex: 0 1 auto; min-height: 0; overflow-y: auto; }
 html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-champion,
 html body.live-player-mode:not(.live-game-active):not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-error { order: 5; }
-.live-play-roster-head { margin: 4px 0 8px; text-align: center; font: 600 13px/1 var(--lse-ui, 'Fredoka', sans-serif); color: var(--lse-muted, #5B6075); text-transform: uppercase; letter-spacing: .08em; }
+.live-play-roster-head { margin: 4px 0 8px; text-align: center; font: 600 13px/1 var(--lse-ui, 'Poppins', sans-serif); color: var(--lse-muted, #5B6075); text-transform: uppercase; letter-spacing: .08em; }
 html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-roster .live-play-roster-tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0; }
 html body.live-player-mode:not(.live-lantern-player):not(.ll-player-lobby):not(.live-cannon-player):not(.wc-player-lobby) #live-play-roster .live-play-roster-tile {
     max-width: 46%; padding: 7px 12px; border-radius: 999px; background: #fff; border: 2px solid var(--lse-line); font: 600 14px/1.1 var(--lse-ui); color: var(--lse-ink);

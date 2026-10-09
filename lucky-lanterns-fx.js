@@ -3,7 +3,7 @@
  *
  * Pure DOM / SVG / canvas helpers, no image assets. Palette, shapes and timings
  * follow the Lucky Lanterns concept clip (night festival, glowing paper lanterns,
- * round animal avatars, Luckiest Guy / Lilita One / Fredoka type).
+ * round animal avatars, Luckiest Guy titles / Poppins UI / Nunito body type).
  *
  * Exposed as window.LLFX and used by live-game-client.js.
  */

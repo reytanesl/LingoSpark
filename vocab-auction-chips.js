@@ -96,7 +96,7 @@
             <circle cx="50" cy="50" r="47" fill="${d.base}" stroke="${d.dark}" stroke-width="2.5"/>${inserts}
             <circle cx="50" cy="50" r="33" fill="none" stroke="${d.edge}" stroke-width="2.6" stroke-dasharray="5 4.2"/>
             <circle cx="50" cy="50" r="27" fill="${d.inlay}" stroke="${d.dark}" stroke-width="1.6"/>
-            <text x="50" y="${50 + fs * 0.36}" text-anchor="middle" font-family="Lilita One, Fredoka, sans-serif" font-size="${fs}" fill="${d.ink}">${d.label}</text>
+            <text x="50" y="${50 + fs * 0.36}" text-anchor="middle" font-family="Poppins, sans-serif" font-weight="800" font-size="${fs}" fill="${d.ink}">${d.label}</text>
             <path d="M18 34 A36 36 0 0 1 46 13" stroke="rgba(255,255,255,.55)" stroke-width="4" fill="none" stroke-linecap="round"/>
         </svg>`;
     }

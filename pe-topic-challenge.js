@@ -494,7 +494,7 @@
         style.id = CSS_ID;
         style.textContent = `
 #topic-challenge-root { --tc-accent: #0e7490; --tc-ink: #0f172a; }
-.tc-wrap { font-family: var(--font-secondary, Inter, sans-serif); color: var(--tc-ink); }
+.tc-wrap { font-family: var(--font-secondary, Nunito, sans-serif); color: var(--tc-ink); }
 .tc-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.85rem; }
 .tc-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem; }
 .tc-tab { border: 2px solid #cbd5e1; background: #fff; color: #334155; border-radius: 0.55rem; padding: 0.4rem 0.75rem; font-weight: 700; cursor: pointer; font-family: var(--font-primary, Poppins, sans-serif); font-size: 0.9rem; }

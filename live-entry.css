@@ -4,7 +4,7 @@
     --lse-navy: #012169; --lse-red: #C8102E; --lse-red-deep: #4E0A1E; --lse-burgundy: #7A1230;
     --lse-fill-top: #FFF7F6; --lse-fill-bot: #FBE6E4; --lse-ink: #1E1B3A; --lse-muted: #5B6075; --lse-line: #E3E1EA;
     --lse-ok: #18A35B; --lse-ok-bg: #E8F8EF; --lse-err: #D61F3B; --lse-err-bg: #FFECEF; --lse-gold: #FFC93C;
-    --lse-head: 'Poppins', system-ui, sans-serif; --lse-ui: 'Fredoka', 'Poppins', system-ui, sans-serif; --lse-body: 'Inter', system-ui, sans-serif;
+    --lse-head: 'Poppins', system-ui, sans-serif; --lse-ui: 'Poppins', system-ui, sans-serif; --lse-body: 'Nunito', system-ui, sans-serif;
     --lse-pad: clamp(12px, 2.2vh, 24px);
 }
 #screen-live-join.live-entry.active {

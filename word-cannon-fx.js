@@ -324,7 +324,7 @@
                 <rect x="170" y="84" width="40" height="34" fill="#c99a5a" stroke="#4a2c12" stroke-width="4"/>
                 <rect x="177" y="91" width="26" height="20" fill="#0d1c40"/>
                 <rect x="56" y="150" width="48" height="30" rx="3" fill="#9c6a35" stroke="#4a2c12" stroke-width="3"/>
-                <text x="80" y="171" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="15" fill="#3a2210">INN</text>
+                <text x="80" y="171" text-anchor="middle" font-family="Luckiest Guy, Poppins, sans-serif" font-size="15" fill="#3a2210">INN</text>
             </g>
             ${cracks('wc-dmg wc-dmg-1', ['M90,70 l10,22 -8,16 12,20', 'M230,150 l-14,10 4,18', 'M300,90 l-8,14 6,12'])}
             ${cracks('wc-dmg wc-dmg-2', ['M120,140 l16,14 -6,20 14,16', 'M60,175 l18,-8 10,14', 'M210,70 l-10,26 12,18 -6,22', 'M290,160 l-12,10'])}
