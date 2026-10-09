@@ -288,6 +288,12 @@
         raceBlobAnim.container = null;
     }
 
+    /** Buddy emoji picked on the join page (optional) — shown before the name. */
+    function buddyHtml(avatar) {
+        const av = String(avatar || '');
+        return av ? `<span class="live-buddy" aria-hidden="true">${esc(av)}</span>` : '';
+    }
+
     function rankingRowsHtml(players, winnerId, { limit = 0, scoreMode = false, cannonMode = false } = {}) {
         const ranked = [...(players || [])].sort(
             (a, b) => (b.score ?? b.progress ?? 0) - (a.score ?? a.progress ?? 0) || String(a.nickname || '').localeCompare(String(b.nickname || ''))
@@ -305,7 +311,7 @@
                 : scoreMode
                 ? formatLanternPoints(p.score ?? p.progress)
                 : `${p.progress || 0}/${p.termsToWin || TERMS_TO_WIN}`;
-            const avatar = scoreMode && p.avatar ? `${p.avatar} ` : '';
+            const avatar = p.avatar ? `${buddyHtml(p.avatar)} ` : '';
             return `<li class="${isWinner ? 'is-winner' : ''}">
                 <span>
                     <span class="live-rank-pos">${p.rank || (i + 1)}.</span>
@@ -461,7 +467,7 @@
 
     function showLiveError(msg) {
         const text = msg || '';
-        for (const id of ['live-error-banner', 'live-play-error', 'live-join-error']) {
+        for (const id of ['live-error-banner', 'live-play-error', 'live-join-error', 'live-entry-host-error']) {
             const el = $(id);
             if (el) {
                 el.textContent = text;
@@ -775,8 +781,9 @@
         for (const team of teams) {
             const members = (team.memberIds || []).map((id, idx) => {
                 const nick = team.memberNicknames?.[idx] || 'Player';
+                const buddy = buddyHtml(team.memberAvatars?.[idx]);
                 return `<div class="live-team-member-row" data-player-id="${esc(id)}">
-                    <span>${esc(nick)}</span>
+                    <span>${buddy}${esc(nick)}</span>
                     <span style="display:inline-flex;gap:0.25rem;">
                         <button type="button" class="live-remove-player-btn" data-unassign-player="${esc(id)}" title="Remove from team" aria-label="Remove ${esc(nick)} from team"><i class="fa-solid fa-user-minus"></i></button>
                         <button type="button" class="live-remove-player-btn" data-remove-player="${esc(id)}" title="Remove from room" aria-label="Remove ${esc(nick)} from room"><i class="fa-solid fa-xmark"></i></button>
@@ -797,7 +804,7 @@
             html += `<div class="live-lobby-player-tiles">${unassigned.map((p) => {
                 const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
                 return `<div class="live-lobby-player-tile" data-player-id="${esc(p.id)}">
-                    <strong title="${esc(p.nickname)}">${esc(p.nickname)}${offline}</strong>
+                    <strong title="${esc(p.nickname)}">${buddyHtml(p.avatar)}${esc(p.nickname)}${offline}</strong>
                     <button type="button" class="live-remove-player-btn" data-remove-player="${esc(p.id)}" title="Remove from room" aria-label="Remove ${esc(p.nickname)}"><i class="fa-solid fa-xmark"></i></button>
                 </div>`;
             }).join('')}</div>`;
@@ -827,7 +834,7 @@
         container.innerHTML = `<div class="live-lobby-player-tiles">${sorted.map((p) => {
             const offline = p.connected === false ? ' <span class="live-muted">(offline)</span>' : '';
             return `<div class="live-lobby-player-tile" data-player-id="${esc(p.id)}">
-                <strong title="${esc(p.nickname)}">${esc(p.nickname)}${offline}</strong>
+                <strong title="${esc(p.nickname)}">${buddyHtml(p.avatar)}${esc(p.nickname)}${offline}</strong>
                 <button type="button" class="live-remove-player-btn" data-remove-player="${esc(p.id)}" title="Remove from room" aria-label="Remove ${esc(p.nickname)}"><i class="fa-solid fa-xmark"></i></button>
             </div>`;
         }).join('')}</div>`;
@@ -847,7 +854,7 @@
         host.innerHTML = `<div class="live-play-roster-tiles">${sorted.map((p) => {
             const isYou = p.id && playerState?.playerId && p.id === playerState.playerId;
             const offline = p.connected === false ? ' (offline)' : '';
-            return `<div class="live-play-roster-tile${isYou ? ' is-you' : ''}" title="${esc(p.nickname)}${offline}">${esc(p.nickname)}</div>`;
+            return `<div class="live-play-roster-tile${isYou ? ' is-you' : ''}" title="${esc(p.nickname)}${offline}">${buddyHtml(p.avatar)}${esc(p.nickname)}</div>`;
         }).join('')}</div>`;
     }
 
@@ -952,7 +959,7 @@
                 ? '<span class="live-host-challenge-badge">Challenge</span>'
                 : '';
             return `<div class="${rowCls}" data-player-id="${esc(p.id)}">
-                <div class="live-host-race-name" title="${esc(p.nickname)}">${challengeBadge}${esc(p.nickname)}</div>
+                <div class="live-host-race-name" title="${esc(p.nickname)}">${challengeBadge}${buddyHtml(p.avatar)}${esc(p.nickname)}</div>
                 <div class="live-host-race-track">
                     <div class="${fillCls}" style="width:${pct}%;${fillStyle}"></div>
                 </div>
@@ -1188,7 +1195,7 @@
         const offline = player.connected === false ? ' · offline' : '';
         return `<div class="live-player-progress" data-player-id="${esc(player.id)}">
             <div class="live-player-progress-head">
-                <strong>${esc(player.nickname)}</strong>
+                <strong>${buddyHtml(player.avatar)}${esc(player.nickname)}</strong>
                 <span class="live-muted">${player.progress || 0} / ${total}${offline}</span>
             </div>
             <div class="live-progress-track">
@@ -1957,7 +1964,7 @@
             LiveAudio.stopGame();
             LiveAudio.stopLobby();
             setLiveGameActive(false);
-            if (typeof showScreen === 'function') showScreen('live-join');
+            openStudentEntry();
             showLiveError(data.message || 'You were removed from the lobby.');
         });
 
@@ -2637,6 +2644,7 @@
                 .filter(Boolean);
             const withDefs = items.filter((i) => String(i.term || '').trim() && String(i.definition || i.def || '').trim()).length;
             if (paste) paste.value = lines.join('\n');
+            window.LiveEntry?.syncPasteDone?.();
             if (hint) {
                 hint.hidden = false;
                 hint.textContent = withDefs >= 12
@@ -2663,6 +2671,53 @@
     function updateHostAuthUI() {
         const signedIn = isHostSignedIn();
         if ($('live-host-setup-form')) $('live-host-setup-form').hidden = !signedIn;
+        if ($('screen-live-join')?.classList.contains('active')) window.LiveEntry?.renderTeacher?.();
+    }
+
+    /** Student tab of the Live Spark entry page (falls back to the bare join screen). */
+    function openStudentEntry(opts = {}) {
+        if (window.LiveEntry?.open) window.LiveEntry.open({ role: 'student', focus: false, ...opts });
+        else if (typeof showScreen === 'function') showScreen('live-join');
+    }
+
+    /** Teacher tab of the Live Spark entry page: sign-in or the short setup form. */
+    function openTeacherEntry() {
+        setHostRaceMode(false);
+        if (window.LiveEntry?.open) {
+            window.LiveEntry.open({ role: 'teacher' });
+            window.LiveEntry.syncHash?.();
+        } else if (typeof showScreen === 'function') {
+            showScreen('live-join');
+        }
+    }
+
+    /** Fresh setup form for a signed-in teacher (word sets loaded, glossary prefill applied). */
+    async function prepareHostSetup() {
+        hostSelectedWordSetId = '';
+        hostWordSetsLoadedForUser = null;
+        applyGlossaryPrefill();
+        toggleLiveSourcePanels();
+        window.LiveEntry?.renderTeacher?.();
+        await loadWordSetsForHost({ force: true });
+    }
+
+    function showHostRoomScreen() {
+        $('live-host-room-panel').hidden = false;
+        if (typeof showScreen === 'function') showScreen('live-host');
+        if (typeof setAppHash === 'function') setAppHash('live/host');
+    }
+
+    /** "Room KTJW is still open · Resume" on the teacher tab. */
+    async function resumeHost() {
+        showLiveError('');
+        const resumed = await resumeHostRoomAsync();
+        if (resumed) {
+            showHostRoomScreen();
+            return true;
+        }
+        window.LiveEntry?.checkResume?.();
+        showLiveError('That room has already ended. Create a new one.');
+        return false;
     }
 
     function onAuthChanged() {
@@ -2738,8 +2793,7 @@
         await ensureAuthLoaded();
         updateHostAuthUI();
         if (!isHostSignedIn()) {
-            showLiveError('Sign in to host Live Spark.');
-            if (typeof openAuthModal === 'function') openAuthModal('login');
+            openTeacherEntry();
             return;
         }
         await closePreviousHostRoom();
@@ -2789,6 +2843,7 @@
             emitHostJoin();
             startHostLobbyPoll(hostState.code);
             LiveAudio.startLobby();
+            showHostRoomScreen();
         } catch (err) {
             showLiveError(err.message);
         } finally {
@@ -2844,38 +2899,24 @@
         const fresh = Boolean(options.fresh);
         showLiveError('');
         LiveAudio.stopAll();
-        if ($('live-host-setup-form')) $('live-host-setup-form').hidden = true;
-        $('live-host-room-panel').hidden = true;
 
         await ensureAuthLoaded();
         updateHostAuthUI();
 
         if (!isHostSignedIn()) {
-            clearStoredHostRoom();
-            if (typeof showScreen === 'function') showScreen('live-host');
-            if (typeof openAuthModal === 'function') openAuthModal('login');
+            openTeacherEntry();
             return;
         }
 
-        if (fresh) {
-            await closePreviousHostRoom();
-            hostSelectedWordSetId = '';
-            hostWordSetsLoadedForUser = null;
-            $('live-host-room-panel').hidden = true;
-            $('live-host-setup-form').hidden = false;
-            applyGlossaryPrefill();
-            await loadWordSetsForHost({ force: true });
-        } else {
-            const resumed = await resumeHostRoomAsync();
-            if (!resumed) {
-                $('live-host-room-panel').hidden = true;
-                $('live-host-setup-form').hidden = false;
-                applyGlossaryPrefill();
-                await loadWordSetsForHost({ force: true });
-            }
+        // Reload / deep link on #/live/host: go straight back into the open room.
+        // A fresh open (header button, teacher tab) shows the setup page with a Resume link instead
+        // of closing the room — Create room still replaces it.
+        if (!fresh && await resumeHostRoomAsync()) {
+            showHostRoomScreen();
+            return;
         }
-        if (typeof showScreen === 'function') showScreen('live-host');
-        if (typeof setAppHash === 'function') setAppHash('live/host');
+        openTeacherEntry();
+        await prepareHostSetup();
     }
 
     async function openHostWithGlossary(terms, options = {}) {
@@ -2885,18 +2926,24 @@
 
     async function joinRoom() {
         showLiveError('');
-        const code = ($('live-join-code')?.value || '').trim().toUpperCase();
+        const code = normalizeJoinCode(window.LiveEntry?.getCode?.() || $('live-join-code')?.value || '');
         const nickname = ($('live-join-nickname')?.value || '').trim();
+        const avatar = window.LiveEntry?.getAvatar?.() || '';
         if (!code || code.length < 4) { showLiveError('Enter a 4-letter room code.'); return; }
         if (!nickname) { showLiveError('Enter a nickname.'); return; }
 
         const btn = $('live-join-btn');
-        if (btn) btn.disabled = true;
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Joining…';
+        }
         try {
+            const payload = { code, nickname };
+            if (avatar) payload.avatar = avatar;
             const res = await fetch('/api/live/join', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, nickname }),
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Could not join.');
@@ -2905,6 +2952,8 @@
             sessionStorage.setItem('ls_live_player_token', data.playerToken);
             sessionStorage.setItem('ls_live_room_code', data.code);
             sessionStorage.setItem('ls_live_nickname', data.nickname);
+            if (data.avatar) sessionStorage.setItem('ls_live_avatar', data.avatar);
+            else sessionStorage.removeItem('ls_live_avatar');
 
             playerState = {
                 playerId: data.playerId,
@@ -2921,9 +2970,10 @@
             if (typeof showScreen === 'function') showScreen('live-play');
             openPlay();
         } catch (err) {
-            showLiveError(err.message);
+            if (!window.LiveEntry?.handleJoinError?.(err.message)) showLiveError(err.message);
         } finally {
             if (btn) btn.disabled = false;
+            window.LiveEntry?.renderStudent?.();
         }
     }
 
@@ -2935,44 +2985,16 @@
             .slice(0, 4);
     }
 
-    function applyJoinCodePrefill(code) {
-        const input = $('live-join-code');
-        const hint = $('live-join-code-hint');
-        const clean = normalizeJoinCode(code);
-        if (!input) return false;
-        if (clean.length === 4) {
-            input.value = clean;
-            input.readOnly = true;
-            input.setAttribute('aria-readonly', 'true');
-            input.classList.add('live-join-code--locked');
-            sessionStorage.setItem('ls_live_join_code_prefill', clean);
-            if (hint) {
-                hint.hidden = false;
-                hint.textContent = 'Room code filled from your link — just enter your nickname.';
-            }
-            return true;
-        }
-        input.readOnly = false;
-        input.removeAttribute('aria-readonly');
-        input.classList.remove('live-join-code--locked');
-        sessionStorage.removeItem('ls_live_join_code_prefill');
-        if (hint) {
-            hint.hidden = true;
-            hint.textContent = '';
-        }
-        return false;
-    }
-
     function openJoin() {
         showLiveError('');
-        const fromUrl = getQueryParam('code');
-        const fromStore = sessionStorage.getItem('ls_live_join_code_prefill');
-        const prefilled = applyJoinCodePrefill(fromUrl || fromStore || '');
-        if (typeof showScreen === 'function') showScreen('live-join');
-        requestAnimationFrame(() => {
-            if (prefilled) $('live-join-nickname')?.focus();
-            else $('live-join-code')?.focus();
-        });
+        const fromUrl = normalizeJoinCode(getQueryParam('code'));
+        let fromStore = '';
+        try { fromStore = normalizeJoinCode(sessionStorage.getItem('ls_live_join_code_prefill')); } catch { /* ignore */ }
+        const code = fromUrl.length === 4 ? fromUrl : fromStore;
+        try {
+            if (fromUrl.length === 4) sessionStorage.setItem('ls_live_join_code_prefill', fromUrl);
+        } catch { /* ignore */ }
+        openStudentEntry({ code, prefilled: code.length === 4, focus: true });
     }
 
     function openPlay() {
@@ -2981,7 +3003,7 @@
         const playerToken = sessionStorage.getItem('ls_live_player_token');
         const code = sessionStorage.getItem('ls_live_room_code');
         if (!playerId || !playerToken || !code) {
-            if (typeof showScreen === 'function') showScreen('live-join');
+            openJoin();
             return;
         }
         playerState = {
@@ -2990,7 +3012,8 @@
             code,
             progress: 0,
         };
-        $('live-play-nickname').textContent = sessionStorage.getItem('ls_live_nickname') || 'Player';
+        const myBuddy = sessionStorage.getItem('ls_live_avatar') || '';
+        $('live-play-nickname').textContent = `${myBuddy ? `${myBuddy} ` : ''}${sessionStorage.getItem('ls_live_nickname') || 'Player'}`;
         $('live-play-champion').hidden = true;
         setLiveGameActive(false);
         showPlayerWaiting('Connecting…');
@@ -4807,14 +4830,7 @@
         document.addEventListener('webkitfullscreenchange', updateFullscreenButtons);
         $('live-host-wordset')?.addEventListener('change', onHostWordSetSelected);
         $('live-host-create-btn')?.addEventListener('click', createHostRoom);
-        $('live-join-btn')?.addEventListener('click', joinRoom);
-        ['live-join-code', 'live-join-nickname'].forEach((id) => {
-            $(id)?.addEventListener('keydown', (e) => {
-                if (e.key !== 'Enter') return;
-                e.preventDefault();
-                joinRoom();
-            });
-        });
+        // #live-join-btn / Enter on the join form are wired by live-entry.js (LiveEntry → LiveGame.joinRoom).
         $('live-host-start')?.addEventListener('click', hostStartGame);
         $('live-host-play-again')?.addEventListener('click', hostPlayAgain);
         $('live-host-end')?.addEventListener('click', hostEnd);
@@ -4881,5 +4897,5 @@
         toggleLiveSourcePanels();
     });
 
-    window.LiveGame = { openHost, openHostWithGlossary, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged };
+    window.LiveGame = { openHost, openHostWithGlossary, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged, prepareHostSetup, resumeHost };
 })();

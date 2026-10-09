@@ -18,6 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="lucky-lanterns.css">
     <link rel="stylesheet" href="word-cannon.css">
+    <link rel="stylesheet" href="live-entry.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
     <script src="demo-sets.js"></script>
     <script src="frank-paragraphs.js"></script>
@@ -34,6 +35,7 @@
     <script src="lucky-lanterns-fx.js" defer></script>
     <script src="word-cannon-fx.js" defer></script>
     <script src="word-cannon-client.js" defer></script>
+    <script src="live-entry.js" defer></script>
     <script src="live-game-client.js" defer></script>
     
     <style>
@@ -776,9 +778,16 @@
         body.live-player-mode .auth-bar,
         body.live-player-mode .about-panel,
         body.live-player-mode .site-copyright,
-        body.live-player-mode #ls-premium-float {
+        body.live-player-mode #ls-premium-float,
+        body.live-host-mode header,
+        body.live-host-mode .main-logo-container,
+        body.live-host-mode .auth-bar,
+        body.live-host-mode .about-panel,
+        body.live-host-mode .site-copyright,
+        body.live-host-mode #ls-premium-float {
             display: none !important;
         }
+        #live-host-play-again[hidden] { display: none !important; }
         .ls-premium-float {
             position: fixed; right: 18px; bottom: 18px; z-index: 9990;
             display: inline-flex; align-items: center; gap: 0.45rem;
@@ -797,7 +806,6 @@
             min-height: 100dvh;
             box-sizing: border-box;
         }
-        body.live-player-mode #screen-live-join,
         body.live-player-mode #screen-live-play {
             margin: 0 auto;
             padding: 1.1rem clamp(1.5rem, 6.5vw, 2.25rem) 1.35rem;
@@ -811,7 +819,6 @@
             width: 100%;
             max-width: 520px;
         }
-        body.live-player-mode #screen-live-join.active,
         body.live-player-mode #screen-live-play.active {
             display: flex;
             flex-direction: column;
@@ -822,11 +829,9 @@
         @media (max-width: 899px) {
             .live-desktop-only { display: none !important; }
         }
-        body.live-player-mode #screen-live-join .top-bar,
         body.live-player-mode #screen-live-play .top-bar {
             display: none;
         }
-        body.live-player-mode #screen-live-join .card,
         body.live-player-mode #screen-live-play.engine-container {
             padding: 0;
             box-shadow: none;
@@ -1479,12 +1484,6 @@
         .live-setup-textarea {
             resize: vertical;
             min-height: 8rem;
-        }
-        #live-host-create-btn {
-            width: 100%;
-            margin-top: 0.15rem;
-            padding: 0.9rem 1rem;
-            font-size: 1.1rem;
         }
         .section-back-row { margin-bottom: 1.25rem; }
 
@@ -4632,52 +4631,6 @@
             <div id="wc-lobby-backdrop" aria-hidden="true"></div>
             <div id="wc-lobby-title" aria-hidden="true"></div>
             <div id="live-error-banner" hidden></div>
-            <form id="live-host-setup-form" class="card live-host-setup-card" hidden onsubmit="return false;">
-                <h2><i class="fa-solid fa-sliders"></i> Game setup</h2>
-
-                <fieldset class="live-setup-section">
-                    <legend><i class="fa-solid fa-book"></i> Word source</legend>
-                    <div class="live-option-grid live-option-grid--3">
-                        <label class="live-option">
-                            <input type="radio" name="live-source" value="builtin" checked>
-                            <span class="live-option-title">Built-in level</span>
-                            <span class="live-option-desc">Ready-made lists by difficulty</span>
-                        </label>
-                        <label class="live-option">
-                            <input type="radio" name="live-source" value="wordset">
-                            <span class="live-option-title">Saved Word Set</span>
-                            <span class="live-option-desc">Your saved vocabulary lists</span>
-                        </label>
-                        <label class="live-option">
-                            <input type="radio" name="live-source" value="paste">
-                            <span class="live-option-title">Paste glossary</span>
-                            <span class="live-option-desc">term = definition, one per line</span>
-                        </label>
-                    </div>
-                </fieldset>
-
-                <div id="live-host-level-row" class="live-setup-field">
-                    <label for="live-host-level"><i class="fa-solid fa-signal"></i> Level</label>
-                    <select id="live-host-level" class="live-setup-select">
-                        <option value="beginner">Beginner</option>
-                        <option value="easy">Easy</option>
-                        <option value="intermediate" selected>Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                    </select>
-                </div>
-                <div id="live-host-wordset-row" class="live-setup-field" hidden>
-                    <label for="live-host-wordset"><i class="fa-solid fa-folder-open"></i> Word Set</label>
-                    <select id="live-host-wordset" class="live-setup-select"></select>
-                    <p id="live-host-wordset-hint" class="live-host-wordset-hint" hidden></p>
-                </div>
-                <div id="live-host-paste-row" class="live-setup-field" hidden>
-                    <label for="live-host-glossary"><i class="fa-solid fa-paste"></i> Glossary</label>
-                    <textarea id="live-host-glossary" class="live-setup-textarea" rows="6" placeholder="apple = A round fruit&#10;house = A building where people live"></textarea>
-                </div>
-
-                <p class="live-muted" style="margin:1rem 0 0.85rem;font-size:0.9rem;">After you create the room, choose game format and answer mode on the host screen.</p>
-                <button type="button" id="live-host-create-btn" class="btn btn-blue">Create room</button>
-            </form>
             <div id="live-host-room-panel" hidden>
                 <div class="live-host-grid">
                     <div class="card live-host-code-card">
@@ -4838,29 +4791,146 @@
             </div>
         </div>
 
-        <!-- LIVE GAME: JOIN -->
-        <div id="screen-live-join" class="screen engine-container">
-            <div class="top-bar live-desktop-only">
-                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-                <h2 style="margin:0;color:var(--royal-blue);font-family:var(--font-primary);"><i class="fa-solid fa-mobile-screen"></i> Join Game</h2>
-                <div style="width:80px;"></div>
-            </div>
-            <div class="live-mobile-join" style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:520px;margin:0 auto;width:100%;">
-                <div id="live-join-error" class="live-player-error" hidden></div>
-                <h2 style="text-align:center;color:var(--royal-blue);margin:0 0 1rem;font-family:var(--font-primary);">Join Live Spark</h2>
-                <p class="live-muted" style="text-align:center;margin:0 0 0.85rem;font-size:0.9rem;">Disconnected? Enter the same room code and nickname to rejoin your team.</p>
-                <p id="live-join-code-hint" class="live-join-code-hint" hidden></p>
-                <div class="live-join-split">
-                    <div class="live-join-code-col">
-                        <label for="live-join-code" style="font-weight:600;">Room code</label>
-                        <input type="text" id="live-join-code" maxlength="4" autocomplete="off" inputmode="text" spellcheck="false">
-                    </div>
-                    <div class="live-join-name-col">
-                        <label for="live-join-nickname" style="font-weight:600;">Nickname</label>
-                        <input type="text" id="live-join-nickname" maxlength="20" autocomplete="nickname">
-                    </div>
+        <!-- LIVE SPARK ENTRY: one full-screen page for students (join) and teachers (sign in + set up) -->
+        <div id="screen-live-join" class="screen live-entry" data-role="student">
+            <div class="lse-app">
+                <div class="lse-bar" role="banner">
+                    <img class="lse-logo" src="assets/brand/lingospark-logo-red.svg" alt="LingoSpark — Gamify Your Words" width="604" height="223">
+                    <a class="lse-back" href="#/home" onclick="if (typeof goHome === 'function') { goHome(); return false; } return true;"><i class="fa-solid fa-arrow-left"></i><span>Back to LingoSpark</span></a>
                 </div>
-                <button type="button" id="live-join-btn" class="btn btn-blue" style="width:100%;padding:0.85rem;font-size:1.1rem;margin-top:1rem;">Join game</button>
+                <main class="lse-main">
+                    <div class="lse-title">
+                        <h1><i class="fa-solid fa-bolt"></i><span id="lse-title-text">Join a Live Spark game</span></h1>
+                        <p id="lse-title-sub">No account needed — just the code from your teacher's screen.</p>
+                    </div>
+                    <div class="lse-roles" role="tablist" aria-label="Who are you?">
+                        <button type="button" id="lse-role-student" class="on" role="tab" aria-selected="true" aria-controls="lse-student-card" data-role="student"><span class="lse-em" aria-hidden="true">🎒</span> I'm a student</button>
+                        <button type="button" id="lse-role-teacher" role="tab" aria-selected="false" aria-controls="lse-teacher-card" data-role="teacher"><span class="lse-em" aria-hidden="true">🧑‍🏫</span> I'm a teacher</button>
+                    </div>
+
+                    <!-- Student: join -->
+                    <section id="lse-student-card" class="lse-card" role="tabpanel" aria-labelledby="lse-role-student">
+                        <form class="lse-form" id="lse-join-form" onsubmit="return false;" novalidate>
+                            <div id="live-join-error" class="lse-banner err" role="alert" hidden></div>
+                            <div class="lse-step" id="lse-step-code">
+                                <div class="lse-num" aria-hidden="true">1</div>
+                                <label class="lse-label" for="lse-code-0">Room code <small>4 letters on the board</small></label>
+                                <div class="lse-ctl" id="lse-code-ctl">
+                                    <div class="lse-code" id="lse-code" role="group" aria-label="Room code, 4 letters">
+                                        <input class="lse-box" id="lse-code-0" data-i="0" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Room code letter 1">
+                                        <input class="lse-box" id="lse-code-1" data-i="1" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Room code letter 2">
+                                        <input class="lse-box" id="lse-code-2" data-i="2" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Room code letter 3">
+                                        <input class="lse-box" id="lse-code-3" data-i="3" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="Room code letter 4">
+                                    </div>
+                                    <input type="hidden" id="live-join-code" value="">
+                                </div>
+                                <div class="lse-hint" id="live-join-code-hint" aria-live="polite" hidden></div>
+                            </div>
+                            <div class="lse-step" id="lse-step-name">
+                                <div class="lse-num" aria-hidden="true">2</div>
+                                <label class="lse-label" for="live-join-nickname">Your name <small>shown on the scoreboard</small></label>
+                                <div class="lse-ctl"><input type="text" id="live-join-nickname" class="lse-input" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" placeholder="e.g. Maya"></div>
+                                <div class="lse-hint" id="lse-name-hint" aria-live="polite" hidden></div>
+                            </div>
+                            <div class="lse-step" id="lse-step-buddy">
+                                <div class="lse-num" aria-hidden="true">3</div>
+                                <div class="lse-label" id="lse-buddy-label">Pick a buddy <small>optional</small></div>
+                                <div class="lse-ctl">
+                                    <div class="lse-avatars" id="lse-avatars" role="radiogroup" aria-labelledby="lse-buddy-label"></div>
+                                </div>
+                            </div>
+                            <button type="button" id="live-join-btn" class="lse-primary off" aria-disabled="true">Enter the room code to join</button>
+                            <p class="lse-fine">Lost connection? Use the same code and name to jump back in.</p>
+                        </form>
+                        <aside class="lse-side" aria-label="Where's the code?">
+                            <h3>Where's the code?</h3>
+                            <div class="lse-board" aria-hidden="true"><div><div class="lse-k">Room code</div><div class="lse-v">KTJW</div></div><div class="lse-qr"></div></div>
+                            <ul class="lse-how">
+                                <li><i class="fa-solid fa-chalkboard"></i><span>It's big on your <b>teacher's screen</b>.</span></li>
+                                <li><i class="fa-solid fa-qrcode"></i><span>Or <b>scan the QR</b> — the code fills in by itself.</span></li>
+                                <li><i class="fa-solid fa-hourglass-half"></i><span>Then wait — the game starts when your teacher taps <b>Start</b>.</span></li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <!-- Teacher: sign in, then set up -->
+                    <section id="lse-teacher-card" class="lse-card" role="tabpanel" aria-labelledby="lse-role-teacher" hidden>
+                        <form class="lse-form" id="lse-signin-form" novalidate>
+                            <div id="lse-signin-error" class="lse-banner err" role="alert" hidden><i class="fa-solid fa-triangle-exclamation"></i><span id="lse-signin-error-text">That email and password don't match. Try again.</span></div>
+                            <a id="lse-google-btn" class="lse-secondary" href="/auth/google?returnTo=%2F%23%2Flive%2Fhost" hidden><i class="fa-brands fa-google" style="color:#4285F4"></i> Continue with Google</a>
+                            <div class="lse-or" id="lse-or" hidden>or with email</div>
+                            <div class="lse-step lse-step--plain" id="lse-step-email">
+                                <label class="lse-label" for="lse-email">Email</label>
+                                <input type="email" id="lse-email" class="lse-input" autocomplete="username" placeholder="you@school.edu" spellcheck="false">
+                            </div>
+                            <div class="lse-step lse-step--plain" id="lse-step-password">
+                                <label class="lse-label" for="lse-password">Password</label>
+                                <input type="password" id="lse-password" class="lse-input" autocomplete="current-password" placeholder="Your password">
+                            </div>
+                            <button type="submit" id="lse-signin-btn" class="lse-primary"><i class="fa-solid fa-right-to-bracket"></i> Sign in &amp; host</button>
+                            <p class="lse-fine">New teacher? <a href="#" id="lse-register-link">Create a free account</a> · Students don't need one.</p>
+                        </form>
+                        <form id="live-host-setup-form" class="lse-form" hidden onsubmit="return false;">
+                            <div class="lse-hello">
+                                <div class="lse-pic" id="lse-hello-pic" aria-hidden="true">LS</div>
+                                <div><b id="lse-hello-name">Hi there 👋</b><span>Signed in · your word sets are ready</span></div>
+                                <a href="#" id="lse-not-you">Not you?</a>
+                            </div>
+                            <div id="live-entry-host-error" class="lse-banner err" role="alert" hidden></div>
+                            <div class="lse-step done">
+                                <div class="lse-num" aria-hidden="true">1</div>
+                                <div class="lse-label" id="lse-words-label">Choose words</div>
+                                <div class="lse-ctl">
+                                    <div class="lse-chips" role="radiogroup" aria-labelledby="lse-words-label">
+                                        <label class="lse-chip"><input type="radio" name="live-source" value="builtin" checked><span><i class="fa-solid fa-signal"></i> Built-in level</span></label>
+                                        <label class="lse-chip"><input type="radio" name="live-source" value="wordset"><span><i class="fa-solid fa-folder-open"></i> My word set</span></label>
+                                        <label class="lse-chip"><input type="radio" name="live-source" value="paste"><span><i class="fa-solid fa-paste"></i> Paste list</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lse-step done" id="live-host-level-row">
+                                <div class="lse-num" aria-hidden="true">2</div>
+                                <label class="lse-label" for="live-host-level">Level</label>
+                                <div class="lse-ctl lse-select-wrap">
+                                    <select id="live-host-level" class="lse-input lse-select">
+                                        <option value="beginner">Beginner</option>
+                                        <option value="easy">Easy</option>
+                                        <option value="intermediate" selected>Intermediate</option>
+                                        <option value="advanced">Advanced</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                            <div class="lse-step" id="live-host-wordset-row" hidden>
+                                <div class="lse-num" aria-hidden="true">2</div>
+                                <label class="lse-label" for="live-host-wordset">Word set</label>
+                                <div class="lse-ctl lse-select-wrap">
+                                    <select id="live-host-wordset" class="lse-input lse-select"></select>
+                                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                </div>
+                                <p id="live-host-wordset-hint" class="lse-hint" hidden></p>
+                            </div>
+                            <div class="lse-step lse-step--paste" id="live-host-paste-row" hidden>
+                                <div class="lse-num" aria-hidden="true" id="lse-paste-num">2</div>
+                                <label class="lse-label" for="live-host-glossary"><span id="lse-paste-label">Paste your list</span> <small>term = definition, 12+ lines</small></label>
+                                <div class="lse-ctl"><textarea id="live-host-glossary" class="lse-input lse-textarea" rows="3" placeholder="apple = A round fruit&#10;house = A building where people live"></textarea></div>
+                            </div>
+                            <div class="lse-resume lse-resume--inline" hidden><i class="fa-solid fa-rotate-left"></i><span>Room <b class="lse-resume-code">----</b> is still open</span><a href="#" class="lse-resume-link">Resume</a></div>
+                            <button type="button" id="live-host-create-btn" class="lse-primary"><i class="fa-solid fa-door-open"></i> Create room</button>
+                            <p class="lse-fine">Next you'll get the room code + QR and choose the game mode while students join.</p>
+                        </form>
+                        <aside class="lse-side" aria-label="How a Live Spark game goes">
+                            <h3>How a Live Spark game goes</h3>
+                            <ul class="lse-how">
+                                <li><i class="fa-solid fa-list-check"></i><span><b>Pick words</b> — a level, your word set or a pasted list.</span></li>
+                                <li><i class="fa-solid fa-qrcode"></i><span><b>Share the code</b> — students join on any phone, no accounts.</span></li>
+                                <li><i class="fa-solid fa-gamepad"></i><span><b>Choose a mode</b> — Race, Captain &amp; Crew, Lucky Lanterns, Word Cannon.</span></li>
+                                <li><i class="fa-solid fa-trophy"></i><span><b>Play</b> — you control rounds from the big screen.</span></li>
+                            </ul>
+                            <div class="lse-resume lse-resume--side" hidden><i class="fa-solid fa-rotate-left"></i><span>Room <b class="lse-resume-code">----</b> is still open</span><a href="#" class="lse-resume-link">Resume</a></div>
+                        </aside>
+                    </section>
+                </main>
             </div>
         </div>
 
@@ -5195,9 +5265,13 @@
                 return;
             }
 
-            if (root === 'live' && (arg === 'host' || arg === 'join' || arg === 'play')) {
-                showScreen('home');
-                openHomeSection('live');
+            if (root === 'live' && arg === 'host' && document.getElementById('screen-live-host')?.classList.contains('active') && window.LiveGame) {
+                // Back from the room screen → teacher tab of the entry page (with "Resume").
+                LiveGame.openHost({ fresh: true });
+                return;
+            }
+            if (root === 'live') {
+                goHome();
                 return;
             }
 
@@ -5217,9 +5291,12 @@
                 exitAuction();
                 return;
             }
-            if (screenId === 'live-host' || screenId === 'live-join' || screenId === 'live-play') {
-                showScreen('home');
-                openHomeSection('live');
+            if (screenId === 'live-host' && window.LiveGame) {
+                LiveGame.openHost({ fresh: true });
+                return;
+            }
+            if (screenId === 'live-join' || screenId === 'live-play') {
+                goHome();
                 return;
             }
             if (screenId !== 'home' && (VOCAB_GAMES.has(screenId) || WRITING_GAMES.has(screenId) || PE_GAMES.has(screenId) || screenId === 'odyssey')) {
@@ -5239,6 +5316,7 @@
             }             else if (screenId === 'setup') setAppHash('setup/' + (activeGame || 'flashcard'));
             else if (screenId === 'auction') setAppHash('auction');
             else if (screenId === 'live-host') setAppHash('live/host');
+            else if (screenId === 'live-join' && window.LiveEntry?.getRole?.() === 'teacher') setAppHash('live/host');
             else if (screenId === 'live-join') {
                 const code = (
                     document.getElementById('live-join-code')?.value
@@ -5284,6 +5362,12 @@
                         } else {
                             openHomeSection('live');
                         }
+                    } else if (root === 'live' && window.LiveGame) {
+                        // Plain #/live: the full-screen entry page, on the tab used last time.
+                        let lastRole = 'student';
+                        try { lastRole = localStorage.getItem('ls_live_role') || 'student'; } catch { /* ignore */ }
+                        if (lastRole === 'teacher') LiveGame.openHost({ fresh: true });
+                        else LiveGame.openJoin();
                     } else {
                         openHomeSection(root);
                     }
@@ -6622,6 +6706,8 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
             document.body.classList.toggle('live-player-mode', screenId === 'live-join' || screenId === 'live-play');
+            // Live Spark routes (#/live, #/live/join, #/live/host) run without the site header, Premium chip and footer.
+            document.body.classList.toggle('live-host-mode', screenId === 'live-host');
             if (screenId !== 'live-play') document.body.classList.remove('live-game-active');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
             const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match', 'test-countdown'];
@@ -6785,7 +6871,8 @@
                 replayPendingSession();
                 flushPendingMaturaReview();
             }
-            if (document.getElementById('screen-live-host')?.classList.contains('active')) {
+            if (document.getElementById('screen-live-host')?.classList.contains('active')
+                || document.getElementById('screen-live-join')?.classList.contains('active')) {
                 window.LiveGame?.onAuthChanged?.();
             }
             return authState;
@@ -6885,8 +6972,10 @@
                 await refreshAuth();
                 closeAuthModal();
                 await trackVisit();
-                if (document.getElementById('screen-live-host')?.classList.contains('active')) {
+                if (document.getElementById('screen-live-host')?.classList.contains('active')
+                    || document.getElementById('screen-live-join')?.classList.contains('active')) {
                     window.LiveGame?.onAuthChanged?.();
+                    if (window.LiveEntry?.getRole?.() === 'teacher') window.LiveGame?.prepareHostSetup?.();
                 }
                 if (pendingWritingGame) {
                     if (authState.hasAccess) {

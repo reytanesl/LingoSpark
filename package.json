@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test --test-concurrency=1 lucky-lanterns.test.js lucky-lanterns.integration.test.js live-question-time.test.js word-cannon.test.js word-cannon.integration.test.js vocab-auction-chips.test.js",
+    "test": "node --test --test-concurrency=1 lucky-lanterns.test.js lucky-lanterns.integration.test.js live-question-time.test.js word-cannon.test.js word-cannon.integration.test.js vocab-auction-chips.test.js live-entry.test.js",
     "packs": "node packs/build.mjs",
     "study-plan": "node packs/build-study-plan.mjs",
     "study-plan-pr": "node packs/build-matura-pr-study-plan.mjs"

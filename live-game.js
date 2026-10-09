@@ -8,6 +8,7 @@ import {
     shuffleDeck,
 } from './vocab-quiz-utils.js';
 import {
+    LANTERN_AVATARS,
     LANTERN_DEFAULT_ROUNDS,
     LANTERN_QUESTION_MS,
     LANTERN_TUTORIAL_MS,
@@ -99,11 +100,17 @@ const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const JOIN_RATE_WINDOW_MS = 60_000;
 const JOIN_RATE_MAX = 30;
+const LOOKUP_RATE_WINDOW_MS = 60_000;
+const LOOKUP_RATE_MAX = 60;
+/** Buddy avatars students may pick on the join page (same set Lucky Lanterns draws). */
+export const LIVE_AVATARS = Object.freeze([...LANTERN_AVATARS]);
 
 /** @type {Map<string, object>} */
 const rooms = new Map();
 /** @type {Map<string, { count: number, resetAt: number }>} */
 const joinRateByIp = new Map();
+/** @type {Map<string, { count: number, resetAt: number }>} */
+const lookupRateByIp = new Map();
 
 function randomToken() {
     return crypto.randomBytes(16).toString('hex');
@@ -131,6 +138,80 @@ export function sanitizeNickname(raw) {
     return cleaned;
 }
 
+/** Returns a whitelisted buddy emoji or null (optional, backward compatible). */
+export function sanitizeAvatar(raw) {
+    const value = String(raw || '').trim();
+    return LIVE_AVATARS.includes(value) ? value : null;
+}
+
+/** Normalises a typed/pasted room code: uppercase letters only, max 4. */
+export function normalizeRoomCode(raw) {
+    return String(raw || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+}
+
+function checkLookupRate(ip) {
+    const now = Date.now();
+    const entry = lookupRateByIp.get(ip);
+    if (!entry || now > entry.resetAt) {
+        lookupRateByIp.set(ip, { count: 1, resetAt: now + LOOKUP_RATE_WINDOW_MS });
+        return true;
+    }
+    entry.count++;
+    return entry.count <= LOOKUP_RATE_MAX;
+}
+
+/** Test helper: forget lookup/join rate-limit counters. */
+export function resetLiveRateLimits() {
+    lookupRateByIp.clear();
+    joinRateByIp.clear();
+}
+
+/**
+ * Lightweight, public room check for the join page. Only returns what a student
+ * standing in the classroom can already see (code, host display name, headcount).
+ * Never includes tokens, player names or deck data.
+ */
+export function lookupRoom(code, ip) {
+    if (!checkLookupRate(ip || 'unknown')) {
+        const err = new Error('Too many room checks. Please wait a minute.');
+        err.status = 429;
+        throw err;
+    }
+    const clean = normalizeRoomCode(code);
+    if (clean.length !== 4 || ![...clean].every((ch) => CODE_CHARS.includes(ch))) {
+        return { exists: false, code: clean };
+    }
+    const room = getRoom(clean);
+    if (!room) return { exists: false, code: clean };
+    const playerCount = room.players.size;
+    return {
+        exists: true,
+        code: room.code,
+        phase: room.phase,
+        joinable: room.phase === 'lobby' && playerCount < MAX_PLAYERS,
+        full: playerCount >= MAX_PLAYERS,
+        hostName: room.hostName || null,
+        playerCount,
+        gameFormat: room.gameFormat || 'race',
+    };
+}
+
+/**
+ * GET /api/live/lookup/:code — used by the join page once 4 letters are typed.
+ * Kept here (not in server.js) so tests can mount it on a bare express app.
+ */
+export function registerLiveLookupRoute(app) {
+    app.get('/api/live/lookup/:code', (req, res) => {
+        res.set('Cache-Control', 'no-store');
+        try {
+            const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+            res.json(lookupRoom(req.params.code, ip));
+        } catch (err) {
+            res.status(err.status || 400).json({ error: err.message || 'Could not check room.' });
+        }
+    });
+}
+
 function checkJoinRate(ip) {
     const now = Date.now();
     const entry = joinRateByIp.get(ip);
@@ -146,6 +227,7 @@ function playerProgress(player) {
     return {
         id: player.id,
         nickname: player.nickname,
+        avatar: player.avatar || null,
         progress: player.termIndex,
         termsToWin: LIVE_TERMS_TO_WIN,
         finished: Boolean(player.finished),
@@ -270,6 +352,7 @@ function lobbyTeamSnapshot(team, room) {
         name: team.name,
         memberIds: [...team.memberIds],
         memberNicknames: members.map((p) => p.nickname),
+        memberAvatars: members.map((p) => p.avatar || null),
         memberCount: team.memberIds.length,
         maxMembers: max,
         canJoin: team.memberIds.length < max,
@@ -1287,7 +1370,18 @@ export function buildDeckFromRequest(body) {
     throw new Error('Invalid word source.');
 }
 
-export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds, gameMinutes }) {
+/** Public display name for the join page — first name/short label only, never an email. */
+export function sanitizeHostName(raw) {
+    const cleaned = String(raw || '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\S+@\S+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 40);
+    return cleaned.length >= 2 ? cleaned : null;
+}
+
+export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds, gameMinutes, hostName }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
@@ -1296,6 +1390,7 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
     const room = {
         code,
         hostUserId,
+        hostName: sanitizeHostName(hostName),
         hostSocketId: null,
         hostToken: randomToken(),
         phase: 'lobby',
@@ -1336,7 +1431,7 @@ export function getRoom(code) {
     return room;
 }
 
-export function joinRoom(code, nickname, ip) {
+export function joinRoom(code, nickname, ip, avatar) {
     if (!checkJoinRate(ip || 'unknown')) {
         throw new Error('Too many join attempts. Please wait a minute.');
     }
@@ -1355,6 +1450,8 @@ export function joinRoom(code, nickname, ip) {
         }
         // Reclaim seat (lobby or mid-game) — keeps team membership / captain-relay position.
         existing.nickname = clean;
+        const reclaimedAvatar = sanitizeAvatar(avatar);
+        if (reclaimedAvatar) existing.avatar = reclaimedAvatar;
         existing.playerToken = randomToken();
         existing.socketId = null;
         existing.connected = false;
@@ -1371,6 +1468,7 @@ export function joinRoom(code, nickname, ip) {
     const player = {
         id: playerId,
         nickname: clean,
+        avatar: sanitizeAvatar(avatar),
         socketId: null,
         playerToken: randomToken(),
         teamId: null,
@@ -1851,7 +1949,7 @@ function startGame(room) {
         clearLanternTimer(room);
         room.challenges = new Map();
         room.lantern = createLanternMatch({
-            players: Array.from(room.players.values()).map((p) => ({ id: p.id, nickname: p.nickname })),
+            players: Array.from(room.players.values()).map((p) => ({ id: p.id, nickname: p.nickname, avatar: p.avatar || null })),
             deck: room.masterDeck,
             rounds: room.lanternRounds,
             answerMode: room.answerMode,

@@ -63,6 +63,7 @@ import {
     getRoom,
     initLiveGame,
     joinRoom,
+    registerLiveLookupRoute,
     broadcastLobbyUpdate,
     publicRoomSnapshot,
     destroyRoom,
@@ -638,6 +639,7 @@ async function start() {
                 teamAssignment: req.body?.teamAssignment,
                 questionSeconds: req.body?.questionSeconds,
                 gameMinutes: req.body?.gameMinutes,
+                hostName: req.user?.name || '',
             });
 
             const joinUrl = `${APP_BASE_URL}/#/live/join?code=${encodeURIComponent(room.code)}`;
@@ -671,16 +673,17 @@ async function start() {
 
     app.post('/api/live/join', async (req, res) => {
         try {
-            const { code, nickname } = req.body || {};
+            const { code, nickname, avatar } = req.body || {};
             if (!code) return res.status(400).json({ error: 'Room code required.' });
             const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-            const { room, player, reclaimed } = joinRoom(code, nickname, ip);
+            const { room, player, reclaimed } = joinRoom(code, nickname, ip, avatar);
             broadcastLobbyUpdate(room.code);
             res.json({
                 code: room.code,
                 playerId: player.id,
                 playerToken: player.playerToken,
                 nickname: player.nickname,
+                avatar: player.avatar || null,
                 reclaimed: Boolean(reclaimed),
                 phase: room.phase,
                 snapshot: publicRoomSnapshot(room),
@@ -689,6 +692,9 @@ async function start() {
             res.status(400).json({ error: err.message || 'Could not join room.' });
         }
     });
+
+    // Join page: "Room found — <host>'s class · N players waiting". Public + rate-limited.
+    registerLiveLookupRoute(app);
 
     app.get('/api/live/room/:code', (req, res) => {
         const room = getRoom(req.params.code);

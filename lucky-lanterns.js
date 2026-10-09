@@ -522,7 +522,7 @@ export function createLanternMatch({
     now = Date.now(),
     rng = Math.random,
 }) {
-    const list = (players || []).map((p) => ({ id: String(p.id), nickname: String(p.nickname || 'Player') }));
+    const list = (players || []).map((p) => ({ id: String(p.id), nickname: String(p.nickname || 'Player'), avatar: p.avatar || null }));
     if (list.length < 2) throw new Error('At least 2 players are required.');
     if (!Array.isArray(deck) || deck.length < 1) throw new Error('No words in this list.');
     const mode = ['recognise', 'realise', 'randomise'].includes(answerMode) ? answerMode : 'randomise';
@@ -554,7 +554,10 @@ export function createLanternMatch({
     };
     list.forEach((p, i) => {
         match.nicknames[p.id] = p.nickname;
-        match.avatars[p.id] = LANTERN_AVATARS[i % LANTERN_AVATARS.length];
+        // Students may pick a buddy on the join page; otherwise hand one out in order.
+        match.avatars[p.id] = p.avatar && LANTERN_AVATARS.includes(p.avatar)
+            ? p.avatar
+            : LANTERN_AVATARS[i % LANTERN_AVATARS.length];
         match.scores[p.id] = 0;
         match.shields[p.id] = false;
     });
