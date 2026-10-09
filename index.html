@@ -1874,6 +1874,12 @@
         body.auction-active {
             overflow: hidden;
             height: 100vh;
+            height: 100dvh;
+        }
+        /* The game fills the viewport: keep the fixed copyright/Premium chips off it (game has its own credit) */
+        body.auction-active .site-copyright,
+        body.auction-active #ls-premium-float {
+            display: none !important;
         }
         .auction-screen {
             display: none;
@@ -1900,6 +1906,12 @@
             color: #FFF6E0;
         }
         .auction-screen .top-bar h1, .auction-screen .top-bar h2, .auction-screen .top-bar h3 { color: #FFD86B; }
+        @media (max-width: 720px) {
+            .auction-screen { height: 100dvh; }
+            .auction-screen .top-bar { padding: 0.4rem 0.75rem; }
+            .auction-screen .top-bar .btn { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
+            .auction-screen .top-bar h2 { font-size: 1.1rem !important; }
+        }
         .auction-screen .top-bar .btn { background: rgba(255, 246, 224, .12); color: #FFF6E0; border: 2px solid rgba(255, 216, 107, .7); }
         .auction-frame {
             flex: 1 1 auto;
@@ -5245,6 +5257,8 @@
                     arg = 'pe-colour';
                     history.replaceState(null, '', '#/' + root + '/pe-colour');
                 }
+                // Leaving #/auction via back/forward: restore the normal app chrome (header, footer)
+                if (root !== 'auction') document.body.classList.remove('auction-active');
 
                 if (root === 'home') {
                     showScreen('home');
