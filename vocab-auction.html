@@ -10,991 +10,189 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&family=Luckiest+Guy&family=Poppins:wght@800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        /* LingoSpark British Style — bright theme tokens */
-        :root {
-            --font-primary: 'Poppins', 'Montserrat', 'Nunito', sans-serif;
-            --font-secondary: 'Inter', 'Roboto', 'Lato', sans-serif;
-            --royal-blue: #012169;
-            --pillarbox-red: #C8102E;
-            --bright-white: #FFFFFF;
-            --light-grey: #F4F5F7;
-            --text-dark: #2D2D2D;
-            --text-muted: #5A5A5A;
-            --success-green: #00823B;
-            --border-light: #E0E0E0;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: var(--font-secondary);
-            background-color: var(--light-grey);
-            color: var(--text-dark);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        h1, h2, h3, h4 { font-family: var(--font-primary); }
-
-        /* Header */
-        header {
-            background: var(--bright-white);
-            border-bottom: 1px solid var(--border-light);
-            padding: 1rem 1.5rem;
-            text-align: center;
-        }
-
-        .brand {
-            font-family: var(--font-primary);
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--royal-blue);
-            letter-spacing: -0.5px;
-        }
-
-        .brand span { color: var(--pillarbox-red); }
-
-        .brand-sub {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 0.15rem;
-        }
-
-        /* Shell */
-        .container {
-            max-width: 920px;
-            margin: 0 auto;
-            padding: 2rem 1.25rem 3rem;
-        }
-
-        .panel {
-            background: var(--bright-white);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-        }
-
-        /* Screens */
-        .screen { display: none; animation: fadeIn 0.35s ease; }
-        .screen.active { display: block; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .screen-title {
-            color: var(--royal-blue);
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 0.5rem;
-        }
-
-        .screen-desc {
-            color: var(--text-muted);
-            margin-bottom: 1.75rem;
-            font-size: 1.05rem;
-        }
-
-        /* Settings form */
-        .form-group {
-            background: var(--light-grey);
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1.1rem;
-            border-left: 4px solid var(--royal-blue);
-        }
-
-        .form-group label.group-label {
-            display: block;
-            font-family: var(--font-primary);
-            font-weight: 700;
-            color: var(--royal-blue);
-            margin-bottom: 0.65rem;
-            font-size: 0.95rem;
-        }
-
-        .option-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem 1.25rem;
-        }
-
-        .option-row label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            cursor: pointer;
-            color: var(--text-dark);
-            font-size: 0.95rem;
-        }
-
-        .option-row input[type="radio"] {
-            accent-color: var(--royal-blue);
-            width: 16px;
-            height: 16px;
-        }
-
-        #custom-words-wrap {
-            display: none;
-            margin-top: 0.85rem;
-        }
-
-        #custom-words-wrap.visible { display: block; }
-
-        #custom-words {
-            width: 100%;
-            min-height: 90px;
-            border: 2px solid #dde3ea;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-family: var(--font-secondary);
-            font-size: 0.95rem;
-            resize: vertical;
-            color: var(--text-dark);
-        }
-
-        #custom-words:focus {
-            outline: none;
-            border-color: var(--royal-blue);
-        }
-
-        /* Buttons */
-        .btn {
-            font-family: var(--font-primary);
-            padding: 0.85rem 1.6rem;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.25s;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-blue { background: var(--royal-blue); color: #fff; }
-        .btn-blue:hover { background: #011648; }
-        .btn-red { background: var(--pillarbox-red); color: #fff; }
-        .btn-red:hover { background: #a00d24; }
-        .btn-green { background: var(--success-green); color: #fff; }
-        .btn-green:hover { background: #00602b; }
-        .btn-grey { background: var(--text-muted); color: #fff; }
-        .btn-grey:hover { background: #333; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .btn-lg {
-            padding: 1rem 2.25rem;
-            font-size: 1.15rem;
-            width: 100%;
-            max-width: 360px;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-
-        /* Round HUD */
-        .hud {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .hud-chip {
-            background: var(--light-grey);
-            border-radius: 8px;
-            padding: 0.85rem 1rem;
-            text-align: center;
-            border: 1px solid var(--border-light);
-        }
-
-        .hud-chip .label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            font-family: var(--font-primary);
-            font-weight: 600;
-        }
-
-        .hud-chip .value {
-            font-family: var(--font-primary);
-            font-weight: 800;
-            font-size: 1.6rem;
-            color: var(--royal-blue);
-            line-height: 1.2;
-        }
-
-        .hud-chip.bankroll .value { color: var(--success-green); }
-
-        .definition-box {
-            background: rgba(1, 33, 105, 0.05);
-            border: 2px solid var(--royal-blue);
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .definition-box .eyebrow {
-            font-family: var(--font-primary);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--pillarbox-red);
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-        }
-
-        .definition-box p {
-            font-size: 1.15rem;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-
-        .mode-badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            background: var(--royal-blue);
-            color: #fff;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-family: var(--font-primary);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-        }
-
-        /* Multiple choice cards */
-        .bet-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        @media (max-width: 640px) {
-            .bet-grid { grid-template-columns: 1fr; }
-            .hud { grid-template-columns: 1fr 1fr; }
-            .screen-title { font-size: 1.55rem; }
-        }
-
-        .bet-card {
-            background: var(--bright-white);
-            border: 2px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.1rem 1rem;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-        }
-
-        .bet-card:hover:not(.locked) {
-            border-color: var(--royal-blue);
-            box-shadow: 0 6px 14px rgba(1, 33, 105, 0.08);
-        }
-
-        .bet-card.correct {
-            border-color: var(--success-green);
-            background: rgba(0, 130, 59, 0.08);
-        }
-
-        .bet-card.wrong {
-            border-color: var(--pillarbox-red);
-            background: rgba(200, 16, 46, 0.08);
-        }
-
-        .bet-card .word {
-            font-family: var(--font-primary);
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--royal-blue);
-            text-align: center;
-            margin-bottom: 0.85rem;
-            word-break: break-word;
-        }
-
-        .bet-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .bet-controls input[type="range"] {
-            width: 100%;
-            accent-color: var(--royal-blue);
-            cursor: pointer;
-        }
-
-        .bet-controls input[type="range"]:disabled { cursor: not-allowed; }
-
-        .bet-amount-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-        }
-
-        .bet-amount-row span {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .bet-amount-row input[type="number"] {
-            width: 90px;
-            border: 2px solid #dde3ea;
-            border-radius: 8px;
-            padding: 0.35rem 0.5rem;
-            font-family: var(--font-secondary);
-            font-weight: 700;
-            color: var(--royal-blue);
-            text-align: right;
-        }
-
-        .bet-amount-row input[type="number"]:focus {
-            outline: none;
-            border-color: var(--royal-blue);
-        }
-
-        .chips-left {
-            text-align: center;
-            margin-top: 1rem;
-            font-family: var(--font-primary);
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .chips-left strong { color: var(--royal-blue); }
-
-        /* Typed input mode */
-        .typed-wrap {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        .typed-wrap input[type="text"] {
-            width: 100%;
-            border: 3px solid var(--royal-blue);
-            border-radius: 8px;
-            padding: 0.9rem 1rem;
-            font-size: 1.35rem;
-            font-family: var(--font-primary);
-            font-weight: 700;
-            color: var(--royal-blue);
-            text-align: center;
-            margin-bottom: 1.25rem;
-        }
-
-        .typed-wrap input[type="text"]:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(1, 33, 105, 0.15);
-        }
-
-        .typed-wrap input[type="text"].correct {
-            border-color: var(--success-green);
-            background: rgba(0, 130, 59, 0.08);
-        }
-
-        .typed-wrap input[type="text"].wrong {
-            border-color: var(--pillarbox-red);
-            background: rgba(200, 16, 46, 0.08);
-        }
-
-        .typed-bet {
-            background: var(--light-grey);
-            border-radius: 12px;
-            padding: 1.25rem;
-            border: 1px solid var(--border-light);
-        }
-
-        .typed-bet .word {
-            font-family: var(--font-primary);
-            font-weight: 700;
-            color: var(--royal-blue);
-            margin-bottom: 0.75rem;
-            text-align: center;
-        }
-
-        .hint-row {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .hint-display {
-            display: none;
-            font-family: var(--font-primary);
-            font-weight: 800;
-            font-size: 1.55rem;
-            color: var(--royal-blue);
-            background: rgba(1, 33, 105, 0.05);
-            border: 2px dashed var(--border-light);
-            border-radius: 8px;
-            padding: 0.75rem 1.25rem;
-            text-align: center;
-            word-break: break-word;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 0.35rem 1.35rem;
-        }
-
-        .hint-display.visible { display: flex; }
-
-        .hint-word {
-            display: inline-block;
-            letter-spacing: 0.38em;
-            margin-right: -0.38em;
-        }
-
-        .example-hint {
-            display: none;
-            font-family: var(--font-secondary);
-            font-style: italic;
-            font-size: 1.05rem;
-            color: var(--text-dark);
-            background: rgba(200, 16, 46, 0.05);
-            border-left: 4px solid var(--pillarbox-red);
-            border-radius: 0 8px 8px 0;
-            padding: 0.85rem 1.1rem;
-            text-align: left;
-            line-height: 1.5;
-            max-width: 100%;
-        }
-
-        .example-hint.visible { display: block; }
-
-        .example-hint .blank {
-            font-style: normal;
-            font-family: var(--font-primary);
-            font-weight: 800;
-            color: var(--pillarbox-red);
-            letter-spacing: 0.08em;
-        }
-
-        .hint-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-
-        .btn-hint {
-            background: transparent;
-            border: 2px solid var(--royal-blue);
-            color: var(--royal-blue);
-            padding: 0.55rem 1.25rem;
-            font-size: 0.9rem;
-        }
-
-        .btn-hint:hover:not(:disabled) {
-            background: var(--royal-blue);
-            color: #fff;
-        }
-
-        .btn-hint-free {
-            border-color: var(--success-green);
-            color: var(--success-green);
-        }
-
-        .btn-hint-free:hover:not(:disabled) {
-            background: var(--success-green);
-            color: #fff;
-        }
-
-        .hint-cost-note {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-align: center;
-        }
-
-        /* Lock In — generous separation from sliders */
-        .lock-in-wrap {
-            margin-top: 3.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        /* Result summary */
-        .result-banner {
-            margin-top: 1.75rem;
-            text-align: center;
-            padding: 1.25rem;
-            border-radius: 12px;
-            font-family: var(--font-primary);
-            font-weight: 700;
-            font-size: 1.25rem;
-        }
-
-        .result-banner.win {
-            background: rgba(0, 130, 59, 0.1);
-            color: var(--success-green);
-        }
-
-        .result-banner.lose {
-            background: rgba(200, 16, 46, 0.1);
-            color: var(--pillarbox-red);
-        }
-
-        .result-banner.neutral {
-            background: rgba(1, 33, 105, 0.08);
-            color: var(--royal-blue);
-        }
-
-        .correct-reveal {
-            text-align: center;
-            margin-top: 0.75rem;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .correct-reveal strong { color: var(--success-green); }
-
-        /* Game over */
-        .gameover-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1.25rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            background: rgba(1, 33, 105, 0.05);
-            color: var(--royal-blue);
-        }
-
-        .gameover-icon.victory { color: var(--success-green); background: rgba(0, 130, 59, 0.1); }
-        .gameover-icon.bankrupt { color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.1); }
-
-        .ai-reminder-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 90; align-items: center; justify-content: center; padding: 1rem; animation: aiReminderFadeIn 0.3s ease; }
-        .ai-reminder-overlay.open { display: flex; }
-        @keyframes aiReminderFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .ai-reminder-card { background: var(--bright-white); border-radius: 16px; max-width: 420px; width: 100%; padding: 1.8rem 1.6rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); text-align: center; }
-        .ai-reminder-card .ai-r-icon { font-size: 2.2rem; color: var(--royal-blue); margin-bottom: 0.6rem; }
-        .ai-reminder-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.6rem; font-size: 1.15rem; }
-        .ai-reminder-card p { font-size: 0.95rem; color: var(--text-dark); line-height: 1.55; margin: 0 0 1.2rem; }
-        .ai-reminder-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-        .ai-reminder-actions .btn { font-size: 0.85rem; padding: 0.45rem 1.1rem; }
-        .app-dialog-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 120;
-            align-items: center; justify-content: center; padding: 1rem; animation: aiReminderFadeIn 0.25s ease;
-        }
-        .app-dialog-overlay.open { display: flex; }
-        .app-dialog-card {
-            background: var(--bright-white); border-radius: 16px; max-width: 420px; width: 100%;
-            padding: 1.6rem 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.16); text-align: center;
-            border-top: 4px solid var(--royal-blue);
-        }
-        .app-dialog-card h3 { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.55rem; font-size: 1.1rem; }
-        .app-dialog-card p { font-size: 0.95rem; color: var(--text-dark); line-height: 1.5; margin: 0 0 1.15rem; white-space: pre-wrap; }
-        .app-dialog-actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
-
-        /* Two-player mode */
-        .turn-banner {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            padding: 0.7rem 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            font-family: var(--font-primary);
-            font-weight: 700;
-            font-size: 1.05rem;
-            background: rgba(1, 33, 105, 0.07);
-            border: 2px solid var(--royal-blue);
-            color: var(--royal-blue);
-        }
-
-        .turn-banner.visible { display: flex; }
-
-        .turn-banner.p2 {
-            background: rgba(200, 16, 46, 0.07);
-            border-color: var(--pillarbox-red);
-            color: var(--pillarbox-red);
-        }
-
-        .turn-banner .turn-sub {
-            font-family: var(--font-secondary);
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .duo-scores {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .duo-scores.visible { display: grid; }
-
-        .duo-score {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-            background: var(--light-grey);
-            border: 2px solid var(--border-light);
-            border-radius: 8px;
-            padding: 0.6rem 0.9rem;
-        }
-
-        .duo-score .nm {
-            font-family: var(--font-primary);
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .duo-score .vl {
-            font-family: var(--font-primary);
-            font-weight: 800;
-            font-size: 1.3rem;
-            color: var(--royal-blue);
-            line-height: 1.2;
-        }
-
-        .duo-score.active { border-color: var(--royal-blue); background: rgba(1, 33, 105, 0.06); }
-        .duo-score.active .nm { color: var(--royal-blue); }
-        .duo-score.active.p2 { border-color: var(--pillarbox-red); background: rgba(200, 16, 46, 0.06); }
-        .duo-score.active.p2 .nm { color: var(--pillarbox-red); }
-        .duo-score.out .vl { color: var(--pillarbox-red); text-decoration: line-through; }
-
-        .hud.single { grid-template-columns: 1fr; }
-
-        .gameover-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin: 1.75rem 0;
-        }
-
-        .stat-box {
-            background: var(--light-grey);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .stat-box .label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            font-family: var(--font-primary);
-            font-weight: 600;
-        }
-
-        .stat-box .value {
-            font-family: var(--font-primary);
-            font-weight: 800;
-            font-size: 1.75rem;
-            color: var(--royal-blue);
-        }
-
-        .stat-box.winner {
-            border: 2px solid var(--success-green);
-            background: rgba(0, 130, 59, 0.08);
-        }
-
-        .stat-box.winner .value { color: var(--success-green); }
-
-        .save-note {
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--success-green);
-        }
-
-        .loading-overlay {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--royal-blue);
-            font-family: var(--font-primary);
-            font-weight: 700;
-            font-size: 1.15rem;
-        }
-
-        .loading-overlay i {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 0.75rem;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .hidden { display: none !important; }
-
-        body.embed header,
-        body.embed footer {
-            display: none;
-        }
-
-        /* Fill the parent iframe exactly; one internal scroll on .container if needed */
-        body.embed {
-            height: 100%;
-            overflow: hidden;
-            background: var(--light-grey);
-        }
-
-        html.embed-root {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        body.embed .container {
-            height: 100%;
-            max-width: 920px;
-            margin: 0 auto;
-            padding: 0.75rem 1rem 1rem;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border-light) transparent;
-        }
-
-        /* Compact spacing so menu/rounds fit more often without scrolling */
-        body.embed .panel {
-            padding: 1.25rem 1.35rem;
-            box-shadow: none;
-        }
-
-        body.embed .screen-title {
-            font-size: 1.55rem;
-            margin-bottom: 0.25rem;
-        }
-
-        body.embed .screen-desc {
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
-        }
-
-        body.embed .form-group {
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        body.embed .lock-in-wrap {
-            margin-top: 1.75rem;
-        }
-
-        body.embed .hud {
-            margin-bottom: 0.85rem;
-        }
-
-        body.embed .turn-banner {
-            margin-bottom: 0.7rem;
-            padding: 0.5rem 0.85rem;
-            font-size: 0.95rem;
-        }
-
-        body.embed .duo-scores {
-            margin-bottom: 0.85rem;
-        }
-
-        body.embed .definition-box {
-            padding: 0.85rem 1rem;
-            margin-bottom: 0.85rem;
-        }
-
-        body.embed .definition-box p {
-            font-size: 1.05rem;
-        }
-
-        footer {
-            text-align: center;
-            padding: 1rem;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-    </style>
+    <link rel="stylesheet" href="vocab-auction.css">
 </head>
 <body>
 
-<header>
-    <div class="brand">Lingo<span>Spark</span></div>
-    <div class="brand-sub">Vocab Auction</div>
-</header>
+<div class="va-room" aria-hidden="true">
+    <span class="va-bokeh" style="left:-40px;top:-30px;width:160px;height:160px;--c:#FFD86B;--o:.32"></span>
+    <span class="va-bokeh" style="right:-30px;top:40px;width:120px;height:120px;--c:#FF8FA3;--o:.28"></span>
+    <span class="va-bokeh" style="right:-40px;bottom:-30px;width:150px;height:150px;--c:#FFD86B;--o:.28"></span>
+    <span class="va-bokeh" style="left:-50px;bottom:-40px;width:140px;height:140px;--c:#7FE0B0;--o:.22"></span>
+</div>
 
-<main class="container">
+<main class="container va-table">
+<div class="va-felt">
 
     <!-- ========== MAIN MENU ========== -->
-    <section id="screen-menu" class="screen active panel">
-        <h1 class="screen-title"><i class="fa-solid fa-gavel"></i> Vocab Auction</h1>
+    <section id="screen-menu" class="screen active va-menu">
+        <div class="va-menu-head">
+            <div class="va-logo-plaque va-logo-lg"><div class="brand">Lingo<span>Spark</span></div><div class="va-logo-sub">VOCAB AUCTION</div></div>
+            <div class="va-menu-chips" aria-hidden="true" id="va-menu-chips"></div>
+        </div>
+        <h1 class="screen-title va-title">Vocab Auction</h1>
         <p class="screen-desc">Bet chips on the word that matches the definition. Confidence pays — mistakes cost.</p>
 
-        <div class="form-group">
-            <label class="group-label"><i class="fa-solid fa-layer-group"></i> Level</label>
-            <div class="option-row" id="level-options">
-                <label><input type="radio" name="level" value="beginner" checked> Beginner</label>
-                <label><input type="radio" name="level" value="easy"> Easy</label>
-                <label><input type="radio" name="level" value="intermediate"> Intermediate</label>
-                <label><input type="radio" name="level" value="advanced"> Advanced</label>
-                <label><input type="radio" name="level" value="custom"> Custom</label>
+        <div class="va-menu-grid">
+            <div class="form-group va-group-level">
+                <label class="group-label"><i class="fa-solid fa-layer-group"></i> Level</label>
+                <div class="option-row" id="level-options">
+                    <label><input type="radio" name="level" value="beginner" checked><span>Beginner</span></label>
+                    <label><input type="radio" name="level" value="easy"><span>Easy</span></label>
+                    <label><input type="radio" name="level" value="intermediate"><span>Intermediate</span></label>
+                    <label><input type="radio" name="level" value="advanced"><span>Advanced</span></label>
+                    <label><input type="radio" name="level" value="custom"><span>Custom</span></label>
+                </div>
+                <div id="custom-words-wrap">
+                    <textarea id="custom-words" placeholder="Words from the built-in banks, or term = definition (one per line). Example: apple = A round fruit…"></textarea>
+                </div>
             </div>
-            <div id="custom-words-wrap">
-                <textarea id="custom-words" placeholder="Words from the built-in banks, or term = definition (one per line). Example: apple = A round fruit…"></textarea>
-            </div>
-        </div>
 
-        <div class="form-group">
-            <label class="group-label"><i class="fa-solid fa-users"></i> Players</label>
-            <div class="option-row">
-                <label><input type="radio" name="players" value="1" checked> 1 Player</label>
-                <label><input type="radio" name="players" value="2"> 2 Players</label>
+            <div class="form-group">
+                <label class="group-label"><i class="fa-solid fa-users"></i> Players</label>
+                <div class="option-row">
+                    <label><input type="radio" name="players" value="1" checked><span>1 Player</span></label>
+                    <label><input type="radio" name="players" value="2"><span>2 Players</span></label>
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <label class="group-label"><i class="fa-solid fa-flag-checkered"></i> Game Length</label>
-            <div class="option-row">
-                <label><input type="radio" name="length" value="10" checked> 10 Rounds</label>
-                <label><input type="radio" name="length" value="survival"> Survival</label>
+            <div class="form-group">
+                <label class="group-label"><i class="fa-solid fa-flag-checkered"></i> Game Length</label>
+                <div class="option-row">
+                    <label><input type="radio" name="length" value="10" checked><span>10 Rounds</span></label>
+                    <label><input type="radio" name="length" value="survival"><span>Survival</span></label>
+                </div>
             </div>
-        </div>
 
-        <div class="form-group">
-            <label class="group-label"><i class="fa-solid fa-keyboard"></i> Input Style</label>
-            <div class="option-row">
-                <label><input type="radio" name="inputStyle" value="mc" checked> Multiple Choice Only</label>
-                <label><input type="radio" name="inputStyle" value="mixed"> Mixed Mode</label>
+            <div class="form-group">
+                <label class="group-label"><i class="fa-solid fa-keyboard"></i> Input Style</label>
+                <div class="option-row">
+                    <label><input type="radio" name="inputStyle" value="mc" checked><span>Multiple Choice Only</span></label>
+                    <label><input type="radio" name="inputStyle" value="mixed"><span>Mixed Mode</span></label>
+                </div>
             </div>
         </div>
 
         <div class="actions">
-            <button type="button" class="btn btn-blue btn-lg" id="btn-start">
+            <button type="button" class="btn btn-gold btn-lg" id="btn-start">
                 <i class="fa-solid fa-play"></i> Start Game
             </button>
         </div>
     </section>
 
     <!-- ========== ACTIVE ROUND ========== -->
-    <section id="screen-round" class="screen panel">
+    <section id="screen-round" class="screen va-round-screen">
         <div id="round-loading" class="loading-overlay hidden">
             <i class="fa-solid fa-spinner"></i>
             Loading round…
         </div>
 
-        <div id="round-content" class="hidden">
-            <div id="turn-banner" class="turn-banner" aria-live="polite">
-                <i class="fa-solid fa-user"></i>
-                <span id="turn-name">Player 1</span>
-                <span class="turn-sub">it's your turn</span>
-            </div>
-
-            <div class="hud" id="hud">
-                <div class="hud-chip">
-                    <div class="label">Round</div>
-                    <div class="value" id="hud-round">1</div>
+        <div id="round-content" class="hidden va-round">
+            <div class="va-top">
+                <div class="va-logo-plaque"><div class="brand">Lingo<span>Spark</span></div><div class="va-logo-sub">VOCAB AUCTION</div></div>
+                <div class="va-bank" id="va-bank">
+                    <div class="va-bank-tray" id="va-bank-tray"></div>
+                    <div class="va-bank-label">THE BANK</div>
                 </div>
-                <div class="hud-chip bankroll" id="hud-bankroll-chip">
-                    <div class="label">Bankroll</div>
-                    <div class="value" id="hud-bankroll">1,000</div>
+                <div class="va-round-info hud" id="hud">
+                    <div class="va-pill" id="hud-round-pill">ROUND <b id="hud-round">1</b></div>
+                    <div class="va-badges">
+                        <span id="mode-badge" class="va-badge mode-badge">Multiple Choice</span>
+                        <span id="turn-banner" class="va-badge va-turn turn-banner" aria-live="polite"><span id="turn-name">Player 1</span>'s turn</span>
+                    </div>
                 </div>
             </div>
 
-            <div id="duo-scores" class="duo-scores">
-                <div class="duo-score" id="duo-score-1">
-                    <span class="nm">Player 1</span>
-                    <span class="vl" id="duo-chips-1">1,000</span>
+            <div class="va-card-wrap">
+                <div class="va-dealer-card definition-box" id="definition-card">
+                    <span class="va-suit is-black" style="left:16px;top:12px">♠</span><span class="va-suit is-red" style="right:16px;top:12px">♥</span>
+                    <span class="va-suit is-red" style="left:16px;bottom:12px">♦</span><span class="va-suit is-black" style="right:16px;bottom:12px">♣</span>
+                    <div class="eyebrow">Definition</div>
+                    <p id="definition-text">—</p>
                 </div>
-                <div class="duo-score p2" id="duo-score-2">
-                    <span class="nm">Player 2</span>
-                    <span class="vl" id="duo-chips-2">1,000</span>
+                <div id="result-area" class="hidden va-result">
+                    <div id="result-banner" class="result-banner"></div>
+                    <p id="correct-reveal" class="correct-reveal"></p>
                 </div>
             </div>
 
-            <div class="definition-box">
-                <div class="eyebrow">Definition</div>
-                <p id="definition-text">—</p>
-            </div>
-
-            <div id="mode-badge" class="mode-badge">Multiple Choice</div>
-
-            <!-- Multiple Choice UI -->
+            <!-- Multiple Choice: four betting spots -->
             <div id="mc-ui">
-                <div class="bet-grid" id="bet-grid"></div>
-                <div class="chips-left">Available chips: <strong id="chips-available">1,000</strong></div>
+                <div class="va-spots bet-grid" id="bet-grid"></div>
             </div>
 
-            <!-- Typed Input UI (Mixed Mode) -->
+            <!-- Typed Input (Mixed Mode) -->
             <div id="typed-ui" class="typed-wrap hidden">
-                <div class="hint-row">
-                    <div class="hint-buttons">
-                        <button type="button" class="btn btn-hint" id="btn-hint">
-                            <i class="fa-solid fa-lightbulb"></i> Hint
-                        </button>
-                        <button type="button" class="btn btn-hint btn-hint-free" id="btn-hint2" disabled>
-                            <i class="fa-solid fa-quote-left"></i> Example
-                        </button>
-                    </div>
-                    <p class="hint-cost-note" id="hint-cost-note">Reveal ~40% of letters · costs chips</p>
-                    <div id="hint-display" class="hint-display" aria-live="polite"></div>
-                    <div id="example-hint" class="example-hint" aria-live="polite"></div>
-                </div>
-                <input type="text" id="typed-answer" placeholder="Type the word or phrase…" autocomplete="off" spellcheck="false">
-                <div class="typed-bet">
-                    <div class="word">Your Bet</div>
-                    <div class="bet-controls">
-                        <input type="range" id="typed-slider" min="0" value="0" step="10">
-                        <div class="bet-amount-row">
-                            <span>Chips</span>
-                            <input type="number" id="typed-amount" min="0" value="0" step="10">
+                <div class="va-typed-main">
+                    <div class="hint-row">
+                        <div class="hint-buttons">
+                            <button type="button" class="btn btn-hint" id="btn-hint">
+                                <i class="fa-solid fa-lightbulb"></i> Hint
+                            </button>
+                            <button type="button" class="btn btn-hint btn-hint-free" id="btn-hint2" disabled>
+                                <i class="fa-solid fa-quote-left"></i> Example
+                            </button>
                         </div>
+                        <p class="hint-cost-note" id="hint-cost-note">Reveal ~40% of letters · costs chips</p>
+                        <div id="hint-display" class="hint-display" aria-live="polite"></div>
+                        <div id="example-hint" class="example-hint" aria-live="polite"></div>
                     </div>
+                    <input type="text" id="typed-answer" placeholder="Type the word or phrase…" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="typed-bet">
+                    <div class="va-spot bet-card" id="va-typed-spot" data-word="">
+                        <button type="button" class="va-spot-hit" id="va-typed-hit" aria-label="Add the selected chip to your bet"></button>
+                        <div class="va-word">Your bet</div>
+                        <div class="va-stack-wrap"></div>
+                        <div class="va-empty">Tap to bet</div>
+                        <button type="button" class="va-minus" id="va-typed-minus" aria-label="Take a chip back">−</button>
+                        <div class="va-amt zero" id="va-typed-amt">0</div>
+                    </div>
+                    <input type="hidden" id="typed-slider" value="0">
+                    <input type="hidden" id="typed-amount" value="0">
                 </div>
             </div>
 
-            <div class="lock-in-wrap">
-                <button type="button" class="btn btn-red btn-lg" id="btn-lock">
-                    <i class="fa-solid fa-lock"></i> Lock In Bets
-                </button>
-                <p id="lock-hint" class="hint-cost-note" style="margin:0;max-width:28rem;">Place a bet on at least one answer to lock in.</p>
-            </div>
-
-            <!-- Result area (shown after lock-in, still within round screen) -->
-            <div id="result-area" class="hidden">
-                <div id="result-banner" class="result-banner"></div>
-                <p id="correct-reveal" class="correct-reveal"></p>
-                <div class="actions" style="margin-top: 1.5rem;">
-                    <button type="button" class="btn btn-blue btn-lg" id="btn-next">
+            <div class="va-bottom">
+                <div class="va-players">
+                    <div class="va-player" id="va-player">
+                        <div class="va-avatar" id="va-avatar">1</div>
+                        <div class="va-pname"><span id="va-player-name">Player 1</span> <small id="va-player-tag">YOUR CHIPS</small></div>
+                        <div class="va-pchips"><b id="hud-bankroll">1,000</b><span>chips</span></div>
+                        <div class="va-ptable" id="va-ontable">On the table: 0</div>
+                        <div class="va-pstack" id="va-player-stack"></div>
+                    </div>
+                    <div class="va-player2 hidden" id="va-player2"></div>
+                </div>
+                <div class="va-rack-wrap">
+                    <div class="va-rack-cap" id="va-rack-cap">Tap a chip · then tap a word</div>
+                    <div class="va-rack" id="va-rack" role="radiogroup" aria-label="Chip to bet"></div>
+                </div>
+                <div class="va-actions lock-in-wrap">
+                    <button type="button" class="btn btn-gold va-lock" id="btn-lock">
+                        <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(-40 32 32)" fill="currentColor"><rect x="14" y="8" width="36" height="18" rx="6"/><rect x="10" y="11" width="6" height="12" rx="2.5"/><rect x="48" y="11" width="6" height="12" rx="2.5"/><rect x="28.5" y="24" width="7" height="32" rx="3.5"/></g><rect x="8" y="54" width="30" height="7" rx="3.5" fill="currentColor"/></svg>
+                        <span>Lock In Bets</span>
+                    </button>
+                    <button type="button" class="btn btn-gold va-lock hidden" id="btn-next">
                         <i class="fa-solid fa-arrow-right"></i> Next Round
                     </button>
+                    <p id="lock-hint" class="hint-cost-note"></p>
                 </div>
             </div>
+            <div class="va-bank-edge" id="va-bank-edge" aria-hidden="true"><span>BANK</span></div>
         </div>
     </section>
 
     <!-- ========== GAME OVER ========== -->
-    <section id="screen-gameover" class="screen panel" style="text-align: center;">
+    <section id="screen-gameover" class="screen va-gameover">
+        <div class="va-logo-plaque"><div class="brand">Lingo<span>Spark</span></div><div class="va-logo-sub">VOCAB AUCTION</div></div>
         <div id="gameover-icon" class="gameover-icon">
             <i class="fa-solid fa-trophy"></i>
         </div>
-        <h1 class="screen-title" style="justify-content: center;" id="gameover-title">Game Over</h1>
+        <h1 class="screen-title" id="gameover-title">Game Over</h1>
         <p class="screen-desc" id="gameover-message">—</p>
 
         <div class="gameover-stats" id="go-stats-solo">
@@ -1003,6 +201,7 @@
                 <div class="value" id="go-rounds">0</div>
             </div>
             <div class="stat-box">
+                <div class="va-stat-stack" id="go-chips-stack"></div>
                 <div class="label">Final Chips</div>
                 <div class="value" id="go-chips">0</div>
             </div>
@@ -1010,10 +209,12 @@
 
         <div class="gameover-stats hidden" id="go-stats-duo">
             <div class="stat-box" id="go-duo-1">
+                <div class="va-stat-stack" id="go-p1-stack"></div>
                 <div class="label" id="go-duo-1-label">Player 1</div>
                 <div class="value" id="go-p1-chips">0</div>
             </div>
             <div class="stat-box" id="go-duo-2">
+                <div class="va-stat-stack" id="go-p2-stack"></div>
                 <div class="label" id="go-duo-2-label">Player 2</div>
                 <div class="value" id="go-p2-chips">0</div>
             </div>
@@ -1022,13 +223,15 @@
         <p id="go-save-note" class="save-note hidden"></p>
 
         <div class="actions">
-            <button type="button" class="btn btn-blue btn-lg" id="btn-again">
+            <button type="button" class="btn btn-gold btn-lg" id="btn-again">
                 <i class="fa-solid fa-rotate-left"></i> Play Again
             </button>
         </div>
     </section>
 
+</div>
 </main>
+<div id="va-fx" class="va-fx" aria-hidden="true"></div>
 
 <!-- AI REMINDER POPUP -->
 <div class="ai-reminder-overlay" id="ai-reminder-overlay" onclick="if(event.target===this)dismissAiReminder()">
@@ -1038,12 +241,12 @@
         <p id="ai-reminder-text">AI is a great study tool, but nothing replaces face-to-face interaction with a real teacher and classmates. Keep practising with people too!</p>
         <div class="ai-reminder-actions">
             <button type="button" class="btn btn-grey" id="ai-reminder-lang-btn" onclick="toggleAiReminderLang()">PL</button>
-            <button type="button" class="btn btn-blue" onclick="dismissAiReminder()">Got it</button>
+            <button type="button" class="btn btn-gold" onclick="dismissAiReminder()">Got it</button>
         </div>
     </div>
 </div>
 
-<footer>Copyright Karol Sęk 2026</footer>
+<footer class="va-footer">Copyright Karol Sęk 2026</footer>
 
 <div class="app-dialog-overlay" id="app-dialog-overlay" onclick="if(event.target===this)closeAppDialog(true)">
     <div class="app-dialog-card" id="app-dialog-card" role="dialog" aria-modal="true">
@@ -1054,12 +257,14 @@
 </div>
 
 <script src="vocab-auction-bank.js"></script>
+<script src="vocab-auction-chips.js"></script>
 <script>
 /**
  * Vocab Auction — LingoSpark
  * Single-file gamified vocab practice with chip betting.
  */
 
+const Casino = window.AuctionChips;
 let appDialogResolver = null;
 function closeAppDialog(result) {
     const overlay = document.getElementById("app-dialog-overlay");
@@ -1074,7 +279,7 @@ function appAlert(message, title = "Notice") {
         document.getElementById("app-dialog-title").textContent = title;
         document.getElementById("app-dialog-message").textContent = String(message || "");
         document.getElementById("app-dialog-actions").innerHTML =
-            `<button type="button" class="btn btn-blue" id="app-dialog-ok">OK</button>`;
+            `<button type="button" class="btn btn-gold" id="app-dialog-ok">OK</button>`;
         document.getElementById("app-dialog-overlay").classList.add("open");
         document.getElementById("app-dialog-ok").onclick = () => closeAppDialog(true);
     });
@@ -1292,20 +497,32 @@ const els = {
     turnBanner: $("#turn-banner"),
     turnName: $("#turn-name"),
     hud: $("#hud"),
-    hudBankrollChip: $("#hud-bankroll-chip"),
-    duoScores: $("#duo-scores"),
-    duoScore1: $("#duo-score-1"),
-    duoScore2: $("#duo-score-2"),
-    duoChips1: $("#duo-chips-1"),
-    duoChips2: $("#duo-chips-2"),
     hudRound: $("#hud-round"),
+    bank: $("#va-bank"),
+    bankTray: $("#va-bank-tray"),
+    bankEdge: $("#va-bank-edge"),
+    player: $("#va-player"),
+    player2: $("#va-player2"),
+    avatar: $("#va-avatar"),
+    playerName: $("#va-player-name"),
+    onTable: $("#va-ontable"),
+    playerStack: $("#va-player-stack"),
+    rack: $("#va-rack"),
+    rackCap: $("#va-rack-cap"),
+    definitionCard: $("#definition-card"),
+    typedSpot: $("#va-typed-spot"),
+    typedHit: $("#va-typed-hit"),
+    typedMinus: $("#va-typed-minus"),
+    typedAmt: $("#va-typed-amt"),
+    goChipsStack: $("#go-chips-stack"),
+    goP1Stack: $("#go-p1-stack"),
+    goP2Stack: $("#go-p2-stack"),
     hudBankroll: $("#hud-bankroll"),
     definitionText: $("#definition-text"),
     modeBadge: $("#mode-badge"),
     mcUi: $("#mc-ui"),
     typedUi: $("#typed-ui"),
     betGrid: $("#bet-grid"),
-    chipsAvailable: $("#chips-available"),
     typedAnswer: $("#typed-answer"),
     typedSlider: $("#typed-slider"),
     typedAmount: $("#typed-amount"),
@@ -1371,31 +588,111 @@ function updateHud() {
 
     const maxRounds = state.gameLength === "10" ? " / 10" : "";
     els.hudRound.textContent = state.round + maxRounds;
-    els.hudBankroll.textContent = formatChips(state.bankroll);
-
-    if (state.mode !== "duo") return;
-
-    const [p1, p2] = state.players;
-    els.duoChips1.textContent = formatChips(p1.bankroll);
-    els.duoChips2.textContent = formatChips(p2.bankroll);
-    els.duoScore1.classList.toggle("active", state.activePlayer === 0);
-    els.duoScore2.classList.toggle("active", state.activePlayer === 1);
-    els.duoScore1.classList.toggle("out", p1.bankrupt);
-    els.duoScore2.classList.toggle("out", p2.bankrupt);
+    renderPlayerPanel();
 }
 
-/** Turn banner, scoreboard and HUD layout for the current mode. */
+/** Chips still on the table this round (not yet settled). */
+function chipsOnTable() {
+    if (state.locked) return 0;
+    return state.isTypedRound ? (state.typedBet || 0) : totalBets();
+}
+
+/**
+ * Player panel: the big number is the chips still in hand (bankroll minus
+ * what is on the table). While the settle animation runs it owns the counter.
+ */
+function renderPlayerPanel() {
+    const p = activePlayer();
+    if (!p) return;
+    const onTable = chipsOnTable();
+    const hand = Math.max(0, state.bankroll - onTable);
+    els.playerName.textContent = p.name;
+    els.avatar.textContent = String(state.activePlayer + 1);
+    els.player.classList.toggle("is-p2", state.activePlayer === 1);
+    if (!state.animating) {
+        els.hudBankroll.textContent = formatChips(hand);
+        els.playerStack.innerHTML = Casino.stackHtml(hand, playerStackOpts());
+    }
+    els.onTable.textContent = state.locked
+        ? (state.animating ? "Settling bets…" : "Bets settled")
+        : `On the table: ${formatChips(onTable)}`;
+
+    const other = otherPlayer();
+    els.player2.classList.toggle("hidden", !other);
+    if (other) {
+        const status = other.bankrupt ? "bankrupt" : "plays next";
+        els.player2.innerHTML = `<span class="va-dot ${state.activePlayer === 0 ? "is-p2" : ""}">${2 - state.activePlayer}</span>`
+            + `${escapeHtml(other.name)} · <b>${formatChips(other.bankroll)}</b> chips · ${status}`;
+    }
+}
+
+function playerStackOpts() {
+    return isPhoneLayout()
+        ? { w: 34, step: 0.24, maxPerCol: 6, gap: 3, mixed: false, maxCount: 14 }
+        : { w: 58, step: 0.2, maxPerCol: 6, gap: 5, mixed: false, maxCount: 18 };
+}
+
+function spotStackOpts() {
+    return isPhoneLayout()
+        ? { w: 44, step: 0.22, maxPerCol: 6, gap: 4, maxCount: 12 }
+        : {
+            w: Math.round(Math.max(56, Math.min(96, window.innerWidth * 0.05, window.innerHeight * 0.085))),
+            step: 0.21, maxPerCol: window.innerHeight < 800 ? 5 : 7, gap: 8, maxCount: 14,
+        };
+}
+
+function isPhoneLayout() {
+    return window.matchMedia("(max-width: 720px)").matches;
+}
+
+/** Turn badge, scoreboard and HUD layout for the current mode. */
 function renderTurnChrome() {
     const duo = state.mode === "duo";
-    els.turnBanner.classList.toggle("visible", duo);
-    els.duoScores.classList.toggle("visible", duo);
-    els.hud.classList.toggle("single", duo);
-    els.hudBankrollChip.classList.toggle("hidden", duo);
+    els.turnBanner.classList.toggle("hidden", !duo);
+    if (duo) {
+        els.turnName.textContent = activePlayer().name;
+        els.turnBanner.classList.toggle("p2", state.activePlayer === 1);
+    }
+    renderPlayerPanel();
+}
 
-    if (!duo) return;
-    const p = activePlayer();
-    els.turnName.textContent = p.name;
-    els.turnBanner.classList.toggle("p2", state.activePlayer === 1);
+/** Decorative chip columns in The Bank tray. */
+function renderBankTray() {
+    if (!els.bankTray || els.bankTray.dataset.ready) return;
+    els.bankTray.dataset.ready = "1";
+    els.bankTray.innerHTML = [1000, 500, 100, 50, 10].map((v, i) => {
+        const n = [4, 5, 7, 6, 8][i];
+        let chips = "";
+        for (let k = 0; k < n; k += 1) chips += `<div class="va-stack-chip" style="bottom:${k * 7}px">${Casino.chipSide(v, 56)}</div>`;
+        return `<div class="va-slot"><div class="va-stack-col" style="width:56px;height:${20 + (n - 1) * 7}px">${chips}</div></div>`;
+    }).join("");
+}
+
+/* =========================================================
+   CHIP TRAY — tap a chip, then tap a word
+   ========================================================= */
+state.chip = 100;
+
+function renderRack() {
+    els.rack.innerHTML = Casino.CHIP_VALUES.map((v) =>
+        `<button type="button" class="va-rack-chip" role="radio" data-chip="${v}" aria-label="${v} chip"
+            aria-checked="${v === state.chip}">${Casino.chipTop(v, 80)}</button>`).join("");
+    els.rack.querySelectorAll(".va-rack-chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            state.chip = Number(btn.dataset.chip);
+            els.rack.querySelectorAll(".va-rack-chip").forEach((b) =>
+                b.setAttribute("aria-checked", String(Number(b.dataset.chip) === state.chip)));
+        });
+    });
+}
+
+/** Pick a sensible default chip for the current bankroll (keeps the player's choice when it fits). */
+function fitSelectedChip() {
+    if (state.chip <= state.bankroll) return;
+    const fit = Casino.CHIP_VALUES.filter((v) => v <= Math.max(10, state.bankroll)).pop() || 10;
+    state.chip = fit;
+    els.rack.querySelectorAll(".va-rack-chip").forEach((b) =>
+        b.setAttribute("aria-checked", String(Number(b.dataset.chip) === state.chip)));
 }
 
 /* =========================================================
@@ -1629,6 +926,7 @@ function buildChoices(correctWord) {
    7. ROUND SETUP
    ========================================================= */
 async function startNextRound() {
+    settleToken += 1;
     const p = activePlayer();
     p.rounds += 1;
     state.round = p.rounds;
@@ -1650,9 +948,16 @@ async function startNextRound() {
     state.isTypedRound =
         state.inputStyle === "mixed" && state.round % 2 === 0;
 
+    Casino.cancelAll();
+    state.animating = false;
     showScreen("round");
-    renderTurnChrome();
     els.resultArea.classList.add("hidden");
+    els.btnNext.classList.add("hidden");
+    els.definitionCard.classList.remove("is-dim");
+    if (els.typedSpot) els.typedSpot.className = "va-spot bet-card";
+    renderBankTray();
+    fitSelectedChip();
+    renderTurnChrome();
     els.roundContent.classList.add("hidden");
     els.roundLoading.classList.remove("hidden");
     els.btnLock.disabled = true;
@@ -1773,35 +1078,72 @@ function updateLockInUI() {
 }
 
 function updateAvailableChipsDisplay() {
-    const available = Math.max(0, state.bankroll - totalBets());
-    els.chipsAvailable.textContent = formatChips(available);
+    renderPlayerPanel();
 }
 
-/**
- * Sync range + number inputs for one card after a change.
- * Also refreshes max attributes on sibling sliders so the
- * browser UI reflects remaining room (soft guidance; hard
- * cap is still enforced in clampBet).
- */
+/** Re-draw one betting spot (stack, amount, empty hint) from state. */
+function paintSpot(spot, amount) {
+    if (!spot) return;
+    const wrap = spot.querySelector(".va-stack-wrap");
+    const amt = spot.querySelector(".va-amt");
+    if (wrap) wrap.innerHTML = amount > 0 ? Casino.stackHtml(amount, spotStackOpts()) : "";
+    if (amt) {
+        amt.textContent = formatChips(amount);
+        amt.classList.toggle("zero", !(amount > 0));
+    }
+    spot.classList.toggle("has-bet", amount > 0);
+}
+
+function spotFor(word) {
+    return els.betGrid.querySelector(`.bet-card[data-word="${CSS.escape(word)}"]`);
+}
+
+/** Set the bet on one word and refresh the table (the hard cap lives in clampBet). */
 function syncCardInputs(word, value) {
     state.bets[word] = value;
-
-    const slider = document.querySelector(`.bet-slider[data-word="${CSS.escape(word)}"]`);
-    const number = document.querySelector(`.bet-number[data-word="${CSS.escape(word)}"]`);
-    if (slider) slider.value = value;
-    if (number) number.value = value;
-
-    // Refresh max on all sliders/numbers based on current distribution
-    state.choices.forEach((w) => {
-        const maxFor = Math.max(0, state.bankroll - sumOtherBets(w));
-        const s = document.querySelector(`.bet-slider[data-word="${CSS.escape(w)}"]`);
-        const n = document.querySelector(`.bet-number[data-word="${CSS.escape(w)}"]`);
-        if (s) s.max = Math.max(maxFor, state.bets[w] || 0);
-        if (n) n.max = Math.max(maxFor, state.bets[w] || 0);
-    });
-
+    paintSpot(spotFor(word), value);
     updateAvailableChipsDisplay();
     updateLockInUI();
+}
+
+/** Tap a spot: drop the selected chip on it (a chip flies from the player's pile). */
+function betChip(word) {
+    if (state.locked) return;
+    const next = clampBet(word, Casino.addChip(state.bets, word, state.chip, state.bankroll));
+    const added = next - (state.bets[word] || 0);
+    if (added <= 0) {
+        nudge(spotFor(word));
+        return;
+    }
+    const spot = spotFor(word);
+    state.bets[word] = next;
+    updateAvailableChipsDisplay();
+    updateLockInUI();
+    Casino.fly(els.playerStack, spot.querySelector(".va-stack-wrap"), Casino.chipsFor(added, 3), {
+        size: isPhoneLayout() ? 34 : 56, lift: isPhoneLayout() ? 60 : 150, dur: 420, gap: 60, ghosts: false,
+    }).then(() => { if (!state.locked && state.bets[word] === next) paintSpot(spot, next); });
+    if (Casino.reducedMotion()) paintSpot(spot, next);
+}
+
+/** "−": take the selected chip back off a word. */
+function unbetChip(word) {
+    if (state.locked) return;
+    syncCardInputs(word, Casino.removeChip(state.bets, word, state.chip));
+}
+
+function nudge(el) {
+    if (!el || Casino.reducedMotion()) return;
+    el.animate([{ transform: "translateX(0)" }, { transform: "translateX(-6px)" }, { transform: "translateX(6px)" }, { transform: "translateX(0)" }], { duration: 260 });
+}
+
+function spotHtml(word) {
+    return `
+        <button type="button" class="va-spot-hit" aria-label="Bet the selected chip on ${escapeAttr(word)}"></button>
+        <div class="va-word">${escapeHtml(word)}</div>
+        <div class="va-stack-wrap"></div>
+        <div class="va-empty">Place chips</div>
+        <button type="button" class="va-minus" aria-label="Take a chip back from ${escapeAttr(word)}">−</button>
+        <div class="va-amt zero">0</div>`;
 }
 
 function renderMcUI() {
@@ -1809,42 +1151,12 @@ function renderMcUI() {
 
     state.choices.forEach((word) => {
         const card = document.createElement("div");
-        card.className = "bet-card";
+        card.className = "va-spot bet-card";
         card.dataset.word = word;
-
-        card.innerHTML = `
-            <div class="word">${escapeHtml(word)}</div>
-            <div class="bet-controls">
-                <input type="range" class="bet-slider" data-word="${escapeAttr(word)}"
-                       min="0" max="${state.bankroll}" value="0" step="10">
-                <div class="bet-amount-row">
-                    <span>Bet</span>
-                    <input type="number" class="bet-number" data-word="${escapeAttr(word)}"
-                           min="0" max="${state.bankroll}" value="0" step="10">
-                </div>
-            </div>
-        `;
-
+        card.innerHTML = spotHtml(word);
+        card.querySelector(".va-spot-hit").addEventListener("click", () => betChip(word));
+        card.querySelector(".va-minus").addEventListener("click", () => unbetChip(word));
         els.betGrid.appendChild(card);
-    });
-
-    // Wire slider ↔ number with mutual capping
-    els.betGrid.querySelectorAll(".bet-slider").forEach((slider) => {
-        slider.addEventListener("input", () => {
-            if (state.locked) return;
-            const word = slider.dataset.word;
-            const clamped = clampBet(word, slider.value);
-            syncCardInputs(word, clamped);
-        });
-    });
-
-    els.betGrid.querySelectorAll(".bet-number").forEach((input) => {
-        input.addEventListener("input", () => {
-            if (state.locked) return;
-            const word = input.dataset.word;
-            const clamped = clampBet(word, input.value);
-            syncCardInputs(word, clamped);
-        });
     });
 
     updateAvailableChipsDisplay();
@@ -1977,11 +1289,18 @@ async function fetchBlankedExample(word) {
 function syncTypedBetLimits() {
     els.typedSlider.max = state.bankroll;
     els.typedAmount.max = state.bankroll;
-    if (state.typedBet > state.bankroll) {
-        state.typedBet = state.bankroll;
-        els.typedSlider.value = state.typedBet;
-        els.typedAmount.value = state.typedBet;
-    }
+    if (state.typedBet > state.bankroll) setTypedBet(state.bankroll);
+    renderPlayerPanel();
+}
+
+/** Typed rounds bet through the same chip tray, on a single "Your bet" spot. */
+function setTypedBet(v) {
+    state.typedBet = Math.max(0, Math.min(state.bankroll, v));
+    els.typedSlider.value = state.typedBet;
+    els.typedAmount.value = state.typedBet;
+    paintSpot(els.typedSpot, state.typedBet);
+    renderPlayerPanel();
+    updateLockInUI();
 }
 
 function updateHintButtonUI() {
@@ -2087,10 +1406,8 @@ function renderTypedUI() {
     els.typedAnswer.disabled = false;
 
     els.typedSlider.max = state.bankroll;
-    els.typedSlider.value = 0;
     els.typedAmount.max = state.bankroll;
-    els.typedAmount.value = 0;
-    state.typedBet = 0;
+    setTypedBet(0);
     state.hintUsed = false;
     state.hint2Used = false;
 
@@ -2108,21 +1425,21 @@ function renderTypedUI() {
 els.btnHint.addEventListener("click", useHint);
 els.btnHint2.addEventListener("click", useExampleHint);
 
-els.typedSlider.addEventListener("input", () => {
-    if (state.locked) return;
-    let v = Math.max(0, Math.min(state.bankroll, Number(els.typedSlider.value) || 0));
-    state.typedBet = v;
-    els.typedAmount.value = v;
-    updateLockInUI();
+els.typedHit.addEventListener("click", () => {
+    if (state.locked || !state.isTypedRound) return;
+    const next = Casino.addChip({ answer: state.typedBet }, "answer", state.chip, state.bankroll);
+    const added = next - state.typedBet;
+    if (added <= 0) { nudge(els.typedSpot); return; }
+    setTypedBet(next);
+    paintSpot(els.typedSpot, 0);
+    Casino.fly(els.playerStack, els.typedSpot.querySelector(".va-stack-wrap"), Casino.chipsFor(added, 3), {
+        size: isPhoneLayout() ? 34 : 56, lift: 120, dur: 420, gap: 60, ghosts: false,
+    }).then(() => { if (!state.locked) paintSpot(els.typedSpot, state.typedBet); });
+    if (Casino.reducedMotion()) paintSpot(els.typedSpot, state.typedBet);
 });
-
-els.typedAmount.addEventListener("input", () => {
-    if (state.locked) return;
-    let v = Math.max(0, Math.min(state.bankroll, Number(els.typedAmount.value) || 0));
-    state.typedBet = v;
-    els.typedSlider.value = v;
-    els.typedAmount.value = v;
-    updateLockInUI();
+els.typedMinus.addEventListener("click", () => {
+    if (state.locked || !state.isTypedRound) return;
+    setTypedBet(Casino.removeChip({ answer: state.typedBet }, "answer", state.chip));
 });
 
 els.typedAnswer.addEventListener("input", () => {
@@ -2149,6 +1466,8 @@ els.btnLock.addEventListener("click", () => {
     resolveRound();
 });
 
+let settleToken = 0;
+
 function resolveRound() {
     state.locked = true;
     state.screen = "result";
@@ -2156,9 +1475,6 @@ function resolveRound() {
     // Disable inputs
     els.btnLock.disabled = true;
     if (els.lockHint) els.lockHint.textContent = "";
-    document.querySelectorAll(".bet-slider, .bet-number").forEach((el) => {
-        el.disabled = true;
-    });
     els.typedAnswer.disabled = true;
     els.typedSlider.disabled = true;
     els.typedAmount.disabled = true;
@@ -2171,87 +1487,149 @@ function resolveRound() {
     updateHintButtonUI();
 
     const correct = state.currentWord;
-    let totalWagered = 0;
-    let correctBet = 0;
-    let won = false;
+    const bankBefore = state.bankroll;
+    let outcome;
+    let correctSpot = null;
+    const lostSpots = [];
 
     if (state.isTypedRound) {
-        totalWagered = state.typedBet;
         const guess = (els.typedAnswer.value || "").trim().toLowerCase();
         const isCorrect = guess === correct.toLowerCase();
-
-        if (isCorrect) {
-            correctBet = state.typedBet;
-            won = true;
-            els.typedAnswer.classList.add("correct");
-        } else {
-            els.typedAnswer.classList.add("wrong");
-        }
+        outcome = Casino.settleTyped(state.typedBet, isCorrect, bankBefore);
+        els.typedAnswer.classList.add(isCorrect ? "correct" : "wrong");
+        els.typedSpot.classList.add("locked", isCorrect ? "correct" : "wrong");
+        if (isCorrect) correctSpot = els.typedSpot;
+        else lostSpots.push({ spot: els.typedSpot, amount: state.typedBet });
     } else {
-        // Highlight cards
-        document.querySelectorAll(".bet-card").forEach((card) => {
+        // Highlight the betting spots
+        document.querySelectorAll("#bet-grid .bet-card").forEach((card) => {
             const word = card.dataset.word;
             card.classList.add("locked");
             if (word.toLowerCase() === correct.toLowerCase()) {
                 card.classList.add("correct");
+                correctSpot = card;
             } else if ((state.bets[word] || 0) > 0) {
-                // Bet placed on a wrong answer → red
+                // Bet placed on a wrong answer → burgundy
                 card.classList.add("wrong");
+            } else {
+                card.classList.add("idle");
             }
         });
-
-        totalWagered = totalBets();
-        correctBet = state.bets[correct] || 0;
-        // Also match case-insensitive key if needed
-        if (!correctBet) {
-            const key = Object.keys(state.bets).find(
-                (k) => k.toLowerCase() === correct.toLowerCase()
-            );
-            if (key) correctBet = state.bets[key] || 0;
-        }
-        won = correctBet > 0;
+        outcome = Casino.settleBets(state.bets, correct, bankBefore);
+        outcome.lost.forEach((l) => lostSpots.push({ spot: spotFor(l.word), amount: l.amount }));
     }
 
-    // Apply scoring
-    const bankBefore = state.bankroll;
-    state.bankroll -= totalWagered;
-    if (correctBet > 0) {
-        state.bankroll += correctBet * 2;
-    }
-    state.bankroll = Math.max(0, state.bankroll);
-
-    const net = state.bankroll - bankBefore;
+    // Apply scoring: every bet is paid in, the bet on the right answer comes back doubled.
+    state.bankroll = outcome.after;
+    const net = outcome.net;
+    state.animating = true;
     updateHud();
 
-    // Result banner
-    els.resultArea.classList.remove("hidden");
+    // Result banner (shown during the chip animation)
     els.resultBanner.classList.remove("win", "lose", "neutral");
-
-    if (net > 0) {
-        els.resultBanner.classList.add("win");
-        els.resultBanner.textContent = `You won ${formatChips(net)} chips!`;
-    } else if (net < 0) {
-        els.resultBanner.classList.add("lose");
-        els.resultBanner.textContent = `You lost ${formatChips(Math.abs(net))} chips.`;
+    const answer = `<strong>${escapeHtml(correct)}</strong>`;
+    let big, sub;
+    if (outcome.won) {
+        els.resultBanner.classList.add(net >= 0 ? "win" : "neutral");
+        big = "Correct!";
+        sub = net > 0
+            ? `The bank pays <strong>2×</strong> · net <strong>+${formatChips(net)}</strong> chips`
+            : net < 0
+                ? `Paid <strong>2×</strong>, but other bets lost · net <strong>−${formatChips(-net)}</strong>`
+                : "Break even — no chips gained or lost.";
     } else {
-        els.resultBanner.classList.add("neutral");
-        els.resultBanner.textContent = won
-            ? "Break even — no chips gained or lost."
-            : "No bets placed — bankroll unchanged.";
+        els.resultBanner.classList.add("lose");
+        big = "Not quite!";
+        sub = `The answer was ${answer} · the bank takes <strong>${formatChips(outcome.wagered)}</strong>`;
     }
-
-    els.correctReveal.innerHTML = `Correct word: <strong>${escapeHtml(correct)}</strong>`;
+    els.resultBanner.innerHTML = `<div class="va-big">${big}</div><div class="va-sub">${sub}</div>`;
+    els.correctReveal.innerHTML = `Correct word: ${answer}`;
 
     collectWord(correct, state.definition);
 
-    // After settlement, available chips = current bankroll (no open bets)
-    if (!state.isTypedRound) {
-        els.chipsAvailable.textContent = formatChips(state.bankroll);
-    }
-
     // Hide lock button once resolved
     els.btnLock.classList.add("hidden");
+    els.btnNext.classList.remove("hidden");
     updateNextButtonLabel();
+
+    playSettlement({ outcome, correctSpot, lostSpots, handBefore: bankBefore - outcome.wagered });
+}
+
+/**
+ * The chip show after Lock In (as in the concept video):
+ *   wrong bets → croupier rake drags them to The Bank (phone: slide off into the BANK tab),
+ *   right bet  → the bank pays 2×, then the whole stack flies into the player's pile while
+ *                the counter rolls up. Mixed rounds do both. Reduced motion = instant.
+ */
+async function playSettlement({ outcome, correctSpot, lostSpots, handBefore }) {
+    const token = ++settleToken;
+    const alive = () => token === settleToken;
+    const quick = Casino.reducedMotion();
+    const pause = (ms) => (quick ? Promise.resolve() : Casino.wait(ms));
+    const phone = isPhoneLayout();
+    const bankEl = phone ? els.bankEdge : els.bank;
+    let hand = handBefore;
+    const paintHand = () => {
+        els.hudBankroll.textContent = formatChips(hand);
+        els.playerStack.innerHTML = Casino.stackHtml(hand, playerStackOpts());
+    };
+    const showBanner = () => {
+        if (!alive()) return;
+        els.resultArea.classList.remove("hidden");
+        els.definitionCard.classList.add("is-dim");
+    };
+    paintHand();
+    await pause(260);
+    if (!alive()) return;
+    if (!outcome.won) showBanner();
+
+    // 1. Wrong bets go to the bank.
+    await Promise.all(lostSpots.filter((l) => l.spot && l.amount > 0).map((l, i) => pause(i * 160).then(() => {
+        if (!alive()) return null;
+        const move = phone ? Casino.slideOff : Casino.rake;
+        return move(l.spot, bankEl, Casino.chipsFor(l.amount, 6), {
+            onGrab: () => {
+                if (!alive()) return;
+                paintSpot(l.spot, 0);
+                Casino.floatText(l.spot, `−${formatChips(l.amount)}`, "is-loss");
+            },
+        });
+    })));
+    if (!alive()) return;
+
+    // 2. The bank pays 2× onto the winning spot, 3. the stack flies home.
+    if (outcome.won && correctSpot) {
+        let onSpot = outcome.correctBet;
+        const pay = Casino.chipsFor(outcome.correctBet, 6);
+        correctSpot.classList.add("is-paid");
+        await Casino.fly(bankEl, correctSpot.querySelector(".va-stack-wrap"), pay, {
+            size: phone ? 34 : 56, lift: phone ? 50 : 110, dur: 520, gap: 120,
+            onLand: (i) => { if (!alive()) return; onSpot += pay[i]; paintSpot(correctSpot, onSpot); },
+        });
+        if (!alive()) return;
+        Casino.sparkles(correctSpot);
+        showBanner();
+        await pause(300);
+        const home = Casino.chipsFor(outcome.payout, 8);
+        let left = outcome.payout;
+        await Casino.fly(correctSpot.querySelector(".va-stack-wrap"), els.playerStack, home, {
+            size: phone ? 34 : 56, lift: phone ? 70 : 150, dur: 600, gap: 90,
+            onLand: (i) => {
+                if (!alive()) return;
+                left -= home[i];
+                paintSpot(correctSpot, left);
+                const from = hand;
+                hand += home[i];
+                Casino.countUp(els.hudBankroll, from, hand, 220, formatChips);
+                els.playerStack.innerHTML = Casino.stackHtml(hand, playerStackOpts());
+            },
+        });
+        if (!alive()) return;
+        Casino.floatText(els.player, `+${formatChips(outcome.payout)}`, "is-win");
+    }
+    showBanner();
+    state.animating = false;
+    renderPlayerPanel();
 }
 
 /**
@@ -2288,6 +1666,9 @@ function updateNextButtonLabel() {
 }
 
 els.btnNext.addEventListener("click", () => {
+    settleToken += 1;
+    Casino.cancelAll();
+    state.animating = false;
     const p = activePlayer();
     if (state.bankroll <= 0) p.bankrupt = true;
 
@@ -2500,6 +1881,7 @@ function renderSoloGameOver(outcome) {
 
     els.goRounds.textContent = state.round;
     els.goChips.textContent = formatChips(state.bankroll);
+    els.goChipsStack.innerHTML = Casino.stackHtml(state.bankroll, { w: 60, step: 0.2, maxPerCol: 7, gap: 5, mixed: false, maxCount: 18 });
 }
 
 function renderDuoGameOver() {
@@ -2511,6 +1893,9 @@ function renderDuoGameOver() {
     els.goDuo2Label.textContent = `${p2.name} · ${p2.rounds} rounds`;
     els.goP1Chips.textContent = formatChips(p1.bankroll);
     els.goP2Chips.textContent = formatChips(p2.bankroll);
+    const goStack = { w: 52, step: 0.2, maxPerCol: 7, gap: 4, mixed: false, maxCount: 16 };
+    els.goP1Stack.innerHTML = Casino.stackHtml(p1.bankroll, goStack);
+    els.goP2Stack.innerHTML = Casino.stackHtml(p2.bankroll, goStack);
     els.goDuo1.classList.remove("winner");
     els.goDuo2.classList.remove("winner");
 
@@ -2582,6 +1967,17 @@ function escapeHtml(str) {
 function escapeAttr(str) {
     return escapeHtml(str).replace(/'/g, "&#39;");
 }
+
+/* Casino table set-up: chip tray + decorative chips on the menu */
+renderRack();
+document.getElementById("va-menu-chips").innerHTML = [10, 50, 100, 500, 1000]
+    .map((v, i) => `<span style="--i:${i}">${Casino.chipTop(v, 64)}</span>`).join("");
+window.matchMedia("(max-width: 720px)").addEventListener("change", () => {
+    if (state.screen !== "round" || state.animating) return;
+    renderPlayerPanel();
+    state.choices.forEach((w) => paintSpot(spotFor(w), state.bets[w] || 0));
+    if (state.isTypedRound) paintSpot(els.typedSpot, state.typedBet);
+});
 
 /* Embed mode when loaded inside LingoSpark (iframe ?embed=1) */
 if (new URLSearchParams(location.search).get("embed") === "1") {

@@ -1886,7 +1886,7 @@
             border-radius: 0;
             box-shadow: none;
             overflow: hidden;
-            background: var(--light-grey);
+            background: #0A120E;
         }
         .auction-screen.active {
             display: flex !important;
@@ -1895,9 +1895,12 @@
             flex-shrink: 0;
             margin: 0;
             padding: 0.75rem 1.25rem;
-            background: var(--bright-white);
-            border-bottom: 1px solid var(--border-light);
+            background: linear-gradient(180deg, #9A1C40, #7A1230 60%, #4E0A1E);
+            border-bottom: 3px solid #E8B931;
+            color: #FFF6E0;
         }
+        .auction-screen .top-bar h1, .auction-screen .top-bar h2, .auction-screen .top-bar h3 { color: #FFD86B; }
+        .auction-screen .top-bar .btn { background: rgba(255, 246, 224, .12); color: #FFF6E0; border: 2px solid rgba(255, 216, 107, .7); }
         .auction-frame {
             flex: 1 1 auto;
             width: 100%;
@@ -1905,7 +1908,7 @@
             display: block;
             min-height: 0;
             height: 100%;
-            background: var(--light-grey);
+            background: #0A120E;
             overflow: hidden;
         }
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
@@ -4593,7 +4596,7 @@
         <div id="screen-auction" class="screen engine-container auction-screen">
             <div class="top-bar">
                 <button class="btn btn-grey" onclick="exitAuction()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <h2 style="margin:0; color: var(--royal-blue); font-family: var(--font-primary); font-size: 1.35rem;"><i class="fa-solid fa-gavel"></i> Vocab Auction</h2>
+                <h2 style="margin:0; color: #FFD86B; font-family: var(--font-primary); font-size: 1.35rem;"><i class="fa-solid fa-gavel"></i> Vocab Auction</h2>
                 <div style="width: 80px;"></div>
             </div>
             <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank" scrolling="no"></iframe>
