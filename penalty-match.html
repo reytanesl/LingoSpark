@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Penalty Match — LingoSpark</title>
+    <meta name="description" content="Penalty Match: two words flash up — tap MATCH when they belong together. Wrong taps and missed pairs cost points. Race to 100.">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="penalty-match.css">
+</head>
+<body class="pm">
+<div class="pm-app">
+    <header class="pm-bar">
+        <a class="pm-logo-link" href="/" target="_top" title="LingoSpark home"><img class="pm-logo" src="assets/brand/lingospark-logo-red.svg" alt="LingoSpark — Gamify Your Words" width="604" height="223"></a>
+        <div class="pm-bar-right">
+            <span class="pm-hud-pill" id="pm-bar-list" hidden></span>
+            <button type="button" class="pm-fs" title="Fullscreen" aria-label="Fullscreen" aria-pressed="false" hidden><i class="fa-solid fa-expand" aria-hidden="true"></i><span class="pm-fs-label">Fullscreen</span></button>
+        </div>
+    </header>
+
+    <main class="pm-main">
+        <!-- ========== SETUP ========== -->
+        <section id="pm-setup" class="pm-screen active" aria-labelledby="pm-title">
+            <div class="pm-card pm-setup-card">
+                <div class="pm-head">
+                    <h1 id="pm-title"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> Penalty Match</h1>
+                    <p>Two words flash up. Tap <b>MATCH</b> if they belong together — before the bar runs out.</p>
+                </div>
+                <ul class="pm-rules" aria-label="Scoring">
+                    <li class="good"><b>+10</b> real pair</li>
+                    <li class="bad"><b>−5</b> wrong tap</li>
+                    <li class="warn"><b>−2</b> missed pair</li>
+                    <li class="goal"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> <b>100</b> to win</li>
+                </ul>
+
+                <div class="pm-field">
+                    <label class="pm-label" for="pm-source"><span><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Word list</span><small id="pm-source-count"></small></label>
+                    <div class="pm-select-wrap">
+                        <select id="pm-source" class="pm-input pm-select">
+                            <optgroup label="Your list" id="pm-opt-shared" hidden>
+                                <option value="shared" id="pm-opt-shared-item">Current list from LingoSpark</option>
+                            </optgroup>
+                            <optgroup label="Built-in levels (word ↔ definition)">
+                                <option value="level:beginner">Beginner</option>
+                                <option value="level:easy">Easy</option>
+                                <option value="level:intermediate">Intermediate</option>
+                                <option value="level:advanced">Advanced</option>
+                            </optgroup>
+                            <optgroup label="Demo sets (English ↔ Polish)" id="pm-opt-demo"></optgroup>
+                            <optgroup label="My word sets" id="pm-opt-mine" hidden></optgroup>
+                            <optgroup label="Custom">
+                                <option value="custom">Paste my own list…</option>
+                            </optgroup>
+                        </select>
+                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                    </div>
+                    <textarea id="pm-custom" class="pm-input pm-textarea" hidden placeholder="One pair per line: dog = pies&#10;Or the word on one line and its meaning on the next."></textarea>
+                </div>
+
+                <div class="pm-field">
+                    <span class="pm-label" id="pm-speed-label"><span><i class="fa-solid fa-stopwatch" aria-hidden="true"></i> Speed</span><small>long definitions get extra time</small></span>
+                    <div class="pm-chips" role="radiogroup" aria-labelledby="pm-speed-label">
+                        <label class="pm-chip"><input type="radio" name="pm-speed" value="slow"><span>Slow · 4s</span></label>
+                        <label class="pm-chip"><input type="radio" name="pm-speed" value="medium" checked><span>Medium · 2.5s</span></label>
+                        <label class="pm-chip"><input type="radio" name="pm-speed" value="fast"><span>Fast · 1.5s</span></label>
+                    </div>
+                </div>
+
+                <p class="pm-error" id="pm-setup-error" role="alert" hidden></p>
+                <button type="button" class="pm-primary" id="pm-start"><i class="fa-solid fa-play" aria-hidden="true"></i> Start</button>
+            </div>
+        </section>
+
+        <!-- ========== PLAY ========== -->
+        <section id="pm-play" class="pm-screen" aria-label="Penalty Match game">
+            <div class="pm-hud">
+                <div class="pm-score" aria-live="polite"><span class="pm-k">Score</span> <b id="pm-score">0</b><span class="pm-of">/ 100</span></div>
+                <div class="pm-goal" aria-hidden="true"><span id="pm-goal-fill"></span></div>
+                <button type="button" class="pm-ghost" id="pm-quit" title="End game"><i class="fa-solid fa-flag" aria-hidden="true"></i><span>End</span></button>
+            </div>
+            <div class="pm-timer" aria-hidden="true"><span id="pm-timer-fill"></span></div>
+
+            <button type="button" class="pm-pair" id="pm-pair" aria-describedby="pm-hint">
+                <span class="pm-word" id="pm-top"></span>
+                <span class="pm-vs" aria-hidden="true"><i class="fa-solid fa-equals"></i><b>?</b></span>
+                <span class="pm-word" id="pm-bottom"></span>
+                <span class="pm-pop" id="pm-pop" aria-hidden="true"></span>
+            </button>
+
+            <p class="pm-feedback" id="pm-feedback" aria-live="polite">&nbsp;</p>
+            <button type="button" class="pm-primary pm-match" id="pm-match"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> MATCH!</button>
+            <p class="pm-hint" id="pm-hint">Not a pair? Let it pass. <span class="pm-keys">Space / Enter = MATCH</span></p>
+
+            <div class="pm-overlay" id="pm-countdown" hidden><span id="pm-count">3</span></div>
+            <div class="pm-overlay pm-paused" id="pm-paused" hidden>
+                <div><i class="fa-solid fa-pause" aria-hidden="true"></i><p>Paused</p><button type="button" class="pm-primary" id="pm-resume"><i class="fa-solid fa-play" aria-hidden="true"></i> Resume</button></div>
+            </div>
+        </section>
+
+        <!-- ========== END ========== -->
+        <section id="pm-end" class="pm-screen" aria-labelledby="pm-end-title">
+            <div class="pm-card pm-end-card">
+                <div class="pm-end-head">
+                    <div class="pm-stars" id="pm-stars" aria-hidden="true"></div>
+                    <h2 id="pm-end-title">Target reached!</h2>
+                    <p id="pm-end-sub"></p>
+                </div>
+                <div class="pm-stats">
+                    <div class="good"><b id="pm-st-correct">0</b><span>pairs snapped</span></div>
+                    <div class="bad"><b id="pm-st-wrong">0</b><span>wrong taps</span></div>
+                    <div class="warn"><b id="pm-st-missed">0</b><span>missed pairs</span></div>
+                    <div><b id="pm-st-acc">0%</b><span>right calls</span></div>
+                </div>
+                <p class="pm-save-note" id="pm-save-note" hidden></p>
+                <div class="pm-review-wrap">
+                    <div class="pm-review-head"><span>Words you met</span><small>trickiest first</small></div>
+                    <ul class="pm-review" id="pm-review"></ul>
+                </div>
+                <div class="pm-end-actions">
+                    <button type="button" class="pm-secondary" id="pm-change"><i class="fa-solid fa-sliders" aria-hidden="true"></i> Change list</button>
+                    <button type="button" class="pm-primary" id="pm-again"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Play again</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="pm-footer">Copyright Karol Sęk 2026</footer>
+</div>
+
+<script src="demo-sets.js"></script>
+<script src="penalty-match-core.js"></script>
+<script>
+/* Penalty Match — LingoSpark. Works standalone (/penalty-match.html) and inside #/penalty-match (?embed=1). */
+(function () {
+    'use strict';
+    const P = window.PenaltyMatchCore;
+    const $ = (id) => document.getElementById(id);
+    const els = {
+        source: $('pm-source'), custom: $('pm-custom'), count: $('pm-source-count'), error: $('pm-setup-error'), start: $('pm-start'),
+        score: $('pm-score'), goal: $('pm-goal-fill'), timer: $('pm-timer-fill'), pair: $('pm-pair'), top: $('pm-top'), bottom: $('pm-bottom'),
+        pop: $('pm-pop'), feedback: $('pm-feedback'), match: $('pm-match'), quit: $('pm-quit'), countdown: $('pm-countdown'), count3: $('pm-count'),
+        paused: $('pm-paused'), resume: $('pm-resume'), barList: $('pm-bar-list'),
+        stars: $('pm-stars'), endTitle: $('pm-end-title'), endSub: $('pm-end-sub'), review: $('pm-review'), saveNote: $('pm-save-note'),
+        again: $('pm-again'), change: $('pm-change'),
+    };
+    const BUILTIN_SAMPLE = 40;   // built-in banks are big: each game draws 40 random entries
+    const params = new URLSearchParams(location.search);
+    const embedded = params.get('embed') === '1';
+    if (embedded) { document.documentElement.classList.add('embed-root'); document.body.classList.add('embed'); }
+
+    let game = null;
+    let timers = [];
+    let paused = false;
+    let lastSource = null;   // { key, label, items, wordSetId }
+    let mySets = [];
+    let sharedItems = [];
+
+    const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function showScreen(id) {
+        document.querySelectorAll('.pm-screen').forEach((s) => s.classList.toggle('active', s.id === id));
+        document.body.dataset.screen = id.replace('pm-', '');
+    }
+
+    /* ---------------- word sources ---------------- */
+    function readShared() {
+        try {
+            return (sessionStorage.getItem('ls_shared_glossary') || sessionStorage.getItem('ls_auction_prefill_glossary') || '').trim();
+        } catch (_) { return ''; }
+    }
+
+    function fillDemoSets() {
+        const group = $('pm-opt-demo');
+        const sets = Array.isArray(window.LINGOSPARK_DEMO_SETS) ? window.LINGOSPARK_DEMO_SETS : [];
+        group.innerHTML = sets.map((s) => `<option value="demo:${esc(s.id)}">${esc(s.name)}</option>`).join('');
+        group.hidden = !sets.length;
+    }
+
+    async function loadMySets() {
+        try {
+            const me = await (await fetch('/api/auth/me', { credentials: 'same-origin' })).json();
+            if (!me || !me.user) return;
+            const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
+            if (!res.ok) return;
+            mySets = ((await res.json()).sets || []).filter((s) => (s.set_type || s.setType) !== 'pe_terms');
+            const group = $('pm-opt-mine');
+            group.innerHTML = mySets.map((s) => `<option value="mine:${Number(s.id)}">${esc(s.name || 'Untitled set')}${s.item_count ? ` (${Number(s.item_count)})` : ''}</option>`).join('');
+            group.hidden = !mySets.length;
+            window.__pmLoggedIn = true;
+        } catch (_) { /* guest or offline */ }
+    }
+
+    let bankPromise = null;
+    function loadBank() {
+        if (window.VOCAB_AUCTION_BANK) return Promise.resolve(window.VOCAB_AUCTION_BANK);
+        if (!bankPromise) {
+            bankPromise = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'vocab-auction-bank.js';
+                s.onload = () => resolve(window.VOCAB_AUCTION_BANK || {});
+                s.onerror = () => { bankPromise = null; reject(new Error('bank')); };
+                document.head.appendChild(s);
+            });
+        }
+        return bankPromise;
+    }
+
+    async function itemsForSource(key) {
+        const [kind, id] = key.split(/:(.*)/s);
+        if (kind === 'shared') return { items: sharedItems, label: 'Your list' };
+        if (kind === 'custom') return { items: P.parseList(els.custom.value), label: 'Custom list' };
+        if (kind === 'demo') {
+            const set = (window.LINGOSPARK_DEMO_SETS || []).find((s) => s.id === id);
+            return { items: P.cleanItems(set ? set.items : []), label: set ? set.name : 'Demo set' };
+        }
+        if (kind === 'level') {
+            const bank = await loadBank();
+            const list = P.cleanItems(bank[id] || []);
+            return { items: P.sample(list, BUILTIN_SAMPLE, Math.random), label: id.charAt(0).toUpperCase() + id.slice(1), builtin: true };
+        }
+        if (kind === 'mine') {
+            const res = await fetch(`/api/word-sets/${Number(id)}`, { credentials: 'same-origin' });
+            if (!res.ok) throw new Error('set');
+            const set = (await res.json()).set || {};
+            return { items: P.cleanItems(set.items || []), label: set.name || 'My set', wordSetId: Number(id) };
+        }
+        return { items: [], label: '' };
+    }
+
+    function updateSourceUi() {
+        const key = els.source.value;
+        els.custom.hidden = key !== 'custom';
+        document.body.classList.toggle('pm-pasting', key === 'custom');
+        let n = null;
+        if (key === 'shared') n = sharedItems.length;
+        else if (key === 'custom') n = P.parseList(els.custom.value).length;
+        else if (key.startsWith('demo:')) {
+            const set = (window.LINGOSPARK_DEMO_SETS || []).find((s) => 'demo:' + s.id === key);
+            n = set ? P.cleanItems(set.items).length : 0;
+        } else if (key.startsWith('level:')) els.count.textContent = `${BUILTIN_SAMPLE} random words`;
+        if (n !== null) els.count.textContent = `${n} pair${n === 1 ? '' : 's'}`;
+        else if (!key.startsWith('level:')) els.count.textContent = '';
+        els.error.hidden = true;
+        try { localStorage.setItem('ls_pm_source', key); } catch (_) { /* ignore */ }
+    }
+
+    function setupInit() {
+        fillDemoSets();
+        const shared = readShared();
+        sharedItems = shared ? P.parseList(shared) : [];
+        if (sharedItems.length >= P.MIN_PAIRS) {
+            $('pm-opt-shared').hidden = false;
+            $('pm-opt-shared-item').textContent = `Current list from LingoSpark (${sharedItems.length})`;
+            els.source.value = 'shared';
+        } else {
+            $('pm-opt-shared').remove();
+            let saved = '';
+            try { saved = localStorage.getItem('ls_pm_source') || ''; } catch (_) { /* ignore */ }
+            const ok = saved && saved !== 'shared' && !saved.startsWith('mine:') && [...els.source.options].some((o) => o.value === saved);
+            els.source.value = ok ? saved : (document.querySelector('#pm-opt-demo option') ? document.querySelector('#pm-opt-demo option').value : 'level:beginner');
+        }
+        try { const sp = localStorage.getItem('ls_pm_speed'); if (sp) { const r = document.querySelector(`input[name="pm-speed"][value="${sp}"]`); if (r) r.checked = true; } } catch (_) { /* ignore */ }
+        if (shared && sharedItems.length < P.MIN_PAIRS) els.custom.value = shared;
+        updateSourceUi();
+        loadMySets();
+    }
+
+    els.source.addEventListener('change', updateSourceUi);
+    els.custom.addEventListener('input', updateSourceUi);
+
+    function setupError(msg) { els.error.textContent = msg; els.error.hidden = false; }
+
+    async function startFromSetup() {
+        const speedKey = (document.querySelector('input[name="pm-speed"]:checked') || {}).value || 'medium';
+        try { localStorage.setItem('ls_pm_speed', speedKey); } catch (_) { /* ignore */ }
+        els.start.disabled = true;
+        try {
+            const src = await itemsForSource(els.source.value);
+            if (src.items.length < P.MIN_PAIRS || P.distinctMeanings(src.items) < 2) {
+                setupError(els.source.value === 'custom'
+                    ? `Add at least ${P.MIN_PAIRS} pairs — e.g. "dog = pies", one per line.`
+                    : `This list needs at least ${P.MIN_PAIRS} pairs with different meanings.`);
+                return;
+            }
+            lastSource = { key: els.source.value, speedKey, ...src };
+            startGame();
+        } catch (_) {
+            setupError('Could not load that word list. Check your connection and try again.');
+        } finally {
+            els.start.disabled = false;
+        }
+    }
+
+    /* ---------------- game loop ---------------- */
+    function startGame() {
+        clearTimers();
+        let items = lastSource.items;
+        if (lastSource.builtin) {   // fresh random words from the same level each round of play
+            const bank = window.VOCAB_AUCTION_BANK || {};
+            const level = lastSource.key.split(':')[1];
+            items = P.sample(P.cleanItems(bank[level] || []), BUILTIN_SAMPLE, Math.random);
+        }
+        game = P.createGame({ items, speedMs: P.SPEEDS[lastSource.speedKey] || P.SPEEDS.medium });
+        els.barList.textContent = lastSource.label;
+        els.barList.hidden = false;
+        document.body.classList.toggle('pm-long', items.some((i) => i.definition.length > 40));
+        renderScore(false);
+        els.top.textContent = ''; els.bottom.textContent = '';
+        els.pair.className = 'pm-pair';
+        setFeedback('', '');
+        els.timer.style.transition = 'none'; els.timer.style.transform = 'scaleX(1)';
+        showScreen('pm-play');
+        countdown(3);
+    }
+
+    function countdown(n) {
+        els.countdown.hidden = false;
+        els.count3.textContent = n;
+        els.count3.classList.remove('tick'); void els.count3.offsetWidth; els.count3.classList.add('tick');
+        if (n > 1) later(() => countdown(n - 1), 550);
+        else later(() => { els.countdown.hidden = true; deal(); }, 550);
+    }
+
+    function deal() {
+        if (!game || game.finished || paused) return;
+        const cur = P.nextPair(game);
+        els.pair.className = 'pm-pair';
+        els.top.textContent = cur.top;
+        els.bottom.textContent = cur.bottom;
+        els.top.classList.toggle('is-term', cur.termOnTop);
+        els.bottom.classList.toggle('is-term', !cur.termOnTop);
+        [els.top, els.bottom].forEach((el) => el.classList.toggle('is-long', el.textContent.length > 40));
+        els.pair.classList.add('in');
+        setFeedback('', '');
+        // timer bar
+        els.timer.style.transition = 'none';
+        els.timer.style.transform = 'scaleX(1)';
+        els.timer.classList.remove('low');
+        void els.timer.offsetWidth;
+        els.timer.style.transition = `transform ${cur.durationMs}ms linear`;
+        els.timer.style.transform = 'scaleX(0)';
+        later(() => els.timer.classList.add('low'), Math.max(0, cur.durationMs * 0.7));
+        cur.timeout = later(() => settle('timeout'), cur.durationMs);
+    }
+
+    function settle(action) {
+        if (!game || !game.current || game.current.resolved || paused) return;
+        const cur = game.current;
+        clearTimers();
+        const res = P.resolve(game, action);
+        const frac = getComputedStyle(els.timer).transform;
+        els.timer.style.transition = 'none';
+        els.timer.style.transform = frac === 'none' ? 'scaleX(0)' : frac;
+        els.pair.classList.remove('in');
+        els.pair.classList.add(res.outcome);
+        const real = `${cur.base.term} = ${cur.base.definition}`;
+        const msgs = {
+            correct: ['good', '<i class="fa-solid fa-check"></i> +10 — Match!'],
+            wrong: ['bad', `<i class="fa-solid fa-xmark"></i> −5 — Not a pair. <span>${esc(real)}</span>`],
+            missed: ['warn', `<i class="fa-solid fa-hourglass-end"></i> −2 — That was a pair!`],
+            passed: ['ok', '<i class="fa-solid fa-check"></i> Good pass — not a pair'],
+        }[res.outcome];
+        setFeedback(msgs[0], msgs[1]);
+        if (res.delta || res.points) popText(res.points > 0 ? `+${res.points}` : res.points ? `−${Math.abs(res.points)}` : '', res.outcome);
+        renderScore(true);
+        const hold = { correct: 550, passed: 380, wrong: 1300, missed: 1000 }[res.outcome];
+        later(() => (game.finished ? endGame() : deal()), res.finished ? 700 : hold);
+    }
+
+    function popText(text, cls) {
+        if (!text) return;
+        els.pop.textContent = text;
+        els.pop.className = 'pm-pop ' + cls;
+        void els.pop.offsetWidth;
+        els.pop.classList.add('go');
+    }
+
+    function setFeedback(cls, html) {
+        els.feedback.className = 'pm-feedback ' + (cls || '');
+        els.feedback.innerHTML = html || '&nbsp;';
+    }
+
+    function renderScore(bump) {
+        els.score.textContent = game ? game.score : 0;
+        els.goal.style.transform = `scaleX(${game ? Math.min(1, game.score / game.target) : 0})`;
+        if (bump) { els.score.classList.remove('bump'); void els.score.offsetWidth; els.score.classList.add('bump'); }
+    }
+
+    function tapMatch() {
+        if (!game || !game.current || game.current.resolved || paused || !els.countdown.hidden) return;
+        settle('tap');
+    }
+
+    els.pair.addEventListener('click', tapMatch);
+    els.match.addEventListener('click', tapMatch);
+    document.addEventListener('keydown', (e) => {
+        if (document.body.dataset.screen !== 'play') return;
+        if (e.key === ' ' || e.key === 'Enter' || e.key === 'm' || e.key === 'M') { e.preventDefault(); tapMatch(); }
+        if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') { e.preventDefault(); paused ? resume() : pause(); }
+    });
+
+    function pause() {
+        if (!game || game.finished || paused || document.body.dataset.screen !== 'play') return;
+        paused = true;
+        clearTimers();
+        if (game.current && !game.current.resolved) game.current.resolved = 'paused';   // replay this pair on resume
+        els.countdown.hidden = true;
+        els.paused.hidden = false;
+    }
+    function resume() {
+        if (!paused) return;
+        paused = false;
+        els.paused.hidden = true;
+        if (game.current && game.current.resolved === 'paused') { game.round -= 1; game.deck.push(game.current.base); game.log.get(game.current.base.term).seen -= 1; game.current = null; }
+        countdown(3);
+    }
+    els.resume.addEventListener('click', resume);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pause(); });
+
+    els.quit.addEventListener('click', () => {
+        if (!game) return;
+        clearTimers();
+        paused = false; els.paused.hidden = true; els.countdown.hidden = true;
+        P.finish(game);
+        endGame();
+    });
+
+    /* ---------------- end ---------------- */
+    function fmtTime(ms) {
+        const s = Math.round(ms / 1000);
+        return s >= 60 ? `${Math.floor(s / 60)} min ${s % 60} s` : `${s} s`;
+    }
+
+    function endGame() {
+        clearTimers();
+        const sum = P.summary(game);
+        els.stars.innerHTML = [1, 2, 3].map((i) => `<i class="fa-solid fa-star${i <= sum.stars ? ' on' : ''}"></i>`).join('');
+        els.endTitle.textContent = sum.reached ? (sum.stars === 3 ? 'Perfect penalty taker!' : 'Target reached!') : 'Game over';
+        els.endSub.textContent = sum.reached
+            ? `100 points in ${fmtTime(sum.durationMs)} · ${sum.rounds} pairs`
+            : `You stopped at ${sum.score} / 100 after ${sum.rounds} pairs.`;
+        $('pm-st-correct').textContent = sum.stats.correct;
+        $('pm-st-wrong').textContent = sum.stats.wrong;
+        $('pm-st-missed').textContent = sum.stats.missed;
+        $('pm-st-acc').textContent = `${sum.accuracy}%`;
+        els.review.innerHTML = sum.review.length ? sum.review.map((r) => {
+            const tag = r.wrong || r.missed
+                ? `<em class="bad">${r.wrong ? `${r.wrong}× wrong tap` : ''}${r.wrong && r.missed ? ' · ' : ''}${r.missed ? `${r.missed}× missed` : ''}</em>`
+                : (r.correct ? '<em class="good"><i class="fa-solid fa-check"></i></em>' : '');
+            return `<li${r.trouble ? ' class="trouble"' : ''}><b>${esc(r.term)}</b><span>${esc(r.definition)}</span>${tag}</li>`;
+        }).join('') : '<li class="empty">No words yet — play a round!</li>';
+        els.saveNote.hidden = true;
+        showScreen('pm-end');
+        recordSession(sum);
+    }
+
+    async function recordSession(sum) {
+        if (!sum.rounds) return;
+        try {
+            const me = await (await fetch('/api/auth/me', { credentials: 'same-origin' })).json();
+            if (!me || !me.user) return;
+            const res = await fetch('/api/progress/session', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    gameKey: 'penalty_match',
+                    wordSetId: lastSource && lastSource.wordSetId ? lastSource.wordSetId : undefined,
+                    score: sum.score,
+                    pointsEarned: sum.score,
+                    durationMs: sum.durationMs,
+                    wordsTotal: sum.review.length,
+                    wordsMastered: sum.review.filter((r) => r.correct > 0 && !r.trouble).length,
+                    result: { reached: sum.reached, stars: sum.stars, accuracy: sum.accuracy, rounds: sum.rounds, stats: sum.stats, speed: lastSource.speedKey, list: lastSource.label },
+                }),
+            });
+            if (res.ok) {
+                els.saveNote.innerHTML = '<i class="fa-solid fa-chart-line"></i> Saved to My Progress.';
+                els.saveNote.hidden = false;
+            }
+        } catch (_) { /* guests / offline: nothing to save */ }
+    }
+
+    els.again.addEventListener('click', () => { if (lastSource) startGame(); });
+    els.change.addEventListener('click', () => { game = null; els.barList.hidden = true; showScreen('pm-setup'); });
+    els.start.addEventListener('click', startFromSetup);
+
+    /* ---------------- fullscreen (same pattern as Vocab Auction / Live games) ---------------- */
+    (function setupFullscreen() {
+        const doc = document;
+        const buttons = Array.from(doc.querySelectorAll('.pm-fs'));
+        const fsEl = () => doc.fullscreenElement || doc.webkitFullscreenElement || null;
+        const root = doc.documentElement;
+        const canRequest = !!(root.requestFullscreen || root.webkitRequestFullscreen);
+        const enabled = doc.fullscreenEnabled !== undefined ? doc.fullscreenEnabled : !!doc.webkitFullscreenEnabled;
+        if (!canRequest || !enabled) return;   // e.g. iPhone Safari: buttons stay hidden
+        const sync = () => {
+            const on = !!fsEl();
+            doc.body.classList.toggle('pm-is-fullscreen', on);
+            buttons.forEach((b) => {
+                b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                b.title = on ? 'Exit fullscreen' : 'Fullscreen';
+                b.setAttribute('aria-label', b.title);
+                b.querySelector('i').className = `fa-solid ${on ? 'fa-compress' : 'fa-expand'}`;
+                b.querySelector('.pm-fs-label').textContent = on ? 'Exit full' : 'Fullscreen';
+            });
+        };
+        const toggle = async () => {
+            try {
+                if (fsEl()) await (doc.exitFullscreen ? doc.exitFullscreen() : doc.webkitExitFullscreen());
+                else await (root.requestFullscreen ? root.requestFullscreen({ navigationUI: 'hide' }) : root.webkitRequestFullscreen());
+            } catch (_) { /* not allowed here */ }
+        };
+        buttons.forEach((b) => { b.hidden = false; b.addEventListener('click', toggle); });
+        doc.addEventListener('fullscreenchange', sync);
+        doc.addEventListener('webkitfullscreenchange', sync);
+        sync();
+    })();
+
+    setupInit();
+    showScreen('pm-setup');
+    window.PenaltyMatchApp = { get game() { return game; }, startFromSetup, pause, resume };
+})();
+</script>
+</body>
+</html>

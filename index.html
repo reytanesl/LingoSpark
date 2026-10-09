@@ -1874,22 +1874,29 @@
         /* Vocab Auction embed — full-viewport, no nested iframe scrollbar */
         body.auction-active > header,
         body.auction-active .auth-bar,
-        body.auction-active .about-panel {
+        body.auction-active .about-panel,
+        body.pm-active > header,
+        body.pm-active .auth-bar,
+        body.pm-active .about-panel {
             display: none !important;
         }
-        body.auction-active .container {
+        body.auction-active .container,
+        body.pm-active .container {
             max-width: none;
             padding: 0;
             margin: 0;
         }
-        body.auction-active {
+        body.auction-active,
+        body.pm-active {
             overflow: hidden;
             height: 100vh;
             height: 100dvh;
         }
         /* The game fills the viewport: keep the fixed copyright/Premium chips off it (game has its own credit) */
         body.auction-active .site-copyright,
-        body.auction-active #ls-premium-float {
+        body.auction-active #ls-premium-float,
+        body.pm-active .site-copyright,
+        body.pm-active #ls-premium-float {
             display: none !important;
         }
         .auction-screen {
@@ -1934,6 +1941,14 @@
             background: #0A120E;
             overflow: hidden;
         }
+        /* Penalty Match embed — same full-viewport frame as Vocab Auction, in the red LingoSpark brand */
+        .auction-screen.pm-screen { background: #FDF6F7; }
+        .pm-screen .top-bar { background: #fff; border-bottom: 3px solid #C8102E; box-shadow: 0 3px 0 #FBE6E4; color: #012169; }
+        .pm-screen .top-bar h2 { margin: 0; color: #012169; font-family: var(--font-primary); font-size: 1.35rem; }
+        .pm-screen .top-bar h2 i { color: #C8102E; }
+        .pm-screen .top-bar .btn { background: #fff; color: #012169; border: 2px solid #E3E1EA; }
+        .pm-screen .top-bar .btn:hover { border-color: #012169; }
+        .pm-screen .auction-frame { background: #FDF6F7; }
         .fc-counter { font-family: var(--font-secondary); text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 
         /* Auth bar + paywall modal */
@@ -2975,7 +2990,7 @@
             <p>LingoSpark is a growing collection of interactive ESL tools designed to make learning English fun, fast, and engaging. I build small, practical apps for teachers and learners—vocab games, writing challenges, team activities, and creative practice tools that turn everyday lessons into something students actually enjoy.</p>
             <p>What I am really proud of is the Writing Suite, the feature that allows students to practice their writing skills and expand their glossaries individually and at their own pace. It can also be used by teachers as support for their writing classes.</p>
             <p>More new activities coming soon!</p>
-            <p><strong>Vocab games stay free forever.</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction, Team Challenge, and Live Spark never need a plan.</p>
+            <p><strong>Vocab games stay free forever.</strong> Flashcards, Bomb Defusal, Grid Territory, Vocab Auction, Penalty Match, Team Challenge, and Live Spark never need a plan.</p>
             <p>Writing Suite and Primary English need paid access so the AI tools can stay online. <strong>Buying access is the best way to support LingoSpark</strong> — you unlock premium games for yourself or your students, and help cover running costs.</p>
             <div class="about-pricing">
                 <p style="margin-bottom:0.4rem;"><strong>Writing Suite — 40 zł / month</strong> <span style="font-weight:600;color:var(--text-muted);">($10)</span></p>
@@ -3001,6 +3016,7 @@
                 <div class="guide-item"><strong>Vocabulary Bomb Defusal</strong><p>Race the timer: type the matching word. Correct answers add time; mistakes take time away. Don’t let the bomb explode!</p></div>
                 <div class="guide-item"><strong>Grid Territory</strong><p>Tic-tac-toe with vocab. Claim a square by answering correctly. Play solo vs a bot (bot skips questions) or two players/teams.</p></div>
                 <div class="guide-item"><strong>Vocab Auction</strong><p>Bet chips on the word or phrase that matches the definition. Higher confidence can win more — wrong bids cost chips. Use a built-in level or your own list. Play solo or as 2 players. When you are logged in, every term and definition you play is added to your “Vocab Auction” set.</p></div>
+                <div class="guide-item"><strong>Penalty Match</strong><p>A word and a meaning flash up together. Tap <strong>MATCH</strong> (or press Space) when they are a real pair: +10. Tapping a wrong pair costs 5, letting a real pair slip by costs 2, and letting a wrong pair pass is the right call. First to 100 wins. Pick a built-in level, a demo set, one of your word sets or the list you loaded in LingoSpark; choose Slow, Medium or Fast.</p></div>
                 <div class="guide-item"><strong>Share or export a word list</strong><p>In Word Sets, use <strong>Share</strong> to copy a student link, or <strong>Export</strong> to download a clean glossary (<code>Term = Definition</code>, one per line). Students open a share link without signing in — the glossary loads into Vocab Review. Use the unlink button to turn sharing off.</p></div>
 
                 <h3>Live Spark</h3>
@@ -3146,6 +3162,7 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-bomb"></i></div><h2>Vocabulary Bomb Defusal</h2><p>Race the clock! Correct answers add time; mistakes deduct it.</p><a href="#/setup/bomb" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-border-all"></i></div><h2>Grid Territory</h2><p>Tic-tac-toe with vocab: play vs a bot or 2 players. Claim squares by answering correctly.</p><a href="#/setup/grid" class="btn btn-outline">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-gavel"></i></div><h2>Vocab Auction</h2><p>Bet chips on the word or phrase that matches the definition. Confidence pays — mistakes cost. Solo or 2 players. Built-in levels or your own list.</p><a href="#/auction" class="btn btn-outline">Play Now</a></div>
+                    <div class="card"><div class="icon-container"><i class="fa-solid fa-hand-pointer"></i></div><h2>Penalty Match</h2><p>Two words flash up — tap MATCH when they really belong together. Wrong taps and missed pairs cost points. Race to 100 with a built-in level, a demo set or your own list.</p><a href="#/penalty-match" class="btn btn-outline">Play Now</a></div>
                 </div>
             </div>
 
@@ -4631,6 +4648,16 @@
             <iframe id="auction-frame" class="auction-frame" title="Vocab Auction" src="about:blank" scrolling="no" allow="fullscreen" allowfullscreen></iframe>
         </div>
 
+        <!-- CORE VOCAB: PENALTY MATCH (standalone page penalty-match.html in an iframe, like Vocab Auction) -->
+        <div id="screen-penalty-match" class="screen engine-container auction-screen pm-screen">
+            <div class="top-bar">
+                <button class="btn btn-grey" onclick="exitPenaltyMatch()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <h2><i class="fa-solid fa-hand-pointer"></i> Penalty Match</h2>
+                <div style="width: 80px;"></div>
+            </div>
+            <iframe id="pm-frame" class="auction-frame" title="Penalty Match" src="about:blank" scrolling="no" allow="fullscreen" allowfullscreen></iframe>
+        </div>
+
         <!-- PASSWORD RESET (link from the "Forgot password?" email: #/reset-password?token=…) -->
         <div id="screen-reset-password" class="screen live-entry">
             <div class="lse-app">
@@ -5318,6 +5345,7 @@
                     frame.src = 'about:blank';
                 }
             }
+            if (document.body.classList.contains('pm-active')) stopPenaltyMatchFrame();
             showScreen('home');
             closeHomeSection();
             return false;
@@ -5336,7 +5364,7 @@
 
             const openSectionForGame = (gameId) => {
                 showScreen('home');
-                if (VOCAB_GAMES.has(gameId) || gameId === 'odyssey' || gameId === 'auction') openHomeSection('vocab');
+                if (VOCAB_GAMES.has(gameId) || gameId === 'odyssey' || gameId === 'auction' || gameId === 'penalty-match') openHomeSection('vocab');
                 else if (WRITING_GAMES.has(gameId) || PE_GAMES.has(gameId)) openHomeSection('writing');
                 else closeHomeSection();
             };
@@ -5356,6 +5384,10 @@
                     exitAuction();
                     return;
                 }
+                if (arg === 'penalty-match') {
+                    exitPenaltyMatch();
+                    return;
+                }
                 backToSetup(arg);
                 return;
             }
@@ -5367,6 +5399,10 @@
 
             if (root === 'auction') {
                 exitAuction();
+                return;
+            }
+            if (root === 'penalty-match') {
+                exitPenaltyMatch();
                 return;
             }
 
@@ -5396,6 +5432,10 @@
                 exitAuction();
                 return;
             }
+            if (screenId === 'penalty-match') {
+                exitPenaltyMatch();
+                return;
+            }
             if (screenId === 'live-host' && window.LiveGame) {
                 LiveGame.openHost({ fresh: true });
                 return;
@@ -5420,6 +5460,7 @@
                 else setAppHash('home');
             }             else if (screenId === 'setup') setAppHash('setup/' + (activeGame || 'flashcard'));
             else if (screenId === 'auction') setAppHash('auction');
+            else if (screenId === 'penalty-match') setAppHash('penalty-match');
             else if (screenId === 'live-host') setAppHash('live/host');
             else if (screenId === 'live-join' && window.LiveEntry?.getRole?.() === 'teacher') setAppHash('live/host');
             else if (screenId === 'live-join') {
@@ -5449,6 +5490,7 @@
                 }
                 // Leaving #/auction via back/forward: restore the normal app chrome (header, footer)
                 if (root !== 'auction') document.body.classList.remove('auction-active');
+                if (root !== 'penalty-match' && !(root === 'game' && arg === 'penalty-match') && document.body.classList.contains('pm-active')) stopPenaltyMatchFrame();
 
                 if (root === 'home') {
                     showScreen('home');
@@ -5482,6 +5524,8 @@
                     }
                 } else if (root === 'auction') {
                     goToAuction();
+                } else if (root === 'penalty-match') {
+                    goToPenaltyMatch();
                 } else if (root === 'set' && arg) {
                     await openSharedWordSet(arg);
                 } else if (root === 'setup' && arg) {
@@ -5496,6 +5540,7 @@
                     else goToSetup(arg);
                 } else if (root === 'game' && arg) {
                     if (arg === 'auction') goToAuction();
+                    else if (arg === 'penalty-match') goToPenaltyMatch();
                     else if (arg === 'test-countdown') {
                         activeGame = arg;
                         if (!parseGlossary()) {
@@ -6510,7 +6555,7 @@
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin-bottom:0.6rem;">Games Played</h3>';
                     html += '<div class="progress-grid">';
                     const gameNames = {
-                        flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction',
+                        flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction', penalty_match: 'Penalty Match',
                         pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
@@ -6547,7 +6592,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', penalty_match:'Penalty Match', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -6820,6 +6865,7 @@
             document.body.classList.toggle('reset-mode', screenId === 'reset-password');
             if (screenId !== 'live-play') document.body.classList.remove('live-game-active');
             if (screenId === 'home' && !applyingRoute) closeHomeSection();
+            // No guest sign-in toast during Penalty Match: it is a timed reflex game and the toast would cover the MATCH button.
             const playScreens = ['flashcard', 'bomb', 'grid', 'odyssey', 'auction', 'memory-flip', 'word-repair', 'speed-match', 'test-countdown'];
             if (playScreens.includes(screenId) && !isLoggedIn()) startGuestLoginReminders();
             else if (!playScreens.includes(screenId)) stopGuestLoginReminders();
@@ -7429,6 +7475,31 @@
             const frame = document.getElementById('auction-frame');
             frame.onload = null;
             frame.src = 'about:blank';
+            showScreen('home');
+            openHomeSection('vocab');
+        }
+
+        /** Penalty Match: own page in an iframe (like Vocab Auction). It reads the shared glossary from sessionStorage itself. */
+        function goToPenaltyMatch() {
+            activeGame = 'penalty-match';
+            document.body.classList.add('pm-active');
+            const shared = (document.getElementById('glossary-input')?.value || '').trim();
+            if (shared) {
+                try { sessionStorage.setItem('ls_shared_glossary', shared); } catch (_) { /* ignore */ }
+            }
+            const frame = document.getElementById('pm-frame');
+            frame.src = 'penalty-match.html?embed=1&t=' + Date.now();
+            showScreen('penalty-match');
+        }
+
+        function stopPenaltyMatchFrame() {
+            document.body.classList.remove('pm-active');
+            const frame = document.getElementById('pm-frame');
+            if (frame) frame.src = 'about:blank';
+        }
+
+        function exitPenaltyMatch() {
+            stopPenaltyMatchFrame();
             showScreen('home');
             openHomeSection('vocab');
         }
