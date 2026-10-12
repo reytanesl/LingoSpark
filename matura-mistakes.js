@@ -129,6 +129,37 @@
         return (String(raw).match(/<<err>>/g) || []).length;
     }
 
+    /**
+     * Is `edited` a plausible transcription fix of `original` (same essay, small edits)?
+     * Used client-side for a hint and server-side to decide whether a recheck is free.
+     */
+    const RECHECK_MIN_SIMILARITY = 0.7;
+    function words(s) {
+        return String(s || '').toLowerCase().match(/[\p{L}\p{N}']+/gu) || [];
+    }
+    function checkTranscriptionFix(original, edited) {
+        const a = String(original || '').replace(/<<\/?err>>/g, '').trim();
+        const b = String(edited || '').trim();
+        if (!b) return { ok: false, reason: 'empty', similarity: 0 };
+        if (b.length > 20000) return { ok: false, reason: 'too_long', similarity: 0 };
+        if (!a) return { ok: false, reason: 'no_original', similarity: 0 };
+        if (a.replace(/\s+/g, ' ') === b.replace(/\s+/g, ' ')) return { ok: false, reason: 'unchanged', similarity: 1 };
+        const wa = words(a);
+        const wb = words(b);
+        const counts = new Map();
+        for (const w of wa) counts.set(w, (counts.get(w) || 0) + 1);
+        let common = 0;
+        for (const w of wb) {
+            const c = counts.get(w) || 0;
+            if (c > 0) { common++; counts.set(w, c - 1); }
+        }
+        const similarity = wa.length + wb.length ? (2 * common) / (wa.length + wb.length) : 0;
+        const ratio = wb.length / Math.max(1, wa.length);
+        if (ratio < 0.7 || ratio > 1.3) return { ok: false, reason: 'length_changed', similarity };
+        if (similarity < RECHECK_MIN_SIMILARITY) return { ok: false, reason: 'too_different', similarity };
+        return { ok: true, reason: 'ok', similarity };
+    }
+
     function typeInfo(id) {
         return TYPES[id] || TYPES.other;
     }
@@ -138,5 +169,6 @@
 
     root.MaturaMistakes = {
         TYPES, TYPE_IDS, PROMPT_TYPES, normalizeType, classifyMistake, sanitizeMistakes, parseMarkedTranscript, typeInfo,
+        checkTranscriptionFix, RECHECK_MIN_SIMILARITY,
     };
 })(typeof window !== 'undefined' ? window : globalThis);

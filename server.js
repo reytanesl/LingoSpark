@@ -53,6 +53,12 @@ import {
     getMaturaProgressSummary,
     getUserById,
     getMaturaAssessAvailability,
+    updateMaturaEssayReview,
+    recordMaturaAssessRun,
+    getMaturaAssessRun,
+    claimMaturaFreeRecheck,
+    releaseMaturaFreeRecheck,
+    planMaturaRecheck,
     recordMaturaAssessUsage,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
@@ -797,6 +803,24 @@ async function start() {
         }
     });
 
+    app.put('/api/matura/reviews/:id', requireLogin, async (req, res) => {
+        try {
+            const { taskText, essayText, totalScore, maxScore, review } = req.body || {};
+            if (!review || typeof review !== 'object') {
+                return res.status(400).json({ error: 'review object required' });
+            }
+            if (req.body?.images || review.images || review.dataUrl) {
+                return res.status(400).json({ error: 'Images and PDF files are not stored. Save the text review only.' });
+            }
+            const saved = await updateMaturaEssayReview(req.user.id, req.params.id, { taskText, essayText, totalScore, maxScore, review });
+            if (!saved) return res.status(404).json({ error: 'Review not found' });
+            const progress = await getMaturaProgressSummary(req.user.id);
+            res.json({ saved: true, id: saved.id, createdAt: saved.created_at, progress });
+        } catch (err) {
+            res.status(400).json({ error: err.message });
+        }
+    });
+
     app.delete('/api/matura/reviews/:id', requireLogin, async (req, res) => {
         try {
             const deleted = await deleteMaturaEssayReview(req.user.id, Number(req.params.id));
@@ -1023,8 +1047,29 @@ Return ONLY valid JSON:
             /* use session user */
         }
         const admin = isAdminEmail(assessUser?.email);
+
+        // Recheck after fixing a wrong transcription: text-only, tied to an earlier assessment of this user.
+        const recheckOf = req.body?.recheckOf != null ? Number(req.body.recheckOf) : 0;
+        let recheck = null;
+        if (recheckOf) {
+            if (images.length) return res.status(400).json({ error: 'A recheck uses your corrected text only — no images.' });
+            let run = null;
+            let root = null;
+            try {
+                run = await getMaturaAssessRun(assessUser.id, recheckOf);
+                root = run && run.root_id ? await getMaturaAssessRun(assessUser.id, run.root_id) : run;
+            } catch (e) {
+                console.warn('getMaturaAssessRun failed:', e.message);
+            }
+            if (!run) return res.status(404).json({ error: 'Original assessment not found. Run a new assessment instead.' });
+            recheck = { ...planMaturaRecheck({ run, root, editedText: essayText }), free: false };
+            if (recheck.reason === 'unchanged') {
+                return res.status(400).json({ error: 'The text is unchanged — edit the transcription first.', code: 'matura_recheck_unchanged' });
+            }
+        }
+
         const cooldown = getMaturaAssessAvailability(assessUser, { isAdmin: admin });
-        if (!cooldown.available) {
+        if (!cooldown.available && !recheck?.eligible) {
             const ms = Math.max(0, cooldown.retryAfterMs || 0);
             const totalMin = Math.max(1, Math.ceil(ms / 60000));
             const h = Math.floor(totalMin / 60);
@@ -1042,6 +1087,22 @@ Return ONLY valid JSON:
         const apiKey = process.env.CURSOR_API_KEY;
         if (!apiKey) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+        }
+        if (recheck?.eligible) {
+            try {
+                recheck.free = await claimMaturaFreeRecheck(assessUser.id, recheck.rootId);
+            } catch (e) {
+                console.warn('claimMaturaFreeRecheck failed:', e.message);
+            }
+            if (!recheck.free) {
+                recheck.reason = 'already_used';
+                if (!cooldown.available) {
+                    return res.status(429).json({
+                        error: 'The free recheck for this essay was already used and no free assessments are left in this 4-hour window.',
+                        code: 'matura_assess_cooldown', maturaAssess: cooldown, maturaAssessPack: publicMaturaAssessPack(),
+                    });
+                }
+            }
         }
 
         const prompt = `Matura rozszerzona English writing feedback TO THE STUDENT (you/your). Total 13 pts: Content 0–5, Coherence 0–2, Range 0–3, Accuracy 0–3.
@@ -1086,7 +1147,7 @@ Return ONLY valid JSON:
             });
             parsed.mistakes = sanitizeMaturaMistakes(parsed?.mistakes);
             let maturaAssess = cooldown;
-            if (!admin) {
+            if (!admin && !recheck?.free) {
                 try {
                     const stamped = await recordMaturaAssessUsage(assessUser.id);
                     if (stamped) {
@@ -1099,8 +1160,29 @@ Return ONLY valid JSON:
                     console.warn('recordMaturaAssessUsage failed:', stampErr.message);
                 }
             }
-            res.json({ ...parsed, maturaAssess, maturaAssessPack: publicMaturaAssessPack() });
+            let assessmentId = null;
+            try {
+                assessmentId = await recordMaturaAssessRun(assessUser.id, {
+                    essayText: parsed.transcribedEssay || essayText,
+                    rootId: recheck?.rootId || null,
+                });
+            } catch (runErr) {
+                console.warn('recordMaturaAssessRun failed:', runErr.message);
+            }
+            // One free recheck per original assessment: gone once used (by this or an earlier recheck).
+            const freeRecheckGone = Boolean(recheck && (recheck.free || recheck.reason === 'already_used'));
+            res.json({
+                ...parsed,
+                assessmentId,
+                recheck: recheck ? { free: recheck.free, reason: recheck.reason, recheckOf } : null,
+                freeRecheckAvailable: Boolean(assessmentId) && !freeRecheckGone,
+                maturaAssess,
+                maturaAssessPack: publicMaturaAssessPack(),
+            });
         } catch (error) {
+            if (recheck?.free) {
+                try { await releaseMaturaFreeRecheck(assessUser.id, recheck.rootId); } catch { /* ignore */ }
+            }
             console.error('Assess-writing error:', error);
             const status = /Unsupported image|too large|valid JSON/i.test(error.message || '') ? 400 : 500;
             res.status(status).json({ error: error.message || 'Failed to assess writing' });

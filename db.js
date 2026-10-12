@@ -196,6 +196,18 @@ export async function initDb() {
         );
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_matura_reviews_user ON matura_essay_reviews (user_id, created_at DESC)`);
+    // One row per AI assessment run: lets the server grant 1 free "fixed transcription" recheck per original assessment.
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS matura_assess_runs (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            essay_text TEXT NOT NULL DEFAULT '',
+            root_id INTEGER,
+            free_recheck_used BOOLEAN NOT NULL DEFAULT FALSE,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_matura_runs_user ON matura_assess_runs (user_id, id)`);
 
     // "Forgot password?" links — only a SHA-256 hash of each token is stored; single use, 1 hour expiry.
     await db.query(`
@@ -1311,6 +1323,7 @@ export function sanitizeMaturaReviewPayload(raw = {}) {
             : [],
         markedTranscript: typeof review.markedTranscript === 'string' ? review.markedTranscript : '',
         mistakes: sanitizeMaturaMistakes(review.mistakes),
+        assessmentId: Number.isInteger(Number(review.assessmentId)) && Number(review.assessmentId) > 0 ? Number(review.assessmentId) : null,
         transcribedEssay: typeof review.transcribedEssay === 'string'
             ? review.transcribedEssay
             : (typeof raw.essayText === 'string' ? raw.essayText : ''),
@@ -1339,6 +1352,77 @@ export async function saveMaturaEssayReview(userId, { taskText = '', essayText =
         [userId, task, essay, score, max, JSON.stringify(cleanReview)]
     );
     return result.rows[0];
+}
+
+/** Replace a saved review in place (used after a transcription-fix recheck). Returns null if not the user's. */
+export async function updateMaturaEssayReview(userId, id, { taskText = '', essayText = '', totalScore = 0, maxScore = 13, review }) {
+    const db = getPool();
+    const cleanReview = sanitizeMaturaReviewPayload({ ...review, totalScore, maxScore, essayText });
+    const result = await db.query(
+        `UPDATE matura_essay_reviews
+         SET task_text = $3, essay_text = $4, total_score = $5, max_score = $6, review = $7::jsonb
+         WHERE user_id = $1 AND id = $2
+         RETURNING id, total_score, max_score, created_at`,
+        [
+            userId, Number(id) || 0, String(taskText || '').slice(0, 20000),
+            String(essayText || cleanReview.transcribedEssay || '').slice(0, 100000),
+            Number(cleanReview.totalScore) || 0, Number(cleanReview.maxScore) || 13, JSON.stringify(cleanReview),
+        ]
+    );
+    return result.rows[0] || null;
+}
+
+/* ---- Matura assessment runs + free transcription-fix recheck ---- */
+export async function recordMaturaAssessRun(userId, { essayText = '', rootId = null } = {}) {
+    const db = getPool();
+    const r = await db.query(
+        `INSERT INTO matura_assess_runs (user_id, essay_text, root_id) VALUES ($1, $2, $3) RETURNING id`,
+        [userId, String(essayText || '').slice(0, 100000), rootId ? Number(rootId) : null]
+    );
+    return r.rows[0]?.id ?? null;
+}
+
+export async function getMaturaAssessRun(userId, id) {
+    const n = Number(id);
+    if (!userId || !Number.isInteger(n) || n <= 0) return null;
+    const db = getPool();
+    const r = await db.query(
+        `SELECT id, user_id, essay_text, root_id, free_recheck_used FROM matura_assess_runs WHERE user_id = $1 AND id = $2`,
+        [userId, n]
+    );
+    return r.rows[0] || null;
+}
+
+/** Atomically use the single free recheck of an original assessment. True if this call got it. */
+export async function claimMaturaFreeRecheck(userId, rootId) {
+    const db = getPool();
+    const r = await db.query(
+        `UPDATE matura_assess_runs SET free_recheck_used = TRUE
+         WHERE user_id = $1 AND id = $2 AND free_recheck_used = FALSE RETURNING id`,
+        [userId, Number(rootId) || 0]
+    );
+    return r.rowCount > 0;
+}
+
+/** Give the free recheck back (the AI call failed). */
+export async function releaseMaturaFreeRecheck(userId, rootId) {
+    const db = getPool();
+    await db.query(
+        `UPDATE matura_assess_runs SET free_recheck_used = FALSE WHERE user_id = $1 AND id = $2`,
+        [userId, Number(rootId) || 0]
+    );
+}
+
+/**
+ * Pure: is a recheck of `run` with `editedText` eligible for the free recheck?
+ * `root` is the original assessment row (run itself when run.root_id is null).
+ */
+export function planMaturaRecheck({ run, root, editedText }) {
+    if (!run || !root) return { eligible: false, reason: 'unknown_assessment', rootId: null, similarity: 0 };
+    const fix = globalThis.MaturaMistakes.checkTranscriptionFix(run.essay_text, editedText);
+    if (!fix.ok) return { eligible: false, reason: fix.reason, rootId: root.id, similarity: fix.similarity };
+    if (root.free_recheck_used) return { eligible: false, reason: 'already_used', rootId: root.id, similarity: fix.similarity };
+    return { eligible: true, reason: 'ok', rootId: root.id, similarity: fix.similarity };
 }
 
 export async function listMaturaEssayReviews(userId, { limit = 50 } = {}) {

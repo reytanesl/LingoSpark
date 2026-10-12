@@ -2916,6 +2916,31 @@
         }
         .matura-transcript-legend .matura-error { font-style: normal; }
         #matura-transcript-wrap { position: relative; }
+        .matura-transcript-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; margin: 0 0 0.5rem;
+        }
+        .matura-edit-btn { font-size: 0.85rem; padding: 0.35rem 0.85rem; border-color: var(--pillarbox-red); color: var(--pillarbox-red); }
+        .matura-edit-btn:focus-visible, .matura-edit-actions .btn:focus-visible { outline: 3px solid var(--royal-blue); outline-offset: 2px; }
+        .matura-edit-panel {
+            border: 2px solid var(--pillarbox-red); border-radius: 12px; padding: 0.85rem; margin-bottom: 0.75rem;
+            background: rgba(200, 16, 46, 0.04);
+        }
+        .matura-edit-panel[hidden] { display: none; }
+        #matura-transcript-wrap.is-editing #matura-transcript,
+        #matura-transcript-wrap.is-editing .matura-transcript-legend,
+        #matura-transcript-wrap.is-editing #matura-mistakes-wrap,
+        #matura-transcript-wrap.is-editing .matura-edit-btn { display: none !important; }
+        .matura-edit-label { display: block; font-size: 0.88rem; color: var(--text-dark); margin-bottom: 0.45rem; line-height: 1.4; }
+        .matura-edit-text {
+            width: 100%; box-sizing: border-box; min-height: 14rem; resize: vertical; font: inherit; font-size: 0.98rem; line-height: 1.6;
+            padding: 0.7rem 0.8rem; border: 2px solid rgba(0,0,0,0.15); border-radius: 10px; background: #fff; color: var(--text-dark);
+        }
+        .matura-edit-text:focus { outline: none; border-color: var(--royal-blue); box-shadow: 0 0 0 3px rgba(28,95,214,0.18); }
+        .matura-edit-hint { font-size: 0.84rem; color: var(--text-muted); margin: 0.45rem 0 0.6rem; line-height: 1.4; }
+        .matura-edit-hint.is-free { color: var(--success-green, #2b8a3e); }
+        .matura-edit-hint.is-paid { color: var(--pillarbox-red); }
+        .matura-edit-actions { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; }
+        @media (max-width: 480px) { .matura-edit-actions .btn { flex: 1 1 auto; } }
         .matura-transcript-box button.matura-error {
             font: inherit; line-height: inherit; cursor: pointer; margin: 0;
             white-space: pre-wrap; text-align: inherit; display: inline;
@@ -4176,7 +4201,22 @@
                         </div>
                     </div>
                     <div id="matura-transcript-wrap" style="display:none;margin-bottom:1rem;">
-                        <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Your essay (mistakes marked)</h4>
+                        <div class="matura-transcript-head">
+                            <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0;">Your essay (mistakes marked)</h4>
+                            <button type="button" class="btn btn-outline matura-edit-btn" id="matura-edit-btn" aria-controls="matura-edit-panel" aria-expanded="false">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit text
+                            </button>
+                        </div>
+                        <div class="matura-edit-panel" id="matura-edit-panel" hidden>
+                            <h5 class="matura-edit-title" style="font-family:var(--font-primary);color:var(--pillarbox-red);margin:0 0 0.35rem;font-size:0.95rem;"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edit transcription</h5>
+                            <label for="matura-edit-text" class="matura-edit-label">Fix any words the AI read wrongly from your handwriting, then recheck. Change only transcription errors — not your own mistakes.</label>
+                            <textarea id="matura-edit-text" class="matura-edit-text" rows="12" spellcheck="false" aria-describedby="matura-edit-hint"></textarea>
+                            <p class="matura-edit-hint" id="matura-edit-hint" aria-live="polite"></p>
+                            <div class="matura-edit-actions">
+                                <button type="button" class="btn btn-outline" id="matura-edit-cancel">Cancel</button>
+                                <button type="button" class="btn btn-blue" id="matura-edit-recheck"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Recheck</button>
+                            </div>
+                        </div>
                         <p class="matura-transcript-legend">Highlighted text = mistakes to correct yourself. Click or tap a red marking to see what type of mistake it is. No model essay is given — rewrite those parts on your own.</p>
                         <div class="pe-prompt-box matura-transcript-box" id="matura-transcript"></div>
                         <div class="matura-mistake-pop" id="matura-mistake-pop" role="dialog" aria-modal="false" aria-labelledby="matura-mistake-pop-type" hidden></div>
@@ -9706,6 +9746,7 @@ Return ONLY JSON:
                     conciseness: data.conciseness || [],
                     markedTranscript: data.markedTranscript || '',
                     mistakes: Array.isArray(data.mistakes) ? data.mistakes : [],
+                    assessmentId: data.assessmentId || null,
                     transcribedEssay: data.transcribedEssay || essayText || '',
                 },
             };
@@ -9876,6 +9917,9 @@ Return ONLY JSON:
                     conciseness: review.conciseness || [],
                     markedTranscript: review.markedTranscript || '',
                     mistakes: Array.isArray(review.mistakes) ? review.mistakes : [],
+                    assessmentId: review.assessmentId || null,
+                    // Server decides; a saved review only knows its run id, so assume the free recheck may still be there.
+                    freeRecheckAvailable: Boolean(review.assessmentId),
                     transcribedEssay: review.transcribedEssay || data.essayText || '',
                 };
                 const task = document.getElementById('matura-task');
@@ -10097,7 +10141,146 @@ Return ONLY JSON:
         });
         window.addEventListener('resize', () => closeMaturaMistakePop(false));
 
+        /* ---- Edit transcription + recheck (1 free recheck per assessment, server-enforced) ---- */
+        function maturaPlainTranscript(data) {
+            const raw = (data?.transcribedEssay || data?.markedTranscript || '');
+            return String(raw).replace(/<<\/?err>>/g, '').trim();
+        }
+
+        function updateMaturaEditHint() {
+            const hint = document.getElementById('matura-edit-hint');
+            const ta = document.getElementById('matura-edit-text');
+            if (!hint || !ta || !maturaResult) return;
+            const MM = window.MaturaMistakes;
+            const fix = MM ? MM.checkTranscriptionFix(maturaPlainTranscript(maturaResult), ta.value) : { ok: true, reason: 'ok' };
+            const freeLeft = Boolean(maturaResult.assessmentId) && maturaResult.freeRecheckAvailable !== false;
+            hint.classList.remove('is-free', 'is-paid');
+            if (fix.reason === 'unchanged') {
+                hint.textContent = freeLeft
+                    ? 'Edit the text, then Recheck. Your first recheck of this essay is free — it does not use one of your 2 assessments.'
+                    : 'Edit the text, then Recheck. The free recheck for this essay is used, so this will count as 1 assessment.';
+                return;
+            }
+            if (fix.ok && freeLeft) {
+                hint.textContent = 'Looks like a transcription fix — this recheck is free (1 per assessment) and does not use your quota.';
+                hint.classList.add('is-free');
+            } else if (!fix.ok && freeLeft) {
+                hint.textContent = fix.reason === 'empty'
+                    ? 'The text is empty.'
+                    : 'That is a big change, not just a transcription fix — it will count as 1 normal assessment.';
+                hint.classList.add('is-paid');
+            } else {
+                hint.textContent = 'The free recheck for this essay is used — this recheck counts as 1 assessment.';
+                hint.classList.add('is-paid');
+            }
+        }
+
+        function openMaturaEdit() {
+            if (!maturaResult) return;
+            closeMaturaMistakePop(false);
+            const panel = document.getElementById('matura-edit-panel');
+            const ta = document.getElementById('matura-edit-text');
+            ta.value = maturaPlainTranscript(maturaResult);
+            panel.hidden = false;
+            document.getElementById('matura-transcript-wrap').classList.add('is-editing');
+            document.getElementById('matura-edit-btn').setAttribute('aria-expanded', 'true');
+            updateMaturaEditHint();
+            ta.focus();
+        }
+
+        function closeMaturaEdit({ focusButton = true } = {}) {
+            const panel = document.getElementById('matura-edit-panel');
+            if (!panel || panel.hidden) return;
+            panel.hidden = true;
+            document.getElementById('matura-transcript-wrap').classList.remove('is-editing');
+            const btn = document.getElementById('matura-edit-btn');
+            btn.setAttribute('aria-expanded', 'false');
+            if (focusButton) btn.focus();
+        }
+
+        async function recheckMaturaEdited() {
+            if (!maturaResult || maturaAssessBusy) return;
+            const ta = document.getElementById('matura-edit-text');
+            const edited = ta.value.trim();
+            const status = document.getElementById('matura-status');
+            const MM = window.MaturaMistakes;
+            if (MM && MM.checkTranscriptionFix(maturaPlainTranscript(maturaResult), edited).reason === 'unchanged') {
+                updateMaturaEditHint();
+                ta.focus();
+                return;
+            }
+            if (!edited) { ta.focus(); return; }
+            const task = (document.getElementById('matura-task')?.value || '').trim() || maturaResult.taskText || '';
+            const recheckBtn = document.getElementById('matura-edit-recheck');
+            recheckBtn.disabled = true;
+            setMaturaLoading(true);
+            try {
+                const response = await fetch('/api/assess-writing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        task, essayText: edited, images: [],
+                        ...(maturaResult.assessmentId ? { recheckOf: maturaResult.assessmentId } : {}),
+                    }),
+                });
+                const data = await response.json().catch(() => ({}));
+                setMaturaLoading(false);
+                if (data.maturaAssess) applyMaturaAssessState(data.maturaAssess);
+                if (!response.ok) {
+                    const hint = document.getElementById('matura-edit-hint');
+                    hint.classList.remove('is-free'); hint.classList.add('is-paid');
+                    hint.textContent = data.error || 'Recheck failed.';
+                    return;
+                }
+                const savedId = maturaViewingId;
+                data.taskText = task;
+                maturaResult = data;
+                closeMaturaEdit({ focusButton: false });
+                renderMaturaResult(data);
+                // Replace the saved history entry with the rechecked review (or save a new one).
+                if (isLoggedIn() && savedId) {
+                    try {
+                        const res = await fetch(`/api/matura/reviews/${savedId}`, {
+                            method: 'PUT', credentials: 'same-origin',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(buildMaturaReviewPayload(data, task, edited)),
+                        });
+                        const body = await res.json().catch(() => ({}));
+                        if (res.ok) { maturaViewingId = body.id || savedId; if (body.progress) maturaProgress = body.progress; await loadMaturaHistory(); }
+                        else await saveMaturaReviewToAccount(data, task, edited);
+                    } catch { /* keep result on screen */ }
+                } else {
+                    await saveMaturaReviewToAccount(data, task, edited);
+                }
+                status.className = 'feedback success';
+                status.textContent = data.recheck?.free
+                    ? 'Rechecked with your corrected text. This free recheck did not use one of your assessments.'
+                    : 'Rechecked with your corrected text. This counted as 1 assessment.';
+                document.getElementById('matura-edit-btn').focus();
+            } catch (err) {
+                setMaturaLoading(false);
+                const hint = document.getElementById('matura-edit-hint');
+                hint.textContent = err.message || 'Could not reach the server.';
+            } finally {
+                recheckBtn.disabled = false;
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest?.('#matura-edit-btn')) openMaturaEdit();
+            else if (e.target.closest?.('#matura-edit-cancel')) closeMaturaEdit();
+            else if (e.target.closest?.('#matura-edit-recheck')) recheckMaturaEdited();
+        });
+        document.addEventListener('input', (e) => {
+            if (e.target?.id === 'matura-edit-text') updateMaturaEditHint();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && e.target?.id === 'matura-edit-text') { e.preventDefault(); closeMaturaEdit(); }
+        });
+
         function renderMaturaResult(data) {
+            closeMaturaEdit({ focusButton: false });
             document.getElementById('matura-result').style.display = 'block';
             document.getElementById('matura-total-score').textContent =
                 `${data.totalScore ?? 0} / ${data.maxScore || 13}`;
