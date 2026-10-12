@@ -13,6 +13,8 @@ import {
     setRoomSettings,
 } from './live-game.js';
 
+const termOf = (q) => DECK.find((d) => d.definition === q.definition).term;
+
 function waitFor(socket, event, predicate = () => true, ms = 4000) {
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
@@ -66,7 +68,7 @@ test('Word Cannon lobby: fixed Red/Blue teams, defaults and format switching', (
     destroyRoom(room.code, room.hostToken);
 });
 
-test('Word Cannon runs teams, a challenge, a volley and a finish over sockets', async () => {
+test('Word Cannon runs continuously over sockets: immediate shots, own questions, non-blocking challenge, finish', async () => {
     const httpServer = createServer();
     const io = new Server(httpServer);
     initLiveGame(io);
@@ -106,62 +108,71 @@ test('Word Cannon runs teams, a challenge, a volley and a finish over sockets', 
         assert.deepEqual(introState.teams.red.members.map((m) => m.nickname), ['Ada', 'Bea']);
         assert.equal(introState.teams.blue.hp, 100);
 
-        const qPromise = waitFor(socks[0], 'live:your-question');
-        const opening = waitFor(host, 'live:cannon-state', (s) => s.phase === 'question');
+        const qs = socks.map((sock) => waitFor(sock, 'live:your-question'));
+        const opening = waitFor(host, 'live:cannon-state', (s) => s.phase === 'battle');
         host.emit('live:cannon-skip');
-        const q = await qPromise;
+        const [qa, qb, qc, qd] = await Promise.all(qs);
         const state = await opening;
-        assert.equal(q.gameFormat, 'word-cannon');
-        assert.equal(q.team, 'red');
-        assert.equal(q.timeLimitSec, 15);
+        assert.equal(qa.gameFormat, 'word-cannon');
+        assert.equal(qa.team, 'red');
+        assert.equal(qa.timeLimitSec, 15);
         assert.equal(state.questionMs, 15_000);
-        assert.ok(state.correctTerm);
+        assert.equal(state.round, undefined, 'no rounds in the continuous game');
         assert.ok(state.clock.gameEndsAt > Date.now());
+        assert.equal(new Set([qa, qb, qc, qd].map((q) => q.questionId)).size, 4, 'each player has an own question');
 
-        // Ada right, Bea right, Cam wrong -> challenge -> accepted, Dev wrong -> continue.
+        // Ada right → her shot is on the host screen at once, nobody else has answered.
+        const shotState = waitFor(host, 'live:cannon-state', (s) => s.shots.length === 1);
         const adaRes = waitFor(socks[0], 'live:answer-result');
-        socks[0].emit('live:submit-answer', { text: state.correctTerm, questionId: q.questionId });
+        socks[0].emit('live:submit-answer', { text: termOf(qa), questionId: qa.questionId });
         const adaResult = await adaRes;
         assert.equal(adaResult.correct, true);
         assert.equal(adaResult.tier, 'fast');
         assert.equal(adaResult.cannon, true);
-        socks[1].emit('live:submit-answer', { text: state.correctTerm, questionId: q.questionId });
+        assert.equal(adaResult.shot.team, 'red');
+        const shot1 = await shotState;
+        assert.equal(shot1.shots[0].shooterId, joined[0].player.id);
+        assert.equal(shot1.teams.blue.members.every((m) => m.status === 'answering'), true);
+        // …and Ada gets her next question about a second later, on her own.
+        const adaNext = await waitFor(socks[0], 'live:your-question');
+        assert.notEqual(adaNext.questionId, qa.questionId);
+        // The old question id is now refused.
+        const stale = waitFor(socks[0], 'live:error');
+        socks[0].emit('live:submit-answer', { text: termOf(qa), questionId: qa.questionId });
+        assert.match((await stale).error, /question is over|Slow down/);
+
+        // Cam wrong (typed) → challenge → card for the host; Cam moves straight on.
         const camRes = waitFor(socks[2], 'live:answer-result');
-        socks[2].emit('live:submit-answer', { text: `${state.correctTerm}x`, questionId: q.questionId });
+        socks[2].emit('live:submit-answer', { text: `${termOf(qc)}x`, questionId: qc.questionId });
         assert.equal((await camRes).challengeable, true);
         const pending = waitFor(host, 'live:challenge-pending');
+        const camNext = waitFor(socks[2], 'live:your-question');
         socks[2].emit('live:challenge-answer');
         const challenge = await pending;
+        assert.equal(challenge.correctTerm, termOf(qc));
+        assert.notEqual((await camNext).questionId, qc.questionId);
+        const queued = await waitFor(host, 'live:cannon-state', (s) => s.reviews.length === 1);
+        assert.equal(queued.phase, 'battle', 'the game never pauses');
+        assert.equal(queued.clock.pausedAt, null);
+
+        // Dev wrong → Continue → next question right away.
         const devRes = waitFor(socks[3], 'live:answer-result');
-        socks[3].emit('live:submit-answer', { text: 'nothing', questionId: q.questionId });
+        socks[3].emit('live:submit-answer', { text: 'nothing', questionId: qd.questionId });
         await devRes;
-        const devResolved = waitFor(socks[3], 'live:challenge-resolved');
+        const devNext = waitFor(socks[3], 'live:your-question');
         socks[3].emit('live:skip-challenge');
-        await devResolved;
-        const review = await waitFor(host, 'live:cannon-state', (s) => s.phase === 'review');
-        assert.equal(review.phaseEndsAt, null, 'waiting for the teacher');
-        assert.ok(review.clock.pausedAt);
+        assert.notEqual((await devNext).questionId, qd.questionId);
 
+        // Host accepts Cam: retroactive blue shot.
         const camResolved = waitFor(socks[2], 'live:challenge-resolved');
-        const volleyPromise = waitFor(host, 'live:cannon-state', (s) => s.phase === 'volley');
-        host.emit('live:resolve-challenge', { challengeId: challenge.id || challenge.challengeId, accept: true });
-        assert.equal((await camResolved).challengeAccepted, true);
-        const volley = await volleyPromise;
-        assert.equal(volley.volley.loaded.red, 2);
-        assert.equal(volley.volley.loaded.blue, 1);
-        assert.equal(volley.volley.shots.length, 3);
-        assert.equal(volley.volley.first, 'red');
-        assert.ok(volley.volley.shots.every((s) => typeof s.label === 'string' && s.at > 0));
-        assert.equal(volley.teams.blue.hpBefore, 100);
-
-        // Phones see their own shots.
-        const adaVolley = await waitFor(socks[0], 'live:cannon-state', (s) => s.phase === 'volley');
-        assert.equal(adaVolley.you.team, 'red');
-        assert.equal(adaVolley.you.shots.length, 1);
-
-        const next = waitFor(host, 'live:cannon-state', (s) => s.phase === 'question' && s.round === 2);
-        host.emit('live:cannon-next');
-        await next;
+        const retro = waitFor(host, 'live:cannon-state', (s) => s.shots.some((x) => x.retro));
+        host.emit('live:resolve-challenge', { challengeId: challenge.id, accept: true });
+        const camOutcome = await camResolved;
+        assert.equal(camOutcome.challengeAccepted, true);
+        assert.equal(camOutcome.shot.team, 'blue');
+        const retroState = await retro;
+        assert.equal(retroState.reviews.length, 0);
+        assert.equal(retroState.teams.blue.stats.shots, 1);
 
         const finished = waitFor(socks[1], 'live:game-finished');
         host.emit('live:end-game');
@@ -182,7 +193,7 @@ test('Word Cannon runs teams, a challenge, a volley and a finish over sockets', 
         late.emit('live:player-join', { code: room.code, playerId: joined[0].player.id, playerToken: joined[0].player.playerToken });
         assert.equal((await again).gameFormat, 'word-cannon');
     } finally {
-        clearTimeout(room.cannonTimer);
+        clearInterval(room.cannonTimer);
         for (const s of all) s.close();
         destroyRoom(room.code, room.hostToken);
         io.close();
@@ -209,7 +220,7 @@ test('Word Cannon random teams split players evenly', async () => {
         assert.deepEqual(sizes, [2, 3]);
         assert.equal(s.teams.red.slots + s.teams.blue.slots, 5);
     } finally {
-        clearTimeout(room.cannonTimer);
+        clearInterval(room.cannonTimer);
         host.close();
         destroyRoom(room.code, room.hostToken);
         io.close();
@@ -243,36 +254,31 @@ test('Word Cannon: a player who lets the timer run out gets a wrong-answer "time
         const intro = waitFor(host, 'live:cannon-state', (s) => s.phase === 'intro');
         host.emit('live:start-game');
         await intro;
-        const opening = waitFor(host, 'live:cannon-state', (s) => s.phase === 'question');
+        const beaQ = waitFor(socks[1], 'live:your-question');
         host.emit('live:cannon-skip');
-        const q = await opening;
+        const q = await beaQ;
 
-        const beaRes = waitFor(socks[1], 'live:answer-result');
-        const beaVolley = waitFor(socks[1], 'live:cannon-state', (s) => s.phase === 'volley');
-        socks[0].emit('live:submit-answer', { text: q.correctTerm, questionId: q.questionId });
+        const beaRes = waitFor(socks[1], 'live:answer-result', (r) => r.timedOut, 4000);
         const result = await beaRes;
         assert.equal(result.timedOut, true);
         assert.equal(result.correct, false);
         assert.equal(result.eligible, false);
         assert.equal(result.challengeable, false);
         assert.equal(result.answerText, '');
-        assert.equal(result.correctTerm, q.correctTerm);
+        assert.equal(result.correctTerm, termOf(q));
         assert.equal(result.cannon, true);
         assert.equal(result.team, 'blue');
-        const state = await beaVolley;
-        assert.equal(state.you.status, 'out');
-        assert.equal(state.you.decision, 'wrong');
-        assert.equal(state.you.timedOut, true);
-        assert.equal(state.you.correctTerm, q.correctTerm);
-        assert.equal(state.you.stats.answered, 1, 'counted like any wrong answer');
+        const state = await waitFor(socks[1], 'live:cannon-state', (s) => s.you?.stats.answered === 1);
         assert.equal(state.you.stats.correct, 0);
-        assert.equal(state.volley.loaded.blue, 0, 'no shot');
-        assert.equal(state.volley.loaded.red, 1);
+        assert.equal(state.teams.red.hp, 100, 'no shot');
         const challengeErr = waitFor(socks[1], 'live:error');
         socks[1].emit('live:challenge-answer');
         assert.ok((await challengeErr).error);
+        // The next question follows on its own after the feedback beat.
+        const next = await waitFor(socks[1], 'live:your-question', () => true, 4000);
+        assert.notEqual(next.questionId, q.questionId);
     } finally {
-        clearTimeout(room.cannonTimer);
+        clearInterval(room.cannonTimer);
         host.close();
         socks.forEach((s) => s.close());
         destroyRoom(room.code, room.hostToken);

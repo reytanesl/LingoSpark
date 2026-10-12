@@ -35,22 +35,19 @@ import {
     CANNON_DEFAULT_MINUTES,
     CANNON_QUESTION_MS,
     CANNON_TEAM_NAMES,
-    advanceCannon,
     cannonPublicView,
     cannonQuestionPayload,
     cannonWinners,
-    closeCannonAnswering,
-    cannonTimeoutResults,
+    challengeCannonAnswer,
     createCannonMatch,
-    expireCannonReview,
     finishCannonEarly,
     hostSkipCannon,
-    markCannonChallengePending,
     normalizeGameMinutes,
     renameCannonPlayer,
-    settleCannonChallenge,
+    settleCannonReview,
     skipCannonPrompt,
     submitCannonAnswer,
+    tickCannon,
 } from './word-cannon.js';
 
 export const LIVE_TERMS_TO_WIN = 12;
@@ -764,10 +761,7 @@ function ensurePlayerQuestionState(player, room) {
 function playerQuestionPayload(player, room) {
     if (isWordCannon(room)) {
         const match = room.cannon;
-        if (!match || match.phase !== 'question') return null;
-        const answer = match.answers?.[player.id];
-        if (answer?.submitted) return null;
-        const q = cannonQuestionPayload(match);
+        const q = cannonQuestionPayload(match, player.id);
         if (!q) return null;
         const team = match.playerTeam[player.id];
         return { ...q, progress: match.stats?.[player.id]?.correct || 0, team, teamName: CANNON_TEAM_NAMES[team] };
@@ -2181,21 +2175,33 @@ function afterLanternChange(io, room, onGameEnd, { deliverQuestions = false } = 
 }
 
 // ---------------------------------------------------------------------------
-// Word Cannon Battle
+// Word Cannon Battle (continuous flow)
 // ---------------------------------------------------------------------------
 
+/** Server tick: expires questions / feedback / phases. State pushes are throttled. */
+const CANNON_TICK_MS = 100;
+const CANNON_STATE_THROTTLE_MS = 150;
+
 function clearCannonTimer(room) {
-    if (!room?.cannonTimer) return;
-    clearTimeout(room.cannonTimer);
-    room.cannonTimer = null;
+    if (room?.cannonTimer) clearInterval(room.cannonTimer);
+    if (room?.cannonEmitTimer) clearTimeout(room.cannonEmitTimer);
+    if (room) {
+        room.cannonTimer = null;
+        room.cannonEmitTimer = null;
+    }
 }
 
 function cannonViewFor(room, opts) {
     return cannonPublicView(room.cannon, { ...opts, connected: lanternConnectedMap(room), now: Date.now() });
 }
 
-function emitCannonState(io, room) {
+function emitCannonStateNow(io, room) {
     if (!io || !room?.cannon) return;
+    if (room.cannonEmitTimer) {
+        clearTimeout(room.cannonEmitTimer);
+        room.cannonEmitTimer = null;
+    }
+    room.cannonEmittedAt = Date.now();
     if (room.hostSocketId) {
         io.to(room.hostSocketId).emit('live:cannon-state', cannonViewFor(room, { forHost: true }));
     }
@@ -2205,114 +2211,133 @@ function emitCannonState(io, room) {
     }
 }
 
-function deliverCannonQuestions(io, room) {
-    const match = room.cannon;
-    if (!match || match.phase !== 'question') return;
-    for (const player of room.players.values()) {
-        if (!player.socketId) continue;
-        if (match.answers[player.id]?.submitted) continue;
-        const q = playerQuestionPayload(player, room);
-        if (q) io.to(player.socketId).emit('live:your-question', q);
+/** Coalesce bursts of answers into at most one state push every CANNON_STATE_THROTTLE_MS. */
+function emitCannonState(io, room, { now: immediate = false } = {}) {
+    if (!io || !room?.cannon) return;
+    const wait = CANNON_STATE_THROTTLE_MS - (Date.now() - (room.cannonEmittedAt || 0));
+    if (immediate || wait <= 0) {
+        emitCannonStateNow(io, room);
+        return;
     }
+    if (room.cannonEmitTimer) return;
+    const code = room.code;
+    room.cannonEmitTimer = setTimeout(() => {
+        const live = getRoom(code);
+        if (!live?.cannon) return;
+        live.cannonEmitTimer = null;
+        emitCannonStateNow(io, live);
+    }, wait);
+}
+
+function sendCannonQuestion(io, room, playerId) {
+    const player = room.players.get(playerId);
+    if (!player?.socketId) return;
+    const q = playerQuestionPayload(player, room);
+    if (q) io.to(player.socketId).emit('live:your-question', q);
 }
 
 function finishCannonRoom(io, room, onGameEnd) {
     if (!room?.cannon) return;
     clearCannonTimer(room);
     finishCannonEarly(room.cannon);
+    for (const [id, c] of room.challenges) {
+        if (c.cannon) room.challenges.delete(id);
+    }
     const w = cannonWinners(room.cannon);
     room.phase = 'finished';
     room.finishedAt = Date.now();
     room.winnerId = w.winner;
     room.winnerNickname = w.winnerNickname;
     touchRoom(room);
-    emitCannonState(io, room);
+    emitCannonStateNow(io, room);
     io.to(`room:${room.code}`).emit('live:game-finished', gameFinishedPayload(room));
     if (onGameEnd) onGameEnd(room);
 }
 
-function armCannonTimer(io, room, onGameEnd) {
-    clearCannonTimer(room);
-    const match = room?.cannon;
-    if (!match || room.phase !== 'playing' || match.phaseEndsAt == null) return;
-    const code = room.code;
-    const expectedPhase = match.phase;
-    const endsAt = match.phaseEndsAt;
-    room.cannonTimer = setTimeout(() => {
-        const live = getRoom(code);
-        if (!live?.cannon || live.phase !== 'playing') return;
-        if (live.cannon.phase !== expectedPhase || live.cannon.phaseEndsAt !== endsAt) return;
-        let skipped = [];
-        if (expectedPhase === 'question') {
-            closeCannonAnswering(live.cannon, Date.now());
-            emitTimeoutResults(io, live, cannonTimeoutResults(live.cannon));
-        } else if (expectedPhase === 'review') skipped = expireCannonReview(live.cannon, Date.now()).skipped;
-        else advanceCannon(live.cannon, Date.now());
-        releaseCannonDecisions(io, live, skipped, { accept: false });
-        afterCannonChange(io, live, onGameEnd, { deliverQuestions: live.cannon.phase === 'question' });
-    }, Math.max(0, endsAt - Date.now()));
-}
-
-function releaseCannonDecisions(io, room, playerIds, { accept = false } = {}) {
-    for (const playerId of playerIds || []) {
-        const player = room.players.get(playerId);
-        if (!player) continue;
-        const challengeId = player.pendingChallenge?.challengeId || null;
-        if (challengeId) room.challenges.delete(challengeId);
-        clearPendingChallenge(player);
-        const result = {
-            cannon: true,
-            gameFormat: 'word-cannon',
-            correct: Boolean(accept),
-            reset: false,
-            challengeable: false,
-            challengeAccepted: Boolean(accept),
-            challengeDeclined: !accept,
-            progress: room.cannon?.stats?.[playerId]?.correct || 0,
-            won: false,
-            correctTerm: room.cannon?.entry?.term || '',
-            definition: room.cannon?.entry?.definition || '',
-        };
-        if (player.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
-        if (room.hostSocketId && challengeId) {
-            io.to(room.hostSocketId).emit('live:challenge-resolved', {
-                id: challengeId,
-                accepted: Boolean(accept),
-                entityId: playerId,
-            });
+/** Open challenges dropped because the game is over: tell the host and the players. */
+function dropCannonChallenges(io, room, reviewIds) {
+    for (const id of reviewIds || []) {
+        const challenge = room.challenges.get(id);
+        room.challenges.delete(id);
+        if (!challenge) continue;
+        const player = room.players.get(challenge.entityId);
+        if (player) clearPendingChallenge(player);
+        if (room.hostSocketId) {
+            io.to(room.hostSocketId).emit('live:challenge-resolved', { id, accepted: false, entityId: challenge.entityId });
         }
     }
 }
 
-function afterCannonChange(io, room, onGameEnd, { deliverQuestions = false } = {}) {
+function runCannonTick(io, room, onGameEnd) {
+    const match = room?.cannon;
+    if (!match || room.phase !== 'playing') {
+        clearCannonTimer(room);
+        return;
+    }
+    const out = tickCannon(match, Date.now());
+    for (const t of out.timeouts) {
+        const player = room.players.get(t.playerId);
+        if (player?.socketId) io.to(player.socketId).emit('live:answer-result', t.result);
+    }
+    for (const id of out.dealt) {
+        const player = room.players.get(id);
+        if (player) {
+            player.answerLocked = false;
+            if (!player.pendingChallenge?.challengeId) clearPendingChallenge(player);
+        }
+        sendCannonQuestion(io, room, id);
+    }
+    dropCannonChallenges(io, room, out.dropped);
+    if (match.phase === 'finished') {
+        finishCannonRoom(io, room, onGameEnd);
+        return;
+    }
+    if (out.changed) emitCannonState(io, room);
+}
+
+function afterCannonChange(io, room, onGameEnd, { deliverQuestions = false, immediate = false } = {}) {
     if (!room?.cannon) return;
     if (room.cannon.phase === 'finished') {
         finishCannonRoom(io, room, onGameEnd);
         return;
     }
-    if (deliverQuestions) deliverCannonQuestions(io, room);
-    emitCannonState(io, room);
-    armCannonTimer(io, room, onGameEnd);
+    if (deliverQuestions) {
+        for (const player of room.players.values()) sendCannonQuestion(io, room, player.id);
+    }
+    emitCannonState(io, room, { now: immediate });
+    if (!room.cannonTimer && room.phase === 'playing') {
+        const code = room.code;
+        room.cannonTimer = setInterval(() => {
+            const live = getRoom(code);
+            if (!live || live.cannon !== room.cannon) {
+                clearInterval(room.cannonTimer);
+                room.cannonTimer = null;
+                return;
+            }
+            runCannonTick(io, live, onGameEnd);
+        }, CANNON_TICK_MS);
+        room.cannonTimer.unref?.();
+    }
     touchRoom(room);
 }
 
 function emitCannonPlayerSession(socket, room, player, payload) {
     const match = room.cannon;
     renameCannonPlayer(match, player.id, player.nickname);
-    const answer = match.answers?.[player.id];
     if (room.phase === 'finished') {
         socket.emit('live:player-joined', payload);
         socket.emit('live:cannon-state', cannonViewFor(room, { playerId: player.id }));
         socket.emit('live:game-finished', gameFinishedPayload(room));
         return;
     }
-    if (answer?.decision === 'prompt' || answer?.decision === 'pending') payload.awaitingChallenge = true;
+    const ps = match.players?.[player.id];
+    if (ps?.mode === 'prompt') payload.awaitingChallenge = true;
     socket.emit('live:player-joined', payload);
     socket.emit('live:cannon-state', cannonViewFor(room, { playerId: player.id }));
-    if (match.phase === 'question' && answer && !answer.submitted) {
-        const question = playerQuestionPayload(player, room);
-        if (question) socket.emit('live:your-question', question);
-    } else if (answer?.decision === 'prompt') {
+    const question = playerQuestionPayload(player, room);
+    if (question) {
+        socket.emit('live:your-question', question);
+    } else if (ps?.mode === 'prompt' && ps.wrong) {
         socket.emit('live:answer-result', {
             correct: false,
             reset: false,
@@ -2321,14 +2346,13 @@ function emitCannonPlayerSession(socket, room, player, payload) {
             gameFormat: 'word-cannon',
             progress: match.stats[player.id]?.correct || 0,
             won: false,
-            correctTerm: match.entry?.term || '',
-            answerText: answer.answerText || '',
-            definition: match.entry?.definition || '',
-            questionId: match.questionId,
+            correctTerm: ps.wrong.term,
+            answerText: ps.wrong.answerText,
+            definition: ps.wrong.definition,
+            questionId: ps.wrong.questionId,
+            nextAt: ps.nextAt,
             team: match.playerTeam[player.id],
         });
-    } else if (answer?.decision === 'pending') {
-        socket.emit('live:challenge-submitted', { challengeId: player.pendingChallenge?.challengeId || null });
     }
 }
 
@@ -2438,8 +2462,6 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             if (room.phase !== 'playing') return;
             attachPlayerSocket(socket, room, player);
             if (isWordCannon(room) && room.cannon) {
-                const answer = room.cannon.answers?.[player.id];
-                if (answer?.decision === 'prompt' || answer?.decision === 'pending') return;
                 const q = playerQuestionPayload(player, room);
                 if (q) socket.emit('live:your-question', q);
                 socket.emit('live:cannon-state', cannonViewFor(room, { playerId: player.id }));
@@ -2649,20 +2671,12 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 const player = room.players.get(socket.data.playerId);
                 if (isWordCannon(room)) {
                     if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
-                    if (questionId != null && Number(questionId) !== room.cannon.questionId) {
-                        throw new Error("Time's up for that question. Try the new one!");
-                    }
-                    const { result } = submitCannonAnswer(room.cannon, socket.data.playerId, text ?? answer, Date.now());
-                    if (result.challengeable && player) {
-                        setPendingChallenge(player, {
-                            term: room.cannon.entry.term,
-                            definition: room.cannon.entry.definition,
-                        }, result.answerText);
-                        player.questionId = room.cannon.questionId;
-                        player.answerLocked = true;
-                    }
+                    const { result, shot } = submitCannonAnswer(
+                        room.cannon, socket.data.playerId, text ?? answer, questionId ?? null, Date.now(),
+                    );
                     socket.emit('live:answer-result', result);
-                    afterCannonChange(io, room, onGameEnd);
+                    // A shot is news for the host right away; plain wrong answers can wait for the throttle.
+                    afterCannonChange(io, room, onGameEnd, { immediate: Boolean(shot) });
                     return;
                 }
                 if (isLuckyLanterns(room)) {
@@ -2751,10 +2765,27 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             try {
                 if (isWordCannon(room)) {
                     if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
-                    const challenge = submitChallenge(room, socket.data.playerId);
-                    markCannonChallengePending(room.cannon, socket.data.playerId, Date.now());
+                    const player = room.players.get(socket.data.playerId);
+                    const review = challengeCannonAnswer(room.cannon, socket.data.playerId, Date.now());
+                    const challenge = {
+                        id: review.id,
+                        cannon: true,
+                        entityId: review.playerId,
+                        entityType: 'player',
+                        nickname: review.nickname,
+                        answerText: review.answerText,
+                        correctTerm: review.term,
+                        definition: review.definition,
+                        progressBefore: room.cannon.stats[review.playerId]?.correct || 0,
+                        status: 'pending',
+                        createdAt: review.createdAt,
+                    };
+                    room.challenges.set(challenge.id, challenge);
+                    if (player) clearPendingChallenge(player);
                     emitChallengePending(io, room, challenge);
-                    socket.emit('live:challenge-submitted', { challengeId: challenge.id });
+                    socket.emit('live:challenge-submitted', { challengeId: challenge.id, cannon: true });
+                    // Straight on to the next question: the game never waits for the teacher.
+                    sendCannonQuestion(io, room, socket.data.playerId);
                     afterCannonChange(io, room, onGameEnd);
                     return;
                 }
@@ -2795,9 +2826,9 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 const player = room.players.get(socket.data.playerId);
                 if (isWordCannon(room)) {
                     if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
-                    const { result } = skipCannonPrompt(room.cannon, socket.data.playerId, Date.now());
+                    skipCannonPrompt(room.cannon, socket.data.playerId, Date.now());
                     if (player) clearPendingChallenge(player);
-                    if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    sendCannonQuestion(io, room, socket.data.playerId);
                     afterCannonChange(io, room, onGameEnd);
                     return;
                 }
@@ -2840,9 +2871,8 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     if (!challenge || challenge.status !== 'pending') {
                         throw new Error('Challenge not found or already resolved.');
                     }
-                    const { result } = settleCannonChallenge(room.cannon, challenge.entityId, accept, Date.now());
+                    const { result, shot } = settleCannonReview(room.cannon, challengeId, accept, Date.now());
                     const player = room.players.get(challenge.entityId);
-                    if (player) clearPendingChallenge(player);
                     room.challenges.delete(challengeId);
                     if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
                     io.to(room.hostSocketId).emit('live:challenge-resolved', {
@@ -2850,7 +2880,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                         accepted: accept,
                         entityId: challenge.entityId,
                     });
-                    afterCannonChange(io, room, onGameEnd);
+                    afterCannonChange(io, room, onGameEnd, { immediate: Boolean(shot) });
                     return;
                 }
                 if (isLuckyLanterns(room)) {
@@ -2951,10 +2981,8 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const outcome = hostSkipCannon(room.cannon, Date.now());
-                emitTimeoutResults(io, room, cannonTimeoutResults(room.cannon));
-                releaseCannonDecisions(io, room, outcome.skipped, { accept: false });
-                releaseCannonDecisions(io, room, outcome.declined, { accept: false });
-                afterCannonChange(io, room, onGameEnd, { deliverQuestions: room.cannon.phase === 'question' });
+                for (const id of outcome.dealt || []) sendCannonQuestion(io, room, id);
+                afterCannonChange(io, room, onGameEnd, { immediate: true });
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }
@@ -2971,12 +2999,10 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 return;
             }
             try {
-                if (room.cannon.phase !== 'volley' && room.cannon.phase !== 'intro') {
-                    socket.emit('live:error', { error: 'Next is available after the volley.' });
-                    return;
-                }
-                advanceCannon(room.cannon, Date.now());
-                afterCannonChange(io, room, onGameEnd, { deliverQuestions: room.cannon.phase === 'question' });
+                // Kept for older hosts: same as Skip (intro / end hold only).
+                const outcome = hostSkipCannon(room.cannon, Date.now());
+                for (const id of outcome.dealt || []) sendCannonQuestion(io, room, id);
+                afterCannonChange(io, room, onGameEnd, { immediate: true });
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }

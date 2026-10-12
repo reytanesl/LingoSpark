@@ -83,6 +83,8 @@
         stormOn: false, stormTimer: null, clockTimer: null,
         captionTimer: null, captionAlt: 0,
         cancelConfetti: null, flagsDown: new Set(), active: false,
+        shotSeq: null, inflight: { red: 0, blue: 0 }, rebuilding: new Set(), lastFireAt: {}, lastLandAt: 0,
+        labelIdx: {}, ptsShown: {}, winsShown: {}, suddenShown: false, endShown: false,
     };
     WCB.hostRevealDoneAt = () => H.revealDoneAt;
     WCB.clearHostReveal = () => { H.revealDoneAt = 0; };
@@ -136,9 +138,7 @@
         H.fx = new (FX().FxCanvas)($('wc-fx'));
         $('wc-skip').addEventListener('click', () => {
             H.revealDoneAt = 0;
-            const phase = H.state?.phase;
-            if (phase === 'volley') ctx.emit('live:cannon-next');
-            else ctx.emit('live:cannon-skip');
+            ctx.emit('live:cannon-skip');
         });
         $('wc-next').addEventListener('click', () => { H.revealDoneAt = 0; ctx.emit('live:cannon-next'); });
         $('wc-end').addEventListener('click', () => { H.revealDoneAt = 0; ctx.hostEnd(); });
@@ -186,6 +186,16 @@
         H.volleySeq = null;
         H.revealDoneAt = 0;
         H.flagsDown.clear();
+        H.shotSeq = null;
+        H.inflight = { red: 0, blue: 0 };
+        H.rebuilding.clear();
+        H.lastFireAt = {};
+        H.lastLandAt = 0;
+        H.labelIdx = {};
+        H.ptsShown = {};
+        H.winsShown = {};
+        H.suddenShown = false;
+        H.endShown = false;
         setStorm(false, { silent: true });
         if (H.cancelConfetti) H.cancelConfetti();
         H.cancelConfetti = null;
@@ -269,7 +279,7 @@
     }
 
     function renderPhones(state) {
-        const show = state.phase === 'question' || state.phase === 'review';
+        const show = false; // the live board shows who is answering
         TEAMS.forEach((t) => {
             const el = $(`wc-phones-${t}`);
             if (!el) return;
@@ -282,10 +292,11 @@
         });
     }
 
-    function caption(text) {
+    function caption(text, { tip = false } = {}) {
         const el = $('wc-caption-text');
         if (!el || el.dataset.text === text) return;
         el.dataset.text = text;
+        if (!tip) H.captionHoldUntil = Date.now() + 3500;
         el.innerHTML = `<span class="wc-caption-star">★</span>${esc(text)}`;
         el.classList.remove('is-swap');
         void el.offsetWidth;
@@ -293,25 +304,21 @@
     }
     function phaseCaption(state) {
         if (!state) return;
-        if (state.phase === 'intro') return caption('Destroy the other fort for a 🏆 WIN. Most WINS when the timer ends wins!');
-        if (state.suddenDeath && state.phase !== 'volley') return caption('Tied on WINS and points! Sudden death: the fastest correct answer fires the LAST SHOT!');
-        if (state.phase === 'review') return caption('Checking challenges… the cannons are waiting');
-        if (state.phase === 'volley') {
-            const v = state.volley;
-            if (v?.shots?.some((s) => s.final)) return; // the shot itself sets "Last shot decides the battle!"
-            if (H.stormOn || v?.storm) {
-                const g = v?.gust;
-                return caption(g ? `STORM gust ×${Number(g).toFixed(1)}: ${g >= 1.15 ? 'wild wind — slow shots blow back!' : g <= 0.85 ? 'calmer gust — aim holds better' : 'shots are wild'}` : 'STORM! Shots are wild — get answers right before the weather hits');
-            }
-            return caption('Every 0.1s weaker force — faster answers hit harder');
+        if (state.phase === 'intro') return caption('Destroy the other fort for a 🏆 WIN. Most WINS when the timer ends wins!', { tip: true });
+        if (state.phase === 'ending' || state.phase === 'finished') return;
+        if (state.suddenDeath) return caption('Sudden death! The first correct answer fires the LAST SHOT!', { tip: true });
+        if (H.captionHoldUntil > Date.now()) return;
+        if (H.stormOn) {
+            const g = state.gust;
+            return caption(g ? `STORM gust ×${Number(g).toFixed(1)}: ${g >= 1.15 ? 'wild wind — slow shots blow back!' : g <= 0.85 ? 'calmer gust — aim holds better' : 'shots are wild'}` : 'STORM! Shots are wild — answer fast!', { tip: true });
         }
-        if (H.stormOn) return caption('STORM! Shots are wild — get answers right before the weather hits');
         const tips = [
-            'Every 0.1s weaker force — faster answers hit harder',
-            'Destroy a fort for a WIN (+20 pts) — it rebuilds and play goes on!',
-            'Time up: most 🏆 WINS takes it — points break a tie',
+            'Correct = instant shot — faster hits harder',
+            'Destroy a fort: +1 🏆 WIN (+20 pts) — it rebuilds!',
+            'Challenge a typed answer — play goes on',
+            'Time up: most 🏆 WINS wins, then points',
         ];
-        caption(tips[H.captionAlt % tips.length]);
+        caption(tips[H.captionAlt % tips.length], { tip: true });
     }
 
     function startHostClock() {
@@ -319,7 +326,7 @@
         H.clockTimer = setInterval(tickHost, 200);
         H.captionTimer = setInterval(() => {
             H.captionAlt += 1;
-            if (H.state?.phase === 'question') phaseCaption(H.state);
+            if (H.state?.phase === 'battle') phaseCaption(H.state);
         }, 6000);
         tickHost();
     }
@@ -350,9 +357,12 @@
         }
         // Storm starts by the clock, not just by a state push.
         if (started && stormLeft <= 0 && !H.stormOn && state.phase !== 'finished') setStorm(true);
-        const ring = document.querySelector('#wc-question .wc-ring');
-        if (ring && state.phase === 'question') {
-            paintRing(ring, Math.max(0, (state.phaseEndsAt || 0) - (Date.now() + H.offset)), state.questionMs || 20000, false);
+        const clock = $('wc-live-clock');
+        if (clock) {
+            const sudden = state.suddenDeath && state.suddenEndsAt ? Math.max(0, state.suddenEndsAt - (Date.now() + H.offset)) : null;
+            const txt = state.phase === 'ending' || state.phase === 'finished' ? '0:00' : fmtClock(sudden ?? left);
+            if (clock.textContent !== txt) clock.textContent = txt;
+            clock.classList.toggle('is-low', (sudden ?? left) <= 10000 && started);
         }
     }
 
@@ -368,7 +378,7 @@
             FX().lightning(H.fx, { x: 960 + (Math.random() - 0.5) * 600 });
             sfx('thunder');
             banner('storm', 'STORM!');
-            caption('STORM! Shots are wild — get answers right before the weather hits');
+            caption('STORM! Shots are wild — answer fast!');
         }
         FX().rainLoop(true);
         const strike = () => {
@@ -439,64 +449,77 @@
         el.className = `wc-dmgnum${lucky ? ' is-lucky' : ''}`;
         el.style.left = `${bar.x + 180}px`;
         el.style.top = `${bar.y - 96}px`;
-        el.textContent = `-${Math.round(dmg)}`;
+        el.textContent = `-${fmtDmg(dmg)}`;
         box.appendChild(el);
         setTimeout(() => el.remove(), 1700);
     }
 
-    // ---------------- question card ----------------
-    function renderQuestion(state) {
+    // ---------------- live battle board (replaces the shared question card) ----------------
+    function teamStatHtml(t, team) {
+        const s = team?.stats || {};
+        const members = team?.members || [];
+        const answering = members.filter((m) => m.status === 'answering').length;
+        return `<div class="wc-live-team wc-live-team--${t}">
+            <h4>${t.toUpperCase()}</h4>
+            <div class="wc-live-nums">
+                <span title="Shots fired"><b>${s.shots || 0}</b>shots</span>
+                <span title="Hits"><b>${s.hits || 0}</b>hits</span>
+                <span title="Correct answers"><b>${s.accuracy || 0}%</b>right</span>
+                <span title="Shots per minute"><b>${Number(s.perMin || 0).toFixed(1)}</b>/min</span>
+            </div>
+            <p class="wc-live-crew">${answering}/${members.length} answering</p>
+        </div>`;
+    }
+    function feedRowHtml(shot) {
+        const friendly = shot.friendly || shot.outcome === 'blown' || shot.outcome === 'own';
+        const cls = shot.lastShot ? 'is-last' : friendly ? 'is-blown' : shot.outcome === 'lucky' ? 'is-lucky'
+            : shot.outcome === 'miss' ? 'is-miss' : shot.outcome === 'shield' ? 'is-shield' : `is-${shot.tier || 'fast'}`;
+        const what = shot.lastShot ? 'LAST SHOT!' : shot.fortDown ? 'FORT DOWN!'
+            : shot.outcome === 'hit' ? `HIT −${fmtDmg(shot.damage)}`
+            : shot.outcome === 'lucky' ? `LUCKY −${fmtDmg(shot.damage)}`
+            : shot.outcome === 'shield' ? 'SHIELD'
+            : friendly ? `OWN FORT −${fmtDmg(shot.damage)}` : 'MISS';
+        return `<li class="wc-feed-row is-${shot.team} ${cls}"><span class="wc-feed-who">${esc(shot.nickname || '?')}${shot.retro ? ' ✓' : ''}</span><span class="wc-feed-what">${esc(what)}</span><span class="wc-feed-ms">${(Math.max(0, shot.ms || 0) / 1000).toFixed(1)}s</span></li>`;
+    }
+    function fmtDmg(d) {
+        const n = Number(d) || 0;
+        return n >= 10 || Number.isInteger(n) ? String(Math.round(n)) : n.toFixed(1);
+    }
+    function renderLive(state) {
         const box = $('wc-question');
         if (!box) return;
         const phase = state.phase;
-        if (phase === 'intro' || phase === 'finished' || (!state.definition && !state.volley)) {
+        if (phase === 'intro' || phase === 'finished') {
             if (box.firstChild && phase !== 'finished') box.innerHTML = '';
-            H.questionKey = null;
             return;
         }
-        const volley = phase === 'volley' ? state.volley : null;
-        const def = volley ? (volley.definition || state.definition) : state.definition;
-        const key = `${state.questionId}|${volley ? 'v' + volley.seq : 'q'}`;
-        const sudden = state.suddenDeath || volley?.suddenDeath;
-        if (H.questionKey !== key) {
-            const fresh = !String(H.questionKey || '').startsWith(`${state.questionId}|`);
-            H.questionKey = key;
-            const pill = sudden ? '<span class="wc-qcard-pill is-sudden">SUDDEN DEATH</span>' : '<span class="wc-qcard-pill">QUESTION</span>';
-            box.innerHTML = `
-                <div class="wc-qcard" style="${fresh ? '' : 'animation:none'}">${pill}
-                    <div class="wc-qcard-text ${textSizeClass(def)}">${esc(def)}</div>
-                    <div class="wc-ring"${volley ? ' hidden' : ''}>${ringSvg()}<span class="wc-ring-num"></span></div>
-                </div>
-                <div class="wc-qmeta" id="wc-qmeta"></div>`;
-            const textEl = box.querySelector('.wc-qcard-text');
-            fitText(textEl);
-            document.fonts?.ready?.then(() => { if (textEl.isConnected) fitText(textEl); });
-            if (volley) {
-                const term = volley.answerTerm || '';
-                if (term) {
-                    const pillEl = document.createElement('div');
-                    pillEl.className = 'wc-answer';
-                    pillEl.innerHTML = `<svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="#fff"/><path d="M14,27 L23,36 L39,17" fill="none" stroke="#22b357" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>${esc(term)}`;
-                    box.appendChild(pillEl);
-                }
-            }
+        if (!box.querySelector('.wc-live')) {
+            box.innerHTML = `<div class="wc-live" id="wc-live">
+                <div class="wc-live-head"><span class="wc-live-pill" id="wc-live-pill">LIVE BATTLE</span></div>
+                <div class="wc-live-row"><div id="wc-live-red"></div><div class="wc-live-clock" id="wc-live-clock">0:00</div><div id="wc-live-blue"></div></div>
+            </div>
+            <ol class="wc-feed" id="wc-feed"></ol>`;
         }
-        const meta = $('wc-qmeta');
-        if (!meta) return;
-        if (phase === 'question') {
-            const counter = `<span class="wc-count"><b>${state.answeredCount || 0}</b> / ${state.playerCount || 0} answered</span>`;
-            const choices = (state.choices || []).map((c) => `<span class="wc-choice">${esc(c)}</span>`).join('');
-            const html = counter + choices;
-            if (meta.dataset.html !== html) { meta.dataset.html = html; meta.innerHTML = html; }
-        } else if (phase === 'review') {
-            const html = '<span class="wc-review">⏳ Waiting for the teacher to check a challenge…</span>';
-            if (meta.dataset.html !== html) { meta.dataset.html = html; meta.innerHTML = html; }
-            const ring = box.querySelector('.wc-ring');
-            if (ring) ring.hidden = true;
-        } else {
-            meta.innerHTML = '';
-            meta.dataset.html = '';
+        const pill = $('wc-live-pill');
+        const pillText = state.suddenDeath ? 'SUDDEN DEATH' : state.storm ? 'STORM!' : 'LIVE BATTLE';
+        if (pill && pill.textContent !== pillText) {
+            pill.textContent = pillText;
+            pill.classList.toggle('is-sudden', Boolean(state.suddenDeath));
+            pill.classList.toggle('is-storm', Boolean(state.storm) && !state.suddenDeath);
         }
+        TEAMS.forEach((t) => {
+            const el = $(`wc-live-${t}`);
+            if (!el) return;
+            const html = teamStatHtml(t, state.teams?.[t]);
+            if (el.dataset.html !== html) { el.dataset.html = html; el.innerHTML = html; }
+        });
+    }
+    /** Feed rows appear when the ball lands (never before the fort reacts). */
+    function pushFeed(shot) {
+        const feed = $('wc-feed');
+        if (!feed) return;
+        feed.insertAdjacentHTML('afterbegin', feedRowHtml(shot));
+        while (feed.children.length > 4) feed.lastElementChild.remove();
     }
 
     // ---------------- intro ----------------
@@ -520,10 +543,10 @@
             <div class="wc-tutorial-card">
                 <p class="wc-tutorial-kicker">Quick tutorial</p>
                 <ul class="wc-tutorial-list">
-                    <li><strong>Answer</strong> the shared question — each correct answer fires a cannonball in the next salvo.</li>
+                    <li><strong>Answer</strong> on your phone at your own pace — every correct answer fires your team's cannon <strong>right away</strong>.</li>
                     <li><strong>Faster answers</strong> = more force and damage. <strong>WINS</strong> = each time you destroy the other fort.</li>
                     <li><strong>Storm</strong> (last minute): wild shots — some can blow back onto your own fort.</li>
-                    <li><strong>Challenge</strong> typed answers if the teacher should review them.</li>
+                    <li><strong>Challenge</strong> a typed answer — the teacher checks it while you keep playing.</li>
                 </ul>
                 <div class="wc-tutorial-actions">
                     <button type="button" class="btn btn-grey" id="wc-intro-skip">Skip</button>
@@ -563,234 +586,229 @@
             H.introShown = true;
             hideIntro();
         }
-
-        const inVolley = state.phase === 'volley' && state.volley;
-        if (!inVolley || (prev && prev.phase !== 'volley')) {
-            if (!inVolley) {
-                if (H.volleySeq != null && state.phase !== 'finished') clearVolley();
-                TEAMS.forEach((t) => {
-                    const hp = state.teams?.[t]?.hp ?? 100;
-                    setBar(t, hp);
-                    FX().setFortDamage($('wc-scene'), t, hp);
-                });
-            }
-        }
-        // During a volley keep the score / WIN chips at their pre-volley values until the
-        // balls land (playVolley updates them), so a WIN never appears before the fort falls.
-        const holdScore = inVolley && state.volley.pointsBefore && H.scoreHeldSeq !== -state.volley.seq;
-        TEAMS.forEach((t) => {
-            const team = state.teams?.[t];
-            const prevPts = prev?.teams?.[t]?.points;
-            const pts = holdScore ? (state.volley.pointsBefore[t] ?? 0) : (team?.points || 0);
-            const kills = holdScore ? (state.volley.winsBefore?.[t] ?? 0) : (team?.fortKills || 0);
-            setScore(t, pts, kills, {
-                pop: !holdScore && prev != null && (team?.points || 0) > (prevPts || 0),
-            });
-        });
-        if (!inVolley && state.phase === 'question' && prev?.phase === 'question') {
+        // First state of this match (or a reconnect): jump straight to the current picture.
+        if (H.shotSeq == null) {
+            H.shotSeq = state.shotSeq || 0;
             TEAMS.forEach((t) => {
-                const nowLoaded = state.teams?.[t]?.loaded || 0;
-                const wasLoaded = prev.teams?.[t]?.loaded || 0;
-                if (nowLoaded > wasLoaded) sfx('pop', { volume: 0.7 });
+                H.ptsShown[t] = state.teams?.[t]?.points || 0;
+                H.winsShown[t] = state.teams?.[t]?.fortKills || 0;
             });
+            (state.shots || []).slice(-4).forEach((s) => pushFeed(s));
         }
+        // Fire every new shot as it happens (several balls may be in the air at once).
+        const fresh = (state.shots || []).filter((s) => s.seq > H.shotSeq).sort((a, b) => a.seq - b.seq);
+        if (fresh.length) {
+            H.shotSeq = fresh[fresh.length - 1].seq;
+            fresh.forEach((shot, i) => queueShot(shot, i));
+        }
+        syncBoard(state);
         renderPhones(state);
-        renderQuestion(state);
+        renderLive(state);
         if (state.storm && !H.stormOn) setStorm(true, { silent: Boolean(prev == null) });
-        const nextBtn = $('wc-next');
-        if (nextBtn) nextBtn.hidden = state.phase !== 'volley';
-        const skipBtn = $('wc-skip');
-        if (skipBtn) skipBtn.hidden = state.phase === 'finished';
-        if (inVolley && state.volley.seq !== H.volleySeq) {
-            H.volleySeq = state.volley.seq;
-            playVolley(state);
+        if (state.suddenDeath && !H.suddenShown) {
+            H.suddenShown = true;
+            cardAway(true);
+            setTimeout(() => { if (H.state?.phase === 'battle') cardAway(false); }, 2600);
+            banner('timeup', "TIME'S UP!", { pill: 'Tied! SUDDEN DEATH — first correct answer wins', pillCls: '' });
+            sfx('thud');
         }
+        if ((state.phase === 'ending' || state.phase === 'finished') && state.result && !H.endShown) {
+            H.endShown = true;
+            const landing = Math.max(0, H.lastLandAt - Date.now());
+            const hold = Math.max(0, (state.phaseEndsAt || 0) - (Date.now() + H.offset));
+            H.revealDoneAt = Date.now() + Math.max(hold, landing + 2600);
+            schedule(landing + 300, () => endSequence(state.result));
+        }
+        const nextBtn = $('wc-next');
+        if (nextBtn) nextBtn.hidden = true;
+        const skipBtn = $('wc-skip');
+        if (skipBtn) skipBtn.hidden = !(state.phase === 'intro' || state.phase === 'ending');
         phaseCaption(state);
         tickHost();
     };
 
-    // ---------------- volley choreography ----------------
-    const MISS_SPOT = { red: { x: 1150, y: 846 }, blue: { x: 770, y: 840 } };
-    const LABEL_AT = { red: { x: 780, y: 420 }, blue: { x: 1140, y: 420 } };
-
-    function playVolley(state) {
-        clearVolley();
-        const v = state.volley;
-        const nowServer = Date.now() + H.offset;
-        const start = (state.phaseEndsAt || nowServer) - (v.durationMs || 0);
-        const elapsed = Math.max(0, nowServer - start);
-        H.revealDoneAt = Date.now() + Math.max(0, (v.durationMs || 0) - elapsed);
+    /** HP bars / forts / scores follow the server unless a ball for that fort is still in the air. */
+    function syncBoard(state) {
         TEAMS.forEach((t) => {
-            const hp0 = v.hpBefore?.[t] ?? 100;
-            setBar(t, hp0, { quiet: true });
-            FX().setFortDamage($('wc-scene'), t, hp0);
-        });
-        if (!v.shots.length) {
-            schedule(500 - elapsed, () => {
-                const msg = v.suddenDeath ? 'No correct answers: try again!' : 'No shots this round!';
-                banner('timeup', '', { pill: msg, pillCls: 'is-sub' });
-                sfx('miss');
-            });
-        } else if (elapsed < 400) {
-            schedule(200, () => {
-                const n = v.shots.length;
-                banner('timeup', '', {
-                    pill: v.suddenDeath ? 'LAST SHOT!' : `FIRE! ${n} shot${n === 1 ? '' : 's'}`,
-                    pillCls: 'is-sub',
-                });
-            });
-        }
-        let hpNow = { ...(v.hpBefore || { red: 100, blue: 100 }) };
-        for (const shot of v.shots) {
-            const end = shot.at + shot.dur;
-            if (end <= elapsed) {
-                // Already happened before we joined: jump to its end state.
-                hpNow[shot.target] = shot.hpAfter;
-                setBar(shot.target, shot.hpAfter, { quiet: true });
-                FX().setFortDamage($('wc-scene'), shot.target, shot.hpAfter);
-                if (shot.final && shot.hpAfter <= 0) downFlag(shot.target, true);
-                continue;
+            if (!H.inflight[t] && !H.rebuilding.has(t)) {
+                const hp = state.teams?.[t]?.hp ?? 100;
+                setBar(t, hp);
+                FX().setFortDamage($('wc-scene'), t, hp);
             }
-            schedule(shot.at - elapsed, () => fireShot(shot, v));
-        }
-        const last = v.shots[v.shots.length - 1];
-        const endAt = last ? last.at + last.dur : 600;
-        // Score + WIN chips update when the balls land (final shot: when the fort falls).
-        const finalShot = v.shots.find((s) => s.final);
-        const scoreAt = finalShot ? finalShot.at + 3200 : (last ? last.at + 1000 : 0);
-        H.scoreHeldSeq = v.seq;
-        schedule(scoreAt - elapsed, () => {
-            H.scoreHeldSeq = -v.seq;
+        });
+        if (!H.inflight.red && !H.inflight.blue) {
             TEAMS.forEach((t) => {
-                const pts = v.points?.[t] ?? state.teams?.[t]?.points ?? 0;
-                const kills = v.wins?.[t] ?? state.teams?.[t]?.fortKills ?? 0;
-                setScore(t, pts, kills, { pop: true });
-            });
-            if (v.fortDown && v.wins) {
-                const killer = other(v.fortDown);
-                caption(`${NAMES[killer]} destroyed the fort: +1 🏆 WIN (${v.wins[killer]} total)!`);
-            }
-        });
-        if (v.rebuild && v.fortDown && v.next !== 'finished') {
-            const rebuildAt = endAt + 700;
-            schedule(rebuildAt - elapsed, () => rebuildFort(v.fortDown));
-        }
-        if (v.next === 'finished') schedule(endAt - elapsed, () => endSequence(v));
-        else if (v.next === 'sudden') {
-            schedule(endAt - elapsed, () => {
-                cardAway(true);
-                banner('timeup', "TIME'S UP!", { pill: 'Tied! SUDDEN DEATH', pillCls: '' });
-                sfx('thud');
+                const pts = state.teams?.[t]?.points || 0;
+                const kills = state.teams?.[t]?.fortKills || 0;
+                const pop = pts > (H.ptsShown[t] || 0);
+                H.ptsShown[t] = pts;
+                H.winsShown[t] = kills;
+                setScore(t, pts, kills, { pop });
             });
         }
     }
 
-    function fireShot(shot, v) {
+    // ---------------- shot choreography (continuous) ----------------
+    const MISS_SPOT = { red: { x: 1150, y: 846 }, blue: { x: 770, y: 840 } };
+    const LABEL_AT = { red: { x: 760, y: 470 }, blue: { x: 1160, y: 470 } };
+    const FLIGHT_MS = 950;
+    const LAST_FLIGHT_MS = 2400;
+
+    function queueShot(shot, i) {
+        const nowServer = Date.now() + H.offset;
+        const age = Math.max(0, nowServer - (shot.firedAt || nowServer));
+        const flight = shot.lastShot ? (FX().reduced() ? 1400 : LAST_FLIGHT_MS) : FLIGHT_MS;
+        if (age > flight + 1200) {
+            // Fired long before we saw it (tab asleep / reconnect): just show the outcome.
+            pushFeed(shot);
+            if (shot.fortDown && shot.rebuildAt && shot.rebuildAt > nowServer) {
+                H.rebuilding.add(shot.target);
+                downFlag(shot.target, true);
+                setBar(shot.target, 0, { quiet: true });
+                schedule(shot.rebuildAt - nowServer, () => rebuildFort(shot.target));
+            }
+            return;
+        }
+        // Balls fired in the same instant leave the barrel a beat apart (no perfect overlap).
+        const sameBarrel = Math.max(0, (H.lastFireAt[shot.team] || 0) + 160 - Date.now());
+        const delay = Math.max(sameBarrel, i * 90);
+        H.lastFireAt[shot.team] = Date.now() + delay;
+        H.inflight[shot.target] = (H.inflight[shot.target] || 0) + 1;
+        H.lastLandAt = Math.max(H.lastLandAt, Date.now() + delay + flight + 200);
+        schedule(delay, () => fireShot(shot, flight));
+    }
+
+    function fireShot(shot, flight) {
         const G = FX().G;
         const team = shot.team;
         const target = shot.target;
         const dir = team === 'red' ? 1 : -1;
-        const final = Boolean(shot.final);
-        const reduced = FX().reduced();
-        const flight = final ? (reduced ? 1400 : 2400) : 950;
-        const delay = final ? 700 : 0;
-        if (final) {
+        const big = Boolean(shot.lastShot);
+        if (big) {
             cardAway(true);
             $('wc-vignette')?.classList.add('is-on');
             $('wc-slowmo')?.classList.add('is-on');
-            if (shot.lastShot) {
-                banner('last', 'LAST SHOT!');
-                caption('Last shot decides the battle!');
-            } else if ((shot.hpAfter ?? 1) <= 0) {
-                banner('last', `${target.toUpperCase()} FORT DOWN!`);
-                caption(v.next === 'finished' ? 'Fort down with the last salvo!' : 'Fort down! +20 points — it rebuilds and the battle goes on');
-            } else {
-                // Time-up replay of the last real hit (the fort survives).
-                banner('last', 'FINAL HIT!');
-                caption("Time's up — the last hit of the battle");
-            }
+            banner('last', 'LAST SHOT!');
+            caption(`${shot.nickname || NAMES[team]} fires the LAST SHOT!`);
             sfx('thud');
-            setTimeout(() => sfx('thud', { volume: 0.8 }), 420);
         }
-        schedule(delay, () => {
-            const cannon = document.querySelector(`#wc-scene .wc-cannon--${team}`);
-            if (cannon) { cannon.classList.remove('is-recoil'); void cannon.offsetWidth; cannon.classList.add('is-recoil'); }
-            const from = G[team].muzzle;
-            FX().muzzleFlash(H.fx, from, dir);
-            FX().smoke(H.fx, from, { dir, n: final ? 14 : 9 });
-            sfx('boom', final ? { rate: 0.8 } : undefined);
-            setTimeout(() => sfx('whoosh', final ? { rate: 0.7 } : undefined), 80);
-            if (shot.outcome === 'blown' || shot.outcome === 'own') setTimeout(() => sfx('wind'), 200);
-            let to;
-            let height = 300;
-            let wobble = 0;
-            const friendly = Boolean(shot.friendly || shot.outcome === 'blown' || shot.outcome === 'own');
-            if (shot.outcome === 'hit' || shot.outcome === 'lucky' || (friendly && shot.damage > 0)) {
-                to = { x: G[target].hit.x + (Math.random() - 0.5) * 50, y: G[target].hit.y + (Math.random() - 0.5) * 30 };
-                height = shot.outcome === 'lucky' ? 420 : final ? 380 : friendly ? 360 : 300;
-                if (v.storm || shot.outcome === 'lucky' || friendly) wobble = friendly ? 140 : 60;
-            } else if (shot.outcome === 'blown') {
-                to = { x: 960 + dir * (220 + Math.random() * 260), y: 700 + Math.random() * 60 };
-                height = 420;
-                wobble = 190;
-            } else {
-                to = { x: MISS_SPOT[team].x + (Math.random() - 0.5) * 140, y: MISS_SPOT[team].y + (Math.random() - 0.5) * 30 };
-                height = 240;
-                if (v.storm) wobble = 70;
-            }
-            FX().shoot(H.fx, {
-                from, to, height, wobble, duration: flight,
-                r: final ? 30 : 24,
-                onLand: (pos) => land(shot, v, pos, final),
-            });
+        const cannon = document.querySelector(`#wc-scene .wc-cannon--${team}`);
+        if (cannon) { cannon.classList.remove('is-recoil'); void cannon.offsetWidth; cannon.classList.add('is-recoil'); }
+        const from = G[team].muzzle;
+        FX().muzzleFlash(H.fx, from, dir);
+        FX().smoke(H.fx, from, { dir, n: big ? 14 : 7 });
+        sfx('boom', big ? { rate: 0.8 } : { volume: 0.8 });
+        setTimeout(() => sfx('whoosh', big ? { rate: 0.7 } : { volume: 0.6 }), 80);
+        const friendly = Boolean(shot.friendly || shot.outcome === 'blown' || shot.outcome === 'own');
+        if (friendly) setTimeout(() => sfx('wind'), 200);
+        let to;
+        let height = 300;
+        let wobble = 0;
+        if (shot.outcome === 'hit' || shot.outcome === 'lucky' || shot.outcome === 'shield' || (friendly && shot.damage > 0)) {
+            to = { x: G[target].hit.x + (Math.random() - 0.5) * 60, y: G[target].hit.y + (Math.random() - 0.5) * 36 };
+            height = shot.outcome === 'lucky' ? 420 : big ? 380 : friendly ? 360 : 280 + Math.random() * 60;
+            if (shot.storm || shot.outcome === 'lucky' || friendly) wobble = friendly ? 140 : 60;
+        } else if (shot.outcome === 'blown') {
+            to = { x: 960 + dir * (220 + Math.random() * 260), y: 700 + Math.random() * 60 };
+            height = 420;
+            wobble = 190;
+        } else {
+            to = { x: MISS_SPOT[team].x + (Math.random() - 0.5) * 140, y: MISS_SPOT[team].y + (Math.random() - 0.5) * 30 };
+            height = 240;
+            if (shot.storm) wobble = 70;
+        }
+        FX().shoot(H.fx, {
+            from, to, height, wobble, duration: flight,
+            r: big ? 30 : 22,
+            onLand: (pos) => land(shot, pos),
         });
     }
 
-    function land(shot, v, pos, final) {
-        const team = shot.team;
+    function nextLabelSlot(team) {
+        H.labelIdx[team] = ((H.labelIdx[team] || 0) + 1) % 4;
+        const base = LABEL_AT[team];
+        return { x: base.x, y: base.y + H.labelIdx[team] * 92 };
+    }
+
+    function land(shot, pos) {
         const target = shot.target;
+        H.inflight[target] = Math.max(0, (H.inflight[target] || 0) - 1);
         const friendly = Boolean(shot.friendly || shot.outcome === 'blown' || shot.outcome === 'own');
         const hitLike = shot.damage > 0 && (shot.outcome === 'hit' || shot.outcome === 'lucky' || friendly);
+        const down = Boolean(shot.fortDown) && !shot.lastShot;
         const tierCls = shot.lastShot ? 'is-last'
-            : shot.outcome === 'blown' || shot.outcome === 'own' ? 'is-blown'
+            : friendly ? 'is-blown'
             : shot.outcome === 'lucky' ? 'is-lucky'
             : shot.outcome === 'miss' ? 'is-miss'
+            : shot.outcome === 'shield' ? 'is-blown'
             : `is-${shot.tier || 'fast'}`;
         const who = shot.nickname ? `${shot.nickname}: ` : '';
-        const text = shot.lastShot ? `LAST SHOT! ${who.replace(/: $/, '')}`.trim() : `${who}${shot.label}`;
-        const slot = labelSlot(shot, v);
-        label(slot.at, text, tierCls, { long: final, detail: shot.lastShot ? '' : (shot.detail || ''), compact: slot.compact });
+        const text = shot.lastShot ? `LAST SHOT! ${shot.nickname || ''}`.trim() : `${who}${shot.label}`;
+        label(nextLabelSlot(shot.team), text, tierCls, { detail: shot.lastShot ? '' : (shot.detail || ''), long: shot.lastShot });
+        pushFeed(shot);
         if (hitLike) {
-            FX().explosion(H.fx, pos, { scale: final ? 1.7 : shot.outcome === 'lucky' ? 1.35 : friendly ? 1.15 : 1 });
-            FX().smoke(H.fx, pos, { n: 10, drift: 90, color: '90,90,95', size: 46 });
-            FX().shake($('wc-shake'), { power: final ? 36 : shot.outcome === 'lucky' ? 26 : 16, duration: final ? 900 : 500 });
-            sfx('explosion', final ? { rate: 0.8 } : undefined);
+            FX().explosion(H.fx, pos, { scale: shot.lastShot || down ? 1.7 : shot.outcome === 'lucky' ? 1.35 : 1 });
+            FX().smoke(H.fx, pos, { n: 8, drift: 90, color: '90,90,95', size: 42 });
+            FX().shake($('wc-shake'), { power: down || shot.lastShot ? 34 : shot.outcome === 'lucky' ? 24 : 12, duration: down ? 800 : 420 });
+            sfx('explosion', down ? { rate: 0.8 } : { volume: 0.8 });
             const fort = document.querySelector(`#wc-scene .wc-fort--${target}`);
             if (fort) { fort.classList.remove('is-hit'); void fort.offsetWidth; fort.classList.add('is-hit'); }
-            setBar(target, shot.hpAfter, { hit: true });
-            FX().setFortDamage($('wc-scene'), target, shot.hpAfter);
+            const hp = shot.hpAfter ?? 0;
+            if (!H.rebuilding.has(target) || down) {
+                setBar(target, hp, { hit: true });
+                FX().setFortDamage($('wc-scene'), target, hp);
+            }
             damageNumber(target, shot.damage, shot.outcome === 'lucky');
             if (shot.outcome === 'lucky') {
                 FX().lightning(H.fx, { x: pos.x, toY: pos.y - 20 });
-                sfx('thunder', { volume: 0.8 });
+                sfx('thunder', { volume: 0.7 });
                 banner('lucky', 'LUCKY HIT!');
             } else if (friendly) {
                 banner('blown', shot.outcome === 'blown' ? 'BLOWN BACK!' : 'OWN FORT!');
             }
-            if (final && shot.hpAfter <= 0) {
-                setTimeout(() => downFlag(target), 300);
-            }
+        } else if (shot.outcome === 'shield') {
+            FX().splash(H.fx, pos, { scale: 0.6 });
+            sfx('pop', { volume: 0.5 });
         } else {
             FX().splash(H.fx, pos, { scale: shot.outcome === 'blown' ? 0.8 : 1 });
-            sfx('splash');
+            sfx('splash', { volume: 0.8 });
             if (shot.outcome === 'blown') banner('blown', 'BLOWN BACK!');
         }
-        if (final) {
+        // Score chips move with the ball that earned them.
+        TEAMS.forEach((t) => {
+            const pts = Math.max(H.ptsShown[t] || 0, shot.pointsAfter?.[t] ?? 0);
+            const kills = Math.max(H.winsShown[t] || 0, shot.winsAfter?.[t] ?? 0);
+            const pop = pts > (H.ptsShown[t] || 0);
+            H.ptsShown[t] = pts;
+            H.winsShown[t] = kills;
+            setScore(t, pts, kills, { pop });
+        });
+        if (down) {
+            const killer = other(target);
+            H.rebuilding.add(target);
+            setTimeout(() => downFlag(target), 250);
+            cardAway(true);
+            setTimeout(() => { if (H.state?.phase === 'battle') cardAway(false); }, 2900);
+            banner('last', `${target.toUpperCase()} FORT DOWN!`, { pill: `+1 🏆 WIN for ${NAMES[killer]}`, pillCls: `is-${killer}` });
+            caption(`${NAMES[killer]}: +1 🏆 WIN (${shot.winsAfter?.[killer] ?? ''} total)! Fort rebuilds…`);
+            sfx('thud');
+            const nowServer = Date.now() + H.offset;
+            schedule(Math.max(1600, (shot.rebuildAt || nowServer + 2200) - nowServer), () => rebuildFort(target));
+        }
+        if (shot.lastShot) {
+            setTimeout(() => downFlag(target), 300);
             setTimeout(() => {
                 $('wc-vignette')?.classList.remove('is-on');
                 $('wc-slowmo')?.classList.remove('is-on');
-                if (v.next !== 'finished') cardAway(false);
             }, 1700);
+        }
+        if (H.state && !H.inflight[target] && !H.rebuilding.has(target)) {
+            // All balls for this fort landed: settle on the server's number.
+            const hp = H.state.teams?.[target]?.hp;
+            if (hp != null && H.state.phase === 'battle') {
+                setBar(target, hp);
+                FX().setFortDamage($('wc-scene'), target, hp);
+            }
         }
     }
 
@@ -813,24 +831,26 @@
     }
 
     function rebuildFort(team) {
+        H.rebuilding.delete(team);
+        if (H.state?.phase === 'ending' || H.state?.phase === 'finished') return;
         raiseFlag(team);
-        setBar(team, 100, { hit: true });
-        FX().setFortDamage($('wc-scene'), team, 100);
+        const hp = H.state?.teams?.[team]?.hp ?? 100;
+        setBar(team, hp, { hit: true });
+        FX().setFortDamage($('wc-scene'), team, hp);
         sfx('chime', { volume: 0.6 });
-        caption('Fort rebuilt! Keep scoring until the timer ends');
     }
 
-    function endSequence(v) {
-        const winner = v.winner;
+    function endSequence(result) {
+        const winner = result?.winner || null;
         cardAway(true);
         const go = () => {
             if (!winner) {
                 banner('win', "IT'S A DRAW!", { cls: 'is-draw' });
-                caption("It's a draw on points!");
+                caption("It's a draw!");
             } else {
                 banner('win', `${winner.toUpperCase()} TEAM WINS!`, { cls: `is-${winner}` });
-                const pts = v.points?.[winner];
-                const w = v.wins || {};
+                const pts = result.points?.[winner];
+                const w = result.wins || {};
                 const byWins = (w.red ?? 0) !== (w.blue ?? 0);
                 caption(byWins ? `${NAMES[winner]} wins with ${w[winner]} 🏆 WIN${w[winner] === 1 ? '' : 'S'}!`
                     : pts != null ? `${NAMES[winner]} wins on points: ${pts}!` : `${NAMES[winner]} wins the battle!`);
@@ -839,12 +859,12 @@
             if (H.cancelConfetti) H.cancelConfetti();
             H.cancelConfetti = FX().confetti(H.fx, { duration: 5200, burst: { x: 960, y: 420 } });
         };
-        if (v.reason === 'time' && !v.shots.some((s) => s.final)) {
+        if (result?.reason === 'time' || result?.reason === 'draw') {
             banner('timeup', "TIME'S UP!");
             sfx('thud');
-            schedule(1600, go);
+            schedule(1500, go);
         } else {
-            schedule(500, go);
+            schedule(400, go);
         }
     }
 
@@ -866,7 +886,7 @@
         }
         const title = $('wc-lobby-title');
         if (title && !title.firstChild) {
-            title.innerHTML = `${FX().titleHtml(['WORD CANNON BATTLE'])}<p>Red vs Blue · every correct answer fires a shot · faster = more force · storm in the final minute</p>`;
+            title.innerHTML = `${FX().titleHtml(['WORD CANNON BATTLE'])}<p>Red vs Blue · every correct answer fires instantly · faster = more force · storm in the final minute</p>`;
         }
     };
 
@@ -891,7 +911,7 @@
     // ==================================================================
     // PHONE
     // ==================================================================
-    const P = { state: null, offset: 0, key: null, result: null, timer: null, volleySeq: null, shotTimers: [], loadedSeen: null, stormOn: false };
+    const P = { state: null, offset: 0, key: null, result: null, qid: null, qEndsAt: null, qMs: 20000, timer: null, toastTimer: null, shotTimers: [], stormOn: false };
 
     function phoneSkySvg() {
         const cl = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff"><circle cx="0" cy="0" r="40"/><circle cx="46" cy="-16" r="50"/><circle cx="98" cy="-2" r="40"/><circle cx="50" cy="18" r="36"/><ellipse cx="50" cy="30" rx="110" ry="14" fill="#d3e9fa"/></g>`;
@@ -923,128 +943,122 @@
     }
 
     WCB.phoneResult = function phoneResult(result) {
-        P.result = result || null;
-        if (result?.eligible) sfx('chime', { volume: 0.7 });
-        else if (result && !result.challengeable && result.correct === false) sfx('miss', { volume: 0.6 });
-        // Merge the answer into local you.* so renderPhone does not wipe the
-        // challenge panel with a stale "no decision yet" state that arrives
-        // before the next live:cannon-state push.
-        if (P.state && result && result.questionId === P.state.questionId) {
-            const decision = result.challengeable ? 'prompt'
-                : result.eligible ? 'correct'
-                : result.correct ? 'correct' : 'wrong';
-            P.state = {
-                ...P.state,
-                you: {
-                    ...(P.state.you || {}),
-                    decision,
-                    eligible: Boolean(result.eligible),
-                    ms: result.ms ?? P.state.you?.ms ?? null,
-                    tier: result.tier ?? P.state.you?.tier ?? null,
-                    status: result.challengeable ? 'deciding' : (result.eligible ? 'loaded' : 'out'),
-                    timedOut: Boolean(result.timedOut || P.state.you?.timedOut),
-                    correctTerm: (!result.eligible && !result.challengeable ? result.correctTerm : null) ?? P.state.you?.correctTerm ?? null,
-                },
-            };
+        if (!result) return;
+        P.result = result;
+        P.resultAt = Date.now();
+        // The state push for this answer may still be on its way: move "you" on locally so the
+        // render below keeps the Challenge panel (prompt) or the feedback card on screen.
+        if (P.state?.you && result.questionId != null) {
+            P.state = { ...P.state, you: { ...P.state.you, mode: result.challengeable ? 'prompt' : 'feedback', questionId: null } };
+        }
+        if (result.correct) {
+            sfx('boom', { volume: 0.6 });
+            if (navigator.vibrate) { try { navigator.vibrate(50); } catch (_) { /* optional */ } }
+        } else if (!result.challengeable) sfx('miss', { volume: 0.6 });
+        if (P.state) WCB.renderPhone(P.state);
+    };
+    /** A new own question arrived: drop the old feedback card. */
+    WCB.phoneQuestion = function phoneQuestion(q) {
+        P.qid = q?.questionId ?? null;
+        P.qEndsAt = q?.endsAt ?? null;
+        P.qMs = (q?.timeLimitSec || 20) * 1000;
+        P.result = null;
+        if (P.state?.you && q) {
+            P.state = { ...P.state, you: { ...P.state.you, mode: 'answering', questionId: q.questionId, endsAt: q.endsAt ?? null } };
         }
         if (P.state) WCB.renderPhone(P.state);
     };
-    WCB.phoneChallengeResolved = function phoneChallengeResolved(result) {
-        if (P.result) P.result = { ...P.result, correct: Boolean(result?.correct), eligible: Boolean(result?.correct), challengeable: false, challengeAccepted: result?.challengeAccepted, challengeDeclined: result?.challengeDeclined };
-        if (result?.correct) sfx('chime', { volume: 0.7 });
-        if (P.state) WCB.renderPhone(P.state);
+    WCB.phoneChallengeSent = function phoneChallengeSent() {
+        phoneToast('📨 Challenge sent — the teacher will check it. Keep firing!', 'is-info');
     };
+    WCB.phoneChallengeResolved = function phoneChallengeResolved(result) {
+        if (result?.challengeAccepted) {
+            const s = result.shot;
+            const what = s ? (s.outcome === 'hit' || s.outcome === 'lucky' ? `HIT −${fmtDmg(s.damage)}` : s.label) : '';
+            phoneToast(`✅ Challenge accepted! "${result.answerText}" counts${s ? ` — shot fired: ${what}` : ''}`, 'is-good');
+            sfx('chime', { volume: 0.7 });
+        } else if (result?.challengeDeclined) {
+            phoneToast(`❌ Challenge rejected — the answer was ${result.correctTerm || '…'}`, 'is-bad');
+        }
+    };
+    function phoneToast(text, cls = '') {
+        const root = $('live-play-cannon');
+        if (!root) return;
+        let el = $('wcp-toast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'wcp-toast';
+            el.className = 'wcp-toast';
+            el.setAttribute('role', 'status');
+            root.appendChild(el);
+        }
+        el.className = `wcp-toast ${cls} is-on`;
+        el.textContent = text;
+        clearTimeout(P.toastTimer);
+        P.toastTimer = setTimeout(() => el.classList.remove('is-on'), 3200);
+    }
 
     WCB.resetPhone = function resetPhone() {
         P.state = null;
         P.key = null;
         P.result = null;
-        P.volleySeq = null;
-        P.scoreSeq = null;
+        P.qid = null;
+        P.qEndsAt = null;
         P.shotTimers.forEach(clearTimeout);
         P.shotTimers = [];
         clearInterval(P.timer);
         P.timer = null;
+        clearTimeout(P.toastTimer);
         const root = $('live-play-cannon');
         if (root) { root.hidden = true; root.innerHTML = ''; }
-        document.body.classList.remove('live-cannon-player', 'wc-phone-storm');
+        document.body.classList.remove('live-cannon-player', 'wc-phone-storm', 'wcp-feedback');
     };
 
     WCB.isPhoneActive = () => document.body.classList.contains('live-cannon-player');
 
+
+    /** Feedback for this phone's last answer (null while answering). */
     function phoneBodyHtml(state, you, team) {
         const phase = state.phase;
-        const r = P.result && P.result.questionId === state.questionId ? P.result : null;
         const ball = `<span class="wcp-ball">${FX().ballSvg()}</span>`;
         if (phase === 'intro') {
             return `<div class="wcp-card is-good wcp-tutorial">${ball}<b>Quick tutorial</b>
                 <p>You're on <strong>${esc(NAMES[team] || 'crew')}</strong>.</p>
                 <ul class="wcp-tutorial-list">
-                    <li>Answer correctly to load a shot for your team.</li>
+                    <li>Answer at your own pace — each correct answer fires <strong>right away</strong>.</li>
                     <li>Faster answers hit harder.</li>
                     <li>Each fort you destroy = <strong>1 WIN</strong> for your team.</li>
                 </ul>
-                <p class="wcp-tutorial-note">Watch the big screen — the host will start the battle.</p></div>`;
+                <p class="wcp-tutorial-note">Watch the big screen — the battle starts in a moment.</p></div>`;
         }
-        if (phase === 'question' || phase === 'review') {
-            if (you.decision === 'prompt' || you.decision === 'pending') return '';
-            if (you.eligible) {
-                const tier = you.tier || r?.tier || 'good';
-                const force = you.force ?? r?.force;
-                const secs = you.ms != null ? `${(you.ms / 1000).toFixed(1)}s` : '';
-                const forcePct = force != null ? `${Math.round(force * 100)}% force` : '';
-                return `<div class="wcp-card is-good">${ball}<div class="wcp-plus">SHOT READY!</div>
-                    <span class="wcp-tier is-${tier}">${tier.toUpperCase()} ${secs}</span>
-                    <p>${forcePct ? `${forcePct}. ` : ''}${tier === 'fast' ? 'Full power!' : tier === 'good' ? 'Solid shot.' : 'Weaker shot — answer faster next time.'}</p></div>`;
-            }
-            if (you.status === 'out' || (r && !r.eligible && !r.challengeable)) {
-                const correctTerm = r?.correctTerm || you.correctTerm;
-                const term = correctTerm ? `<p>The answer was <strong>${esc(correctTerm)}</strong>.</p>` : '';
-                const head = you.timedOut || r?.timedOut ? '⏰ Time\'s up! No shot this time' : 'No shot this time';
-                return `<div class="wcp-card is-bad"><b>${head}</b>${term}<p>Get the next one!</p></div>`;
-            }
-            if (phase === 'review') return '<div class="wcp-card"><b>Hold fire…</b><p>The teacher is checking a challenge.</p></div>';
-            return '';
+        if (phase === 'ending') {
+            const r = state.result;
+            const head = r?.winner ? `${r.winner.toUpperCase()} TEAM WINS!` : "IT'S A DRAW!";
+            return `<div class="wcp-card ${r?.winner === team ? 'is-good' : ''}"><b>${esc(head)}</b><p>Watch the big screen!</p></div>`;
         }
-        if (phase === 'volley') {
-            const v = state.volley || {};
-            const mine = (v.shots || []).filter((s) => String(s.shooterId) === String(you.id || ctx.playerId()));
-            const teamShots = (v.shots || []).filter((s) => s.team === team).length;
-            const rows = mine.map((s, i) => `<div class="wcp-shot is-wait" data-shot="${i}">🔥 Your shot is flying…</div>`).join('');
-            // A timeout goes straight to the volley, so the wrong-answer feedback rides on this card.
-            const timedOut = !mine.length && (you.timedOut || r?.timedOut);
-            const correctTerm = r?.correctTerm || you.correctTerm;
-            const timeUp = timedOut
-                ? `<p class="wcp-timeup"><b>⏰ Time's up!</b> ${correctTerm ? `The answer was <strong>${esc(correctTerm)}</strong>. ` : ''}No shot from you this round.</p>`
-                : '';
-            return `<div class="wcp-card ${mine.length ? 'is-good' : ''}">${timeUp}<b>${v.suddenDeath ? 'LAST SHOT!' : 'FIRE!'}</b>
-                <p>${teamShots ? `Your team fires ${teamShots} shot${teamShots === 1 ? '' : 's'}.` : 'Your team has no shots this round.'} Watch the big screen!</p>
-                ${rows ? `<div class="wcp-shots">${rows}</div>` : ''}</div>`;
+        const r = P.result;
+        if (!r || (P.qid != null && r.questionId !== P.qid)) return '';
+        if (r.challengeable) return '';
+        if (r.correct) {
+            const s = r.shot || {};
+            const tier = r.tier || s.tier || 'good';
+            const secs = r.ms != null ? `${(r.ms / 1000).toFixed(1)}s` : '';
+            const out = s.lastShot ? 'LAST SHOT — you won it!'
+                : s.fortDown && s.target !== team ? 'FORT DOWN! +1 🏆 WIN'
+                : s.outcome === 'hit' ? `HIT −${fmtDmg(s.damage)}`
+                : s.outcome === 'lucky' ? `LUCKY HIT −${fmtDmg(s.damage)}`
+                : s.outcome === 'shield' ? 'Shield! Fort is rebuilding'
+                : s.outcome === 'blown' ? `Blown back! −${fmtDmg(s.damage)} own fort`
+                : s.outcome === 'own' ? `Own fort −${fmtDmg(s.damage)}`
+                : 'MISS — splash!';
+            const cls = s.outcome === 'hit' || s.outcome === 'lucky' ? 'is-hit' : s.outcome === 'miss' || s.outcome === 'shield' ? 'is-miss' : 'is-blown';
+            return `<div class="wcp-card is-good wcp-fired"><div class="wcp-plus">BOOM! FIRED</div>
+                <span class="wcp-tier is-${tier}">${tier.toUpperCase()} ${secs}</span>
+                <div class="wcp-shot ${cls}"><b>${esc(out)}</b><small>${esc(s.detail || '')}</small></div></div>`;
         }
-        return '';
-    }
-
-    function scheduleShotReveals(state) {
-        P.shotTimers.forEach(clearTimeout);
-        P.shotTimers = [];
-        const v = state.volley;
-        if (!v) return;
-        const youId = String(state.you?.id || ctx.playerId() || '');
-        const mine = (v.shots || []).filter((s) => String(s.shooterId) === youId);
-        const start = (state.phaseEndsAt || 0) - (v.durationMs || 0);
-        mine.forEach((s, i) => {
-            const impact = s.at + (s.final ? 3100 : 950);
-            const wait = start + impact - (Date.now() + P.offset);
-            P.shotTimers.push(setTimeout(() => {
-                const el = document.querySelector(`#live-play-cannon [data-shot="${i}"]`);
-                if (!el) return;
-                const cls = s.outcome === 'hit' || s.outcome === 'lucky' ? 'is-hit' : s.outcome === 'blown' || s.outcome === 'own' ? 'is-blown' : 'is-miss';
-                el.className = `wcp-shot ${cls}`;
-                el.innerHTML = `<b>${esc(s.label)}</b><small>${esc(s.detail || '')}</small>`;
-                sfx(cls === 'is-hit' ? 'explosion' : 'splash', { volume: 0.5 });
-                if (navigator.vibrate && cls === 'is-hit') { try { navigator.vibrate(60); } catch (_) { /* optional */ } }
-            }, Math.max(0, wait)));
-        });
+        const term = r.correctTerm ? `<p>The answer was <strong>${esc(r.correctTerm)}</strong>.</p>` : '';
+        const head = r.timedOut ? '⏰ Time\'s up! No shot' : '✗ Not quite — no shot';
+        return `<div class="wcp-card is-bad"><b>${head}</b>${term}<p class="wcp-next">Next question…</p></div>`;
     }
 
     WCB.renderPhone = function renderPhone(state) {
@@ -1070,7 +1084,7 @@
                     <div class="wcp-bar is-red" id="wcp-bar-red"><i></i><span></span></div>
                     <div class="wcp-bar is-blue" id="wcp-bar-blue"><i></i><span></span></div>
                 </div>
-                <div class="wcp-ringrow"><div class="wcp-ring" id="wcp-ring" hidden>${ringSvg()}<b></b></div></div>
+                <div class="wcp-ringrow"><div class="wcp-mine" id="wcp-mine"></div><div class="wcp-ring" id="wcp-ring" hidden>${ringSvg()}<b></b></div></div>
                 <div class="wcp-body" id="wcp-body"></div>`;
             P.key = null;
         }
@@ -1080,81 +1094,53 @@
             const html = `${esc((NAMES[team] || 'Team').toUpperCase())} <small>${esc(ctx.nickname() || '')}</small>`;
             if (teamEl.dataset.html !== html) { teamEl.dataset.html = html; teamEl.innerHTML = html; }
         }
-        const inVolley = state.phase === 'volley' && state.volley;
-        // Score / WIN chips: during a volley show the pre-volley numbers until the balls land
-        // (same moment as the host), then the new totals. Updated in place — no lag, no flicker.
-        const holdScore = inVolley && state.volley.pointsBefore && P.scoreSeq !== state.volley.seq;
         TEAMS.forEach((t) => {
             const bar = $(`wcp-bar-${t}`);
             if (!bar) return;
-            const hp = inVolley ? (state.volley.hpBefore?.[t] ?? 100) : (state.teams?.[t]?.hp ?? 100);
-            if (!inVolley || P.volleySeq !== state.volley.seq) {
-                bar.querySelector('i').style.width = `${Math.max(0, Math.min(100, hp))}%`;
-                bar.querySelector('span').textContent = `${t.toUpperCase()} ${Math.round(hp)}%`;
-            }
+            const hp = state.teams?.[t]?.hp ?? 100;
+            bar.querySelector('i').style.width = `${Math.max(0, Math.min(100, hp))}%`;
+            bar.querySelector('span').textContent = `${t.toUpperCase()} ${Math.round(hp)}%`;
             bar.classList.toggle('is-mine', t === team);
-            const pts = holdScore ? (state.volley.pointsBefore[t] ?? 0) : (state.teams?.[t]?.points ?? 0);
-            const kills = holdScore ? (state.volley.winsBefore?.[t] ?? 0) : (state.teams?.[t]?.fortKills || 0);
-            setPhoneScore(t, pts, kills);
+            setPhoneScore(t, state.teams?.[t]?.points ?? 0, state.teams?.[t]?.fortKills || 0, true);
         });
-        if (inVolley && P.volleySeq !== state.volley.seq) {
-            // Move the bars + scores to the end of the volley once the shots land.
-            const v = state.volley;
-            const start = (state.phaseEndsAt || 0) - (v.durationMs || 0);
-            const last = v.shots[v.shots.length - 1];
-            const finalShot = v.shots.find((s) => s.final);
-            const landAt = finalShot ? finalShot.at + 3200 : last ? last.at + 1000 : 0;
-            const wait = start + landAt - (Date.now() + P.offset);
-            P.shotTimers.push(setTimeout(() => {
-                P.scoreSeq = v.seq;
-                TEAMS.forEach((t) => {
-                    const bar = $(`wcp-bar-${t}`);
-                    if (!bar) return;
-                    const hp = v.hpAfter?.[t] ?? 100;
-                    bar.querySelector('i').style.width = `${Math.max(0, hp)}%`;
-                    bar.querySelector('span').textContent = `${t.toUpperCase()} ${Math.round(hp)}%`;
-                    setPhoneScore(t, v.points?.[t] ?? 0, v.wins?.[t] ?? 0, true);
-                });
-            }, Math.max(0, wait)));
+        const mine = $('wcp-mine');
+        if (mine) {
+            const st = you.stats || {};
+            const html = `<span>🎯 ${st.hits || 0}</span><span>✔ ${st.correct || 0}/${st.answered || 0}</span>${st.streak >= 2 ? `<span class="is-streak">🔥 ${st.streak}</span>` : ''}`;
+            if (mine.dataset.html !== html) { mine.dataset.html = html; mine.innerHTML = html; }
         }
+        // Question id the server is waiting on (when it is the one this phone shows).
+        if (you.mode === 'answering' && you.questionId != null && P.qid == null) P.qid = you.questionId;
+        const showingFeedback = Boolean(P.result && (P.qid == null || P.result.questionId === P.qid));
+        const asking = state.phase === 'battle' && you.mode === 'answering' && !showingFeedback;
         const body = $('wcp-body');
-        const key = [state.questionId, state.phase, you.status || '', you.decision || '', you.eligible ? 1 : 0, you.timedOut ? 't' : '', state.volley?.seq ?? '', P.result?.questionId === state.questionId ? (P.result.eligible ? 'y' : 'n') : ''].join('|');
+        const key = [state.phase, P.qid ?? '', showingFeedback ? `${P.result.questionId}|${P.result.correct ? 1 : 0}|${P.result.challengeable ? 'c' : ''}` : '', state.result?.winner ?? ''].join('|');
         if (body && P.key !== key) {
             P.key = key;
             body.innerHTML = phoneBodyHtml(state, you, team);
-            if (inVolley && P.volleySeq !== state.volley.seq) {
-                P.volleySeq = state.volley.seq;
-                scheduleShotReveals(state);
-            }
         }
-        if (inVolley) P.volleySeq = state.volley.seq;
-        // Question chrome: hide definition/answers once this phone has answered.
-        const asking = state.phase === 'question' && !you.decision && you.status !== 'out';
+        document.body.classList.toggle('wcp-feedback', !asking);
         const def = $('live-play-definition');
         const typeSection = $('live-play-type-section');
         const choices = $('live-play-choices');
         if (!asking) {
-            const keepDef = you.decision === 'prompt' || you.decision === 'pending';
+            const keepDef = Boolean(P.result?.challengeable) && you.mode === 'prompt';
             if (def) def.hidden = !keepDef;
             if (typeSection) typeSection.hidden = true;
             if (choices) choices.hidden = true;
             if (ctx.setAnswerInputsEnabled) ctx.setAnswerInputsEnabled(false);
         } else {
             if (def) def.hidden = false;
-            // Self-heal: make sure this phone shows the answer buttons / box for the live
-            // question (a stale render or a missed live:your-question used to leave it blank).
-            ctx.ensureQuestion?.(state.questionId, state.inputMode);
+            // Self-heal: make sure this phone shows the answer UI for its live question.
+            ctx.ensureQuestion?.(you.questionId, null);
         }
         const status = $('live-play-status');
         if (status) {
             let note = '';
-            if (state.phase === 'question' && asking) note = state.suddenDeath ? 'Sudden death! Fastest correct answer fires the LAST SHOT.' : 'Answer right — every 0.1s weaker shot force!';
-            else if (you.decision === 'prompt') note = 'Marked wrong. Challenge it, or continue.';
-            else if (you.decision === 'pending') note = 'Waiting for the teacher…';
-            else if (state.phase === 'question') note = 'Waiting for the others…';
+            if (asking) note = state.suddenDeath ? 'Sudden death! First correct answer fires the LAST SHOT.' : 'Answer fast — your shot fires the moment you are right!';
             status.textContent = note;
         }
-        if (you.decision !== 'prompt' && you.decision !== 'pending' && ctx.hideChallengeActions) ctx.hideChallengeActions();
+        if (!(you.mode === 'prompt' && P.result?.challengeable) && ctx.hideChallengeActions) ctx.hideChallengeActions();
         if (!P.timer) P.timer = setInterval(tickPhone, 250);
         tickPhone();
     };
@@ -1177,26 +1163,23 @@
         const left = clockLeft(state, P.offset);
         const stormLeft = left - (state.clock?.stormMs || 60000);
         const started = Boolean(state.clock?.gameEndsAt);
-        const storm = started && (stormLeft <= 0 || state.storm);
+        const storm = started && !state.suddenDeath && (stormLeft <= 0 || state.storm);
         if (chip) {
             const html = state.suddenDeath ? `${FX().stormIconSvg()}SUDDEN DEATH`
-                : storm ? `${FX().stormIconSvg()}STORM! ${fmtClock(left)}` : `${FX().stormIconSvg()}STORM IN ${fmtClock(stormLeft)}`;
+                : storm ? `${FX().stormIconSvg()}STORM! ${fmtClock(left)}` : `${FX().stormIconSvg()}${fmtClock(left)} · storm in ${fmtClock(stormLeft)}`;
             if (chip.dataset.html !== html) { chip.dataset.html = html; chip.innerHTML = html; }
             chip.classList.toggle('is-storm', storm || state.suddenDeath);
         }
         document.body.classList.toggle('wc-phone-storm', storm);
-        // Self-heal every tick (not only on state pushes): while this phone may still answer,
-        // keep its answer box / buttons on screen for the live question.
         const me = state.you || {};
-        if (state.phase === 'question' && !me.decision && me.status !== 'out'
-            && (state.phaseEndsAt || 0) > Date.now() + P.offset) {
-            ctx.ensureQuestion?.(state.questionId, state.inputMode);
-        }
+        const showingFeedback = Boolean(P.result && (P.qid == null || P.result.questionId === P.qid));
+        const asking = state.phase === 'battle' && me.mode === 'answering' && !showingFeedback;
+        const endsAt = asking ? (P.qid === me.questionId ? (me.endsAt ?? P.qEndsAt) : P.qEndsAt) : null;
+        if (asking && endsAt && endsAt > Date.now() + P.offset) ctx.ensureQuestion?.(me.questionId, null);
         const ring = $('wcp-ring');
         if (ring) {
-            const asking = state.phase === 'question';
-            ring.hidden = !asking;
-            if (asking) paintRing(ring, Math.max(0, (state.phaseEndsAt || 0) - (Date.now() + P.offset)), state.questionMs || 20000);
+            ring.hidden = !asking || !endsAt;
+            if (asking && endsAt) paintRing(ring, Math.max(0, endsAt - (Date.now() + P.offset)), state.questionMs || P.qMs || 20000);
         }
     }
 
@@ -1226,7 +1209,7 @@
                     <div class="wcpl-wait"><span class="wcpl-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="wcpl-msg"></span></div>
                 </div>
                 <p class="wcpl-count"></p>
-                <div class="wcpl-rules"><span>💣 Every correct answer fires a shot</span><span>🎯 Every 0.1s weaker force — answer fast</span><span>⛈️ Final minute: storm makes shots wild</span></div>`;
+                <div class="wcpl-rules"><span>💣 Every correct answer fires instantly</span><span>🎯 Every 0.1s weaker force — answer fast</span><span>⛈️ Final minute: storm makes shots wild</span></div>`;
             el.querySelectorAll('[data-wc-team]').forEach((btn) => {
                 btn.addEventListener('click', () => {
                     if (btn.disabled) return;

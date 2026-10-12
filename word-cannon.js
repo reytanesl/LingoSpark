@@ -1,34 +1,26 @@
 /**
- * Word Cannon Battle — match flow and scoring for Live Spark.
+ * Word Cannon Battle — continuous-flow match logic for Live Spark.
  *
- * Two fixed teams (Red and Blue) defend forts that start at 100% health.
- * Every round has a shared question. Each correct answer fires one shot in the
- * following volley (teams alternate, fastest team first).
+ * Two teams (Red and Blue) defend forts that start at 100% health. There are no rounds:
+ * every player answers their own question stream at their own pace and every correct
+ * answer fires that player's team cannon IMMEDIATELY.
  *
- * Shot force and damage fall with answer time in 0.1 s steps. The decay curve
- * depends on the question type so multiple-choice (faster) and type-in (slower)
- * stay fair: MC loses power sooner; typed keeps power longer.
+ * Shot force falls with the player's answer time in 0.1 s steps (curve per question
+ * type: multiple choice decays sooner, type-in keeps power longer). Speed tiers, hit
+ * chances, storm rules and own-fort chances are unchanged from the round-based game.
  *
- * Fairness: full-power damage per shot = CANNON_ROUND_BUDGET / team size, so a
- * whole team answering well deals about the same budget whatever its size.
+ * Balance: full-power damage = CANNON_SHOT_BUDGET / teamSize^CANNON_SIZE_EXP so a fort
+ * falls in about the same real time as with the old salvos.
  *
- * Storm (final CANNON_STORM_MS): rain and a random wind GUST per volley
- * (STORM_RULES.gustMin..gustMax). Slow shots are the ones that get BLOWN BACK
- * onto their own fort (chance grows with gust and with lost force); LUCKY HITs
- * deal a random 1.4–2.2× and the remaining hits a random 0.25–1.55×.
- * Own-fort hits are rare outside the storm: only a slow miss can clip it.
+ * Feedback: correct → ~1 s then the next question; wrong pick / timeout → the correct
+ * answer for 1.5 s; wrong typed → Challenge / Continue (4 s). A challenge goes to the
+ * host review queue and the player carries on; Accept fires a retroactive shot at the
+ * force earned at answer time.
  *
- * Volleys fire as a salvo (all shots in one tight burst) to keep the pace up.
- *
- * Scoring (kids-friendly):
- * - +1 point per correct answer (and that fires a shot)
- * - +1 point per HP of damage dealt to the opposing fort (faster = more damage)
- * - +1 WIN (+CANNON_FORT_KILL_BONUS points) each time a team destroys the other fort
- * Destroying a fort is celebrated (slow-mo, flag falls) then that fort rebuilds
- * to 100% and play continues until the game timer ends.
- * Winner when time is up (or the host ends): most WINS (forts destroyed);
- * equal WINS -> most points; equal points -> sudden death LAST SHOT. After
- * CANNON_SUDDEN_TRIES empty sudden rounds it is a draw.
+ * Scoring: +1 per correct answer, +1 per HP dealt to the enemy fort, +1 WIN
+ * (+CANNON_FORT_KILL_BONUS) per fort destroyed; the fort rebuilds (short shield) and
+ * the battle goes on. Time up: most WINS, then points; a tie goes to continuous sudden
+ * death (first correct answer fires the LAST SHOT), then a draw.
  *
  * All randomness comes from the match rng (seedable with mulberry32).
  */
@@ -39,14 +31,23 @@ export const CANNON_FORMAT = 'word-cannon';
 export const CANNON_MAX_HP = 100;
 /** Kept for older callers; every correct answer now fires (no ammo cap). */
 export const CANNON_MAX_BALLS = 5;
+/**
+ * Damage per full-power shot = CANNON_SHOT_BUDGET / teamSize^CANNON_SIZE_EXP.
+ * Tuned (see README / commit notes) so a fort falls in about the same real time as the
+ * old round-based salvos (budget 20 / teamSize per round): continuous fire is ~1.4–3× more
+ * shots per minute, more so for big teams that used to wait for the slowest player.
+ */
+export const CANNON_SHOT_BUDGET = 16;
+export const CANNON_SIZE_EXP = 1.24;
+/** Old per-round budget (kept for reference / older callers). */
 export const CANNON_ROUND_BUDGET = 20;
 /** Points: correct answer, each HP of damage dealt, fort kill bonus. */
 export const CANNON_POINTS_CORRECT = 1;
 export const CANNON_POINTS_PER_DAMAGE = 1;
 export const CANNON_FORT_KILL_BONUS = 20;
 export const CANNON_QUESTION_MS = 20_000;
-/** Time a player gets to decide whether to challenge a typed answer (host review pauses the clock). */
-export const CANNON_REVIEW_MS = 8_000;
+/** Time a player gets to decide whether to challenge a wrong typed answer. */
+export const CANNON_REVIEW_MS = 4_000;
 /** Host quick tutorial (skippable) before round 1. */
 export const CANNON_INTRO_MS = 7_000;
 export const CANNON_GAME_MINUTES = [3, 5, 8, 10];
@@ -56,21 +57,38 @@ export const CANNON_SUDDEN_TRIES = 3;
 export const CANNON_TEAM_IDS = ['red', 'blue'];
 export const CANNON_TEAM_NAMES = { red: 'Red Team', blue: 'Blue Team' };
 
-/** Volley pacing (ms). Shots fire as a salvo; the client plays the same beats. */
-export const VOLLEY_TIMING = {
-    introMs: 450,
-    /** Tiny stagger so balls leave nearly together without stacking perfectly. */
-    salvoStaggerMs: 140,
-    shotMs: 1_100,
-    finalShotMs: 3_600,
-    outroMs: 600,
-    emptyMs: 1_500,
+/**
+ * Continuous-flow pacing (ms). Every player answers their own question stream; a correct
+ * answer fires that player's team cannon immediately (no rounds, no waiting).
+ */
+export const CANNON_FLOW = {
+    /** Correct answer: short "BOOM" feedback before the next question. */
+    feedbackCorrectMs: 1_000,
+    /** Wrong pick / timeout: show the correct answer this long, no shot. */
+    feedbackWrongMs: 1_500,
+    /** Wrong typed answer: Challenge / Continue choice auto-continues after this. */
+    promptMs: 4_000,
+    /** Ball flight on the host screen (shots land this long after firing). */
+    flightMs: 950,
+    /** Fort destroyed: flag falls, then the fort rebuilds; shots in this window hit a shield. */
+    rebuildMs: 3_200,
+    /** Storm: wind gust re-rolled this often. */
+    gustEveryMs: 6_000,
+    /** Sudden death: first correct answer anywhere fires the LAST SHOT; draw after this. */
+    suddenMs: 40_000,
+    /** Hold after the decisive moment so in-flight balls and banners can finish. */
     endHoldMs: 4_400,
-    /** Extra hold after a mid-game fort kill so the flag-fall can play before rebuild. */
-    fortDownMs: 2_200,
-    /** Extra beat before a sudden-death round. */
-    suddenMs: 1_100,
+    /** Anti-spam: at most `rateMax` answers per `rateWindowMs` per player. */
+    rateMax: 4,
+    rateWindowMs: 2_000,
+    /** A player waits this many other questions before seeing a word again (capped by deck size). */
+    repeatGap: 8,
+    /** Last shots kept in the public state for the host animation / feed. */
+    shotLog: 24,
 };
+
+/** Kept name for older callers: the same beats as CANNON_FLOW. */
+export const VOLLEY_TIMING = CANNON_FLOW;
 
 /** Force drops once every FORCE_STEP_MS after a short full-power window. */
 export const FORCE_STEP_MS = 100;
@@ -194,7 +212,12 @@ export function teamSlots(teamSize) {
 
 /** Damage of one hit at full power for a team of this size. */
 export function baseDamage(teamSize) {
-    return CANNON_ROUND_BUDGET / teamSlots(teamSize);
+    return CANNON_SHOT_BUDGET / Math.pow(teamSlots(teamSize), CANNON_SIZE_EXP);
+}
+
+/** Damage is kept to 0.1 HP so big teams still chip the fort (HUD rounds it). */
+function dmg(x) {
+    return Math.max(0.1, Math.round(x * 10) / 10);
 }
 
 /** One shot per correct answer — no ammo cap. */
@@ -205,7 +228,7 @@ export function ballsLoaded(correctCount, _teamSize) {
 function ownFortDamage(full, rng) {
     const factor = STORM_RULES.blownOwnMin
         + rng() * (STORM_RULES.blownOwnMax - STORM_RULES.blownOwnMin);
-    return Math.max(1, Math.round(full * factor));
+    return dmg(full * factor);
 }
 
 /**
@@ -235,7 +258,7 @@ export function resolveShot({
         }
         if (roll < blown + STORM_RULES.luckyChance) {
             const lucky = STORM_RULES.luckyMin + rng() * (STORM_RULES.luckyMax - STORM_RULES.luckyMin);
-            return { outcome: 'lucky', tier: tierInfo.tier, force, damage: Math.max(1, Math.round(full * lucky)) };
+            return { outcome: 'lucky', tier: tierInfo.tier, force, damage: dmg(full * lucky) };
         }
         // Wild remaining shot: stronger gusts spoil the aim; damage is a random band.
         const hitChance = clamp(0.35 + 0.4 * force - 0.25 * (g - 1), 0.1, 0.95);
@@ -246,11 +269,11 @@ export function resolveShot({
             return { outcome: 'miss', tier: tierInfo.tier, force, damage: 0 };
         }
         const wild = STORM_RULES.wildMin + rng() * (STORM_RULES.wildMax - STORM_RULES.wildMin);
-        return { outcome: 'hit', tier: tierInfo.tier, force, damage: Math.max(1, Math.round(full * wild)) };
+        return { outcome: 'hit', tier: tierInfo.tier, force, damage: dmg(full * wild) };
     }
     const hit = tierInfo.hitChance >= 1 || rng() < tierInfo.hitChance;
     if (hit) {
-        return { outcome: 'hit', tier: tierInfo.tier, force, damage: Math.max(1, Math.round(full)) };
+        return { outcome: 'hit', tier: tierInfo.tier, force, damage: dmg(full) };
     }
     if (rng() < STORM_RULES.calmStrayOwn * (1 - force)) {
         return { outcome: 'own', tier: tierInfo.tier, force, damage: ownFortDamage(full, rng), friendly: true };
@@ -266,7 +289,13 @@ export function shotLabel(shot) {
     if (shot.outcome === 'blown') return 'BLOWN BACK!';
     if (shot.outcome === 'own') return 'OWN FORT!';
     if (shot.outcome === 'lucky') return 'LUCKY HIT!';
+    if (shot.outcome === 'shield') return 'SHIELD! Fort rebuilding';
     return `${tier} ${secs}: ${shot.outcome === 'hit' ? 'HIT!' : 'MISS'}`;
+}
+
+function fmtDmg(d) {
+    const n = Number(d) || 0;
+    return n >= 10 || Number.isInteger(n) ? String(Math.round(n)) : n.toFixed(1);
 }
 
 /** Second label line: answer time, force and damage, e.g. "1.2s · 92% force · −9". */
@@ -274,151 +303,9 @@ export function shotDetail(shot) {
     const secs = `${(Math.max(0, shot.ms || 0) / 1000).toFixed(1)}s`;
     const force = `${Math.round(Math.max(0, Math.min(1, shot.force ?? 0)) * 100)}% force`;
     const dmg = shot.damage > 0
-        ? (shot.target && shot.team && shot.target === shot.team ? `−${Math.round(shot.damage)} own fort` : `−${Math.round(shot.damage)}`)
+        ? (shot.target && shot.team && shot.target === shot.team ? `−${fmtDmg(shot.damage)} own fort` : `−${fmtDmg(shot.damage)}`)
         : 'no damage';
     return `${secs} · ${force} · ${dmg}`;
-}
-
-/**
- * Build a volley from the correct answers of a round.
- * shooters: { red: [{id, nickname, ms}], blue: [...] } (any order)
- * hp: { red, blue }   sizes: { red, blue }
- * Teams alternate, starting with the team that had the fastest correct answer.
- * Damage is applied in order and the volley stops when a fort sinks.
- * Stray / blown shots can target the shooter's own fort.
- */
-export function buildVolley({
-    shooters,
-    hp,
-    sizes,
-    questionMs = CANNON_QUESTION_MS,
-    storm = false,
-    gust = null,
-    inputMode = 'typed',
-    rng = Math.random,
-    timing = VOLLEY_TIMING,
-}) {
-    const stormGust = storm ? (gust ?? rollStormGust(rng)) : null;
-    const queues = {};
-    const loaded = {};
-    for (const team of CANNON_TEAM_IDS) {
-        const list = [...(shooters?.[team] || [])].sort((a, b) => a.ms - b.ms || String(a.id).localeCompare(String(b.id)));
-        const n = ballsLoaded(list.length, sizes?.[team] || list.length || 1);
-        queues[team] = list.slice(0, n);
-        loaded[team] = n;
-    }
-    let first = 'red';
-    const fr = queues.red[0]?.ms ?? Infinity;
-    const fb = queues.blue[0]?.ms ?? Infinity;
-    if (fb < fr) first = 'blue';
-    const hpNow = { red: hp?.red ?? CANNON_MAX_HP, blue: hp?.blue ?? CANNON_MAX_HP };
-    const hpBefore = { ...hpNow };
-    const order = [];
-    let turn = first;
-    while (queues.red.length || queues.blue.length) {
-        if (!queues[turn].length) turn = otherTeam(turn);
-        order.push({ team: turn, shooter: queues[turn].shift() });
-        turn = otherTeam(turn);
-    }
-    const mode = normalizeInputMode(inputMode);
-    const shots = [];
-    let sunk = null;
-    for (const { team, shooter } of order) {
-        if (sunk) break;
-        const r = resolveShot({
-            ms: shooter.ms,
-            questionMs,
-            teamSize: sizes?.[team] || 1,
-            storm,
-            gust: stormGust ?? 1,
-            inputMode: mode,
-            rng,
-        });
-        const friendly = Boolean(r.friendly || r.outcome === 'blown' || r.outcome === 'own');
-        const target = friendly ? team : otherTeam(team);
-        const before = hpNow[target];
-        const after = Math.max(0, before - r.damage);
-        hpNow[target] = after;
-        const shot = {
-            index: shots.length,
-            team,
-            target,
-            friendly,
-            shooterId: shooter.id,
-            nickname: shooter.nickname || '',
-            ms: Math.round(shooter.ms),
-            tier: r.tier,
-            force: r.force,
-            outcome: r.outcome,
-            damage: before - after,
-            hpBefore: before,
-            hpAfter: after,
-            final: after <= 0,
-            lastShot: false,
-        };
-        shot.label = shotLabel(shot);
-        shot.detail = shotDetail(shot);
-        shots.push(shot);
-        if (after <= 0) sunk = target;
-    }
-    return timeVolley({ shots, loaded, hpBefore, hpAfter: hpNow, storm, gust: stormGust, first, sunk, inputMode: mode }, timing);
-}
-
-/** Add `at`/`dur` beats. All shots fire in one salvo (tiny stagger only). */
-export function timeVolley(volley, timing = VOLLEY_TIMING) {
-    const stagger = Math.max(0, timing.salvoStaggerMs ?? 140);
-    let t = timing.introMs;
-    for (const shot of volley.shots) {
-        shot.at = t;
-        shot.dur = shot.final ? timing.finalShotMs : timing.shotMs;
-        t += stagger;
-    }
-    const last = volley.shots[volley.shots.length - 1];
-    const end = last ? last.at + last.dur : timing.introMs;
-    volley.durationMs = volley.shots.length ? end + timing.outroMs : timing.emptyMs;
-    return volley;
-}
-
-/** Sudden death: the fastest correct answer fires one sure LAST SHOT that sinks the other fort. */
-export function buildSuddenDeathVolley({ shooters, hp, timing = VOLLEY_TIMING }) {
-    const all = [];
-    for (const team of CANNON_TEAM_IDS) {
-        for (const s of shooters?.[team] || []) all.push({ ...s, team });
-    }
-    all.sort((a, b) => a.ms - b.ms || String(a.id).localeCompare(String(b.id)));
-    const hpBefore = { red: hp?.red ?? CANNON_MAX_HP, blue: hp?.blue ?? CANNON_MAX_HP };
-    const hpAfter = { ...hpBefore };
-    const loaded = { red: 0, blue: 0 };
-    const shots = [];
-    let sunk = null;
-    const best = all[0];
-    if (best) {
-        const target = otherTeam(best.team);
-        loaded[best.team] = 1;
-        const before = hpBefore[target];
-        hpAfter[target] = 0;
-        const shot = {
-            index: 0,
-            team: best.team,
-            target,
-            shooterId: best.id,
-            nickname: best.nickname || '',
-            ms: Math.round(best.ms),
-            tier: 'fast',
-            force: 1,
-            outcome: 'hit',
-            damage: before,
-            hpBefore: before,
-            hpAfter: 0,
-            final: true,
-            lastShot: true,
-        };
-        shot.label = shotLabel(shot);
-        shot.detail = shotDetail(shot);
-        shots.push(shot);
-        sunk = target;
-    }
-    return timeVolley({ shots, loaded, hpBefore, hpAfter, storm: false, first: best?.team || null, sunk, suddenDeath: true }, timing);
 }
 
 /** Winner by health: 'red' | 'blue' | null (tie). */
@@ -478,7 +365,12 @@ function awardCorrectPoints(match, playerId) {
 }
 
 // ---------------------------------------------------------------------------
-// Match flow
+// Continuous match flow
+//
+// intro → battle (everyone answers their own questions; correct = immediate shot)
+//       → [time up & tie] sudden death (still continuous; first correct = LAST SHOT)
+//       → ending (short hold so the last balls / banners land) → finished
+// The server calls tickCannon() ~10×/s to expire questions, feedback and phases.
 // ---------------------------------------------------------------------------
 
 function resolveInputMode(answerMode, rng) {
@@ -487,225 +379,521 @@ function resolveInputMode(answerMode, rng) {
     return rng() < 0.5 ? 'choice' : 'typed';
 }
 
-function blankAnswer() {
-    return { submitted: false, correct: false, eligible: false, answerText: '', decision: null, ms: null, timedOut: false, timeoutNotified: false };
-}
-
 function blankStats() {
-    return { correct: 0, answered: 0, shots: 0, hits: 0, damage: 0, totalMs: 0 };
+    return { correct: 0, answered: 0, shots: 0, hits: 0, damage: 0, totalMs: 0, streak: 0, bestStreak: 0 };
 }
 
-/** Remaining game time (ms), honouring a paused clock. */
+function blankPlayerState() {
+    return {
+        mode: 'idle', // idle | answering | feedback | prompt | done
+        q: null,
+        nextAt: null,
+        last: null,
+        wrong: null,
+        recent: [],
+        bag: [],
+        submits: [],
+        reviewId: null,
+    };
+}
+
+/** Remaining game time (ms). The clock never pauses in the continuous game. */
 export function cannonTimeLeft(match, now = Date.now()) {
     if (!match?.gameEndsAt) return match?.gameMs ?? 0;
-    const ref = match.clockPausedAt ?? now;
-    return Math.max(0, match.gameEndsAt - ref);
+    return Math.max(0, match.gameEndsAt - now);
 }
 
 export function isStormActive(match, now = Date.now()) {
-    if (!match?.gameEndsAt) return false;
+    if (!match?.gameEndsAt || match.suddenDeath) return false;
     return cannonTimeLeft(match, now) <= Math.min(CANNON_STORM_MS, match.gameMs);
 }
 
-function pauseClock(match, now) {
-    if (match.gameEndsAt && match.clockPausedAt == null) match.clockPausedAt = now;
-}
-
-function resumeClock(match, now) {
-    if (match.clockPausedAt != null) {
-        match.gameEndsAt += Math.max(0, now - match.clockPausedAt);
-        match.clockPausedAt = null;
+function currentGust(match, now) {
+    const every = match.timing.gustEveryMs || 6_000;
+    if (match.gust == null || match.gustUntil == null || now >= match.gustUntil) {
+        match.gust = rollStormGust(match.rng);
+        match.gustUntil = now + every;
     }
+    return match.gust;
 }
 
-function beginRound(match, now) {
-    match.phase = 'question';
-    match.questionId += 1;
-    match.roundIndex += 1;
-    match.volley = null;
-    match.answers = {};
-    for (const id of match.playerOrder) match.answers[id] = blankAnswer();
-    const entry = match.deck[match.cursor % match.deck.length];
-    match.cursor += 1;
-    match.entry = { term: entry.term, definition: entry.definition };
-    match.inputMode = resolveInputMode(match.answerMode, match.rng);
-    match.choices = match.inputMode === 'choice'
-        ? buildChoices(entry.term, match.deck.map((d) => d.term), match.level)
-        : null;
-    if (!match.gameEndsAt) match.gameEndsAt = now + match.gameMs;
-    resumeClock(match, now);
-    match.questionStartedAt = now;
-    match.phaseEndsAt = now + match.questionMs;
+/** Next deck index for a player: shuffled bag, never one of their last `repeatGap` words. */
+function pickEntryIndex(match, ps) {
+    const n = match.deck.length;
+    const gap = Math.min(match.timing.repeatGap ?? 8, Math.floor(n / 2));
+    for (let guard = 0; guard < 4; guard += 1) {
+        if (!ps.bag.length) {
+            const bag = Array.from({ length: n }, (_, i) => i);
+            for (let i = bag.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(match.rng() * (i + 1));
+                [bag[i], bag[j]] = [bag[j], bag[i]];
+            }
+            ps.bag = bag;
+        }
+        const recent = gap > 0 ? ps.recent.slice(-gap) : [];
+        const at = ps.bag.findIndex((idx) => !recent.includes(idx));
+        if (at >= 0) {
+            const [idx] = ps.bag.splice(at, 1);
+            ps.recent.push(idx);
+            if (ps.recent.length > 32) ps.recent.shift();
+            return idx;
+        }
+        ps.bag = [];
+    }
+    return Math.floor(match.rng() * n);
 }
 
-function openPrompt(match) {
-    return match.playerOrder.some((id) => match.answers[id]?.decision === 'prompt');
+function dealQuestion(match, id, now) {
+    const ps = match.players[id];
+    const idx = pickEntryIndex(match, ps);
+    const entry = match.deck[idx];
+    const inputMode = resolveInputMode(match.answerMode, match.rng);
+    match.questionSeq += 1;
+    ps.q = {
+        id: match.questionSeq,
+        idx,
+        term: entry.term,
+        definition: entry.definition,
+        inputMode,
+        choices: inputMode === 'choice' ? buildChoices(entry.term, match.deck.map((d) => d.term), match.level) : null,
+        startedAt: now,
+        endsAt: now + match.questionMs,
+        number: (match.stats[id]?.answered || 0) + 1,
+    };
+    ps.mode = 'answering';
+    ps.nextAt = null;
+    ps.wrong = null;
+    return ps.q;
 }
 
-function openPending(match) {
-    return match.playerOrder.some((id) => match.answers[id]?.decision === 'pending');
-}
-
-function allSubmitted(match) {
-    return match.playerOrder.every((id) => match.answers[id]?.submitted);
-}
-
-function shootersFromAnswers(match) {
-    const shooters = { red: [], blue: [] };
+function startBattle(match, now) {
+    match.phase = 'battle';
+    match.phaseEndsAt = null;
+    match.gameEndsAt = now + match.gameMs;
+    const dealt = [];
     for (const id of match.playerOrder) {
-        const answer = match.answers[id];
-        if (!answer?.eligible) continue;
-        shooters[match.playerTeam[id]].push({ id, nickname: match.nicknames[id], ms: answer.ms ?? match.questionMs });
+        dealQuestion(match, id, now);
+        dealt.push(id);
     }
-    return shooters;
+    return dealt;
 }
 
-function startVolley(match, now) {
-    resumeClock(match, now);
-    const shooters = shootersFromAnswers(match);
-    const hp = { red: match.teams.red.hp, blue: match.teams.blue.hp };
-    const sizes = { red: match.teams.red.memberIds.length, blue: match.teams.blue.memberIds.length };
-    const timeUp = cannonTimeLeft(match, now) <= 0;
-    const storm = !match.suddenDeath && isStormActive(match, now);
-    const pointsBefore = teamPointsSnapshot(match);
-    const winsBefore = teamWinsSnapshot(match);
-    let volley;
+function enterEnding(match, now, { winner, reason }) {
+    match.phase = 'ending';
+    match.phaseEndsAt = now + (match.timing.endHoldMs ?? 4_400);
+    match.result = {
+        winner,
+        reason,
+        hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
+        points: teamPointsSnapshot(match),
+        wins: teamWinsSnapshot(match),
+        endedAt: now,
+    };
+    for (const id of match.playerOrder) {
+        const ps = match.players[id];
+        ps.mode = 'done';
+        ps.q = null;
+        ps.nextAt = null;
+    }
+    // Open challenges can no longer change the result.
+    const dropped = match.reviews.map((r) => r.id);
+    match.reviews = [];
+    for (const id of match.playerOrder) match.players[id].reviewId = null;
+    return dropped;
+}
+
+function pushShot(match, shot) {
+    match.shots.push(shot);
+    const keep = match.timing.shotLog ?? 24;
+    if (match.shots.length > keep) match.shots.splice(0, match.shots.length - keep);
+}
+
+/**
+ * Fire one shot for `playerId` right now, from an answer that took `ms` (force curve by
+ * `inputMode`). Applies damage, points, WIN + rebuild. Returns the shot record.
+ */
+function fireShot(match, playerId, ms, inputMode, now, { retro = false } = {}) {
+    const id = String(playerId);
+    const team = match.playerTeam[id];
+    const s = match.stats[id];
+    match.shotSeq += 1;
+    const base = {
+        seq: match.shotSeq,
+        firedAt: now,
+        landsAt: now + (match.timing.flightMs ?? 950),
+        team,
+        shooterId: id,
+        nickname: match.nicknames[id] || '',
+        ms: Math.round(ms),
+        inputMode: normalizeInputMode(inputMode),
+        retro: Boolean(retro),
+        pointsBefore: teamPointsSnapshot(match),
+        winsBefore: teamWinsSnapshot(match),
+    };
     if (match.suddenDeath) {
-        volley = buildSuddenDeathVolley({ shooters, hp, timing: match.timing });
-        match.suddenTries += 1;
-    } else {
-        volley = buildVolley({
-            shooters,
-            hp,
-            sizes,
-            questionMs: match.questionMs,
-            storm,
-            inputMode: match.inputMode,
-            rng: match.rng,
-            timing: match.timing,
-        });
+        const target = otherTeam(team);
+        const before = match.teams[target].hp;
+        const shot = {
+            ...base, target, friendly: false, tier: 'fast', force: 1, outcome: 'hit', storm: false, gust: null,
+            damage: before, hpBefore: before, hpAfter: 0, final: true, lastShot: true, fortDown: target,
+        };
+        match.teams[target].hp = 0;
+        match.teams[team].fortKills += 1;
+        addTeamPoints(match, team, CANNON_FORT_KILL_BONUS);
+        if (s) { s.shots += 1; s.hits += 1; s.damage += before; }
+        shot.pointsAfter = teamPointsSnapshot(match);
+        shot.winsAfter = teamWinsSnapshot(match);
+        shot.label = shotLabel(shot);
+        shot.detail = shotDetail(shot);
+        pushShot(match, shot);
+        enterEnding(match, now, { winner: team, reason: 'sudden' });
+        return shot;
     }
-    volley.round = match.roundIndex;
-    volley.seq = ++match.volleySeq;
-    volley.answerTerm = match.entry?.term || '';
-    volley.definition = match.entry?.definition || '';
-    volley.timeUp = timeUp;
-    volley.pointsBefore = pointsBefore;
-    volley.winsBefore = winsBefore;
-    // Apply HP from the volley (may rebuild a sunk fort below).
-    for (const team of CANNON_TEAM_IDS) match.teams[team].hp = volley.hpAfter[team];
-    for (const shot of volley.shots) {
-        const s = match.stats[shot.shooterId];
-        const enemyHit = shot.damage > 0 && shot.target !== shot.team;
-        if (s) {
-            s.shots += 1;
-            if (shot.outcome === 'hit' || shot.outcome === 'lucky') s.hits += 1;
-            if (enemyHit) s.damage += shot.damage;
-        }
-        // Points only for damage to the opposing fort — own-fort strays score nothing.
-        if (enemyHit) {
-            const pts = shot.damage * CANNON_POINTS_PER_DAMAGE;
-            addTeamPoints(match, shot.team, pts);
-            match.teams[shot.team].damageDealt = (match.teams[shot.team].damageDealt || 0) + shot.damage;
-        }
+    const storm = isStormActive(match, now);
+    const gust = storm ? currentGust(match, now) : null;
+    const r = resolveShot({
+        ms,
+        questionMs: match.questionMs,
+        teamSize: match.teams[team].memberIds.length,
+        storm,
+        gust: gust ?? 1,
+        inputMode,
+        rng: match.rng,
+    });
+    const friendly = Boolean(r.friendly || r.outcome === 'blown' || r.outcome === 'own');
+    const target = friendly ? team : otherTeam(team);
+    const fort = match.teams[target];
+    const shielded = fort.rebuildUntil != null && now < fort.rebuildUntil && r.damage > 0;
+    const before = fort.hp;
+    const damage = shielded ? 0 : Math.min(before, r.damage);
+    const after = Math.max(0, Math.round((before - damage) * 10) / 10);
+    const shot = {
+        ...base,
+        target,
+        friendly,
+        tier: r.tier,
+        force: r.force,
+        outcome: shielded ? 'shield' : r.outcome,
+        storm,
+        gust,
+        damage: Math.round(damage * 10) / 10,
+        hpBefore: before,
+        hpAfter: after,
+        final: false,
+        lastShot: false,
+        fortDown: null,
+        rebuildAt: null,
+    };
+    fort.hp = after;
+    if (s) {
+        s.shots += 1;
+        if (!shielded && (r.outcome === 'hit' || r.outcome === 'lucky')) s.hits += 1;
     }
-    // Decide what comes next.
-    let next = 'question';
-    let winner = null;
-    let reason = null;
-    volley.rebuild = false;
-    volley.fortDown = null;
-    if (volley.sunk && match.suddenDeath) {
-        // Only sudden death ends on a sunk fort.
-        winner = otherTeam(volley.sunk);
-        reason = 'sudden';
-        next = 'finished';
-    } else if (volley.sunk) {
-        // 1 WIN for the team that destroyed the opposite fort (own-fort sink credits the other side).
-        const killer = otherTeam(volley.sunk);
+    const enemyHit = shot.damage > 0 && !friendly;
+    if (enemyHit) {
+        if (s) s.damage = Math.round((s.damage + shot.damage) * 10) / 10;
+        addTeamPoints(match, team, Math.round(shot.damage * CANNON_POINTS_PER_DAMAGE));
+        match.teams[team].damageDealt = Math.round(((match.teams[team].damageDealt || 0) + shot.damage) * 10) / 10;
+    }
+    if (after <= 0) {
+        // Fort destroyed: 1 WIN for the other side (an own-fort sink credits the opponents).
+        const killer = otherTeam(target);
+        match.teams[killer].fortKills += 1;
         addTeamPoints(match, killer, CANNON_FORT_KILL_BONUS);
-        match.teams[killer].fortKills = (match.teams[killer].fortKills || 0) + 1;
-        // Rebuild the fallen fort so the battle continues until the timer ends.
-        match.teams[volley.sunk].hp = CANNON_MAX_HP;
-        volley.rebuild = true;
-        volley.fortDown = volley.sunk;
-        volley.durationMs += match.timing.fortDownMs || 0;
-        if (timeUp) {
-            winner = matchLeader(match);
-            if (winner) {
-                next = 'finished';
-                reason = 'time';
-            } else {
-                next = 'sudden';
-                reason = 'tie';
-            }
-        } else {
-            next = 'question';
-            reason = 'fort-down';
+        shot.final = true;
+        shot.fortDown = target;
+        shot.rebuildAt = now + (match.timing.flightMs ?? 950) + (match.timing.rebuildMs ?? 3_200) - 600;
+        fort.hp = CANNON_MAX_HP;
+        fort.rebuildUntil = shot.rebuildAt;
+    }
+    match.teams[team].shots = (match.teams[team].shots || 0) + 1;
+    shot.pointsAfter = teamPointsSnapshot(match);
+    shot.winsAfter = teamWinsSnapshot(match);
+    shot.label = shotLabel(shot);
+    shot.detail = shotDetail(shot);
+    pushShot(match, shot);
+    return shot;
+}
+
+function resultPayload(match, id, extra = {}) {
+    const team = match.playerTeam[id];
+    return {
+        gameFormat: CANNON_FORMAT,
+        cannon: true,
+        reset: false,
+        won: false,
+        progress: match.stats[id]?.correct || 0,
+        team,
+        teamName: CANNON_TEAM_NAMES[team],
+        suddenDeath: Boolean(match.suddenDeath),
+        ...extra,
+    };
+}
+
+function checkRate(match, ps, now) {
+    const win = match.timing.rateWindowMs ?? 2_000;
+    ps.submits = ps.submits.filter((t) => now - t < win);
+    if (ps.submits.length >= (match.timing.rateMax ?? 4)) {
+        throw new Error('Slow down! One answer at a time.');
+    }
+    ps.submits.push(now);
+}
+
+/**
+ * A player answers their current question. Correct → immediate shot.
+ * Returns { result, shot, ended } (ended = this answer decided the game).
+ */
+export function submitCannonAnswer(match, playerId, rawText, questionId = null, now = Date.now()) {
+    if (!match || (match.phase !== 'battle')) throw new Error('Answering is closed.');
+    const id = String(playerId);
+    const ps = match.players[id];
+    if (!ps) throw new Error('Player not found.');
+    if (ps.mode !== 'answering' || !ps.q) throw new Error('Wait for your next question.');
+    if (questionId != null && Number(questionId) !== ps.q.id) throw new Error('That question is over.');
+    const text = sanitizeAnswerText(rawText);
+    if (!text) throw new Error(ps.q.inputMode === 'choice' ? 'Choose an answer first.' : 'Type an answer first.');
+    if (ps.q.inputMode === 'choice' && !(ps.q.choices || []).some((c) => matchesTermAnswer(text, c))) {
+        throw new Error('Invalid choice.');
+    }
+    checkRate(match, ps, now);
+    const q = ps.q;
+    const ms = Math.max(0, Math.min(match.questionMs, now - q.startedAt));
+    const correct = matchesTermAnswer(text, q.term);
+    const s = match.stats[id];
+    s.answered += 1;
+    const tierInfo = speedTier(ms, match.questionMs, q.inputMode);
+    const common = {
+        questionId: q.id,
+        correctTerm: q.term,
+        definition: q.definition,
+        answerText: text,
+        inputMode: q.inputMode,
+        ms,
+    };
+    if (correct) {
+        s.correct += 1;
+        s.totalMs += ms;
+        s.streak += 1;
+        s.bestStreak = Math.max(s.bestStreak, s.streak);
+        addTeamPoints(match, match.playerTeam[id], CANNON_POINTS_CORRECT);
+        const shot = fireShot(match, id, ms, q.inputMode, now);
+        const ended = match.phase !== 'battle';
+        if (!ended) {
+            ps.mode = 'feedback';
+            ps.nextAt = now + match.timing.feedbackCorrectMs;
         }
-    } else if (match.suddenDeath) {
-        if (match.suddenTries >= CANNON_SUDDEN_TRIES) {
-            next = 'finished';
-            reason = 'draw';
-        } else {
-            next = 'sudden';
+        ps.q = ended ? null : q;
+        ps.last = { correct: true, shotSeq: shot.seq, at: now };
+        return {
+            result: resultPayload(match, id, {
+                ...common, correct: true, challengeable: false, timedOut: false, eligible: true,
+                tier: tierInfo.tier, force: tierInfo.force, shot,
+                nextAt: ps.nextAt,
+            }),
+            shot,
+            ended,
+        };
+    }
+    s.streak = 0;
+    const canChallenge = q.inputMode === 'typed' && !ps.reviewId;
+    ps.wrong = { questionId: q.id, ms, inputMode: q.inputMode, term: q.term, definition: q.definition, answerText: text };
+    ps.mode = canChallenge ? 'prompt' : 'feedback';
+    ps.nextAt = now + (canChallenge ? match.timing.promptMs : match.timing.feedbackWrongMs);
+    ps.last = { correct: false, at: now };
+    return {
+        result: resultPayload(match, id, {
+            ...common, correct: false, challengeable: canChallenge, timedOut: false, eligible: false,
+            tier: null, force: null, nextAt: ps.nextAt,
+        }),
+        shot: null,
+        ended: false,
+    };
+}
+
+/**
+ * Wrong typed answer → the player challenges. Creates a host review entry and the player
+ * moves straight on to the next question (the game never pauses).
+ */
+export function challengeCannonAnswer(match, playerId, now = Date.now()) {
+    const id = String(playerId);
+    const ps = match?.players?.[id];
+    if (!ps || match.phase !== 'battle' || ps.mode !== 'prompt' || !ps.wrong) {
+        throw new Error('There is no answer to challenge.');
+    }
+    if (ps.reviewId) throw new Error('Your last challenge is still being checked.');
+    match.reviewSeq += 1;
+    const review = {
+        id: `wc-${match.seed}-${match.reviewSeq}`,
+        playerId: id,
+        nickname: match.nicknames[id],
+        team: match.playerTeam[id],
+        createdAt: now,
+        ...ps.wrong,
+    };
+    match.reviews.push(review);
+    ps.reviewId = review.id;
+    ps.wrong = null;
+    dealQuestion(match, id, now);
+    return review;
+}
+
+/** Player taps Continue (or the prompt timed out): next question now. */
+export function skipCannonPrompt(match, playerId, now = Date.now()) {
+    const id = String(playerId);
+    const ps = match?.players?.[id];
+    if (!ps || match.phase !== 'battle' || ps.mode !== 'prompt') throw new Error('No pending answer.');
+    ps.wrong = null;
+    dealQuestion(match, id, now);
+    return ps.q;
+}
+
+/**
+ * Host decides a challenge. Accept → retroactive shot at the force earned at answer time.
+ * Returns { review, result, shot, ended }.
+ */
+export function settleCannonReview(match, reviewId, accept, now = Date.now()) {
+    const at = (match?.reviews || []).findIndex((r) => r.id === reviewId);
+    if (at < 0) throw new Error('Challenge not found.');
+    const [review] = match.reviews.splice(at, 1);
+    const ps = match.players[review.playerId];
+    if (ps && ps.reviewId === review.id) ps.reviewId = null;
+    let shot = null;
+    if (accept && match.phase === 'battle') {
+        const s = match.stats[review.playerId];
+        if (s) {
+            s.correct += 1;
+            s.totalMs += review.ms;
         }
-    } else if (timeUp) {
-        winner = matchLeader(match);
+        addTeamPoints(match, review.team, CANNON_POINTS_CORRECT);
+        shot = fireShot(match, review.playerId, review.ms, review.inputMode, now, { retro: true });
+    }
+    const tierInfo = speedTier(review.ms, match.questionMs, review.inputMode);
+    return {
+        review,
+        shot,
+        ended: Boolean(shot && match.phase !== 'battle'),
+        result: resultPayload(match, review.playerId, {
+            questionId: review.questionId,
+            correct: Boolean(accept),
+            challengeable: false,
+            challengeAccepted: Boolean(accept),
+            challengeDeclined: !accept,
+            correctTerm: review.term,
+            definition: review.definition,
+            answerText: review.answerText,
+            ms: review.ms,
+            tier: accept ? tierInfo.tier : null,
+            force: accept ? tierInfo.force : null,
+            shot,
+        }),
+    };
+}
+
+/**
+ * Advance timers. Returns what happened so the server can notify sockets:
+ * { changed, dealt: [playerIds needing their new question], timeouts: [{playerId, result}],
+ *   phase, finished, dropped: [review ids] }
+ */
+export function tickCannon(match, now = Date.now()) {
+    const out = { changed: false, dealt: [], timeouts: [], phase: match?.phase || null, finished: false, dropped: [] };
+    if (!match) return out;
+    if (match.phase === 'intro') {
+        if (match.phaseEndsAt != null && now >= match.phaseEndsAt) {
+            out.dealt = startBattle(match, now);
+            out.changed = true;
+        }
+        out.phase = match.phase;
+        return out;
+    }
+    if (match.phase === 'ending') {
+        if (now >= match.phaseEndsAt) {
+            match.phase = 'finished';
+            match.phaseEndsAt = null;
+            out.changed = true;
+            out.finished = true;
+        }
+        out.phase = match.phase;
+        return out;
+    }
+    if (match.phase !== 'battle') return out;
+    // Game clock.
+    if (!match.suddenDeath && now >= match.gameEndsAt) {
+        const winner = matchLeader(match);
+        out.changed = true;
         if (winner) {
-            next = 'finished';
-            reason = 'time';
-            // Slow-mo only on a real hit on the enemy fort — never on a blown-back / own-fort ball.
-            const lastHit = [...volley.shots].reverse().find((s) => s.damage > 0 && !s.friendly && s.target !== s.team);
-            if (lastHit && !lastHit.final) {
-                lastHit.final = true;
-                timeVolley(volley, match.timing);
-                if (volley.rebuild) volley.durationMs += match.timing.fortDownMs || 0;
-            }
-        } else {
-            next = 'sudden';
-            reason = 'tie';
+            out.dropped = enterEnding(match, now, { winner, reason: 'time' });
+            out.phase = match.phase;
+            return out;
+        }
+        match.suddenDeath = true;
+        match.suddenEndsAt = now + (match.timing.suddenMs ?? 40_000);
+    } else if (match.suddenDeath && now >= match.suddenEndsAt) {
+        out.changed = true;
+        out.dropped = enterEnding(match, now, { winner: null, reason: 'draw' });
+        out.phase = match.phase;
+        return out;
+    }
+    for (const id of match.playerOrder) {
+        const ps = match.players[id];
+        if (ps.mode === 'answering' && ps.q && now >= ps.q.endsAt) {
+            // Time ran out: counts as wrong (never challengeable), show the answer briefly.
+            const q = ps.q;
+            match.stats[id].answered += 1;
+            match.stats[id].streak = 0;
+            ps.mode = 'feedback';
+            ps.nextAt = now + match.timing.feedbackWrongMs;
+            ps.last = { correct: false, timedOut: true, at: now };
+            out.timeouts.push({
+                playerId: id,
+                result: resultPayload(match, id, {
+                    questionId: q.id, correct: false, challengeable: false, timedOut: true, eligible: false,
+                    correctTerm: q.term, definition: q.definition, answerText: '', inputMode: q.inputMode,
+                    ms: match.questionMs, tier: null, force: null, nextAt: ps.nextAt,
+                }),
+            });
+            out.changed = true;
+        } else if ((ps.mode === 'feedback' || ps.mode === 'prompt') && ps.nextAt != null && now >= ps.nextAt) {
+            ps.wrong = null;
+            dealQuestion(match, id, now);
+            out.dealt.push(id);
+            out.changed = true;
         }
     }
-    volley.next = next;
-    volley.winner = winner;
-    volley.reason = reason;
-    volley.points = teamPointsSnapshot(match);
-    volley.wins = teamWinsSnapshot(match);
-    if (next === 'finished') volley.durationMs += match.timing.endHoldMs;
-    if (next === 'sudden') volley.durationMs += match.timing.suddenMs ?? 1_100;
-    match.volley = volley;
-    match.phase = 'volley';
-    match.phaseEndsAt = now + volley.durationMs;
-    if (next === 'finished') {
+    out.phase = match.phase;
+    return out;
+}
+
+/** Host ends the game: most WINS, then most points; equal on both is a draw. */
+export function finishCannonEarly(match) {
+    if (!match) return;
+    if (!match.result) {
+        const winner = matchLeader(match);
         match.result = {
             winner,
-            reason,
+            reason: winner ? 'ended' : 'draw',
             hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
             points: teamPointsSnapshot(match),
             wins: teamWinsSnapshot(match),
         };
     }
-    return 'volley';
+    match.reviews = [];
+    match.phase = 'finished';
+    match.phaseEndsAt = null;
 }
 
-function syncPhase(match, now) {
-    if (match.phase !== 'question' && match.phase !== 'review') return match.phase;
-    if (match.phase === 'question' && !allSubmitted(match)) return 'question';
-    if (openPrompt(match) || openPending(match)) {
-        const entered = match.phase !== 'review';
-        match.phase = 'review';
-        if (openPrompt(match)) {
-            resumeClock(match, now);
-            if (entered || match.phaseEndsAt == null) match.phaseEndsAt = now + CANNON_REVIEW_MS;
-        } else {
-            // Waiting for the teacher: the storm clock waits too.
-            pauseClock(match, now);
-            match.phaseEndsAt = null;
-        }
-        return 'review';
+/** Host Skip: skips the intro, or the end hold. Battle has nothing to skip. */
+export function hostSkipCannon(match, now = Date.now()) {
+    if (!match) throw new Error('No cannon match.');
+    if (match.phase === 'intro') {
+        const dealt = startBattle(match, now);
+        return { phase: match.phase, dealt };
     }
-    return startVolley(match, now);
+    if (match.phase === 'ending') {
+        match.phase = 'finished';
+        match.phaseEndsAt = null;
+        return { phase: 'finished', dealt: [], finished: true };
+    }
+    return { phase: match.phase, dealt: [] };
 }
 
 export function createCannonMatch({
@@ -719,7 +907,7 @@ export function createCannonMatch({
     seed = null,
     rng = null,
     now = Date.now(),
-    timing = VOLLEY_TIMING,
+    timing = CANNON_FLOW,
     introMs = CANNON_INTRO_MS,
 }) {
     if (!Array.isArray(deck) || deck.length < 1) throw new Error('No words in this list.');
@@ -728,40 +916,39 @@ export function createCannonMatch({
     if (!red.length || !blue.length) throw new Error('Both Red and Blue need at least one player.');
     const mode = ['recognise', 'realise', 'randomise'].includes(answerMode) ? answerMode : 'randomise';
     const matchSeed = seed == null ? Math.floor(Math.random() * 2 ** 31) : Number(seed) >>> 0;
+    const mkTeam = (id, list) => ({
+        id, name: CANNON_TEAM_NAMES[id], memberIds: list.map((p) => p.id),
+        hp: CANNON_MAX_HP, points: 0, fortKills: 0, damageDealt: 0, shots: 0, rebuildUntil: null,
+    });
     const match = {
         format: CANNON_FORMAT,
         seed: matchSeed,
         rng: rng || mulberry32(matchSeed),
         phase: 'intro',
         phaseEndsAt: now + Math.max(0, introMs),
-        questionId: 0,
-        roundIndex: 0,
-        cursor: 0,
+        startedAt: now,
         deck,
         answerMode: mode,
         level: level || 'intermediate',
         questionMs: Number(questionMs) > 0 ? Math.round(Number(questionMs)) : CANNON_QUESTION_MS,
         gameMs: Number(gameMs) > 0 ? Math.round(Number(gameMs)) : normalizeGameMinutes(gameMinutes) * 60_000,
         gameEndsAt: null,
-        clockPausedAt: null,
-        questionStartedAt: null,
-        timing,
-        teams: {
-            red: { id: 'red', name: CANNON_TEAM_NAMES.red, memberIds: red.map((p) => p.id), hp: CANNON_MAX_HP, points: 0, fortKills: 0, damageDealt: 0 },
-            blue: { id: 'blue', name: CANNON_TEAM_NAMES.blue, memberIds: blue.map((p) => p.id), hp: CANNON_MAX_HP, points: 0, fortKills: 0, damageDealt: 0 },
-        },
+        timing: { ...CANNON_FLOW, ...(timing || {}) },
+        teams: { red: mkTeam('red', red), blue: mkTeam('blue', blue) },
         playerOrder: [...red, ...blue].map((p) => p.id),
         playerTeam: {},
         nicknames: {},
         stats: {},
-        answers: {},
-        entry: null,
-        inputMode: 'typed',
-        choices: null,
-        volley: null,
-        volleySeq: 0,
+        players: {},
+        questionSeq: 0,
+        shotSeq: 0,
+        shots: [],
+        reviews: [],
+        reviewSeq: 0,
+        gust: null,
+        gustUntil: null,
         suddenDeath: false,
-        suddenTries: 0,
+        suddenEndsAt: null,
         result: null,
     };
     for (const p of red) match.playerTeam[p.id] = 'red';
@@ -769,9 +956,9 @@ export function createCannonMatch({
     for (const p of [...red, ...blue]) {
         match.nicknames[p.id] = p.nickname;
         match.stats[p.id] = blankStats();
-        match.answers[p.id] = blankAnswer();
+        match.players[p.id] = blankPlayerState();
     }
-    if (!(introMs > 0)) beginRound(match, now);
+    if (!(introMs > 0)) startBattle(match, now);
     return match;
 }
 
@@ -780,240 +967,6 @@ export function renameCannonPlayer(match, playerId, nickname) {
     const id = String(playerId);
     if (!match.nicknames[id]) return;
     match.nicknames[id] = String(nickname);
-}
-
-function resultPayload(match, playerId, answer) {
-    const tierInfo = answer.eligible && answer.ms != null
-        ? speedTier(answer.ms, match.questionMs, match.inputMode)
-        : null;
-    const team = match.playerTeam[playerId];
-    return {
-        correct: Boolean(answer.correct),
-        reset: false,
-        challengeable: answer.decision === 'prompt',
-        timedOut: Boolean(answer.timedOut),
-        progress: match.stats[playerId]?.correct || 0,
-        won: false,
-        correctTerm: match.entry?.term || '',
-        answerText: answer.answerText || '',
-        definition: match.entry?.definition || '',
-        gameFormat: CANNON_FORMAT,
-        cannon: true,
-        eligible: Boolean(answer.eligible),
-        questionId: match.questionId,
-        round: match.roundIndex,
-        ms: answer.ms,
-        tier: tierInfo?.tier || null,
-        force: tierInfo?.force ?? null,
-        team,
-        teamName: CANNON_TEAM_NAMES[team],
-        suddenDeath: Boolean(match.suddenDeath),
-    };
-}
-
-export function submitCannonAnswer(match, playerId, rawText, now = Date.now()) {
-    if (!match || match.phase !== 'question') throw new Error('Answering is closed.');
-    const id = String(playerId);
-    const answer = match.answers[id];
-    if (!answer) throw new Error('Player not found.');
-    if (answer.submitted) throw new Error('You already answered this round.');
-    const text = sanitizeAnswerText(rawText);
-    if (!text) {
-        throw new Error(match.inputMode === 'choice' ? 'Choose an answer first.' : 'Type an answer first.');
-    }
-    if (match.inputMode === 'choice') {
-        const ok = (match.choices || []).some((choice) => matchesTermAnswer(text, choice));
-        if (!ok) throw new Error('Invalid choice.');
-    }
-    const correct = matchesTermAnswer(text, match.entry.term);
-    answer.submitted = true;
-    answer.answerText = text;
-    answer.correct = correct;
-    answer.ms = Math.max(0, Math.min(match.questionMs, now - (match.questionStartedAt ?? now)));
-    const stats = match.stats[id];
-    if (stats) stats.answered += 1;
-    if (correct) {
-        answer.eligible = true;
-        answer.decision = 'correct';
-        if (stats) {
-            stats.correct += 1;
-            stats.totalMs += answer.ms;
-        }
-        awardCorrectPoints(match, id);
-    } else if (match.inputMode === 'typed') {
-        answer.eligible = false;
-        answer.decision = 'prompt';
-    } else {
-        answer.eligible = false;
-        answer.decision = 'wrong';
-    }
-    const phase = syncPhase(match, now);
-    return { phase, result: resultPayload(match, id, answer) };
-}
-
-export function markCannonChallengePending(match, playerId, now = Date.now()) {
-    const answer = match?.answers?.[String(playerId)];
-    if (!answer || answer.decision !== 'prompt') throw new Error('There is no answer to challenge.');
-    answer.decision = 'pending';
-    return syncPhase(match, now);
-}
-
-export function settleCannonChallenge(match, playerId, accept, now = Date.now()) {
-    const id = String(playerId);
-    const answer = match?.answers?.[id];
-    if (!answer || answer.decision !== 'pending') throw new Error('Challenge state mismatch.');
-    if (accept) {
-        answer.decision = 'accepted';
-        answer.eligible = true;
-        answer.correct = true;
-        const stats = match.stats[id];
-        if (stats) {
-            stats.correct += 1;
-            stats.totalMs += answer.ms || 0;
-        }
-        awardCorrectPoints(match, id);
-    } else {
-        answer.decision = 'declined';
-        answer.eligible = false;
-        answer.correct = false;
-    }
-    const result = { ...resultPayload(match, id, answer), challengeAccepted: Boolean(accept), challengeDeclined: !accept };
-    const phase = syncPhase(match, now);
-    return { phase, result };
-}
-
-export function skipCannonPrompt(match, playerId, now = Date.now()) {
-    const answer = match?.answers?.[String(playerId)];
-    if (!answer || answer.decision !== 'prompt') throw new Error('No pending answer.');
-    answer.decision = 'skipped';
-    answer.eligible = false;
-    const result = { ...resultPayload(match, String(playerId), answer), challengeDeclined: true };
-    const phase = syncPhase(match, now);
-    return { phase, result };
-}
-
-/**
- * Question time is over: everyone who has not answered gets a WRONG answer (blank text,
- * counted in stats like any wrong answer, no shot). A blank answer can never be challenged,
- * so timed-out players never hold up the round.
- */
-export function closeCannonAnswering(match, now = Date.now()) {
-    if (!match || match.phase !== 'question') return match?.phase || null;
-    for (const id of match.playerOrder) {
-        const answer = match.answers[id];
-        if (answer.submitted) continue;
-        answer.submitted = true;
-        answer.answerText = '';
-        answer.correct = false;
-        answer.eligible = false;
-        answer.decision = 'wrong';
-        answer.timedOut = true;
-        answer.ms = match.questionMs;
-        const stats = match.stats[id];
-        if (stats) stats.answered += 1;
-    }
-    return syncPhase(match, now);
-}
-
-/**
- * Wrong-answer results for players who timed out and have not been told yet
- * (each player is returned once). Same payload as a wrong answer plus `timedOut`.
- */
-export function cannonTimeoutResults(match) {
-    if (!match) return [];
-    const out = [];
-    for (const id of match.playerOrder) {
-        const answer = match.answers[id];
-        if (!answer?.timedOut || answer.timeoutNotified) continue;
-        answer.timeoutNotified = true;
-        out.push({ playerId: id, result: { ...resultPayload(match, id, answer), challengeable: false, timedOut: true } });
-    }
-    return out;
-}
-
-export function expireCannonReview(match, now = Date.now()) {
-    if (!match || match.phase !== 'review') return { phase: match?.phase || null, skipped: [] };
-    const skipped = [];
-    for (const id of match.playerOrder) {
-        const answer = match.answers[id];
-        if (answer.decision !== 'prompt') continue;
-        answer.decision = 'skipped';
-        answer.eligible = false;
-        skipped.push(id);
-    }
-    if (openPending(match)) {
-        pauseClock(match, now);
-        match.phaseEndsAt = null;
-        return { phase: 'review', skipped };
-    }
-    return { phase: startVolley(match, now), skipped };
-}
-
-export function forceCannonReview(match, now = Date.now()) {
-    if (!match) throw new Error('No cannon match.');
-    const declined = [];
-    const skipped = [];
-    for (const id of match.playerOrder) {
-        const answer = match.answers[id];
-        if (answer.decision === 'prompt') {
-            answer.decision = 'skipped';
-            answer.eligible = false;
-            skipped.push(id);
-        } else if (answer.decision === 'pending') {
-            answer.decision = 'declined';
-            answer.eligible = false;
-            answer.correct = false;
-            declined.push(id);
-        }
-    }
-    startVolley(match, now);
-    return { phase: match.phase, declined, skipped };
-}
-
-/** Move on after the intro or a volley. */
-export function advanceCannon(match, now = Date.now()) {
-    if (!match) return null;
-    if (match.phase === 'intro') {
-        beginRound(match, now);
-        return 'question';
-    }
-    if (match.phase !== 'volley') return match.phase;
-    const next = match.volley?.next || 'question';
-    if (next === 'finished') {
-        match.phase = 'finished';
-        match.phaseEndsAt = null;
-        return 'finished';
-    }
-    if (next === 'sudden') match.suddenDeath = true;
-    beginRound(match, now);
-    return 'question';
-}
-
-/** Host ends the game: most WINS, then most points; equal on both is a draw. */
-export function finishCannonEarly(match) {
-    if (!match) return;
-    if (!match.result) {
-        const points = teamPointsSnapshot(match);
-        const winner = matchLeader(match);
-        match.result = {
-            winner,
-            reason: winner ? 'ended' : 'draw',
-            hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
-            points,
-            wins: teamWinsSnapshot(match),
-        };
-    }
-    match.phase = 'finished';
-    match.phaseEndsAt = null;
-}
-
-export function hostSkipCannon(match, now = Date.now()) {
-    if (!match) throw new Error('No cannon match.');
-    if (match.phase === 'intro') return { phase: advanceCannon(match, now), declined: [], skipped: [] };
-    if (match.phase === 'question') return { phase: closeCannonAnswering(match, now), declined: [], skipped: [] };
-    if (match.phase === 'review') return forceCannonReview(match, now);
-    if (match.phase === 'volley') return { phase: advanceCannon(match, now), declined: [], skipped: [] };
-    return { phase: match.phase, declined: [], skipped: [] };
 }
 
 /** Per-player rows with stats, best first (hits, damage, correct, faster average). */
@@ -1029,8 +982,9 @@ export function cannonPlayerRows(match) {
             answered: s.answered,
             shots: s.shots,
             hits: s.hits,
-            damage: s.damage,
+            damage: Math.round(s.damage),
             avgMs: s.correct ? Math.round(s.totalMs / s.correct) : null,
+            bestStreak: s.bestStreak || 0,
         };
     });
     rows.sort((a, b) => b.hits - a.hits
@@ -1049,180 +1003,156 @@ export function cannonMvp(match) {
     return best;
 }
 
+function teamSummary(match, teamId) {
+    const t = match.teams[teamId];
+    return {
+        hp: Math.round(t.hp),
+        points: t.points || 0,
+        fortKills: t.fortKills || 0,
+        damageDealt: Math.round(t.damageDealt || 0),
+    };
+}
+
 export function cannonWinners(match) {
     const points = teamPointsSnapshot(match);
     const result = match?.result || { winner: matchLeader(match), reason: null, points };
     const winner = result.winner || null;
-    const rows = cannonPlayerRows(match);
     return {
         winner,
         reason: result.reason || null,
         winnerId: winner,
         winnerNickname: winner ? `${CANNON_TEAM_NAMES[winner]}` : "It's a draw",
-        hp: { red: match.teams.red.hp, blue: match.teams.blue.hp },
+        hp: { red: Math.round(match.teams.red.hp), blue: Math.round(match.teams.blue.hp) },
         points: result.points || points,
         wins: teamWinsSnapshot(match),
-        teams: {
-            red: {
-                hp: match.teams.red.hp,
-                points: match.teams.red.points || 0,
-                fortKills: match.teams.red.fortKills || 0,
-                damageDealt: match.teams.red.damageDealt || 0,
-            },
-            blue: {
-                hp: match.teams.blue.hp,
-                points: match.teams.blue.points || 0,
-                fortKills: match.teams.blue.fortKills || 0,
-                damageDealt: match.teams.blue.damageDealt || 0,
-            },
-        },
+        teams: { red: teamSummary(match, 'red'), blue: teamSummary(match, 'blue') },
         mvp: cannonMvp(match),
-        players: rows,
+        players: cannonPlayerRows(match),
     };
 }
 
 function statusFor(match, id) {
-    const answer = match.answers[id];
     if (match.phase === 'intro') return 'ready';
-    const decision = answer?.decision;
-    if (!answer?.submitted) return 'answering';
-    if (decision === 'prompt') return 'deciding';
-    if (decision === 'pending') return 'challenging';
-    if (answer.eligible) return 'loaded';
-    return 'out';
+    const ps = match.players[id];
+    if (!ps) return 'out';
+    if (ps.mode === 'prompt') return 'deciding';
+    if (ps.mode === 'feedback') return ps.last?.correct ? 'fired' : 'missed';
+    if (ps.mode === 'answering') return 'answering';
+    return 'done';
 }
 
-export function cannonQuestionPayload(match) {
-    if (!match || match.phase !== 'question') return null;
+/** The player's current question (null when between questions). */
+export function cannonQuestionPayload(match, playerId) {
+    if (!match || match.phase !== 'battle') return null;
+    const ps = match.players?.[String(playerId)];
+    if (!ps || ps.mode !== 'answering' || !ps.q) return null;
+    const q = ps.q;
     return {
         progress: 0,
         termsToWin: 0,
-        termIndex: match.roundIndex - 1,
-        questionId: match.questionId,
-        definition: match.entry.definition,
-        inputMode: match.inputMode,
+        termIndex: q.number - 1,
+        questionId: q.id,
+        definition: q.definition,
+        inputMode: q.inputMode,
         answerMode: match.answerMode,
         gameFormat: CANNON_FORMAT,
         caseSensitive: false,
-        round: match.roundIndex,
-        endsAt: match.phaseEndsAt,
+        round: q.number,
+        startedAt: q.startedAt,
+        endsAt: q.endsAt,
         timeLimitSec: Math.round(match.questionMs / 1000),
         suddenDeath: Boolean(match.suddenDeath),
-        ...(match.inputMode === 'choice' ? { choices: match.choices } : {}),
+        ...(q.inputMode === 'choice' ? { choices: q.choices } : {}),
     };
+}
+
+function teamLiveStats(match, teamId) {
+    const out = { answered: 0, correct: 0, shots: 0, hits: 0, damage: 0, accuracy: 0, perMin: 0 };
+    for (const id of match.teams[teamId].memberIds) {
+        const s = match.stats[id];
+        out.answered += s.answered;
+        out.correct += s.correct;
+        out.shots += s.shots;
+        out.hits += s.hits;
+    }
+    out.damage = Math.round(match.teams[teamId].damageDealt || 0);
+    out.accuracy = out.answered ? Math.round((out.correct / out.answered) * 100) : 0;
+    return out;
 }
 
 export function cannonPublicView(match, { playerId = null, forHost = false, connected = null, now = Date.now() } = {}) {
     if (!match) return null;
-    const showVolley = (match.phase === 'volley' || match.phase === 'finished') && match.volley;
     const teams = {};
+    const elapsedMin = match.gameEndsAt ? Math.max(0.25, (Math.min(now, match.result?.endedAt ?? now) - (match.gameEndsAt - match.gameMs)) / 60_000) : 0;
     for (const teamId of CANNON_TEAM_IDS) {
         const team = match.teams[teamId];
-        const loadedNow = team.memberIds.filter((id) => match.answers[id]?.eligible).length;
+        const stats = teamLiveStats(match, teamId);
+        stats.perMin = elapsedMin ? Math.round((stats.shots / elapsedMin) * 10) / 10 : 0;
         teams[teamId] = {
             id: teamId,
             name: team.name,
-            // During a volley the client animates from hpBefore to hpAfter.
             hp: team.hp,
-            hpBefore: showVolley && match.phase === 'volley' ? match.volley.hpBefore[teamId] : team.hp,
             maxHp: CANNON_MAX_HP,
             points: team.points || 0,
             fortKills: team.fortKills || 0,
-            damageDealt: team.damageDealt || 0,
+            damageDealt: Math.round(team.damageDealt || 0),
             slots: teamSlots(team.memberIds.length),
-            loaded: match.phase === 'volley' ? match.volley.loaded[teamId] : ballsLoaded(loadedNow, team.memberIds.length),
+            rebuildUntil: team.rebuildUntil,
+            stats,
             members: team.memberIds.map((id) => ({
                 id,
                 nickname: match.nicknames[id],
                 connected: connected ? connected[id] !== false : true,
                 status: statusFor(match, id),
                 correct: match.stats[id]?.correct || 0,
+                answered: match.stats[id]?.answered || 0,
                 hits: match.stats[id]?.hits || 0,
+                streak: match.stats[id]?.streak || 0,
             })),
         };
     }
-    const answeredCount = match.playerOrder.filter((id) => match.answers[id]?.submitted).length;
-    const correctCount = match.playerOrder.filter((id) => match.answers[id]?.eligible).length;
     const view = {
         gameFormat: CANNON_FORMAT,
         phase: match.phase,
         serverNow: now,
-        round: match.roundIndex,
         phaseEndsAt: match.phaseEndsAt,
         questionMs: match.questionMs,
-        questionId: match.questionId,
-        inputMode: match.inputMode,
-        choices: match.inputMode === 'choice' && Array.isArray(match.choices) ? [...match.choices] : null,
-        definition: match.entry?.definition || '',
-        answeredCount,
         playerCount: match.playerOrder.length,
-        correctCount: (forHost || match.phase !== 'question') ? correctCount : null,
         teams,
         clock: {
             gameMs: match.gameMs,
             gameEndsAt: match.gameEndsAt,
-            pausedAt: match.clockPausedAt,
+            pausedAt: null,
             timeLeftMs: cannonTimeLeft(match, now),
             stormMs: Math.min(CANNON_STORM_MS, match.gameMs),
         },
         storm: isStormActive(match, now),
+        gust: isStormActive(match, now) ? match.gust : null,
         suddenDeath: Boolean(match.suddenDeath),
-        volley: showVolley ? {
-            seq: match.volley.seq,
-            round: match.volley.round,
-            storm: match.volley.storm,
-            suddenDeath: Boolean(match.volley.suddenDeath),
-            first: match.volley.first,
-            loaded: match.volley.loaded,
-            rebuild: Boolean(match.volley.rebuild),
-            fortDown: match.volley.fortDown || null,
-            points: match.volley.points || teamPointsSnapshot(match),
-            pointsBefore: match.volley.pointsBefore || null,
-            wins: match.volley.wins || teamWinsSnapshot(match),
-            winsBefore: match.volley.winsBefore || null,
-            gust: match.volley.gust ?? null,
-            hpBefore: match.volley.hpBefore,
-            hpAfter: match.volley.hpAfter,
-            shots: match.volley.shots,
-            durationMs: match.volley.durationMs,
-            next: match.volley.next,
-            winner: match.volley.winner,
-            reason: match.volley.reason,
-            timeUp: match.volley.timeUp,
-            answerTerm: match.volley.answerTerm,
-            definition: match.volley.definition,
-        } : null,
-        result: match.phase === 'finished' ? cannonWinners(match) : null,
+        suddenEndsAt: match.suddenEndsAt,
+        shotSeq: match.shotSeq,
+        // Host animates every shot; phones only need their own team's recent shots for the ticker.
+        shots: forHost ? match.shots.slice() : match.shots.slice(-6),
+        reviews: forHost ? match.reviews.map((r) => ({ id: r.id, playerId: r.playerId, nickname: r.nickname, team: r.team })) : [],
+        result: (match.phase === 'ending' || match.phase === 'finished') ? cannonWinners(match) : null,
         you: null,
     };
-    if (forHost && (match.phase === 'question' || match.phase === 'review')) {
-        view.correctTerm = match.entry?.term || '';
-    }
-    if (playerId != null && match.answers[String(playerId)]) {
-        const id = String(playerId);
-        const answer = match.answers[id];
+    const id = playerId != null ? String(playerId) : null;
+    if (id && match.players[id]) {
+        const ps = match.players[id];
         const team = match.playerTeam[id];
         view.you = {
             id,
             team,
             teamName: CANNON_TEAM_NAMES[team],
-            decision: answer.decision || null,
+            mode: ps.mode,
             status: statusFor(match, id),
-            timedOut: Boolean(answer.timedOut),
-            // Only once this player's answer is final and wrong (they can no longer answer).
-            correctTerm: answer.submitted && !answer.eligible && ['wrong', 'skipped', 'declined'].includes(answer.decision)
-                ? (match.entry?.term || '')
-                : null,
-            eligible: Boolean(answer.eligible),
-            ms: answer.ms,
-            tier: answer.eligible && answer.ms != null
-                ? speedTier(answer.ms, match.questionMs, match.inputMode).tier
-                : null,
-            force: answer.eligible && answer.ms != null
-                ? shotForce(answer.ms, match.inputMode)
-                : null,
+            questionId: ps.mode === 'answering' ? ps.q?.id ?? null : null,
+            startedAt: ps.mode === 'answering' ? ps.q?.startedAt ?? null : null,
+            endsAt: ps.mode === 'answering' ? ps.q?.endsAt ?? null : null,
+            nextAt: ps.nextAt,
+            reviewPending: Boolean(ps.reviewId),
             stats: { ...(match.stats[id] || blankStats()) },
-            shots: showVolley ? match.volley.shots.filter((s) => s.shooterId === id) : [],
         };
     }
     return view;

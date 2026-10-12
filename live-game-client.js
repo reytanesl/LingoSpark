@@ -1757,7 +1757,12 @@
         });
 
         s.on('live:your-question', (q) => {
-            if (q) showPlayerQuestion(q);
+            if (!q) return;
+            const cannonQ = q.gameFormat === 'word-cannon';
+            if (cannonQ) hideChallengeActions();
+            showPlayerQuestion(q);
+            // Word Cannon: own question stream — clear the last feedback card.
+            if (cannonQ) window.WCB?.phoneQuestion(q);
         });
 
         s.on('live:lantern-state', (state) => {
@@ -1842,7 +1847,13 @@
             }
         });
 
-        s.on('live:challenge-submitted', () => {
+        s.on('live:challenge-submitted', (data) => {
+            // Word Cannon never waits for the teacher: the player is already on the next question.
+            if (data?.cannon || isWordCannonFormat(playerState?.gameFormat)) {
+                hideChallengeActions();
+                window.WCB?.phoneChallengeSent();
+                return;
+            }
             showChallengeWaiting();
         });
 
@@ -1853,8 +1864,7 @@
                 return;
             }
             if (result?.cannon || result?.gameFormat === 'word-cannon') {
-                hideChallengeActions();
-                answerPending = false;
+                // Arrives while the player is busy with a later question: toast only.
                 window.WCB?.phoneChallengeResolved(result);
                 return;
             }
@@ -2516,8 +2526,8 @@
                 status.textContent = `Round ${q.round || 1} of ${q.rounds || q.termsToWin || 10} — ${modeHint}`;
             } else if (cannonMode) {
                 status.textContent = q.suddenDeath
-                    ? 'Sudden death! Fastest correct answer fires the LAST SHOT.'
-                    : 'Answer fast: faster answers aim better!';
+                    ? 'Sudden death! First correct answer fires the LAST SHOT.'
+                    : 'Answer fast — your shot fires the moment you are right!';
             } else {
                 const modeHint = choiceMode ? 'Tap the matching term' : 'Type the matching term';
                 status.textContent = `Term ${(q.progress || 0) + 1} of ${q.termsToWin || TERMS_TO_WIN} — ${modeHint}`;
