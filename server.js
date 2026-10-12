@@ -73,6 +73,8 @@ import {
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { staticAllowlist } from './static-allowlist.js';
+import './matura-mistakes.js';
+const { sanitizeMistakes: sanitizeMaturaMistakes, PROMPT_TYPES: MATURA_MISTAKE_TYPES } = globalThis.MaturaMistakes;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -1053,12 +1055,13 @@ ${essayText ? `TYPED TEXT (also use images if attached):\n"""\n${essayText}\n"""
 
 Also give conciseness coaching (does NOT change the 13 pts): redundancy, strong verbs, active voice, fillers, short phrases, avoid nominalizations, simpler sentences. 3–6 "conciseness" bullets with before→after hints from THEIR wording. Weave 1–2 into improvements. Do NOT rewrite paragraphs or give a model essay.
 
-Rules: second person; short bullet arrays only; fair/specific; scores integers in band; no invented content; if handwriting illegible, note briefly. Full original transcript in transcribedEssay; markedTranscript wraps ONLY real mistakes in <<err>>...<<\/err>> (no corrections inside tags).
+Rules: second person; short bullet arrays only; fair/specific; scores integers in band; no invented content; if handwriting illegible, note briefly. Full original transcript in transcribedEssay; markedTranscript wraps ONLY real mistakes in <<err>>...<<\/err>> (no corrections inside tags). For EVERY <<err>> tag add one entry to "mistakes", in the same order: text = exactly the text inside that tag, type = one of ${MATURA_MISTAKE_TYPES}, correction = the corrected wording (short), explanation = ≤15 words why.
 
 Return ONLY valid JSON:
 {
   "transcribedEssay": "full plain transcript",
   "markedTranscript": "transcript with <<err>>mistakes<<\/err>>",
+  "mistakes": [{ "text": "exact text inside the nth tag", "type": "grammar", "correction": "...", "explanation": "..." }],
   "wordCount": 0,
   "overallComment": ["2–4 bullets"],
   "totalScore": 0,
@@ -1081,6 +1084,7 @@ Return ONLY valid JSON:
                 images,
                 label: 'matura-assess',
             });
+            parsed.mistakes = sanitizeMaturaMistakes(parsed?.mistakes);
             let maturaAssess = cooldown;
             if (!admin) {
                 try {

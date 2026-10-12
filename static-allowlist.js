@@ -29,6 +29,7 @@ export const PUBLIC_SCRIPTS = new Set([
     'live-entry.js',
     'live-game-client.js',
     'lucky-lanterns-fx.js',
+    'matura-mistakes.js',
     'password-reset-client.js',
     'pe-colour-blocks.js',
     'pe-dictation-banks.js',

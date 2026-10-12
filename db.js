@@ -1,3 +1,4 @@
+import './matura-mistakes.js';
 import pg from 'pg';
 import crypto from 'crypto';
 
@@ -1258,6 +1259,8 @@ export async function getProgressSummary(userId) {
     };
 }
 
+const sanitizeMaturaMistakes = (list) => globalThis.MaturaMistakes.sanitizeMistakes(list);
+
 /** Strip anything that looks like file/binary payload before persisting a Matura review. */
 export function sanitizeMaturaReviewPayload(raw = {}) {
     const review = raw.review && typeof raw.review === 'object' ? raw.review : raw;
@@ -1272,6 +1275,7 @@ export function sanitizeMaturaReviewPayload(raw = {}) {
             ? review.conciseness.map((s) => String(s || '').trim()).filter(Boolean)
             : [],
         markedTranscript: typeof review.markedTranscript === 'string' ? review.markedTranscript : '',
+        mistakes: sanitizeMaturaMistakes(review.mistakes),
         transcribedEssay: typeof review.transcribedEssay === 'string'
             ? review.transcribedEssay
             : (typeof raw.essayText === 'string' ? raw.essayText : ''),

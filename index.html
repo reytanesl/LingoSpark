@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="live-entry.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
     <script src="demo-sets.js"></script>
+    <script src="matura-mistakes.js"></script>
     <script src="frank-paragraphs.js"></script>
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
@@ -2914,6 +2915,53 @@
             font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.65rem;
         }
         .matura-transcript-legend .matura-error { font-style: normal; }
+        #matura-transcript-wrap { position: relative; }
+        .matura-transcript-box button.matura-error {
+            font: inherit; line-height: inherit; cursor: pointer; margin: 0;
+            white-space: pre-wrap; text-align: inherit; display: inline;
+            border-top: 0; border-left: 0; border-right: 0;
+        }
+        .matura-transcript-box button.matura-error:hover,
+        .matura-transcript-box button.matura-error.is-active { background: rgba(200, 16, 46, 0.24); }
+        .matura-transcript-box button.matura-error:focus-visible {
+            outline: 3px solid var(--royal-blue); outline-offset: 2px;
+        }
+        .matura-mtype {
+            display: inline-block; font-family: var(--font-primary); font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.03em; text-transform: uppercase; color: #fff; background: var(--mt, #5c5f66);
+            padding: 0.18rem 0.5rem; border-radius: 999px; line-height: 1.3; white-space: nowrap;
+        }
+        .matura-mtype.is-inferred { background: #fff; color: var(--mt, #5c5f66); box-shadow: inset 0 0 0 1.5px var(--mt, #5c5f66); }
+        .matura-mistake-pop {
+            position: absolute; z-index: 30; width: min(320px, calc(100% - 8px)); box-sizing: border-box;
+            background: var(--bright-white, #fff); border: 2px solid var(--pillarbox-red);
+            border-radius: 10px; padding: 0.7rem 0.85rem 0.75rem; box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+            text-align: left; font-size: 0.92rem; color: var(--text-dark);
+        }
+        .matura-mistake-pop[hidden] { display: none; }
+        .matura-mistake-pop .pop-head { display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; margin-bottom: 0.45rem; }
+        .matura-mistake-pop .pop-close {
+            border: 0; background: transparent; font-size: 1.25rem; line-height: 1; cursor: pointer;
+            color: var(--text-muted); padding: 0.1rem 0.3rem; border-radius: 6px;
+        }
+        .matura-mistake-pop .pop-close:focus-visible { outline: 3px solid var(--royal-blue); }
+        .matura-mistake-fix { margin: 0; line-height: 1.45; word-break: break-word; }
+        .matura-mistake-fix .orig { color: var(--pillarbox-red); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+        .matura-mistake-fix .arrow { color: var(--text-muted); margin: 0 0.3rem; }
+        .matura-mistake-fix .corr { color: var(--success-green, #2b8a3e); font-weight: 700; }
+        .matura-mistake-why { margin: 0.4rem 0 0; color: var(--text-muted); font-size: 0.86rem; line-height: 1.4; }
+        .matura-mistakes-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+        .matura-mistakes-list li {
+            display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.15rem 0.5rem; align-items: start;
+            padding: 0.5rem 0.65rem; border: 1px solid rgba(0,0,0,0.08); border-left: 4px solid var(--mt, #5c5f66);
+            border-radius: 8px; background: var(--bright-white, #fff); cursor: pointer; text-align: left;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+        .matura-mistakes-list li:focus-visible { outline: 3px solid var(--royal-blue); outline-offset: 1px; }
+        .matura-mistakes-list li.is-active { background: rgba(200, 16, 46, 0.07); box-shadow: 0 0 0 2px var(--pillarbox-red); }
+        .matura-mistakes-list .num { font-weight: 700; color: var(--pillarbox-red); font-family: var(--font-primary); }
+        .matura-mistakes-list .body { min-width: 0; }
+        .matura-mistakes-list .body .matura-mtype { margin-bottom: 0.2rem; }
         .matura-history-panel {
             margin-top: 1.75rem; padding: 1.15rem 1.2rem; background: var(--bright-white);
             border: 2px solid var(--border-light); border-radius: 12px; text-align: left;
@@ -4129,8 +4177,13 @@
                     </div>
                     <div id="matura-transcript-wrap" style="display:none;margin-bottom:1rem;">
                         <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Your essay (mistakes marked)</h4>
-                        <p class="matura-transcript-legend">Highlighted text = mistakes to correct yourself. No model answer is given — rewrite those parts on your own.</p>
+                        <p class="matura-transcript-legend">Highlighted text = mistakes to correct yourself. Click or tap a red marking to see what type of mistake it is. No model essay is given — rewrite those parts on your own.</p>
                         <div class="pe-prompt-box matura-transcript-box" id="matura-transcript"></div>
+                        <div class="matura-mistake-pop" id="matura-mistake-pop" role="dialog" aria-modal="false" aria-labelledby="matura-mistake-pop-type" hidden></div>
+                        <div id="matura-mistakes-wrap" style="display:none;margin-top:1rem;">
+                            <h4 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.5rem;">Your mistakes <span id="matura-mistakes-count" style="color:var(--text-muted);font-weight:400;font-size:0.9rem;"></span></h4>
+                            <ol class="matura-mistakes-list" id="matura-mistakes-list"></ol>
+                        </div>
                     </div>
                     <div class="mission-action-row" style="flex-wrap:wrap;align-items:center;gap:0.6rem;">
                         <label for="matura-export-format" style="font-size:0.9rem;color:var(--text-muted);margin:0;">Export as</label>
@@ -9642,6 +9695,7 @@ Return ONLY JSON:
                     improvements: data.improvements || [],
                     conciseness: data.conciseness || [],
                     markedTranscript: data.markedTranscript || '',
+                    mistakes: Array.isArray(data.mistakes) ? data.mistakes : [],
                     transcribedEssay: data.transcribedEssay || essayText || '',
                 },
             };
@@ -9811,6 +9865,7 @@ Return ONLY JSON:
                     improvements: review.improvements || [],
                     conciseness: review.conciseness || [],
                     markedTranscript: review.markedTranscript || '',
+                    mistakes: Array.isArray(review.mistakes) ? review.mistakes : [],
                     transcribedEssay: review.transcribedEssay || data.essayText || '',
                 };
                 const task = document.getElementById('matura-task');
@@ -9880,6 +9935,158 @@ Return ONLY JSON:
             return parts.join('') || escapeHtml(raw);
         }
 
+        /* ---- Mistake types: clickable red markings + "Your mistakes" list ---- */
+        let maturaMistakeState = { mistakes: [], active: -1 };
+
+        function maturaTypeBadge(m) {
+            const MM = window.MaturaMistakes;
+            const info = MM.typeInfo(m.type);
+            const title = m.inferred ? ' title="Estimated type (this review was saved before mistake types were added)"' : '';
+            return `<span class="matura-mtype${m.inferred ? ' is-inferred' : ''}" style="--mt:${info.color}"${title}>${escapeHtml(info.label)}${m.inferred ? ' (est.)' : ''}</span>`;
+        }
+
+        function maturaFixHtml(m) {
+            const corr = m.correction
+                ? `<span class="arrow" aria-hidden="true">→</span><span class="visually-hidden" style="position:absolute;left:-9999px;">should be</span><span class="corr">${escapeHtml(m.correction)}</span>`
+                : '';
+            return `<p class="matura-mistake-fix"><span class="orig">${escapeHtml(m.text.trim() || m.text)}</span>${corr}</p>`
+                + (m.explanation ? `<p class="matura-mistake-why">${escapeHtml(m.explanation)}</p>` : '');
+        }
+
+        function renderMaturaMistakes(data) {
+            const wrap = document.getElementById('matura-transcript-wrap');
+            const box = document.getElementById('matura-transcript');
+            const listWrap = document.getElementById('matura-mistakes-wrap');
+            const list = document.getElementById('matura-mistakes-list');
+            closeMaturaMistakePop(false);
+            const MM = window.MaturaMistakes;
+            if (!MM) {
+                const markedHtml = formatMaturaMarkedTranscript(data.markedTranscript, data.transcribedEssay);
+                wrap.style.display = markedHtml ? 'block' : 'none';
+                box.innerHTML = markedHtml;
+                listWrap.style.display = 'none';
+                return;
+            }
+            const { segments, mistakes } = MM.parseMarkedTranscript(data.markedTranscript, data.transcribedEssay, data.mistakes);
+            maturaMistakeState = { mistakes, active: -1 };
+            const raw = (data.markedTranscript || data.transcribedEssay || '').trim();
+            wrap.style.display = raw ? 'block' : 'none';
+            box.innerHTML = segments.length
+                ? segments.map(seg => seg.mistake
+                    ? `<button type="button" class="matura-error" data-mi="${seg.index}" aria-haspopup="dialog" aria-expanded="false" aria-controls="matura-mistake-pop" aria-label="Mistake ${seg.index + 1}: ${escapeHtml(seg.text.trim())} — ${escapeHtml(MM.typeInfo(seg.mistake.type).label)}. Show details">${escapeHtml(seg.text)}</button>`
+                    : escapeHtml(seg.text)).join('')
+                : escapeHtml(raw);
+            if (!mistakes.length) {
+                listWrap.style.display = 'none';
+                list.innerHTML = '';
+                return;
+            }
+            listWrap.style.display = 'block';
+            document.getElementById('matura-mistakes-count').textContent = `(${mistakes.length})`;
+            list.innerHTML = mistakes.map((m, i) => `
+                <li tabindex="0" data-mi="${i}" style="--mt:${MM.typeInfo(m.type).color}" aria-label="Mistake ${i + 1}, ${escapeHtml(MM.typeInfo(m.type).label)}. Show in essay">
+                    <span class="num">${i + 1}.</span>
+                    <div class="body">${maturaTypeBadge(m)}${maturaFixHtml(m)}</div>
+                </li>`).join('');
+        }
+
+        function setMaturaActiveMistake(idx) {
+            maturaMistakeState.active = idx;
+            document.querySelectorAll('#matura-transcript button.matura-error').forEach(b => {
+                const on = Number(b.dataset.mi) === idx;
+                b.classList.toggle('is-active', on);
+                b.setAttribute('aria-expanded', on ? 'true' : 'false');
+            });
+            document.querySelectorAll('#matura-mistakes-list li').forEach(li => {
+                const on = Number(li.dataset.mi) === idx;
+                li.classList.toggle('is-active', on);
+                if (on) li.setAttribute('aria-current', 'true'); else li.removeAttribute('aria-current');
+            });
+        }
+
+        function openMaturaMistakePop(idx, { focusPop = false, scrollList = false } = {}) {
+            const m = maturaMistakeState.mistakes[idx];
+            const mark = document.querySelector(`#matura-transcript button.matura-error[data-mi="${idx}"]`);
+            const pop = document.getElementById('matura-mistake-pop');
+            const wrap = document.getElementById('matura-transcript-wrap');
+            if (!m || !mark || !pop || !wrap) return;
+            pop.innerHTML = `
+                <div class="pop-head">
+                    <span id="matura-mistake-pop-type">${maturaTypeBadge(m)}</span>
+                    <button type="button" class="pop-close" aria-label="Close mistake details">×</button>
+                </div>
+                ${maturaFixHtml(m)}
+                ${m.correction || m.explanation ? '' : '<p class="matura-mistake-why">Try to correct this part yourself.</p>'}`;
+            pop.hidden = false;
+            setMaturaActiveMistake(idx);
+            // Position under the clicked mark (first line box), clamped inside the wrap.
+            const wr = wrap.getBoundingClientRect();
+            const rects = mark.getClientRects();
+            const r = rects.length ? rects[0] : mark.getBoundingClientRect();
+            const pw = pop.offsetWidth;
+            let left = r.left - wr.left;
+            left = Math.max(4, Math.min(left, wrap.clientWidth - pw - 4));
+            let top = r.bottom - wr.top + 6;
+            pop.style.left = `${left}px`;
+            pop.style.top = `${top}px`;
+            // Flip above if it would run past the bottom of the viewport.
+            const ph = pop.offsetHeight;
+            if (r.bottom + 6 + ph > window.innerHeight && r.top - ph - 6 > 0) {
+                pop.style.top = `${r.top - wr.top - ph - 6}px`;
+            }
+            if (scrollList) {
+                const li = document.querySelector(`#matura-mistakes-list li[data-mi="${idx}"]`);
+                li?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+            if (focusPop) pop.querySelector('.pop-close')?.focus();
+        }
+
+        function closeMaturaMistakePop(returnFocus = true) {
+            const pop = document.getElementById('matura-mistake-pop');
+            if (!pop || pop.hidden) return;
+            const idx = maturaMistakeState.active;
+            pop.hidden = true;
+            document.querySelectorAll('#matura-transcript button.matura-error').forEach(b => {
+                b.classList.remove('is-active');
+                b.setAttribute('aria-expanded', 'false');
+            });
+            if (returnFocus && idx >= 0) {
+                document.querySelector(`#matura-transcript button.matura-error[data-mi="${idx}"]`)?.focus();
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const mark = e.target.closest?.('#matura-transcript button.matura-error');
+            if (mark) {
+                const idx = Number(mark.dataset.mi);
+                const pop = document.getElementById('matura-mistake-pop');
+                if (!pop.hidden && maturaMistakeState.active === idx) closeMaturaMistakePop(false);
+                else openMaturaMistakePop(idx);
+                return;
+            }
+            if (e.target.closest?.('#matura-mistake-pop .pop-close')) { closeMaturaMistakePop(true); return; }
+            const li = e.target.closest?.('#matura-mistakes-list li[data-mi]');
+            if (li) {
+                const idx = Number(li.dataset.mi);
+                const markEl = document.querySelector(`#matura-transcript button.matura-error[data-mi="${idx}"]`);
+                markEl?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                setTimeout(() => openMaturaMistakePop(idx), 250);
+                setMaturaActiveMistake(idx);
+                return;
+            }
+            if (!e.target.closest?.('#matura-mistake-pop')) closeMaturaMistakePop(false);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const pop = document.getElementById('matura-mistake-pop');
+                if (pop && !pop.hidden) { e.preventDefault(); closeMaturaMistakePop(true); }
+                return;
+            }
+            const li = e.target.closest?.('#matura-mistakes-list li[data-mi]');
+            if (li && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); li.click(); }
+        });
+        window.addEventListener('resize', () => closeMaturaMistakePop(false));
+
         function renderMaturaResult(data) {
             document.getElementById('matura-result').style.display = 'block';
             document.getElementById('matura-total-score').textContent =
@@ -9918,9 +10125,7 @@ Return ONLY JSON:
                 }
             }
 
-            const markedHtml = formatMaturaMarkedTranscript(data.markedTranscript, data.transcribedEssay);
-            document.getElementById('matura-transcript-wrap').style.display = markedHtml ? 'block' : 'none';
-            document.getElementById('matura-transcript').innerHTML = markedHtml;
+            renderMaturaMistakes(data);
 
             document.getElementById('matura-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
