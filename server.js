@@ -1032,7 +1032,7 @@ Return ONLY valid JSON:
             let when = `${totalMin} minute${totalMin === 1 ? '' : 's'}`;
             if (h > 0) when = m === 0 ? `${h} hour${h === 1 ? '' : 's'}` : `${h}h ${m}m`;
             return res.status(429).json({
-                error: `Matura criteria assessment is on a 4-hour cooldown. Unlock 4 more assessments for 5 zł / $1, or try again in about ${when}.`,
+                error: `You have used both free Matura criteria assessments in this 4-hour window. Unlock 4 more assessments for 5 zł / $1, or try again in about ${when}.`,
                 code: 'matura_assess_cooldown',
                 maturaAssess: cooldown,
                 maturaAssessPack: publicMaturaAssessPack(),
@@ -1092,6 +1092,7 @@ Return ONLY valid JSON:
                     if (stamped) {
                         assessUser.matura_assess_last_at = stamped.matura_assess_last_at;
                         assessUser.matura_assess_credits = stamped.matura_assess_credits;
+                        assessUser.matura_assess_window_count = stamped.matura_assess_window_count;
                     }
                     maturaAssess = getMaturaAssessAvailability(assessUser, { isAdmin: false });
                 } catch (stampErr) {

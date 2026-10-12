@@ -44,6 +44,7 @@ export async function initDb() {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_last_at TIMESTAMPTZ`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_credits INTEGER NOT NULL DEFAULT 0`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_window_count INTEGER NOT NULL DEFAULT 0`);
     await db.query(`
         DO $$ BEGIN
             ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL;
@@ -539,9 +540,33 @@ export function isAdminEmail(email) {
     return email.toLowerCase().trim() === admin;
 }
 
-/** Premium Matura criteria assessments: once every 4 hours, or use paid bonus credits. */
+/**
+ * Premium Matura criteria assessments: MATURA_ASSESS_FREE_PER_WINDOW free uses per 4-hour window,
+ * or paid bonus credits. The window starts at the first free use (matura_assess_last_at);
+ * matura_assess_window_count counts free uses inside it.
+ */
 export const MATURA_ASSESS_COOLDOWN_MS = 4 * 60 * 60 * 1000;
+export const MATURA_ASSESS_FREE_PER_WINDOW = 2;
 export const MATURA_ASSESS_PACK_CREDITS = 4;
+
+/** Pure: free-slot state for a window start + count (legacy rows with count 0 inside a window count as 1 used). */
+export function computeMaturaFreeWindow(lastAt, windowCount, nowMs = Date.now()) {
+    const lastMs = lastAt ? new Date(lastAt).getTime() : 0;
+    const inWindow = Boolean(lastMs) && !Number.isNaN(lastMs) && nowMs < lastMs + MATURA_ASSESS_COOLDOWN_MS;
+    const used = inWindow
+        ? Math.min(MATURA_ASSESS_FREE_PER_WINDOW, Math.max(1, Math.floor(Number(windowCount) || 0)))
+        : 0;
+    const freeRemaining = MATURA_ASSESS_FREE_PER_WINDOW - used;
+    const windowEndsMs = inWindow ? lastMs + MATURA_ASSESS_COOLDOWN_MS : 0;
+    return {
+        inWindow,
+        freeUsed: used,
+        freeRemaining,
+        freeLimit: MATURA_ASSESS_FREE_PER_WINDOW,
+        retryAfterMs: freeRemaining > 0 || !inWindow ? 0 : Math.max(0, windowEndsMs - nowMs),
+        windowEndsAt: inWindow ? new Date(windowEndsMs).toISOString() : null,
+    };
+}
 
 export function getMaturaAssessCredits(user) {
     return Math.max(0, Math.floor(Number(user?.matura_assess_credits) || 0));
@@ -555,6 +580,8 @@ export function getMaturaAssessAvailability(user, { isAdmin = false } = {}) {
             nextAvailableAt: null,
             retryAfterMs: 0,
             cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+            freeLimit: MATURA_ASSESS_FREE_PER_WINDOW,
+            freeRemaining: 0,
             creditsRemaining: 0,
             usingCredits: false,
         };
@@ -566,22 +593,18 @@ export function getMaturaAssessAvailability(user, { isAdmin = false } = {}) {
             nextAvailableAt: null,
             retryAfterMs: 0,
             cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+            freeLimit: MATURA_ASSESS_FREE_PER_WINDOW,
+            freeRemaining: MATURA_ASSESS_FREE_PER_WINDOW,
             creditsRemaining: getMaturaAssessCredits(user),
             usingCredits: false,
         };
     }
 
     const creditsRemaining = getMaturaAssessCredits(user);
-    const lastRaw = user.matura_assess_last_at;
-    const lastMs = lastRaw ? new Date(lastRaw).getTime() : 0;
-    let retryAfterMs = 0;
-    let nextAvailableAt = null;
-    if (lastMs && !Number.isNaN(lastMs)) {
-        const nextMs = lastMs + MATURA_ASSESS_COOLDOWN_MS;
-        retryAfterMs = Math.max(0, nextMs - Date.now());
-        if (retryAfterMs > 0) nextAvailableAt = new Date(nextMs).toISOString();
-    }
-    const cooldownOk = retryAfterMs <= 0;
+    const win = computeMaturaFreeWindow(user.matura_assess_last_at, user.matura_assess_window_count);
+    const retryAfterMs = win.retryAfterMs;
+    const nextAvailableAt = retryAfterMs > 0 ? win.windowEndsAt : null;
+    const cooldownOk = win.freeRemaining > 0;
     const usingCredits = !cooldownOk && creditsRemaining > 0;
     const available = cooldownOk || creditsRemaining > 0;
 
@@ -591,6 +614,10 @@ export function getMaturaAssessAvailability(user, { isAdmin = false } = {}) {
         nextAvailableAt: available ? null : nextAvailableAt,
         retryAfterMs: available ? 0 : retryAfterMs,
         cooldownMs: MATURA_ASSESS_COOLDOWN_MS,
+        freeLimit: MATURA_ASSESS_FREE_PER_WINDOW,
+        freeUsed: win.freeUsed,
+        freeRemaining: win.freeRemaining,
+        windowEndsAt: win.windowEndsAt,
         creditsRemaining,
         usingCredits,
         // When blocked, still expose when free slot returns (for UI countdown + buy CTA)
@@ -611,7 +638,7 @@ export async function recordMaturaAssessUsage(userId) {
     try {
         await client.query('BEGIN');
         const locked = await client.query(
-            `SELECT id, matura_assess_last_at, matura_assess_credits
+            `SELECT id, matura_assess_last_at, matura_assess_credits, matura_assess_window_count
              FROM users WHERE id = $1 FOR UPDATE`,
             [userId]
         );
@@ -622,30 +649,38 @@ export async function recordMaturaAssessUsage(userId) {
         }
 
         const credits = Math.max(0, Math.floor(Number(row.matura_assess_credits) || 0));
-        const lastMs = row.matura_assess_last_at ? new Date(row.matura_assess_last_at).getTime() : 0;
-        const retryAfterMs = lastMs && !Number.isNaN(lastMs)
-            ? Math.max(0, lastMs + MATURA_ASSESS_COOLDOWN_MS - Date.now())
-            : 0;
-        const cooldownOk = retryAfterMs <= 0;
+        const win = computeMaturaFreeWindow(row.matura_assess_last_at, row.matura_assess_window_count);
+        const RET = 'RETURNING matura_assess_last_at, matura_assess_credits, matura_assess_window_count';
 
         let result;
-        if (cooldownOk) {
+        if (!win.inWindow) {
+            // First free use opens a new 4-hour window.
             result = await client.query(
                 `UPDATE users
-                 SET matura_assess_last_at = NOW()
+                 SET matura_assess_last_at = NOW(), matura_assess_window_count = 1
                  WHERE id = $1
-                 RETURNING matura_assess_last_at, matura_assess_credits`,
+                 ${RET}`,
                 [userId]
+            );
+        } else if (win.freeRemaining > 0) {
+            // Another free use inside the same window (window start unchanged).
+            result = await client.query(
+                `UPDATE users
+                 SET matura_assess_window_count = $2
+                 WHERE id = $1
+                 ${RET}`,
+                [userId, win.freeUsed + 1]
             );
         } else if (credits > 0) {
             const nextCredits = credits - 1;
             result = await client.query(
                 `UPDATE users
                  SET matura_assess_credits = $2,
-                     matura_assess_last_at = CASE WHEN $2 = 0 THEN NOW() ELSE matura_assess_last_at END
+                     matura_assess_last_at = CASE WHEN $2 = 0 THEN NOW() ELSE matura_assess_last_at END,
+                     matura_assess_window_count = CASE WHEN $2 = 0 THEN $3 ELSE matura_assess_window_count END
                  WHERE id = $1
-                 RETURNING matura_assess_last_at, matura_assess_credits`,
-                [userId, nextCredits]
+                 ${RET}`,
+                [userId, nextCredits, MATURA_ASSESS_FREE_PER_WINDOW]
             );
         } else {
             await client.query('ROLLBACK');
