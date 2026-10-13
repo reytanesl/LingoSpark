@@ -505,6 +505,7 @@ export function publicRoomSnapshot(room) {
         gameMinutes: room.gameMinutes || CANNON_DEFAULT_MINUTES,
         questionSeconds: room.questionSeconds || null,
         questionTimeSec: questionSecondsForRoom(room),
+        challengesEnabled: challengesEnabled(room),
         teamAssignment: room.teamAssignment || 'random',
         teamMin: isWordCannon(room) ? 1 : LIVE_TEAM_MIN,
         teamMax: teamMaxForRoom(room),
@@ -543,6 +544,23 @@ export function normalizeQuestionSeconds(value) {
  * Seconds allowed per question in the room's current format, or null for no limit.
  * Defaults keep the old behaviour: Lucky Lanterns 20 s, the race formats untimed.
  */
+/** Host switch per game room: may players challenge a typed answer marked wrong? Default on. */
+export function challengesEnabled(room) {
+    return room?.challengesEnabled !== false;
+}
+
+export function normalizeChallengesSetting(value) {
+    if (value === false || value === 0) return false;
+    const v = String(value ?? '').trim().toLowerCase();
+    return !(v === 'off' || v === 'false' || v === '0' || v === 'no');
+}
+
+/** Results the player could challenge carry challengesOff when the host switched challenges off (phone auto-continues). */
+export function tagChallengeResult(room, result) {
+    if (!result || !result.challengeable || challengesEnabled(room)) return result;
+    return { ...result, challengesOff: true };
+}
+
 export function questionSecondsForRoom(room) {
     if (isLuckyLanterns(room)) return room?.questionSeconds || LANTERN_QUESTION_MS / 1000;
     if (isWordCannon(room)) return room?.questionSeconds || CANNON_QUESTION_MS / 1000;
@@ -827,7 +845,7 @@ function emitHostAnswerFeed(io, room, entity, result) {
         progress: result.progress,
         won: Boolean(result.won),
         teamId: result.teamId || null,
-        challengeable: Boolean(result.challengeable),
+        challengeable: Boolean(result.challengeable) && challengesEnabled(room),
         timedOut: Boolean(result.timedOut),
     });
 }
@@ -1198,6 +1216,7 @@ function emitPlayerSession(socket, room, player) {
                 correct: false,
                 reset: false,
                 challengeable: true,
+                challengesOff: !challengesEnabled(room),
                 lantern: true,
                 gameFormat: 'lucky-lanterns',
                 progress: room.lantern.scores[player.id] || 0,
@@ -1375,7 +1394,7 @@ export function sanitizeHostName(raw) {
     return cleaned.length >= 2 ? cleaned : null;
 }
 
-export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds, gameMinutes, hostName }) {
+export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds, gameMinutes, challenges, hostName }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
@@ -1407,6 +1426,7 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         lantern: null,
         lanternTimer: null,
         gameMinutes: normalizeGameMinutes(gameMinutes),
+        challengesEnabled: challenges === undefined ? true : normalizeChallengesSetting(challenges),
         cannon: null,
         cannonTimer: null,
     };
@@ -1543,7 +1563,7 @@ export function resetRoomToLobby(room) {
 }
 
 /** Lobby (or finished→lobby): change format / answer mode; keep room code + players. */
-export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes } = {}) {
+export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, challenges } = {}) {
     if (room.phase === 'playing') {
         throw new Error('Settings can only be changed before the game starts.');
     }
@@ -1572,6 +1592,9 @@ export function setRoomSettings(room, { gameFormat, teamAssignment, answerMode, 
     // undefined = not sent (keep); null / '' / 0 = back to the format default.
     if (questionSeconds !== undefined) {
         room.questionSeconds = normalizeQuestionSeconds(questionSeconds);
+    }
+    if (challenges !== undefined && challenges !== null) {
+        room.challengesEnabled = normalizeChallengesSetting(challenges);
     }
 
     if (!usesTeamLobby(room)) {
@@ -1708,7 +1731,7 @@ function deliverTeamQuestion(io, room, team) {
 }
 
 function deliverTeamAnswerResult(io, room, team, result) {
-    const payload = { ...result, teamId: team.id };
+    const payload = { ...tagChallengeResult(room, result), teamId: team.id };
     for (const memberId of team.memberIds) {
         const member = room.players.get(memberId);
         if (!member?.socketId) continue;
@@ -2342,6 +2365,7 @@ function emitCannonPlayerSession(socket, room, player, payload) {
             correct: false,
             reset: false,
             challengeable: true,
+            challengesOff: !challengesEnabled(room),
             cannon: true,
             gameFormat: 'word-cannon',
             progress: match.stats[player.id]?.correct || 0,
@@ -2545,7 +2569,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
         });
 
-        socket.on('live:set-settings', ({ gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, settingsSeq }) => {
+        socket.on('live:set-settings', ({ gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, challenges, settingsSeq }) => {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'host' || socket.id !== room.hostSocketId) {
                 socket.emit('live:error', { error: 'Host only.' });
@@ -2553,7 +2577,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 const wasFinished = room.phase === 'finished';
-                setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes });
+                setRoomSettings(room, { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, challenges });
                 const snapshot = publicRoomSnapshot(room);
                 // Always refresh lobby for host + players (also covers finished → lobby).
                 io.to(`room:${room.code}`).emit('live:lobby-reset', {
@@ -2570,6 +2594,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     gameMinutes: room.gameMinutes,
                     questionSeconds: room.questionSeconds || null,
                     questionTimeSec: questionSecondsForRoom(room),
+                    challengesEnabled: challengesEnabled(room),
                     snapshot,
                     resetFromFinished: wasFinished,
                     settingsSeq,
@@ -2674,7 +2699,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     const { result, shot } = submitCannonAnswer(
                         room.cannon, socket.data.playerId, text ?? answer, questionId ?? null, Date.now(),
                     );
-                    socket.emit('live:answer-result', result);
+                    socket.emit('live:answer-result', tagChallengeResult(room, result));
                     // A shot is news for the host right away; plain wrong answers can wait for the throttle.
                     afterCannonChange(io, room, onGameEnd, { immediate: Boolean(shot) });
                     return;
@@ -2690,7 +2715,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                         player.questionId = room.lantern.questionId;
                         player.answerLocked = true;
                     }
-                    socket.emit('live:answer-result', result);
+                    socket.emit('live:answer-result', tagChallengeResult(room, result));
                     afterLanternChange(io, room, onGameEnd);
                     return;
                 }
@@ -2736,7 +2761,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 assertCurrentQuestion(room, player, questionId);
                 const result = submitAnswer(room, socket.data.playerId, text ?? answer);
                 if (player) emitHostAnswerFeed(io, room, player, result);
-                socket.emit('live:answer-result', result);
+                socket.emit('live:answer-result', tagChallengeResult(room, result));
 
                 if (result.won) {
                     const finished = gameFinishedPayload(room);
@@ -2760,6 +2785,10 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             const room = getRoom(socket.data.roomCode);
             if (!room || socket.data.liveRole !== 'player') {
                 socket.emit('live:error', { error: 'Players only.' });
+                return;
+            }
+            if (!challengesEnabled(room)) {
+                socket.emit('live:error', { error: 'Challenges are switched off for this game.', code: 'challenges_off' });
                 return;
             }
             try {

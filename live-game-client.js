@@ -1140,6 +1140,24 @@
         ensureSocket().emit('live:skip-challenge');
     }
 
+    let autoContinueTimer = null;
+    let playerChallengesOff = false;
+    function scheduleAutoContinue(result) {
+        clearTimeout(autoContinueTimer);
+        const canAct = canPlayerChallengeAction();
+        const resultEl = $('live-play-result');
+        if (resultEl && !(result.cannon || result.gameFormat === 'word-cannon')) {
+            resultEl.classList.add('live-play-result--visible');
+            resultEl.innerHTML = `<div class="live-choice wrong">Marked incorrect — expected <strong>${esc(result.correctTerm || '')}</strong>.</div>
+                <p class="live-muted live-play-autocontinue">Challenges are off for this game. Continuing…</p>`;
+        }
+        if (!canAct) return;
+        autoContinueTimer = setTimeout(() => {
+            if (!playerState) return;
+            ensureSocket().emit('live:skip-challenge');
+        }, 1400);
+    }
+
     function applyChallengeResolved(result) {
         hideChallengeActions();
         answerPending = false;
@@ -1797,8 +1815,15 @@
             syncPlayerCannonLobby();
         });
 
-        s.on('live:answer-result', (result) => {
+        s.on('live:answer-result', (incoming) => {
             answerPending = false;
+            let result = incoming;
+            if (result?.challengeable) playerChallengesOff = Boolean(result.challengesOff);
+            // Host switched challenges off: no Challenge button — continue automatically after a short look.
+            if (result?.challengeable && result.challengesOff) {
+                result = { ...result, challengeable: false };
+                scheduleAutoContinue(result);
+            }
             if (result?.lantern || result?.gameFormat === 'lucky-lanterns') {
                 if (result.challengeable) showChallengeActions(result);
                 else hideChallengeActions();
@@ -2094,6 +2119,23 @@
             roundsInput.value = String(snap?.lanternRounds || hostState?.lanternRounds || 10);
         }
         syncQuestionTimeUI(format, snap && 'questionSeconds' in snap ? snap.questionSeconds : hostState?.questionSeconds);
+        if (snap && 'challengesEnabled' in snap && hostState) hostState.challengesEnabled = snap.challengesEnabled !== false;
+        syncChallengesToggleUI(hostState?.challengesEnabled !== false);
+    }
+
+    /** Host switch: may players challenge typed answers marked wrong in this game? */
+    function syncChallengesToggleUI(on) {
+        const box = $('live-lobby-challenges');
+        if (box && document.activeElement !== box) box.checked = Boolean(on);
+        const isOn = box ? box.checked : Boolean(on);
+        const state = $('live-lobby-challenges-state');
+        if (state) state.textContent = isOn ? 'On' : 'Off';
+        const hint = $('live-lobby-challenges-hint');
+        if (hint) {
+            hint.textContent = isOn
+                ? 'Players can challenge a typed answer marked wrong; you accept or reject it.'
+                : 'Off: no Challenge button — wrong answers just continue, and no challenge cards appear for you.';
+        }
     }
 
     /** Host keeps the chosen seconds; '' means each format's own default (Lucky Lanterns 20 s, races untimed). */
@@ -2163,8 +2205,11 @@
         syncQuestionTimeUI(gameFormat, questionSeconds);
         const gameMinutes = Number($('live-lobby-game-minutes')?.value || hostState.gameMinutes || 5);
         hostState.gameMinutes = gameMinutes;
+        const challenges = $('live-lobby-challenges') ? $('live-lobby-challenges').checked : hostState.challengesEnabled !== false;
+        hostState.challengesEnabled = challenges;
+        syncChallengesToggleUI(challenges);
         const settingsSeq = ++lobbySettingsSeq;
-        ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, settingsSeq });
+        ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, challenges, settingsSeq });
     }
 
     function getFullscreenElement() {
@@ -4769,7 +4814,7 @@
         const status = $('live-play-status');
         let note = '';
         if (state.phase === 'question' && !you.decision) note = 'Answer to earn a lantern.';
-        else if (you.decision === 'prompt') note = 'Marked wrong. Challenge it, or continue.';
+        else if (you.decision === 'prompt') note = playerChallengesOff ? 'Marked wrong — challenges are off for this game. Continuing…' : 'Marked wrong. Challenge it, or continue.';
         else if (you.decision === 'pending') note = 'Waiting for the teacher.';
         else if (you.status === 'ready') note = 'Correct! Lanterns open after any challenges.';
         else if (you.status === 'out') note = you.timedOut ? 'Time\'s up — counted as wrong. No lantern this round.' : 'No lantern this round.';
@@ -4932,6 +4977,7 @@
             ensureQuestion: ensureCannonQuestion,
         });
         $('live-lobby-question-time')?.addEventListener('change', emitHostLobbySettings);
+        $('live-lobby-challenges')?.addEventListener('change', emitHostLobbySettings);
         bindHostLobbyBoard();
         $('live-play-submit')?.addEventListener('click', () => submitPlayerAnswer());
         $('live-play-captain-submit')?.addEventListener('click', submitCaptainAnswer);

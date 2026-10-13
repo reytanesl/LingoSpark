@@ -665,6 +665,7 @@ async function start() {
                 teamAssignment: req.body?.teamAssignment,
                 questionSeconds: req.body?.questionSeconds,
                 gameMinutes: req.body?.gameMinutes,
+                challenges: req.body?.challenges,
                 hostName: req.user?.name || '',
             });
 
