@@ -46,5 +46,17 @@ test('wiring: deck script allowlisted and loaded; host uses it for Word Cannon; 
     assert.doesNotMatch(wc, /wc-feed|pushFeed/);
     const css = readFileSync(new URL('./word-cannon.css', import.meta.url), 'utf8');
     assert.doesNotMatch(css, /wc-feed/);
-    assert.match(css, /\.live-challenge-deck > \.live-host-challenge-card\.is-top \{ transform: none; \}/);
+    const deckCss = readFileSync(new URL('./challenge-deck.css', import.meta.url), 'utf8');
+    assert.match(deckCss, /\.live-challenge-deck > \.live-host-challenge-card\.is-top \{ transform: none; \}/);
+});
+
+test('Lucky Lanterns uses the same deck with its own compact styling', () => {
+    const client = readFileSync(new URL('./live-game-client.js', import.meta.url), 'utf8');
+    assert.match(client, /live-host-lanterns'\)\) && window\.ChallengeDeck/);
+    const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+    assert.match(html, /<link rel="stylesheet" href="challenge-deck\.css">/);
+    const shared = readFileSync(new URL('./challenge-deck.css', import.meta.url), 'utf8');
+    assert.doesNotMatch(shared, /body\.live-host-(cannon|lanterns)/, 'shared CSS stays game-neutral');
+    const ll = readFileSync(new URL('./lucky-lanterns.css', import.meta.url), 'utf8');
+    assert.match(ll, /body\.live-host-lanterns \.live-host-challenge-panel\.live-challenge-deck \{/);
 });

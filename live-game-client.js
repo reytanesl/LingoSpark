@@ -1029,9 +1029,9 @@
         const panel = mountHostChallengePanel();
         if (!panel) return;
         const challenges = Array.from(hostPendingChallenges.values());
-        const deck = document.body.classList.contains('live-host-cannon') && window.ChallengeDeck;
+        const deck = (document.body.classList.contains('live-host-cannon') || document.body.classList.contains('live-host-lanterns')) && window.ChallengeDeck;
         if (deck) {
-            // Word Cannon: stacked deck — oldest on top and untouched while newer ones queue underneath.
+            // Word Cannon / Lucky Lanterns: stacked deck — oldest on top and untouched while newer ones queue underneath.
             clearTimeout(hostDeckHideTimer);
             if (challenges.length) panel.hidden = false;
             window.ChallengeDeck.render(panel, challenges, {

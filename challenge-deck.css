@@ -1,0 +1,43 @@
+/*
+ * Host challenge deck (Word Cannon, Lucky Lanterns) — used with challenge-deck.js.
+ * The oldest card is on top and never moves when newer ones arrive; newer cards queue underneath
+ * as offset edges. Each game positions/sizes the panel and styles the cards in its own CSS.
+ */
+.live-host-challenge-panel.live-challenge-deck {
+    display: block; overflow: visible; max-height: none; height: calc(var(--deck-h, 160px) + 3 * 18px);
+}
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0; box-sizing: border-box;
+    animation: none; transform-origin: 50% 0;
+    transition: transform 0.36s cubic-bezier(.2,.9,.3,1.15), opacity 0.36s ease, filter 0.36s ease;
+}
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-under {
+    height: var(--deck-h, 160px); overflow: hidden; pointer-events: none;
+    transform: translateY(calc(var(--depth, 1) * 18px)) scale(calc(1 - var(--depth, 1) * 0.03)) rotate(calc(var(--depth, 1) * 0.9deg));
+    filter: brightness(calc(1 - var(--depth, 1) * 0.07));
+}
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-under > * { visibility: hidden; }
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-hidden-deep { opacity: 0; }
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-top { transform: none; }
+/* newcomers slide in from behind, under the top card; the top card itself never animates on arrivals */
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-entering.is-under { animation: wcDeckIn 0.42s cubic-bezier(.2,.9,.3,1.1) both; }
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-entering.is-top { animation: wcDeckFirst 0.32s ease-out both; }
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-leaving {
+    pointer-events: none; z-index: 200 !important;
+    transform: translate(60%, -14px) rotate(9deg) !important; opacity: 0 !important;
+    transition: transform 0.36s ease-in, opacity 0.36s ease-in;
+}
+.live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card.is-leaving:not(.is-leaving-top) { transform: translateY(30px) scale(0.9) !important; }
+@keyframes wcDeckIn {
+    from { transform: translateY(-20px) scale(calc(1 - var(--depth, 1) * 0.03)) rotate(0deg); opacity: 0; }
+    to { transform: translateY(calc(var(--depth, 1) * 18px)) scale(calc(1 - var(--depth, 1) * 0.03)) rotate(calc(var(--depth, 1) * 0.9deg)); opacity: 1; }
+}
+@keyframes wcDeckFirst { from { transform: translateY(-10px) scale(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
+.live-challenge-deck-more {
+    position: absolute; right: -0.6rem; bottom: -0.2rem; z-index: 150;
+    background: #2a3d9c; color: #fff; font: 800 clamp(0.8rem, 0.9vw, 1.15rem) var(--font-primary, sans-serif);
+    border: 3px solid #ffc83d; border-radius: 999px; padding: 0.15em 0.6em; box-shadow: 0 3px 0 rgba(0,0,0,0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+    .live-host-challenge-panel.live-challenge-deck > .live-host-challenge-card { transition-duration: 0.01s !important; animation-duration: 0.01s !important; }
+}
