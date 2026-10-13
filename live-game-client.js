@@ -994,22 +994,11 @@
         });
     }
 
-    function renderHostChallengePanel() {
-        const panel = mountHostChallengePanel();
-        if (!panel) return;
-        const challenges = Array.from(hostPendingChallenges.values());
-        if (!challenges.length) {
-            panel.hidden = true;
-            panel.innerHTML = '';
-            return;
-        }
-        panel.hidden = false;
-        panel.innerHTML = challenges.map((c) => {
-            const term = String(c.correctTerm || '').trim();
-            const def = String(c.definition || '').trim();
-            const submitted = String(c.answerText || '').trim();
-            return `
-            <div class="live-host-challenge-card" data-challenge-id="${esc(c.id)}">
+    function hostChallengeCardInner(c) {
+        const term = String(c.correctTerm || '').trim();
+        const def = String(c.definition || '').trim();
+        const submitted = String(c.answerText || '').trim();
+        return `
                 <div class="live-host-challenge-card-head">
                     <span class="live-host-challenge-badge">Challenge</span>
                     <strong>${esc(c.nickname)}</strong>
@@ -1022,23 +1011,51 @@
                 <div class="live-host-challenge-actions">
                     <button type="button" class="btn btn-blue live-challenge-accept" data-challenge-id="${esc(c.id)}">✓ Accept</button>
                     <button type="button" class="btn live-challenge-reject" data-challenge-id="${esc(c.id)}">✗ Reject</button>
-                </div>
-            </div>`;
-        }).join('');
-        panel.querySelectorAll('.live-challenge-accept').forEach((btn) => {
+                </div>`;
+    }
+
+    function bindHostChallengeButtons(rootEl) {
+        rootEl.querySelectorAll('.live-challenge-accept, .live-challenge-reject').forEach((btn) => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                resolveHostChallenge(btn.getAttribute('data-challenge-id'), true);
+                resolveHostChallenge(btn.getAttribute('data-challenge-id'), btn.classList.contains('live-challenge-accept'));
             });
         });
-        panel.querySelectorAll('.live-challenge-reject').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                resolveHostChallenge(btn.getAttribute('data-challenge-id'), false);
+    }
+
+    let hostDeckHideTimer = null;
+    function renderHostChallengePanel() {
+        const panel = mountHostChallengePanel();
+        if (!panel) return;
+        const challenges = Array.from(hostPendingChallenges.values());
+        const deck = document.body.classList.contains('live-host-cannon') && window.ChallengeDeck;
+        if (deck) {
+            // Word Cannon: stacked deck — oldest on top and untouched while newer ones queue underneath.
+            clearTimeout(hostDeckHideTimer);
+            if (challenges.length) panel.hidden = false;
+            window.ChallengeDeck.render(panel, challenges, {
+                cardHtml: hostChallengeCardInner,
+                bind: (el) => bindHostChallengeButtons(el),
             });
-        });
+            if (!challenges.length) {
+                hostDeckHideTimer = setTimeout(() => {
+                    if (!hostPendingChallenges.size) { panel.hidden = true; panel.innerHTML = ''; }
+                }, window.ChallengeDeck.LEAVE_MS + 20);
+            }
+            return;
+        }
+        panel.classList.remove('live-challenge-deck');
+        if (!challenges.length) {
+            panel.hidden = true;
+            panel.innerHTML = '';
+            return;
+        }
+        panel.hidden = false;
+        panel.innerHTML = challenges.map((c) => `
+            <div class="live-host-challenge-card" data-challenge-id="${esc(c.id)}">${hostChallengeCardInner(c)}
+            </div>`).join('');
+        bindHostChallengeButtons(panel);
     }
 
     function canPlayerChallengeAction() {

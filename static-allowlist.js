@@ -24,6 +24,7 @@ export const PUBLIC_PAGES = new Set([
  * Add a file here when a page starts loading it.
  */
 export const PUBLIC_SCRIPTS = new Set([
+    'challenge-deck.js',
     'demo-sets.js',
     'frank-paragraphs.js',
     'live-entry.js',

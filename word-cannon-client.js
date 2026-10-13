@@ -470,17 +470,6 @@
             <p class="wc-live-crew">${answering}/${members.length} answering</p>
         </div>`;
     }
-    function feedRowHtml(shot) {
-        const friendly = shot.friendly || shot.outcome === 'blown' || shot.outcome === 'own';
-        const cls = shot.lastShot ? 'is-last' : friendly ? 'is-blown' : shot.outcome === 'lucky' ? 'is-lucky'
-            : shot.outcome === 'miss' ? 'is-miss' : shot.outcome === 'shield' ? 'is-shield' : `is-${shot.tier || 'fast'}`;
-        const what = shot.lastShot ? 'LAST SHOT!' : shot.fortDown ? 'FORT DOWN!'
-            : shot.outcome === 'hit' ? `HIT −${fmtDmg(shot.damage)}`
-            : shot.outcome === 'lucky' ? `LUCKY −${fmtDmg(shot.damage)}`
-            : shot.outcome === 'shield' ? 'SHIELD'
-            : friendly ? `OWN FORT −${fmtDmg(shot.damage)}` : 'MISS';
-        return `<li class="wc-feed-row is-${shot.team} ${cls}"><span class="wc-feed-who">${esc(shot.nickname || '?')}${shot.retro ? ' ✓' : ''}</span><span class="wc-feed-what">${esc(what)}</span><span class="wc-feed-ms">${(Math.max(0, shot.ms || 0) / 1000).toFixed(1)}s</span></li>`;
-    }
     function fmtDmg(d) {
         const n = Number(d) || 0;
         return n >= 10 || Number.isInteger(n) ? String(Math.round(n)) : n.toFixed(1);
@@ -497,8 +486,7 @@
             box.innerHTML = `<div class="wc-live" id="wc-live">
                 <div class="wc-live-head"><span class="wc-live-pill" id="wc-live-pill">LIVE BATTLE</span></div>
                 <div class="wc-live-row"><div id="wc-live-red"></div><div class="wc-live-clock" id="wc-live-clock">0:00</div><div id="wc-live-blue"></div></div>
-            </div>
-            <ol class="wc-feed" id="wc-feed"></ol>`;
+            </div>`;
         }
         const pill = $('wc-live-pill');
         const pillText = state.suddenDeath ? 'SUDDEN DEATH' : state.storm ? 'STORM!' : 'LIVE BATTLE';
@@ -514,14 +502,6 @@
             if (el.dataset.html !== html) { el.dataset.html = html; el.innerHTML = html; }
         });
     }
-    /** Feed rows appear when the ball lands (never before the fort reacts). */
-    function pushFeed(shot) {
-        const feed = $('wc-feed');
-        if (!feed) return;
-        feed.insertAdjacentHTML('afterbegin', feedRowHtml(shot));
-        while (feed.children.length > 4) feed.lastElementChild.remove();
-    }
-
     // ---------------- intro ----------------
     function skipIntroTutorial() {
         hideIntro();
@@ -593,7 +573,6 @@
                 H.ptsShown[t] = state.teams?.[t]?.points || 0;
                 H.winsShown[t] = state.teams?.[t]?.fortKills || 0;
             });
-            (state.shots || []).slice(-4).forEach((s) => pushFeed(s));
         }
         // Fire every new shot as it happens (several balls may be in the air at once).
         const fresh = (state.shots || []).filter((s) => s.seq > H.shotSeq).sort((a, b) => a.seq - b.seq);
@@ -660,7 +639,6 @@
         const flight = shot.lastShot ? (FX().reduced() ? 1400 : LAST_FLIGHT_MS) : FLIGHT_MS;
         if (age > flight + 1200) {
             // Fired long before we saw it (tab asleep / reconnect): just show the outcome.
-            pushFeed(shot);
             if (shot.fortDown && shot.rebuildAt && shot.rebuildAt > nowServer) {
                 H.rebuilding.add(shot.target);
                 downFlag(shot.target, true);
@@ -745,7 +723,6 @@
         const who = shot.nickname ? `${shot.nickname}: ` : '';
         const text = shot.lastShot ? `LAST SHOT! ${shot.nickname || ''}`.trim() : `${who}${shot.label}`;
         label(nextLabelSlot(shot.team), text, tierCls, { detail: shot.lastShot ? '' : (shot.detail || ''), long: shot.lastShot });
-        pushFeed(shot);
         if (hitLike) {
             FX().explosion(H.fx, pos, { scale: shot.lastShot || down ? 1.7 : shot.outcome === 'lucky' ? 1.35 : 1 });
             FX().smoke(H.fx, pos, { n: 8, drift: 90, color: '90,90,95', size: 42 });
