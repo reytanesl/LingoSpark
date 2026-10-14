@@ -11815,7 +11815,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             A2: {
                 label: 'A2',
                 vocab: 'Simplified Matura rozszerzona practice: clear linked ideas, common collocations. Keep CKE form structure but use accessible wording — avoid rare academic English.',
-                length: 'About 200–250 English words when complete (CKE Matura rozszerzona target; simpler wording at this level).',
+                length: 'HARD CKE limit: 200–250 English words when complete (Matura rozszerzona; simpler wording at this level).',
                 wordMin: 200,
                 wordMax: 250,
                 gapsTranslate: 5,
@@ -11824,7 +11824,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             B1: {
                 label: 'B1',
                 vocab: 'Matura rozszerzona form practice with B1–B2 bridge language: opinions, reasons, contrast, polite formal tone when needed. Accessible exam English — not C1 jargon.',
-                length: 'About 200–250 English words when complete (CKE Matura rozszerzona limit).',
+                length: 'HARD CKE limit: 200–250 English words when complete (Matura rozszerzona).',
                 wordMin: 200,
                 wordMax: 250,
                 gapsTranslate: 6,
@@ -11833,7 +11833,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             B2: {
                 label: 'B2',
                 vocab: 'Solid B2 / CKE Matura rozszerzona: clear argumentation, discourse markers, precise but natural exam vocabulary matching Informator expectations.',
-                length: 'About 200–250 English words when complete (strict CKE Matura rozszerzona).',
+                length: 'HARD CKE limit: 200–250 English words when complete (Matura rozszerzona).',
                 wordMin: 200,
                 wordMax: 250,
                 gapsTranslate: 7,
@@ -11842,7 +11842,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             'B2+': {
                 label: 'B2+',
                 vocab: 'Strong B2+ Matura rozszerzona: nuanced stance, formal cohesion, richer but teachable wording — still exam English, not obscure academic prose.',
-                length: 'About 200–250 English words when complete (strict CKE Matura rozszerzona).',
+                length: 'HARD CKE limit: 200–250 English words when complete (Matura rozszerzona).',
                 wordMin: 200,
                 wordMax: 250,
                 gapsTranslate: 8,
@@ -11919,6 +11919,83 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                 .replace(/\r\n/g, '\n')
                 .replace(/\n{2,}/g, '<span class="e8-gaps-para-break" aria-hidden="true"></span>')
                 .replace(/\n/g, '<br>');
+        }
+
+        function countEnglishWords(text) {
+            return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+        }
+
+        function rebuildGapsModelText(parts, gaps) {
+            let out = '';
+            const p = Array.isArray(parts) ? parts : [];
+            const g = Array.isArray(gaps) ? gaps : [];
+            for (let i = 0; i < p.length; i++) {
+                out += String(p[i] || '');
+                if (i < g.length) {
+                    const ans = String(g[i]?.answer || '').trim();
+                    if (!ans) continue;
+                    if (out && !/\s$/.test(out)) out += ' ';
+                    out += ans;
+                    const next = String(p[i + 1] || '');
+                    if (next && !/^\s/.test(next)) out += ' ';
+                }
+            }
+            return out.replace(/[ \t]+\n/g, '\n').replace(/\n[ \t]+/g, '\n').replace(/[ \t]{2,}/g, ' ').trim();
+        }
+
+        function countGapsModelWords(data, opts) {
+            const o = opts || {};
+            let text = rebuildGapsModelText(data?.parts, data?.gaps);
+            const opening = String(o.opening || data?.opening || '').trim();
+            if (o.excludeOpening && opening) {
+                const escaped = opening.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                text = text.replace(new RegExp('^' + escaped + '\\s*', 'i'), '');
+            }
+            return countEnglishWords(text);
+        }
+
+        async function fetchGapsTextWithCkeLength(prompt, lengthOpts) {
+            const {
+                wordMin, wordMax, softMin, softMax, excludeOpening, label, targetHint
+            } = lengthOpts;
+            let data = await fetchGenerativeAI(prompt);
+            if (!data || data.__error || !Array.isArray(data.parts) || !Array.isArray(data.gaps) || !data.gaps.length) {
+                return data;
+            }
+            let words = countGapsModelWords(data, { excludeOpening, opening: data.opening });
+            data.__wordCount = words;
+            if (words >= softMin && words <= softMax) return data;
+
+            const mid = Math.round((wordMin + wordMax) / 2);
+            const fixPrompt = `LENGTH FIX — CKE ${label}.
+The previous model was ${words} English words${excludeOpening ? ' after the given opening' : ''}. That is OUTSIDE the required ${wordMin}–${wordMax} range.
+Rewrite the SAME exam task as ONE corrected JSON object only.
+Keep: mode, form/genre, polecenie (taskPl/taskEn), bullets, opening (if any), and the same number of gaps.
+Change: expand or shorten the English text so the COMPLETE filled text is ${wordMin}–${wordMax} words (aim ~${mid}${targetHint ? `; ${targetHint}` : ''}).
+${excludeOpening ? 'Word count = body AFTER the given opening (CKE E8 rule: the printed beginning does not count).' : 'Word count = full finished English text including gap answers (greeting/title/sign-off count).'}
+Preserve clear paragraphs (\\n\\n). Return ONLY the full JSON (parts + gaps with answers, etc.).
+Previous JSON:
+${JSON.stringify({
+                mode: data.mode,
+                genre: data.genre,
+                form: data.form,
+                title: data.title,
+                opening: data.opening,
+                taskPl: data.taskPl,
+                taskEn: data.taskEn,
+                bullets: data.bullets,
+                parts: data.parts,
+                gaps: data.gaps
+            })}`;
+            const fixed = await fetchGenerativeAI(fixPrompt);
+            if (fixed && !fixed.__error && Array.isArray(fixed.parts) && Array.isArray(fixed.gaps) && fixed.gaps.length) {
+                fixed.__wordCount = countGapsModelWords(fixed, {
+                    excludeOpening,
+                    opening: fixed.opening || data.opening
+                });
+                return fixed;
+            }
+            return data;
         }
 
         function formatGapsExamTaskHtml(taskText, bullets, meta) {
@@ -12077,8 +12154,14 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
 
             const kind = task.mode === 'sentences' ? 'Missing sentences' : 'Translate gaps';
             const genreLabel = ADV_GAPS_GENRES[task.genreKey]?.label || task.genre || 'Matura rozszerzona';
+            const wc = Number(task.wordCount) || 0;
+            const wcOk = wc >= 200 && wc <= 250;
+            const wcNote = wc
+                ? ` · <span style="color:${wcOk ? 'var(--success-green, #2b8a3e)' : 'var(--pillarbox-red)'}">${wc} words (CKE 200–250)</span>`
+                : '';
             meta.innerHTML = `<strong>[${escapeHtml(kind)} · ${escapeHtml(task.level || 'B2')} · Matura PR]</strong> ${escapeHtml(genreLabel)}`
-                + (task.title ? ` — ${escapeHtml(task.title)}` : '');
+                + (task.title ? ` — ${escapeHtml(task.title)}` : '')
+                + wcNote;
             paintGapsExamTask(advGapsTaskPaintOpts(task));
 
             const gaps = Array.isArray(task.gaps) ? task.gaps : [];
@@ -12146,6 +12229,11 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
 
             const wordMin = L.wordMin || 200;
             const wordMax = L.wordMax || 250;
+            const lengthRule = `CKE LENGTH (HARD RULE — Matura rozszerzona):
+  - When all gap answers are inserted, the COMPLETE English text MUST be ${wordMin}–${wordMax} words (CKE Informator). Aim ~220–230.
+  - Count every English word in the finished text (title/greeting/sign-off included). Do NOT write a Matura podstawowa 100–150 text.
+  - Include "wordCount": <integer> in the JSON equalling that completed length.`;
+
             const taskRule = `CKE MATURA ROZSZERZONA POLECENIE (required — authentic exam style):
   - taskPl: Polish polecenie as on the CKE paper for ONE topic of this form (${genre.ckeForm || genre.label}). Include the form name and require ${wordMin}–${wordMax} wyrazów. Style like real arkusze (e.g. "Napisz rozprawkę, w której…" / "Napisz artykuł…" / "Napisz list…"). Embed 2 clear content requirements in the topic (not a shopping list of 4+ bullets).
   - taskEn: faithful English translation of taskPl for bilingual display.
@@ -12165,7 +12253,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                 prompt = `Create ONE English model text for CKE Matura rozszerzona (extended writing) at CEFR ${L.label} with MISSING SENTENCES.
 TEXT TYPE (required): ${genre.prompt}
 LEVEL RULES: ${L.vocab}
-TARGET LENGTH: ${L.length} — aim ${wordMin}–${wordMax} words for the COMPLETE text.
+${lengthRule}
 ${topicRule}
 ${taskRule}
 ${paraRule}
@@ -12177,12 +12265,12 @@ STRUCTURE:
   - The student writes ONE full English sentence per gap — model answers should match ${L.label} Matura quality.
   - For artykuł: include a title line in the first part. For list formalny: include greeting and sign-off in the text.
 Return ONLY JSON:
-{"mode":"sentences","genre":"${genre.label}","form":"${genre.ckeForm || genre.label}","title":"short topic title","taskPl":"Polskie polecenie CKE matury rozszerzonej…","taskEn":"English translation…","bullets":["content point 1","content point 2"],"parts":["Intro paragraph.\\n\\n","Body continues…\\n\\n","…"],"gaps":[{"n":1,"answer":"Model sentence.","alts":["optional"],"role":"why it fits"}]}`;
+{"mode":"sentences","genre":"${genre.label}","form":"${genre.ckeForm || genre.label}","title":"short topic title","wordCount":220,"taskPl":"Polskie polecenie CKE matury rozszerzonej…","taskEn":"English translation…","bullets":["content point 1","content point 2"],"parts":["Intro paragraph.\\n\\n","Body continues…\\n\\n","…"],"gaps":[{"n":1,"answer":"Model sentence.","alts":["optional"],"role":"why it fits"}]}`;
             } else {
                 prompt = `Create ONE English model text for CKE Matura rozszerzona (extended writing) at CEFR ${L.label} with TRANSLATION GAPS.
 TEXT TYPE (required): ${genre.prompt}
 LEVEL RULES: ${L.vocab}
-TARGET LENGTH: ${L.length} — aim ${wordMin}–${wordMax} words for the COMPLETE text.
+${lengthRule}
 ${topicRule}
 ${taskRule}
 ${paraRule}
@@ -12197,10 +12285,18 @@ STRUCTURE:
   - Prefer useful Matura language: linkers, formal phrases, topic vocabulary.
   - For artykuł: include a title in the first part. For list formalny: include greeting and sign-off.
 Return ONLY JSON:
-{"mode":"translate","genre":"${genre.label}","form":"${genre.ckeForm || genre.label}","title":"short topic title","taskPl":"Polskie polecenie CKE matury rozszerzonej…","taskEn":"English translation…","bullets":["content point 1","content point 2"],"parts":["Intro with a "," and more.\\n\\nNext paragraph begins…"],"gaps":[{"n":1,"pl":"z drugiej strony","answer":"on the other hand","alts":["however"]},{"n":2,"pl":"składać wniosek","answer":"submit an application","alts":["apply"]}]}`;
+{"mode":"translate","genre":"${genre.label}","form":"${genre.ckeForm || genre.label}","title":"short topic title","wordCount":220,"taskPl":"Polskie polecenie CKE matury rozszerzonej…","taskEn":"English translation…","bullets":["content point 1","content point 2"],"parts":["Intro with a "," and more.\\n\\nNext paragraph begins…"],"gaps":[{"n":1,"pl":"z drugiej strony","answer":"on the other hand","alts":["however"]},{"n":2,"pl":"składać wniosek","answer":"submit an application","alts":["apply"]}]}`;
             }
 
-            const data = await fetchGenerativeAI(prompt);
+            const data = await fetchGapsTextWithCkeLength(prompt, {
+                wordMin,
+                wordMax,
+                softMin: 185,
+                softMax: 270,
+                excludeOpening: false,
+                label: 'Matura rozszerzona',
+                targetHint: 'typical exam answer ~220 words'
+            });
             peToggleLoading('adv-gaps', false);
             if (!data || data.__error || !Array.isArray(data.parts) || !Array.isArray(data.gaps) || !data.gaps.length) {
                 if (feedback) {
@@ -12213,6 +12309,7 @@ Return ONLY JSON:
                 return;
             }
             const examTask = normalizeGapsExamTask(data, { maxBullets: 2 });
+            const wordCount = data.__wordCount || countGapsModelWords(data, {});
             advGapsTask = {
                 mode,
                 level: L.label,
@@ -12225,6 +12322,7 @@ Return ONLY JSON:
                 bullets: examTask.bullets,
                 opening: examTask.opening,
                 taskLang: 'pl',
+                wordCount,
                 parts: data.parts,
                 gaps: data.gaps.map((g, i) => ({
                     n: g.n != null ? Number(g.n) : (i + 1),
@@ -12398,8 +12496,14 @@ Return ONLY JSON:
             const L = peLevelGuide();
             const kind = task.mode === 'sentences' ? 'Missing sentences' : 'Translate gaps';
             const genre = task.form || task.genre || 'e-mail / blog';
+            const wc = Number(task.wordCount) || 0;
+            const wcOk = wc >= 50 && wc <= 120;
+            const wcNote = wc
+                ? ` · <span style="color:${wcOk ? 'var(--success-green, #2b8a3e)' : 'var(--pillarbox-red)'}">${wc} words (CKE 50–120)</span>`
+                : '';
             meta.innerHTML = `<strong>[${escapeHtml(kind)} · ${escapeHtml(L.label)} · E8 CKE]</strong> ${escapeHtml(genre)}`
                 + (task.title ? ` — ${escapeHtml(task.title)}` : '')
+                + wcNote
                 + (peMode === 'custom' && Array.isArray(task.requiredWords) && task.requiredWords.length
                     ? `<br><small><strong>Required glossary words:</strong> ${task.requiredWords.map(escapeHtml).join(', ')}</small>`
                     : '');
@@ -12477,13 +12581,19 @@ Return ONLY JSON:
             const formPick = Math.random() < 0.5 ? 'email' : 'blog';
             const formPl = formPick === 'blog' ? 'wpis na blogu' : 'e-mail';
             const formEn = formPick === 'blog' ? 'blog post' : 'e-mail';
+            const lengthRule = `CKE LENGTH (HARD RULE — egzamin ósmoklasisty):
+  - After inserting all gap answers, the English BODY (NOT counting the given opening) MUST be 50–120 words. Aim ~80–100.
+  - CKE rule: the printed beginning (opening) does not count toward the limit.
+  - Include "wordCount": <integer> = body word count after the opening.
+  - Do NOT write a long Matura-style essay.`;
+
             const taskRule = `CKE EGZAMIN ÓSMOKLASISTY POLECENIE (required — authentic Informator style):
   - form MUST be "${formPick}" (${formPl}) — ONLY CKE forms: e-mail OR wpis na blogu. NEVER formal letter, essay, note, announcement, or message-only.
   - taskPl: Polish polecenie as on the CKE paper: short situation + instruction to write the ${formPl}; mention Użyj 50–120 wyrazów. Primary language for students.
   - bullets: EXACTLY 3 Polish-style content podpunkty (write them in English in the JSON bullets array for bilingual UI, but they must match what taskPl requires). Typical verbs: thank / invite / describe / suggest / ask / explain why…
   - opening: the given English beginning printed on the exam (e.g. "Hi Alex," or a blog starter sentence). The model text MUST start from this opening (include it in parts[0]).
   - taskEn: faithful English translation of taskPl (situation + form + word count).
-  - The finished English text MUST develop all 3 points, stay within 50–120 words, and match informal E8 register (friend email or class blog — never Dear Sir or Madam).`;
+  - The finished English body MUST develop all 3 points, stay within 50–120 words (excluding opening), and match informal E8 register (friend email or class blog — never Dear Sir or Madam).`;
 
             const paraRule = `PARAGRAPHS (required — never one continuous block):
   - Divide the finished text into clear paragraphs separated by a blank line (\\n\\n inside the parts strings).
@@ -12497,7 +12607,8 @@ Return ONLY JSON:
 SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
 E8 GAPS RULES: ${L.e8Gaps || ''}
-TEXT TYPE: ${formEn} (${formPl}) ONLY. Target 50–120 English words when COMPLETE (CKE limit). Aim ~70–100 words.
+TEXT TYPE: ${formEn} (${formPl}) ONLY.
+${lengthRule}
 ${topicRule}
 ${taskRule}
 ${paraRule}
@@ -12509,13 +12620,14 @@ STRUCTURE: Provide "parts" as an array of text fragments that ALTERNATE with mis
   - Each gap needs a clear cohesive role (reason, result, extra detail, polite closing line, etc.).
   - The student will write ONE full English sentence per gap.
 Return ONLY JSON:
-{"mode":"sentences","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","taskPl":"Polskie polecenie CKE E8…","taskEn":"English translation…","bullets":["point 1","point 2","point 3"],"parts":["Hi Alex,\\n\\nThanks for your email. ","\\n\\nNext paragraph…","\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
+{"mode":"sentences","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","wordCount":85,"taskPl":"Polskie polecenie CKE E8…","taskEn":"English translation…","bullets":["point 1","point 2","point 3"],"parts":["Hi Alex,\\n\\nThanks for your email. ","\\n\\nNext paragraph…","\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
             } else {
                 prompt = `Create ONE English model text for CKE egzamin ósmoklasisty (Polish grade-8 English exam) at CEFR ${L.label} with TRANSLATION GAPS.
 SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
 E8 GAPS RULES: ${L.e8Gaps || ''}
-TEXT TYPE: ${formEn} (${formPl}) ONLY. Target 50–120 English words when COMPLETE (CKE limit). Aim ~70–100 words.
+TEXT TYPE: ${formEn} (${formPl}) ONLY.
+${lengthRule}
 ${topicRule}
 ${taskRule}
 ${paraRule}
@@ -12531,10 +12643,18 @@ STRUCTURE: Provide "parts" as text fragments alternating with gaps.
   - answer = best English translation for that gap in context (a word OR a short English phrase matching the Polish cue); alts = other acceptable English forms.
   - Gaps must fit grammatically in the English sentence (articles, prepositions, verb forms, word order as needed in the answer).
 Return ONLY JSON:
-{"mode":"translate","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","taskPl":"Polskie polecenie CKE E8…","taskEn":"English translation…","bullets":["point 1","point 2","point 3"],"parts":["Hi Alex,\\n\\nYesterday I went to the "," with my class.\\n\\nWe want to "," soon.\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]},{"n":3,"pl":"w przyszłym tygodniu","answer":"next week","alts":["in the next week"]}]}`;
+{"mode":"translate","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","wordCount":85,"taskPl":"Polskie polecenie CKE E8…","taskEn":"English translation…","bullets":["point 1","point 2","point 3"],"parts":["Hi Alex,\\n\\nYesterday I went to the "," with my class.\\n\\nWe want to "," soon.\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]},{"n":3,"pl":"w przyszłym tygodniu","answer":"next week","alts":["in the next week"]}]}`;
             }
 
-            const data = await fetchGenerativeAI(prompt);
+            const data = await fetchGapsTextWithCkeLength(prompt, {
+                wordMin: 50,
+                wordMax: 120,
+                softMin: 45,
+                softMax: 130,
+                excludeOpening: true,
+                label: 'egzamin ósmoklasisty',
+                targetHint: 'typical E8 answer ~80–100 body words'
+            });
             peToggleLoading('pe-e8-gaps', false);
             if (!data || data.__error || !Array.isArray(data.parts) || !Array.isArray(data.gaps) || !data.gaps.length) {
                 if (feedback) {
@@ -12548,6 +12668,10 @@ Return ONLY JSON:
             }
             const examTask = normalizeGapsExamTask(data, { maxBullets: 3 });
             const resolvedForm = /blog/i.test(String(data.form || data.genre || formPick)) ? 'blog' : 'email';
+            const wordCount = data.__wordCount || countGapsModelWords(data, {
+                excludeOpening: true,
+                opening: examTask.opening || data.opening
+            });
             peE8GapsTask = {
                 mode,
                 genre: resolvedForm,
@@ -12558,6 +12682,7 @@ Return ONLY JSON:
                 bullets: examTask.bullets,
                 opening: examTask.opening,
                 taskLang: 'pl',
+                wordCount,
                 parts: data.parts,
                 gaps: data.gaps.map((g, i) => ({
                     n: g.n != null ? Number(g.n) : (i + 1),
