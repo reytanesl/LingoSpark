@@ -2352,18 +2352,22 @@
             margin: 0;
             accent-color: #0e7490;
         }
-        #screen-setup .setup-choice-grid {
+        #screen-setup .setup-choice-grid,
+        .game-setup-panel .setup-choice-grid {
             display: grid;
             gap: 0.5rem;
             margin-top: 0.25rem;
         }
-        #screen-setup .setup-choice-grid--2 {
+        #screen-setup .setup-choice-grid--2,
+        .game-setup-panel .setup-choice-grid--2 {
             grid-template-columns: 1fr 1fr;
         }
         @media (max-width: 560px) {
-            #screen-setup .setup-choice-grid--2 { grid-template-columns: 1fr; }
+            #screen-setup .setup-choice-grid--2,
+            .game-setup-panel .setup-choice-grid--2 { grid-template-columns: 1fr; }
         }
-        #screen-setup .setup-choice {
+        #screen-setup .setup-choice,
+        .game-setup-panel .setup-choice {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -2377,30 +2381,36 @@
             margin: 0;
             font-weight: 400;
             color: var(--text-dark);
+            position: relative;
         }
-        #screen-setup .setup-choice:hover {
+        #screen-setup .setup-choice:hover,
+        .game-setup-panel .setup-choice:hover {
             border-color: rgba(1, 33, 105, 0.3);
             background: rgba(1, 33, 105, 0.03);
         }
-        #screen-setup .setup-choice input {
+        #screen-setup .setup-choice input,
+        .game-setup-panel .setup-choice input {
             position: absolute;
             opacity: 0;
             width: 0;
             height: 0;
             pointer-events: none;
         }
-        #screen-setup .setup-choice:has(input:checked) {
+        #screen-setup .setup-choice:has(input:checked),
+        .game-setup-panel .setup-choice:has(input:checked) {
             border-color: var(--royal-blue);
             background: rgba(1, 33, 105, 0.06);
             box-shadow: 0 0 0 1px rgba(1, 33, 105, 0.1);
         }
-        #screen-setup .setup-choice-title {
+        #screen-setup .setup-choice-title,
+        .game-setup-panel .setup-choice-title {
             font-weight: 700;
             color: var(--royal-blue);
             font-size: 0.95rem;
             line-height: 1.25;
         }
-        #screen-setup .setup-choice-desc {
+        #screen-setup .setup-choice-desc,
+        .game-setup-panel .setup-choice-desc {
             font-size: 0.8rem;
             color: var(--text-muted);
             line-height: 1.35;
@@ -2518,6 +2528,45 @@
         .dictation-gap-input:focus { outline: none; border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.06); }
         .dictation-gap-input.dictation-gap-correct { border-bottom-color: var(--success-green); background: rgba(0,130,59,0.1); }
         .dictation-gap-input.dictation-gap-wrong { border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.1); }
+
+        .e8-gaps-text {
+            background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px;
+            padding: 1.25rem 1.35rem; font-size: 1.08rem; line-height: 2.15; margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        .e8-gaps-blank {
+            display: inline-flex; align-items: baseline; gap: 0.25rem; margin: 0 0.1rem;
+            vertical-align: baseline;
+        }
+        .e8-gaps-blank .dictation-gap-input { min-width: 6.5rem; max-width: 14rem; }
+        .e8-gaps-pl {
+            font-size: 0.88rem; color: var(--text-muted); font-weight: 600; white-space: nowrap;
+        }
+        .e8-gaps-marker {
+            display: inline-block; min-width: 2.4rem; text-align: center;
+            font-weight: 800; color: var(--royal-blue); font-family: var(--font-primary);
+            border-bottom: 2px dashed var(--royal-blue); margin: 0 0.15rem; padding: 0 0.2rem;
+        }
+        .e8-gaps-answers {
+            display: flex; flex-direction: column; gap: 0.65rem; margin: 0 0 1rem;
+        }
+        .e8-gaps-answer-row {
+            display: flex; align-items: flex-start; gap: 0.65rem;
+        }
+        .e8-gaps-answer-num {
+            flex: 0 0 1.75rem; height: 1.75rem; margin-top: 0.55rem;
+            border-radius: 999px; background: var(--royal-blue); color: #fff;
+            font-family: var(--font-primary); font-weight: 800; font-size: 0.9rem;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .e8-gaps-answer-row .pe-input { margin-bottom: 0; }
+        .e8-gaps-answer-input.dictation-gap-correct {
+            border-color: var(--success-green); background: rgba(0,130,59,0.08);
+        }
+        .e8-gaps-answer-input.dictation-gap-wrong {
+            border-color: var(--pillarbox-red); background: rgba(200,16,46,0.08);
+        }
+
         .dictation-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
 
         .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto; }
@@ -3169,6 +3218,7 @@
                 <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, or upload a photo/PDF of a real exam task (and optionally your handwritten email), then get AI examiner feedback.</p></div>
+                <div class="guide-item"><strong>E8 Text Gaps</strong><p>Two E8-style writing drills: translate Polish cues in brackets into English gaps in the text, or restore missing sentences for cohesion. Cursor AI checks your answers and gives feedback.</p></div>
                 <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
                 <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Creator mode also has to be (am / is / are), and / or, question words, and . or ?. Ages 10–12 add play/do/go collocations, daily routines, parts of the day, and telling the time. Fill the gaps: drag tiles into blanks. When you choose singular or plural, the plural form is shown and spoken. Persons: I, You, We, They, He, She. Things are grouped (food, furniture, school…). Line Up: drag pictured tiles onto numbered boxes. Switch EN | PL for help. Signed-in players collect each correct sentence in a Colour Blocks set.</p></div>
                 <div class="guide-item"><strong>Vocab Scenes</strong><p>Interactive classroom scenes — tap objects to see and hear words. Labels, Sound and Quiz toggles in the toolbar. Opens in a new tab — free to play.</p></div>
@@ -3186,6 +3236,7 @@
                 <div class="guide-item"><strong>Word-Forged Odyssey</strong><p>Paste vocab, pick a language level (A2, B1, B2 or C1) and a genre, then write story actions that use the highlighted target words each turn. The story, questions and feedback are written at your level; the target words always stay in.</p></div>
                 <div class="guide-item"><strong>Mission: Chat</strong><p>Roleplay to achieve a goal. After the chat, get strengths and improvement feedback and export a PDF report.</p></div>
                 <div class="guide-item"><strong>Matura Writing Assessment</strong><p>Upload a photo or PDF of a handwritten/printed essay plus the writing task. AI marks it against Matura rozszerzona writing criteria with detailed comments, and also coaches conciseness (cut redundancy, strong verbs, active voice, fillers, shorter phrases, avoid nominalizations, simplify structure). Premium includes two assessments every 4 hours; unlock 4 more for 5 zł / $1 when you need them sooner.</p></div>
+                <div class="guide-item"><strong>Advanced Text Gaps</strong><p>Exam-style gap drills at A2–B2+: for-and-against or opinion essays, articles, or formal letters. Translate Polish cues in the text, or restore missing sentences for cohesion — Cursor AI gives feedback.</p></div>
             </div>
         </div>
     </div>
@@ -3432,6 +3483,7 @@
                         </button>
                         <div class="grid ws-game-cat-grid">
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-pen-to-square"></i></div><h2>E8 Text Gaps</h2><p>E8-style writing texts: translate Polish cues in gaps, or fill missing sentences for cohesion — Cursor AI grades your answers.</p><a href="#/setup/pe-e8-gaps" class="btn btn-outline">Play Now</a></div>
                         </div>
                     </section>
                 </div>
@@ -3439,6 +3491,7 @@
                 <div class="pe-pack-grid adv-pack-panel" id="adv-pack-grid">
                     <div class="grid ws-matura-row">
                         <div class="card"><div class="icon-container"><i class="fa-solid fa-file-pen"></i></div><h2>Matura Writing Assessment</h2><p>Upload a photo or PDF of your essay, paste the exam task, and get detailed Matura rozszerzona criteria feedback.</p><a href="#/setup/matura" class="btn btn-outline">Assess Now</a></div>
+                        <div class="card"><div class="icon-container"><i class="fa-solid fa-align-left"></i></div><h2>Advanced Text Gaps</h2><p>A2–B2+ exam texts (for–against, opinion, article, formal letter): translate Polish cues or fill missing sentences — Cursor AI grades your answers.</p><a href="#/setup/adv-gaps" class="btn btn-outline">Play Now</a></div>
                     </div>
                     <section class="ws-game-cat">
                         <button type="button" class="ws-game-cat-btn" aria-expanded="false" onclick="toggleWsGameCat(this)">
@@ -3641,6 +3694,92 @@
                     </div>
                 </div>
                 <p class="pe-setup-hint" style="margin-top: 0.75rem;">Fluency first: the AI never corrects grammar. Progress rises when you persuade, clarify, and use relevant language.</p>
+            </div>
+
+
+
+            <div id="adv-gaps-setup-note" class="form-group setup-note" style="display:none; background: rgba(0,130,59,0.07); border-color: rgba(0,130,59,0.18);">
+                <label style="color: var(--success-green);"><i class="fa-solid fa-align-left"></i> Advanced Text Gaps</label>
+                <p>AI writes an exam-style model text at your chosen level. Pick for–against essay, opinion essay, article, or formal letter — then translate Polish cues or restore missing sentences.</p>
+            </div>
+
+            <div class="form-group" id="adv-gaps-settings" style="display: none;">
+                <div class="pe-setup-compact">
+                    <div class="pe-setup-field">
+                        <label><i class="fa-solid fa-signal"></i> Level</label>
+                        <div class="radio-group pe-setup-chips">
+                            <label><input type="radio" name="adv-gaps-setup-level" value="A2"> A2</label>
+                            <label><input type="radio" name="adv-gaps-setup-level" value="B1" checked> B1</label>
+                            <label><input type="radio" name="adv-gaps-setup-level" value="B2"> B2</label>
+                            <label><input type="radio" name="adv-gaps-setup-level" value="B2+"> B2+</label>
+                        </div>
+                    </div>
+                    <div class="pe-setup-field">
+                        <label><i class="fa-solid fa-file-lines"></i> Text type</label>
+                        <div class="setup-choice-grid setup-choice-grid--2">
+                            <label class="setup-choice">
+                                <input type="radio" name="adv-gaps-setup-genre" value="for-against" checked>
+                                <span class="setup-choice-title">For–against essay</span>
+                                <span class="setup-choice-desc">Pros and cons with a balanced conclusion</span>
+                            </label>
+                            <label class="setup-choice">
+                                <input type="radio" name="adv-gaps-setup-genre" value="opinion">
+                                <span class="setup-choice-title">Opinion essay</span>
+                                <span class="setup-choice-desc">Clear stance with supporting arguments</span>
+                            </label>
+                            <label class="setup-choice">
+                                <input type="radio" name="adv-gaps-setup-genre" value="article">
+                                <span class="setup-choice-title">Article</span>
+                                <span class="setup-choice-desc">Magazine-style piece with a catchy opening</span>
+                            </label>
+                            <label class="setup-choice">
+                                <input type="radio" name="adv-gaps-setup-genre" value="formal-letter">
+                                <span class="setup-choice-title">Formal letter</span>
+                                <span class="setup-choice-desc">Polite register, purpose, and closing</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="pe-setup-field">
+                        <label><i class="fa-solid fa-sliders"></i> Activity type</label>
+                        <div class="setup-choice-grid setup-choice-grid--2">
+                            <label class="setup-choice">
+                                <input type="radio" name="adv-gaps-setup-mode" value="translate" checked>
+                                <span class="setup-choice-title">Translate gaps</span>
+                                <span class="setup-choice-desc">Polish cues in brackets → English</span>
+                            </label>
+                            <label class="setup-choice">
+                                <input type="radio" name="adv-gaps-setup-mode" value="sentences">
+                                <span class="setup-choice-title">Missing sentences</span>
+                                <span class="setup-choice-desc">Numbered boxes under the text</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="e8-gaps-setup-note" class="form-group setup-note" style="display:none; background: rgba(1,33,105,0.06); border-color: rgba(1,33,105,0.18);">
+                <label style="color: var(--royal-blue);"><i class="fa-solid fa-pen-to-square"></i> E8 Text Gaps</label>
+                <p>AI writes an examen ósmoklasisty–style text. Choose translate gaps (Polish cues → English) or missing sentences (restore cohesion). Cursor AI then marks your answers.</p>
+            </div>
+
+            <div class="form-group" id="pe-e8-gaps-settings" style="display: none;">
+                <div class="pe-setup-compact">
+                    <div class="pe-setup-field">
+                        <label><i class="fa-solid fa-sliders"></i> Activity type</label>
+                        <div class="setup-choice-grid setup-choice-grid--2">
+                            <label class="setup-choice">
+                                <input type="radio" name="e8-gaps-setup-mode" value="translate" checked>
+                                <span class="setup-choice-title">Translate gaps</span>
+                                <span class="setup-choice-desc">Fill gaps using the Polish words/phrases in brackets</span>
+                            </label>
+                            <label class="setup-choice">
+                                <input type="radio" name="e8-gaps-setup-mode" value="sentences">
+                                <span class="setup-choice-title">Missing sentences</span>
+                                <span class="setup-choice-desc">Write a suitable sentence for each numbered gap</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="dictation-setup-note" class="form-group setup-note" style="display:none; background: rgba(0,130,59,0.07); border-color: rgba(0,130,59,0.18);">
@@ -3857,6 +3996,88 @@
                 <button class="btn btn-blue" onclick="launchSelectedGame()">Launch Game <i class="fa-solid fa-rocket"></i></button>
                 <button type="button" class="btn btn-outline live-vocab-live-btn" id="vocab-setup-live-btn" onclick="hostLiveQuizFromVocab()" hidden><i class="fa-solid fa-bolt"></i> Host Live Spark with this list</button>
             </div>
+        </div>
+
+
+        <!-- ADVANCED ENGLISH: TEXT GAPS -->
+        <div id="screen-adv-gaps" class="screen engine-container">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">Advanced Text Gaps <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" id="adv-gaps-level-badge">B1</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="adv-gaps-points">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
+            </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initAdvGaps()" id="adv-gaps-btn">New Text <i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div class="pe-setup-field" style="margin-bottom:0.75rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-signal"></i> Level</label>
+                    <div class="radio-group pe-setup-chips" style="margin-top:0.4rem;">
+                        <label><input type="radio" name="adv-gaps-play-level" value="A2" onchange="syncAdvGapsChrome()"> A2</label>
+                        <label><input type="radio" name="adv-gaps-play-level" value="B1" checked onchange="syncAdvGapsChrome()"> B1</label>
+                        <label><input type="radio" name="adv-gaps-play-level" value="B2" onchange="syncAdvGapsChrome()"> B2</label>
+                        <label><input type="radio" name="adv-gaps-play-level" value="B2+" onchange="syncAdvGapsChrome()"> B2+</label>
+                    </div>
+                </div>
+                <div class="pe-setup-field" style="margin-bottom:0.75rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-file-lines"></i> Text type</label>
+                    <div class="setup-choice-grid setup-choice-grid--2" style="margin-top:0.45rem;">
+                        <label class="setup-choice">
+                            <input type="radio" name="adv-gaps-play-genre" value="for-against" checked onchange="syncAdvGapsInstructions()">
+                            <span class="setup-choice-title">For–against essay</span>
+                            <span class="setup-choice-desc">Pros and cons</span>
+                        </label>
+                        <label class="setup-choice">
+                            <input type="radio" name="adv-gaps-play-genre" value="opinion" onchange="syncAdvGapsInstructions()">
+                            <span class="setup-choice-title">Opinion essay</span>
+                            <span class="setup-choice-desc">Clear stance</span>
+                        </label>
+                        <label class="setup-choice">
+                            <input type="radio" name="adv-gaps-play-genre" value="article" onchange="syncAdvGapsInstructions()">
+                            <span class="setup-choice-title">Article</span>
+                            <span class="setup-choice-desc">Magazine style</span>
+                        </label>
+                        <label class="setup-choice">
+                            <input type="radio" name="adv-gaps-play-genre" value="formal-letter" onchange="syncAdvGapsInstructions()">
+                            <span class="setup-choice-title">Formal letter</span>
+                            <span class="setup-choice-desc">Polite register</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="pe-setup-field" style="margin-bottom:0.85rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-sliders"></i> Activity type</label>
+                    <div class="setup-choice-grid setup-choice-grid--2" style="margin-top:0.45rem;">
+                        <label class="setup-choice">
+                            <input type="radio" name="adv-gaps-play-mode" value="translate" checked onchange="syncAdvGapsInstructions()">
+                            <span class="setup-choice-title">Translate gaps</span>
+                            <span class="setup-choice-desc">Polish cues → English</span>
+                        </label>
+                        <label class="setup-choice">
+                            <input type="radio" name="adv-gaps-play-mode" value="sentences" onchange="syncAdvGapsInstructions()">
+                            <span class="setup-choice-title">Missing sentences</span>
+                            <span class="setup-choice-desc">Boxes under the text</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en" id="adv-gaps-instr-en">Read the exam-style text and fill each gap with the English translation of the Polish word or phrase in brackets. Then submit for Cursor AI feedback.</div>
+                    <div class="pe-instr-pl" id="adv-gaps-instr-pl">Przeczytaj tekst egzaminacyjny i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub zwrotu w nawiasie. Potem wyślij odpowiedzi do oceny Cursor AI.</div>
+                </div>
+            </div>
+        </div>
+            <div id="adv-gaps-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="adv-gaps-content">
+                <div class="pe-prompt-box" id="adv-gaps-meta" style="margin-bottom:0.75rem;">Choose New Text to start.</div>
+                <div class="e8-gaps-text" id="adv-gaps-text" aria-live="polite"></div>
+                <div class="e8-gaps-answers" id="adv-gaps-answers" hidden></div>
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkAdvGaps()" id="adv-gaps-check" disabled>Check answers</button>
+            </div>
+            <div id="adv-gaps-feedback" class="feedback"></div>
         </div>
 
         <!-- WRITING SUITE: FRANKENSTEIN BUILDER -->
@@ -4397,6 +4618,54 @@
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeLink()" id="pe-link-check">Connect!</button>
             </div>
             <div id="pe-link-feedback" class="feedback"></div>
+        </div>
+
+
+        <!-- PRIMARY ENGLISH: E8 TEXT GAPS -->
+        <div id="screen-pe-e8-gaps" class="screen engine-container">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">E8 Text Gaps <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></div>
+                <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-e8gaps">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
+            </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initPeE8Gaps()" id="pe-e8-gaps-btn">New Text <i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div class="pe-setup-field" style="margin-bottom:0.85rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-sliders"></i> Activity type</label>
+                    <div class="setup-choice-grid setup-choice-grid--2" style="margin-top:0.45rem;">
+                        <label class="setup-choice">
+                            <input type="radio" name="e8-gaps-play-mode" value="translate" checked onchange="syncPeE8GapsInstructions()">
+                            <span class="setup-choice-title">Translate gaps</span>
+                            <span class="setup-choice-desc">Polish cues in brackets → English</span>
+                        </label>
+                        <label class="setup-choice">
+                            <input type="radio" name="e8-gaps-play-mode" value="sentences" onchange="syncPeE8GapsInstructions()">
+                            <span class="setup-choice-title">Missing sentences</span>
+                            <span class="setup-choice-desc">Numbered boxes under the text</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head">
+                        <strong>Instructions</strong>
+                        <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
+                    </div>
+                    <div class="pe-instr-en" id="pe-e8-gaps-instr-en">Read the exam-style text and fill each gap with the English translation of the Polish word or phrase in brackets. Then submit for Cursor AI feedback.</div>
+                    <div class="pe-instr-pl" id="pe-e8-gaps-instr-pl">Przeczytaj tekst egzaminacyjny i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub zwrotu w nawiasie. Potem wyślij odpowiedzi do oceny Cursor AI.</div>
+                </div>
+            </div>
+        </div>
+            <div id="pe-e8-gaps-loading" class="loading-spinner" style="display:none;"></div>
+            <div id="pe-e8-gaps-content">
+                <div class="pe-prompt-box" id="pe-e8-gaps-meta" style="margin-bottom:0.75rem;">Choose New Text to start.</div>
+                <div class="e8-gaps-text" id="pe-e8-gaps-text" aria-live="polite"></div>
+                <div class="e8-gaps-answers" id="pe-e8-gaps-answers" hidden></div>
+                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeE8Gaps()" id="pe-e8-gaps-check" disabled>Check answers</button>
+            </div>
+            <div id="pe-e8-gaps-feedback" class="feedback"></div>
         </div>
 
         <!-- PRIMARY ENGLISH: EXAM SIMULATOR -->
@@ -5506,8 +5775,8 @@
 
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
-        const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-boring', 'pe-topic', 'pe-review']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review']);
+        const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-boring', 'pe-topic', 'pe-review']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'adv-gaps', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
         const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown']);
 
@@ -5761,9 +6030,11 @@
                         if (arg === 'vocab') initVocab();
                         if (arg === 'mission') initMissionChat();
                         if (arg === 'matura') initMaturaAssessment();
+                        if (arg === 'adv-gaps') initAdvGaps();
                         if (arg === 'pe-detail') initPeDetail();
                         if (arg === 'pe-link') initPeLink();
                         if (arg === 'pe-exam') initPeExam();
+                        if (arg === 'pe-e8-gaps') initPeE8Gaps();
                         if (arg === 'pe-dictation') initPeDictation();
                         if (arg === 'pe-colour') initColourBlocks();
                         if (arg === 'pe-topic') initTopicChallenge();
@@ -6743,7 +7014,7 @@
                     html += '<div class="progress-grid">';
                     const gameNames = {
                         flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction', penalty_match: 'Penalty Match',
-                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_e8_gaps: 'E8 Text Gaps', adv_gaps: 'Advanced Text Gaps', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
                     };
@@ -6779,7 +7050,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', penalty_match:'Penalty Match', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', penalty_match:'Penalty Match', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_e8_gaps:'E8 Text Gaps', adv_gaps:'Advanced Text Gaps', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -7509,7 +7780,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'adv-gaps', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -7524,6 +7795,14 @@
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType) || gameType === 'test-countdown') ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('pe-dictation-settings').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
+            const peE8GapsSettings = document.getElementById('pe-e8-gaps-settings');
+            if (peE8GapsSettings) peE8GapsSettings.style.display = (gameType === 'pe-e8-gaps') ? 'block' : 'none';
+            const e8GapsSetupNote = document.getElementById('e8-gaps-setup-note');
+            if (e8GapsSetupNote) e8GapsSetupNote.style.display = (gameType === 'pe-e8-gaps') ? 'block' : 'none';
+            const advGapsSettings = document.getElementById('adv-gaps-settings');
+            if (advGapsSettings) advGapsSettings.style.display = (gameType === 'adv-gaps') ? 'block' : 'none';
+            const advGapsSetupNote = document.getElementById('adv-gaps-setup-note');
+            if (advGapsSetupNote) advGapsSetupNote.style.display = (gameType === 'adv-gaps') ? 'block' : 'none';
             document.getElementById('pe-colour-settings').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
             document.getElementById('colour-setup-note').style.display = (gameType === 'pe-colour') ? 'block' : 'none';
             const peTopicSettings = document.getElementById('pe-topic-settings');
@@ -7550,6 +7829,12 @@
             }
             if (gameType === 'pe-dictation') {
                 document.getElementById('setup-title').innerText = 'Dictation Setup';
+            }
+            if (gameType === 'pe-e8-gaps') {
+                document.getElementById('setup-title').innerText = 'E8 Text Gaps Setup';
+            }
+            if (gameType === 'adv-gaps') {
+                document.getElementById('setup-title').innerText = 'Advanced Text Gaps Setup';
             }
             if (gameType === 'pe-colour') {
                 document.getElementById('setup-title').innerText = 'Colour Blocks Setup';
@@ -7742,10 +8027,22 @@
             if(activeGame === 'odyssey') initOdyssey();
             if(activeGame === 'mission') initMissionChat();
             if(activeGame === 'matura') initMaturaAssessment();
+            if(activeGame === 'adv-gaps') {
+                copyAdvGapsSetupToPlay();
+                initAdvGaps();
+            }
             if(activeGame === 'pe-boring') initPeBoring();
             if(activeGame === 'pe-detail') initPeDetail();
             if(activeGame === 'pe-link') initPeLink();
             if(activeGame === 'pe-exam') initPeExam();
+            if(activeGame === 'pe-e8-gaps') {
+                const setupMode = document.querySelector('input[name="e8-gaps-setup-mode"]:checked');
+                const playRadios = document.querySelectorAll('input[name="e8-gaps-play-mode"]');
+                if (setupMode && playRadios.length) {
+                    playRadios.forEach((r) => { r.checked = (r.value === setupMode.value); });
+                }
+                initPeE8Gaps();
+            }
             if(activeGame === 'pe-dictation') initPeDictation();
             if(activeGame === 'pe-colour') initColourBlocks();
             if(activeGame === 'pe-topic') initTopicChallenge();
@@ -10660,14 +10957,15 @@ Return ONLY JSON:
         // ==========================================
         // PRIMARY ENGLISH PACK (AI)
         // ==========================================
-        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, dictation: 0, colour: 0, line: 0, topic: 0, review: 0 };
+        let pePoints = { boring: 0, detail: 0, link: 0, exam: 0, e8gaps: 0, dictation: 0, colour: 0, line: 0, topic: 0, review: 0 };
         let peBoringTask = null;
         let peDetailTask = null;
         let peLinkTask = null;
         let peExamTask = null;
+        let peE8GapsTask = null;
         let peExamTaskImages = []; // session-only — NEVER persisted
         let peExamAnswerImages = []; // session-only — NEVER persisted
-        const peRecentTopics = { boring: [], detail: [], link: [], exam: [] };
+        const peRecentTopics = { boring: [], detail: [], link: [], exam: [], e8gaps: [] };
 
         const PE_TOPICS = [
             'family and home', 'school and lessons', 'friends and hobbies', 'food and cooking', 'pets and animals',
@@ -10689,7 +10987,8 @@ Return ONLY JSON:
                 link: 'Allowed linkers: because, so, and, but, when, after, before. CRITICAL: Keep BOTH sentences very short and simple (about 4–8 words each). Everyday vocabulary only.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before'],
                 exam: 'Email task for Polish school A2 / E8-style: 50–120 words, 3 bullet points about everyday life (school, friends, plans). Do not require advanced vocabulary.',
-                examWords: { min: 50, max: 120 }
+                examWords: { min: 50, max: 120 },
+                e8Gaps: 'E8-style short writing text (email, message, or short note) about everyday school life. Gaps use familiar A2 vocabulary (places, routines, feelings, plans). Prefer clear school English over rare words.'
             },
             B1: {
                 label: 'B1',
@@ -10701,7 +11000,8 @@ Return ONLY JSON:
                 link: 'Allowed linkers: because, so, and, but, when, after, before, although, however, while, if, therefore. Keep BOTH sentences short and clear (about 5–10 words each). Everyday school English only.',
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'however', 'while', 'if', 'therefore'],
                 exam: 'Email or short message for gentle B1 / E8+ style: 50–120 words, 3–4 content points. Prefer clear accessible vocabulary over advanced wording.',
-                examWords: { min: 50, max: 120 }
+                examWords: { min: 50, max: 120 },
+                e8Gaps: 'E8+/gentle B1 writing text with richer opinions or plans, still learner-friendly. Gaps can include common collocations and polite phrases — not academic C1 wording.'
             }
         };
 
@@ -10732,7 +11032,8 @@ Return ONLY JSON:
                     link: 'Student must join ideas with a clear linker (because, so, and, but, when, although, if, etc.) and include required custom glossary word(s).',
                     linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'if'],
                     exam: 'Exam email format required: clear instruction, explicit word count, bullet points, sign as XYZ. Enforce task guidelines strictly.',
-                    examWords: { min: 50, max: 120 }
+                    examWords: { min: 50, max: 120 },
+                    e8Gaps: 'Custom vocabulary mode. Keep an E8-style text but weave required glossary words into gaps or missing sentences naturally.'
                 };
             }
             return PE_CEFR[peCefrLevel] || PE_CEFR.A2;
@@ -11335,6 +11636,591 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             feedback.className = data.valid ? 'feedback success' : 'feedback error';
             feedback.textContent = data.message || (data.valid ? 'Perfect flow!' : 'Check your linker logic.');
             if (data.valid) { peAddPoints('link', data.points || 30); incrementGameCount(); recordGameSessionApi('pe_link', { score: data.points || 30, pointsEarned: data.points || 30 }); }
+        }
+
+
+
+        // ==========================================
+        // ADVANCED TEXT GAPS
+        // ==========================================
+        let advGapsTask = null;
+        let advGapsPoints = 0;
+        const ADV_GAPS_LEVELS = {
+            A2: {
+                label: 'A2',
+                vocab: 'Clear school/intermediate A2: everyday topics, common collocations, short linked ideas. Avoid rare or academic wording.',
+                length: 'About 120–180 words when complete.',
+                gapsTranslate: 5,
+                gapsSentences: 3
+            },
+            B1: {
+                label: 'B1',
+                vocab: 'Gentle B1 / Matura podstawowa flavour: opinions, reasons, contrast, polite formal tone when needed. Accessible school/exam English — not C1 jargon.',
+                length: 'About 160–220 words when complete.',
+                gapsTranslate: 6,
+                gapsSentences: 3
+            },
+            B2: {
+                label: 'B2',
+                vocab: 'Solid B2 / Matura rozszerzona flavour: clearer argumentation, discourse markers, precise but still natural exam vocabulary.',
+                length: 'About 200–280 words when complete.',
+                gapsTranslate: 7,
+                gapsSentences: 4
+            },
+            'B2+': {
+                label: 'B2+',
+                vocab: 'Strong B2+ stretch toward early C1 exam writing: nuanced stance, formal cohesion, richer but still teachable wording — not obscure academic English.',
+                length: 'About 220–320 words when complete.',
+                gapsTranslate: 8,
+                gapsSentences: 4
+            }
+        };
+        const ADV_GAPS_GENRES = {
+            'for-against': {
+                label: 'for–against essay',
+                prompt: 'a balanced for-and-against essay (introduction, arguments for, arguments against, conclusion). Do NOT write only one side.'
+            },
+            opinion: {
+                label: 'opinion essay',
+                prompt: 'an opinion essay with a clear thesis, 2–3 supporting arguments, and a conclusion. Acknowledge a counterpoint briefly if natural.'
+            },
+            article: {
+                label: 'article',
+                prompt: 'a magazine/newspaper-style article with a catchy opening, informative middle, and engaging closing (not a formal essay structure).'
+            },
+            'formal-letter': {
+                label: 'formal letter',
+                prompt: 'a formal letter (complaint, application, or request) with appropriate greeting, purpose, supporting points, polite closing and sign-off.'
+            }
+        };
+
+        function getAdvGapsRadio(name, fallback) {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            return el ? el.value : fallback;
+        }
+
+        function setAdvGapsRadio(name, value) {
+            document.querySelectorAll(`input[name="${name}"]`).forEach((r) => {
+                r.checked = (r.value === value);
+            });
+        }
+
+        function copyAdvGapsSetupToPlay() {
+            setAdvGapsRadio('adv-gaps-play-level', getAdvGapsRadio('adv-gaps-setup-level', 'B1'));
+            setAdvGapsRadio('adv-gaps-play-genre', getAdvGapsRadio('adv-gaps-setup-genre', 'for-against'));
+            setAdvGapsRadio('adv-gaps-play-mode', getAdvGapsRadio('adv-gaps-setup-mode', 'translate'));
+            syncAdvGapsChrome();
+            syncAdvGapsInstructions();
+        }
+
+        function getAdvGapsLevel() {
+            return getAdvGapsRadio('adv-gaps-play-level', getAdvGapsRadio('adv-gaps-setup-level', 'B1'));
+        }
+
+        function getAdvGapsGenre() {
+            return getAdvGapsRadio('adv-gaps-play-genre', getAdvGapsRadio('adv-gaps-setup-genre', 'for-against'));
+        }
+
+        function getAdvGapsMode() {
+            const v = getAdvGapsRadio('adv-gaps-play-mode', getAdvGapsRadio('adv-gaps-setup-mode', 'translate'));
+            return v === 'sentences' ? 'sentences' : 'translate';
+        }
+
+        function getAdvGapsLevelGuide() {
+            return ADV_GAPS_LEVELS[getAdvGapsLevel()] || ADV_GAPS_LEVELS.B1;
+        }
+
+        function syncAdvGapsChrome() {
+            const badge = document.getElementById('adv-gaps-level-badge');
+            if (badge) badge.textContent = getAdvGapsLevel();
+        }
+
+        function syncAdvGapsInstructions() {
+            const mode = getAdvGapsMode();
+            const genre = ADV_GAPS_GENRES[getAdvGapsGenre()]?.label || 'exam text';
+            const en = document.getElementById('adv-gaps-instr-en');
+            const pl = document.getElementById('adv-gaps-instr-pl');
+            if (mode === 'sentences') {
+                if (en) en.textContent = `Read the ${genre}. Numbered gaps mark missing sentences. Write one suitable English sentence in each box below so the text stays cohesive and logical. Then submit for Cursor AI feedback.`;
+                if (pl) pl.textContent = `Przeczytaj tekst (${genre}). Numerowane luki oznaczają brakujące zdania. Wpisz w każdym polu poniżej jedno pasujące zdanie po angielsku, zachowując spójność i logikę. Potem wyślij odpowiedzi do oceny Cursor AI.`;
+            } else {
+                if (en) en.textContent = `Read the ${genre} and fill each gap with the English translation of the Polish word or phrase in brackets. Then submit for Cursor AI feedback.`;
+                if (pl) pl.textContent = `Przeczytaj tekst (${genre}) i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub zwrotu w nawiasie. Potem wyślij odpowiedzi do oceny Cursor AI.`;
+            }
+            syncAdvGapsChrome();
+        }
+
+        function collectAdvGapsAnswers() {
+            if (!advGapsTask) return [];
+            if (advGapsTask.mode === 'sentences') {
+                return Array.from(document.querySelectorAll('#adv-gaps-answers .e8-gaps-answer-input')).map((inp) => ({
+                    n: Number(inp.dataset.gapN),
+                    answer: (inp.value || '').trim()
+                }));
+            }
+            return Array.from(document.querySelectorAll('#adv-gaps-text .e8-gaps-input')).map((inp) => ({
+                n: Number(inp.dataset.gapN),
+                answer: (inp.value || '').trim()
+            }));
+        }
+
+        function renderAdvGapsTask(task) {
+            const textEl = document.getElementById('adv-gaps-text');
+            const answersEl = document.getElementById('adv-gaps-answers');
+            const meta = document.getElementById('adv-gaps-meta');
+            const check = document.getElementById('adv-gaps-check');
+            if (!textEl || !answersEl) return;
+
+            const kind = task.mode === 'sentences' ? 'Missing sentences' : 'Translate gaps';
+            const genreLabel = ADV_GAPS_GENRES[task.genreKey]?.label || task.genre || 'exam text';
+            meta.innerHTML = `<strong>[${escapeHtml(kind)} · ${escapeHtml(task.level || 'B1')}]</strong> ${escapeHtml(genreLabel)}`
+                + (task.title ? ` — ${escapeHtml(task.title)}` : '');
+
+            const gaps = Array.isArray(task.gaps) ? task.gaps : [];
+            const parts = Array.isArray(task.parts) ? task.parts : [];
+
+            if (task.mode === 'sentences') {
+                let html = '';
+                parts.forEach((part, i) => {
+                    html += escapeHtml(String(part || ''));
+                    if (i < gaps.length) {
+                        const g = gaps[i] || {};
+                        const num = g.n != null ? g.n : (i + 1);
+                        html += `<span class="e8-gaps-marker" aria-label="Gap ${num}">(${num})</span>`;
+                    }
+                });
+                textEl.innerHTML = html || '<em>No text generated.</em>';
+                answersEl.hidden = false;
+                answersEl.innerHTML = gaps.map((g, i) => {
+                    const num = g.n != null ? g.n : (i + 1);
+                    return `<div class="e8-gaps-answer-row">
+                        <span class="e8-gaps-answer-num">${num}</span>
+                        <input type="text" class="pe-input e8-gaps-answer-input" data-gap-n="${num}" placeholder="Write sentence ${num}…" autocomplete="off" aria-label="Sentence ${num}">
+                    </div>`;
+                }).join('');
+            } else {
+                answersEl.hidden = true;
+                answersEl.innerHTML = '';
+                let html = '';
+                parts.forEach((part, i) => {
+                    html += escapeHtml(String(part || ''));
+                    if (i < gaps.length) {
+                        const g = gaps[i] || {};
+                        const num = g.n != null ? g.n : (i + 1);
+                        const pl = escapeHtml(String(g.pl || ''));
+                        html += `<span class="e8-gaps-blank">`
+                            + `<input type="text" class="dictation-gap-input e8-gaps-input" data-gap-n="${num}" autocomplete="off" aria-label="Gap ${num}: translate ${pl}">`
+                            + `<span class="e8-gaps-pl">(${pl})</span>`
+                            + `</span>`;
+                    }
+                });
+                textEl.innerHTML = html || '<em>No text generated.</em>';
+            }
+            if (check) check.disabled = !gaps.length;
+        }
+
+        async function initAdvGaps() {
+            const feedback = document.getElementById('adv-gaps-feedback');
+            if (feedback) feedback.textContent = '';
+            syncAdvGapsInstructions();
+            const mode = getAdvGapsMode();
+            const genreKey = getAdvGapsGenre();
+            const genre = ADV_GAPS_GENRES[genreKey] || ADV_GAPS_GENRES['for-against'];
+            const L = getAdvGapsLevelGuide();
+            peToggleLoading('adv-gaps', true);
+            const R = peRandomnessBlock('exam');
+            const gapCount = mode === 'sentences' ? L.gapsSentences : L.gapsTranslate;
+
+            let prompt;
+            if (mode === 'sentences') {
+                prompt = `Create ONE English exam-style text for CEFR ${L.label} with MISSING SENTENCES.
+TEXT TYPE (required): ${genre.prompt}
+LEVEL RULES: ${L.vocab}
+TARGET LENGTH: ${L.length}
+STRUCTURE:
+  - Provide "parts" as text fragments that ALTERNATE with missing sentences.
+  - parts.length must be gaps.length + 1.
+  - Insert exactly ${gapCount} missing sentences (gaps).
+  - Each gap needs a clear cohesive role (topic sentence, contrast, example, result, polite closing, etc.).
+  - The student writes ONE full English sentence per gap — model answers should match ${L.label} quality.
+  - Keep authentic exam register for this text type.
+RANDOMISE HARD — seed ${R.seed}. Topic angle: ${R.topic} / ${R.angle}. Invent a fresh prompt every time (education, environment, technology, health, culture, work, travel, media…).
+Return ONLY JSON:
+{"mode":"sentences","genre":"${genre.label}","title":"short topic title","parts":["…","…"],"gaps":[{"n":1,"answer":"Model sentence.","alts":["optional"],"role":"why it fits"}]}`;
+            } else {
+                prompt = `Create ONE English exam-style text for CEFR ${L.label} with TRANSLATION GAPS.
+TEXT TYPE (required): ${genre.prompt}
+LEVEL RULES: ${L.vocab}
+TARGET LENGTH: ${L.length}
+STRUCTURE:
+  - Provide "parts" as text fragments alternating with gaps.
+  - parts.length must be gaps.length + 1.
+  - Create exactly ${gapCount} gaps.
+  - Each gap: Polish cue (pl) — a word or short phrase (NOT a full sentence) that the student translates into English in the blank.
+  - Polish cues should match mature school/exam Polish appropriate for ${L.label} (more formal for formal letter / essay).
+  - answer = best English form for that gap in context; alts = other acceptable English forms.
+  - Gaps must fit grammar (articles, prepositions, verb forms, discourse markers as needed).
+  - Prefer useful exam language: linkers, formal phrases, topic vocabulary.
+RANDOMISE HARD — seed ${R.seed}. Topic angle: ${R.topic} / ${R.angle}. Fresh topic every time.
+Return ONLY JSON:
+{"mode":"translate","genre":"${genre.label}","title":"short topic title","parts":["…","…"],"gaps":[{"n":1,"pl":"z drugiej strony","answer":"on the other hand","alts":["however"]},{"n":2,"pl":"składać wniosek","answer":"submit an application","alts":["apply"]}]}`;
+            }
+
+            const data = await fetchGenerativeAI(prompt);
+            peToggleLoading('adv-gaps', false);
+            if (!data || data.__error || !Array.isArray(data.parts) || !Array.isArray(data.gaps) || !data.gaps.length) {
+                if (feedback) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = aiErrorMessage(data) || 'Could not generate a text. Try New Text again.';
+                }
+                advGapsTask = null;
+                const check = document.getElementById('adv-gaps-check');
+                if (check) check.disabled = true;
+                return;
+            }
+            advGapsTask = {
+                mode,
+                level: L.label,
+                genreKey,
+                genre: data.genre || genre.label,
+                title: data.title || '',
+                parts: data.parts,
+                gaps: data.gaps.map((g, i) => ({
+                    n: g.n != null ? Number(g.n) : (i + 1),
+                    pl: g.pl || '',
+                    answer: String(g.answer || '').trim(),
+                    alts: Array.isArray(g.alts) ? g.alts.map((a) => String(a || '').trim()).filter(Boolean) : [],
+                    role: g.role || ''
+                }))
+            };
+            renderAdvGapsTask(advGapsTask);
+        }
+
+        async function checkAdvGaps() {
+            if (!advGapsTask) return;
+            const feedback = document.getElementById('adv-gaps-feedback');
+            const checkBtn = document.getElementById('adv-gaps-check');
+            const student = collectAdvGapsAnswers();
+            if (!student.length || student.some((s) => !s.answer)) {
+                if (feedback) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = 'Fill in every gap before checking.';
+                }
+                return;
+            }
+            if (feedback) {
+                feedback.className = 'feedback neutral';
+                feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cursor AI is checking your answers…';
+            }
+            if (checkBtn) checkBtn.disabled = true;
+            const gapKey = advGapsTask.gaps.map((g) => ({
+                n: g.n,
+                pl: g.pl || undefined,
+                expected: g.answer,
+                alts: g.alts || [],
+                role: g.role || undefined
+            }));
+            const prompt = `CEFR ${advGapsTask.level} ESL/exam check for Advanced Text Gaps (${advGapsTask.mode}).
+${PE_TYPEIN_RULE}
+Text type: ${advGapsTask.genre}. Title: ${advGapsTask.title || 'n/a'}.
+Full text parts (gaps between): ${JSON.stringify(advGapsTask.parts)}
+Gap key: ${JSON.stringify(gapKey)}
+Student answers: ${JSON.stringify(student)}
+Mark each gap for correctness AND relevance/cohesion in this ${advGapsTask.genre}.
+- Translate mode: accept expected, alts, and other natural English translations of the Polish cue that fit register and grammar.
+- Sentences mode: accept expected/alts and other coherent sentences that keep logic, register, and cohesion (not word-for-word).
+Be specific and encouraging. valid=true if most gaps are good; points 0–60.
+Return ONLY JSON:
+{"valid":true/false,"points":45,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Brief note"},{"n":2,"ok":false,"note":"What to fix"}]}`;
+            const data = await fetchGenerativeAI(prompt);
+            if (checkBtn) checkBtn.disabled = false;
+            if (!data || data.__error) {
+                if (feedback) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = aiErrorMessage(data);
+                }
+                return;
+            }
+
+            const items = Array.isArray(data.items) ? data.items : [];
+            const byN = new Map(items.map((it) => [Number(it.n), it]));
+            document.querySelectorAll('#adv-gaps-text .e8-gaps-input, #adv-gaps-answers .e8-gaps-answer-input').forEach((inp) => {
+                const it = byN.get(Number(inp.dataset.gapN));
+                const ok = it ? !!it.ok : false;
+                inp.classList.toggle('dictation-gap-correct', ok);
+                inp.classList.toggle('dictation-gap-wrong', !ok);
+            });
+
+            let html = escapeHtml(data.message || (data.valid ? 'Great work!' : 'Check the notes below and try again.'));
+            if (items.length) {
+                html += '<ul style="margin:0.65rem 0 0;padding-left:1.2rem;text-align:left;">'
+                    + items.map((it) => {
+                        const mark = it.ok ? '✓' : '✗';
+                        return `<li><strong>(${escapeHtml(String(it.n))})</strong> ${mark} ${escapeHtml(it.note || '')}</li>`;
+                    }).join('')
+                    + '</ul>';
+            }
+            if (feedback) {
+                feedback.className = data.valid ? 'feedback success' : 'feedback error';
+                feedback.innerHTML = html;
+            }
+            if (data.valid) {
+                const pts = Number(data.points) || 45;
+                advGapsPoints += pts;
+                const ptsEl = document.getElementById('adv-gaps-points');
+                if (ptsEl) ptsEl.textContent = advGapsPoints;
+                incrementGameCount();
+                recordGameSessionApi('adv_gaps', { score: pts, pointsEarned: pts });
+            }
+        }
+
+        function getPeE8GapsMode() {
+            const play = document.querySelector('input[name="e8-gaps-play-mode"]:checked');
+            if (play) return play.value === 'sentences' ? 'sentences' : 'translate';
+            const setup = document.querySelector('input[name="e8-gaps-setup-mode"]:checked');
+            return setup && setup.value === 'sentences' ? 'sentences' : 'translate';
+        }
+
+        function syncPeE8GapsInstructions() {
+            const mode = getPeE8GapsMode();
+            const en = document.getElementById('pe-e8-gaps-instr-en');
+            const pl = document.getElementById('pe-e8-gaps-instr-pl');
+            if (mode === 'sentences') {
+                if (en) en.textContent = 'Read the exam-style text. Numbered gaps mark missing sentences. Write one suitable English sentence in each box below so the text stays cohesive and logical. Then submit for Cursor AI feedback.';
+                if (pl) pl.textContent = 'Przeczytaj tekst egzaminacyjny. Numerowane luki oznaczają brakujące zdania. Wpisz w każdym polu poniżej jedno pasujące zdanie po angielsku, zachowując spójność i logikę. Potem wyślij odpowiedzi do oceny Cursor AI.';
+            } else {
+                if (en) en.textContent = 'Read the exam-style text and fill each gap with the English translation of the Polish word or phrase in brackets. Then submit for Cursor AI feedback.';
+                if (pl) pl.textContent = 'Przeczytaj tekst egzaminacyjny i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub zwrotu w nawiasie. Potem wyślij odpowiedzi do oceny Cursor AI.';
+            }
+        }
+
+        function collectPeE8GapsAnswers() {
+            if (!peE8GapsTask) return [];
+            if (peE8GapsTask.mode === 'sentences') {
+                return Array.from(document.querySelectorAll('#pe-e8-gaps-answers .e8-gaps-answer-input')).map((inp) => ({
+                    n: Number(inp.dataset.gapN),
+                    answer: (inp.value || '').trim()
+                }));
+            }
+            return Array.from(document.querySelectorAll('#pe-e8-gaps-text .e8-gaps-input')).map((inp) => ({
+                n: Number(inp.dataset.gapN),
+                answer: (inp.value || '').trim()
+            }));
+        }
+
+        function renderPeE8GapsTask(task) {
+            const textEl = document.getElementById('pe-e8-gaps-text');
+            const answersEl = document.getElementById('pe-e8-gaps-answers');
+            const meta = document.getElementById('pe-e8-gaps-meta');
+            const check = document.getElementById('pe-e8-gaps-check');
+            if (!textEl || !answersEl) return;
+
+            const L = peLevelGuide();
+            const kind = task.mode === 'sentences' ? 'Missing sentences' : 'Translate gaps';
+            const genre = task.genre || 'exam text';
+            meta.innerHTML = `<strong>[${escapeHtml(kind)} · ${escapeHtml(L.label)}]</strong> ${escapeHtml(genre)}`
+                + (task.title ? ` — ${escapeHtml(task.title)}` : '')
+                + (peMode === 'custom' && Array.isArray(task.requiredWords) && task.requiredWords.length
+                    ? `<br><small><strong>Required glossary words:</strong> ${task.requiredWords.map(escapeHtml).join(', ')}</small>`
+                    : '');
+
+            const gaps = Array.isArray(task.gaps) ? task.gaps : [];
+            const parts = Array.isArray(task.parts) ? task.parts : [];
+
+            if (task.mode === 'sentences') {
+                let html = '';
+                parts.forEach((part, i) => {
+                    html += escapeHtml(String(part || ''));
+                    if (i < gaps.length) {
+                        const g = gaps[i] || {};
+                        const num = g.n != null ? g.n : (i + 1);
+                        html += `<span class="e8-gaps-marker" aria-label="Gap ${num}">(${num})</span>`;
+                    }
+                });
+                textEl.innerHTML = html || '<em>No text generated.</em>';
+                answersEl.hidden = false;
+                answersEl.innerHTML = gaps.map((g, i) => {
+                    const num = g.n != null ? g.n : (i + 1);
+                    return `<div class="e8-gaps-answer-row">
+                        <span class="e8-gaps-answer-num">${num}</span>
+                        <input type="text" class="pe-input e8-gaps-answer-input" data-gap-n="${num}" placeholder="Write sentence ${num}…" autocomplete="off" aria-label="Sentence ${num}">
+                    </div>`;
+                }).join('');
+            } else {
+                answersEl.hidden = true;
+                answersEl.innerHTML = '';
+                let html = '';
+                parts.forEach((part, i) => {
+                    html += escapeHtml(String(part || ''));
+                    if (i < gaps.length) {
+                        const g = gaps[i] || {};
+                        const num = g.n != null ? g.n : (i + 1);
+                        const pl = escapeHtml(String(g.pl || ''));
+                        html += `<span class="e8-gaps-blank">`
+                            + `<input type="text" class="dictation-gap-input e8-gaps-input" data-gap-n="${num}" autocomplete="off" aria-label="Gap ${num}: translate ${pl}">`
+                            + `<span class="e8-gaps-pl">(${pl})</span>`
+                            + `</span>`;
+                    }
+                });
+                textEl.innerHTML = html || '<em>No text generated.</em>';
+            }
+            if (check) check.disabled = !gaps.length;
+        }
+
+        async function initPeE8Gaps() {
+            const feedback = document.getElementById('pe-e8-gaps-feedback');
+            if (feedback) feedback.textContent = '';
+            syncPeLevelBadges();
+            syncPeE8GapsInstructions();
+            const mode = getPeE8GapsMode();
+            peToggleLoading('pe-e8-gaps', true);
+            const L = peLevelGuide();
+            const R = peRandomnessBlock('e8gaps');
+            const requiredCustomWords = peGetRequiredCustomWords(mode === 'sentences' ? 2 : 3);
+            const customRule = peMode === 'custom'
+                ? `CUSTOM VOCAB: weave these glossary words naturally into the text/gaps: ${requiredCustomWords.join(', ')}.`
+                : '';
+
+            let prompt;
+            if (mode === 'sentences') {
+                prompt = `Create ONE short E8-style (Polish egzamin ósmoklasisty writing) English text for CEFR ${L.label} with MISSING SENTENCES.
+SCHOOL CONTEXT: ${L.schoolLevel || ''}
+LEVEL RULES: ${L.vocab}
+E8 GAPS RULES: ${L.e8Gaps || ''}
+TEXT TYPE: a short email, message to a friend, or note (NOT a full essay). About 80–140 words when complete.
+STRUCTURE: Provide "parts" as an array of text fragments that ALTERNATE with missing sentences.
+  - parts.length must be gaps.length + 1 (text before first gap, between gaps, and after last gap).
+  - Insert 3 or 4 missing sentences (gaps).
+  - Each gap needs a clear cohesive role (reason, result, extra detail, polite closing line, etc.).
+  - The student will write ONE full English sentence per gap.
+RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
+${customRule}
+Return ONLY JSON:
+{"mode":"sentences","genre":"email|message|note","title":"short topic label","parts":["text before gap1","text between…","text after last"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
+            } else {
+                prompt = `Create ONE short E8-style (Polish egzamin ósmoklasisty writing) English text for CEFR ${L.label} with TRANSLATION GAPS.
+SCHOOL CONTEXT: ${L.schoolLevel || ''}
+LEVEL RULES: ${L.vocab}
+E8 GAPS RULES: ${L.e8Gaps || ''}
+TEXT TYPE: a short email, message to a friend, or note (NOT a full essay). About 70–120 words with gaps filled.
+STRUCTURE: Provide "parts" as text fragments alternating with gaps.
+  - parts.length must be gaps.length + 1.
+  - Create 5 or 6 gaps.
+  - Each gap: Polish cue (pl) that the student translates into English in the blank.
+  - Polish cues must be natural school Polish (nouns, verbs, short phrases) — NOT full sentences.
+  - answer = best English translation for that gap in context; alts = other acceptable English forms.
+  - Gaps must fit grammatically in the English sentence (articles, prepositions, verb forms as needed in the answer).
+RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
+${customRule}
+Return ONLY JSON:
+{"mode":"translate","genre":"email|message|note","title":"short topic label","parts":["Yesterday I went to the "," with my class."],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]}]}`;
+            }
+
+            const data = await fetchGenerativeAI(prompt);
+            peToggleLoading('pe-e8-gaps', false);
+            if (!data || data.__error || !Array.isArray(data.parts) || !Array.isArray(data.gaps) || !data.gaps.length) {
+                if (feedback) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = aiErrorMessage(data) || 'Could not generate a text. Try New Text again.';
+                }
+                peE8GapsTask = null;
+                const check = document.getElementById('pe-e8-gaps-check');
+                if (check) check.disabled = true;
+                return;
+            }
+            peE8GapsTask = {
+                mode,
+                genre: data.genre || 'exam text',
+                title: data.title || '',
+                parts: data.parts,
+                gaps: data.gaps.map((g, i) => ({
+                    n: g.n != null ? Number(g.n) : (i + 1),
+                    pl: g.pl || '',
+                    answer: String(g.answer || '').trim(),
+                    alts: Array.isArray(g.alts) ? g.alts.map((a) => String(a || '').trim()).filter(Boolean) : [],
+                    role: g.role || ''
+                })),
+                requiredWords: requiredCustomWords
+            };
+            renderPeE8GapsTask(peE8GapsTask);
+        }
+
+        async function checkPeE8Gaps() {
+            if (!peE8GapsTask) return;
+            const feedback = document.getElementById('pe-e8-gaps-feedback');
+            const checkBtn = document.getElementById('pe-e8-gaps-check');
+            const student = collectPeE8GapsAnswers();
+            if (!student.length || student.some((s) => !s.answer)) {
+                if (feedback) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = 'Fill in every gap before checking.';
+                }
+                return;
+            }
+            if (feedback) {
+                feedback.className = 'feedback neutral';
+                feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cursor AI is checking your answers…';
+            }
+            if (checkBtn) checkBtn.disabled = true;
+            const L = peLevelGuide();
+            const gapKey = peE8GapsTask.gaps.map((g) => ({
+                n: g.n,
+                pl: g.pl || undefined,
+                expected: g.answer,
+                alts: g.alts || [],
+                role: g.role || undefined
+            }));
+            const prompt = `CEFR ${L.label} ESL check for E8 Text Gaps (${peE8GapsTask.mode}).
+${PE_TYPEIN_RULE}
+Task genre: ${peE8GapsTask.genre}. Title: ${peE8GapsTask.title || 'n/a'}.
+Full text parts (in order, gaps between): ${JSON.stringify(peE8GapsTask.parts)}
+Gap key: ${JSON.stringify(gapKey)}
+Student answers: ${JSON.stringify(student)}
+${peMode === 'custom' ? `CUSTOM: prefer answers that fit glossary words ${JSON.stringify(peE8GapsTask.requiredWords || [])} when relevant.` : ''}
+Mark each gap for correctness AND relevance/cohesion in context.
+- Translate mode: accept expected answer, listed alts, and other natural English translations of the Polish cue that fit grammar/context.
+- Sentences mode: accept expected/alts and other coherent sentences that keep logic and cohesion (do not require word-for-word match).
+Be encouraging and specific. Prefer partial credit: valid=true if most gaps are good; points 0–50.
+Return ONLY JSON:
+{"valid":true/false,"points":40,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Brief note"},{"n":2,"ok":false,"note":"What to fix / a better option"}]}`;
+            const data = await fetchGenerativeAI(prompt);
+            if (checkBtn) checkBtn.disabled = false;
+            if (!data || data.__error) {
+                if (feedback) {
+                    feedback.className = 'feedback error';
+                    feedback.textContent = aiErrorMessage(data);
+                }
+                return;
+            }
+
+            const items = Array.isArray(data.items) ? data.items : [];
+            const byN = new Map(items.map((it) => [Number(it.n), it]));
+            document.querySelectorAll('#pe-e8-gaps-text .e8-gaps-input, #pe-e8-gaps-answers .e8-gaps-answer-input').forEach((inp) => {
+                const it = byN.get(Number(inp.dataset.gapN));
+                const ok = it ? !!it.ok : false;
+                inp.classList.toggle('dictation-gap-correct', ok);
+                inp.classList.toggle('dictation-gap-wrong', !ok);
+            });
+
+            let html = escapeHtml(data.message || (data.valid ? 'Great work!' : 'Check the notes below and try again.'));
+            if (items.length) {
+                html += '<ul style="margin:0.65rem 0 0;padding-left:1.2rem;text-align:left;">'
+                    + items.map((it) => {
+                        const mark = it.ok ? '✓' : '✗';
+                        return `<li><strong>(${escapeHtml(String(it.n))})</strong> ${mark} ${escapeHtml(it.note || '')}</li>`;
+                    }).join('')
+                    + '</ul>';
+            }
+            if (feedback) {
+                feedback.className = data.valid ? 'feedback success' : 'feedback error';
+                feedback.innerHTML = html;
+            }
+            if (data.valid) {
+                const pts = Number(data.points) || 40;
+                peAddPoints('e8gaps', pts);
+                incrementGameCount();
+                recordGameSessionApi('pe_e8_gaps', { score: pts, pointsEarned: pts });
+            }
         }
 
         async function initPeExam() {
