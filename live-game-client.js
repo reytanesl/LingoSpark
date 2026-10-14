@@ -22,6 +22,7 @@
     let playerChallengePending = false;
     let hostSelectedWordSetId = '';
     let hostWordSetsLoadedForUser = null;
+    let hostWordSetsCache = [];
 
     const RACE_BAR_COLORS = ['#e21b3c', '#1368ce', '#d89e00', '#26890c', '#9c27b0', '#ff6600', '#06b6d4', '#ec4899'];
     const HOST_POSITIVE_FEEDBACK = ['Way to go!', "That's right!", 'Nice one!', 'Spot on!', 'Keep going!', 'Brilliant!', 'Yes!'];
@@ -2647,6 +2648,91 @@
         $('live-play-result').innerHTML = '';
     }
 
+    function hostWordSetMeta(set, key) {
+        if (!set) return '';
+        if (key === 'category') return String(set.category || '').trim();
+        return String(set.class_name || set.className || '').trim();
+    }
+
+    function refillSelectOptions(sel, blankLabel, values, previous) {
+        if (!sel) return;
+        sel.innerHTML = '';
+        const blank = document.createElement('option');
+        blank.value = '';
+        blank.textContent = blankLabel;
+        sel.appendChild(blank);
+        for (const v of values) {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = v;
+            if (v === previous) opt.selected = true;
+            sel.appendChild(opt);
+        }
+        if (previous && !values.includes(previous)) sel.value = '';
+        sel.disabled = values.length === 0;
+    }
+
+    function fillHostWordSetFilterSelects(sets) {
+        const catSel = $('live-host-ws-filter-category');
+        const classSel = $('live-host-ws-filter-class');
+        const wrap = $('live-host-wordset-filters');
+        const cats = [...new Set((sets || []).map((s) => hostWordSetMeta(s, 'category')).filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b));
+        const classes = [...new Set((sets || []).map((s) => hostWordSetMeta(s, 'class')).filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b));
+        refillSelectOptions(catSel, 'All categories', cats, catSel?.value || '');
+        refillSelectOptions(classSel, 'All classes', classes, classSel?.value || '');
+        if (wrap) wrap.hidden = !(sets && sets.length);
+    }
+
+    function filteredHostWordSets() {
+        const cat = String($('live-host-ws-filter-category')?.value || '').trim();
+        const cls = String($('live-host-ws-filter-class')?.value || '').trim();
+        return (hostWordSetsCache || []).filter((s) => {
+            if (cat && hostWordSetMeta(s, 'category') !== cat) return false;
+            if (cls && hostWordSetMeta(s, 'class') !== cls) return false;
+            return true;
+        });
+    }
+
+    function renderHostWordSetOptions(previous) {
+        const sel = $('live-host-wordset');
+        if (!sel) return;
+        const sets = filteredHostWordSets();
+        sel.innerHTML = '<option value="">— Select a saved set —</option>';
+        for (const s of sets) {
+            const opt = document.createElement('option');
+            opt.value = String(s.id);
+            const meta = [hostWordSetMeta(s, 'category'), hostWordSetMeta(s, 'class')].filter(Boolean).join(' · ');
+            opt.textContent = meta
+                ? `${s.name} (${s.item_count || 0}) — ${meta}`
+                : `${s.name} (${s.item_count || 0})`;
+            sel.appendChild(opt);
+        }
+        const hint = $('live-host-wordset-hint');
+        if (!hostWordSetsCache.length) {
+            if (hint) { hint.hidden = false; hint.textContent = 'No saved sets yet — create one in Word Sets, or paste a glossary.'; }
+        } else if (!sets.length) {
+            if (hint) { hint.hidden = false; hint.textContent = 'No word sets match this category/class filter.'; }
+            hostSelectedWordSetId = '';
+        } else {
+            if (previous && [...sel.options].some((o) => o.value === previous)) {
+                sel.value = previous;
+                hostSelectedWordSetId = previous;
+            } else if (hostSelectedWordSetId && [...sel.options].some((o) => o.value === hostSelectedWordSetId)) {
+                sel.value = hostSelectedWordSetId;
+            } else {
+                hostSelectedWordSetId = '';
+            }
+            if (hint && !hostSelectedWordSetId) hint.hidden = true;
+        }
+    }
+
+    function onHostWordSetFilterChange() {
+        const previous = hostSelectedWordSetId || $('live-host-wordset')?.value || '';
+        renderHostWordSetOptions(previous);
+    }
+
     async function loadWordSetsForHost(options = {}) {
         const force = Boolean(options.force);
         const sel = $('live-host-wordset');
@@ -2654,8 +2740,11 @@
         if (!isHostSignedIn()) {
             hostSelectedWordSetId = '';
             hostWordSetsLoadedForUser = null;
+            hostWordSetsCache = [];
             sel.innerHTML = '<option value="">— Select a saved set —</option>';
             sel.disabled = true;
+            const filters = $('live-host-wordset-filters');
+            if (filters) filters.hidden = true;
             const hint = $('live-host-wordset-hint');
             if (hint) { hint.hidden = false; hint.textContent = 'Sign in to load your saved word sets.'; }
             return;
@@ -2663,8 +2752,9 @@
 
         const userId = window.authState?.user?.id;
         // Avoid wiping a teacher's selection on every auth refresh / Create click.
-        if (!force && hostWordSetsLoadedForUser === userId && sel.options.length > 1) {
-            if (hostSelectedWordSetId) sel.value = hostSelectedWordSetId;
+        if (!force && hostWordSetsLoadedForUser === userId && hostWordSetsCache.length) {
+            fillHostWordSetFilterSelects(hostWordSetsCache);
+            renderHostWordSetOptions(hostSelectedWordSetId || sel.value);
             sel.disabled = false;
             return;
         }
@@ -2680,28 +2770,10 @@
                 return;
             }
             const data = await res.json();
-            const sets = data.sets || [];
-            if (!sets.length) {
-                const hint = $('live-host-wordset-hint');
-                if (hint) { hint.hidden = false; hint.textContent = 'No saved sets yet — create one in Word Sets, or paste a glossary.'; }
-            } else {
-                const hint = $('live-host-wordset-hint');
-                if (hint && !hostSelectedWordSetId) hint.hidden = true;
-            }
-            for (const s of sets) {
-                const opt = document.createElement('option');
-                opt.value = String(s.id);
-                const meta = [s.category, s.class_name].filter(Boolean).join(' · ');
-                opt.textContent = meta
-                    ? `${s.name} (${s.item_count || 0}) — ${meta}`
-                    : `${s.name} (${s.item_count || 0})`;
-                sel.appendChild(opt);
-            }
+            hostWordSetsCache = data.sets || [];
             hostWordSetsLoadedForUser = userId;
-            if (previous && [...sel.options].some((o) => o.value === previous)) {
-                sel.value = previous;
-                hostSelectedWordSetId = previous;
-            }
+            fillHostWordSetFilterSelects(hostWordSetsCache);
+            renderHostWordSetOptions(previous);
         } catch {
             const hint = $('live-host-wordset-hint');
             if (hint) { hint.hidden = false; hint.textContent = 'Could not load word sets.'; }
@@ -4947,6 +5019,8 @@
         document.addEventListener('fullscreenchange', updateFullscreenButtons);
         document.addEventListener('webkitfullscreenchange', updateFullscreenButtons);
         $('live-host-wordset')?.addEventListener('change', onHostWordSetSelected);
+        $('live-host-ws-filter-category')?.addEventListener('change', onHostWordSetFilterChange);
+        $('live-host-ws-filter-class')?.addEventListener('change', onHostWordSetFilterChange);
         $('live-host-create-btn')?.addEventListener('click', createHostRoom);
         // #live-join-btn / Enter on the join form are wired by live-entry.js (LiveEntry → LiveGame.joinRoom).
         $('live-host-start')?.addEventListener('click', hostStartGame);

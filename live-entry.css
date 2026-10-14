@@ -61,6 +61,18 @@
 .live-entry .lse-step.bad .lse-num { background: var(--lse-err); border-color: var(--lse-err); color: #fff; }
 .live-entry .lse-label { margin: 0; font: 700 clamp(15px, 2vh, 18px)/1.1 var(--lse-head); color: var(--lse-navy); display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .live-entry .lse-label small { font: 500 13px/1.2 var(--lse-body); color: var(--lse-muted); }
+.live-entry .lse-wordset-filters {
+    grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 4px;
+}
+.live-entry .lse-wordset-filters[hidden] { display: none !important; }
+.live-entry .lse-label--sub {
+    display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+    font: 650 13px/1.2 var(--lse-head); color: var(--lse-muted);
+}
+.live-entry .lse-label--sub .lse-select-wrap { width: 100%; }
+@media (max-width: 560px) {
+    .live-entry .lse-wordset-filters { grid-template-columns: 1fr; }
+}
 .live-entry .lse-ctl { grid-column: 2; min-width: 0; }
 .live-entry .lse-step--plain .lse-ctl, .live-entry .lse-step--plain .lse-label { grid-column: 1; }
 

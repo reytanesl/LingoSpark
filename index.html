@@ -2680,12 +2680,24 @@
         .ws-filters {
             display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: flex-end;
             max-width: 860px; margin: 0 auto 1rem; text-align: left;
+            padding: 0.85rem 1rem; background: rgba(1, 33, 105, 0.04);
+            border: 1px solid rgba(1, 33, 105, 0.12); border-radius: 12px;
+        }
+        .ws-filters[hidden] { display: none !important; }
+        .ws-filters-title {
+            flex: 1 1 100%; margin: 0; font-family: var(--font-primary); font-size: 0.92rem;
+            font-weight: 800; color: var(--royal-blue);
+        }
+        .ws-filters-count {
+            flex: 1 1 100%; margin: -0.15rem 0 0; font-size: 0.82rem; color: var(--text-muted);
         }
         .ws-filters label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); flex: 1 1 160px; }
         .ws-filters select, .ws-meta-fields input {
             padding: 0.45rem 0.6rem; border: 2px solid var(--border-light); border-radius: 8px;
             font-size: 0.95rem; font-family: var(--font-secondary); background: #fff;
         }
+        .ws-filters-actions { display: flex; align-items: flex-end; gap: 0.4rem; flex: 0 0 auto; }
+        .ws-filters-actions .btn { padding: 0.45rem 0.75rem; font-size: 0.88rem; }
         .ws-meta-fields {
             display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin: 0.75rem 0 1rem;
         }
@@ -3327,23 +3339,28 @@
             <div class="category-header">
                 <i class="fa-solid fa-book cat-icon"></i><h2>Word Sets</h2>
             </div>
-            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — organise them by <strong>category</strong> and <strong>class</strong>. Use <strong>Share</strong> to copy a link your students can open (no login needed). Open <strong>Edit</strong> on any list to rename it and change each word or phrase.</p>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — tag them with a <strong>category</strong> and <strong>class</strong>, then use the filters below to show only the lists you need. Use <strong>Share</strong> to copy a student link (no login needed). Open <strong>Edit</strong> to rename a list or change words.</p>
             <div id="ws-editor" class="ws-editor" hidden></div>
             <div id="mysets-browse">
             <div style="text-align:center; margin-bottom: 1rem;">
                 <button type="button" class="btn btn-blue" onclick="createWordSetFromVocab()"><i class="fa-solid fa-plus"></i> Create word set</button>
             </div>
             <div class="ws-filters" id="ws-filters" hidden>
+                <p class="ws-filters-title"><i class="fa-solid fa-filter"></i> Filter word lists</p>
                 <label>Category
-                    <select id="ws-filter-category" onchange="renderSavedWordSets()">
+                    <select id="ws-filter-category" onchange="renderSavedWordSets()" aria-label="Filter by category">
                         <option value="">All categories</option>
                     </select>
                 </label>
                 <label>Class
-                    <select id="ws-filter-class" onchange="renderSavedWordSets()">
+                    <select id="ws-filter-class" onchange="renderSavedWordSets()" aria-label="Filter by class">
                         <option value="">All classes</option>
                     </select>
                 </label>
+                <div class="ws-filters-actions">
+                    <button type="button" class="btn btn-outline" id="ws-filter-clear" onclick="clearWordSetFilters()" hidden>Clear</button>
+                </div>
+                <p class="ws-filters-count" id="ws-filters-count" hidden></p>
             </div>
             <div id="mysets-save-row" style="display:none; margin-bottom: 1.2rem; padding: 1rem; background: var(--light-grey); border-radius: 10px; border-left: 4px solid var(--royal-blue); max-width: 640px; margin-left: auto; margin-right: auto;">
                 <label style="font-weight: 600; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-floppy-disk"></i> Save current glossary</label>
@@ -5562,6 +5579,24 @@
                             <div class="lse-step" id="live-host-wordset-row" hidden>
                                 <div class="lse-num" aria-hidden="true">2</div>
                                 <label class="lse-label" for="live-host-wordset">Word set</label>
+                                <div class="lse-wordset-filters" id="live-host-wordset-filters" hidden>
+                                    <label class="lse-label lse-label--sub" for="live-host-ws-filter-category">Category
+                                        <div class="lse-ctl lse-select-wrap">
+                                            <select id="live-host-ws-filter-category" class="lse-input lse-select" aria-label="Filter word sets by category">
+                                                <option value="">All categories</option>
+                                            </select>
+                                            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                        </div>
+                                    </label>
+                                    <label class="lse-label lse-label--sub" for="live-host-ws-filter-class">Class
+                                        <div class="lse-ctl lse-select-wrap">
+                                            <select id="live-host-ws-filter-class" class="lse-input lse-select" aria-label="Filter word sets by class">
+                                                <option value="">All classes</option>
+                                            </select>
+                                            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                        </div>
+                                    </label>
+                                </div>
                                 <div class="lse-ctl lse-select-wrap">
                                     <select id="live-host-wordset" class="lse-input lse-select"></select>
                                     <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
@@ -6518,57 +6553,97 @@
             el.innerHTML = unique.map((v) => `<option value="${esc(v)}"></option>`).join('');
         }
 
+        function getWordSetFilterValues() {
+            return {
+                category: String(document.getElementById('ws-filter-category')?.value || '').trim(),
+                className: String(document.getElementById('ws-filter-class')?.value || '').trim()
+            };
+        }
+
+        function filterWordSetsByMeta(sets, catFilter, classFilter) {
+            return (sets || []).filter((s) => {
+                if (catFilter && wsMetaValue(s, 'category') !== catFilter) return false;
+                if (classFilter && wsMetaValue(s, 'class') !== classFilter) return false;
+                return true;
+            });
+        }
+
+        function clearWordSetFilters() {
+            const catSel = document.getElementById('ws-filter-category');
+            const classSel = document.getElementById('ws-filter-class');
+            if (catSel) catSel.value = '';
+            if (classSel) classSel.value = '';
+            renderSavedWordSets();
+        }
+
         function updateWordSetFilters(sets) {
             const catSel = document.getElementById('ws-filter-category');
             const classSel = document.getElementById('ws-filter-class');
             const filters = document.getElementById('ws-filters');
             const prevCat = catSel?.value || '';
             const prevClass = classSel?.value || '';
-            const cats = [...new Set([
-                ...DEFAULT_WS_CATEGORIES,
-                ...(sets || []).map((s) => wsMetaValue(s, 'category')).filter(Boolean)
-            ])].sort((a, b) => a.localeCompare(b));
+            const catsFromSets = [...new Set((sets || []).map((s) => wsMetaValue(s, 'category')).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b));
             const classes = [...new Set((sets || []).map((s) => wsMetaValue(s, 'class')).filter(Boolean))]
                 .sort((a, b) => a.localeCompare(b));
             if (catSel) {
                 catSel.innerHTML = '<option value="">All categories</option>' +
-                    cats.map((c) => `<option value="${esc(c)}"${c === prevCat ? ' selected' : ''}>${esc(c)}</option>`).join('');
+                    catsFromSets.map((c) => `<option value="${esc(c)}"${c === prevCat ? ' selected' : ''}>${esc(c)}</option>`).join('');
+                if (prevCat && !catsFromSets.includes(prevCat)) catSel.value = '';
+                catSel.disabled = catsFromSets.length === 0;
             }
             if (classSel) {
                 classSel.innerHTML = '<option value="">All classes</option>' +
                     classes.map((c) => `<option value="${esc(c)}"${c === prevClass ? ' selected' : ''}>${esc(c)}</option>`).join('');
+                if (prevClass && !classes.includes(prevClass)) classSel.value = '';
+                classSel.disabled = classes.length === 0;
             }
+            // Show filters whenever the teacher has saved lists (options fill as category/class tags are used).
             if (filters) filters.hidden = !(sets && sets.length);
-            fillDatalist('ws-category-suggestions', cats);
+            fillDatalist('ws-category-suggestions', [...new Set([...DEFAULT_WS_CATEGORIES, ...catsFromSets])]);
             fillDatalist('ws-class-suggestions', classes);
         }
 
         function renderSavedWordSets() {
             const container = document.getElementById('mysets-list');
             if (!container) return;
-            let html = '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.6rem;font-size:1rem;">Demo sets</h3>';
-            html += renderDemoSetCardsHtml() || '<p style="color:var(--text-muted);">No demo sets available.</p>';
+            const { category: catFilter, className: classFilter } = getWordSetFilterValues();
+            const filtersActive = !!(catFilter || classFilter);
+            const clearBtn = document.getElementById('ws-filter-clear');
+            const countEl = document.getElementById('ws-filters-count');
+            if (clearBtn) clearBtn.hidden = !filtersActive;
+
+            let html = '';
+            if (!filtersActive) {
+                html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.6rem;font-size:1rem;">Demo sets</h3>';
+                html += renderDemoSetCardsHtml() || '<p style="color:var(--text-muted);">No demo sets available.</p>';
+            }
 
             if (!isLoggedIn()) {
                 html += '<p style="text-align:center;color:var(--text-muted);padding:1.2rem 0.5rem;">Sign in to save your own word sets and track mastery.</p>';
                 container.innerHTML = html;
                 const filters = document.getElementById('ws-filters');
                 if (filters) filters.hidden = true;
+                if (countEl) countEl.hidden = true;
                 return;
             }
 
-            html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;font-size:1rem;">Your saved sets</h3>';
-            const catFilter = document.getElementById('ws-filter-category')?.value || '';
-            const classFilter = document.getElementById('ws-filter-class')?.value || '';
-            const filtered = (cachedWordSets || []).filter((s) => {
-                if (catFilter && wsMetaValue(s, 'category') !== catFilter) return false;
-                if (classFilter && wsMetaValue(s, 'class') !== classFilter) return false;
-                return true;
-            });
+            html += `<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:${filtersActive ? '0' : '1.2rem'} 0 0.6rem;font-size:1rem;">Your saved sets</h3>`;
+            const filtered = filterWordSetsByMeta(cachedWordSets, catFilter, classFilter);
+            if (countEl) {
+                if (cachedWordSets.length && (catFilter || classFilter || document.getElementById('ws-filters')?.hidden === false)) {
+                    countEl.hidden = false;
+                    countEl.textContent = filtersActive
+                        ? `Showing ${filtered.length} of ${cachedWordSets.length} lists`
+                        : `${cachedWordSets.length} list${cachedWordSets.length === 1 ? '' : 's'}`;
+                } else {
+                    countEl.hidden = true;
+                }
+            }
             if (!cachedWordSets.length) {
-                html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No saved sets yet. Use <strong>Create word set</strong> or paste a glossary in Vocab Review and save it here.</p>';
+                html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No saved sets yet. Use <strong>Create word set</strong> or paste a glossary in Vocab Review and save it here. Add a <strong>category</strong> and <strong>class</strong> when you save so you can filter them later.</p>';
             } else if (!filtered.length) {
-                html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No sets match these filters.</p>';
+                html += '<p style="text-align:center;color:var(--text-muted);padding:1rem;">No lists match this category/class. <button type="button" class="btn btn-outline" style="margin-top:0.5rem;" onclick="clearWordSetFilters()">Clear filters</button></p>';
             } else {
                 html += filtered.map((s) => {
                     const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
