@@ -76,6 +76,7 @@ import {
     publicRoomSnapshot,
     destroyRoom,
 } from './live-game.js';
+import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { staticAllowlist } from './static-allowlist.js';
@@ -636,12 +637,14 @@ async function start() {
     app.post('/api/live/create', requireLogin, async (req, res) => {
         try {
             let deckPayload;
+            let deckLabel = null;
             const { source, setId, level, terms, glossary, answerMode } = req.body || {};
 
             if (source === 'wordset') {
                 if (!setId) return res.status(400).json({ error: 'setId required for word set source.' });
                 const data = await loadWordSetForGame(Number(setId), req.user.id);
                 if (!data) return res.status(404).json({ error: 'Word set not found.' });
+                deckLabel = data.set?.name || data.set?.title || `Word set #${setId}`;
                 deckPayload = buildDeckFromRequest({
                     source: 'wordset',
                     items: data.items,
@@ -649,8 +652,11 @@ async function start() {
                 });
             } else if (source === 'paste') {
                 deckPayload = buildDeckFromRequest({ source: 'paste', terms: terms || glossary, level });
+                deckLabel = 'Pasted glossary';
             } else {
                 deckPayload = buildDeckFromRequest({ source: 'builtin', level: level || 'intermediate' });
+                const lv = String(deckPayload.level || 'intermediate');
+                deckLabel = `Built-in deck (${lv.charAt(0).toUpperCase()}${lv.slice(1)})`;
             }
 
             if (deckPayload.deck.length < 12) {
@@ -666,6 +672,7 @@ async function start() {
                 questionSeconds: req.body?.questionSeconds,
                 gameMinutes: req.body?.gameMinutes,
                 challenges: req.body?.challenges,
+                deckLabel,
                 hostName: req.user?.name || '',
             });
 
@@ -722,6 +729,36 @@ async function start() {
 
     // Join page: "Room found — <host>'s class · N players waiting". Public + rate-limited.
     registerLiveLookupRoute(app);
+
+    // Host-only download of the last finished game's report (kept on the room in memory;
+    // a copy is also saved in the host's user_game_sessions.result.report).
+    const sendLiveReport = (fmt) => async (req, res) => {
+        const room = getRoom(req.params.code);
+        if (!room) return res.status(404).json({ error: 'Room not found.' });
+        if (!room.hostUserId || room.hostUserId !== req.user?.id) {
+            return res.status(403).json({ error: 'Only the host can download this report.' });
+        }
+        const report = room.lastReport;
+        if (!report) return res.status(404).json({ error: 'No finished game in this room yet.' });
+        const base = reportFileBase(report);
+        res.set('Cache-Control', 'no-store');
+        try {
+            if (fmt === 'csv') {
+                res.set('Content-Type', 'text/csv; charset=utf-8');
+                res.set('Content-Disposition', `attachment; filename="${base}.csv"`);
+                return res.send(reportToCsv(report));
+            }
+            const pdf = await reportToPdf(report);
+            res.set('Content-Type', 'application/pdf');
+            res.set('Content-Disposition', `attachment; filename="${base}.pdf"`);
+            return res.send(pdf);
+        } catch (err) {
+            console.error('report export failed:', err);
+            return res.status(500).json({ error: 'Could not build the report.' });
+        }
+    };
+    app.get('/api/live/room/:code/report.csv', requireLogin, sendLiveReport('csv'));
+    app.get('/api/live/room/:code/report.pdf', requireLogin, sendLiveReport('pdf'));
 
     app.get('/api/live/room/:code', (req, res) => {
         const room = getRoom(req.params.code);
@@ -1234,7 +1271,9 @@ app.get('/api/health', (_req, res) => {
                 score: room.players.size,
                 pointsEarned: topScore,
                 wordsTotal: 12,
-                result: { code: room.code, players: room.players.size },
+                durationMs: room.lastReport?.durationMs || 0,
+                // The full game report is kept with the teacher's live-host history.
+                result: { code: room.code, players: room.players.size, ...(room.lastReport ? { report: room.lastReport } : {}) },
             }).catch((err) => console.warn('live_host session save failed:', err.message));
         },
     });

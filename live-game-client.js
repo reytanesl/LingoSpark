@@ -323,6 +323,15 @@
         }).join('');
     }
 
+    /** Host-only CSV/PDF links for the last finished game's report (server checks the host). */
+    function reportLinksHtml(code) {
+        const c = encodeURIComponent(String(code || '').toUpperCase());
+        if (!c) return '';
+        return `<span class="live-report-dl__label">Download report:</span>
+            <a href="/api/live/room/${c}/report.csv" download class="live-report-csv">⬇ CSV</a>
+            <a href="/api/live/room/${c}/report.pdf" download class="live-report-pdf">⬇ PDF</a>`;
+    }
+
     function showLiveWinnerScreen(winnerNickname, isYou, options = {}) {
         const screen = $('live-winner-screen');
         const content = $('live-winner-content');
@@ -365,6 +374,7 @@
         content.innerHTML = `
             ${headline}
             ${rest.length ? `<ol class="live-winner-scores" aria-label="${teamMode ? 'Team scores' : 'Player scores'}">${rankingRowsHtml(rest, options.winnerId, { scoreMode: lantern })}</ol>` : ''}
+            ${options.reportCode ? `<div class="live-report-dl" id="live-winner-report">${reportLinksHtml(options.reportCode)}</div>` : ''}
             <button type="button" class="btn btn-blue" id="live-winner-dismiss" style="padding:0.75rem 2rem;">Continue</button>`;
         screen.hidden = false;
         $('live-winner-dismiss')?.addEventListener('click', () => {
@@ -1661,7 +1671,13 @@
                     lantern: Boolean(data.lantern) || isLuckyLanternsFormat(hostState?.gameFormat),
                     ranking: data.players || [],
                     winnerId: data.winnerId,
+                    reportCode: hostState?.code,
                 });
+            }
+            const reportBox = $('live-host-report');
+            if (reportBox && hostState?.code) {
+                reportBox.innerHTML = reportLinksHtml(hostState.code);
+                reportBox.hidden = false;
             }
             // Keep Start + format controls available — starting or changing settings resets to lobby.
             const playAgain = $('live-host-play-again');

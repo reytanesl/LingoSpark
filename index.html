@@ -1313,6 +1313,27 @@
             background: linear-gradient(160deg, #fffbeb 0%, #fef3c7 35%, #fff7ed 70%, #f8fafc 100%);
         }
         .live-winner-screen[hidden] { display: none !important; }
+        .live-report-dl {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem;
+            margin: 0.25rem auto 1rem; font-family: var(--font-primary);
+        }
+        .live-report-dl[hidden] { display: none !important; }
+        .live-report-dl__label { font-weight: 700; color: #1f2937; font-size: 0.95rem; }
+        .live-report-dl a {
+            display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.95rem;
+            border-radius: 999px; border: 2px solid #dc2626; background: #fff; color: #dc2626;
+            font-weight: 700; font-size: 0.9rem; text-decoration: none;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15); transition: background 0.15s, color 0.15s;
+        }
+        .live-report-dl a:hover, .live-report-dl a:focus-visible { background: #dc2626; color: #fff; outline: none; }
+        .live-report-dl--panel { margin: 0.5rem 0 0; justify-content: flex-start; }
+        .live-winner-screen--cannon .live-report-dl,
+        .live-winner-screen--lanterns .live-report-dl {
+            background: rgba(255, 255, 255, 0.92); border-radius: 999px; padding: 0.4rem 0.6rem 0.4rem 1rem;
+            width: max-content; max-width: 100%; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        }
+        .live-winner-screen--cannon .live-report-dl__label,
+        .live-winner-screen--cannon .live-report-dl a { font-size: 1.15rem; }
         .live-winner-cup {
             font-size: clamp(5rem, 22vw, 9rem); line-height: 1; margin-bottom: 0.5rem;
             filter: drop-shadow(0 8px 24px rgba(212, 160, 23, 0.45));
@@ -4997,6 +5018,7 @@
                         <div class="btn-group lsr-actions">
                             <button type="button" id="live-host-start" class="btn btn-blue lsr-start" disabled>Start game (need 2+ players)</button>
                             <button type="button" id="live-host-play-again" class="btn btn-blue lsr-again" hidden>Play again</button>
+                            <div id="live-host-report" class="live-report-dl live-report-dl--panel" hidden></div>
                             <button type="button" id="live-host-end" class="btn btn-grey lsr-end">End game</button>
                         </div>
                     </div>

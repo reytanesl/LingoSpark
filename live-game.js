@@ -1,3 +1,4 @@
+import { initReportStats, noteQuestionSent, noteAnswer, noteChallengeAccepted, buildGameReport } from './game-report.js';
 import crypto from 'crypto';
 import {
     buildChoices,
@@ -545,6 +546,19 @@ export function normalizeQuestionSeconds(value) {
  * Defaults keep the old behaviour: Lucky Lanterns 20 s, the race formats untimed.
  */
 /** Host switch per game room: may players challenge a typed answer marked wrong? Default on. */
+/** Build (and keep on the room) the report of the game that just finished. */
+export function finalizeGameReport(room) {
+    try {
+        return buildGameReport(room, gameFinishedPayload(room), {
+            questionSeconds: room.questionSeconds || questionSecondsForRoom(room) || null,
+            challengesEnabled: challengesEnabled(room),
+        });
+    } catch (err) {
+        console.warn('game report failed:', err.message);
+        return null;
+    }
+}
+
 export function challengesEnabled(room) {
     return room?.challengesEnabled !== false;
 }
@@ -777,6 +791,12 @@ function ensurePlayerQuestionState(player, room) {
 }
 
 function playerQuestionPayload(player, room) {
+    const q = playerQuestionPayloadInner(player, room);
+    if (q && player) noteQuestionSent(room, player.id, `${q.questionId ?? ''}|${q.definition ?? ''}`);
+    return q;
+}
+
+function playerQuestionPayloadInner(player, room) {
     if (isWordCannon(room)) {
         const match = room.cannon;
         const q = cannonQuestionPayload(match, player.id);
@@ -1394,7 +1414,7 @@ export function sanitizeHostName(raw) {
     return cleaned.length >= 2 ? cleaned : null;
 }
 
-export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds, gameMinutes, challenges, hostName }) {
+export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, teamAssignment, lanternRounds, questionSeconds, gameMinutes, challenges, hostName, deckLabel }) {
     if (!deck || deck.length < LIVE_TERMS_TO_WIN) {
         throw new Error(`At least ${LIVE_TERMS_TO_WIN} terms with definitions are required.`);
     }
@@ -1427,6 +1447,8 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         lanternTimer: null,
         gameMinutes: normalizeGameMinutes(gameMinutes),
         challengesEnabled: challenges === undefined ? true : normalizeChallengesSetting(challenges),
+        deckLabel: String(deckLabel || '').trim().slice(0, 120) || null,
+        lastReport: null,
         cannon: null,
         cannonTimer: null,
     };
@@ -2393,7 +2415,15 @@ export function broadcastLobbyUpdate(code) {
     }
 }
 
-export function initLiveGame(io, { onGameEnd } = {}) {
+export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
+    // Every finish path calls onGameEnd: build the authoritative report first, then let the server save it.
+    const onGameEnd = (room) => {
+        if (room && room.reportStats && !room.reportStats.reported) {
+            room.reportStats.reported = true;
+            room.lastReport = finalizeGameReport(room);
+        }
+        if (onGameEndHook) onGameEndHook(room);
+    };
     liveIo = io;
     const housekeeping = setInterval(() => {
         const now = Date.now();
@@ -2638,6 +2668,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
             }
             try {
                 startGame(room);
+                initReportStats(room);
                 const progress = progressSnapshot(room);
                 io.to(`room:${room.code}`).emit('live:game-started', {
                     termsToWin: isLuckyLanterns(room) ? (room.lantern?.rounds || room.lanternRounds) : LIVE_TERMS_TO_WIN,
@@ -2699,6 +2730,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     const { result, shot } = submitCannonAnswer(
                         room.cannon, socket.data.playerId, text ?? answer, questionId ?? null, Date.now(),
                     );
+                    noteAnswer(room, socket.data.playerId, result);
                     socket.emit('live:answer-result', tagChallengeResult(room, result));
                     // A shot is news for the host right away; plain wrong answers can wait for the throttle.
                     afterCannonChange(io, room, onGameEnd, { immediate: Boolean(shot) });
@@ -2707,6 +2739,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 if (isLuckyLanterns(room)) {
                     if (!room.lantern) throw new Error('Lucky Lanterns has not started.');
                     const { result } = submitLanternAnswer(room.lantern, socket.data.playerId, text ?? answer, Date.now());
+                    noteAnswer(room, socket.data.playerId, { ...result, correctTerm: result.correctTerm || room.lantern.entry?.term });
                     if (result.challengeable && player) {
                         setPendingChallenge(player, {
                             term: room.lantern.entry.term,
@@ -2724,6 +2757,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     if (!team) throw new Error('You are not on a team.');
                     assertCurrentQuestion(room, team, questionId);
                     const result = submitTeamAnswer(room, socket.data.playerId, text ?? answer);
+                    noteAnswer(room, socket.data.playerId, result);
                     emitHostAnswerFeed(io, room, team, result);
                     deliverTeamAnswerResult(io, room, team, result);
 
@@ -2744,6 +2778,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                     if (!answerText) throw new Error('Choose an answer first.');
                     assertCurrentQuestion(room, team, questionId);
                     const result = processRelayAnswer(room, team, player, answerText);
+                    noteAnswer(room, socket.data.playerId, result);
                     emitHostAnswerFeed(io, room, team, result);
                     deliverTeamAnswerResult(io, room, team, result);
 
@@ -2760,6 +2795,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
 
                 assertCurrentQuestion(room, player, questionId);
                 const result = submitAnswer(room, socket.data.playerId, text ?? answer);
+                noteAnswer(room, socket.data.playerId, result);
                 if (player) emitHostAnswerFeed(io, room, player, result);
                 socket.emit('live:answer-result', tagChallengeResult(room, result));
 
@@ -2894,6 +2930,12 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                 const accept = payload.reject || payload.decline
                     ? false
                     : Boolean(payload.accept);
+                const reportChallenge = room.challenges.get(challengeId);
+                const noteAccepted = () => {
+                    if (accept && reportChallenge) {
+                        noteChallengeAccepted(room, reportChallenge.playerId || reportChallenge.entityId, reportChallenge.correctTerm);
+                    }
+                };
                 if (isWordCannon(room)) {
                     if (!room.cannon) throw new Error('Word Cannon Battle has not started.');
                     const challenge = room.challenges.get(challengeId);
@@ -2909,6 +2951,7 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                         accepted: accept,
                         entityId: challenge.entityId,
                     });
+                    noteAccepted();
                     afterCannonChange(io, room, onGameEnd, { immediate: Boolean(shot) });
                     return;
                 }
@@ -2928,10 +2971,12 @@ export function initLiveGame(io, { onGameEnd } = {}) {
                         accepted: accept,
                         entityId: challenge.entityId,
                     });
+                    noteAccepted();
                     afterLanternChange(io, room, onGameEnd);
                     return;
                 }
                 resolveChallenge(io, room, challengeId, accept, onGameEnd);
+                noteAccepted();
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
             }
