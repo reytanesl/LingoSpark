@@ -2577,6 +2577,25 @@
         .gaps-feedback-suggestion {
             color: #ea580c; font-weight: 700;
         }
+        .gaps-exam-task {
+            background: #fff; border: 2px solid rgba(1, 33, 105, 0.18); border-left: 5px solid var(--royal-blue);
+            border-radius: 12px; padding: 1rem 1.15rem; margin: 0 0 1rem; text-align: left;
+        }
+        .gaps-exam-task-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
+            margin-bottom: 0.55rem;
+        }
+        .gaps-exam-task-label {
+            margin: 0; font-family: var(--font-primary); font-weight: 800; color: var(--royal-blue); font-size: 0.95rem;
+        }
+        .gaps-exam-task-body {
+            margin: 0; color: var(--text-dark); font-size: 1.02rem; line-height: 1.55; white-space: pre-wrap;
+        }
+        .gaps-exam-task-body ul {
+            margin: 0.45rem 0 0; padding-left: 1.25rem;
+        }
+        .gaps-exam-task-body li { margin: 0.2rem 0; }
+        .gaps-exam-task[hidden] { display: none !important; }
 
         .dictation-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
 
@@ -4106,6 +4125,13 @@
             <div id="adv-gaps-loading" class="loading-spinner" style="display:none;"></div>
             <div id="adv-gaps-content">
                 <div class="pe-prompt-box" id="adv-gaps-meta" style="margin-bottom:0.75rem;">Choose New Text to start.</div>
+                <div class="gaps-exam-task" id="adv-gaps-task" hidden>
+                    <div class="gaps-exam-task-head">
+                        <p class="gaps-exam-task-label"><i class="fa-solid fa-clipboard-list"></i> Exam writing task</p>
+                        <button type="button" class="btn btn-outline" id="adv-gaps-task-lang-btn" style="padding:0.35rem 0.75rem;font-size:0.85rem;" hidden onclick="toggleAdvGapsTaskLang()">Show in Polish 🇵🇱</button>
+                    </div>
+                    <div class="gaps-exam-task-body" id="adv-gaps-task-body"></div>
+                </div>
                 <div class="e8-gaps-text" id="adv-gaps-text" aria-live="polite"></div>
                 <div class="e8-gaps-answers" id="adv-gaps-answers" hidden></div>
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkAdvGaps()" id="adv-gaps-check" disabled>Check answers</button>
@@ -4699,6 +4725,13 @@
             <div id="pe-e8-gaps-loading" class="loading-spinner" style="display:none;"></div>
             <div id="pe-e8-gaps-content">
                 <div class="pe-prompt-box" id="pe-e8-gaps-meta" style="margin-bottom:0.75rem;">Choose New Text to start.</div>
+                <div class="gaps-exam-task" id="pe-e8-gaps-task" hidden>
+                    <div class="gaps-exam-task-head">
+                        <p class="gaps-exam-task-label"><i class="fa-solid fa-clipboard-list"></i> Exam writing task / Polecenie</p>
+                        <button type="button" class="btn btn-outline" id="pe-e8-gaps-task-lang-btn" style="padding:0.35rem 0.75rem;font-size:0.85rem;" hidden onclick="togglePeE8GapsTaskLang()">Show in English</button>
+                    </div>
+                    <div class="gaps-exam-task-body" id="pe-e8-gaps-task-body"></div>
+                </div>
                 <div class="e8-gaps-text" id="pe-e8-gaps-text" aria-live="polite"></div>
                 <div class="e8-gaps-answers" id="pe-e8-gaps-answers" hidden></div>
                 <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeE8Gaps()" id="pe-e8-gaps-check" disabled>Check answers</button>
@@ -11786,6 +11819,58 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                 + '</ul>';
         }
 
+        function formatGapsExamTaskHtml(taskText, bullets) {
+            let html = '';
+            const main = String(taskText || '').trim();
+            if (main) html += `<div>${escapeHtml(main).replace(/\n/g, '<br>')}</div>`;
+            const pts = Array.isArray(bullets) ? bullets.map((b) => String(b || '').trim()).filter(Boolean) : [];
+            if (pts.length) {
+                html += '<ul>' + pts.map((b) => `<li>${escapeHtml(b)}</li>`).join('') + '</ul>';
+            }
+            return html;
+        }
+
+        function normalizeGapsExamTask(data) {
+            const bullets = Array.isArray(data?.bullets)
+                ? data.bullets.map((b) => String(b || '').trim()).filter(Boolean).slice(0, 5)
+                : [];
+            return {
+                taskEn: String(data?.taskEn || data?.task || '').trim(),
+                taskPl: String(data?.taskPl || '').trim(),
+                bullets
+            };
+        }
+
+        function paintGapsExamTask(opts) {
+            const {
+                wrapId, bodyId, langBtnId, taskEn, taskPl, bullets, preferLang
+            } = opts;
+            const wrap = document.getElementById(wrapId);
+            const body = document.getElementById(bodyId);
+            const langBtn = document.getElementById(langBtnId);
+            if (!wrap || !body) return;
+            const hasEn = !!taskEn;
+            const hasPl = !!taskPl;
+            if (!hasEn && !hasPl && !(bullets && bullets.length)) {
+                wrap.hidden = true;
+                body.innerHTML = '';
+                if (langBtn) langBtn.hidden = true;
+                return;
+            }
+            wrap.hidden = false;
+            const canToggle = hasEn && hasPl;
+            let lang = preferLang || (hasPl ? 'pl' : 'en');
+            if (lang === 'pl' && !hasPl) lang = 'en';
+            if (lang === 'en' && !hasEn) lang = 'pl';
+            const text = lang === 'pl' ? (taskPl || taskEn) : (taskEn || taskPl);
+            body.innerHTML = formatGapsExamTaskHtml(text, bullets);
+            if (langBtn) {
+                langBtn.hidden = !canToggle;
+                langBtn.dataset.lang = lang;
+                langBtn.textContent = lang === 'pl' ? 'Show in English' : 'Show in Polish 🇵🇱';
+            }
+        }
+
         function getAdvGapsLevel() {
             return getAdvGapsRadio('adv-gaps-play-level', getAdvGapsRadio('adv-gaps-setup-level', 'B1'));
         }
@@ -11837,6 +11922,22 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             }));
         }
 
+        function toggleAdvGapsTaskLang() {
+            if (!advGapsTask) return;
+            const btn = document.getElementById('adv-gaps-task-lang-btn');
+            const next = (btn && btn.dataset.lang === 'en') ? 'pl' : 'en';
+            advGapsTask.taskLang = next;
+            paintGapsExamTask({
+                wrapId: 'adv-gaps-task',
+                bodyId: 'adv-gaps-task-body',
+                langBtnId: 'adv-gaps-task-lang-btn',
+                taskEn: advGapsTask.taskEn,
+                taskPl: advGapsTask.taskPl,
+                bullets: advGapsTask.bullets,
+                preferLang: next
+            });
+        }
+
         function renderAdvGapsTask(task) {
             const textEl = document.getElementById('adv-gaps-text');
             const answersEl = document.getElementById('adv-gaps-answers');
@@ -11848,6 +11949,15 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             const genreLabel = ADV_GAPS_GENRES[task.genreKey]?.label || task.genre || 'exam text';
             meta.innerHTML = `<strong>[${escapeHtml(kind)} · ${escapeHtml(task.level || 'B1')}]</strong> ${escapeHtml(genreLabel)}`
                 + (task.title ? ` — ${escapeHtml(task.title)}` : '');
+            paintGapsExamTask({
+                wrapId: 'adv-gaps-task',
+                bodyId: 'adv-gaps-task-body',
+                langBtnId: 'adv-gaps-task-lang-btn',
+                taskEn: task.taskEn,
+                taskPl: task.taskPl,
+                bullets: task.bullets,
+                preferLang: task.taskLang || 'en'
+            });
 
             const gaps = Array.isArray(task.gaps) ? task.gaps : [];
             const parts = Array.isArray(task.parts) ? task.parts : [];
@@ -11896,6 +12006,10 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             const feedback = document.getElementById('adv-gaps-feedback');
             if (feedback) feedback.textContent = '';
             syncAdvGapsInstructions();
+            paintGapsExamTask({
+                wrapId: 'adv-gaps-task', bodyId: 'adv-gaps-task-body', langBtnId: 'adv-gaps-task-lang-btn',
+                taskEn: '', taskPl: '', bullets: []
+            });
             const mode = getAdvGapsMode();
             const genreKey = getAdvGapsGenre();
             const genre = ADV_GAPS_GENRES[genreKey] || ADV_GAPS_GENRES['for-against'];
@@ -11908,6 +12022,12 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                 ? `TOPIC (required): Write specifically about "${userTopic}". Do not switch to a different theme.`
                 : `RANDOMISE HARD — seed ${R.seed}. Topic angle: ${R.topic} / ${R.angle}. Invent a fresh topic every time (education, environment, technology, health, culture, work, travel, media…).`;
 
+            const taskRule = `EXAM WRITING TASK (required): Also invent a realistic exam-style writing brief that this finished text would answer.
+  - taskEn: English polecenie / writing task (situation + what to include).
+  - taskPl: Polish translation of the same brief (for bilingual display).
+  - bullets: 3–4 short content points the writer must cover (English), matching what the model text actually includes.
+  - The gapped text MUST clearly address the task and all bullets.`;
+
             let prompt;
             if (mode === 'sentences') {
                 prompt = `Create ONE English exam-style text for CEFR ${L.label} with MISSING SENTENCES.
@@ -11915,6 +12035,7 @@ TEXT TYPE (required): ${genre.prompt}
 LEVEL RULES: ${L.vocab}
 TARGET LENGTH: ${L.length}
 ${topicRule}
+${taskRule}
 STRUCTURE:
   - Provide "parts" as text fragments that ALTERNATE with missing sentences.
   - parts.length must be gaps.length + 1.
@@ -11923,13 +12044,14 @@ STRUCTURE:
   - The student writes ONE full English sentence per gap — model answers should match ${L.label} quality.
   - Keep authentic exam register for this text type.
 Return ONLY JSON:
-{"mode":"sentences","genre":"${genre.label}","title":"short topic title","parts":["…","…"],"gaps":[{"n":1,"answer":"Model sentence.","alts":["optional"],"role":"why it fits"}]}`;
+{"mode":"sentences","genre":"${genre.label}","title":"short topic title","taskEn":"English exam brief…","taskPl":"Polskie polecenie…","bullets":["point 1","point 2","point 3"],"parts":["…","…"],"gaps":[{"n":1,"answer":"Model sentence.","alts":["optional"],"role":"why it fits"}]}`;
             } else {
                 prompt = `Create ONE English exam-style text for CEFR ${L.label} with TRANSLATION GAPS.
 TEXT TYPE (required): ${genre.prompt}
 LEVEL RULES: ${L.vocab}
 TARGET LENGTH: ${L.length}
 ${topicRule}
+${taskRule}
 STRUCTURE:
   - Provide "parts" as text fragments alternating with gaps.
   - parts.length must be gaps.length + 1.
@@ -11940,7 +12062,7 @@ STRUCTURE:
   - Gaps must fit grammar (articles, prepositions, verb forms, discourse markers as needed).
   - Prefer useful exam language: linkers, formal phrases, topic vocabulary.
 Return ONLY JSON:
-{"mode":"translate","genre":"${genre.label}","title":"short topic title","parts":["…","…"],"gaps":[{"n":1,"pl":"z drugiej strony","answer":"on the other hand","alts":["however"]},{"n":2,"pl":"składać wniosek","answer":"submit an application","alts":["apply"]}]}`;
+{"mode":"translate","genre":"${genre.label}","title":"short topic title","taskEn":"English exam brief…","taskPl":"Polskie polecenie…","bullets":["point 1","point 2","point 3"],"parts":["…","…"],"gaps":[{"n":1,"pl":"z drugiej strony","answer":"on the other hand","alts":["however"]},{"n":2,"pl":"składać wniosek","answer":"submit an application","alts":["apply"]}]}`;
             }
 
             const data = await fetchGenerativeAI(prompt);
@@ -11955,12 +12077,17 @@ Return ONLY JSON:
                 if (check) check.disabled = true;
                 return;
             }
+            const examTask = normalizeGapsExamTask(data);
             advGapsTask = {
                 mode,
                 level: L.label,
                 genreKey,
                 genre: data.genre || genre.label,
                 title: data.title || '',
+                taskEn: examTask.taskEn,
+                taskPl: examTask.taskPl,
+                bullets: examTask.bullets,
+                taskLang: 'en',
                 parts: data.parts,
                 gaps: data.gaps.map((g, i) => ({
                     n: g.n != null ? Number(g.n) : (i + 1),
@@ -11997,13 +12124,19 @@ Return ONLY JSON:
                 alts: g.alts || [],
                 role: g.role || undefined
             }));
+            const examBrief = [
+                advGapsTask.taskEn || '',
+                (advGapsTask.bullets && advGapsTask.bullets.length) ? `Content points: ${advGapsTask.bullets.join(' | ')}` : ''
+            ].filter(Boolean).join('\n');
             const prompt = `CEFR ${advGapsTask.level} ESL/exam check for Advanced Text Gaps (${advGapsTask.mode}).
 ${PE_TYPEIN_RULE}
 Text type: ${advGapsTask.genre}. Title: ${advGapsTask.title || 'n/a'}.
+Exam writing task this text answers:
+${examBrief || 'n/a'}
 Full text parts (gaps between): ${JSON.stringify(advGapsTask.parts)}
 Gap key: ${JSON.stringify(gapKey)}
 Student answers: ${JSON.stringify(student)}
-Mark each gap for correctness AND relevance/cohesion in this ${advGapsTask.genre}.
+Mark each gap for correctness AND relevance/cohesion in this ${advGapsTask.genre}, considering the exam writing task above.
 - Translate mode: accept expected, alts, and other natural English translations of the Polish cue that fit register and grammar.
 - Sentences mode: accept expected/alts and other coherent sentences that keep logic, register, and cohesion (not word-for-word).
 Be specific and encouraging. valid=true if most gaps are good; points 0–60.
@@ -12091,6 +12224,22 @@ Return ONLY JSON:
             }));
         }
 
+        function togglePeE8GapsTaskLang() {
+            if (!peE8GapsTask) return;
+            const btn = document.getElementById('pe-e8-gaps-task-lang-btn');
+            const next = (btn && btn.dataset.lang === 'en') ? 'pl' : 'en';
+            peE8GapsTask.taskLang = next;
+            paintGapsExamTask({
+                wrapId: 'pe-e8-gaps-task',
+                bodyId: 'pe-e8-gaps-task-body',
+                langBtnId: 'pe-e8-gaps-task-lang-btn',
+                taskEn: peE8GapsTask.taskEn,
+                taskPl: peE8GapsTask.taskPl,
+                bullets: peE8GapsTask.bullets,
+                preferLang: next
+            });
+        }
+
         function renderPeE8GapsTask(task) {
             const textEl = document.getElementById('pe-e8-gaps-text');
             const answersEl = document.getElementById('pe-e8-gaps-answers');
@@ -12106,6 +12255,15 @@ Return ONLY JSON:
                 + (peMode === 'custom' && Array.isArray(task.requiredWords) && task.requiredWords.length
                     ? `<br><small><strong>Required glossary words:</strong> ${task.requiredWords.map(escapeHtml).join(', ')}</small>`
                     : '');
+            paintGapsExamTask({
+                wrapId: 'pe-e8-gaps-task',
+                bodyId: 'pe-e8-gaps-task-body',
+                langBtnId: 'pe-e8-gaps-task-lang-btn',
+                taskEn: task.taskEn,
+                taskPl: task.taskPl,
+                bullets: task.bullets,
+                preferLang: task.taskLang || 'pl'
+            });
 
             const gaps = Array.isArray(task.gaps) ? task.gaps : [];
             const parts = Array.isArray(task.parts) ? task.parts : [];
@@ -12159,6 +12317,10 @@ Return ONLY JSON:
             if (feedback) feedback.textContent = '';
             syncPeLevelBadges();
             syncPeE8GapsInstructions();
+            paintGapsExamTask({
+                wrapId: 'pe-e8-gaps-task', bodyId: 'pe-e8-gaps-task-body', langBtnId: 'pe-e8-gaps-task-lang-btn',
+                taskEn: '', taskPl: '', bullets: []
+            });
             const mode = getPeE8GapsMode();
             peToggleLoading('pe-e8-gaps', true);
             const L = peLevelGuide();
@@ -12172,6 +12334,13 @@ Return ONLY JSON:
                 ? `TOPIC (required): Write specifically about "${userTopic}". Do not switch to a different theme.`
                 : `RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.`;
 
+            const taskRule = `EXAM WRITING TASK / POLECENIE (required): Also invent a realistic E8 egzamin ósmoklasisty writing brief that this finished text would answer.
+  - taskEn: English version of the polecenie (situation + what to include).
+  - taskPl: Polish polecenie (primary display language for E8) — faithful translation of taskEn.
+  - bullets: 3–4 short content points the writer must cover (English), matching what the model text actually includes.
+  - Typical E8 style: write an email/message/note to a friend covering specific points (e.g. invite, explain why, ask about…).
+  - The gapped text MUST clearly address the task and all bullets.`;
+
             let prompt;
             if (mode === 'sentences') {
                 prompt = `Create ONE short E8-style (Polish egzamin ósmoklasisty writing) English text for CEFR ${L.label} with MISSING SENTENCES.
@@ -12179,21 +12348,25 @@ SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
 E8 GAPS RULES: ${L.e8Gaps || ''}
 TEXT TYPE: a short email, message to a friend, or note (NOT a full essay). About 80–140 words when complete.
+${topicRule}
+${taskRule}
+${customRule}
 STRUCTURE: Provide "parts" as an array of text fragments that ALTERNATE with missing sentences.
   - parts.length must be gaps.length + 1 (text before first gap, between gaps, and after last gap).
   - Insert 3 or 4 missing sentences (gaps).
   - Each gap needs a clear cohesive role (reason, result, extra detail, polite closing line, etc.).
   - The student will write ONE full English sentence per gap.
-${topicRule}
-${customRule}
 Return ONLY JSON:
-{"mode":"sentences","genre":"email|message|note","title":"short topic label","parts":["text before gap1","text between…","text after last"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
+{"mode":"sentences","genre":"email|message|note","title":"short topic label","taskEn":"English exam brief…","taskPl":"Polskie polecenie…","bullets":["point 1","point 2","point 3"],"parts":["text before gap1","text between…","text after last"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
             } else {
                 prompt = `Create ONE short E8-style (Polish egzamin ósmoklasisty writing) English text for CEFR ${L.label} with TRANSLATION GAPS.
 SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
 E8 GAPS RULES: ${L.e8Gaps || ''}
 TEXT TYPE: a short email, message to a friend, or note (NOT a full essay). About 70–120 words with gaps filled.
+${topicRule}
+${taskRule}
+${customRule}
 STRUCTURE: Provide "parts" as text fragments alternating with gaps.
   - parts.length must be gaps.length + 1.
   - Create 5 or 6 gaps.
@@ -12203,10 +12376,8 @@ STRUCTURE: Provide "parts" as text fragments alternating with gaps.
   - Polish cues = natural school Polish words OR short phrases — NEVER full sentences.
   - answer = best English translation for that gap in context (a word OR a short English phrase matching the Polish cue); alts = other acceptable English forms.
   - Gaps must fit grammatically in the English sentence (articles, prepositions, verb forms, word order as needed in the answer).
-${topicRule}
-${customRule}
 Return ONLY JSON:
-{"mode":"translate","genre":"email|message|note","title":"short topic label","parts":["Yesterday I went to the "," with my class. We want to "," soon."],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]},{"n":3,"pl":"w przyszłym tygodniu","answer":"next week","alts":["in the next week"]}]}`;
+{"mode":"translate","genre":"email|message|note","title":"short topic label","taskEn":"English exam brief…","taskPl":"Polskie polecenie…","bullets":["point 1","point 2","point 3"],"parts":["Yesterday I went to the "," with my class. We want to "," soon."],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]},{"n":3,"pl":"w przyszłym tygodniu","answer":"next week","alts":["in the next week"]}]}`;
             }
 
             const data = await fetchGenerativeAI(prompt);
@@ -12221,10 +12392,15 @@ Return ONLY JSON:
                 if (check) check.disabled = true;
                 return;
             }
+            const examTask = normalizeGapsExamTask(data);
             peE8GapsTask = {
                 mode,
                 genre: data.genre || 'exam text',
                 title: data.title || '',
+                taskEn: examTask.taskEn,
+                taskPl: examTask.taskPl,
+                bullets: examTask.bullets,
+                taskLang: 'pl',
                 parts: data.parts,
                 gaps: data.gaps.map((g, i) => ({
                     n: g.n != null ? Number(g.n) : (i + 1),
@@ -12263,14 +12439,20 @@ Return ONLY JSON:
                 alts: g.alts || [],
                 role: g.role || undefined
             }));
+            const examBrief = [
+                peE8GapsTask.taskPl || peE8GapsTask.taskEn || '',
+                (peE8GapsTask.bullets && peE8GapsTask.bullets.length) ? `Content points: ${peE8GapsTask.bullets.join(' | ')}` : ''
+            ].filter(Boolean).join('\n');
             const prompt = `CEFR ${L.label} ESL check for E8 Text Gaps (${peE8GapsTask.mode}).
 ${PE_TYPEIN_RULE}
 Task genre: ${peE8GapsTask.genre}. Title: ${peE8GapsTask.title || 'n/a'}.
+Exam writing task / polecenie this text answers:
+${examBrief || 'n/a'}
 Full text parts (in order, gaps between): ${JSON.stringify(peE8GapsTask.parts)}
 Gap key: ${JSON.stringify(gapKey)}
 Student answers: ${JSON.stringify(student)}
 ${peMode === 'custom' ? `CUSTOM: prefer answers that fit glossary words ${JSON.stringify(peE8GapsTask.requiredWords || [])} when relevant.` : ''}
-Mark each gap for correctness AND relevance/cohesion in context.
+Mark each gap for correctness AND relevance/cohesion in context, considering the exam writing task above.
 - Translate mode: cues may be single words OR short phrases. Accept expected answer, listed alts, and other natural English translations (word or short phrase) of the Polish cue that fit grammar/context. Do not demand only one-word answers when the cue is a phrase.
 - Sentences mode: accept expected/alts and other coherent sentences that keep logic and cohesion (do not require word-for-word match).
 Be encouraging and specific. Prefer partial credit: valid=true if most gaps are good; points 0–50.
