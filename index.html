@@ -1389,6 +1389,8 @@
             margin-left: auto; background: rgba(212, 160, 23, 0.2) !important;
             border-color: #d4a017 !important; color: #8a6914 !important;
         }
+        /* `.btn` sets display:inline-flex, which would otherwise override the hidden attribute. */
+        #vocab-setup-live-btn[hidden] { display: none !important; }
         #live-confetti-canvas {
             position: fixed; inset: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 9999; display: none;
@@ -2538,7 +2540,13 @@
             display: inline-flex; align-items: baseline; gap: 0.25rem; margin: 0 0.1rem;
             vertical-align: baseline;
         }
-        .e8-gaps-blank .dictation-gap-input { min-width: 6.5rem; max-width: 14rem; }
+        .e8-gaps-blank .dictation-gap-input {
+            min-width: 7rem; max-width: min(22rem, 100%); width: auto;
+            field-sizing: content;
+        }
+        .e8-gaps-blank .dictation-gap-input.e8-gaps-input--phrase {
+            min-width: 10rem; max-width: min(28rem, 100%);
+        }
         .e8-gaps-pl {
             font-size: 0.88rem; color: var(--text-muted); font-weight: 600; white-space: nowrap;
         }
@@ -3221,7 +3229,7 @@
                 <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, or upload a photo/PDF of a real exam task (and optionally your handwritten email), then get AI examiner feedback.</p></div>
-                <div class="guide-item"><strong>E8 Text Gaps</strong><p>Two E8-style writing drills: translate Polish cues in brackets into English gaps in the text, or restore missing sentences for cohesion. Cursor AI checks your answers and gives feedback.</p></div>
+                <div class="guide-item"><strong>E8 Text Gaps</strong><p>Two E8-style writing drills: translate Polish words or short phrases in brackets into English gaps in the text, or restore missing sentences for cohesion. Cursor AI checks your answers and gives feedback.</p></div>
                 <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
                 <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Creator mode also has to be (am / is / are), and / or, question words, and . or ?. Ages 10–12 add play/do/go collocations, daily routines, parts of the day, and telling the time. Fill the gaps: drag tiles into blanks. When you choose singular or plural, the plural form is shown and spoken. Persons: I, You, We, They, He, She. Things are grouped (food, furniture, school…). Line Up: drag pictured tiles onto numbered boxes. Switch EN | PL for help. Signed-in players collect each correct sentence in a Colour Blocks set.</p></div>
                 <div class="guide-item"><strong>Vocab Scenes</strong><p>Interactive classroom scenes — tap objects to see and hear words. Labels, Sound and Quiz toggles in the toolbar. Opens in a new tab — free to play.</p></div>
@@ -3778,7 +3786,7 @@
                             <label class="setup-choice">
                                 <input type="radio" name="e8-gaps-setup-mode" value="translate" checked>
                                 <span class="setup-choice-title">Translate gaps</span>
-                                <span class="setup-choice-desc">Fill gaps using the Polish words/phrases in brackets</span>
+                                <span class="setup-choice-desc">Translate Polish words or short phrases in brackets into English</span>
                             </label>
                             <label class="setup-choice">
                                 <input type="radio" name="e8-gaps-setup-mode" value="sentences">
@@ -4664,7 +4672,7 @@
                         <label class="setup-choice">
                             <input type="radio" name="e8-gaps-play-mode" value="translate" checked onchange="syncPeE8GapsInstructions()">
                             <span class="setup-choice-title">Translate gaps</span>
-                            <span class="setup-choice-desc">Polish cues in brackets → English</span>
+                            <span class="setup-choice-desc">Polish words or short phrases → English</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="e8-gaps-play-mode" value="sentences" onchange="syncPeE8GapsInstructions()">
@@ -4683,8 +4691,8 @@
                         <strong>Instructions</strong>
                         <button type="button" class="pe-flag-btn" title="Polish instructions" onclick="togglePePolish(this)">🇵🇱</button>
                     </div>
-                    <div class="pe-instr-en" id="pe-e8-gaps-instr-en">Read the exam-style text and fill each gap with the English translation of the Polish word or phrase in brackets. Then submit for Cursor AI feedback.</div>
-                    <div class="pe-instr-pl" id="pe-e8-gaps-instr-pl">Przeczytaj tekst egzaminacyjny i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub zwrotu w nawiasie. Potem wyślij odpowiedzi do oceny Cursor AI.</div>
+                    <div class="pe-instr-en" id="pe-e8-gaps-instr-en">Read the exam-style text and fill each gap with the English translation of the Polish word or short phrase in brackets (e.g. a noun, verb, or 2–4 word expression). Then submit for Cursor AI feedback.</div>
+                    <div class="pe-instr-pl" id="pe-e8-gaps-instr-pl">Przeczytaj tekst egzaminacyjny i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie (np. rzeczownik, czasownik albo wyrażenie 2–4 wyrazowe). Potem wyślij odpowiedzi do oceny Cursor AI.</div>
                 </div>
             </div>
         </div>
@@ -7919,6 +7927,7 @@
             }
             if (gameType === 'flashcard') updateFlashcardSetupUI();
 
+            // Host Live Spark with this list — Vocab Review practice games only (not Odyssey / Writing / PE).
             const liveBtn = document.getElementById('vocab-setup-live-btn');
             if (liveBtn) liveBtn.hidden = !vocabGames.includes(gameType);
 
@@ -11029,7 +11038,7 @@ Return ONLY JSON:
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before'],
                 exam: 'Email task for Polish school A2 / E8-style: 50–120 words, 3 bullet points about everyday life (school, friends, plans). Do not require advanced vocabulary.',
                 examWords: { min: 50, max: 120 },
-                e8Gaps: 'E8-style short writing text (email, message, or short note) about everyday school life. Gaps use familiar A2 vocabulary (places, routines, feelings, plans). Prefer clear school English over rare words.'
+                e8Gaps: 'E8-style short writing text (email, message, or short note) about everyday school life. Translation gaps mix single words AND short phrases (2–4 words / common collocations). Familiar A2 vocabulary (places, routines, feelings, plans). Prefer clear school English over rare words.'
             },
             B1: {
                 label: 'B1',
@@ -11042,7 +11051,7 @@ Return ONLY JSON:
                 linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'however', 'while', 'if', 'therefore'],
                 exam: 'Email or short message for gentle B1 / E8+ style: 50–120 words, 3–4 content points. Prefer clear accessible vocabulary over advanced wording.',
                 examWords: { min: 50, max: 120 },
-                e8Gaps: 'E8+/gentle B1 writing text with richer opinions or plans, still learner-friendly. Gaps can include common collocations and polite phrases — not academic C1 wording.'
+                e8Gaps: 'E8+/gentle B1 writing text with richer opinions or plans, still learner-friendly. Translation gaps mix single words AND short phrases (2–4 words), including common collocations and polite expressions — not academic C1 wording.'
             }
         };
 
@@ -11074,7 +11083,7 @@ Return ONLY JSON:
                     linkers: ['because', 'so', 'and', 'but', 'when', 'after', 'before', 'although', 'if'],
                     exam: 'Exam email format required: clear instruction, explicit word count, bullet points, sign as XYZ. Enforce task guidelines strictly.',
                     examWords: { min: 50, max: 120 },
-                    e8Gaps: 'Custom vocabulary mode. Keep an E8-style text but weave required glossary words into gaps or missing sentences naturally.'
+                    e8Gaps: 'Custom vocabulary mode. Keep an E8-style text but weave required glossary words into gaps or missing sentences naturally. Translation gaps may be single words or short phrases.'
                 };
             }
             return PE_CEFR[peCefrLevel] || PE_CEFR.A2;
@@ -12063,8 +12072,8 @@ Return ONLY JSON:
                 if (en) en.textContent = 'Read the exam-style text. Numbered gaps mark missing sentences. Write one suitable English sentence in each box below so the text stays cohesive and logical. Then submit for Cursor AI feedback.';
                 if (pl) pl.textContent = 'Przeczytaj tekst egzaminacyjny. Numerowane luki oznaczają brakujące zdania. Wpisz w każdym polu poniżej jedno pasujące zdanie po angielsku, zachowując spójność i logikę. Potem wyślij odpowiedzi do oceny Cursor AI.';
             } else {
-                if (en) en.textContent = 'Read the exam-style text and fill each gap with the English translation of the Polish word or phrase in brackets. Then submit for Cursor AI feedback.';
-                if (pl) pl.textContent = 'Przeczytaj tekst egzaminacyjny i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub zwrotu w nawiasie. Potem wyślij odpowiedzi do oceny Cursor AI.';
+                if (en) en.textContent = 'Read the exam-style text and fill each gap with the English translation of the Polish word or short phrase in brackets (single words and 2–4 word expressions both count). Then submit for Cursor AI feedback.';
+                if (pl) pl.textContent = 'Przeczytaj tekst egzaminacyjny i uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie (pojedyncze słowa i wyrażenia 2–4 wyrazowe). Potem wyślij odpowiedzi do oceny Cursor AI.';
             }
         }
 
@@ -12129,9 +12138,13 @@ Return ONLY JSON:
                     if (i < gaps.length) {
                         const g = gaps[i] || {};
                         const num = g.n != null ? g.n : (i + 1);
-                        const pl = escapeHtml(String(g.pl || ''));
+                        const plRaw = String(g.pl || '');
+                        const pl = escapeHtml(plRaw);
+                        const isPhrase = plRaw.trim().split(/\s+/).length > 1 || plRaw.length > 12;
+                        const sizeClass = isPhrase ? ' e8-gaps-input--phrase' : '';
+                        const sizeHint = Math.min(28, Math.max(8, Math.ceil(plRaw.length * 0.7) + (isPhrase ? 6 : 2)));
                         html += `<span class="e8-gaps-blank">`
-                            + `<input type="text" class="dictation-gap-input e8-gaps-input" data-gap-n="${num}" autocomplete="off" aria-label="Gap ${num}: translate ${pl}">`
+                            + `<input type="text" class="dictation-gap-input e8-gaps-input${sizeClass}" data-gap-n="${num}" size="${sizeHint}" autocomplete="off" aria-label="Gap ${num}: translate ${pl}">`
                             + `<span class="e8-gaps-pl">(${pl})</span>`
                             + `</span>`;
                     }
@@ -12185,13 +12198,15 @@ STRUCTURE: Provide "parts" as text fragments alternating with gaps.
   - parts.length must be gaps.length + 1.
   - Create 5 or 6 gaps.
   - Each gap: Polish cue (pl) that the student translates into English in the blank.
-  - Polish cues must be natural school Polish (nouns, verbs, short phrases) — NOT full sentences.
-  - answer = best English translation for that gap in context; alts = other acceptable English forms.
-  - Gaps must fit grammatically in the English sentence (articles, prepositions, verb forms as needed in the answer).
+  - Mix BOTH single words AND short phrases: at least 2 gaps must be short phrases (2–4 Polish words / common expressions), and at least 2 gaps single words.
+  - Good phrase examples: "napisać wiadomość", "iść piechotą", "w przyszłym tygodniu", "dobrze się bawić", "być zmęczonym".
+  - Polish cues = natural school Polish words OR short phrases — NEVER full sentences.
+  - answer = best English translation for that gap in context (a word OR a short English phrase matching the Polish cue); alts = other acceptable English forms.
+  - Gaps must fit grammatically in the English sentence (articles, prepositions, verb forms, word order as needed in the answer).
 ${topicRule}
 ${customRule}
 Return ONLY JSON:
-{"mode":"translate","genre":"email|message|note","title":"short topic label","parts":["Yesterday I went to the "," with my class."],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]}]}`;
+{"mode":"translate","genre":"email|message|note","title":"short topic label","parts":["Yesterday I went to the "," with my class. We want to "," soon."],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]},{"n":3,"pl":"w przyszłym tygodniu","answer":"next week","alts":["in the next week"]}]}`;
             }
 
             const data = await fetchGenerativeAI(prompt);
@@ -12256,12 +12271,12 @@ Gap key: ${JSON.stringify(gapKey)}
 Student answers: ${JSON.stringify(student)}
 ${peMode === 'custom' ? `CUSTOM: prefer answers that fit glossary words ${JSON.stringify(peE8GapsTask.requiredWords || [])} when relevant.` : ''}
 Mark each gap for correctness AND relevance/cohesion in context.
-- Translate mode: accept expected answer, listed alts, and other natural English translations of the Polish cue that fit grammar/context.
+- Translate mode: cues may be single words OR short phrases. Accept expected answer, listed alts, and other natural English translations (word or short phrase) of the Polish cue that fit grammar/context. Do not demand only one-word answers when the cue is a phrase.
 - Sentences mode: accept expected/alts and other coherent sentences that keep logic and cohesion (do not require word-for-word match).
 Be encouraging and specific. Prefer partial credit: valid=true if most gaps are good; points 0–50.
-For each WRONG item include "suggestion": the best corrected English answer (word/phrase or full sentence). Keep "note" as brief explanation only — put the model answer in "suggestion", not in "note".
+For each WRONG item include "suggestion": the best corrected English answer (word, short phrase, or full sentence). Keep "note" as brief explanation only — put the model answer in "suggestion", not in "note".
 Return ONLY JSON:
-{"valid":true/false,"points":40,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Well done"},{"n":2,"ok":false,"note":"Wrong translation.","suggestion":"cinema"}]}`;
+{"valid":true/false,"points":40,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Well done"},{"n":2,"ok":false,"note":"Wrong translation.","suggestion":"write a message"}]}`;
             const data = await fetchGenerativeAI(prompt);
             if (checkBtn) checkBtn.disabled = false;
             if (!data || data.__error) {
