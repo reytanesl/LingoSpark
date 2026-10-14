@@ -2566,6 +2566,9 @@
         .e8-gaps-answer-input.dictation-gap-wrong {
             border-color: var(--pillarbox-red); background: rgba(200,16,46,0.08);
         }
+        .gaps-feedback-suggestion {
+            color: #ea580c; font-weight: 700;
+        }
 
         .dictation-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
 
@@ -3754,6 +3757,11 @@
                             </label>
                         </div>
                     </div>
+                    <div class="pe-setup-field">
+                        <label for="adv-gaps-setup-topic"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                        <input type="text" id="adv-gaps-setup-topic" placeholder="e.g. school uniforms, online learning, volunteering" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;" maxlength="120" autocomplete="off">
+                        <p class="pe-setup-hint">Leave blank for a random topic.</p>
+                    </div>
                 </div>
             </div>
 
@@ -3779,12 +3787,17 @@
                             </label>
                         </div>
                     </div>
+                    <div class="pe-setup-field">
+                        <label for="e8-gaps-setup-topic"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                        <input type="text" id="e8-gaps-setup-topic" placeholder="e.g. school trip, favourite hobby, weekend plans" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;" maxlength="120" autocomplete="off">
+                        <p class="pe-setup-hint">Leave blank for a random topic.</p>
+                    </div>
                 </div>
             </div>
 
             <div id="dictation-setup-note" class="form-group setup-note" style="display:none; background: rgba(0,130,59,0.07); border-color: rgba(0,130,59,0.18);">
                 <label style="color: var(--success-green);"><i class="fa-solid fa-headphones"></i> Dictation</label>
-                <p>Built-in sentence banks — no word list needed. Uses your browser’s text-to-speech (en-GB).</p>
+                <p>Built-in sentence banks — no word list needed. Uses your browser’s text-to-speech. Pick any English voice installed on this device.</p>
             </div>
 
             <div class="form-group" id="pe-dictation-settings" style="display: none;">
@@ -3811,6 +3824,13 @@
                                 <span class="setup-choice-desc">Fill missing verbs, adjectives, nouns, adverbs</span>
                             </label>
                         </div>
+                    </div>
+                    <div class="pe-setup-field">
+                        <label for="dictation-setup-voice"><i class="fa-solid fa-microphone-lines"></i> Voice</label>
+                        <select id="dictation-setup-voice" onchange="onDictationVoiceChange('setup')" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;">
+                            <option value="">Loading voices…</option>
+                        </select>
+                        <p class="pe-setup-hint">English voices available in this browser. Preference is saved on this device.</p>
                     </div>
                 </div>
             </div>
@@ -4059,6 +4079,11 @@
                             <span class="setup-choice-desc">Boxes under the text</span>
                         </label>
                     </div>
+                </div>
+                <div class="pe-setup-field" style="margin-bottom:0.85rem;">
+                    <label for="adv-gaps-play-topic" style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                    <input type="text" id="adv-gaps-play-topic" class="pe-input" placeholder="e.g. school uniforms, online learning" maxlength="120" autocomplete="off" style="margin-bottom:0.35rem;">
+                    <p class="pe-setup-hint" style="margin:0;">Leave blank for a random topic.</p>
                 </div>
                 <div class="pe-instr">
                     <div class="pe-instr-head">
@@ -4648,6 +4673,11 @@
                         </label>
                     </div>
                 </div>
+                <div class="pe-setup-field" style="margin-bottom:0.85rem;">
+                    <label for="e8-gaps-play-topic" style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+                    <input type="text" id="e8-gaps-play-topic" class="pe-input" placeholder="e.g. school trip, favourite hobby" maxlength="120" autocomplete="off" style="margin-bottom:0.35rem;">
+                    <p class="pe-setup-hint" style="margin:0;">Leave blank for a random topic.</p>
+                </div>
                 <div class="pe-instr">
                     <div class="pe-instr-head">
                         <strong>Instructions</strong>
@@ -4747,6 +4777,13 @@
             <div class="game-setup-panel">
                 <div class="game-setup-actions">
                     <button class="btn btn-outline" onclick="dictationNextSentence()" id="pe-dictation-btn">New sentence <i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div class="pe-setup-field" style="margin-bottom:0.85rem;">
+                    <label for="dictation-play-voice" style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-microphone-lines"></i> Voice</label>
+                    <select id="dictation-play-voice" onchange="onDictationVoiceChange('play')" style="width:100%; margin-top:0.4rem; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;">
+                        <option value="">Loading voices…</option>
+                    </select>
+                    <p class="pe-setup-hint" style="margin:0.35rem 0 0;">English voices from this browser. Preference is saved on this device.</p>
                 </div>
                 <div class="pe-instr" id="dictation-instr-listen">
                     <div class="pe-instr-head">
@@ -7795,6 +7832,7 @@
             document.getElementById('test-dir-settings').style.display = (hybridGames.includes(gameType) || gameType === 'test-countdown') ? 'none' : (vocabGames.includes(gameType) ? 'block' : 'none');
             document.getElementById('pe-dictation-settings').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
             document.getElementById('dictation-setup-note').style.display = (gameType === 'pe-dictation') ? 'block' : 'none';
+            if (gameType === 'pe-dictation') initDictationVoicePicker();
             const peE8GapsSettings = document.getElementById('pe-e8-gaps-settings');
             if (peE8GapsSettings) peE8GapsSettings.style.display = (gameType === 'pe-e8-gaps') ? 'block' : 'none';
             const e8GapsSetupNote = document.getElementById('e8-gaps-setup-note');
@@ -8041,6 +8079,9 @@
                 if (setupMode && playRadios.length) {
                     playRadios.forEach((r) => { r.checked = (r.value === setupMode.value); });
                 }
+                const setupTopic = document.getElementById('e8-gaps-setup-topic');
+                const playTopic = document.getElementById('e8-gaps-play-topic');
+                if (setupTopic && playTopic) playTopic.value = setupTopic.value || '';
                 initPeE8Gaps();
             }
             if(activeGame === 'pe-dictation') initPeDictation();
@@ -11709,8 +11750,31 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             setAdvGapsRadio('adv-gaps-play-level', getAdvGapsRadio('adv-gaps-setup-level', 'B1'));
             setAdvGapsRadio('adv-gaps-play-genre', getAdvGapsRadio('adv-gaps-setup-genre', 'for-against'));
             setAdvGapsRadio('adv-gaps-play-mode', getAdvGapsRadio('adv-gaps-setup-mode', 'translate'));
+            const setupTopic = document.getElementById('adv-gaps-setup-topic');
+            const playTopic = document.getElementById('adv-gaps-play-topic');
+            if (setupTopic && playTopic) playTopic.value = setupTopic.value || '';
             syncAdvGapsChrome();
             syncAdvGapsInstructions();
+        }
+
+        function getAdvGapsTopic() {
+            const play = document.getElementById('adv-gaps-play-topic');
+            const setup = document.getElementById('adv-gaps-setup-topic');
+            return String((play && play.value) || (setup && setup.value) || '').trim();
+        }
+
+        function formatGapsFeedbackItems(items) {
+            if (!items.length) return '';
+            return '<ul style="margin:0.65rem 0 0;padding-left:1.2rem;text-align:left;">'
+                + items.map((it) => {
+                    const mark = it.ok ? '✓' : '✗';
+                    const note = escapeHtml(it.note || '');
+                    const suggestion = !it.ok && it.suggestion
+                        ? ` <span class="gaps-feedback-suggestion">${escapeHtml(String(it.suggestion))}</span>`
+                        : '';
+                    return `<li><strong>(${escapeHtml(String(it.n))})</strong> ${mark} ${note}${suggestion}</li>`;
+                }).join('')
+                + '</ul>';
         }
 
         function getAdvGapsLevel() {
@@ -11830,6 +11894,10 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             peToggleLoading('adv-gaps', true);
             const R = peRandomnessBlock('exam');
             const gapCount = mode === 'sentences' ? L.gapsSentences : L.gapsTranslate;
+            const userTopic = getAdvGapsTopic();
+            const topicRule = userTopic
+                ? `TOPIC (required): Write specifically about "${userTopic}". Do not switch to a different theme.`
+                : `RANDOMISE HARD — seed ${R.seed}. Topic angle: ${R.topic} / ${R.angle}. Invent a fresh topic every time (education, environment, technology, health, culture, work, travel, media…).`;
 
             let prompt;
             if (mode === 'sentences') {
@@ -11837,6 +11905,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
 TEXT TYPE (required): ${genre.prompt}
 LEVEL RULES: ${L.vocab}
 TARGET LENGTH: ${L.length}
+${topicRule}
 STRUCTURE:
   - Provide "parts" as text fragments that ALTERNATE with missing sentences.
   - parts.length must be gaps.length + 1.
@@ -11844,7 +11913,6 @@ STRUCTURE:
   - Each gap needs a clear cohesive role (topic sentence, contrast, example, result, polite closing, etc.).
   - The student writes ONE full English sentence per gap — model answers should match ${L.label} quality.
   - Keep authentic exam register for this text type.
-RANDOMISE HARD — seed ${R.seed}. Topic angle: ${R.topic} / ${R.angle}. Invent a fresh prompt every time (education, environment, technology, health, culture, work, travel, media…).
 Return ONLY JSON:
 {"mode":"sentences","genre":"${genre.label}","title":"short topic title","parts":["…","…"],"gaps":[{"n":1,"answer":"Model sentence.","alts":["optional"],"role":"why it fits"}]}`;
             } else {
@@ -11852,6 +11920,7 @@ Return ONLY JSON:
 TEXT TYPE (required): ${genre.prompt}
 LEVEL RULES: ${L.vocab}
 TARGET LENGTH: ${L.length}
+${topicRule}
 STRUCTURE:
   - Provide "parts" as text fragments alternating with gaps.
   - parts.length must be gaps.length + 1.
@@ -11861,7 +11930,6 @@ STRUCTURE:
   - answer = best English form for that gap in context; alts = other acceptable English forms.
   - Gaps must fit grammar (articles, prepositions, verb forms, discourse markers as needed).
   - Prefer useful exam language: linkers, formal phrases, topic vocabulary.
-RANDOMISE HARD — seed ${R.seed}. Topic angle: ${R.topic} / ${R.angle}. Fresh topic every time.
 Return ONLY JSON:
 {"mode":"translate","genre":"${genre.label}","title":"short topic title","parts":["…","…"],"gaps":[{"n":1,"pl":"z drugiej strony","answer":"on the other hand","alts":["however"]},{"n":2,"pl":"składać wniosek","answer":"submit an application","alts":["apply"]}]}`;
             }
@@ -11930,8 +11998,9 @@ Mark each gap for correctness AND relevance/cohesion in this ${advGapsTask.genre
 - Translate mode: accept expected, alts, and other natural English translations of the Polish cue that fit register and grammar.
 - Sentences mode: accept expected/alts and other coherent sentences that keep logic, register, and cohesion (not word-for-word).
 Be specific and encouraging. valid=true if most gaps are good; points 0–60.
+For each WRONG item include "suggestion": the best corrected English answer (word/phrase or full sentence). Keep "note" as brief explanation only — put the model answer in "suggestion", not in "note".
 Return ONLY JSON:
-{"valid":true/false,"points":45,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Brief note"},{"n":2,"ok":false,"note":"What to fix"}]}`;
+{"valid":true/false,"points":45,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Well done"},{"n":2,"ok":false,"note":"Wrong linker.","suggestion":"on the other hand"}]}`;
             const data = await fetchGenerativeAI(prompt);
             if (checkBtn) checkBtn.disabled = false;
             if (!data || data.__error) {
@@ -11951,15 +12020,14 @@ Return ONLY JSON:
                 inp.classList.toggle('dictation-gap-wrong', !ok);
             });
 
+            items.forEach((it) => {
+                if (it.ok || it.suggestion) return;
+                const gap = (advGapsTask.gaps || []).find((g) => Number(g.n) === Number(it.n));
+                if (gap && gap.answer) it.suggestion = gap.answer;
+            });
+
             let html = escapeHtml(data.message || (data.valid ? 'Great work!' : 'Check the notes below and try again.'));
-            if (items.length) {
-                html += '<ul style="margin:0.65rem 0 0;padding-left:1.2rem;text-align:left;">'
-                    + items.map((it) => {
-                        const mark = it.ok ? '✓' : '✗';
-                        return `<li><strong>(${escapeHtml(String(it.n))})</strong> ${mark} ${escapeHtml(it.note || '')}</li>`;
-                    }).join('')
-                    + '</ul>';
-            }
+            html += formatGapsFeedbackItems(items);
             if (feedback) {
                 feedback.className = data.valid ? 'feedback success' : 'feedback error';
                 feedback.innerHTML = html;
@@ -11979,6 +12047,12 @@ Return ONLY JSON:
             if (play) return play.value === 'sentences' ? 'sentences' : 'translate';
             const setup = document.querySelector('input[name="e8-gaps-setup-mode"]:checked');
             return setup && setup.value === 'sentences' ? 'sentences' : 'translate';
+        }
+
+        function getPeE8GapsTopic() {
+            const play = document.getElementById('e8-gaps-play-topic');
+            const setup = document.getElementById('e8-gaps-setup-topic');
+            return String((play && play.value) || (setup && setup.value) || '').trim();
         }
 
         function syncPeE8GapsInstructions() {
@@ -12080,6 +12154,10 @@ Return ONLY JSON:
             const customRule = peMode === 'custom'
                 ? `CUSTOM VOCAB: weave these glossary words naturally into the text/gaps: ${requiredCustomWords.join(', ')}.`
                 : '';
+            const userTopic = getPeE8GapsTopic();
+            const topicRule = userTopic
+                ? `TOPIC (required): Write specifically about "${userTopic}". Do not switch to a different theme.`
+                : `RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.`;
 
             let prompt;
             if (mode === 'sentences') {
@@ -12093,7 +12171,7 @@ STRUCTURE: Provide "parts" as an array of text fragments that ALTERNATE with mis
   - Insert 3 or 4 missing sentences (gaps).
   - Each gap needs a clear cohesive role (reason, result, extra detail, polite closing line, etc.).
   - The student will write ONE full English sentence per gap.
-RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
+${topicRule}
 ${customRule}
 Return ONLY JSON:
 {"mode":"sentences","genre":"email|message|note","title":"short topic label","parts":["text before gap1","text between…","text after last"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
@@ -12110,7 +12188,7 @@ STRUCTURE: Provide "parts" as text fragments alternating with gaps.
   - Polish cues must be natural school Polish (nouns, verbs, short phrases) — NOT full sentences.
   - answer = best English translation for that gap in context; alts = other acceptable English forms.
   - Gaps must fit grammatically in the English sentence (articles, prepositions, verb forms as needed in the answer).
-RANDOMISE HARD — seed ${R.seed}. Topic: ${R.topic}. Angle: ${R.angle}.
+${topicRule}
 ${customRule}
 Return ONLY JSON:
 {"mode":"translate","genre":"email|message|note","title":"short topic label","parts":["Yesterday I went to the "," with my class."],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]}]}`;
@@ -12181,8 +12259,9 @@ Mark each gap for correctness AND relevance/cohesion in context.
 - Translate mode: accept expected answer, listed alts, and other natural English translations of the Polish cue that fit grammar/context.
 - Sentences mode: accept expected/alts and other coherent sentences that keep logic and cohesion (do not require word-for-word match).
 Be encouraging and specific. Prefer partial credit: valid=true if most gaps are good; points 0–50.
+For each WRONG item include "suggestion": the best corrected English answer (word/phrase or full sentence). Keep "note" as brief explanation only — put the model answer in "suggestion", not in "note".
 Return ONLY JSON:
-{"valid":true/false,"points":40,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Brief note"},{"n":2,"ok":false,"note":"What to fix / a better option"}]}`;
+{"valid":true/false,"points":40,"message":"Short overall feedback in English (1–3 sentences).","items":[{"n":1,"ok":true,"note":"Well done"},{"n":2,"ok":false,"note":"Wrong translation.","suggestion":"cinema"}]}`;
             const data = await fetchGenerativeAI(prompt);
             if (checkBtn) checkBtn.disabled = false;
             if (!data || data.__error) {
@@ -12202,15 +12281,15 @@ Return ONLY JSON:
                 inp.classList.toggle('dictation-gap-wrong', !ok);
             });
 
+            // If the model forgot "suggestion", fall back to the expected gap answer for wrong items.
+            items.forEach((it) => {
+                if (it.ok || it.suggestion) return;
+                const gap = (peE8GapsTask.gaps || []).find((g) => Number(g.n) === Number(it.n));
+                if (gap && gap.answer) it.suggestion = gap.answer;
+            });
+
             let html = escapeHtml(data.message || (data.valid ? 'Great work!' : 'Check the notes below and try again.'));
-            if (items.length) {
-                html += '<ul style="margin:0.65rem 0 0;padding-left:1.2rem;text-align:left;">'
-                    + items.map((it) => {
-                        const mark = it.ok ? '✓' : '✗';
-                        return `<li><strong>(${escapeHtml(String(it.n))})</strong> ${mark} ${escapeHtml(it.note || '')}</li>`;
-                    }).join('')
-                    + '</ul>';
-            }
+            html += formatGapsFeedbackItems(items);
             if (feedback) {
                 feedback.className = data.valid ? 'feedback success' : 'feedback error';
                 feedback.innerHTML = html;
@@ -12401,6 +12480,7 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
             a1: { label: 'A1 (Klasy 4–5)', badge: 'A1', rate: 0.88 },
             a2: { label: 'A2', badge: 'A2', rate: 0.95 }
         };
+        const DICTATION_VOICE_KEY = 'ls_dictation_voice';
 
         const DICTATION_STOPWORDS = new Set([
             'a', 'an', 'the', 'and', 'or', 'but', 'so', 'because', 'as', 'if', 'when', 'while', 'until', 'although', 'though',
@@ -12421,8 +12501,103 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
             gaps: [],
             sentenceCount: 0,
             listenRevealed: false,
-            gapChecked: false
+            gapChecked: false,
+            voiceURI: ''
         };
+
+        function dictationVoiceScore(v) {
+            const blob = `${v.name || ''} ${v.lang || ''}`.toLowerCase();
+            let score = 0;
+            if (/en[-_]gb/i.test(v.lang)) score += 20;
+            else if (/en[-_]us/i.test(v.lang)) score += 12;
+            else if (/^en/i.test(v.lang)) score += 6;
+            if (v.localService === false) score += 4;
+            if (/google|microsoft|natural|neural|premium|enhanced/i.test(blob)) score += 8;
+            if (/compact|eloquence|espeak|robot|novelty/i.test(blob)) score -= 20;
+            return score;
+        }
+
+        function listDictationEnglishVoices() {
+            if (!window.speechSynthesis) return [];
+            return (window.speechSynthesis.getVoices() || [])
+                .filter((v) => /^en([-_]|$)/i.test(v.lang || ''))
+                .slice()
+                .sort((a, b) => dictationVoiceScore(b) - dictationVoiceScore(a) || String(a.name).localeCompare(String(b.name)));
+        }
+
+        function loadDictationVoiceURI() {
+            try { return localStorage.getItem(DICTATION_VOICE_KEY) || ''; } catch (_) { return ''; }
+        }
+
+        function saveDictationVoiceURI(uri) {
+            dictationState.voiceURI = uri || '';
+            try {
+                if (uri) localStorage.setItem(DICTATION_VOICE_KEY, uri);
+                else localStorage.removeItem(DICTATION_VOICE_KEY);
+            } catch (_) { /* ignore */ }
+        }
+
+        function getDictationSelectedVoice() {
+            const voices = listDictationEnglishVoices();
+            if (!voices.length) return null;
+            if (!dictationState.voiceURI) dictationState.voiceURI = loadDictationVoiceURI();
+            return voices.find((v) => v.voiceURI === dictationState.voiceURI) || voices[0];
+        }
+
+        function populateDictationVoiceSelects() {
+            const voices = listDictationEnglishVoices();
+            if (!dictationState.voiceURI) dictationState.voiceURI = loadDictationVoiceURI();
+            if (dictationState.voiceURI && !voices.some((v) => v.voiceURI === dictationState.voiceURI)) {
+                dictationState.voiceURI = '';
+            }
+            if (!dictationState.voiceURI && voices.length) {
+                dictationState.voiceURI = voices[0].voiceURI;
+            }
+
+            ['dictation-setup-voice', 'dictation-play-voice'].forEach((id) => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                if (!window.speechSynthesis) {
+                    sel.innerHTML = '<option value="">Speech not supported in this browser</option>';
+                    sel.disabled = true;
+                    return;
+                }
+                sel.disabled = false;
+                if (!voices.length) {
+                    sel.innerHTML = '<option value="">No English voices found yet</option>';
+                    return;
+                }
+                sel.innerHTML = voices.map((v) => {
+                    const label = `${v.name} (${v.lang}${v.localService === false ? ', online' : ''})`;
+                    const selected = v.voiceURI === dictationState.voiceURI ? ' selected' : '';
+                    return `<option value="${escapeHtml(v.voiceURI)}"${selected}>${escapeHtml(label)}</option>`;
+                }).join('');
+            });
+        }
+
+        function onDictationVoiceChange(source) {
+            const id = source === 'setup' ? 'dictation-setup-voice' : 'dictation-play-voice';
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            saveDictationVoiceURI(sel.value || '');
+            populateDictationVoiceSelects();
+        }
+
+        let dictationVoicesBound = false;
+        function initDictationVoicePicker() {
+            populateDictationVoiceSelects();
+            if (!window.speechSynthesis) return;
+            if (!dictationVoicesBound) {
+                dictationVoicesBound = true;
+                if (typeof window.speechSynthesis.addEventListener === 'function') {
+                    window.speechSynthesis.addEventListener('voiceschanged', populateDictationVoiceSelects);
+                } else {
+                    window.speechSynthesis.onvoiceschanged = populateDictationVoiceSelects;
+                }
+            }
+            // Some browsers only expose voices after a tick / second getVoices call.
+            setTimeout(populateDictationVoiceSelects, 250);
+        }
 
         function dictationGetSetupLevel() {
             const el = document.querySelector('input[name="dictation-level"]:checked');
@@ -12516,8 +12691,10 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
             }
             window.speechSynthesis.cancel();
             const cfg = PE_DICTATION_LEVELS[dictationState.level] || PE_DICTATION_LEVELS.beginner;
+            const voice = getDictationSelectedVoice();
             const utter = new SpeechSynthesisUtterance(dictationState.sentence);
-            utter.lang = 'en-GB';
+            utter.lang = voice?.lang || 'en-GB';
+            if (voice) utter.voice = voice;
             utter.rate = cfg.rate;
             window.speechSynthesis.speak(utter);
         }
@@ -12582,6 +12759,7 @@ Return ONLY JSON: {"title":"Exam task","recipientName":"FirstName","taskEn":"Ful
         }
 
         function initPeDictation() {
+            initDictationVoicePicker();
             dictationState.level = dictationGetSetupLevel();
             dictationState.mode = dictationGetSetupMode();
             if (!(window.PE_DICTATION_BANKS || {})[dictationState.level]) {
