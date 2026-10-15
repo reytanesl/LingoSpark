@@ -7,6 +7,7 @@ await import('./frank-paragraphs.js');
 await import('./frank-options.js');
 const FO = globalThis.FrankOptions;
 const BANK = globalThis.LINGOSPARK_FRANK_PARAGRAPHS;
+const WHOLES = globalThis.LINGOSPARK_FRANK_WHOLE_TEXTS;
 
 function memoryStorage() {
     const m = new Map();
@@ -59,8 +60,8 @@ test('paragraph options are filtered by text type; invalid choices fall back to 
     assert.deepEqual(essay.slice(0, 1), ['any']);
     assert.ok(essay.includes('body_counter') && !essay.includes('closing'));
     const letter = FO.paragraphOptions('informal_letter').map((o) => o.value);
-    assert.deepEqual(letter, ['any', 'opening', 'body', 'closing']);
-    assert.ok(FO.paragraphOptions('any').every((o) => o.value === 'any' || o.value.startsWith('role:')));
+    assert.deepEqual(letter, ['any', 'whole', 'opening', 'body', 'closing']);
+    assert.ok(FO.paragraphOptions('any').every((o) => ['any', 'whole'].includes(o.value) || o.value.startsWith('role:')));
     assert.deepEqual(FO.normalizeSelection({ textType: 'story', paraType: 'body_for' }), { textType: 'story', paraType: 'any' });
     assert.deepEqual(FO.normalizeSelection({ textType: 'nope', paraType: 'x' }), { textType: 'any', paraType: 'any' });
     assert.equal(FO.textTypeOptions()[0].label, 'Any / Random');
@@ -86,4 +87,52 @@ test('typeInfo labels and the page wiring', () => {
     assert.ok(html.includes('<script src="frank-options.js"></script>'));
     assert.equal((html.match(/data-frank-options/g) || []).length >= 2, true);
     assert.ok(html.includes('id="frank-setup-text-type"') && html.includes('id="frank-setup-para-type"'));
+});
+
+test('whole texts: 3+ per text type, all parts exist, follow beginning → middle → end', () => {
+    const ids = new Set(WHOLES.map((w) => w.id));
+    assert.equal(ids.size, WHOLES.length);
+    for (const t of FO.TEXT_TYPES) {
+        const list = FO.filterWholeTexts(BANK, WHOLES, { textType: t.id, paraType: 'whole' });
+        assert.ok(list.length >= 3, `${t.id} has only ${list.length} whole texts`);
+        assert.ok(t.wholeHint, `${t.id} needs a whole-text hint`);
+        for (const w of list) {
+            assert.ok(w.paragraphs.length >= 4, `${w.id} is too short`);
+            const roles = w.paragraphs.map((p) => FO.findPara(t.id, p.type).role);
+            assert.equal(roles[0], 'start', `${w.id} must open with a beginning paragraph`);
+            assert.equal(roles[roles.length - 1], 'end', `${w.id} must end with an ending paragraph`);
+            assert.ok(roles.slice(1, -1).every((r) => r === 'middle'), `${w.id} middle paragraphs`);
+            const bankTopics = new Set(w.paragraphs.map((p) => BANK.find((b) => b.id === p.id).topic));
+            assert.equal(bankTopics.size, 1, `${w.id} mixes topics`);
+        }
+    }
+    for (const w of WHOLES) assert.ok(FO.resolveWholeText(BANK, w), `${w.id} references a missing paragraph`);
+    assert.equal(FO.countFor(BANK, WHOLES, { textType: 'any', paraType: 'whole' }), WHOLES.length);
+});
+
+test('whole-text option: offered for every text type, picked texts match and do not repeat', () => {
+    for (const v of ['any', ...FO.TEXT_TYPES.map((t) => t.id)]) {
+        assert.ok(FO.paragraphOptions(v).some((o) => o.value === 'whole' && /Whole text/.test(o.label)));
+    }
+    const sel = FO.normalizeSelection({ textType: 'story', paraType: 'whole' });
+    assert.deepEqual(sel, { textType: 'story', paraType: 'whole' });
+    assert.ok(FO.isWhole(sel));
+    assert.equal(FO.filterBank(BANK, sel).length, 0, 'whole mode never deals a single paragraph');
+    let last = null;
+    for (let i = 0; i < 20; i++) {
+        const w = FO.pickWholeText(BANK, WHOLES, sel, last);
+        assert.equal(w.textType, 'story');
+        assert.notEqual(w.id, last);
+        last = w.id;
+    }
+    assert.equal(FO.wholeInfo({ textType: 'essay', kind: 'Opinion essay' }).textLabel, 'Opinion essay');
+    const st = memoryStorage();
+    FO.saveSelection(st, { textType: 'report', paraType: 'whole' });
+    assert.deepEqual(FO.loadSelection(st), { textType: 'report', paraType: 'whole' });
+});
+
+test('letter greetings, sign-offs and names get their own line', () => {
+    const lines = FO.paragraphLines({ sentences: ['Thanks again!', 'Take care,', 'Kuba'] });
+    assert.deepEqual(lines, ['Thanks again!', 'Take care,', 'Kuba']);
+    assert.deepEqual(FO.paragraphLines({ sentences: ['Dear Ms Taylor,', 'I am writing.', 'I would like to apply.'] }), ['Dear Ms Taylor,', 'I am writing. I would like to apply.']);
 });

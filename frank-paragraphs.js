@@ -1760,5 +1760,678 @@
       "Students should also be given at least two hours of free time each day.",
       "With these changes, the next trip could be even more enjoyable."
     ]
+  },
+  {
+    "id": 162,
+    "textType": "formal_letter",
+    "topic": "Complaint about a hotel stay",
+    "type": "body",
+    "sentences": [
+      "Another problem was the hotel restaurant, which was advertised as open until 11 p.m.",
+      "In reality, it closed at nine, so on our first evening we had to look for food elsewhere.",
+      "Moreover, the swimming pool shown in your brochure was closed for repairs during our entire stay.",
+      "Nobody had informed us about this when we made the booking."
+    ]
+  },
+  {
+    "id": 163,
+    "textType": "formal_letter",
+    "topic": "Applying for a summer job",
+    "type": "body",
+    "sentences": [
+      "As for my personal qualities, I am a friendly and hard-working person who enjoys working in a team.",
+      "At school, I am a member of the student council, so I am used to organising events and solving problems.",
+      "My teachers often say that I learn new tasks quickly and that I am very reliable.",
+      "I am sure these qualities would be useful in a busy summer job like this one."
+    ]
+  },
+  {
+    "id": 164,
+    "textType": "formal_letter",
+    "topic": "Asking for information about a language course",
+    "type": "body",
+    "sentences": [
+      "Apart from the course itself, I am interested in the activities you organise outside lessons.",
+      "In particular, I would like to know more about trips to nearby towns and sports activities at weekends.",
+      "If these activities are not included in the price, could you tell me how much they cost?",
+      "This information would help me plan my budget for the summer."
+    ]
+  },
+  {
+    "id": 165,
+    "textType": "formal_letter",
+    "topic": "Suggestion to the town council",
+    "type": "body",
+    "sentences": [
+      "We believe the costs of this project would not be very high.",
+      "The building already belongs to the town, so it would only need painting and some new furniture.",
+      "Furthermore, several local businesses have offered to donate equipment such as computers and sofas.",
+      "In return, they would only ask to put their logos on a sign at the entrance."
+    ]
+  },
+  {
+    "id": 166,
+    "textType": "informal_letter",
+    "topic": "News after moving house",
+    "type": "body",
+    "sentences": [
+      "Guess what else happened last week?",
+      "Our school organised a talent show, and my new friends persuaded me to sing in it.",
+      "I was terribly nervous at first, but in the end I won second prize!",
+      "The best part was that my parents recorded everything, so I'll send you the video."
+    ]
+  },
+  {
+    "id": 167,
+    "textType": "informal_letter",
+    "topic": "Inviting a friend for the holidays",
+    "type": "body",
+    "sentences": [
+      "Don't worry about money, because my parents will pay for the house and the food.",
+      "You'd only need to buy your train ticket, which isn't too expensive if you book early.",
+      "Also, my cousin Ola is coming for the second week, and I'm sure you'll get on really well.",
+      "She's into kayaking just like you!"
+    ]
+  },
+  {
+    "id": 168,
+    "textType": "informal_letter",
+    "topic": "Thanking a friend for a birthday present",
+    "type": "body",
+    "sentences": [
+      "My birthday party was great fun, by the way.",
+      "We had a barbecue in the garden, and about fifteen people came.",
+      "The only problem was that it started raining at nine, so we all had to squeeze into the living room.",
+      "Still, everyone said it was the best party of the year!"
+    ]
+  },
+  {
+    "id": 169,
+    "textType": "article",
+    "topic": "Teenagers and smartphones",
+    "type": "body",
+    "sentences": [
+      "Another problem is the effect of social media on our self-confidence.",
+      "When we scroll through perfect photos of other people's lives, it is easy to feel that our own life is boring.",
+      "In fact, many young people admit that they feel worse after spending an hour online.",
+      "It is important to remember that most of these photos show only the best moments."
+    ]
+  },
+  {
+    "id": 170,
+    "textType": "article",
+    "topic": "The best place to spend a weekend in my town",
+    "type": "body",
+    "sentences": [
+      "For those who like history, the harbour also has a small maritime museum.",
+      "It tells the story of the town's fishermen and has a real wooden boat that visitors can climb into.",
+      "Best of all, entry is free for students on Saturdays.",
+      "After the visit, you can relax with a coffee on the museum's roof terrace."
+    ]
+  },
+  {
+    "id": 171,
+    "textType": "article",
+    "topic": "Learning a foreign language",
+    "type": "body",
+    "sentences": [
+      "Of course, it is also important not to be afraid of making mistakes.",
+      "Many learners stay silent because they worry about sounding silly.",
+      "However, every mistake is a chance to learn something new.",
+      "Native speakers usually appreciate the effort and are happy to help."
+    ]
+  },
+  {
+    "id": 172,
+    "textType": "review",
+    "topic": "A film review",
+    "type": "body",
+    "sentences": [
+      "What impressed me most were the beautiful shots of the wild coastline.",
+      "The director uses the grey sea and the strong wind to create a feeling of danger.",
+      "The dialogue is quite simple, so the film is easy to follow even in the original version.",
+      "Even the smallest roles are played by talented local actors."
+    ]
+  },
+  {
+    "id": 173,
+    "textType": "review",
+    "topic": "A restaurant review",
+    "type": "body",
+    "sentences": [
+      "Our waiter, however, was very friendly and apologised for the delay.",
+      "He also recommended a delicious tiramisu, which was probably the best dessert I have ever had.",
+      "As for the prices, a main course costs around 45 złoty, which is fair for the city centre.",
+      "There is also a special lunch menu on weekdays which is even cheaper."
+    ]
+  },
+  {
+    "id": 174,
+    "textType": "review",
+    "topic": "A book review",
+    "type": "body",
+    "sentences": [
+      "What I liked most was the way the author describes Leo's feelings.",
+      "We see how his fear slowly changes into courage and hope.",
+      "The language is quite simple, so the book is suitable for readers at intermediate level.",
+      "However, a few chapters in the middle are rather repetitive."
+    ]
+  },
+  {
+    "id": 175,
+    "textType": "story",
+    "topic": "A day that started badly",
+    "type": "body",
+    "sentences": [
+      "He rushed into the classroom just as the teacher was handing out the papers.",
+      "His hands were shaking and his heart was beating fast.",
+      "However, as soon as he read the first question, he began to feel calmer.",
+      "After all, he had revised for weeks and knew the answers well."
+    ]
+  },
+  {
+    "id": 176,
+    "textType": "story",
+    "topic": "A strange discovery",
+    "type": "body",
+    "sentences": [
+      "We sat on the floor of the barn and started reading the first letter.",
+      "It was dated 1943 and began with the words 'My dearest Helena'.",
+      "As we read on, we realised that the writer had hidden something very important before leaving the village.",
+      "The last letter mentioned the apple tree and a promise to come back one day."
+    ]
+  },
+  {
+    "id": 177,
+    "textType": "story",
+    "topic": "Lost in the mountains",
+    "type": "body",
+    "sentences": [
+      "As they walked, the path became steeper and more slippery.",
+      "At one point, Tomek fell and hurt his ankle, so they had to slow down.",
+      "The others took turns carrying his backpack and helping him over the rocks.",
+      "Meanwhile, it was getting darker and colder with every minute."
+    ]
+  },
+  {
+    "id": 178,
+    "textType": "report",
+    "topic": "School canteen survey",
+    "type": "body",
+    "sentences": [
+      "Finally, as regards opening hours, most students said that the canteen opens too late in the morning.",
+      "Many of them arrive at school early and would like to buy breakfast before lessons.",
+      "Moreover, the canteen is closed after 2 p.m., which is a problem for students with afternoon classes.",
+      "About a third of those surveyed said they would use the canteen more often if it stayed open longer."
+    ]
+  },
+  {
+    "id": 179,
+    "textType": "report",
+    "topic": "Sports facilities in our town",
+    "type": "body",
+    "sentences": [
+      "Apart from the pool and the pitches, the town also has a sports hall at the community centre, which is well equipped.",
+      "However, most of these activities are designed for adults and take place during working hours.",
+      "Many teenagers said that they would like to try sports such as climbing or volleyball.",
+      "Unfortunately, there are currently no clubs in the town that offer these sports for young people."
+    ]
+  },
+  {
+    "id": 180,
+    "textType": "report",
+    "topic": "A school trip",
+    "type": "body",
+    "sentences": [
+      "Apart from the sightseeing, students were asked about the accommodation in a youth hostel near the Old Town, which was generally rated as good.",
+      "The rooms were clean and the location allowed students to walk to most places.",
+      "However, some students complained that the hostel was noisy at night.",
+      "The food was described as simple but tasty, although the portions were rather small."
+    ]
+  },
+  {
+    "id": 181,
+    "textType": "essay",
+    "topic": "Should teenagers have part-time jobs?",
+    "type": "introduction",
+    "sentences": [
+      "Nowadays, more and more teenagers work after school or at weekends.",
+      "Some people believe that a part-time job is a valuable experience, while others think it does more harm than good.",
+      "Before reaching any conclusion, it is worth looking at both sides of the argument."
+    ]
+  },
+  {
+    "id": 182,
+    "textType": "essay",
+    "topic": "Should teenagers have part-time jobs?",
+    "type": "body_for",
+    "sentences": [
+      "On the one hand, a part-time job teaches young people to be responsible and independent.",
+      "They learn how to manage their time and how to deal with customers and colleagues.",
+      "What is more, earning their own money helps them understand its real value.",
+      "As a result, they often become more careful about how they spend it."
+    ]
+  },
+  {
+    "id": 183,
+    "textType": "essay",
+    "topic": "Should teenagers have part-time jobs?",
+    "type": "body_against",
+    "sentences": [
+      "On the other hand, working while still at school can be very tiring.",
+      "Students who work several evenings a week may not have enough time to study or sleep.",
+      "Consequently, their marks may get worse, especially in their final year.",
+      "Furthermore, they have less time to relax and spend with family and friends."
+    ]
+  },
+  {
+    "id": 184,
+    "textType": "essay",
+    "topic": "Should teenagers have part-time jobs?",
+    "type": "conclusion_for_against",
+    "sentences": [
+      "To sum up, a part-time job has both advantages and disadvantages for teenagers.",
+      "While it can teach responsibility and the value of money, it can also affect their education.",
+      "In my opinion, a few hours of work at the weekend is a sensible compromise."
+    ]
+  },
+  {
+    "id": 185,
+    "textType": "essay",
+    "topic": "Living in a city or in the countryside",
+    "type": "introduction",
+    "sentences": [
+      "Many young people dream of moving to a big city when they finish school.",
+      "However, others prefer the peace and quiet of the countryside.",
+      "So which is the better place to live?"
+    ]
+  },
+  {
+    "id": 186,
+    "textType": "essay",
+    "topic": "Living in a city or in the countryside",
+    "type": "body_for",
+    "sentences": [
+      "There are many advantages to living in a city.",
+      "First of all, it is much easier to find a good job or go to university there.",
+      "In addition, cities offer a wide range of entertainment, such as cinemas, concerts and restaurants.",
+      "Public transport is also usually frequent, so you do not need a car."
+    ]
+  },
+  {
+    "id": 187,
+    "textType": "essay",
+    "topic": "Living in a city or in the countryside",
+    "type": "body_against",
+    "sentences": [
+      "Nevertheless, life in a city also has its drawbacks.",
+      "The cost of living, especially rent, is often very high.",
+      "Moreover, big cities can be noisy, crowded and polluted.",
+      "For this reason, many people feel stressed and miss contact with nature."
+    ]
+  },
+  {
+    "id": 188,
+    "textType": "essay",
+    "topic": "Living in a city or in the countryside",
+    "type": "conclusion_for_against",
+    "sentences": [
+      "In conclusion, both the city and the countryside have their good and bad points.",
+      "The right choice depends on a person's age, job and lifestyle.",
+      "Perhaps the ideal solution is to live in a small town close to a big city."
+    ]
+  },
+  {
+    "id": 189,
+    "textType": "essay",
+    "topic": "Should mobile phones be banned in schools?",
+    "type": "introduction",
+    "sentences": [
+      "Mobile phones have become a part of everyday life, even for young children.",
+      "Recently, some countries have decided to ban phones in schools completely.",
+      "In my opinion, this is a very good idea."
+    ]
+  },
+  {
+    "id": 190,
+    "textType": "essay",
+    "topic": "Should mobile phones be banned in schools?",
+    "type": "body_opinion",
+    "sentences": [
+      "The main reason I support a ban is that phones distract students during lessons.",
+      "Even when a phone is silent, many students cannot stop checking their messages.",
+      "Without phones, they would pay more attention and remember more of what they learn.",
+      "Moreover, students would talk to each other more during breaks instead of staring at screens."
+    ]
+  },
+  {
+    "id": 191,
+    "textType": "essay",
+    "topic": "Should mobile phones be banned in schools?",
+    "type": "body_counter",
+    "sentences": [
+      "Some people argue that phones are useful tools for learning, for example for looking up words.",
+      "They also say that parents need to be able to contact their children.",
+      "However, schools can provide computers for research, and parents can always call the school office in an emergency.",
+      "Therefore, these arguments do not convince me."
+    ]
+  },
+  {
+    "id": 192,
+    "textType": "essay",
+    "topic": "Should mobile phones be banned in schools?",
+    "type": "conclusion_opinion",
+    "sentences": [
+      "To conclude, I strongly believe that banning phones in schools would benefit students.",
+      "It would help them concentrate in class and build better relationships with classmates.",
+      "I hope that more schools will introduce this rule in the near future."
+    ]
+  },
+  {
+    "id": 193,
+    "textType": "essay",
+    "topic": "Is it better to travel abroad or on holiday at home?",
+    "type": "introduction",
+    "sentences": [
+      "When planning a holiday, many families have to decide whether to go abroad or stay in their own country.",
+      "Every year, cheap flights make foreign trips more and more tempting.",
+      "Both options can be enjoyable, but I personally believe that holidays at home are the better choice."
+    ]
+  },
+  {
+    "id": 194,
+    "textType": "essay",
+    "topic": "Is it better to travel abroad or on holiday at home?",
+    "type": "body_opinion",
+    "sentences": [
+      "Firstly, travelling in your own country is usually much cheaper.",
+      "You do not have to pay for expensive flights, and accommodation often costs less.",
+      "Secondly, it is a great opportunity to discover beautiful places close to home that you have never seen.",
+      "Poland, for example, has amazing mountains, lakes and historic cities."
+    ]
+  },
+  {
+    "id": 195,
+    "textType": "essay",
+    "topic": "Is it better to travel abroad or on holiday at home?",
+    "type": "body_counter",
+    "sentences": [
+      "It is true that going abroad allows people to experience a different culture and practise foreign languages.",
+      "For many, this is the most exciting part of a holiday.",
+      "Nevertheless, you can also meet foreign tourists at home and learn a lot about your own country's history.",
+      "In my view, these benefits are just as valuable."
+    ]
+  },
+  {
+    "id": 196,
+    "textType": "essay",
+    "topic": "Is it better to travel abroad or on holiday at home?",
+    "type": "conclusion_opinion",
+    "sentences": [
+      "All in all, I am convinced that a holiday at home can be just as interesting as one abroad.",
+      "It saves money and helps us appreciate our own country.",
+      "That is why I would recommend it to anyone planning their next trip."
+    ]
+  }
+];
+
+// Whole texts (beginning to end): ordered paragraph ids from the bank above. Used by the "Whole text" option.
+(typeof window !== 'undefined' ? window : globalThis).LINGOSPARK_FRANK_WHOLE_TEXTS = [
+  {
+    "id": "w1",
+    "textType": "formal_letter",
+    "topic": "Complaint about a hotel stay",
+    "paragraphs": [
+      105,
+      109,
+      162,
+      113
+    ]
+  },
+  {
+    "id": "w2",
+    "textType": "formal_letter",
+    "topic": "Applying for a summer job",
+    "paragraphs": [
+      106,
+      110,
+      163,
+      114
+    ]
+  },
+  {
+    "id": "w3",
+    "textType": "formal_letter",
+    "topic": "Asking for information about a language course",
+    "paragraphs": [
+      107,
+      111,
+      164,
+      115
+    ]
+  },
+  {
+    "id": "w4",
+    "textType": "formal_letter",
+    "topic": "Suggestion to the town council",
+    "paragraphs": [
+      108,
+      112,
+      165,
+      116
+    ]
+  },
+  {
+    "id": "w5",
+    "textType": "informal_letter",
+    "topic": "News after moving house",
+    "paragraphs": [
+      117,
+      120,
+      166,
+      123
+    ]
+  },
+  {
+    "id": "w6",
+    "textType": "informal_letter",
+    "topic": "Inviting a friend for the holidays",
+    "paragraphs": [
+      118,
+      121,
+      167,
+      124
+    ]
+  },
+  {
+    "id": "w7",
+    "textType": "informal_letter",
+    "topic": "Thanking a friend for a birthday present",
+    "paragraphs": [
+      119,
+      122,
+      168,
+      125
+    ]
+  },
+  {
+    "id": "w8",
+    "textType": "article",
+    "topic": "Teenagers and smartphones",
+    "paragraphs": [
+      126,
+      129,
+      169,
+      132
+    ]
+  },
+  {
+    "id": "w9",
+    "textType": "article",
+    "topic": "The best place to spend a weekend in my town",
+    "paragraphs": [
+      127,
+      130,
+      170,
+      133
+    ]
+  },
+  {
+    "id": "w10",
+    "textType": "article",
+    "topic": "Learning a foreign language",
+    "paragraphs": [
+      128,
+      131,
+      171,
+      134
+    ]
+  },
+  {
+    "id": "w11",
+    "textType": "review",
+    "topic": "A film review",
+    "paragraphs": [
+      135,
+      138,
+      172,
+      141
+    ]
+  },
+  {
+    "id": "w12",
+    "textType": "review",
+    "topic": "A restaurant review",
+    "paragraphs": [
+      136,
+      139,
+      173,
+      142
+    ]
+  },
+  {
+    "id": "w13",
+    "textType": "review",
+    "topic": "A book review",
+    "paragraphs": [
+      137,
+      140,
+      174,
+      143
+    ]
+  },
+  {
+    "id": "w14",
+    "textType": "story",
+    "topic": "A day that started badly",
+    "paragraphs": [
+      144,
+      147,
+      175,
+      150
+    ]
+  },
+  {
+    "id": "w15",
+    "textType": "story",
+    "topic": "A strange discovery",
+    "paragraphs": [
+      145,
+      148,
+      176,
+      151
+    ]
+  },
+  {
+    "id": "w16",
+    "textType": "story",
+    "topic": "Lost in the mountains",
+    "paragraphs": [
+      146,
+      149,
+      177,
+      152
+    ]
+  },
+  {
+    "id": "w17",
+    "textType": "report",
+    "topic": "School canteen survey",
+    "paragraphs": [
+      153,
+      156,
+      178,
+      159
+    ]
+  },
+  {
+    "id": "w18",
+    "textType": "report",
+    "topic": "Sports facilities in our town",
+    "paragraphs": [
+      154,
+      157,
+      179,
+      160
+    ]
+  },
+  {
+    "id": "w19",
+    "textType": "report",
+    "topic": "A school trip",
+    "paragraphs": [
+      155,
+      158,
+      180,
+      161
+    ]
+  },
+  {
+    "id": "w20",
+    "textType": "essay",
+    "essayKind": "For and against essay",
+    "topic": "Should teenagers have part-time jobs?",
+    "paragraphs": [
+      181,
+      182,
+      183,
+      184
+    ]
+  },
+  {
+    "id": "w21",
+    "textType": "essay",
+    "essayKind": "For and against essay",
+    "topic": "Living in a city or in the countryside",
+    "paragraphs": [
+      185,
+      186,
+      187,
+      188
+    ]
+  },
+  {
+    "id": "w22",
+    "textType": "essay",
+    "essayKind": "Opinion essay",
+    "topic": "Should mobile phones be banned in schools?",
+    "paragraphs": [
+      189,
+      190,
+      191,
+      192
+    ]
+  },
+  {
+    "id": "w23",
+    "textType": "essay",
+    "essayKind": "Opinion essay",
+    "topic": "Is it better to travel abroad or on holiday at home?",
+    "paragraphs": [
+      193,
+      194,
+      195,
+      196
+    ]
   }
 ];

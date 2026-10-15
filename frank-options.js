@@ -4,11 +4,13 @@
     'use strict';
 
     const ANY = 'any';
+    const WHOLE = 'whole';
     const STORAGE_KEY = 'lingospark.frank.selection.v1';
 
     const TEXT_TYPES = [
         {
             id: 'essay',
+            wholeHint: 'Typical shape: introduction → body paragraphs (arguments for and against, or your opinion and a counter-argument) → conclusion.',
             label: 'Essay (for and against / opinion)',
             short: 'Essay',
             paras: [
@@ -23,6 +25,7 @@
         },
         {
             id: 'formal_letter',
+            wholeHint: 'Typical shape: greeting and reason for writing → main points → further details → what you expect next and a formal sign-off.',
             label: 'Formal letter / email',
             short: 'Formal letter',
             paras: [
@@ -33,6 +36,7 @@
         },
         {
             id: 'informal_letter',
+            wholeHint: 'Typical shape: friendly greeting → main news → more news or details → wrapping up and a casual sign-off.',
             label: 'Informal letter / email',
             short: 'Informal email',
             paras: [
@@ -43,6 +47,7 @@
         },
         {
             id: 'article',
+            wholeHint: 'Typical shape: an eye-catching introduction → the main point → a further point → a conclusion that speaks to the reader.',
             label: 'Article',
             short: 'Article',
             paras: [
@@ -53,6 +58,7 @@
         },
         {
             id: 'review',
+            wholeHint: 'Typical shape: what it is → description → strengths and weaknesses → overall opinion and recommendation.',
             label: 'Review (film, book, restaurant)',
             short: 'Review',
             paras: [
@@ -63,6 +69,7 @@
         },
         {
             id: 'story',
+            wholeHint: 'Typical shape: setting the scene → events build up → the key moment → how it all ended.',
             label: 'Story',
             short: 'Story',
             paras: [
@@ -73,6 +80,7 @@
         },
         {
             id: 'report',
+            wholeHint: 'Typical shape: aim of the report → findings → further findings → conclusion and recommendations.',
             label: 'Report',
             short: 'Report',
             paras: [
@@ -108,7 +116,7 @@
     function paragraphOptions(textType) {
         const t = findTextType(textType);
         const list = t ? t.paras.map((p) => ({ value: p.id, label: p.label })) : ROLES.map((r) => ({ value: `role:${r.id}`, label: r.label }));
-        return [{ value: ANY, label: 'Any / Random' }, ...list];
+        return [{ value: ANY, label: 'Any / Random' }, { value: WHOLE, label: 'Whole text (beginning to end)' }, ...list];
     }
 
     function textTypeOptions() {
@@ -129,8 +137,13 @@
         return p ? p.role : null;
     }
 
+    function isWhole(sel) {
+        return normalizeSelection(sel).paraType === WHOLE;
+    }
+
     function matches(item, sel) {
         const s = normalizeSelection(sel);
+        if (s.paraType === WHOLE) return false;
         if (!item || !Array.isArray(item.sentences) || item.sentences.length < 2) return false;
         if (s.textType !== ANY && textTypeOf(item) !== s.textType) return false;
         if (s.paraType === ANY) return true;
@@ -150,6 +163,72 @@
         const list = pool.length ? pool : usable;
         if (!list.length) return null;
         return list[Math.floor(r() * list.length) % list.length];
+    }
+
+    /** Lines of one paragraph: greetings / sign-offs / names (ending in a comma or no full stop) get their own line. */
+    function paragraphLines(item) {
+        const lines = [];
+        let cur = '';
+        for (const raw of (item && item.sentences) || []) {
+            const sentence = String(raw || '').trim();
+            if (!sentence) continue;
+            const own = /,$/.test(sentence) || !/[.!?…"”'’)]$/.test(sentence);
+            if (own) {
+                if (cur) lines.push(cur);
+                lines.push(sentence);
+                cur = '';
+            } else {
+                cur = cur ? `${cur} ${sentence}` : sentence;
+            }
+        }
+        if (cur) lines.push(cur);
+        return lines;
+    }
+
+    /** Resolve a whole-text model (paragraph ids) into its ordered paragraphs; null if any part is missing. */
+    function resolveWholeText(bank, whole) {
+        if (!whole || !Array.isArray(whole.paragraphs) || whole.paragraphs.length < 3) return null;
+        const byId = new Map((Array.isArray(bank) ? bank : []).map((p) => [p.id, p]));
+        const paras = whole.paragraphs.map((id) => byId.get(id));
+        if (paras.some((p) => !p)) return null;
+        return {
+            id: whole.id,
+            textType: whole.textType || 'essay',
+            kind: whole.essayKind || '',
+            topic: whole.topic || '',
+            paragraphs: paras.map((p) => ({ id: p.id, type: p.type, lines: paragraphLines(p), text: paragraphLines(p).join('\n') })),
+        };
+    }
+
+    function filterWholeTexts(bank, wholes, sel) {
+        const s = normalizeSelection(sel);
+        return (Array.isArray(wholes) ? wholes : [])
+            .filter((w) => s.textType === ANY || (w.textType || 'essay') === s.textType)
+            .map((w) => resolveWholeText(bank, w))
+            .filter(Boolean);
+    }
+
+    function pickWholeText(bank, wholes, sel, lastId, rand) {
+        const r = typeof rand === 'function' ? rand : Math.random;
+        const usable = filterWholeTexts(bank, wholes, sel);
+        const pool = usable.filter((w) => w.id !== lastId);
+        const list = pool.length ? pool : usable;
+        if (!list.length) return null;
+        return list[Math.floor(r() * list.length) % list.length];
+    }
+
+    /** How many exercises the current choice can deal (paragraphs, or whole texts). */
+    function countFor(bank, wholes, sel) {
+        return isWhole(sel) ? filterWholeTexts(bank, wholes, sel).length : filterBank(bank, sel).length;
+    }
+
+    function wholeInfo(whole) {
+        const t = findTextType(whole && whole.textType);
+        return {
+            textLabel: (whole && whole.kind) || (t ? t.short : 'Text'),
+            label: 'Whole text — beginning to end',
+            hint: t ? t.wholeHint : 'Put the paragraphs in order from the beginning of the text to the end.',
+        };
     }
 
     function typeInfo(item) {
@@ -185,7 +264,7 @@
     }
 
     const api = {
-        ANY, STORAGE_KEY, TEXT_TYPES, ROLES, DEFAULT_SELECTION,
+        ANY, WHOLE, STORAGE_KEY, isWhole, paragraphLines, resolveWholeText, filterWholeTexts, pickWholeText, countFor, wholeInfo, TEXT_TYPES, ROLES, DEFAULT_SELECTION,
         textTypeOf, findTextType, findPara, paragraphOptions, textTypeOptions, normalizeSelection,
         matches, filterBank, pickParagraph, typeInfo, selectionLabel, loadSelection, saveSelection,
     };

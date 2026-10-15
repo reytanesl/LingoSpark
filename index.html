@@ -1787,6 +1787,10 @@
         .frank-type-kind:empty { display: none; }
         .frank-options { margin-top: 0.85rem; text-align: left; }
         .frank-options select { width: 100%; max-width: 100%; }
+        .frank-item--para span { line-height: 1.6; }
+        .frank-item--para .frank-line { display: block; }
+        .frank-item--para .frank-line + .frank-line { margin-top: 0.35rem; }
+        .frank-container--whole .frank-item { border-left: 4px solid rgba(200, 16, 46, 0.35); }
         .frank-opt-count { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
         .frank-opt-count.is-empty { color: #b91c1c; font-weight: 600; }
         .frank-options--game { margin: 0 0 0.85rem; }
@@ -4073,7 +4077,7 @@
 
             <div id="frank-setup-note" class="form-group setup-note" style="display:none;">
                 <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
-                <p>Ready-made model paragraphs (B1–B2) — no AI. Pick what you want to practise, then put the scrambled sentences back into the original order.</p>
+                <p>Ready-made model paragraphs (B1–B2) — no AI. Pick what you want to practise — one paragraph (sentences to order) or the whole text (paragraphs to order from beginning to end).</p>
                 <div class="pe-setup-compact frank-options" data-frank-options>
                     <div class="pe-setup-row">
                         <div class="pe-setup-field">
@@ -8380,13 +8384,14 @@
             if (!window.FrankOptions) return;
             const choice = frankSelection();
             const bank = window.LINGOSPARK_FRANK_PARAGRAPHS || [];
-            const n = FrankOptions.filterBank(bank, choice).length;
+            const n = FrankOptions.countFor(bank, window.LINGOSPARK_FRANK_WHOLE_TEXTS || [], choice);
+            const unit = FrankOptions.isWhole(choice) ? 'whole model text' : 'model paragraph';
             document.querySelectorAll('[data-frank-options]').forEach((box) => {
                 frankFillSelect(box.querySelector('.frank-opt-text'), FrankOptions.textTypeOptions(), choice.textType);
                 frankFillSelect(box.querySelector('.frank-opt-para'), FrankOptions.paragraphOptions(choice.textType), choice.paraType);
                 const count = box.querySelector('.frank-opt-count');
                 if (count) {
-                    count.textContent = n ? `${n} model paragraph${n === 1 ? '' : 's'} match this choice.` : 'No paragraphs match this choice yet — pick another option.';
+                    count.textContent = n ? `${n} ${unit}${n === 1 ? '' : 's'} match${n === 1 ? 'es' : ''} this choice.` : 'Nothing matches this choice yet — pick another option.';
                     count.classList.toggle('is-empty', !n);
                 }
             });
@@ -8428,6 +8433,14 @@
             return para;
         }
 
+        let frankLastWholeId = null;
+        function pickFrankWholeText(choice) {
+            if (!window.FrankOptions) return null;
+            const w = FrankOptions.pickWholeText(window.LINGOSPARK_FRANK_PARAGRAPHS || [], window.LINGOSPARK_FRANK_WHOLE_TEXTS || [], choice, frankLastWholeId);
+            if (w) frankLastWholeId = w.id;
+            return w;
+        }
+
         function frankTypeInfo(para) {
             return window.FrankOptions ? FrankOptions.typeInfo(para) : {
                 textLabel: '', label: String((para && para.type) || 'Paragraph').replace(/_/g, ' '),
@@ -8447,18 +8460,20 @@
             }
 
             syncFrankOptionsUi();
-            const para = pickFrankParagraph();
+            const choice = frankSelection();
+            const whole = window.FrankOptions && FrankOptions.isWhole(choice);
+            const para = whole ? pickFrankWholeText(choice) : pickFrankParagraph();
             if (!para) {
                 if (container) container.innerHTML = '';
                 if (typeCard) typeCard.hidden = true;
                 if (feedback) {
                     feedback.className = 'feedback error';
-                    feedback.textContent = 'No paragraphs match this text type and paragraph type. Open Setup and choose another option.';
+                    feedback.textContent = 'Nothing matches this text type and paragraph type. Open Setup and choose another option.';
                 }
                 return;
             }
 
-            const info = frankTypeInfo(para);
+            const info = whole ? FrankOptions.wholeInfo(para) : frankTypeInfo(para);
             const kindEl = document.getElementById('frank-type-kind');
             if (kindEl) kindEl.textContent = info.textLabel || '';
             const nameEl = document.getElementById('frank-type-name');
@@ -8470,9 +8485,14 @@
             if (typeCard) typeCard.hidden = false;
 
             const desc = document.getElementById('frank-game-desc');
-            if (desc) desc.textContent = 'Put these scrambled sentences back into the original order: ' + (info.textLabel ? info.textLabel + ' — ' : '') + info.label + '.';
+            if (desc) desc.textContent = whole
+                ? 'Put these scrambled paragraphs in order, from the beginning of the text to the end: ' + info.textLabel + '.'
+                : 'Put these scrambled sentences back into the original order: ' + (info.textLabel ? info.textLabel + ' — ' : '') + info.label + '.';
 
-            const objects = para.sentences.map((text, idx) => ({ id: idx + 1, text: String(text || '') }));
+            // Whole text: the units are complete paragraphs; otherwise sentences of one paragraph.
+            const objects = whole
+                ? para.paragraphs.map((pp, idx) => ({ id: idx + 1, lines: pp.lines }))
+                : para.sentences.map((text, idx) => ({ id: idx + 1, lines: [String(text || '')] }));
             let shuffled = frankShuffle(objects);
             let guard = 0;
             while (guard < 12 && shuffled.every((s, i) => s.id === i + 1)) {
@@ -8483,7 +8503,8 @@
             frankensteinState = {
                 id: para.id,
                 type: para.type,
-                textType: window.FrankOptions ? FrankOptions.textTypeOf(para) : 'essay',
+                textType: whole ? para.textType : (window.FrankOptions ? FrankOptions.textTypeOf(para) : 'essay'),
+                whole: Boolean(whole),
                 typeLabel: info.label,
                 topic: para.topic || '',
                 length: objects.length
@@ -8491,11 +8512,15 @@
 
             if (container) {
                 container.innerHTML = '';
+                container.classList.toggle('frank-container--whole', Boolean(whole));
                 shuffled.forEach((s) => {
                     const div = document.createElement('div');
-                    div.className = 'frank-item';
+                    div.className = whole ? 'frank-item frank-item--para' : 'frank-item';
                     div.dataset.id = String(s.id);
-                    div.innerHTML = `<span>${esc(s.text)}</span><div class="frank-controls"><button type="button" onclick="moveFrank(this, -1)" aria-label="Move up"><i class="fa-solid fa-chevron-up"></i></button><button type="button" onclick="moveFrank(this, 1)" aria-label="Move down"><i class="fa-solid fa-chevron-down"></i></button></div>`;
+                    const body = whole
+                        ? `<span>${s.lines.map((line) => `<span class="frank-line">${esc(line)}</span>`).join('')}</span>`
+                        : `<span>${esc(s.lines[0])}</span>`;
+                    div.innerHTML = `${body}<div class="frank-controls"><button type="button" onclick="moveFrank(this, -1)" aria-label="Move up"><i class="fa-solid fa-chevron-up"></i></button><button type="button" onclick="moveFrank(this, 1)" aria-label="Move down"><i class="fa-solid fa-chevron-down"></i></button></div>`;
                     container.appendChild(div);
                 });
             }
@@ -8520,7 +8545,7 @@
             const n = (frankensteinState && frankensteinState.length) || currentOrder.length;
             const correctOrder = Array.from({ length: n }, (_, i) => i + 1);
             const feedback = document.getElementById('frank-feedback');
-            const typeLabel = 'paragraph';
+            const typeLabel = frankensteinState && frankensteinState.whole ? 'text' : 'paragraph';
 
             if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
                 feedback.className = 'feedback success';
@@ -8530,7 +8555,7 @@
             } else {
                 const firstWrong = currentOrder.findIndex((id, i) => id !== i + 1);
                 feedback.className = 'feedback error';
-                feedback.textContent = `Not quite. Check sentence ${firstWrong + 1} — it does not belong there in this ${typeLabel.toLowerCase()}.`;
+                feedback.textContent = `Not quite. Check ${typeLabel === 'text' ? 'paragraph' : 'sentence'} ${firstWrong + 1} — it does not belong there in this ${typeLabel.toLowerCase()}.`;
             }
         }
 
