@@ -1,3 +1,4 @@
+// Frankenstein Builder bank. Items without "textType" are essay paragraphs (see frank-options.js).
 ﻿(typeof window !== 'undefined' ? window : globalThis).LINGOSPARK_FRANK_PARAGRAPHS = [
   {
     "id": 1,
@@ -1047,6 +1048,717 @@
       "In conclusion, I firmly believe that the future of humanity depends on our ability to replace selfish nationalism with genuine global solidarity.",
       "Cross-border challenges such as pandemics and global warming cannot be conquered by any single nation acting alone.",
       "Embracing international cooperation and mutual responsibility is the only path toward lasting peace and sustainable prosperity."
+    ]
+  },
+  {
+    "id": 101,
+    "textType": "essay",
+    "topic": "School uniforms",
+    "type": "body_counter",
+    "sentences": [
+      "Some people argue that school uniforms limit students' freedom to express their personality.",
+      "In their opinion, teenagers should be allowed to choose what they wear because clothes are part of who they are.",
+      "However, this argument ignores the fact that students can still show their individuality through their ideas, hobbies and achievements.",
+      "For this reason, I remain convinced that uniforms do more good than harm."
+    ]
+  },
+  {
+    "id": 102,
+    "textType": "essay",
+    "topic": "Online learning",
+    "type": "body_counter",
+    "sentences": [
+      "Admittedly, online lessons allow students to study at their own pace and save time on travelling.",
+      "Some learners even find it easier to concentrate at home than in a noisy classroom.",
+      "Nevertheless, most teenagers miss the face-to-face contact with teachers and friends that a real school provides.",
+      "Therefore, I believe online learning should only support traditional lessons, not replace them."
+    ]
+  },
+  {
+    "id": 103,
+    "textType": "essay",
+    "topic": "Banning cars from city centres",
+    "type": "body_counter",
+    "sentences": [
+      "Opponents of car-free city centres claim that such a ban would hurt local shops.",
+      "They worry that customers who cannot park nearby will simply go to shopping centres outside the city.",
+      "Yet experience from cities like Oslo shows that pedestrian zones actually attract more visitors and increase sales.",
+      "In the light of this evidence, the fear of losing business seems greatly exaggerated."
+    ]
+  },
+  {
+    "id": 104,
+    "textType": "essay",
+    "topic": "Homework",
+    "type": "body_counter",
+    "sentences": [
+      "It is sometimes said that homework is necessary because it helps students remember what they learnt in class.",
+      "Supporters of this view also point out that it teaches young people to organise their time.",
+      "On the other hand, too much homework leaves students tired and with no time for sport or family life.",
+      "That is why I am convinced that a small amount of well-planned homework is far better than long daily assignments."
+    ]
+  },
+  {
+    "id": 105,
+    "textType": "formal_letter",
+    "topic": "Complaint about a hotel stay",
+    "type": "opening",
+    "sentences": [
+      "Dear Sir or Madam,",
+      "I am writing to complain about the service I received at your hotel during my stay from 3 to 7 August.",
+      "Unfortunately, several problems spoiled what should have been a relaxing holiday for my family."
+    ]
+  },
+  {
+    "id": 106,
+    "textType": "formal_letter",
+    "topic": "Applying for a summer job",
+    "type": "opening",
+    "sentences": [
+      "Dear Ms Taylor,",
+      "I am writing in response to your advertisement for summer assistants, which appeared on your website last week.",
+      "I would like to apply for the position, as I believe I have the skills and experience you are looking for."
+    ]
+  },
+  {
+    "id": 107,
+    "textType": "formal_letter",
+    "topic": "Asking for information about a language course",
+    "type": "opening",
+    "sentences": [
+      "Dear Sir or Madam,",
+      "I recently saw an advertisement for your intensive English courses in the local newspaper.",
+      "I am interested in joining the course in July, and I would be grateful if you could send me some further information."
+    ]
+  },
+  {
+    "id": 108,
+    "textType": "formal_letter",
+    "topic": "Suggestion to the town council",
+    "type": "opening",
+    "sentences": [
+      "Dear Councillors,",
+      "I am a student at the local secondary school and I am writing on behalf of my classmates.",
+      "We would like to suggest an idea which, in our view, could make our town a better place for young people."
+    ]
+  },
+  {
+    "id": 109,
+    "textType": "formal_letter",
+    "topic": "Complaint about a hotel stay",
+    "type": "body",
+    "sentences": [
+      "First of all, the room we had booked was not ready when we arrived, so we had to wait for over two hours.",
+      "When we were finally able to go in, we discovered that the air conditioning did not work.",
+      "Although I reported the problem at reception the same evening, nobody came to repair it.",
+      "As a result, we hardly slept during the hot nights that followed."
+    ]
+  },
+  {
+    "id": 110,
+    "textType": "formal_letter",
+    "topic": "Applying for a summer job",
+    "type": "body",
+    "sentences": [
+      "I am eighteen years old and I am currently in my final year at secondary school.",
+      "Last summer I worked as a waiter in a busy café, where I learnt to stay calm and polite even under pressure.",
+      "In addition, I speak fluent English and some German, which would help me deal with foreign customers.",
+      "I am also available to start work immediately after my exams in June."
+    ]
+  },
+  {
+    "id": 111,
+    "textType": "formal_letter",
+    "topic": "Asking for information about a language course",
+    "type": "body",
+    "sentences": [
+      "Firstly, I would like to know how many students there are in each group.",
+      "I would also appreciate more details about the level of the course, since I have already passed a B1 exam.",
+      "Secondly, could you tell me whether accommodation with a host family is included in the price?",
+      "Finally, I would like to ask if it is possible to pay for the course in two instalments."
+    ]
+  },
+  {
+    "id": 112,
+    "textType": "formal_letter",
+    "topic": "Suggestion to the town council",
+    "type": "body",
+    "sentences": [
+      "At present, there is nowhere in our town where teenagers can meet safely in the evenings.",
+      "For this reason, we suggest turning the empty building next to the library into a youth centre.",
+      "It could offer a games room, a music studio and a quiet place to study.",
+      "Moreover, many students have already said that they would be happy to help decorate it as volunteers."
+    ]
+  },
+  {
+    "id": 113,
+    "textType": "formal_letter",
+    "topic": "Complaint about a hotel stay",
+    "type": "closing",
+    "sentences": [
+      "Considering all these problems, I believe I am entitled to a partial refund.",
+      "I would therefore be grateful if you could return 30% of the price of our stay.",
+      "I look forward to receiving your reply as soon as possible.",
+      "Yours faithfully,",
+      "Anna Kowalska"
+    ]
+  },
+  {
+    "id": 114,
+    "textType": "formal_letter",
+    "topic": "Applying for a summer job",
+    "type": "closing",
+    "sentences": [
+      "I enclose my CV with the details of my education and previous work.",
+      "I would be happy to attend an interview at any time convenient for you.",
+      "Thank you for considering my application, and I look forward to hearing from you.",
+      "Yours sincerely,",
+      "Tomasz Nowak"
+    ]
+  },
+  {
+    "id": 115,
+    "textType": "formal_letter",
+    "topic": "Asking for information about a language course",
+    "type": "closing",
+    "sentences": [
+      "I would be very grateful for your answers to my questions.",
+      "If possible, please also send me a brochure with the full list of course dates.",
+      "Thank you in advance for your help.",
+      "Yours faithfully,",
+      "Julia Wiśniewska"
+    ]
+  },
+  {
+    "id": 116,
+    "textType": "formal_letter",
+    "topic": "Suggestion to the town council",
+    "type": "closing",
+    "sentences": [
+      "We hope that you will consider our proposal at your next meeting.",
+      "If you need any further details, we would be glad to present our plan in person.",
+      "Thank you for your time and attention.",
+      "Yours faithfully,",
+      "Piotr Zieliński, on behalf of Class 3B"
+    ]
+  },
+  {
+    "id": 117,
+    "textType": "informal_letter",
+    "topic": "News after moving house",
+    "type": "opening",
+    "sentences": [
+      "Hi Kate,",
+      "Thanks so much for your last email – it was great to hear from you!",
+      "Sorry I haven't written for ages, but I've been really busy since we moved to our new flat."
+    ]
+  },
+  {
+    "id": 118,
+    "textType": "informal_letter",
+    "topic": "Inviting a friend for the holidays",
+    "type": "opening",
+    "sentences": [
+      "Hi Tom,",
+      "How are you?",
+      "I hope your exams went well and that you can finally relax a bit.",
+      "I'm writing because I've got a great idea for the summer holidays."
+    ]
+  },
+  {
+    "id": 119,
+    "textType": "informal_letter",
+    "topic": "Thanking a friend for a birthday present",
+    "type": "opening",
+    "sentences": [
+      "Dear Emma,",
+      "I'm so sorry for not replying sooner – my phone broke and I lost all my messages!",
+      "Anyway, I just wanted to say a huge thank you for the birthday present you sent me."
+    ]
+  },
+  {
+    "id": 120,
+    "textType": "informal_letter",
+    "topic": "News after moving house",
+    "type": "body",
+    "sentences": [
+      "Our new flat is much bigger than the old one, and I've finally got my own room.",
+      "The best thing is that it's only ten minutes on foot from my school.",
+      "At first I didn't know anyone in the neighbourhood, but then I joined the local basketball team.",
+      "Now I've made a few new friends and we often meet in the park after training."
+    ]
+  },
+  {
+    "id": 121,
+    "textType": "informal_letter",
+    "topic": "Inviting a friend for the holidays",
+    "type": "body",
+    "sentences": [
+      "My parents have rented a little house by a lake in the mountains for the whole of July.",
+      "They said I can invite a friend, so of course I thought of you first!",
+      "We could go swimming and kayaking during the day and have barbecues in the evenings.",
+      "There's also a bike path around the lake, so bring your bike if you can."
+    ]
+  },
+  {
+    "id": 122,
+    "textType": "informal_letter",
+    "topic": "Thanking a friend for a birthday present",
+    "type": "body",
+    "sentences": [
+      "The book about travelling around Asia is absolutely perfect!",
+      "I started reading it the same evening and couldn't put it down until two in the morning.",
+      "It has already given me loads of ideas for my gap year.",
+      "In fact, I've now decided that Vietnam will definitely be the first stop on my trip."
+    ]
+  },
+  {
+    "id": 123,
+    "textType": "informal_letter",
+    "topic": "News after moving house",
+    "type": "closing",
+    "sentences": [
+      "Anyway, that's enough about me.",
+      "Write back soon and tell me what's new with you!",
+      "Love,",
+      "Ola"
+    ]
+  },
+  {
+    "id": 124,
+    "textType": "informal_letter",
+    "topic": "Inviting a friend for the holidays",
+    "type": "closing",
+    "sentences": [
+      "Let me know what you think as soon as you can, because my mum needs to book the train tickets.",
+      "I really hope you can come – it'll be so much fun!",
+      "Take care,",
+      "Kuba"
+    ]
+  },
+  {
+    "id": 125,
+    "textType": "informal_letter",
+    "topic": "Thanking a friend for a birthday present",
+    "type": "closing",
+    "sentences": [
+      "Thanks again – you always know exactly what I like!",
+      "By the way, are you free next weekend?",
+      "If so, maybe we could meet up for a pizza and catch up properly.",
+      "Lots of love,",
+      "Marta"
+    ]
+  },
+  {
+    "id": 126,
+    "textType": "article",
+    "topic": "Teenagers and smartphones",
+    "type": "introduction",
+    "sentences": [
+      "How many times a day do you check your phone?",
+      "If you are like most teenagers, the answer is probably more than a hundred.",
+      "But is this constant scrolling really harmless, or is it time we all took a break from our screens?"
+    ]
+  },
+  {
+    "id": 127,
+    "textType": "article",
+    "topic": "The best place to spend a weekend in my town",
+    "type": "introduction",
+    "sentences": [
+      "Are you looking for a place to relax at the weekend without spending a fortune?",
+      "Then you should definitely visit the old harbour in my town.",
+      "In this article, I will explain why it has become my favourite place to spend a Saturday afternoon."
+    ]
+  },
+  {
+    "id": 128,
+    "textType": "article",
+    "topic": "Learning a foreign language",
+    "type": "introduction",
+    "sentences": [
+      "Imagine travelling abroad and being able to chat with local people as easily as with your friends at home.",
+      "For many of us, this sounds like a dream.",
+      "However, with the right approach, learning a foreign language can be much easier than you think."
+    ]
+  },
+  {
+    "id": 129,
+    "textType": "article",
+    "topic": "Teenagers and smartphones",
+    "type": "body",
+    "sentences": [
+      "First of all, spending too much time online can seriously affect our sleep.",
+      "Many teenagers check social media late at night, so they go to bed far too late.",
+      "As a consequence, they feel tired the next day and find it difficult to concentrate at school.",
+      "What is more, the blue light from screens makes it harder for the brain to switch off."
+    ]
+  },
+  {
+    "id": 130,
+    "textType": "article",
+    "topic": "The best place to spend a weekend in my town",
+    "type": "body",
+    "sentences": [
+      "The first thing you will notice is the amazing view of the sea and the colourful fishing boats.",
+      "Along the promenade, there are several small cafés serving delicious homemade ice cream.",
+      "If you prefer something more active, you can hire a bike and ride along the coast.",
+      "In the evenings, local bands often play live music, which creates a wonderful atmosphere."
+    ]
+  },
+  {
+    "id": 131,
+    "textType": "article",
+    "topic": "Learning a foreign language",
+    "type": "body",
+    "sentences": [
+      "The most important thing is to practise a little every day rather than a lot once a week.",
+      "For example, you can listen to podcasts on your way to school or change the language settings on your phone.",
+      "Another useful tip is to watch your favourite series with English subtitles.",
+      "In this way, you learn new words in a natural context without even noticing it."
+    ]
+  },
+  {
+    "id": 132,
+    "textType": "article",
+    "topic": "Teenagers and smartphones",
+    "type": "conclusion",
+    "sentences": [
+      "To sum up, smartphones are useful, but we should not let them control our lives.",
+      "Why not try leaving your phone in another room for one evening a week?",
+      "You might be surprised how much more time and energy you have."
+    ]
+  },
+  {
+    "id": 133,
+    "textType": "article",
+    "topic": "The best place to spend a weekend in my town",
+    "type": "conclusion",
+    "sentences": [
+      "All in all, the old harbour has something for everyone, whatever their age or interests.",
+      "So, next time you are bored at the weekend, grab your friends and head down to the sea.",
+      "I promise you won't regret it!"
+    ]
+  },
+  {
+    "id": 134,
+    "textType": "article",
+    "topic": "Learning a foreign language",
+    "type": "conclusion",
+    "sentences": [
+      "In conclusion, learning a language does not have to be boring or stressful.",
+      "If you make it part of your daily routine and choose activities you enjoy, progress will come quickly.",
+      "So what are you waiting for?",
+      "Start today and you will be amazed by the results in just a few months."
+    ]
+  },
+  {
+    "id": 135,
+    "textType": "review",
+    "topic": "A film review",
+    "type": "introduction",
+    "sentences": [
+      "Last weekend I finally went to see \"The Silent Coast\", the new thriller everyone at school has been talking about.",
+      "Directed by a young Polish filmmaker, it has already won several awards at international festivals.",
+      "I had high expectations before I went, and I was not disappointed."
+    ]
+  },
+  {
+    "id": 136,
+    "textType": "review",
+    "topic": "A restaurant review",
+    "type": "introduction",
+    "sentences": [
+      "If you enjoy Italian food, you have probably heard of Bella Pasta, the restaurant which opened in the city centre last month.",
+      "Last Friday I went there with my family to celebrate my brother's birthday.",
+      "Here is what we thought of it."
+    ]
+  },
+  {
+    "id": 137,
+    "textType": "review",
+    "topic": "A book review",
+    "type": "introduction",
+    "sentences": [
+      "\"The Last Island\" is the latest novel by the popular author Sarah Miles.",
+      "It is an adventure story aimed mainly at teenagers, but I think adults will enjoy it too.",
+      "I read it in just two days during the winter holidays."
+    ]
+  },
+  {
+    "id": 138,
+    "textType": "review",
+    "topic": "A film review",
+    "type": "body",
+    "sentences": [
+      "The film tells the story of a young journalist who travels to a small fishing village to investigate a mysterious disappearance.",
+      "At first, the villagers seem friendly, but she soon realises that they are hiding a terrible secret.",
+      "The main actress gives a brilliant performance, and the music makes every scene even more exciting.",
+      "My only criticism is that the middle part of the film is a little too slow."
+    ]
+  },
+  {
+    "id": 139,
+    "textType": "review",
+    "topic": "A restaurant review",
+    "type": "body",
+    "sentences": [
+      "The restaurant is decorated in a modern style, with large windows and plenty of plants.",
+      "The menu offers a wide choice of pasta and pizza, as well as some vegetarian dishes.",
+      "We ordered a seafood pasta and a mushroom pizza, and both were absolutely delicious.",
+      "The only disappointment was the service, as we had to wait almost forty minutes for our food."
+    ]
+  },
+  {
+    "id": 140,
+    "textType": "review",
+    "topic": "A book review",
+    "type": "body",
+    "sentences": [
+      "The main character is Leo, a fifteen-year-old boy who survives a shipwreck and ends up alone on a desert island.",
+      "At the beginning, he struggles to find food and shelter, but gradually he learns how to survive.",
+      "Later, he discovers that he is not the only person on the island.",
+      "The plot is full of unexpected twists, and the descriptions of nature are beautiful."
+    ]
+  },
+  {
+    "id": 141,
+    "textType": "review",
+    "topic": "A film review",
+    "type": "conclusion",
+    "sentences": [
+      "Overall, \"The Silent Coast\" is one of the best thrillers I have seen in years.",
+      "Despite a few slow moments, it kept me on the edge of my seat until the very end.",
+      "I would highly recommend it to anyone who loves mystery and suspense."
+    ]
+  },
+  {
+    "id": 142,
+    "textType": "review",
+    "topic": "A restaurant review",
+    "type": "conclusion",
+    "sentences": [
+      "All things considered, Bella Pasta is a great place for a special meal with family or friends.",
+      "The prices are reasonable and the food is excellent, even if the service could be faster.",
+      "I would definitely recommend it, but I suggest booking a table in advance at weekends."
+    ]
+  },
+  {
+    "id": 143,
+    "textType": "review",
+    "topic": "A book review",
+    "type": "conclusion",
+    "sentences": [
+      "To sum up, \"The Last Island\" is an exciting and moving story about courage and friendship.",
+      "Although the ending is a little predictable, it did not spoil my enjoyment of the book.",
+      "I would recommend it to anyone aged twelve or over who enjoys adventure stories."
+    ]
+  },
+  {
+    "id": 144,
+    "textType": "story",
+    "topic": "A day that started badly",
+    "type": "opening",
+    "sentences": [
+      "It was a cold, rainy Monday morning in November.",
+      "Adam woke up, looked at his alarm clock and jumped out of bed in panic.",
+      "He had overslept, and his most important exam of the year was starting in just thirty minutes."
+    ]
+  },
+  {
+    "id": 145,
+    "textType": "story",
+    "topic": "A strange discovery",
+    "type": "opening",
+    "sentences": [
+      "Last summer, my cousin and I were staying at our grandparents' house in the countryside.",
+      "One hot afternoon, we decided to explore the old barn at the end of the garden.",
+      "Nobody had been inside it for years, and the heavy wooden door creaked loudly as we pushed it open."
+    ]
+  },
+  {
+    "id": 146,
+    "textType": "story",
+    "topic": "Lost in the mountains",
+    "type": "opening",
+    "sentences": [
+      "The sun was shining brightly when Maja and her friends set off on their hike in the Tatra Mountains.",
+      "They had planned the route carefully and expected to reach the shelter by four o'clock.",
+      "None of them could have guessed how differently the day would end."
+    ]
+  },
+  {
+    "id": 147,
+    "textType": "story",
+    "topic": "A day that started badly",
+    "type": "body",
+    "sentences": [
+      "Without eating breakfast, he grabbed his bag and ran out of the house.",
+      "When he reached the bus stop, he saw his bus disappearing around the corner.",
+      "Just as he was about to give up, a car stopped next to him and his neighbour offered him a lift.",
+      "Thanks to her, he arrived at school with two minutes to spare."
+    ]
+  },
+  {
+    "id": 148,
+    "textType": "story",
+    "topic": "A strange discovery",
+    "type": "body",
+    "sentences": [
+      "At first, we could see nothing but dust and old farm tools.",
+      "Then my cousin noticed a small metal box hidden under a pile of straw.",
+      "With shaking hands, we opened it and found a bundle of letters and an old map.",
+      "To our surprise, the map showed our grandparents' garden with a red cross next to the apple tree."
+    ]
+  },
+  {
+    "id": 149,
+    "textType": "story",
+    "topic": "Lost in the mountains",
+    "type": "body",
+    "sentences": [
+      "After about two hours, thick fog suddenly came down and they could hardly see the path.",
+      "Soon they realised that they had taken a wrong turn and were completely lost.",
+      "To make matters worse, there was no signal on their phones.",
+      "Trying to stay calm, Maja suggested that they should follow the stream down the valley."
+    ]
+  },
+  {
+    "id": 150,
+    "textType": "story",
+    "topic": "A day that started badly",
+    "type": "ending",
+    "sentences": [
+      "Two weeks later, Adam got his results.",
+      "To his delight, he had passed with the highest mark in his class.",
+      "Since that day, he has always set two alarms before an important event."
+    ]
+  },
+  {
+    "id": 151,
+    "textType": "story",
+    "topic": "A strange discovery",
+    "type": "ending",
+    "sentences": [
+      "That evening, we showed everything to our grandfather.",
+      "He smiled and explained that the letters had been written by his own father during the war.",
+      "The next morning, we all dug under the apple tree together, and what we found there is a story for another day."
+    ]
+  },
+  {
+    "id": 152,
+    "textType": "story",
+    "topic": "Lost in the mountains",
+    "type": "ending",
+    "sentences": [
+      "Finally, just before dark, they saw the lights of the shelter in the distance.",
+      "Exhausted but relieved, they walked in and were welcomed with hot tea by the mountain rescuers.",
+      "It was an adventure they would never forget, and they promised each other always to check the weather forecast in future."
+    ]
+  },
+  {
+    "id": 153,
+    "textType": "report",
+    "topic": "School canteen survey",
+    "type": "introduction",
+    "sentences": [
+      "The aim of this report is to present students' opinions about the school canteen.",
+      "It is based on a questionnaire completed by 120 students from all year groups.",
+      "It also includes some recommendations for improving the service."
+    ]
+  },
+  {
+    "id": 154,
+    "textType": "report",
+    "topic": "Sports facilities in our town",
+    "type": "introduction",
+    "sentences": [
+      "This report has been written at the request of the town council.",
+      "Its purpose is to assess the sports facilities available to young people in our town.",
+      "The information was collected by visiting the facilities and interviewing local teenagers."
+    ]
+  },
+  {
+    "id": 155,
+    "textType": "report",
+    "topic": "A school trip",
+    "type": "introduction",
+    "sentences": [
+      "The purpose of this report is to evaluate last month's class trip to Kraków.",
+      "It describes the main activities and summarises the opinions of the students who took part.",
+      "Finally, it suggests some changes for future trips."
+    ]
+  },
+  {
+    "id": 156,
+    "textType": "report",
+    "topic": "School canteen survey",
+    "type": "body",
+    "sentences": [
+      "The majority of students said that the food in the canteen is tasty and reasonably priced.",
+      "However, over 60% complained about the long queues during the lunch break.",
+      "Many students also pointed out that there are not enough vegetarian options.",
+      "In addition, some students said that the dining room is too noisy to relax in."
+    ]
+  },
+  {
+    "id": 157,
+    "textType": "report",
+    "topic": "Sports facilities in our town",
+    "type": "body",
+    "sentences": [
+      "The town has a modern swimming pool, which is popular with people of all ages.",
+      "However, it is often overcrowded in the evenings, when most teenagers are free.",
+      "The outdoor football pitches are in poor condition and have no lighting.",
+      "As a result, they cannot be used after dark during the autumn and winter."
+    ]
+  },
+  {
+    "id": 158,
+    "textType": "report",
+    "topic": "A school trip",
+    "type": "body",
+    "sentences": [
+      "On the first day, students visited Wawel Castle and the Old Town with a professional guide.",
+      "Most participants found the tour interesting, although some felt it was too long.",
+      "The second day was spent at the Wieliczka Salt Mine, which was the highlight of the trip for nearly everyone.",
+      "On the other hand, several students complained that there was not enough free time."
+    ]
+  },
+  {
+    "id": 159,
+    "textType": "report",
+    "topic": "School canteen survey",
+    "type": "conclusion",
+    "sentences": [
+      "In conclusion, students are generally satisfied with the canteen, but some changes are needed.",
+      "Firstly, I would recommend opening a second serving point to reduce the queues.",
+      "Secondly, the menu should include at least two vegetarian dishes every day.",
+      "If these suggestions are introduced, the canteen will become a much more pleasant place for everyone."
+    ]
+  },
+  {
+    "id": 160,
+    "textType": "report",
+    "topic": "Sports facilities in our town",
+    "type": "conclusion",
+    "sentences": [
+      "To sum up, although our town has some good sports facilities, they do not fully meet young people's needs.",
+      "I would strongly recommend installing lights on the football pitches.",
+      "It would also be a good idea to reserve some evening hours at the pool for teenagers only.",
+      "These changes would encourage more young people to lead an active lifestyle."
+    ]
+  },
+  {
+    "id": 161,
+    "textType": "report",
+    "topic": "A school trip",
+    "type": "conclusion",
+    "sentences": [
+      "Overall, the trip was a great success and gave students a chance to learn outside the classroom.",
+      "However, in future I would suggest planning shorter guided tours.",
+      "Students should also be given at least two hours of free time each day.",
+      "With these changes, the next trip could be even more enjoyable."
     ]
   }
 ];

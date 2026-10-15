@@ -27,6 +27,7 @@ export const PUBLIC_SCRIPTS = new Set([
     'challenge-deck.js',
     'demo-sets.js',
     'frank-paragraphs.js',
+    'frank-options.js',
     'live-entry.js',
     'live-game-client.js',
     'lucky-lanterns-fx.js',

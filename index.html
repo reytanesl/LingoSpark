@@ -23,6 +23,7 @@
     <script src="demo-sets.js"></script>
     <script src="matura-mistakes.js"></script>
     <script src="frank-paragraphs.js"></script>
+    <script src="frank-options.js"></script>
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
     <script src="pe-line-up.js"></script>
@@ -1778,6 +1779,19 @@
             border-radius: 12px; padding: 0.95rem 1.15rem; margin: 0 auto 1.35rem; max-width: 720px; text-align: left;
             box-shadow: 0 4px 14px rgba(1, 33, 105, 0.06);
         }
+        .frank-type-kind {
+            display: inline-block; margin: 0 0 0.35rem; padding: 0.15rem 0.6rem; border-radius: 999px;
+            background: rgba(200, 16, 46, 0.08); color: var(--pillarbox-red, #c8102e);
+            font-family: var(--font-primary); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.02em;
+        }
+        .frank-type-kind:empty { display: none; }
+        .frank-options { margin-top: 0.85rem; text-align: left; }
+        .frank-options select { width: 100%; max-width: 100%; }
+        .frank-opt-count { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+        .frank-opt-count.is-empty { color: #b91c1c; font-weight: 600; }
+        .frank-options--game { margin: 0 0 0.85rem; }
+        .frank-options--game .pe-setup-field label { font-size: 0.85rem; }
+        @media (max-width: 480px) { .frank-options select { font-size: 0.9rem; padding-left: 0.6rem; padding-right: 0.6rem; } }
         .frank-type-name { font-family: var(--font-primary); font-weight: 800; color: var(--royal-blue); font-size: 1.08rem; margin: 0 0 0.2rem; }
         .frank-type-topic { font-size: 0.88rem; color: var(--text-muted); margin: 0 0 0.5rem; }
         .frank-type-hint { font-size: 0.92rem; line-height: 1.5; margin: 0; color: var(--text-dark); }
@@ -3277,7 +3291,7 @@
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
-                <div class="guide-item"><strong>Frankenstein Builder</strong><p>A paragraph type is named (introduction, body for/against/opinion, or conclusion). Unscramble the sentences into the original order.</p></div>
+                <div class="guide-item"><strong>Frankenstein Builder</strong><p>Choose a text type (essay, formal or informal letter/email, article, review, story, report) and a paragraph type, or leave both on Any. Unscramble the sentences into the original order.</p></div>
                 <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
                 <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Cut redundant words and phrases without losing meaning. Aim for clear, concise writing.</p></div>
@@ -3565,7 +3579,7 @@
                             <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
                         </button>
                         <div class="grid ws-game-cat-grid">
-                            <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a ready-made essay paragraph — introduction, body or conclusion — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a model paragraph — essay, letter/email, article, review, story or report; opening, body or ending — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
                         </div>
@@ -4059,7 +4073,20 @@
 
             <div id="frank-setup-note" class="form-group setup-note" style="display:none;">
                 <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
-                <p>Ready-made essay paragraphs — no AI. Each round names the paragraph type. Scramble the sentences back into the original order.</p>
+                <p>Ready-made model paragraphs (B1–B2) — no AI. Pick what you want to practise, then put the scrambled sentences back into the original order.</p>
+                <div class="pe-setup-compact frank-options" data-frank-options>
+                    <div class="pe-setup-row">
+                        <div class="pe-setup-field">
+                            <label for="frank-setup-text-type"><i class="fa-solid fa-file-lines"></i> Text type</label>
+                            <select id="frank-setup-text-type" class="frank-opt-text"></select>
+                        </div>
+                        <div class="pe-setup-field">
+                            <label for="frank-setup-para-type"><i class="fa-solid fa-paragraph"></i> Paragraph type</label>
+                            <select id="frank-setup-para-type" class="frank-opt-para"></select>
+                        </div>
+                    </div>
+                    <p class="frank-opt-count" aria-live="polite"></p>
+                </div>
             </div>
             </div>
             </div>
@@ -4173,6 +4200,19 @@
                 <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
             <div class="game-setup-panel">
+                <div class="pe-setup-compact frank-options frank-options--game" data-frank-options>
+                    <div class="pe-setup-row">
+                        <div class="pe-setup-field">
+                            <label for="frank-game-text-type">Text type</label>
+                            <select id="frank-game-text-type" class="frank-opt-text"></select>
+                        </div>
+                        <div class="pe-setup-field">
+                            <label for="frank-game-para-type">Paragraph type</label>
+                            <select id="frank-game-para-type" class="frank-opt-para"></select>
+                        </div>
+                    </div>
+                    <p class="frank-opt-count" aria-live="polite"></p>
+                </div>
                 <div class="game-setup-actions">
                     <button class="btn btn-outline" onclick="initFrankenstein()" id="frank-btn">New Paragraph <i class="fa-solid fa-rotate"></i></button>
                 </div>
@@ -4180,6 +4220,7 @@
             </div>
         </div>
             <div id="frank-type-card" class="frank-type-card" hidden>
+                <p class="frank-type-kind" id="frank-type-kind"></p>
                 <p class="frank-type-name" id="frank-type-name"></p>
                 <p class="frank-type-topic" id="frank-type-topic"></p>
                 <p class="frank-type-hint" id="frank-type-hint"></p>
@@ -8016,6 +8057,7 @@
             }
             if (gameType === 'frank') {
                 document.getElementById('setup-title').innerText = 'Frankenstein Builder';
+                syncFrankOptionsUi();
             }
             if (gameType === 'memory-flip') {
                 document.getElementById('setup-title').innerText = 'Memory Flip Setup';
@@ -8322,32 +8364,50 @@
         // 1. FRANKENSTEIN BUILDER — scramble a bank paragraph (no AI)
         let frankensteinState = null;
         let frankLastId = null;
-        const FRANK_PARA_TYPES = {
-            introduction: {
-                label: 'Introduction',
-                hint: 'Typical shape: general context → the debate or problem → the writer’s thesis or question.'
-            },
-            body_for: {
-                label: 'Body paragraph — arguments for',
-                hint: 'Typical shape: a point in favour → explanation → extra support → result or wrap-up.'
-            },
-            body_against: {
-                label: 'Body paragraph — arguments against',
-                hint: 'Typical shape: a contrasting point → explanation → extra support → result or wrap-up.'
-            },
-            body_opinion: {
-                label: 'Body paragraph — opinion',
-                hint: 'Typical shape: a clear personal view → reasons → further justification → a firm close.'
-            },
-            conclusion_for_against: {
-                label: 'Conclusion — for and against',
-                hint: 'Typical shape: a balanced summary → both sides in brief → a measured closing judgement.'
-            },
-            conclusion_opinion: {
-                label: 'Conclusion — opinion',
-                hint: 'Typical shape: a restated opinion → a key reason → a final recommendation.'
-            }
-        };
+        // Text type + paragraph type options live in frank-options.js (window.FrankOptions).
+        function frankSelection() {
+            return window.FrankOptions ? FrankOptions.loadSelection(window.localStorage) : { textType: 'any', paraType: 'any' };
+        }
+
+        function frankFillSelect(sel, options, value) {
+            if (!sel) return;
+            sel.innerHTML = options.map((o) => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
+            sel.value = value;
+        }
+
+        /** Render every Frankenstein option block (setup screen + in-game panel) from the saved choice. */
+        function syncFrankOptionsUi() {
+            if (!window.FrankOptions) return;
+            const choice = frankSelection();
+            const bank = window.LINGOSPARK_FRANK_PARAGRAPHS || [];
+            const n = FrankOptions.filterBank(bank, choice).length;
+            document.querySelectorAll('[data-frank-options]').forEach((box) => {
+                frankFillSelect(box.querySelector('.frank-opt-text'), FrankOptions.textTypeOptions(), choice.textType);
+                frankFillSelect(box.querySelector('.frank-opt-para'), FrankOptions.paragraphOptions(choice.textType), choice.paraType);
+                const count = box.querySelector('.frank-opt-count');
+                if (count) {
+                    count.textContent = n ? `${n} model paragraph${n === 1 ? '' : 's'} match this choice.` : 'No paragraphs match this choice yet — pick another option.';
+                    count.classList.toggle('is-empty', !n);
+                }
+            });
+        }
+
+        function onFrankOptionChange(event) {
+            const box = event.target.closest('[data-frank-options]');
+            if (!box || !window.FrankOptions) return;
+            const textType = box.querySelector('.frank-opt-text').value;
+            const prev = frankSelection();
+            const paraType = event.target.classList.contains('frank-opt-text') && textType !== prev.textType ? 'any' : box.querySelector('.frank-opt-para').value;
+            FrankOptions.saveSelection(window.localStorage, { textType, paraType });
+            syncFrankOptionsUi();
+            // Inside the game, a new choice deals a matching paragraph straight away.
+            if (box.classList.contains('frank-options--game') && document.getElementById('screen-frank')?.classList.contains('active')) initFrankenstein();
+        }
+
+        document.addEventListener('change', (event) => {
+            if (event.target && event.target.matches && event.target.matches('[data-frank-options] select')) onFrankOptionChange(event);
+        });
+        document.addEventListener('DOMContentLoaded', syncFrankOptionsUi);
 
         function frankShuffle(items) {
             const arr = items.slice();
@@ -8362,18 +8422,15 @@
 
         function pickFrankParagraph() {
             const bank = Array.isArray(window.LINGOSPARK_FRANK_PARAGRAPHS) ? window.LINGOSPARK_FRANK_PARAGRAPHS : [];
-            const usable = bank.filter((p) => Array.isArray(p.sentences) && p.sentences.length >= 2);
-            const pool = usable.filter((p) => p.id !== frankLastId);
-            const list = pool.length ? pool : usable;
-            if (!list.length) return null;
-            const para = list[Math.floor(Math.random() * list.length)];
-            frankLastId = para.id;
+            if (!window.FrankOptions) return null;
+            const para = FrankOptions.pickParagraph(bank, frankSelection(), frankLastId);
+            if (para) frankLastId = para.id;
             return para;
         }
 
-        function frankTypeInfo(type) {
-            return FRANK_PARA_TYPES[type] || {
-                label: String(type || 'Paragraph').replace(/_/g, ' '),
+        function frankTypeInfo(para) {
+            return window.FrankOptions ? FrankOptions.typeInfo(para) : {
+                textLabel: '', label: String((para && para.type) || 'Paragraph').replace(/_/g, ' '),
                 hint: 'Put the sentences back into the original paragraph order.'
             };
         }
@@ -8389,18 +8446,21 @@
                 feedback.className = 'feedback';
             }
 
+            syncFrankOptionsUi();
             const para = pickFrankParagraph();
             if (!para) {
                 if (container) container.innerHTML = '';
                 if (typeCard) typeCard.hidden = true;
                 if (feedback) {
                     feedback.className = 'feedback error';
-                    feedback.textContent = 'No paragraphs are available right now.';
+                    feedback.textContent = 'No paragraphs match this text type and paragraph type. Open Setup and choose another option.';
                 }
                 return;
             }
 
-            const info = frankTypeInfo(para.type);
+            const info = frankTypeInfo(para);
+            const kindEl = document.getElementById('frank-type-kind');
+            if (kindEl) kindEl.textContent = info.textLabel || '';
             const nameEl = document.getElementById('frank-type-name');
             const topicEl = document.getElementById('frank-type-topic');
             const hintEl = document.getElementById('frank-type-hint');
@@ -8410,7 +8470,7 @@
             if (typeCard) typeCard.hidden = false;
 
             const desc = document.getElementById('frank-game-desc');
-            if (desc) desc.textContent = 'Put these scrambled sentences back into the original order for this ' + info.label.toLowerCase() + '.';
+            if (desc) desc.textContent = 'Put these scrambled sentences back into the original order: ' + (info.textLabel ? info.textLabel + ' — ' : '') + info.label + '.';
 
             const objects = para.sentences.map((text, idx) => ({ id: idx + 1, text: String(text || '') }));
             let shuffled = frankShuffle(objects);
@@ -8423,6 +8483,7 @@
             frankensteinState = {
                 id: para.id,
                 type: para.type,
+                textType: window.FrankOptions ? FrankOptions.textTypeOf(para) : 'essay',
                 typeLabel: info.label,
                 topic: para.topic || '',
                 length: objects.length
@@ -8459,7 +8520,7 @@
             const n = (frankensteinState && frankensteinState.length) || currentOrder.length;
             const correctOrder = Array.from({ length: n }, (_, i) => i + 1);
             const feedback = document.getElementById('frank-feedback');
-            const typeLabel = (frankensteinState && frankensteinState.typeLabel) || 'paragraph';
+            const typeLabel = 'paragraph';
 
             if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
                 feedback.className = 'feedback success';
