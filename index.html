@@ -1822,6 +1822,29 @@
             .frank-container--whole .frank-controls { flex-direction: column; }
             .frank-container--whole .frank-controls button { padding: 3px 8px; }
         }
+        .frank-source { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .frank-source-pill { position: relative; cursor: pointer; margin: 0 !important; }
+        .frank-source-pill input { position: absolute; opacity: 0; pointer-events: none; }
+        .frank-source-pill span {
+            display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; border-radius: 999px;
+            border: 2px solid var(--border-light); background: var(--bright-white); color: var(--royal-blue);
+            font-family: var(--font-primary); font-weight: 700; font-size: 0.88rem;
+        }
+        .frank-source-pill input:checked + span { border-color: var(--pillarbox-red, #c8102e); background: rgba(200, 16, 46, 0.07); color: var(--pillarbox-red, #c8102e); }
+        .frank-source-pill input:focus-visible + span { outline: 2px solid var(--royal-blue); outline-offset: 2px; }
+        .frank-ai-topic[hidden] { display: none; }
+        .frank-options input.frank-opt-topic { width: 100%; box-sizing: border-box; padding: 0.55rem 0.7rem; border: 2px solid var(--border-light); border-radius: 0.5rem; font-size: 0.95rem; }
+        .frank-type-task { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--border-light); display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.92rem; }
+        .frank-type-task[hidden] { display: none; }
+        .frank-task-label { font-family: var(--font-primary); font-weight: 700; font-size: 0.76rem; color: var(--pillarbox-red, #c8102e); text-transform: uppercase; letter-spacing: 0.03em; }
+        .frank-task-title { font-family: var(--font-primary); color: var(--royal-blue); }
+        .frank-task-head { font-weight: 700; color: var(--text-dark); }
+        .frank-task-text { line-height: 1.5; }
+        .frank-task-elements { margin: 0.1rem 0 0; padding-left: 1.2rem; line-height: 1.5; }
+        .frank-task-words { font-size: 0.8rem; color: var(--text-muted); }
+        .frank-ai-status { max-width: 720px; margin: 0 auto 1rem; padding: 0.6rem 0.9rem; border-radius: 10px; background: rgba(1, 33, 105, 0.06); color: var(--royal-blue); font-size: 0.9rem; text-align: left; }
+        .frank-ai-status[hidden] { display: none; }
+        .frank-ai-status.is-fallback { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
         .frank-opt-count { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
         .frank-opt-count.is-empty { color: #b91c1c; font-weight: 600; }
         .frank-options--game { margin: 0 0 0.85rem; }
@@ -4108,8 +4131,12 @@
 
             <div id="frank-setup-note" class="form-group setup-note" style="display:none;">
                 <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
-                <p>Ready-made model paragraphs (B1–B2) — no AI. Pick what you want to practise — one paragraph, or the whole text (sentences and short chunks to order from beginning to end).</p>
+                <p>Ready-made B1–B2 models, or <strong>Generate with AI</strong>: a new text written to CKE extended-matura (rozszerzona) criteria with an exam-style task. Pick what you want to practise — one paragraph, or the whole text (sentences and short chunks to order from beginning to end).</p>
                 <div class="pe-setup-compact frank-options" data-frank-options>
+                    <div class="frank-source" role="radiogroup" aria-label="Where the text comes from">
+                        <label class="frank-source-pill"><input type="radio" name="setup-frank-source" value="bank" class="frank-opt-source"><span><i class="fa-solid fa-book-open"></i> Ready-made bank</span></label>
+                        <label class="frank-source-pill"><input type="radio" name="setup-frank-source" value="ai" class="frank-opt-source"><span><i class="fa-solid fa-wand-magic-sparkles"></i> Generate with AI</span></label>
+                    </div>
                     <div class="pe-setup-row">
                         <div class="pe-setup-field">
                             <label for="frank-setup-text-type"><i class="fa-solid fa-file-lines"></i> Text type</label>
@@ -4119,6 +4146,10 @@
                             <label for="frank-setup-para-type"><i class="fa-solid fa-paragraph"></i> Paragraph type</label>
                             <select id="frank-setup-para-type" class="frank-opt-para"></select>
                         </div>
+                    </div>
+                    <div class="pe-setup-field frank-ai-topic" hidden>
+                        <label for="frank-setup-topic"><i class="fa-solid fa-lightbulb"></i> Topic (optional)</label>
+                        <input type="text" id="frank-setup-topic" class="frank-opt-topic" maxlength="120" placeholder="e.g. school uniforms, remote work, city transport" autocomplete="off">
                     </div>
                     <p class="frank-opt-count" aria-live="polite"></p>
                 </div>
@@ -4236,6 +4267,10 @@
             </div>
             <div class="game-setup-panel">
                 <div class="pe-setup-compact frank-options frank-options--game" data-frank-options>
+                    <div class="frank-source" role="radiogroup" aria-label="Where the text comes from">
+                        <label class="frank-source-pill"><input type="radio" name="game-frank-source" value="bank" class="frank-opt-source"><span><i class="fa-solid fa-book-open"></i> Ready-made bank</span></label>
+                        <label class="frank-source-pill"><input type="radio" name="game-frank-source" value="ai" class="frank-opt-source"><span><i class="fa-solid fa-wand-magic-sparkles"></i> Generate with AI</span></label>
+                    </div>
                     <div class="pe-setup-row">
                         <div class="pe-setup-field">
                             <label for="frank-game-text-type">Text type</label>
@@ -4245,6 +4280,10 @@
                             <label for="frank-game-para-type">Paragraph type</label>
                             <select id="frank-game-para-type" class="frank-opt-para"></select>
                         </div>
+                    </div>
+                    <div class="pe-setup-field frank-ai-topic" hidden>
+                        <label for="frank-game-topic"><i class="fa-solid fa-lightbulb"></i> Topic (optional)</label>
+                        <input type="text" id="frank-game-topic" class="frank-opt-topic" maxlength="120" placeholder="e.g. school uniforms, remote work, city transport" autocomplete="off">
                     </div>
                     <p class="frank-opt-count" aria-live="polite"></p>
                 </div>
@@ -4259,7 +4298,9 @@
                 <p class="frank-type-name" id="frank-type-name"></p>
                 <p class="frank-type-topic" id="frank-type-topic"></p>
                 <p class="frank-type-hint" id="frank-type-hint"></p>
+                <div class="frank-type-task" id="frank-type-task" hidden></div>
             </div>
+            <p id="frank-ai-status" class="frank-ai-status" role="status" hidden></p>
             <div id="frank-loading" class="loading-spinner" style="display:none;"></div>
             <div id="frank-content">
                 <div id="frank-container" style="margin-bottom: 2rem;"></div>
@@ -8418,13 +8459,25 @@
             const bank = window.LINGOSPARK_FRANK_PARAGRAPHS || [];
             const n = FrankOptions.countFor(bank, window.LINGOSPARK_FRANK_WHOLE_TEXTS || [], choice);
             const unit = FrankOptions.isWhole(choice) ? 'whole model text' : 'model paragraph';
+            const ai = frankAiPrefs();
             document.querySelectorAll('[data-frank-options]').forEach((box) => {
+                box.querySelectorAll('.frank-opt-source').forEach((r) => { r.checked = r.value === ai.source; });
+                const topicWrap = box.querySelector('.frank-ai-topic');
+                if (topicWrap) topicWrap.hidden = ai.source !== 'ai';
+                const topicInput = box.querySelector('.frank-opt-topic');
+                if (topicInput && document.activeElement !== topicInput) topicInput.value = ai.topic;
                 frankFillSelect(box.querySelector('.frank-opt-text'), FrankOptions.textTypeOptions(), choice.textType);
                 frankFillSelect(box.querySelector('.frank-opt-para'), FrankOptions.paragraphOptions(choice.textType), choice.paraType);
                 const count = box.querySelector('.frank-opt-count');
                 if (count) {
                     count.textContent = n ? `${n} ${unit}${n === 1 ? '' : 's'} match${n === 1 ? 'es' : ''} this choice.` : 'Nothing matches this choice yet — pick another option.';
                     count.classList.toggle('is-empty', !n);
+                    if (ai.source === 'ai') {
+                        count.classList.remove('is-empty');
+                        count.textContent = FrankOptions.isWhole(choice)
+                            ? 'AI writes a new 200–250-word text to CKE extended-matura criteria, with an exam-style task. Up to 12 AI texts per hour.'
+                            : 'AI writes a new model paragraph to CKE extended-matura criteria, with an exam-style task. Up to 12 AI texts per hour.';
+                    }
                 }
             });
         }
@@ -8442,7 +8495,22 @@
         }
 
         document.addEventListener('change', (event) => {
-            if (event.target && event.target.matches && event.target.matches('[data-frank-options] select')) onFrankOptionChange(event);
+            const t = event.target;
+            if (!t || !t.matches) return;
+            if (t.matches('[data-frank-options] select')) onFrankOptionChange(event);
+            if (t.matches('[data-frank-options] .frank-opt-source')) {
+                saveFrankAiPrefs({ source: t.value });
+                syncFrankOptionsUi();
+                if (t.closest('.frank-options--game') && document.getElementById('screen-frank')?.classList.contains('active')) initFrankenstein();
+            }
+            if (t.matches('[data-frank-options] .frank-opt-topic')) {
+                saveFrankAiPrefs({ topic: t.value.trim() });
+                syncFrankOptionsUi();
+            }
+        });
+        document.addEventListener('input', (event) => {
+            const t = event.target;
+            if (t && t.matches && t.matches('[data-frank-options] .frank-opt-topic')) saveFrankAiPrefs({ topic: t.value });
         });
         document.addEventListener('DOMContentLoaded', syncFrankOptionsUi);
 
@@ -8494,7 +8562,82 @@
             syncFrankOptionsUi();
             const choice = frankSelection();
             const whole = window.FrankOptions && FrankOptions.isWhole(choice);
+            const aiStatus = document.getElementById('frank-ai-status');
+            if (aiStatus) { aiStatus.hidden = true; aiStatus.classList.remove('is-fallback'); }
+            if (frankAiPrefs().source === 'ai') {
+                frankGenerateAi(choice, whole);
+                return;
+            }
             const para = whole ? pickFrankWholeText(choice) : pickFrankParagraph();
+            frankRender(para, whole);
+        }
+
+        // ---- Generate with AI (server: POST /api/frank/generate, CKE extended-matura criteria) ----
+        const FRANK_AI_KEY = 'lingospark.frank.ai.v1';
+        function frankAiPrefs() {
+            try {
+                const v = JSON.parse(localStorage.getItem(FRANK_AI_KEY) || '{}');
+                return { source: v.source === 'ai' ? 'ai' : 'bank', topic: String(v.topic || '').slice(0, 120) };
+            } catch (_) { return { source: 'bank', topic: '' }; }
+        }
+        function saveFrankAiPrefs(prefs) {
+            const cur = frankAiPrefs();
+            const next = { source: prefs.source === 'ai' ? 'ai' : (prefs.source === 'bank' ? 'bank' : cur.source), topic: prefs.topic !== undefined ? String(prefs.topic).slice(0, 120) : cur.topic };
+            try { localStorage.setItem(FRANK_AI_KEY, JSON.stringify(next)); } catch (_) { /* private mode */ }
+            return next;
+        }
+        let frankAiBusy = false;
+        async function frankGenerateAi(choice, whole) {
+            if (frankAiBusy) return;
+            frankAiBusy = true;
+            const loading = document.getElementById('frank-loading');
+            const container = document.getElementById('frank-container');
+            const typeCard = document.getElementById('frank-type-card');
+            const status = document.getElementById('frank-ai-status');
+            const btn = document.getElementById('frank-btn');
+            if (container) container.innerHTML = '';
+            if (typeCard) typeCard.hidden = true;
+            if (loading) loading.style.display = 'block';
+            if (status) { status.hidden = false; status.className = 'frank-ai-status'; status.textContent = whole ? 'Writing a new 200–250-word text to CKE extended-matura criteria…' : 'Writing a new model paragraph to CKE extended-matura criteria…'; }
+            if (btn) btn.disabled = true;
+            let item = null;
+            let failure = '';
+            try {
+                const res = await fetch('/api/frank/generate', {
+                    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ textType: choice.textType, paraType: choice.paraType, topic: frankAiPrefs().topic }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data && data.item) item = data.item;
+                else failure = (data && data.error) || `Server error ${res.status}`;
+            } catch (err) {
+                failure = 'Network error — check your connection.';
+            } finally {
+                frankAiBusy = false;
+                if (loading) loading.style.display = 'none';
+                if (btn) btn.disabled = false;
+            }
+            if (item) {
+                if (status) status.hidden = true;
+                frankRender(item, whole, { ai: true });
+                return;
+            }
+            // Fallback: a matching ready-made model from the static bank.
+            const para = whole ? pickFrankWholeText(choice) : pickFrankParagraph();
+            frankRender(para, whole);
+            if (status) {
+                status.hidden = false;
+                status.className = 'frank-ai-status is-fallback';
+                status.textContent = `AI generation failed: ${failure} Showing a ready-made model instead.`;
+            }
+        }
+
+        function frankRender(para, whole, opts = {}) {
+            const checkBtn = document.getElementById('frank-check-btn');
+            const feedback = document.getElementById('frank-feedback');
+            const container = document.getElementById('frank-container');
+            const typeCard = document.getElementById('frank-type-card');
+            if (!opts.ai) { const st = document.getElementById('frank-ai-status'); if (st && !st.classList.contains('is-fallback')) st.hidden = true; }
             if (!para) {
                 if (container) container.innerHTML = '';
                 if (typeCard) typeCard.hidden = true;
@@ -8514,6 +8657,20 @@
             if (nameEl) nameEl.textContent = info.label;
             if (topicEl) topicEl.textContent = para.topic ? ('Topic: ' + para.topic) : '';
             if (hintEl) hintEl.textContent = info.hint;
+            const taskEl = document.getElementById('frank-type-task');
+            if (taskEl) {
+                if (opts.ai && para.task) {
+                    taskEl.innerHTML = `<span class="frank-task-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Generated with AI · CKE matura rozszerzona</span>`
+                        + (para.title ? `<strong class="frank-task-title">${esc(para.title)}</strong>` : '')
+                        + `<span class="frank-task-head">Polecenie</span><span class="frank-task-text">${esc(para.task)}</span>`
+                        + (Array.isArray(para.elements) && para.elements.length ? `<ul class="frank-task-elements">${para.elements.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>` : '')
+                        + (para.words ? `<span class="frank-task-words">${para.words} words</span>` : '');
+                    taskEl.hidden = false;
+                } else {
+                    taskEl.innerHTML = '';
+                    taskEl.hidden = true;
+                }
+            }
             if (typeCard) typeCard.hidden = false;
 
             const desc = document.getElementById('frank-game-desc');

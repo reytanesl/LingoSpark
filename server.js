@@ -79,6 +79,7 @@ import {
 import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
+import { createFrankGenerateHandler } from './frank-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
 import './matura-mistakes.js';
 const { sanitizeMistakes: sanitizeMaturaMistakes, PROMPT_TYPES: MATURA_MISTAKE_TYPES } = globalThis.MaturaMistakes;
@@ -998,6 +999,16 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             res.status(500).json({ error: error.message || 'Failed to generate the story' });
         }
     });
+
+    /**
+     * Frankenstein Builder "Generate with AI": whitelisted text/paragraph type + optional topic; the
+     * CKE extended-matura prompt, validation (JSON, word count, linking) and a per-user rate limit
+     * live in frank-ai.js. On any failure the client falls back to the static bank.
+     */
+    app.post('/api/frank/generate', requireWritingAccess, createFrankGenerateHandler({
+        runPrompt: (prompt, label) => runVisionJsonPrompt({ apiKey: process.env.CURSOR_API_KEY, prompt, label }),
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
+    }));
 
     /**
      * Primary English Exam Simulator — same vision upload path as Matura Writing Assessment,
