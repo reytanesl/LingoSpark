@@ -1787,10 +1787,41 @@
         .frank-type-kind:empty { display: none; }
         .frank-options { margin-top: 0.85rem; text-align: left; }
         .frank-options select { width: 100%; max-width: 100%; }
-        .frank-item--para span { line-height: 1.6; }
-        .frank-item--para .frank-line { display: block; }
-        .frank-item--para .frank-line + .frank-line { margin-top: 0.35rem; }
-        .frank-container--whole .frank-item { border-left: 4px solid rgba(200, 16, 46, 0.35); }
+        #frank-container { counter-reset: frank-pos; }
+        .frank-item { counter-increment: frank-pos; align-items: center; }
+        .frank-item .frank-text { flex: 1; line-height: 1.5; }
+        .frank-item .frank-text::before {
+            content: counter(frank-pos); display: inline-flex; align-items: center; justify-content: center;
+            min-width: 1.5rem; height: 1.5rem; margin-right: 0.55rem; border-radius: 999px;
+            background: var(--light-grey); color: var(--royal-blue); font-family: var(--font-primary);
+            font-weight: 800; font-size: 0.78rem; vertical-align: 1px;
+        }
+        .frank-item .frank-grip {
+            flex: 0 0 auto; align-self: stretch; display: flex; align-items: center; padding: 0 0.15rem;
+            color: #9ca3af; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+        }
+        .frank-item--dragging { opacity: 0.85; border-color: var(--pillarbox-red, #c8102e) !important; box-shadow: 0 10px 24px rgba(1, 33, 105, 0.18); }
+        .frank-item--dragging .frank-grip { cursor: grabbing; }
+        .frank-item--wrong { border-color: #dc2626 !important; background: #fef2f2; }
+        .frank-item--ok { border-color: #16a34a; }
+        .frank-container--whole .frank-item { padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; font-size: 0.97rem; }
+        .frank-container--whole .frank-controls { flex-direction: row; }
+        .frank-container--whole .frank-controls button { padding: 4px 9px; font-size: 1rem; }
+        .frank-item--short .frank-text { font-style: italic; color: var(--royal-blue); }
+        .frank-solved {
+            margin: 1rem auto 0; max-width: 760px; text-align: left; background: var(--bright-white);
+            border: 1px solid var(--border-light); border-left: 4px solid #16a34a; border-radius: 12px; padding: 1rem 1.2rem;
+        }
+        .frank-solved[hidden] { display: none; }
+        .frank-solved-title { margin: 0 0 0.6rem; font-family: var(--font-primary); font-weight: 800; color: #15803d; font-size: 0.95rem; }
+        .frank-solved-para { margin: 0 0 0.75rem; line-height: 1.6; }
+        .frank-solved-para:last-child { margin-bottom: 0; }
+        @media (max-width: 480px) {
+            .frank-item { padding: 0.75rem 0.7rem; gap: 0.4rem; }
+            .frank-container--whole .frank-item { padding: 0.5rem 0.5rem; font-size: 0.92rem; }
+            .frank-container--whole .frank-controls { flex-direction: column; }
+            .frank-container--whole .frank-controls button { padding: 3px 8px; }
+        }
         .frank-opt-count { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
         .frank-opt-count.is-empty { color: #b91c1c; font-weight: 600; }
         .frank-options--game { margin: 0 0 0.85rem; }
@@ -4077,7 +4108,7 @@
 
             <div id="frank-setup-note" class="form-group setup-note" style="display:none;">
                 <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
-                <p>Ready-made model paragraphs (B1–B2) — no AI. Pick what you want to practise — one paragraph (sentences to order) or the whole text (paragraphs to order from beginning to end).</p>
+                <p>Ready-made model paragraphs (B1–B2) — no AI. Pick what you want to practise — one paragraph, or the whole text (sentences and short chunks to order from beginning to end).</p>
                 <div class="pe-setup-compact frank-options" data-frank-options>
                     <div class="pe-setup-row">
                         <div class="pe-setup-field">
@@ -4235,6 +4266,7 @@
                 <button class="btn btn-blue" style="width: 100%; padding: 1rem;" onclick="checkFrankenstein()" id="frank-check-btn">Check Order</button>
             </div>
             <div id="frank-feedback" class="feedback"></div>
+            <div id="frank-solved" class="frank-solved" hidden></div>
         </div>
 
         <!-- WRITING SUITE: TRANSITION MATCHER -->
@@ -8486,13 +8518,15 @@
 
             const desc = document.getElementById('frank-game-desc');
             if (desc) desc.textContent = whole
-                ? 'Put these scrambled paragraphs in order, from the beginning of the text to the end: ' + info.textLabel + '.'
+                ? 'Put these scrambled sentences in order, from the beginning of the text to the end: ' + info.textLabel + '. Drag the grip or use the arrows.'
                 : 'Put these scrambled sentences back into the original order: ' + (info.textLabel ? info.textLabel + ' — ' : '') + info.label + '.';
 
-            // Whole text: the units are complete paragraphs; otherwise sentences of one paragraph.
+            // Whole text: single sentences / two-sentence chunks across the entire text (8–12 cards);
+            // otherwise the sentences of one paragraph.
+            const chunks = whole ? FrankOptions.chunkWholeText(para) : null;
             const objects = whole
-                ? para.paragraphs.map((pp, idx) => ({ id: idx + 1, lines: pp.lines }))
-                : para.sentences.map((text, idx) => ({ id: idx + 1, lines: [String(text || '')] }));
+                ? chunks.map((c) => ({ id: c.id, text: c.text, short: c.short }))
+                : para.sentences.map((text, idx) => ({ id: idx + 1, text: String(text || '') }));
             let shuffled = frankShuffle(objects);
             let guard = 0;
             while (guard < 12 && shuffled.every((s, i) => s.id === i + 1)) {
@@ -8507,27 +8541,70 @@
                 whole: Boolean(whole),
                 typeLabel: info.label,
                 topic: para.topic || '',
+                chunks,
                 length: objects.length
             };
+            const solved = document.getElementById('frank-solved');
+            if (solved) { solved.hidden = true; solved.innerHTML = ''; }
 
             if (container) {
                 container.innerHTML = '';
                 container.classList.toggle('frank-container--whole', Boolean(whole));
                 shuffled.forEach((s) => {
                     const div = document.createElement('div');
-                    div.className = whole ? 'frank-item frank-item--para' : 'frank-item';
+                    div.className = 'frank-item' + (whole ? ' frank-item--chunk' : '') + (s.short ? ' frank-item--short' : '');
                     div.dataset.id = String(s.id);
-                    const body = whole
-                        ? `<span>${s.lines.map((line) => `<span class="frank-line">${esc(line)}</span>`).join('')}</span>`
-                        : `<span>${esc(s.lines[0])}</span>`;
-                    div.innerHTML = `${body}<div class="frank-controls"><button type="button" onclick="moveFrank(this, -1)" aria-label="Move up"><i class="fa-solid fa-chevron-up"></i></button><button type="button" onclick="moveFrank(this, 1)" aria-label="Move down"><i class="fa-solid fa-chevron-down"></i></button></div>`;
+                    div.innerHTML = `<span class="frank-grip" aria-hidden="true" title="Drag to move"><i class="fa-solid fa-grip-vertical"></i></span><span class="frank-text">${esc(s.text)}</span><div class="frank-controls"><button type="button" onclick="moveFrank(this, -1)" aria-label="Move up"><i class="fa-solid fa-chevron-up"></i></button><button type="button" onclick="moveFrank(this, 1)" aria-label="Move down"><i class="fa-solid fa-chevron-down"></i></button></div>`;
                     container.appendChild(div);
                 });
             }
             if (checkBtn) checkBtn.style.display = 'block';
         }
 
+        function clearFrankMarks() {
+            document.querySelectorAll('#frank-container .frank-item--wrong, #frank-container .frank-item--ok').forEach((el) => el.classList.remove('frank-item--wrong', 'frank-item--ok'));
+        }
+
+        // Drag to reorder (mouse + touch via the grip handle); up/down buttons stay for precise moves.
+        (function initFrankDrag() {
+            let drag = null;
+            document.addEventListener('pointerdown', (e) => {
+                const grip = e.target.closest && e.target.closest('#frank-container .frank-grip');
+                if (!grip) return;
+                const item = grip.closest('.frank-item');
+                e.preventDefault();
+                clearFrankMarks();
+                drag = { item, id: e.pointerId };
+                item.classList.add('frank-item--dragging');
+                try { grip.setPointerCapture(e.pointerId); } catch (_) { /* old browsers */ }
+            });
+            document.addEventListener('pointermove', (e) => {
+                if (!drag || e.pointerId !== drag.id) return;
+                e.preventDefault();
+                const container = drag.item.parentNode;
+                const others = Array.from(container.children).filter((el) => el !== drag.item);
+                let before = null;
+                for (const el of others) {
+                    const r = el.getBoundingClientRect();
+                    if (e.clientY < r.top + r.height / 2) { before = el; break; }
+                }
+                if (before) { if (drag.item.nextSibling !== before) container.insertBefore(drag.item, before); }
+                else if (container.lastElementChild !== drag.item) container.appendChild(drag.item);
+                // keep the dragged card in view on small screens
+                if (e.clientY < 60) window.scrollBy(0, -12);
+                else if (e.clientY > window.innerHeight - 60) window.scrollBy(0, 12);
+            }, { passive: false });
+            const end = (e) => {
+                if (!drag || e.pointerId !== drag.id) return;
+                drag.item.classList.remove('frank-item--dragging');
+                drag = null;
+            };
+            document.addEventListener('pointerup', end);
+            document.addEventListener('pointercancel', end);
+        })();
+
         function moveFrank(btn, direction) {
+            clearFrankMarks();
             let item = btn.closest('div.frank-item');
             let container = item.parentNode;
             let items = Array.from(container.children);
@@ -8539,23 +8616,55 @@
             }
         }
 
+        function renderFrankSolvedText() {
+            const box = document.getElementById('frank-solved');
+            const chunks = frankensteinState && frankensteinState.chunks;
+            if (!box || !chunks) return;
+            const paras = [];
+            chunks.forEach((c) => {
+                const p = paras[c.para] || (paras[c.para] = []);
+                p.push(c);
+            });
+            // Paragraph breaks restored; greetings / sign-offs / names on their own lines.
+            box.innerHTML = '<p class="frank-solved-title"><i class="fa-solid fa-check"></i> The complete text, with its paragraph breaks</p>' + paras.map((list) => {
+                const lines = [];
+                let cur = '';
+                list.forEach((c) => {
+                    if (c.short) { if (cur) lines.push(cur); lines.push(c.text); cur = ''; } else cur = cur ? cur + ' ' + c.text : c.text;
+                });
+                if (cur) lines.push(cur);
+                return '<p class="frank-solved-para">' + lines.map((l) => esc(l)).join('<br>') + '</p>';
+            }).join('');
+            box.hidden = false;
+        }
+
         function checkFrankenstein() {
             const items = Array.from(document.getElementById('frank-container').children);
             const currentOrder = items.map((el) => parseInt(el.dataset.id, 10));
-            const n = (frankensteinState && frankensteinState.length) || currentOrder.length;
-            const correctOrder = Array.from({ length: n }, (_, i) => i + 1);
             const feedback = document.getElementById('frank-feedback');
-            const typeLabel = frankensteinState && frankensteinState.whole ? 'text' : 'paragraph';
+            const whole = Boolean(frankensteinState && frankensteinState.whole);
+            const unit = whole ? 'card' : 'sentence';
+            const firstWrong = window.FrankOptions ? FrankOptions.firstWrongPosition(currentOrder) : currentOrder.findIndex((id, i) => id !== i + 1);
+            clearFrankMarks();
 
-            if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
+            if (firstWrong === -1) {
                 feedback.className = 'feedback success';
-                feedback.textContent = `Perfect — that is the original order for this ${typeLabel.toLowerCase()}.`;
+                feedback.textContent = whole
+                    ? 'Perfect — the whole text is in the right order, from beginning to end.'
+                    : 'Perfect — that is the original order for this paragraph.';
+                items.forEach((el) => el.classList.add('frank-item--ok'));
+                if (whole) renderFrankSolvedText();
                 incrementGameCount();
                 recordGameSessionApi('frank', { score: 100, pointsEarned: 100 });
             } else {
-                const firstWrong = currentOrder.findIndex((id, i) => id !== i + 1);
                 feedback.className = 'feedback error';
-                feedback.textContent = `Not quite. Check ${typeLabel === 'text' ? 'paragraph' : 'sentence'} ${firstWrong + 1} — it does not belong there in this ${typeLabel.toLowerCase()}.`;
+                const okText = firstWrong > 0 ? ` ${firstWrong === 1 ? 'The first ' + unit + ' is' : 'The first ' + firstWrong + ' ' + unit + 's are'} in the right place.` : '';
+                feedback.textContent = `Not quite. Position ${firstWrong + 1} is the first ${unit} out of place.${okText}`;
+                items.slice(0, firstWrong).forEach((el) => el.classList.add('frank-item--ok'));
+                if (items[firstWrong]) {
+                    items[firstWrong].classList.add('frank-item--wrong');
+                    items[firstWrong].scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }
             }
         }
 

@@ -136,3 +136,38 @@ test('letter greetings, sign-offs and names get their own line', () => {
     assert.deepEqual(lines, ['Thanks again!', 'Take care,', 'Kuba']);
     assert.deepEqual(FO.paragraphLines({ sentences: ['Dear Ms Taylor,', 'I am writing.', 'I would like to apply.'] }), ['Dear Ms Taylor,', 'I am writing. I would like to apply.']);
 });
+
+test('whole text is ordered as sentences / two-sentence chunks: 8–12 cards, never across paragraphs', () => {
+    for (const w of WHOLES) {
+        const text = FO.resolveWholeText(BANK, w);
+        const chunks = FO.chunkWholeText(text);
+        assert.ok(chunks.length >= 8 && chunks.length <= 12, `${w.id} has ${chunks.length} cards`);
+        assert.deepEqual(chunks.map((c) => c.id), chunks.map((_, i) => i + 1));
+        const allSentences = text.paragraphs.flatMap((p) => p.sentences.map((x) => x.trim()));
+        assert.equal(chunks.map((c) => c.text).join(' '), allSentences.join(' '), `${w.id} chunks must cover the text in order`);
+        for (const c of chunks) {
+            assert.ok(c.sentences === 1 || c.sentences === 2, `${w.id} chunk ${c.id} has ${c.sentences} sentences`);
+            if (c.short) assert.equal(c.sentences, 1, 'greetings / sign-offs / names stay on their own');
+        }
+        // a chunk never crosses a paragraph break, and paragraphs stay in order
+        const paraOf = chunks.map((c) => c.para);
+        assert.deepEqual(paraOf, [...paraOf].sort((a, b) => a - b));
+        // all unique texts (no two identical cards → one right answer)
+        assert.equal(new Set(chunks.map((c) => c.text)).size, chunks.length);
+    }
+    const letter = FO.chunkWholeText(FO.resolveWholeText(BANK, WHOLES.find((w) => w.textType === 'formal_letter')));
+    assert.ok(letter[0].short && /,$/.test(letter[0].text), 'greeting is its own first card');
+    assert.ok(letter[letter.length - 1].short && letter[letter.length - 2].short, 'sign-off and name are their own cards');
+});
+
+test('chunking pairs only when needed and feedback finds the first wrong position', () => {
+    const small = { paragraphs: [{ sentences: ['A one.', 'A two.', 'A three.'] }, { sentences: ['B one.', 'B two.', 'B three.'] }, { sentences: ['C one.', 'C two.'] }] };
+    assert.equal(FO.chunkWholeText(small).length, 8, 'short texts stay as single sentences');
+    const big = { paragraphs: [{ sentences: ['1.', '2.', '3.', '4.', '5.', '6.'] }, { sentences: ['7.', '8.', '9.', '10.', '11.', '12.'] }, { sentences: ['13.', '14.'] }] };
+    const c = FO.chunkWholeText(big);
+    assert.equal(c.length, 12);
+    assert.equal(c.filter((x) => x.sentences === 2).length, 2);
+    assert.equal(FO.firstWrongPosition([1, 2, 3, 4]), -1);
+    assert.equal(FO.firstWrongPosition([1, 2, 4, 3]), 2);
+    assert.equal(FO.firstWrongPosition([2, 1]), 0);
+});

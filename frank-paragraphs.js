@@ -1210,7 +1210,7 @@
     "type": "closing",
     "sentences": [
       "I enclose my CV with the details of my education and previous work.",
-      "I would be happy to attend an interview at any time convenient for you.",
+      "After reading it, I hope you will invite me for an interview, which I could attend at any time convenient for you.",
       "Thank you for considering my application, and I look forward to hearing from you.",
       "Yours sincerely,",
       "Tomasz Nowak"
@@ -1331,7 +1331,7 @@
     "type": "closing",
     "sentences": [
       "Let me know what you think as soon as you can, because my mum needs to book the train tickets.",
-      "I really hope you can come – it'll be so much fun!",
+      "Until then, I'll keep my fingers crossed – it'll be so much fun if you come!",
       "Take care,",
       "Kuba"
     ]
@@ -1343,7 +1343,7 @@
     "type": "closing",
     "sentences": [
       "Thanks again – you always know exactly what I like!",
-      "By the way, are you free next weekend?",
+      "Oh, and before I go – are you free next weekend?",
       "If so, maybe we could meet up for a pizza and catch up properly.",
       "Lots of love,",
       "Marta"
@@ -1403,7 +1403,7 @@
       "The first thing you will notice is the amazing view of the sea and the colourful fishing boats.",
       "Along the promenade, there are several small cafés serving delicious homemade ice cream.",
       "If you prefer something more active, you can hire a bike and ride along the coast.",
-      "In the evenings, local bands often play live music, which creates a wonderful atmosphere."
+      "Later, when the sun goes down, local bands often play live music, which creates a wonderful atmosphere."
     ]
   },
   {
@@ -1698,7 +1698,7 @@
       "The majority of students said that the food in the canteen is tasty and reasonably priced.",
       "However, over 60% complained about the long queues during the lunch break.",
       "Many students also pointed out that there are not enough vegetarian options.",
-      "In addition, some students said that the dining room is too noisy to relax in."
+      "Last of all, a few students mentioned that the dining room is too noisy to relax in."
     ]
   },
   {
@@ -1709,7 +1709,7 @@
     "sentences": [
       "The town has a modern swimming pool, which is popular with people of all ages.",
       "However, it is often overcrowded in the evenings, when most teenagers are free.",
-      "The outdoor football pitches are in poor condition and have no lighting.",
+      "Next to the pool, there are outdoor football pitches, but they are in poor condition and have no lighting.",
       "As a result, they cannot be used after dark during the autumn and winter."
     ]
   },
@@ -1854,7 +1854,7 @@
       "Another problem is the effect of social media on our self-confidence.",
       "When we scroll through perfect photos of other people's lives, it is easy to feel that our own life is boring.",
       "In fact, many young people admit that they feel worse after spending an hour online.",
-      "It is important to remember that most of these photos show only the best moments."
+      "That is why it is important to remember that most of these photos show only the best moments."
     ]
   },
   {
@@ -1878,7 +1878,7 @@
       "Of course, it is also important not to be afraid of making mistakes.",
       "Many learners stay silent because they worry about sounding silly.",
       "However, every mistake is a chance to learn something new.",
-      "Native speakers usually appreciate the effort and are happy to help."
+      "What is more, native speakers usually appreciate the effort and are happy to help."
     ]
   },
   {
@@ -1890,7 +1890,7 @@
       "What impressed me most were the beautiful shots of the wild coastline.",
       "The director uses the grey sea and the strong wind to create a feeling of danger.",
       "The dialogue is quite simple, so the film is easy to follow even in the original version.",
-      "Even the smallest roles are played by talented local actors."
+      "Last but not least, even the smallest roles are played by talented local actors."
     ]
   },
   {
@@ -1914,7 +1914,7 @@
       "What I liked most was the way the author describes Leo's feelings.",
       "We see how his fear slowly changes into courage and hope.",
       "The language is quite simple, so the book is suitable for readers at intermediate level.",
-      "However, a few chapters in the middle are rather repetitive."
+      "My only complaint is that a few chapters in the middle are rather repetitive."
     ]
   },
   {
@@ -1959,7 +1959,7 @@
     "topic": "School canteen survey",
     "type": "body",
     "sentences": [
-      "Finally, as regards opening hours, most students said that the canteen opens too late in the morning.",
+      "Students were also asked about opening hours, and most of them said that the canteen opens too late in the morning.",
       "Many of them arrive at school early and would like to buy breakfast before lessons.",
       "Moreover, the canteen is closed after 2 p.m., which is a problem for students with afternoon classes.",
       "About a third of those surveyed said they would use the canteen more often if it stayed open longer."
@@ -1971,7 +1971,7 @@
     "topic": "Sports facilities in our town",
     "type": "body",
     "sentences": [
-      "Apart from the pool and the pitches, the town also has a sports hall at the community centre, which is well equipped.",
+      "Apart from the pool and the pitches, the town also has a sports hall at the community centre, which is well equipped and offers a wide range of activities.",
       "However, most of these activities are designed for adults and take place during working hours.",
       "Many teenagers said that they would like to try sports such as climbing or volleyball.",
       "Unfortunately, there are currently no clubs in the town that offer these sports for young people."
@@ -1986,7 +1986,7 @@
       "Apart from the sightseeing, students were asked about the accommodation in a youth hostel near the Old Town, which was generally rated as good.",
       "The rooms were clean and the location allowed students to walk to most places.",
       "However, some students complained that the hostel was noisy at night.",
-      "The food was described as simple but tasty, although the portions were rather small."
+      "As for the meals, the food was described as simple but tasty, although the portions were rather small."
     ]
   },
   {
@@ -2055,7 +2055,7 @@
       "There are many advantages to living in a city.",
       "First of all, it is much easier to find a good job or go to university there.",
       "In addition, cities offer a wide range of entertainment, such as cinemas, concerts and restaurants.",
-      "Public transport is also usually frequent, so you do not need a car."
+      "Last but not least, public transport is usually frequent, so you do not need a car."
     ]
   },
   {

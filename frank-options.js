@@ -196,7 +196,7 @@
             textType: whole.textType || 'essay',
             kind: whole.essayKind || '',
             topic: whole.topic || '',
-            paragraphs: paras.map((p) => ({ id: p.id, type: p.type, lines: paragraphLines(p), text: paragraphLines(p).join('\n') })),
+            paragraphs: paras.map((p) => ({ id: p.id, type: p.type, sentences: p.sentences.slice(), lines: paragraphLines(p), text: paragraphLines(p).join('\n') })),
         };
     }
 
@@ -217,7 +217,64 @@
         return list[Math.floor(r() * list.length) % list.length];
     }
 
-    /** How many exercises the current choice can deal (paragraphs, or whole texts). */
+    /** Letter greeting / sign-off / name line: ends with a comma or has no final punctuation. */
+    function isShortLine(sentence) {
+        const t = String(sentence || '').trim();
+        return /,$/.test(t) || !/[.!?…"”'’)]$/.test(t);
+    }
+
+    /**
+     * Whole-text cards: single sentences or two-sentence chunks across the entire text.
+     * Chunks never cross a paragraph break; greetings, sign-offs and names stay on their own.
+     * Sentences are paired (1+2, 3+4 … inside the paragraph with the most cards first) until
+     * the text has at most `max` cards (default 12). Deterministic, so positions are stable.
+     */
+    function chunkWholeText(whole, opts) {
+        const max = (opts && opts.max) || 12;
+        const paras = ((whole && whole.paragraphs) || []).map((p, pi) => {
+            const src = p.sentences || (p.lines ? null : []);
+            const sentences = src || [];
+            return sentences.map((t) => ({ para: pi, sentences: [String(t).trim()], fixed: isShortLine(t) }));
+        });
+        const total = () => paras.reduce((n, list) => n + list.length, 0);
+        const mergeOnce = () => {
+            // the paragraph with the most single-sentence cards that can still be paired
+            let best = -1;
+            let bestCount = 0;
+            paras.forEach((list, pi) => {
+                let singles = 0;
+                for (let i = 0; i + 1 < list.length; i++) {
+                    if (!list[i].fixed && !list[i + 1].fixed && list[i].sentences.length === 1 && list[i + 1].sentences.length === 1) singles++;
+                }
+                const count = list.filter((c) => !c.fixed).length;
+                if (singles && count > bestCount) { best = pi; bestCount = count; }
+            });
+            if (best < 0) return false;
+            const list = paras[best];
+            for (let i = 0; i + 1 < list.length; i++) {
+                const a = list[i];
+                const b = list[i + 1];
+                if (!a.fixed && !b.fixed && a.sentences.length === 1 && b.sentences.length === 1) {
+                    list.splice(i, 2, { para: best, sentences: [...a.sentences, ...b.sentences], fixed: false });
+                    return true;
+                }
+            }
+            return false;
+        };
+        while (total() > max && mergeOnce()) { /* pair up */ }
+        const chunks = [];
+        paras.forEach((list) => list.forEach((c) => {
+            chunks.push({ id: chunks.length + 1, para: c.para, text: c.sentences.join(' '), sentences: c.sentences.length, short: c.fixed });
+        }));
+        return chunks;
+    }
+
+    /** Index (0-based) of the first card that is out of place, or -1 when the order is right. */
+    function firstWrongPosition(order) {
+        return (order || []).findIndex((id, i) => Number(id) !== i + 1);
+    }
+
+
     function countFor(bank, wholes, sel) {
         return isWhole(sel) ? filterWholeTexts(bank, wholes, sel).length : filterBank(bank, sel).length;
     }
@@ -226,7 +283,7 @@
         const t = findTextType(whole && whole.textType);
         return {
             textLabel: (whole && whole.kind) || (t ? t.short : 'Text'),
-            label: 'Whole text — beginning to end',
+            label: 'Whole text — order the sentences from beginning to end',
             hint: t ? t.wholeHint : 'Put the paragraphs in order from the beginning of the text to the end.',
         };
     }
@@ -264,7 +321,7 @@
     }
 
     const api = {
-        ANY, WHOLE, STORAGE_KEY, isWhole, paragraphLines, resolveWholeText, filterWholeTexts, pickWholeText, countFor, wholeInfo, TEXT_TYPES, ROLES, DEFAULT_SELECTION,
+        ANY, WHOLE, STORAGE_KEY, isWhole, chunkWholeText, firstWrongPosition, isShortLine, paragraphLines, resolveWholeText, filterWholeTexts, pickWholeText, countFor, wholeInfo, TEXT_TYPES, ROLES, DEFAULT_SELECTION,
         textTypeOf, findTextType, findPara, paragraphOptions, textTypeOptions, normalizeSelection,
         matches, filterBank, pickParagraph, typeInfo, selectionLabel, loadSelection, saveSelection,
     };
