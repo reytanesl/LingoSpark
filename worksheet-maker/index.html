@@ -629,14 +629,15 @@
     }
     .toolbar.show {
       display: flex;
-      position: sticky;
-      top: 0.65rem;
-      z-index: 50;
+      /* Stay in document flow — do not stick/float over the scrolled worksheet */
+      position: relative;
+      z-index: 1;
       background: #fff;
       border: 1.6px solid var(--sd-red);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 0.65rem 0.8rem;
+      margin-bottom: 1rem;
     }
     .toolbar-groups {
       display: flex;
@@ -1577,7 +1578,6 @@
       .row, .name-line, .choice-pair { grid-template-columns: 1fr; }
       .header-inner { justify-content: center; text-align: center; }
       .brand-block { flex-direction: column; text-align: center; }
-      .toolbar.show { top: 0.35rem; }
       .toolbar-group { border-right: none; padding-right: 0; }
     }
 
@@ -2016,7 +2016,7 @@
             <button class="btn btn-outline type-size-btn" type="button" id="typeBiggerBtn" data-i18n-title="typeBigger" title="Larger text" aria-label="Larger text"><span class="type-a type-a-lg" aria-hidden="true">A+</span></button>
           </span>
           <button class="btn btn-outline" type="button" id="printBtn" data-i18n-title="printColourHint" title="In the print dialog, choose Colour rather than Black and white."><i class="fa-solid fa-print"></i> <span data-i18n="print">Print</span></button>
-          <button class="btn btn-outline" type="button" id="driveWorksheetBtn" data-i18n-title="driveWorksheetTitle" title="Export this worksheet as a PDF to Google Drive">
+          <button class="btn btn-outline is-hidden" type="button" id="driveWorksheetBtn" data-i18n-title="driveWorksheetTitle" title="Export this worksheet as a PDF to Google Drive" hidden>
             <i class="fa-brands fa-google-drive"></i> <span data-i18n="driveWorksheet">Drive</span>
           </button>
           <button class="btn btn-outline" type="button" id="lingoSparkVocabBtn" data-i18n-title="lingoSparkVocabTitle" title="Copy a 15–25 item Term = Definition glossary and open Create word set on lingospark.study." disabled>
@@ -2048,7 +2048,7 @@
           <button class="btn btn-outline" type="button" id="nextSlideBtn"><i class="fa-solid fa-chevron-right"></i></button>
           <button class="btn btn-outline" type="button" id="presentBtn"><i class="fa-solid fa-expand"></i> <span data-i18n="present">Present</span></button>
           <button class="btn btn-primary" type="button" id="downloadPdfBtn"><i class="fa-solid fa-file-pdf"></i> <span data-i18n="downloadPdf">Download PDF</span></button>
-          <button class="btn btn-outline" type="button" id="driveSlidesBtn" data-i18n-title="driveSlidesTitle" title="Export this presentation as a PDF to Google Drive">
+          <button class="btn btn-outline is-hidden" type="button" id="driveSlidesBtn" data-i18n-title="driveSlidesTitle" title="Export this presentation as a PDF to Google Drive" hidden>
             <i class="fa-brands fa-google-drive"></i> <span data-i18n="driveSlides">Drive</span>
           </button>
         </span>
@@ -4044,6 +4044,27 @@
       window.addEventListener('afterprint', restore);
       window.print();
     };
+    function setDriveButtonsVisible(show) {
+      for (const id of ['driveWorksheetBtn', 'driveSlidesBtn']) {
+        const btn = $(id);
+        if (!btn) continue;
+        btn.hidden = !show;
+        btn.classList.toggle('is-hidden', !show);
+      }
+    }
+    // Drive sync stays admin-only (not shown to regular Worksheet Maker users).
+    async function syncAdminDriveButtons() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        const data = await res.json().catch(() => ({}));
+        setDriveButtonsVisible(Boolean(data?.isAdmin));
+      } catch {
+        setDriveButtonsVisible(false);
+      }
+    }
+    setDriveButtonsVisible(false);
+    syncAdminDriveButtons();
+
     $('driveWorksheetBtn').onclick = () => {
       exportWorksheetToDrive();
     };
@@ -4992,7 +5013,6 @@
       exportSlidesToDrive();
     };
 
-    loadGoogleDriveConfig().catch(() => {});
   </script>
 </body>
 </html>
