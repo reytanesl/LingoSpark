@@ -45,6 +45,7 @@ export async function initDb() {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_last_at TIMESTAMPTZ`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_credits INTEGER NOT NULL DEFAULT 0`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS matura_assess_window_count INTEGER NOT NULL DEFAULT 0`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS worksheet_maker_credits INTEGER NOT NULL DEFAULT 0`);
     await db.query(`
         DO $$ BEGIN
             ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL;
@@ -61,6 +62,7 @@ export async function initDb() {
         );
     `);
     await db.query(`ALTER TABLE pending_bmc_payments ADD COLUMN IF NOT EXISTS matura_credits INTEGER NOT NULL DEFAULT 0`);
+    await db.query(`ALTER TABLE pending_bmc_payments ADD COLUMN IF NOT EXISTS worksheet_credits INTEGER NOT NULL DEFAULT 0`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_pending_bmc_email ON pending_bmc_payments (LOWER(email))`);
     await db.query(`
         CREATE TABLE IF NOT EXISTS app_stats (
@@ -388,15 +390,22 @@ export async function deleteUser(id) {
     return result.rows[0] || null;
 }
 
-async function queuePendingBmcPayment(email, { membershipId = null, days = 7, maturaCredits = 0 } = {}) {
+async function queuePendingBmcPayment(email, {
+    membershipId = null,
+    days = 7,
+    maturaCredits = 0,
+    worksheetCredits = 0,
+} = {}) {
     const db = getPool();
     const normalized = (email || '').toLowerCase().trim();
     const grantDays = Number.isFinite(Number(days)) && Number(days) > 0 ? Number(days) : 0;
     const credits = Math.max(0, Math.floor(Number(maturaCredits) || 0));
-    if (grantDays <= 0 && credits <= 0) return;
+    const wmCredits = Math.max(0, Math.floor(Number(worksheetCredits) || 0));
+    if (grantDays <= 0 && credits <= 0 && wmCredits <= 0) return;
     await db.query(
-        `INSERT INTO pending_bmc_payments (email, days, membership_id, matura_credits) VALUES ($1, $2, $3, $4)`,
-        [normalized, grantDays || 0, membershipId, credits]
+        `INSERT INTO pending_bmc_payments (email, days, membership_id, matura_credits, worksheet_credits)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [normalized, grantDays || 0, membershipId, credits, wmCredits]
     );
 }
 
@@ -414,11 +423,20 @@ export async function applyPendingBmcPayments(user) {
     let current = user;
     for (const row of pending.rows) {
         const credits = Math.max(0, Math.floor(Number(row.matura_credits) || 0));
+        const worksheetCredits = Math.max(0, Math.floor(Number(row.worksheet_credits) || 0));
         const days = Math.max(0, Math.floor(Number(row.days) || 0));
         if (credits > 0) {
             current =
                 (await grantMaturaAssessCreditsByEmail(normalized, {
                     credits,
+                    membershipId: row.membership_id,
+                    skipQueue: true,
+                })) || current;
+        }
+        if (worksheetCredits > 0) {
+            current =
+                (await grantWorksheetMakerCreditsByEmail(normalized, {
+                    credits: worksheetCredits,
                     membershipId: row.membership_id,
                     skipQueue: true,
                 })) || current;
@@ -739,6 +757,86 @@ export async function grantMaturaAssessCreditsByEmail(email, {
     return result.rows[0] || null;
 }
 
+/** One BMC Extra purchase → one Worksheet Maker create. */
+export const WORKSHEET_MAKER_PACK_CREDITS = 1;
+
+export function getWorksheetMakerCredits(user) {
+    return Math.max(0, Math.floor(Number(user?.worksheet_maker_credits) || 0));
+}
+
+export function getWorksheetMakerAvailability(user, { isAdmin = false } = {}) {
+    if (isAdmin) {
+        return {
+            allowed: true,
+            isAdmin: true,
+            creditsRemaining: null,
+            unlimited: true,
+        };
+    }
+    if (!user) {
+        return {
+            allowed: false,
+            isAdmin: false,
+            creditsRemaining: 0,
+            unlimited: false,
+            reason: 'login_required',
+        };
+    }
+    const creditsRemaining = getWorksheetMakerCredits(user);
+    return {
+        allowed: creditsRemaining > 0,
+        isAdmin: false,
+        creditsRemaining,
+        unlimited: false,
+        reason: creditsRemaining > 0 ? null : 'no_credits',
+    };
+}
+
+export async function grantWorksheetMakerCreditsByEmail(email, {
+    credits = WORKSHEET_MAKER_PACK_CREDITS,
+    membershipId = null,
+    skipQueue = false,
+} = {}) {
+    const db = getPool();
+    const normalized = (email || '').toLowerCase().trim();
+    if (!normalized) return null;
+    const add = Math.max(0, Math.floor(Number(credits) || 0));
+    if (add <= 0) return null;
+
+    const existing = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [normalized]);
+    const user = existing.rows[0];
+    if (!user) {
+        if (!skipQueue) {
+            await queuePendingBmcPayment(normalized, { membershipId, days: 0, worksheetCredits: add });
+        }
+        return null;
+    }
+
+    const result = await db.query(
+        `UPDATE users
+         SET worksheet_maker_credits = COALESCE(worksheet_maker_credits, 0) + $2
+         WHERE id = $1
+         RETURNING *`,
+        [user.id, add]
+    );
+    return result.rows[0] || null;
+}
+
+/** Consume one Worksheet Maker credit. Returns updated user row, or null if none left. */
+export async function consumeWorksheetMakerCredit(userId) {
+    const db = getPool();
+    const id = Number(userId);
+    if (!Number.isFinite(id) || id <= 0) return null;
+    const result = await db.query(
+        `UPDATE users
+         SET worksheet_maker_credits = worksheet_maker_credits - 1
+         WHERE id = $1 AND COALESCE(worksheet_maker_credits, 0) > 0
+         RETURNING *`,
+        [id]
+    );
+    return result.rows[0] || null;
+}
+
 export function publicUser(user) {
     if (!user) return null;
     return {
@@ -784,6 +882,7 @@ export const ANALYTICS_PAGE_KEYS = new Set([
     'section:cat-vocab',
     'section:cat-team',
     'section:cat-writing',
+    'section:cat-worksheets',
     'section:cat-live',
     'section:primary-english',
 ]);

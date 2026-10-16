@@ -68,6 +68,7 @@ URL example: `https://lingospark.onrender.com`
 | `BMC_WEEK_URL` | optional direct Extra for the week plan |
 | `BMC_MONTH_URL` | optional direct Extra for the month plan |
 | `BMC_YEAR_URL` | optional direct Extra for the year plan |
+| `BMC_WORKSHEET_MAKER_URL` | required for Worksheet Maker: Extra link for **$2 / 5 zł** (1 use) |
 | `BMC_WEBHOOK_SECRET` | from BMC Integrations → Webhooks |
 | `NODE_ENV` | `production` |
 | `MAIL_FROM` | sender for password-reset emails, e.g. `LingoSpark <no-reply@yourdomain.com>` |
@@ -90,10 +91,11 @@ The `password_reset_tokens` table is created automatically on start (`CREATE TAB
 
 ### Buy Me a Coffee setup
 
-1. Create three paid Extras that match the site copy (name them clearly):
+1. Create paid Extras that match the site copy (name them clearly):
    - **Week — $3** → webhook grants **7 days** (shown as **12 zł**)
    - **Month — $10** → webhook grants **30 days** (shown as **40 zł**)
    - **Year — $70** → webhook grants **365 days** (shown as **280 zł**, best value)
+   - **Worksheet Maker — $2** → webhook grants **1 Worksheet Maker use** (shown as **5 zł**). Name it e.g. “Worksheet Maker — 1 use”. Set `BMC_WORKSHEET_MAKER_URL` to this Extra’s direct link (required; no shop fallback).
    PLN is display-only (~4 zł / $1). Checkout stays USD until Stripe / Przelewy24.
 2. Copy the shop URL → `BMC_PAYMENT_URL` (use `https://buymeacoffee.com/lingospark/extras`). Optional: set `BMC_WEEK_URL` / `BMC_MONTH_URL` / `BMC_YEAR_URL` to each Extra’s direct link so plan cards skip the listing.
 3. Studio → Integrations → Webhooks → endpoint:

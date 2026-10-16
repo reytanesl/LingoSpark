@@ -239,6 +239,27 @@
         #section-worksheets .worksheet-maker-open {
             text-align: center; margin: 0 0 1rem;
         }
+        #section-worksheets .wm-gate {
+            max-width: 520px; margin: 0.5rem auto 1.5rem; padding: 1.5rem 1.25rem;
+            text-align: center; background: var(--bright-white);
+            border-radius: 12px; border-top: 4px solid #B45309;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        }
+        #section-worksheets .wm-gate h3 {
+            font-family: var(--font-primary); color: var(--royal-blue);
+            font-size: 1.35rem; margin: 0 0 0.5rem;
+        }
+        #section-worksheets .wm-gate p { color: var(--text-muted); margin: 0 0 0.85rem; line-height: 1.45; }
+        #section-worksheets .wm-gate .wm-price {
+            font-family: var(--font-primary); font-size: 1.75rem; font-weight: 800;
+            color: var(--text-dark); margin: 0 0 0.15rem;
+        }
+        #section-worksheets .wm-gate .wm-price-usd { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
+        #section-worksheets .wm-gate-actions { display: flex; flex-direction: column; gap: 0.65rem; align-items: stretch; }
+        #section-worksheets .wm-credits-note {
+            text-align: center; font-size: 0.95rem; color: var(--text-muted); margin: 0 0 0.75rem;
+        }
+        #section-worksheets .wm-credits-note strong { color: #B45309; }
         .hub-live-quiz-circle {
             display: inline-flex; align-items: center; justify-content: center;
             flex-shrink: 0;
@@ -3309,7 +3330,7 @@
             <p>Writing Suite and Primary English need paid access so the AI tools can stay online. <strong>Buying access is the best way to support LingoSpark</strong> — you unlock premium games for yourself or your students, and help cover running costs.</p>
             <div class="about-pricing">
                 <p style="margin-bottom:0.4rem;"><strong>Writing Suite — 40 zł / month</strong> <span style="font-weight:600;color:var(--text-muted);">($10)</span></p>
-                <p style="margin-bottom:0.6rem;">Plans: <strong>12 zł / week</strong> ($3) · <strong>40 zł / month</strong> ($10) · <strong>280 zł / year</strong> ($70, best value). Writing Suite and Primary English for the days you paid. Matura criteria assessment: 2 every 4 hours — or unlock <strong>4 more assessments for 5 zł / $1</strong>.</p>
+                <p style="margin-bottom:0.6rem;">Plans: <strong>12 zł / week</strong> ($3) · <strong>40 zł / month</strong> ($10) · <strong>280 zł / year</strong> ($70, best value). Writing Suite and Primary English for the days you paid. Matura criteria assessment: 2 every 4 hours — or unlock <strong>4 more assessments for 5 zł / $1</strong>. <strong>Worksheet Maker</strong> is separate: <strong>5 zł / $2 per use</strong> via its own purchase link.</p>
                 <p style="margin-bottom:0;font-size:0.88rem;">Checkout is in USD on Buy Me a Coffee (same email as your LingoSpark account). PLN is the local price at about 4 zł per $1 — card billing in złoty comes later.</p>
             </div>
             <p><a href="https://buymeacoffee.com/lingospark/extras" id="about-premium-link" target="_blank" rel="noopener">Go Premium — open the shop</a></p>
@@ -3560,9 +3581,19 @@
                     <i class="fa-solid fa-file-lines cat-icon"></i><h2>Worksheet Maker</h2>
                 </div>
                 <p style="text-align: center; margin-bottom: 1rem; color: var(--text-muted);">Create pedagogically sound worksheets and answer keys from a link, PDF, or topic — then build slides from the sheet.</p>
-                <p class="worksheet-maker-open"><a class="btn btn-blue" href="/worksheet-maker/" target="_blank" rel="noopener">Open full screen <i class="fa-solid fa-arrow-up-right-from-square"></i></a></p>
-                <div class="worksheet-maker-frame-wrap">
-                    <iframe class="worksheet-maker-frame" src="/worksheet-maker/" title="Worksheet Maker" loading="lazy"></iframe>
+                <div id="wm-access-gate" class="wm-gate" hidden>
+                    <h3>Separate access — one use per purchase</h3>
+                    <p class="wm-price">5 zł</p>
+                    <p class="wm-price-usd">$2 on checkout · one worksheet create</p>
+                    <p id="wm-gate-body">Sign in, then buy one use with the Worksheet Maker link (same email as this account). Writing Suite plans do not include this tool.</p>
+                    <div class="wm-gate-actions" id="wm-gate-actions"></div>
+                </div>
+                <div id="wm-access-app" hidden>
+                    <p class="wm-credits-note" id="wm-credits-note"></p>
+                    <p class="worksheet-maker-open"><a class="btn btn-blue" href="/worksheet-maker/" target="_blank" rel="noopener">Open full screen <i class="fa-solid fa-arrow-up-right-from-square"></i></a></p>
+                    <div class="worksheet-maker-frame-wrap">
+                        <iframe class="worksheet-maker-frame" id="wm-iframe" title="Worksheet Maker" loading="lazy"></iframe>
+                    </div>
                 </div>
             </div>
 
@@ -7364,6 +7395,9 @@
             if (section) section.classList.add('active');
             if (sectionId === 'mysets') refreshMySetsView();
             if (sectionId === 'progress') loadProgressDashboard();
+            if (sectionId === 'worksheets') {
+                refreshAuth().then(syncWorksheetMakerAccess);
+            }
             syncAuthBarNavActive();
             const trackKey = sectionId === 'writing' ? 'writing' : sectionId === 'worksheets' ? 'worksheets' : sectionId === 'team' ? 'team' : sectionId === 'live' ? 'live' : sectionId === 'mysets' ? 'mysets' : sectionId === 'progress' ? 'progress' : 'vocab';
             trackSectionOpen('section:cat-' + trackKey);
@@ -7750,9 +7784,103 @@
                 credits: 4, usd: 1, pln: 5,
                 checkoutUrl: 'https://buymeacoffee.com/lingospark/extras',
             },
+            worksheetMaker: null,
+            worksheetMakerPack: {
+                credits: 1, usd: 2, pln: 5,
+                checkoutUrl: '',
+                linkConfigured: false,
+            },
         });
         let authState = emptyAuthState();
         window.authState = authState;
+
+        function getWorksheetMakerPack() {
+            const pack = authState?.worksheetMakerPack || emptyAuthState().worksheetMakerPack;
+            return {
+                ...pack,
+                checkoutUrl: String(pack.checkoutUrl || '').trim(),
+                linkConfigured: Boolean(String(pack.checkoutUrl || '').trim()),
+            };
+        }
+
+        function canUseWorksheetMaker() {
+            if (authState?.isAdmin) return true;
+            const wm = authState?.worksheetMaker;
+            if (!wm) return false;
+            if (wm.unlimited) return true;
+            return Number(wm.creditsRemaining || 0) > 0;
+        }
+
+        function syncWorksheetMakerAccess() {
+            const gate = document.getElementById('wm-access-gate');
+            const app = document.getElementById('wm-access-app');
+            const body = document.getElementById('wm-gate-body');
+            const actions = document.getElementById('wm-gate-actions');
+            const creditsNote = document.getElementById('wm-credits-note');
+            const iframe = document.getElementById('wm-iframe');
+            if (!gate || !app || !actions) return;
+
+            const pack = getWorksheetMakerPack();
+            const allowed = canUseWorksheetMaker();
+
+            if (allowed) {
+                gate.hidden = true;
+                app.hidden = false;
+                if (creditsNote) {
+                    if (authState?.isAdmin || authState?.worksheetMaker?.unlimited) {
+                        creditsNote.innerHTML = 'Admin access — unlimited Worksheet Maker uses.';
+                    } else {
+                        const n = Number(authState?.worksheetMaker?.creditsRemaining || 0);
+                        creditsNote.innerHTML = `Uses left: <strong>${n}</strong> · each create costs one use (5 zł / $2 via the purchase link).`;
+                    }
+                }
+                if (iframe && !iframe.getAttribute('src')) {
+                    iframe.src = '/worksheet-maker/';
+                }
+                return;
+            }
+
+            gate.hidden = false;
+            app.hidden = true;
+            if (iframe) iframe.removeAttribute('src');
+
+            if (!authState?.user) {
+                if (body) {
+                    body.textContent = 'Sign in, then buy one use with the Worksheet Maker purchase link (same email as this account). Writing Suite plans do not include this tool.';
+                }
+                actions.innerHTML = `
+                    <button type="button" class="btn btn-blue" onclick="openAuthModal('login')">
+                        <i class="fa-solid fa-right-to-bracket"></i> Sign in / Create account
+                    </button>
+                `;
+                return;
+            }
+
+            if (!pack.linkConfigured) {
+                if (body) {
+                    body.textContent = 'The Worksheet Maker purchase link is not configured yet (BMC_WORKSHEET_MAKER_URL). Ask the site owner to add the Buy Me a Coffee Extra link.';
+                }
+                actions.innerHTML = `
+                    <button type="button" class="btn btn-outline" onclick="refreshAuth().then(syncWorksheetMakerAccess)">
+                        <i class="fa-solid fa-rotate"></i> Refresh
+                    </button>
+                `;
+                return;
+            }
+
+            if (body) {
+                body.textContent = 'Buy one use with the Worksheet Maker link below (same email as ' + (authState.user.email || 'your account') + '). Writing Suite plans do not include this tool.';
+            }
+            const href = escapePaywallHtml(pack.checkoutUrl);
+            actions.innerHTML = `
+                <a class="btn btn-blue" href="${href}" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-link"></i> Buy 1 use — 5 zł / $2
+                </a>
+                <button type="button" class="btn btn-outline" onclick="refreshAuth().then(syncWorksheetMakerAccess)">
+                    <i class="fa-solid fa-rotate"></i> I already paid — refresh uses
+                </button>
+            `;
+        }
 
         async function refreshAuth() {
             try {
@@ -7765,6 +7893,9 @@
             renderAuthBar();
             updateAuthBarNav();
             updateMaturaAssessCooldownUi();
+            if (document.getElementById('section-worksheets')?.classList.contains('active')) {
+                syncWorksheetMakerAccess();
+            }
             if (authState.user) {
                 stopGuestLoginReminders();
                 replayPendingSession();
@@ -7777,6 +7908,7 @@
             return authState;
         }
         window.refreshAuth = refreshAuth;
+        window.syncWorksheetMakerAccess = syncWorksheetMakerAccess;
 
         async function trackVisit() {
             try {

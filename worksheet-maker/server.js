@@ -46,16 +46,20 @@ function requireApiKey(res) {
   return key;
 }
 
-/** Express router: APIs under /api/* plus static files (index.html). Mount at /worksheet-maker. */
-export function createWorksheetMakerRouter() {
+/**
+ * Express router: APIs under /api/* plus static files (index.html). Mount at /worksheet-maker.
+ * @param {{ requireCreateAccess?: (req, res) => Promise<boolean>|boolean }} [options]
+ */
+export function createWorksheetMakerRouter(options = {}) {
   const router = express.Router();
   router.use(express.json({ limit: '16mb' }));
-  registerWorksheetMakerRoutes(router);
+  registerWorksheetMakerRoutes(router, options);
   router.use(express.static(__dirname, { index: ['index.html'] }));
   return router;
 }
 
-function registerWorksheetMakerRoutes(app) {
+function registerWorksheetMakerRoutes(app, options = {}) {
+  const { requireCreateAccess } = options;
 
 async function buildLessonPayload(body, key, update = () => {}) {
   if (body?.mode === 'polishPrimary') {
@@ -494,9 +498,23 @@ app.post('/api/create-lesson', async (req, res) => {
     return res.status(400).json({ error: 'Tick at least one task type.' });
   }
 
+  // Consume prepaid use only after the request is valid.
+  if (typeof requireCreateAccess === 'function') {
+    const allowed = await requireCreateAccess(req, res);
+    if (!allowed) return;
+  }
+
   // Return immediately so reverse proxies (e.g. Render ~60s limit) do not cut the AI call.
   const job = startJob(async (update) => buildLessonPayload(body, key, update));
-  res.status(202).json({ jobId: job.id, status: job.status });
+  res.status(202).json({
+    jobId: job.id,
+    status: job.status,
+    worksheetMaker: req.user
+      ? {
+          creditsRemaining: Math.max(0, Math.floor(Number(req.user.worksheet_maker_credits) || 0)),
+        }
+      : undefined,
+  });
 });
 
 app.post('/api/create-slides', async (req, res) => {

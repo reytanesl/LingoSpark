@@ -4382,9 +4382,13 @@
     async function createLessonViaJob(body) {
       const { res, data } = await fetchJson('api/create-lesson', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       }, { retries: 5 });
+      if (res.status === 401 || res.status === 402) {
+        throw new Error(data.error || 'Sign in and buy a Worksheet Maker use (5 zł / $2) first.');
+      }
       if (!res.ok) throw new Error(data.error || ui('errCreate'));
       if (data.lesson) return data;
       if (!data.jobId) throw new Error(data.error || ui('errCreate'));

@@ -60,11 +60,13 @@ import {
     releaseMaturaFreeRecheck,
     planMaturaRecheck,
     recordMaturaAssessUsage,
+    getWorksheetMakerAvailability,
+    consumeWorksheetMakerCredit,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { createMailer } from './mailer.js';
 import { registerPasswordResetRoutes, createPgResetStore } from './password-reset.js';
-import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, checkoutUrls } from './billing.js';
+import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, publicWorksheetMakerPack, checkoutUrls } from './billing.js';
 import {
     buildDeckFromRequest,
     createRoom,
@@ -311,6 +313,8 @@ async function start() {
             status: getAccessStatus(user),
             maturaAssess: getMaturaAssessAvailability(user, { isAdmin: admin }),
             maturaAssessPack: publicMaturaAssessPack(),
+            worksheetMaker: getWorksheetMakerAvailability(user, { isAdmin: admin }),
+            worksheetMakerPack: publicWorksheetMakerPack(),
             googleConfigured: googleReady,
             localAuthEnabled: dbReady,
             bmcPaymentUrl: checkoutUrls().extras,
@@ -359,6 +363,7 @@ async function start() {
         res.json({
             plans: publicAccessPlans(),
             maturaAssessPack: publicMaturaAssessPack(),
+            worksheetMakerPack: publicWorksheetMakerPack(),
             checkoutNote: 'Checkout is in USD on Buy Me a Coffee. PLN is the local price (~4 zł / $1). Stripe / Przelewy24 later.',
         });
     });
@@ -1255,7 +1260,54 @@ app.get('/api/health', (_req, res) => {
     });
 
     // Worksheet Maker (Lesson Creator) — own page + /worksheet-maker/api/*
-    app.use('/worksheet-maker', createWorksheetMakerRouter());
+    // Creating a worksheet costs one prepaid credit (5 zł / $2 per BMC Extra link use).
+    app.use('/worksheet-maker', createWorksheetMakerRouter({
+        async requireCreateAccess(req, res) {
+            if (!req.isAuthenticated?.() || !req.user) {
+                res.status(401).json({
+                    error: 'Sign in required to use Worksheet Maker.',
+                    code: 'login_required',
+                    worksheetMakerPack: publicWorksheetMakerPack(),
+                });
+                return false;
+            }
+            try {
+                let user = (await expireUserIfNeeded(req.user)) || req.user;
+                user = (await applyPendingBmcPayments(user)) || user;
+                try {
+                    const fresh = await getUserById(user.id);
+                    if (fresh) user = fresh;
+                } catch { /* ignore */ }
+                req.user = user;
+            } catch { /* ignore */ }
+
+            if (isAdminEmail(req.user.email)) return true;
+
+            const availability = getWorksheetMakerAvailability(req.user, { isAdmin: false });
+            if (!availability.allowed) {
+                res.status(402).json({
+                    error: 'Buy one Worksheet Maker use (5 zł / $2) with the purchase link, then try again.',
+                    code: 'worksheet_maker_credits',
+                    worksheetMaker: availability,
+                    worksheetMakerPack: publicWorksheetMakerPack(),
+                });
+                return false;
+            }
+
+            const updated = await consumeWorksheetMakerCredit(req.user.id);
+            if (!updated) {
+                res.status(402).json({
+                    error: 'No Worksheet Maker uses left. Buy another use (5 zł / $2) with the purchase link.',
+                    code: 'worksheet_maker_credits',
+                    worksheetMaker: getWorksheetMakerAvailability(req.user, { isAdmin: false }),
+                    worksheetMakerPack: publicWorksheetMakerPack(),
+                });
+                return false;
+            }
+            req.user = updated;
+            return true;
+        },
+    }));
 
     // Only files on the allowlist (pages, client JS/CSS, images, audio) are served;
     // server code, tests, package/deploy files, dotfiles, data/, scripts/ etc. 404.

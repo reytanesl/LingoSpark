@@ -3,7 +3,9 @@ import {
     grantBmcAccessByEmail,
     revokeBmcAccessByEmail,
     grantMaturaAssessCreditsByEmail,
+    grantWorksheetMakerCreditsByEmail,
     MATURA_ASSESS_PACK_CREDITS,
+    WORKSHEET_MAKER_PACK_CREDITS,
 } from './db.js';
 
 /** Checkout is still BMC (USD-only). PLN is display-only (~4 zł / $1) until Stripe/Przelewy24. */
@@ -15,6 +17,9 @@ const MONTH_AMOUNT = 10;
 const YEAR_AMOUNT = 70;
 export const MATURA_PACK_USD = 1;
 export const MATURA_PACK_PLN = 5;
+/** One Worksheet Maker create = one paid use via a dedicated BMC Extra link. */
+export const WORKSHEET_MAKER_USD = 2;
+export const WORKSHEET_MAKER_PLN = 5;
 
 export const ACCESS_PLANS = [
     {
@@ -48,12 +53,15 @@ export const ACCESS_PLANS = [
 
 export function checkoutUrls() {
     const extras = process.env.BMC_PAYMENT_URL || 'https://buymeacoffee.com/lingospark/extras';
+    // Worksheet Maker requires its own Extra link — do not fall back to the shop listing.
+    const worksheetMaker = String(process.env.BMC_WORKSHEET_MAKER_URL || '').trim();
     return {
         extras,
         week: process.env.BMC_WEEK_URL || extras,
         month: process.env.BMC_MONTH_URL || extras,
         year: process.env.BMC_YEAR_URL || extras,
         maturaPack: process.env.BMC_MATURA_PACK_URL || extras,
+        worksheetMaker,
     };
 }
 
@@ -75,6 +83,21 @@ export function publicMaturaAssessPack() {
         label: '4 Matura assessments',
         description: 'Unlock 4 extra Matura criteria assessments. After the 4th, the usual 4-hour wait returns.',
         checkoutUrl: urls.maturaPack || urls.extras,
+    };
+}
+
+export function publicWorksheetMakerPack() {
+    const urls = checkoutUrls();
+    const checkoutUrl = urls.worksheetMaker;
+    return {
+        id: 'worksheet-maker-use',
+        credits: WORKSHEET_MAKER_PACK_CREDITS,
+        usd: WORKSHEET_MAKER_USD,
+        pln: WORKSHEET_MAKER_PLN,
+        label: '1 Worksheet Maker use',
+        description: 'One paid use of Worksheet Maker (create one worksheet). Buy again for another use.',
+        checkoutUrl,
+        linkConfigured: Boolean(checkoutUrl),
     };
 }
 
@@ -153,6 +176,9 @@ export function isMaturaAssessPack(payload, eventType = '') {
     const amount = extractAmount(payload);
     const type = String(eventType || '').toLowerCase();
 
+    // Worksheet Maker ($2) must not be mistaken for Matura ($1).
+    if (isWorksheetMakerPack(payload, eventType)) return false;
+
     const titleHit =
         /matura/.test(title) ||
         (/assess/.test(title) && /(essay|writing|prac)/.test(title)) ||
@@ -165,6 +191,31 @@ export function isMaturaAssessPack(payload, eventType = '') {
     // One-time extras priced at ~$1 without a membership title → treat as Matura pack
     if (amountHit && (type.includes('extra_purchase') || type.includes('donation'))) {
         if (!/\b(week|month|year|annual|premium|suite)\b/.test(title)) return true;
+    }
+    return false;
+}
+
+/**
+ * Detect the $2 / 5 zł Worksheet Maker single-use Extra.
+ * Checked before Writing Suite day grants so $2 is not treated as a week.
+ */
+export function isWorksheetMakerPack(payload, eventType = '') {
+    const title = extractTitle(payload).toLowerCase();
+    const amount = extractAmount(payload);
+    const type = String(eventType || '').toLowerCase();
+
+    const titleHit =
+        /worksheet\s*maker/.test(title) ||
+        /lesson\s*creator/.test(title) ||
+        /karta\s*pracy/.test(title) ||
+        (/\bworksheet\b/.test(title) && /\b(use|credit|single|one|1)\b/.test(title)) ||
+        (/\blesson\b/.test(title) && /\b(sheet|worksheet)\b/.test(title));
+
+    const amountHit = amount != null && Math.abs(amount - WORKSHEET_MAKER_USD) <= 0.51;
+
+    if (titleHit && (amountHit || amount == null || (amount >= 1.5 && amount < 2.75))) return true;
+    if (amountHit && (type.includes('extra_purchase') || type.includes('donation'))) {
+        if (!/\b(week|month|year|annual|premium|suite|matura|assess)\b/.test(title)) return true;
     }
     return false;
 }
@@ -218,11 +269,15 @@ export function resolveAccessDays(payload, eventType = '') {
         if (Math.abs(amount - YEAR_AMOUNT) <= 15 || (amount >= 55 && amount <= 90)) {
             return YEAR_DAYS;
         }
-        // ~$10 → month; ~$3 → week (do not treat ~$1 Matura packs as a week)
+        // ~$10 → month; ~$3 → week (do not treat ~$1 Matura or ~$2 Worksheet Maker as a week)
         if (Math.abs(amount - MONTH_AMOUNT) <= 2 || (amount >= 8 && amount <= 15)) {
             return MONTH_DAYS;
         }
-        if (Math.abs(amount - WEEK_AMOUNT) <= 1.5 || (amount >= 2.5 && amount < 8)) {
+        if (Math.abs(amount - WORKSHEET_MAKER_USD) <= 0.51) {
+            // Worksheet Maker pack — not Writing Suite days (handled by isWorksheetMakerPack).
+            return 0;
+        }
+        if (Math.abs(amount - WEEK_AMOUNT) <= 0.75 || (amount >= 2.75 && amount < 8)) {
             return WEEK_DAYS;
         }
     }
@@ -276,6 +331,25 @@ export async function handleBmcWebhook(eventType, payload) {
     }
 
     if (isGrantEvent(type)) {
+        if (isWorksheetMakerPack(payload, type)) {
+            const user = await grantWorksheetMakerCreditsByEmail(email, {
+                credits: WORKSHEET_MAKER_PACK_CREDITS,
+                membershipId,
+            });
+            return {
+                ok: true,
+                action: 'grant_worksheet_maker_use',
+                credits: WORKSHEET_MAKER_PACK_CREDITS,
+                amount,
+                user: user?.email || null,
+                pending: !user,
+                creditsRemaining: user ? Number(user.worksheet_maker_credits || 0) : null,
+                note: user
+                    ? null
+                    : 'No account yet — Worksheet Maker use queued and will apply when this email registers or signs in.',
+            };
+        }
+
         if (isMaturaAssessPack(payload, type)) {
             const user = await grantMaturaAssessCreditsByEmail(email, {
                 credits: MATURA_ASSESS_PACK_CREDITS,
@@ -296,6 +370,14 @@ export async function handleBmcWebhook(eventType, payload) {
         }
 
         const days = resolveAccessDays(payload, type);
+        if (!days || days <= 0) {
+            return {
+                ok: false,
+                reason: 'Could not map payment to Writing Suite days or Worksheet Maker / Matura packs.',
+                amount,
+                title: extractTitle(payload),
+            };
+        }
         const user = await grantBmcAccessByEmail(email, { membershipId, days });
         return {
             ok: true,
