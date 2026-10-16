@@ -2645,14 +2645,41 @@
         }
         .e8-gaps-blank {
             display: inline-flex; align-items: baseline; gap: 0.25rem; margin: 0 0.1rem;
-            vertical-align: baseline;
+            vertical-align: baseline; cursor: text;
         }
-        .e8-gaps-blank .dictation-gap-input {
+        .e8-gaps-blank .dictation-gap-input,
+        .e8-gaps-blank .e8-gaps-input {
             min-width: 7rem; max-width: min(22rem, 100%); width: auto;
             field-sizing: content;
+            margin: 0; padding: 0.2rem 0.4rem;
+            border: none; border-bottom: 2px solid var(--royal-blue);
+            border-radius: 0; background: transparent;
+            font: inherit; font-weight: 700; color: var(--royal-blue);
+            outline: none;
         }
-        .e8-gaps-blank .dictation-gap-input.e8-gaps-input--phrase {
+        .e8-gaps-blank .dictation-gap-input:focus,
+        .e8-gaps-blank .e8-gaps-input:focus {
+            border-bottom-color: var(--pillarbox-red, #c8102e);
+            background: rgba(0, 86, 184, 0.06);
+        }
+        .e8-gaps-blank .dictation-gap-input.e8-gaps-input--phrase,
+        .e8-gaps-blank .e8-gaps-input.e8-gaps-input--phrase {
             min-width: 10rem; max-width: min(28rem, 100%);
+        }
+        .e8-gaps-blank.e8-gaps-blank--sentence {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            margin: 0.15rem 0.1rem; max-width: 100%;
+            vertical-align: middle;
+        }
+        .e8-gaps-blank.e8-gaps-blank--sentence .e8-gaps-input {
+            min-width: min(18rem, 70vw); max-width: min(36rem, 100%);
+            width: 18rem; font-weight: 600;
+        }
+        .e8-gaps-blank .e8-gaps-blank-num {
+            flex: 0 0 1.4rem; height: 1.4rem;
+            border-radius: 999px; background: var(--royal-blue); color: #fff;
+            font-family: var(--font-primary); font-weight: 800; font-size: 0.78rem;
+            display: inline-flex; align-items: center; justify-content: center;
         }
         .e8-gaps-pl {
             font-size: 0.88rem; color: var(--text-muted); font-weight: 600; white-space: nowrap;
@@ -2668,7 +2695,7 @@
             display: inline-block; min-width: 2.4rem; text-align: center;
             font-weight: 800; color: var(--royal-blue); font-family: var(--font-primary);
             border-bottom: 2px dashed var(--royal-blue); margin: 0 0.15rem; padding: 0 0.2rem;
-            user-select: text; -webkit-user-select: text;
+            user-select: text; -webkit-user-select: text; cursor: text;
         }
         .e8-gaps-answers {
             display: flex; flex-direction: column; gap: 0.65rem; margin: 0 0 1rem;
@@ -2688,6 +2715,14 @@
         }
         .e8-gaps-answer-input.dictation-gap-wrong {
             border-color: var(--pillarbox-red); background: rgba(200,16,46,0.08);
+        }
+        .e8-gaps-blank .e8-gaps-input.dictation-gap-correct {
+            border-bottom-color: var(--success-green); background: rgba(0,130,59,0.1);
+            color: var(--success-green);
+        }
+        .e8-gaps-blank .e8-gaps-input.dictation-gap-wrong {
+            border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.1);
+            color: var(--pillarbox-red);
         }
         .gaps-feedback-suggestion {
             color: #ea580c; font-weight: 700;
@@ -12478,6 +12513,40 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             return pl ? `${line} (${pl})` : line;
         }
 
+        /** Inline fillable gap inside the running text (words or sentences). */
+        function gapsInlineInputHtml(gap, mode, index) {
+            const g = gap || {};
+            const num = g.n != null ? g.n : (index + 1);
+            const blank = gapsBlankPlain(g, mode, index);
+            if (mode === 'sentences') {
+                return `<span class="e8-gaps-blank e8-gaps-blank--sentence" data-gap-n="${num}" data-blank="${escapeHtml(blank)}" role="group">`
+                    + `<span class="e8-gaps-blank-num" aria-hidden="true">${num}</span>`
+                    + `<input type="text" class="pe-input e8-gaps-input" data-gap-n="${num}" `
+                    + `placeholder="Sentence ${num}…" autocomplete="off" aria-label="Gap ${num}: write the missing sentence">`
+                    + `</span>`;
+            }
+            const pl = String(g.pl || '').trim();
+            const phraseClass = pl && pl.split(/\s+/).length > 1 ? ' e8-gaps-input--phrase' : '';
+            const ph = pl ? `Translate: ${pl}` : `Gap ${num}`;
+            return `<span class="e8-gaps-blank" data-gap-n="${num}" data-blank="${escapeHtml(blank)}" role="group">`
+                + `<input type="text" class="pe-input e8-gaps-input${phraseClass}" data-gap-n="${num}" `
+                + `placeholder="…" autocomplete="off" aria-label="${escapeHtml(ph)}">`
+                + (pl ? `<span class="e8-gaps-pl">(${escapeHtml(pl)})</span>` : '')
+                + `</span>`;
+        }
+
+        // Click anywhere on an inline gap (cue, number, underline) to focus its input.
+        document.addEventListener('click', (e) => {
+            const blank = e.target && e.target.closest && e.target.closest('.e8-gaps-blank');
+            if (!blank) return;
+            if (e.target.closest('input, textarea, button, a')) return;
+            const inp = blank.querySelector('.e8-gaps-input');
+            if (inp) {
+                e.preventDefault();
+                inp.focus();
+            }
+        });
+
         /** Rebuild gapped worksheet from task data — blanks only, never model answers. */
         function buildGapsWorksheetPlainText(task) {
             if (!task) return '';
@@ -12511,7 +12580,14 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                 clone.querySelectorAll('br').forEach((node) => {
                     node.replaceWith(document.createTextNode('\n'));
                 });
-                // Strip any leftover inputs if present (must never appear in print/copy).
+                // Replace fillable gaps with printable blanks (never student answers).
+                clone.querySelectorAll('.e8-gaps-blank').forEach((node) => {
+                    const blank = node.getAttribute('data-blank') || '________';
+                    node.replaceWith(document.createTextNode(blank));
+                });
+                clone.querySelectorAll('.e8-gaps-blank-plain, .e8-gaps-marker').forEach((node) => {
+                    node.replaceWith(document.createTextNode(node.textContent || '________'));
+                });
                 clone.querySelectorAll('input, textarea, button').forEach((node) => node.remove());
                 const fromDom = (clone.textContent || '')
                     .replace(/\u00a0/g, ' ')
@@ -12676,8 +12752,9 @@ ${JSON.stringify({
             }
             const main = String(taskText || '').trim();
             if (main) html += `<div>${escapeHtml(main).replace(/\n/g, '<br>')}</div>`;
+            // Content points live inside taskPl/taskEn — never re-list them (avoids English duplicates under the polecenie).
             const pts = Array.isArray(bullets) ? bullets.map((b) => String(b || '').trim()).filter(Boolean) : [];
-            if (pts.length) {
+            if (!main && pts.length) {
                 html += '<ul>' + pts.map((b) => `<li>${escapeHtml(b)}</li>`).join('') + '</ul>';
             }
             const opening = String(m.opening || '').trim();
@@ -12774,14 +12851,14 @@ ${JSON.stringify({
 
         function collectAdvGapsAnswers() {
             if (!advGapsTask) return [];
-            const fromAnswers = Array.from(document.querySelectorAll('#adv-gaps-answers .e8-gaps-answer-input'));
-            if (fromAnswers.length) {
-                return fromAnswers.map((inp) => ({
+            const fromText = Array.from(document.querySelectorAll('#adv-gaps-text .e8-gaps-input'));
+            if (fromText.length) {
+                return fromText.map((inp) => ({
                     n: Number(inp.dataset.gapN),
                     answer: (inp.value || '').trim()
                 }));
             }
-            return Array.from(document.querySelectorAll('#adv-gaps-text .e8-gaps-input')).map((inp) => ({
+            return Array.from(document.querySelectorAll('#adv-gaps-answers .e8-gaps-answer-input')).map((inp) => ({
                 n: Number(inp.dataset.gapN),
                 answer: (inp.value || '').trim()
             }));
@@ -12833,50 +12910,16 @@ ${JSON.stringify({
 
             const gaps = Array.isArray(task.gaps) ? task.gaps : [];
             const parts = Array.isArray(task.parts) ? task.parts : [];
-
-            if (task.mode === 'sentences') {
-                let html = '';
-                parts.forEach((part, i) => {
-                    html += formatGapsPartHtml(part);
-                    if (i < gaps.length) {
-                        const g = gaps[i] || {};
-                        const num = g.n != null ? g.n : (i + 1);
-                        html += `<span class="e8-gaps-marker" aria-label="Gap ${num}">(${num})</span>`;
-                    }
-                });
-                textEl.innerHTML = html || '<em>No text generated.</em>';
-                answersEl.hidden = false;
-                answersEl.innerHTML = gaps.map((g, i) => {
-                    const num = g.n != null ? g.n : (i + 1);
-                    return `<div class="e8-gaps-answer-row">
-                        <span class="e8-gaps-answer-num">${num}</span>
-                        <input type="text" class="pe-input e8-gaps-answer-input" data-gap-n="${num}" placeholder="Write sentence ${num}…" autocomplete="off" aria-label="Sentence ${num}">
-                    </div>`;
-                }).join('');
-            } else {
-                // Selectable blanks in the text (for copy/print); answers typed below.
-                let html = '';
-                parts.forEach((part, i) => {
-                    html += formatGapsPartHtml(part);
-                    if (i < gaps.length) {
-                        const g = gaps[i] || {};
-                        const num = g.n != null ? g.n : (i + 1);
-                        const blank = escapeHtml(gapsBlankPlain(g, 'translate', i));
-                        html += `<span class="e8-gaps-blank-plain" data-gap-n="${num}" aria-label="Gap ${num}">${blank}</span>`;
-                    }
-                });
-                textEl.innerHTML = html || '<em>No text generated.</em>';
-                answersEl.hidden = false;
-                answersEl.innerHTML = gaps.map((g, i) => {
-                    const num = g.n != null ? g.n : (i + 1);
-                    const pl = String(g.pl || '').trim();
-                    const ph = pl ? `Translate: ${pl}` : `Gap ${num}`;
-                    return `<div class="e8-gaps-answer-row">
-                        <span class="e8-gaps-answer-num">${num}</span>
-                        <input type="text" class="pe-input e8-gaps-answer-input" data-gap-n="${num}" placeholder="${escapeHtml(ph)}" autocomplete="off" aria-label="${escapeHtml(ph)}">
-                    </div>`;
-                }).join('');
-            }
+            const mode = task.mode === 'sentences' ? 'sentences' : 'translate';
+            let html = '';
+            parts.forEach((part, i) => {
+                html += formatGapsPartHtml(part);
+                if (i < gaps.length) html += gapsInlineInputHtml(gaps[i], mode, i);
+            });
+            textEl.innerHTML = html || '<em>No text generated.</em>';
+            // Answers are typed in the text; keep the under-text list empty/hidden.
+            answersEl.hidden = true;
+            answersEl.innerHTML = '';
             if (check) check.disabled = !gaps.length;
             setGapsPrintEnabled(['adv-gaps-print', 'adv-gaps-print-inline', 'adv-gaps-copy', 'adv-gaps-copy-inline'], gaps.length > 0);
         }
@@ -13123,14 +13166,14 @@ Return ONLY JSON:
 
         function collectPeE8GapsAnswers() {
             if (!peE8GapsTask) return [];
-            const fromAnswers = Array.from(document.querySelectorAll('#pe-e8-gaps-answers .e8-gaps-answer-input'));
-            if (fromAnswers.length) {
-                return fromAnswers.map((inp) => ({
+            const fromText = Array.from(document.querySelectorAll('#pe-e8-gaps-text .e8-gaps-input'));
+            if (fromText.length) {
+                return fromText.map((inp) => ({
                     n: Number(inp.dataset.gapN),
                     answer: (inp.value || '').trim()
                 }));
             }
-            return Array.from(document.querySelectorAll('#pe-e8-gaps-text .e8-gaps-input')).map((inp) => ({
+            return Array.from(document.querySelectorAll('#pe-e8-gaps-answers .e8-gaps-answer-input')).map((inp) => ({
                 n: Number(inp.dataset.gapN),
                 answer: (inp.value || '').trim()
             }));
@@ -13188,50 +13231,16 @@ Return ONLY JSON:
 
             const gaps = Array.isArray(task.gaps) ? task.gaps : [];
             const parts = Array.isArray(task.parts) ? task.parts : [];
-
-            if (task.mode === 'sentences') {
-                let html = '';
-                parts.forEach((part, i) => {
-                    html += formatGapsPartHtml(part);
-                    if (i < gaps.length) {
-                        const g = gaps[i] || {};
-                        const num = g.n != null ? g.n : (i + 1);
-                        html += `<span class="e8-gaps-marker" aria-label="Gap ${num}">(${num})</span>`;
-                    }
-                });
-                textEl.innerHTML = html || '<em>No text generated.</em>';
-                answersEl.hidden = false;
-                answersEl.innerHTML = gaps.map((g, i) => {
-                    const num = g.n != null ? g.n : (i + 1);
-                    return `<div class="e8-gaps-answer-row">
-                        <span class="e8-gaps-answer-num">${num}</span>
-                        <input type="text" class="pe-input e8-gaps-answer-input" data-gap-n="${num}" placeholder="Write sentence ${num}…" autocomplete="off" aria-label="Sentence ${num}">
-                    </div>`;
-                }).join('');
-            } else {
-                // Selectable blanks in the text (for copy/print); answers typed below.
-                let html = '';
-                parts.forEach((part, i) => {
-                    html += formatGapsPartHtml(part);
-                    if (i < gaps.length) {
-                        const g = gaps[i] || {};
-                        const num = g.n != null ? g.n : (i + 1);
-                        const blank = escapeHtml(gapsBlankPlain(g, 'translate', i));
-                        html += `<span class="e8-gaps-blank-plain" data-gap-n="${num}" aria-label="Gap ${num}">${blank}</span>`;
-                    }
-                });
-                textEl.innerHTML = html || '<em>No text generated.</em>';
-                answersEl.hidden = false;
-                answersEl.innerHTML = gaps.map((g, i) => {
-                    const num = g.n != null ? g.n : (i + 1);
-                    const pl = String(g.pl || '').trim();
-                    const ph = pl ? `Translate: ${pl}` : `Gap ${num}`;
-                    return `<div class="e8-gaps-answer-row">
-                        <span class="e8-gaps-answer-num">${num}</span>
-                        <input type="text" class="pe-input e8-gaps-answer-input" data-gap-n="${num}" placeholder="${escapeHtml(ph)}" autocomplete="off" aria-label="${escapeHtml(ph)}">
-                    </div>`;
-                }).join('');
-            }
+            const mode = task.mode === 'sentences' ? 'sentences' : 'translate';
+            let html = '';
+            parts.forEach((part, i) => {
+                html += formatGapsPartHtml(part);
+                if (i < gaps.length) html += gapsInlineInputHtml(gaps[i], mode, i);
+            });
+            textEl.innerHTML = html || '<em>No text generated.</em>';
+            // Answers are typed in the text; keep the under-text list empty/hidden.
+            answersEl.hidden = true;
+            answersEl.innerHTML = '';
             if (check) check.disabled = !gaps.length;
             setGapsPrintEnabled(['pe-e8-gaps-print', 'pe-e8-gaps-print-inline', 'pe-e8-gaps-copy', 'pe-e8-gaps-copy-inline'], gaps.length > 0);
         }
