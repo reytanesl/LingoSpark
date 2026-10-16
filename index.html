@@ -4228,8 +4228,8 @@
             <div class="game-setup-panel">
                 <div class="game-setup-actions">
                     <button class="btn btn-outline" onclick="initAdvGaps()" id="adv-gaps-btn">New Text <i class="fa-solid fa-rotate"></i></button>
-                    <button class="btn btn-outline" onclick="printAdvGapsText()" id="adv-gaps-print" disabled title="Print the text with gaps"><i class="fa-solid fa-print"></i> Print text</button>
-                    <button class="btn btn-outline" onclick="copyAdvGapsText()" id="adv-gaps-copy" disabled title="Copy text with gaps for Word"><i class="fa-solid fa-copy"></i> Copy text</button>
+                    <button class="btn btn-outline" onclick="printAdvGapsText()" id="adv-gaps-print" disabled title="Print only the gapped text (no answers)"><i class="fa-solid fa-print"></i> Print gapped text</button>
+                    <button class="btn btn-outline" onclick="copyAdvGapsText()" id="adv-gaps-copy" disabled title="Copy only the gapped text for Word"><i class="fa-solid fa-copy"></i> Copy gapped text</button>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.75rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-signal"></i> Level</label>
@@ -4300,11 +4300,13 @@
                     <div class="gaps-exam-task-body" id="adv-gaps-task-body"></div>
                 </div>
                 <div class="e8-gaps-text" id="adv-gaps-text" aria-live="polite"></div>
+                <div class="gaps-export-row" style="display:flex;flex-wrap:wrap;gap:0.55rem;margin:0 0 1rem;">
+                    <button class="btn btn-outline" type="button" onclick="printAdvGapsText()" id="adv-gaps-print-inline" disabled title="Print only the gapped text (no answers)"><i class="fa-solid fa-print"></i> Print gapped text</button>
+                    <button class="btn btn-outline" type="button" onclick="copyAdvGapsText()" id="adv-gaps-copy-inline" disabled title="Copy only the gapped text for Word"><i class="fa-solid fa-copy"></i> Copy gapped text</button>
+                </div>
                 <div class="e8-gaps-answers" id="adv-gaps-answers" hidden></div>
                 <div class="gaps-action-row" style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.25rem;">
                     <button class="btn btn-blue" style="flex:1 1 220px;padding:1rem;" onclick="checkAdvGaps()" id="adv-gaps-check" disabled>Check answers</button>
-                    <button class="btn btn-outline" style="flex:0 0 auto;padding:1rem 1.1rem;" onclick="printAdvGapsText()" id="adv-gaps-print-inline" disabled title="Print the text with gaps"><i class="fa-solid fa-print"></i> Print</button>
-                    <button class="btn btn-outline" style="flex:0 0 auto;padding:1rem 1.1rem;" onclick="copyAdvGapsText()" id="adv-gaps-copy-inline" disabled title="Copy text with gaps for Word"><i class="fa-solid fa-copy"></i> Copy</button>
                 </div>
             </div>
             <div id="adv-gaps-feedback" class="feedback"></div>
@@ -4887,8 +4889,8 @@
             <div class="game-setup-panel">
                 <div class="game-setup-actions">
                     <button class="btn btn-outline" onclick="initPeE8Gaps()" id="pe-e8-gaps-btn">New Text <i class="fa-solid fa-rotate"></i></button>
-                    <button class="btn btn-outline" onclick="printPeE8GapsText()" id="pe-e8-gaps-print" disabled title="Print the text with gaps"><i class="fa-solid fa-print"></i> Print text</button>
-                    <button class="btn btn-outline" onclick="copyPeE8GapsText()" id="pe-e8-gaps-copy" disabled title="Copy text with gaps for Word"><i class="fa-solid fa-copy"></i> Copy text</button>
+                    <button class="btn btn-outline" onclick="printPeE8GapsText()" id="pe-e8-gaps-print" disabled title="Print only the gapped text (no answers)"><i class="fa-solid fa-print"></i> Print gapped text</button>
+                    <button class="btn btn-outline" onclick="copyPeE8GapsText()" id="pe-e8-gaps-copy" disabled title="Copy only the gapped text for Word"><i class="fa-solid fa-copy"></i> Copy gapped text</button>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.85rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-sliders"></i> Activity type</label>
@@ -4929,11 +4931,13 @@
                     <div class="gaps-exam-task-body" id="pe-e8-gaps-task-body"></div>
                 </div>
                 <div class="e8-gaps-text" id="pe-e8-gaps-text" aria-live="polite"></div>
+                <div class="gaps-export-row" style="display:flex;flex-wrap:wrap;gap:0.55rem;margin:0 0 1rem;">
+                    <button class="btn btn-outline" type="button" onclick="printPeE8GapsText()" id="pe-e8-gaps-print-inline" disabled title="Print only the gapped text (no answers)"><i class="fa-solid fa-print"></i> Print gapped text</button>
+                    <button class="btn btn-outline" type="button" onclick="copyPeE8GapsText()" id="pe-e8-gaps-copy-inline" disabled title="Copy only the gapped text for Word"><i class="fa-solid fa-copy"></i> Copy gapped text</button>
+                </div>
                 <div class="e8-gaps-answers" id="pe-e8-gaps-answers" hidden></div>
                 <div class="gaps-action-row" style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.25rem;">
                     <button class="btn btn-blue" style="flex:1 1 220px;padding:1rem;" onclick="checkPeE8Gaps()" id="pe-e8-gaps-check" disabled>Check answers</button>
-                    <button class="btn btn-outline" style="flex:0 0 auto;padding:1rem 1.1rem;" onclick="printPeE8GapsText()" id="pe-e8-gaps-print-inline" disabled title="Print the text with gaps"><i class="fa-solid fa-print"></i> Print</button>
-                    <button class="btn btn-outline" style="flex:0 0 auto;padding:1rem 1.1rem;" onclick="copyPeE8GapsText()" id="pe-e8-gaps-copy-inline" disabled title="Copy text with gaps for Word"><i class="fa-solid fa-copy"></i> Copy</button>
                 </div>
             </div>
             <div id="pe-e8-gaps-feedback" class="feedback"></div>
@@ -12461,7 +12465,7 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             });
         }
 
-        /** Gap placeholder as shown on screen / for print & Word paste. */
+        /** Gap placeholder as shown on screen (never includes English answers). */
         function gapsBlankPlain(gap, mode, index) {
             const g = gap || {};
             if (mode === 'sentences') {
@@ -12469,13 +12473,12 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                 return `(${n})`;
             }
             const pl = String(g.pl || '').trim();
-            const ansLen = String(g.answer || '').trim().length;
-            const width = Math.min(28, Math.max(8, Math.max(pl.length + 2, ansLen || 8)));
+            const width = Math.min(24, Math.max(8, pl.length + 4 || 10));
             const line = '_'.repeat(width);
             return pl ? `${line} (${pl})` : line;
         }
 
-        /** Full worksheet text with gaps (blanks + Polish cues / numbers) — printable & pasteable. */
+        /** Rebuild gapped worksheet from task data — blanks only, never model answers. */
         function buildGapsWorksheetPlainText(task) {
             if (!task) return '';
             const parts = Array.isArray(task.parts) ? task.parts : [];
@@ -12494,15 +12497,39 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             return out.replace(/[ \t]+\n/g, '\n').replace(/\n[ \t]+/g, '\n').replace(/[ \t]{2,}/g, ' ').trim();
         }
 
-        /** Print only the email/text with gaps — no key, no polecenie. */
-        function printGapsGeneratedText(task) {
-            if (!task || !Array.isArray(task.parts) || !Array.isArray(task.gaps) || !task.gaps.length) {
-                appAlert('Generate a text first (New Text), then print.');
-                return;
+        /**
+         * Plain text of the on-screen gapped email/text only (#…-gaps-text).
+         * Answer inputs live outside this box, so they are never included.
+         */
+        function getGapsTextAsDisplayed(textElId, task) {
+            const el = document.getElementById(textElId);
+            if (el && el.childNodes.length) {
+                const clone = el.cloneNode(true);
+                clone.querySelectorAll('.e8-gaps-para-break').forEach((node) => {
+                    node.replaceWith(document.createTextNode('\n\n'));
+                });
+                clone.querySelectorAll('br').forEach((node) => {
+                    node.replaceWith(document.createTextNode('\n'));
+                });
+                // Strip any leftover inputs if present (must never appear in print/copy).
+                clone.querySelectorAll('input, textarea, button').forEach((node) => node.remove());
+                const fromDom = (clone.textContent || '')
+                    .replace(/\u00a0/g, ' ')
+                    .replace(/[ \t]+\n/g, '\n')
+                    .replace(/\n[ \t]+/g, '\n')
+                    .replace(/[ \t]{2,}/g, ' ')
+                    .replace(/\n{3,}/g, '\n\n')
+                    .trim();
+                if (fromDom && !/^No text generated/i.test(fromDom)) return fromDom;
             }
-            const plain = buildGapsWorksheetPlainText(task);
+            return buildGapsWorksheetPlainText(task);
+        }
+
+        /** Print ONLY the gapped text (no polecenie, no answer list, no key). */
+        function printGapsGappedText(textElId, task) {
+            const plain = getGapsTextAsDisplayed(textElId, task);
             if (!plain) {
-                appAlert('No text to print yet.');
+                appAlert('Generate a text first (New Text), then print.');
                 return;
             }
             const esc = escapeHtml;
@@ -12510,15 +12537,16 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Text with gaps</title>
+<title>Gapped text</title>
 <style>
-  body { font-family: Georgia, 'Times New Roman', serif; color: #222; max-width: 720px; margin: 1.25rem auto; padding: 0 1.25rem 2rem; line-height: 1.7; font-size: 12pt; }
-  .text { white-space: pre-wrap; }
-  @media print { body { margin: 0; max-width: none; padding: 0; } }
+  @page { margin: 18mm 16mm; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #111; margin: 0; padding: 0; line-height: 1.75; font-size: 12pt; }
+  .text { white-space: pre-wrap; word-wrap: break-word; }
 </style>
 </head>
 <body>
   <div class="text">${esc(plain)}</div>
+  <script>window.onload=function(){setTimeout(function(){try{window.print()}catch(e){}},200)}<\/script>
 </body>
 </html>`;
 
@@ -12530,22 +12558,17 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             w.document.open();
             w.document.write(html);
             w.document.close();
-            w.focus();
-            setTimeout(() => {
-                try { w.print(); } catch (_) { /* ignore */ }
-            }, 350);
         }
 
-        async function copyGapsWorksheetText(task) {
-            if (!task || !Array.isArray(task.parts) || !Array.isArray(task.gaps) || !task.gaps.length) {
+        /** Copy ONLY the gapped text as shown (for Word). */
+        async function copyGapsGappedText(textElId, task, btnId) {
+            const plain = getGapsTextAsDisplayed(textElId, task);
+            if (!plain) {
                 appAlert('Generate a text first (New Text), then copy.');
                 return;
             }
-            const plain = buildGapsWorksheetPlainText(task);
-            if (!plain) {
-                appAlert('No text to copy yet.');
-                return;
-            }
+            const btn = btnId ? document.getElementById(btnId) : null;
+            const prevLabel = btn ? btn.innerHTML : '';
             try {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(plain);
@@ -12559,26 +12582,31 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                     document.execCommand('copy');
                     ta.remove();
                 }
-                appAlert('Copied — paste into Word or any word processor. Gaps are included as blanks.');
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                    setTimeout(() => { btn.innerHTML = prevLabel; }, 1600);
+                }
             } catch (err) {
-                appAlert('Could not copy automatically. Select the text in the box and press Ctrl+C.');
+                appAlert('Could not copy. Select the gapped text above and press Ctrl+C.');
             }
         }
 
         function printAdvGapsText() {
-            printGapsGeneratedText(advGapsTask);
+            printGapsGappedText('adv-gaps-text', advGapsTask);
         }
 
         function printPeE8GapsText() {
-            printGapsGeneratedText(peE8GapsTask);
+            printGapsGappedText('pe-e8-gaps-text', peE8GapsTask);
         }
 
         function copyAdvGapsText() {
-            copyGapsWorksheetText(advGapsTask);
+            const btnId = document.getElementById('adv-gaps-copy-inline') ? 'adv-gaps-copy-inline' : 'adv-gaps-copy';
+            return copyGapsGappedText('adv-gaps-text', advGapsTask, btnId);
         }
 
         function copyPeE8GapsText() {
-            copyGapsWorksheetText(peE8GapsTask);
+            const btnId = document.getElementById('pe-e8-gaps-copy-inline') ? 'pe-e8-gaps-copy-inline' : 'pe-e8-gaps-copy';
+            return copyGapsGappedText('pe-e8-gaps-text', peE8GapsTask, btnId);
         }
 
         function countGapsModelWords(data, opts) {
