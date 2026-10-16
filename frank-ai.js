@@ -1,39 +1,47 @@
 /* Frankenstein Builder — "Generate with AI".
    Server-side only (imported by server.js and the tests, never served). The browser sends a
    whitelisted text type, paragraph type (or "whole") and an optional topic to POST /api/frank/generate;
-   the prompt is built here and targets CKE matura rozszerzona (formuła 2023+) writing requirements.
+   the prompt is built here and targets CKE matura rozszerzona (formuła 2023+) writing requirements
+   (Informator: język angielski — wypowiedź pisemna, 13 pts / four criteria, 200–250 words).
    The AI reply is validated (JSON shape, word count, cohesive linking so the order is unambiguous)
    before it reaches the player; on failure the client falls back to the static bank. */
 import './frank-options.js';
 
 const FO = globalThis.FrankOptions;
 
-export const WHOLE_WORDS = { min: 200, max: 250 };
+/** Aim for the CKE target band; accept a slightly wider band so near-miss model texts still pass. */
+export const WHOLE_WORDS = {
+    min: FO.CKE_WORD_TARGET.min,
+    max: FO.CKE_WORD_TARGET.max,
+    acceptMin: FO.CKE_WORD_ACCEPT.min,
+    acceptMax: FO.CKE_WORD_ACCEPT.max,
+    floor: FO.CKE_WORD_FLOOR,
+};
 export const PARA_WORDS = { min: 45, max: 140 };
 export const RATE_LIMIT = { max: 12, windowMs: 60 * 60 * 1000, minGapMs: 8000 };
 export const MAX_TOPIC_CHARS = 120;
 
-/** Exam forms on the 2023+ extended matura (tekst argumentacyjny / list / artykuł, 200–250 words). */
+/** Exam forms on the 2023+ extended matura (rozprawka / list formalny / artykuł). */
 const CKE_FORMS = {
     for_against: {
         exam: true,
-        form: 'rozprawka "for and against" (argumentative essay): introduce the issue, present arguments for and against, then a balanced judgement',
+        form: 'rozprawka "for and against" (argumentative essay)',
         register: 'formal / neutral academic register, no contractions, impersonal structures where natural',
     },
     opinion: {
         exam: true,
-        form: 'rozprawka "opinion" (opinion essay): clear thesis, supporting arguments, a counter-argument with rebuttal, conclusion',
-        register: 'formal / neutral academic register, no contractions; a clear personal stance is expected',
+        form: 'rozprawka "opinion" (opinion essay)',
+        register: 'formal / neutral academic register, no contractions or chatty language; a clear personal stance in the thesis is expected',
     },
     formal_letter: {
         exam: true,
-        form: 'list formalny (formal letter / email) to an institution, organisation, newspaper editor or official, written to persuade or argue a case',
-        register: 'formal register: "Dear Sir or Madam," or "Dear Mr/Ms + surname,"; no contractions; polite, persuasive formulas; ends with "Yours faithfully," / "Yours sincerely," and a full name',
+        form: 'list formalny (formal letter / email) to an institution, organisation, newspaper editor or official',
+        register: 'formal register: "Dear Sir or Madam," → "Yours faithfully," OR "Dear Mr/Ms + surname," → "Yours sincerely,"; no contractions; polite formulas; sign off as XYZ (never a real name)',
     },
     article: {
         exam: true,
-        form: 'artykuł publicystyczny (opinion article for a magazine or website) arguing a clear position',
-        register: 'semi-formal publicistic register: engaging opening (question, striking fact), direct address to readers allowed, no slang, no contractions',
+        form: 'artykuł publicystyczny (magazine / website article) — must sound like an article, not a dry essay',
+        register: 'semi-formal publicistic register: engaging opening, direct address to readers allowed, vivid but accurate language, no slang, no contractions',
     },
 };
 
@@ -96,6 +104,30 @@ function rolePlan(textType) {
     return t.paras.map((p) => `- ${p.id} (${p.role}): ${p.label}. ${p.hint}`).join('\n');
 }
 
+function formPlanBlock(textType) {
+    const t = FO.findTextType(textType);
+    const plan = (t.plan || []).map((line, i) => `${i + 1}. ${line}`).join('\n');
+    return `FORM CONVENTIONS (Zgodność z poleceniem also checks these — mixing forms costs points):
+${t.conventions || ''}
+
+STANDARD PARAGRAPH PLAN for this form (aim ${WHOLE_WORDS.min}–${WHOLE_WORDS.max} words):
+${plan}`;
+}
+
+function criteriaBlock(register) {
+    const lines = FO.CKE_CRITERIA.map((c, i) =>
+        `${i + 1}. ${c.label} (0–${c.max} pts): ${c.summary}`).join('\n');
+    return `CKE MARKING (matura rozszerzona wypowiedź pisemna — max 13 points; score at the top band in every criterion):
+${lines}
+
+COMMON POINT LOSSES TO AVOID:
+- Not developing BOTH prompt elements (lowers Zgodność z poleceniem).
+- Mixing forms (e.g. an article that reads like an essay, or a letter without letter conventions).
+- Word count: target ${WHOLE_WORDS.min}–${WHOLE_WORDS.max}. Texts of roughly ${WHOLE_WORDS.acceptMin}–${WHOLE_WORDS.acceptMax} are still usable as models; below ${WHOLE_WORDS.floor} CKE scores only Zgodność (max 5/13).
+
+Register / correctness: ${register}.`;
+}
+
 export function buildFrankAiPrompt(v, { retryNote = '' } = {}) {
     const t = FO.findTextType(v.textType);
     const form = CKE_FORMS[v.textType];
@@ -105,24 +137,22 @@ export function buildFrankAiPrompt(v, { retryNote = '' } = {}) {
         : 'TOPIC: choose a fresh, realistic topic typical of extended-matura tasks (education, technology, environment, work, culture, health, travel, society, media).';
     const common = `You write model texts for Polish students preparing for the CKE matura z języka angielskiego, poziom rozszerzony (formuła 2023+), writing task (wypowiedź pisemna).
 TEXT TYPE: ${t.label}. Form: ${form.form}.
-${form.exam ? 'This IS a form used on the extended exam: follow the CKE task format exactly.' : 'This form is not set on the extended exam; keep the same CKE quality criteria anyway.'}
+This IS a form used on the extended exam: follow the CKE task format and form conventions exactly.
 ${topicLine}
 
-CKE CRITERIA THE TEXT MUST MEET (score at the top band in every criterion):
-1. Zgodność z poleceniem: the task (polecenie) has exactly TWO elements; the text addresses BOTH and develops each one fully (rozwinięcie: a clear claim + explanation/justification + a concrete example or consequence), not just mentions it.
-2. Spójność i logika: clear paragraphing (introduction, body paragraphs, conclusion / opening and closing for letters), logical progression, and explicit cohesion: EVERY sentence after the first one in a paragraph must contain a linking device or a clear reference to the previous sentence (e.g. However, Moreover, As a result, For instance, This..., Such...), and EVERY paragraph after the first must open with a signposting phrase (Firstly / On the other hand / Admittedly / To sum up ...). The original order of sentences must be the only sensible one.
-3. Zakres środków językowych: a wide range of B2+/C1 vocabulary (precise collocations, topic-specific lexis, no repetition) and structures (e.g. conditionals, passive, participle clauses, inversion, cleft sentences, modal perfects) — but natural and accurate.
-4. Poprawność środków językowych: no language mistakes. Register: ${form.register}.
+${criteriaBlock(form.register)}
 
-POLECENIE: write the exam-style task in POLISH, the way CKE phrases it (one or two sentences of context + "Napisz ..." + the two elements as separate bullet points). Put the two elements also in "elements" (Polish).`;
+${formPlanBlock(v.textType)}
+
+POLECENIE: write the exam-style task in POLISH, the way CKE phrases it (one or two sentences of context + "Napisz ..." + the two elements as separate bullet points). Put the two elements also in "elements" (Polish). The text must develop BOTH elements fully (claim + explanation/justification + concrete example or consequence) — not just mention them.`;
     const format = 'Every sentence is a separate string. Plain text only, no line breaks, no numbering, no markdown. Each sentence at most 35 words.';
     if (v.whole) {
         return `${common}
 
-WRITE: the WHOLE text, ${WHOLE_WORDS.min}–${WHOLE_WORDS.max} words in total (count every word, including greeting, sign-off and title if any). 4 or 5 paragraphs. ${format}
-${v.textType === 'formal_letter' ? 'Put the greeting (e.g. "Dear Sir or Madam,") as the first string of the first paragraph, and the sign-off (e.g. "Yours faithfully,") and the full name as the last two strings of the last paragraph.' : ''}
+WRITE: the WHOLE text, ${WHOLE_WORDS.min}–${WHOLE_WORDS.max} words in total (count every word, including greeting, sign-off and title if any). Prefer 4 paragraphs; 5 is OK when the plan includes an optional body. ${format}
+${v.textType === 'formal_letter' ? 'Put the greeting (e.g. "Dear Sir or Madam,") as the first string of the first paragraph, and the sign-off (e.g. "Yours faithfully,") and XYZ as the last two strings of the last paragraph. Never use a real personal name.' : ''}
 ${v.textType === 'article' ? 'Give the article a short catchy "title" (not part of the paragraphs).' : ''}
-Typical paragraph roles for this text type:
+Paragraph role ids to use in JSON:
 ${rolePlan(v.textType)}
 ${retryNote}
 Return ONLY valid JSON:
@@ -132,7 +162,7 @@ Return ONLY valid JSON:
 
 WRITE: ONE paragraph only — the "${para.label}" of a ${t.short.toLowerCase()} answering the polecenie. ${para.hint} 4–6 sentences, ${PARA_WORDS.min}–${PARA_WORDS.max} words. ${format}
 ${para.id === 'opening' && /letter/.test(v.textType) ? 'Start with the greeting (e.g. "Dear Sir or Madam,") as the first string.' : ''}
-${para.id === 'closing' && /letter/.test(v.textType) ? 'End with the sign-off and the full name as the last two strings.' : ''}
+${para.id === 'closing' && /letter/.test(v.textType) ? 'End with the sign-off and XYZ as the last two strings (never a real name).' : ''}
 ${retryNote}
 Return ONLY valid JSON:
 {"task":"<polecenie in Polish>","elements":["<element 1>","<element 2>"],"topic":"<short English topic>","paragraph":{"type":"${para.id}","sentences":["...","..."]}}`;
@@ -186,8 +216,17 @@ export function validateFrankAiResult(raw, v) {
     const meta = { task, elements, topic, title, words, ai: true };
     if (v.whole) {
         if (paras.length < 3 || paras.length > 6) return { ok: false, error: 'A whole text needs 3–6 paragraphs.' };
-        if (words < WHOLE_WORDS.min || words > WHOLE_WORDS.max) {
-            return { ok: false, error: `The whole text has ${words} words; it must have ${WHOLE_WORDS.min}–${WHOLE_WORDS.max}.` };
+        if (words < WHOLE_WORDS.acceptMin || words > WHOLE_WORDS.acceptMax) {
+            return { ok: false, error: `The whole text has ${words} words; aim for ${WHOLE_WORDS.min}–${WHOLE_WORDS.max} (accepted ${WHOLE_WORDS.acceptMin}–${WHOLE_WORDS.acceptMax}).` };
+        }
+        if (v.textType === 'formal_letter') {
+            const last = all[all.length - 1] || '';
+            if (!/^XYZ\.?$/i.test(last.replace(/["']/g, '').trim())) {
+                return { ok: false, error: 'Formal letters must end with the sign-off name XYZ.' };
+            }
+        }
+        if (v.textType === 'article' && title.length < 3) {
+            return { ok: false, error: 'Articles need a short catchy title.' };
         }
         const t = FO.findTextType(v.textType);
         const startType = t.paras.find((p) => p.role === 'start').id;

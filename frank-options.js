@@ -7,55 +7,103 @@
     const WHOLE = 'whole';
     const STORAGE_KEY = 'lingospark.frank.selection.v1';
 
-    /** CKE Matura rozszerzona writing forms only (shorter menu). */
+    /**
+     * CKE Matura rozszerzona (formuła 2023+) writing forms.
+     * Marked out of 13 on the same four criteria for every form; target length 200–250 words
+     * (CKE: below 160 words only Zgodność is scored). See Informator — język angielski.
+     */
     const TEXT_TYPES = [
         {
             id: 'for_against',
-            wholeHint: 'Typical shape: introduction → arguments for → arguments against → conclusion with a balanced judgement.',
+            wholeHint: 'CKE plan (4 paragraphs, 200–250 words): neutral introduction → arguments for → arguments against → conclusion that weighs both sides.',
             label: 'For–against essay',
             short: 'For–against essay',
+            conventions: 'Neutral introduction (no thesis yet); one paragraph of arguments for and one against (or a balanced mix); conclusion that sums up both sides and may give an opinion. Formal style, no contractions.',
+            plan: [
+                'Introduction: present the issue neutrally; note that it is controversial — do not give your opinion yet.',
+                'Arguments for: 2–3 points, each with support or examples (often one polecenie element).',
+                'Arguments against: 2–3 points, each with support or examples (often the other element).',
+                'Conclusion: sum up both sides and give a balanced view or your own opinion.',
+            ],
             paras: [
-                { id: 'introduction', role: 'start', label: 'Introduction', hint: 'Typical shape: general context → the debate or problem → both sides promised (no final verdict yet).' },
-                { id: 'body_for', role: 'middle', label: 'Body paragraph — arguments for', hint: 'Typical shape: a point in favour → explanation → extra support → result or wrap-up.' },
-                { id: 'body_against', role: 'middle', label: 'Body paragraph — arguments against', hint: 'Typical shape: a contrasting point → explanation → extra support → result or wrap-up.' },
-                { id: 'conclusion_for_against', role: 'end', label: 'Conclusion — for and against', hint: 'Typical shape: a balanced summary → both sides in brief → a measured closing judgement.' },
+                { id: 'introduction', role: 'start', label: 'Introduction — neutral', hint: 'Present the issue neutrally (e.g. a controversial debate) → both sides promised → no final verdict yet.' },
+                { id: 'body_for', role: 'middle', label: 'Arguments for', hint: '2–3 points in favour, each with reasons/examples/consequences (Often: first element of the polecenie).' },
+                { id: 'body_against', role: 'middle', label: 'Arguments against', hint: '2–3 contrasting points, each with support (Often: second element of the polecenie).' },
+                { id: 'conclusion_for_against', role: 'end', label: 'Conclusion — balanced judgement', hint: 'Brief summary of both sides → measured closing judgement or opinion.' },
             ],
         },
         {
             id: 'opinion',
-            wholeHint: 'Typical shape: introduction with a clear thesis → supporting arguments → counter-argument with rebuttal → conclusion.',
+            wholeHint: 'CKE plan (4–5 paragraphs, 200–250 words): introduction with a clear thesis → body arguments → optional opposing view with rebuttal → conclusion that restates the opinion.',
             label: 'Opinion essay',
             short: 'Opinion essay',
+            conventions: 'Introduction with a clear thesis; body paragraphs that each argue one point with support; conclusion that restates the opinion. Formal, impersonal style — no contractions or chatty language.',
+            plan: [
+                'Introduction: introduce the topic and state your opinion clearly in a thesis sentence.',
+                'Body 1: first argument with reasons and an example (often the first polecenie element).',
+                'Body 2: second argument with support (often the second polecenie element).',
+                'Optional Body 3: one opposing view, then why you disagree.',
+                'Conclusion: restate your opinion in different words and add a final thought or recommendation.',
+            ],
             paras: [
-                { id: 'introduction', role: 'start', label: 'Introduction', hint: 'Typical shape: general context → the problem → a clear thesis stating your view.' },
-                { id: 'body_opinion', role: 'middle', label: 'Body paragraph — opinion', hint: 'Typical shape: a clear personal view → reasons → further justification → a firm close.' },
-                { id: 'body_counter', role: 'middle', label: 'Counter-argument and rebuttal', hint: 'Typical shape: the opposing view → why some people hold it → your rebuttal (However / Nevertheless) → your position restated.' },
-                { id: 'conclusion_opinion', role: 'end', label: 'Conclusion — opinion', hint: 'Typical shape: a restated opinion → a key reason → a final recommendation.' },
+                { id: 'introduction', role: 'start', label: 'Introduction — thesis', hint: 'General context → the problem → a clear thesis stating your opinion.' },
+                { id: 'body_opinion', role: 'middle', label: 'Body — supporting argument', hint: 'One clear claim → reasons → example or consequence → firm close (one polecenie element).' },
+                { id: 'body_counter', role: 'middle', label: 'Opposing view and rebuttal (optional)', hint: 'Opposing view → why some hold it → your rebuttal (However / Nevertheless) → your position restated.' },
+                { id: 'conclusion_opinion', role: 'end', label: 'Conclusion — restated opinion', hint: 'Restate the opinion in different words → key reason → final recommendation or thought.' },
             ],
         },
         {
             id: 'article',
-            wholeHint: 'Typical shape: an eye-catching introduction → the main point → a further point → a conclusion that speaks to the reader.',
+            wholeHint: 'CKE plan (4–5 paragraphs, 200–250 words): catchy title → hooking opening → body developing both prompt elements → memorable ending or call to action.',
             label: 'Article',
             short: 'Article',
+            conventions: 'Eye-catching title; opening that hooks the reader (question, surprising fact or short anecdote); lively body that speaks to the reader; memorable final line or call to action. Semi-formal and vivid — no slang. Must not read like a dry essay.',
+            plan: [
+                'Title: short and catchy (question, play on words, or a promise).',
+                'Opening: hook the reader and introduce the topic.',
+                'Body 1: first polecenie element — personal examples and vivid language.',
+                'Body 2: second polecenie element — developed the same way.',
+                'Optional Body 3: an extra angle or a piece of advice.',
+                'Ending: memorable final line (advice, call to action or rhetorical question) that links back to the opening.',
+            ],
             paras: [
-                { id: 'introduction', role: 'start', label: 'Introduction — hooking the reader', hint: 'Typical shape: a question or striking idea → link to the reader → what the article will discuss.' },
-                { id: 'body', role: 'middle', label: 'Main body — developing the topic', hint: 'Typical shape: main point → explanation → example or consequence → extra point (What is more …).' },
-                { id: 'conclusion', role: 'end', label: 'Conclusion — final thought or call to action', hint: 'Typical shape: summing up → advice or a question for the reader → a memorable last line.' },
+                { id: 'introduction', role: 'start', label: 'Opening — hook the reader', hint: 'Question, surprising fact or short anecdote → link to the reader → what the article will discuss.' },
+                { id: 'body', role: 'middle', label: 'Main body — develop a prompt element', hint: 'One polecenie element: claim → vivid explanation → personal example or consequence → address the reader.' },
+                { id: 'conclusion', role: 'end', label: 'Ending — call to action', hint: 'Memorable last line: advice, call to action or rhetorical question that echoes the opening.' },
             ],
         },
         {
             id: 'formal_letter',
-            wholeHint: 'Typical shape: greeting and reason for writing → main points → further details → what you expect next and a formal sign-off.',
+            wholeHint: 'CKE plan (4–5 paragraphs, 200–250 words): greeting → reason for writing → body for each prompt element → closing that asks for action → Yours faithfully/sincerely + XYZ.',
             label: 'Formal letter',
             short: 'Formal letter',
+            conventions: 'Correct greeting and matching sign-off (Dear Sir or Madam → Yours faithfully; Dear Mr/Ms X → Yours sincerely). Reason for writing in the opening; closing that asks for a reply or action. Formal, polite, no contractions. Sign as XYZ — never a real name.',
+            plan: [
+                'Greeting: Dear Sir or Madam, or Dear Mr/Ms X,',
+                'Opening: who you are if relevant and why you are writing.',
+                'Body 1: first polecenie element, developed with details.',
+                'Body 2: second polecenie element, developed with details.',
+                'Closing: what you expect next (reply or action) and a polite thank-you.',
+                'Sign-off: Yours faithfully / Yours sincerely, then XYZ on its own line.',
+            ],
             paras: [
-                { id: 'opening', role: 'start', label: 'Opening — greeting and reason for writing', hint: 'Typical shape: Dear Sir or Madam / Dear Ms … → I am writing to / in response to … → what the letter is about.' },
-                { id: 'body', role: 'middle', label: 'Main body — details, request or complaint', hint: 'Typical shape: first point → more detail → next point, linked with Firstly / In addition / As a result.' },
-                { id: 'closing', role: 'end', label: 'Closing and sign-off', hint: 'Typical shape: what you expect next → I look forward to … → Yours faithfully / sincerely → your name.' },
+                { id: 'opening', role: 'start', label: 'Opening — greeting and reason', hint: 'Dear Sir or Madam / Dear Mr/Ms … → I am writing to / in response to … → who you are if needed and why.' },
+                { id: 'body', role: 'middle', label: 'Main body — one prompt element', hint: 'Develop one polecenie element fully (claim + details + example/consequence), with formal linkers.' },
+                { id: 'closing', role: 'end', label: 'Closing and sign-off (XYZ)', hint: 'What you expect next → I look forward to … → Yours faithfully / sincerely → XYZ (never a real name).' },
             ],
         },
     ];
+
+    /** Shared CKE marking scale for every Matura rozszerzona writing form (max 13). */
+    const CKE_CRITERIA = Object.freeze([
+        { id: 'zgodnosc', label: 'Zgodność z poleceniem', max: 5, summary: 'Cover both prompt elements and develop each with reasons, examples and consequences; follow the conventions of the form. Just mentioning an element scores low.' },
+        { id: 'spojnosc', label: 'Spójność i logika', max: 2, summary: 'Clear paragraphs, logical order and linkers between sentences and paragraphs so the reader never has to guess how ideas fit.' },
+        { id: 'zakres', label: 'Zakres środków językowych', max: 3, summary: 'Precise, varied B2+ vocabulary and structures (collocations, inversion, passives) — not simple, repeated words.' },
+        { id: 'poprawnosc', label: 'Poprawność środków językowych', max: 3, summary: 'Grammar, vocabulary, spelling and punctuation: fewer mistakes, especially ones that block meaning, means more points.' },
+    ]);
+    const CKE_WORD_TARGET = Object.freeze({ min: 200, max: 250 });
+    const CKE_WORD_ACCEPT = Object.freeze({ min: 180, max: 280 });
+    const CKE_WORD_FLOOR = 160; // CKE: below this, only Zgodność is scored
 
     const FOR_AGAINST_PARAS = new Set(['introduction', 'body_for', 'body_against', 'conclusion_for_against']);
     const OPINION_PARAS = new Set(['introduction', 'body_opinion', 'body_counter', 'conclusion_opinion']);
@@ -334,6 +382,7 @@
 
     const api = {
         ANY, WHOLE, STORAGE_KEY, isWhole, chunkWholeText, firstWrongPosition, isShortLine, paragraphLines, resolveWholeText, filterWholeTexts, pickWholeText, countFor, wholeInfo, TEXT_TYPES, ROLES, DEFAULT_SELECTION,
+        CKE_CRITERIA, CKE_WORD_TARGET, CKE_WORD_ACCEPT, CKE_WORD_FLOOR,
         textTypeOf, resolveTextTypes, resolveWholeTextType, isActiveTextType, findTextType, findPara, paragraphOptions, textTypeOptions, normalizeSelection,
         matches, filterBank, pickParagraph, typeInfo, selectionLabel, loadSelection, saveSelection,
     };

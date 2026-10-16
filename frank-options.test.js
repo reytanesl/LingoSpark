@@ -16,9 +16,20 @@ function memoryStorage() {
     return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), m };
 }
 
-test('menu offers only the four Matura forms', () => {
+test('menu offers only the four Matura forms with CKE plans and criteria', () => {
     assert.deepEqual(FO.TEXT_TYPES.map((t) => t.id), ['for_against', 'opinion', 'article', 'formal_letter']);
     assert.deepEqual(FO.textTypeOptions().map((o) => o.value), ['any', 'for_against', 'opinion', 'article', 'formal_letter']);
+    assert.equal(FO.CKE_CRITERIA.reduce((n, c) => n + c.max, 0), 13);
+    assert.deepEqual(FO.CKE_WORD_TARGET, { min: 200, max: 250 });
+    assert.ok(FO.CKE_WORD_ACCEPT.min <= FO.CKE_WORD_TARGET.min && FO.CKE_WORD_ACCEPT.max >= FO.CKE_WORD_TARGET.max);
+    assert.equal(FO.CKE_WORD_FLOOR, 160);
+    for (const t of FO.TEXT_TYPES) {
+        assert.ok(t.conventions && t.conventions.length > 40, `${t.id} needs form conventions`);
+        assert.ok(Array.isArray(t.plan) && t.plan.length >= 4, `${t.id} needs a paragraph plan`);
+        assert.match(t.wholeHint, /200–250/);
+    }
+    assert.match(FO.findTextType('formal_letter').conventions, /XYZ/);
+    assert.match(FO.findTextType('opinion').conventions, /thesis/i);
 });
 
 test('bank: unique ids; active items map to a known text/paragraph type', () => {
@@ -93,7 +104,7 @@ test('last choice is remembered in storage; legacy types reset to Any', () => {
 test('typeInfo labels and the page wiring', () => {
     const info = FO.typeInfo({ textType: 'article', type: 'conclusion' });
     assert.equal(info.textLabel, 'Article');
-    assert.match(info.label, /conclusion/i);
+    assert.match(info.label, /ending|call to action/i);
     assert.equal(FO.typeInfo({ type: 'body_for' }).textLabel, 'For–against essay');
     assert.equal(FO.typeInfo({ type: 'body_opinion' }).textLabel, 'Opinion essay');
     assert.ok(isPublicStaticPath('/frank-options.js'));

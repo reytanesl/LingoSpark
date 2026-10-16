@@ -3338,7 +3338,7 @@
                 <p style="font-size:0.88rem;color:var(--text-muted);margin:0.5rem 0 0;">AI games use <strong>A2</strong> or <strong>B1</strong> under Primary English. Beginner and A1 listening/spelling is in Dictation.</p>
 
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 1.2rem 0 0.4rem; font-size: 1.1rem;">Advanced English</h4>
-                <div class="guide-item"><strong>Frankenstein Builder</strong><p>Choose a Matura writing form (for–against essay, opinion essay, article, or formal letter) and a paragraph type, or leave both on Any. Unscramble the sentences into the original order.</p></div>
+                <div class="guide-item"><strong>Frankenstein Builder</strong><p>Practise CKE Matura rozszerzona writing forms (for–against essay, opinion essay, article, formal letter): 200–250 words, marked /13 on Zgodność z poleceniem, Spójność i logika, Zakres and Poprawność. Pick a form and paragraph type, or leave both on Any, then unscramble the sentences.</p></div>
                 <div class="guide-item"><strong>Transition Matcher</strong><p>Choose the best discourse marker to join two academic statements smoothly.</p></div>
                 <div class="guide-item"><strong>The Devil’s Advocate</strong><p>Read a thesis, then pick the strongest structural counter-argument from the options.</p></div>
                 <div class="guide-item"><strong>Bloat Slasher</strong><p>Cut redundant words and phrases without losing meaning. Aim for clear, concise writing.</p></div>
@@ -3626,7 +3626,7 @@
                             <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
                         </button>
                         <div class="grid ws-game-cat-grid">
-                            <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble a model Matura paragraph — for–against essay, opinion essay, article or formal letter; opening, body or ending — back into the original sentence order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-puzzle-piece"></i></div><h2>Frankenstein Builder</h2><p>Unscramble CKE Matura model texts (200–250 words, /13): for–against or opinion essay, article or formal letter — opening, body or ending back into order.</p><a href="#/setup/frank" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-bridge"></i></div><h2>Transition Matcher</h2><p>Select the correct discourse marker to connect two AI-generated academic statements.</p><a href="#/setup/trans" class="btn btn-outline">Play Now</a></div>
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-scale-unbalanced"></i></div><h2>The Devil's Advocate</h2><p>Analyze a fresh thesis and identify the strongest structural counter-argument.</p><a href="#/setup/devil" class="btn btn-outline">Play Now</a></div>
                         </div>
@@ -4104,7 +4104,7 @@
 
             <div id="frank-setup-note" class="form-group setup-note" style="display:none;">
                 <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
-                <p>Ready-made B1–B2 models, or <strong>Generate with AI</strong>: a new text written to CKE extended-matura (rozszerzona) criteria with an exam-style task. Pick what you want to practise — one paragraph, or the whole text (sentences and short chunks to order from beginning to end).</p>
+                <p>CKE Matura rozszerzona models (formuła 2023+): <strong>200–250 words</strong>, marked out of <strong>13</strong> on the same four criteria for every form — Zgodność z poleceniem (0–5), Spójność i logika (0–2), Zakres środków językowych (0–3), Poprawność środków językowych (0–3). Forms: for–against essay, opinion essay, article, formal letter. Ready-made bank or <strong>Generate with AI</strong> with an exam-style polecenie. Practise one paragraph or the whole text.</p>
                 <div class="pe-setup-compact frank-options" data-frank-options>
                     <div class="frank-source" role="radiogroup" aria-label="Where the text comes from">
                         <label class="frank-source-pill"><input type="radio" name="setup-frank-source" value="bank" class="frank-opt-source"><span><i class="fa-solid fa-book-open"></i> Ready-made bank</span></label>
@@ -8624,12 +8624,29 @@
             if (hintEl) hintEl.textContent = info.hint;
             const taskEl = document.getElementById('frank-type-task');
             if (taskEl) {
+                const ttId = whole ? para.textType : (window.FrankOptions ? FrankOptions.textTypeOf(para) : '');
+                const form = window.FrankOptions && FrankOptions.findTextType(ttId);
+                const crit = window.FrankOptions && Array.isArray(FrankOptions.CKE_CRITERIA)
+                    ? FrankOptions.CKE_CRITERIA.map((c) => `${c.label} 0–${c.max}`).join(' · ')
+                    : '';
+                const wTarget = window.FrankOptions && FrankOptions.CKE_WORD_TARGET;
+                let html = '';
+                if (crit && wTarget) {
+                    html += `<span class="frank-task-label"><i class="fa-solid fa-scale-balanced"></i> CKE · 13 pts · ${wTarget.min}–${wTarget.max} words</span>`
+                        + `<span class="frank-task-text">${esc(crit)}. Develop both prompt elements; keep the form’s conventions.</span>`;
+                }
+                if (form && form.conventions) {
+                    html += `<span class="frank-task-head">Form conventions</span><span class="frank-task-text">${esc(form.conventions)}</span>`;
+                }
                 if (opts.ai && para.task) {
-                    taskEl.innerHTML = `<span class="frank-task-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Generated with AI · CKE matura rozszerzona</span>`
+                    html += `<span class="frank-task-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Generated with AI · exam polecenie</span>`
                         + (para.title ? `<strong class="frank-task-title">${esc(para.title)}</strong>` : '')
                         + `<span class="frank-task-head">Polecenie</span><span class="frank-task-text">${esc(para.task)}</span>`
                         + (Array.isArray(para.elements) && para.elements.length ? `<ul class="frank-task-elements">${para.elements.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>` : '')
                         + (para.words ? `<span class="frank-task-words">${para.words} words</span>` : '');
+                }
+                if (html) {
+                    taskEl.innerHTML = html;
                     taskEl.hidden = false;
                 } else {
                     taskEl.innerHTML = '';
