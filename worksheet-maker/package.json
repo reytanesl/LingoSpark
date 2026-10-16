@@ -1,0 +1,25 @@
+{
+  "name": "lesson-creator",
+  "version": "1.0.0",
+  "description": "Create pedagogically sound ESL reading and listening lessons from a link.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "author": "Karol Sęk",
+  "license": "ISC",
+  "dependencies": {
+    "@cursor/sdk": "^1.0.23",
+    "@mozilla/readability": "^0.6.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "html2canvas": "^1.4.1",
+    "jsdom": "^26.1.0",
+    "jspdf": "^4.2.1",
+    "unpdf": "^1.8.1"
+  }
+}

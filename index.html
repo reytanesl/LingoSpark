@@ -173,6 +173,8 @@
         .hub-square.team:hover { border-top-color: var(--royal-blue); }
         .hub-square.writing { border-top-color: var(--success-green); }
         .hub-square.writing:hover { border-top-color: var(--pillarbox-red); }
+        .hub-square.worksheets { border-top-color: #B45309; }
+        .hub-square.worksheets:hover { border-top-color: var(--royal-blue); }
         .hub-square .hub-icon {
             height: clamp(5.75rem, 28vw, 7.75rem);
             width: clamp(5.75rem, 28vw, 7.75rem);
@@ -187,6 +189,9 @@
         .hub-square.writing .hub-icon {
             background-color: rgba(0, 130, 59, 0.08); color: var(--success-green);
         }
+        .hub-square.worksheets .hub-icon {
+            background-color: rgba(180, 83, 9, 0.10); color: #B45309;
+        }
         .hub-square .hub-title {
             font-family: var(--font-primary);
             font-size: clamp(1.75rem, 7.8vw, 2.2rem);
@@ -199,24 +204,40 @@
         }
         @media (min-width: 768px) {
             .home-hub {
-                flex-direction: row; justify-content: center; align-items: stretch;
-                max-width: 1080px; gap: 1.75rem; padding: 0 1rem; margin: 1.5rem auto 0.75rem;
+                flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: stretch;
+                max-width: 1180px; gap: 1.25rem; padding: 0 1rem; margin: 1.5rem auto 0.75rem;
             }
             .hub-square {
-                width: auto; flex: 1 1 0; max-width: 320px; min-width: 0;
-                aspect-ratio: 1 / 1; padding: 1.5rem 1.15rem; gap: 0.85rem;
+                width: auto; flex: 1 1 0; max-width: 260px; min-width: 200px;
+                aspect-ratio: 1 / 1; padding: 1.35rem 1rem; gap: 0.7rem;
                 justify-content: center;
             }
-            .hub-square .hub-icon { height: 78px; width: 78px; font-size: 2.1rem; }
-            .hub-square .hub-title { font-size: 1.85rem; }
-            .hub-square .hub-sub { font-size: 1.2rem; max-width: none; }
+            .hub-square .hub-icon { height: 68px; width: 68px; font-size: 1.85rem; }
+            .hub-square .hub-title { font-size: 1.55rem; }
+            .hub-square .hub-sub { font-size: 1.05rem; max-width: none; }
         }
         .home-hub-wrap {
-            max-width: 1080px; width: 100%; margin: 0.75rem auto 1.5rem; padding: 0 0.75rem;
+            max-width: 1180px; width: 100%; margin: 0.75rem auto 1.5rem; padding: 0 0.75rem;
             display: flex; flex-direction: column; align-items: center;
         }
         @media (min-width: 768px) {
             .home-hub-wrap { padding: 0 1rem; margin: 1.5rem auto 2rem; }
+        }
+        #section-worksheets.home-section.active {
+            display: flex; flex-direction: column; min-height: calc(100vh - 5rem);
+        }
+        #section-worksheets .worksheet-maker-frame-wrap {
+            flex: 1 1 auto; min-height: 70vh; margin: 0 -0.25rem 1rem;
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-light);
+            background: #fff;
+        }
+        #section-worksheets .worksheet-maker-frame {
+            display: block; width: 100%; height: min(85vh, 1100px); border: 0;
+        }
+        #section-worksheets .worksheet-maker-open {
+            text-align: center; margin: 0 0 1rem;
         }
         .hub-live-quiz-circle {
             display: inline-flex; align-items: center; justify-content: center;
@@ -3391,6 +3412,11 @@
                     <span class="hub-title">Writing Suite</span>
                     <span class="hub-sub">Primary English practice and Essay tools</span>
                 </a>
+                <a href="#/worksheets" class="hub-square worksheets">
+                    <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></span>
+                    <span class="hub-title">Worksheet Maker</span>
+                    <span class="hub-sub">Build lesson worksheets and answer keys from any source</span>
+                </a>
             </div>
             </div>
 
@@ -3523,6 +3549,20 @@
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-table-cells"></i></div><h2>Wordle</h2><p>Identify a hidden five‑letter word in six attempts.</p><a href="https://lo006.my.canva.site/daxjbue14qa" target="_blank" class="btn btn-blue">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-link"></i></div><h2>Word Chain</h2><p>Build word chains by connecting vocabulary items under time pressure.</p><a href="https://lo006.my.canva.site/word-chain" target="_blank" class="btn btn-blue">Play Now</a></div>
                     <div class="card"><div class="icon-container"><i class="fa-solid fa-font"></i></div><h2>Word Board</h2><p>Create high‑scoring words using letter tiles on a shared board.</p><a href="https://lo006.my.canva.site/daxjbsma8ui" target="_blank" class="btn btn-blue">Play Now</a></div>
+                </div>
+            </div>
+
+            <div id="section-worksheets" class="home-section">
+                <div class="section-back-row">
+                    <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                </div>
+                <div class="category-header">
+                    <i class="fa-solid fa-file-lines cat-icon"></i><h2>Worksheet Maker</h2>
+                </div>
+                <p style="text-align: center; margin-bottom: 1rem; color: var(--text-muted);">Create pedagogically sound worksheets and answer keys from a link, PDF, or topic — then build slides from the sheet.</p>
+                <p class="worksheet-maker-open"><a class="btn btn-blue" href="/worksheet-maker/" target="_blank" rel="noopener">Open full screen <i class="fa-solid fa-arrow-up-right-from-square"></i></a></p>
+                <div class="worksheet-maker-frame-wrap">
+                    <iframe class="worksheet-maker-frame" src="/worksheet-maker/" title="Worksheet Maker" loading="lazy"></iframe>
                 </div>
             </div>
 
@@ -6159,7 +6199,7 @@
                 } else if (root === 'reset-password') {
                     if (window.PasswordReset) window.PasswordReset.openResetPage(hash);
                     else showScreen('reset-password');
-                } else if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'live' || root === 'mysets' || root === 'progress') {
+                } else if (root === 'vocab' || root === 'team' || root === 'writing' || root === 'worksheets' || root === 'live' || root === 'mysets' || root === 'progress') {
                     showScreen('home');
                     if (root === 'live' && arg) {
                         if (arg === 'host') {
@@ -7315,7 +7355,7 @@
 
         function openHomeSection(sectionId) {
             const hubWrap = document.querySelector('.home-hub-wrap');
-            const map = { vocab: 'section-vocab', team: 'section-team', writing: 'section-writing', live: 'section-live', mysets: 'section-mysets', progress: 'section-progress' };
+            const map = { vocab: 'section-vocab', team: 'section-team', writing: 'section-writing', worksheets: 'section-worksheets', live: 'section-live', mysets: 'section-mysets', progress: 'section-progress' };
             const targetId = map[sectionId];
             if (!targetId) return;
             document.querySelectorAll('.home-section').forEach((el) => el.classList.remove('active'));
@@ -7325,7 +7365,7 @@
             if (sectionId === 'mysets') refreshMySetsView();
             if (sectionId === 'progress') loadProgressDashboard();
             syncAuthBarNavActive();
-            const trackKey = sectionId === 'writing' ? 'writing' : sectionId === 'team' ? 'team' : sectionId === 'live' ? 'live' : sectionId === 'mysets' ? 'mysets' : sectionId === 'progress' ? 'progress' : 'vocab';
+            const trackKey = sectionId === 'writing' ? 'writing' : sectionId === 'worksheets' ? 'worksheets' : sectionId === 'team' ? 'team' : sectionId === 'live' ? 'live' : sectionId === 'mysets' ? 'mysets' : sectionId === 'progress' ? 'progress' : 'vocab';
             trackSectionOpen('section:cat-' + trackKey);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (!applyingRoute) setAppHash(sectionId === 'mysets' || sectionId === 'progress' ? sectionId : sectionId);

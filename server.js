@@ -81,6 +81,7 @@ import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
+import { createWorksheetMakerRouter } from './worksheet-maker/server.js';
 import './matura-mistakes.js';
 const { sanitizeMistakes: sanitizeMaturaMistakes, PROMPT_TYPES: MATURA_MISTAKE_TYPES } = globalThis.MaturaMistakes;
 
@@ -1252,6 +1253,9 @@ app.get('/api/health', (_req, res) => {
     app.use('/packs', (_req, res) => {
         res.status(404).type('text/plain').send('Not found');
     });
+
+    // Worksheet Maker (Lesson Creator) — own page + /worksheet-maker/api/*
+    app.use('/worksheet-maker', createWorksheetMakerRouter());
 
     // Only files on the allowlist (pages, client JS/CSS, images, audio) are served;
     // server code, tests, package/deploy files, dotfiles, data/, scripts/ etc. 404.
