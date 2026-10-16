@@ -5,7 +5,7 @@ import express from 'express';
 import { isPublicStaticPath } from './static-allowlist.js';
 import {
     validateFrankAiRequest, buildFrankAiPrompt, validateFrankAiResult, createRateLimiter,
-    createFrankGenerateHandler, countWords, hasCohesiveMarker, WHOLE_WORDS,
+    createFrankGenerateHandler, countWords, hasCohesiveMarker, isEssayLikeArticleOpening, WHOLE_WORDS,
 } from './frank-ai.js';
 
 const FO = globalThis.FrankOptions;
@@ -102,10 +102,24 @@ test('prompt targets CKE extended matura (2023+) requirements', () => {
     const para = buildFrankAiPrompt({ textType: 'opinion', paraType: 'body_counter', whole: false, topic: '' });
     assert.match(para, /ONE paragraph only/);
     assert.match(para, /Opposing view and rebuttal/);
-    assert.match(buildFrankAiPrompt({ textType: 'article', paraType: 'whole', whole: true, topic: '' }), /artykuł publicystyczny/);
+    const article = buildFrankAiPrompt({ textType: 'article', paraType: 'whole', whole: true, topic: '' });
+    assert.match(article, /artykuł publicystyczny/);
+    assert.match(article, /In this article/);
+    assert.match(article, /lively hook|magazine-like/i);
     assert.match(buildFrankAiPrompt({ textType: 'for_against', paraType: 'whole', whole: true, topic: '' }, { retryNote: 'REJECTED: too short' }), /REJECTED: too short/);
     assert.match(buildFrankAiPrompt({ textType: 'for_against', paraType: 'whole', whole: true, topic: '' }), /for and against/);
     assert.match(buildFrankAiPrompt({ textType: 'opinion', paraType: 'whole', whole: true, topic: '' }), /opinion/);
+});
+
+test('article openings reject essay-style roadmaps', () => {
+    assert.equal(isEssayLikeArticleOpening([
+        'In this article, I will first explain how AI can support independent study.',
+        'At the same time, I will show why relying on it too often may weaken exam skills.',
+    ]), true);
+    assert.equal(isEssayLikeArticleOpening([
+        'How often do you ask a chatbot for help with homework?',
+        'Used wisely it can be a brilliant study buddy — used lazily it can steal your matura skills.',
+    ]), false);
 });
 
 test('result validation: accepts good texts, chunks them, rejects bad ones with a reason', () => {

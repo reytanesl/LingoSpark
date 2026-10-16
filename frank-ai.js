@@ -42,6 +42,7 @@ const CKE_FORMS = {
         exam: true,
         form: 'artykuł publicystyczny (magazine / website article) — must sound like an article, not a dry essay',
         register: 'semi-formal publicistic register: engaging opening, direct address to readers allowed, vivid but accurate language, no slang, no contractions',
+        openingBan: 'ARTICLE OPENING (critical): hook the reader with a lively question, surprising fact or short anecdote that lands on the topic. Do NOT write essay-style roadmaps such as "In this article, I will…", "I will first explain…", "At the same time, I will show…", or any two-sentence preview of what the text will discuss. Keep the opening punchy and magazine-like — never like a rozprawka introduction.',
     },
 };
 
@@ -151,7 +152,8 @@ POLECENIE: write the exam-style task in POLISH, the way CKE phrases it (one or t
 
 WRITE: the WHOLE text, ${WHOLE_WORDS.min}–${WHOLE_WORDS.max} words in total (count every word, including greeting, sign-off and title if any). Prefer 4 paragraphs; 5 is OK when the plan includes an optional body. ${format}
 ${v.textType === 'formal_letter' ? 'Put the greeting (e.g. "Dear Sir or Madam,") as the first string of the first paragraph, and the sign-off (e.g. "Yours faithfully,") and XYZ as the last two strings of the last paragraph. Never use a real personal name.' : ''}
-${v.textType === 'article' ? 'Give the article a short catchy "title" (not part of the paragraphs).' : ''}
+${v.textType === 'article' ? `Give the article a short catchy "title" (not part of the paragraphs).
+${form.openingBan || ''}` : ''}
 Paragraph role ids to use in JSON:
 ${rolePlan(v.textType)}
 ${retryNote}
@@ -163,12 +165,29 @@ Return ONLY valid JSON:
 WRITE: ONE paragraph only — the "${para.label}" of a ${t.short.toLowerCase()} answering the polecenie. ${para.hint} 4–6 sentences, ${PARA_WORDS.min}–${PARA_WORDS.max} words. ${format}
 ${para.id === 'opening' && /letter/.test(v.textType) ? 'Start with the greeting (e.g. "Dear Sir or Madam,") as the first string.' : ''}
 ${para.id === 'closing' && /letter/.test(v.textType) ? 'End with the sign-off and XYZ as the last two strings (never a real name).' : ''}
+${v.textType === 'article' && para.id === 'introduction' ? (form.openingBan || '') : ''}
 ${retryNote}
 Return ONLY valid JSON:
 {"task":"<polecenie in Polish>","elements":["<element 1>","<element 2>"],"topic":"<short English topic>","paragraph":{"type":"${para.id}","sentences":["...","..."]}}`;
 }
 
 const cleanSentence = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+
+/** Essay-style roadmaps that make an article opening sound like a rozprawka. */
+const ARTICLE_OPENING_BANS = [
+    /\bin this article\b/i,
+    /\bthis article will\b/i,
+    /\bi will first\b/i,
+    /\bat the same time,\s*i will\b/i,
+    /\bi am going to (?:first )?(?:explain|discuss|show|consider|outline|present|examine)\b/i,
+    /\bi will (?:now )?(?:explain|discuss|consider|outline|present|examine)\b/i,
+    /\bthe (?:aim|purpose) of this article\b/i,
+];
+
+export function isEssayLikeArticleOpening(sentences) {
+    const list = Array.isArray(sentences) ? sentences : [];
+    return list.some((s) => ARTICLE_OPENING_BANS.some((re) => re.test(String(s || ''))));
+}
 
 /**
  * Check an AI reply against the schema and the CKE-derived rules. Returns
@@ -228,6 +247,9 @@ export function validateFrankAiResult(raw, v) {
         if (v.textType === 'article' && title.length < 3) {
             return { ok: false, error: 'Articles need a short catchy title.' };
         }
+        if (v.textType === 'article' && isEssayLikeArticleOpening(paras[0])) {
+            return { ok: false, error: 'Article opening sounds like an essay roadmap; use a lively hook instead of "In this article I will…".' };
+        }
         const t = FO.findTextType(v.textType);
         const startType = t.paras.find((p) => p.role === 'start').id;
         const endType = t.paras.filter((p) => p.role === 'end').map((p) => p.id);
@@ -246,6 +268,9 @@ export function validateFrankAiResult(raw, v) {
     if (sentences.length < 3 || sentences.length > 8) return { ok: false, error: 'A paragraph needs 3–8 sentences.' };
     if (words < PARA_WORDS.min || words > PARA_WORDS.max) {
         return { ok: false, error: `The paragraph has ${words} words; it must have ${PARA_WORDS.min}–${PARA_WORDS.max}.` };
+    }
+    if (v.textType === 'article' && v.paraType === 'introduction' && isEssayLikeArticleOpening(sentences)) {
+        return { ok: false, error: 'Article opening sounds like an essay roadmap; use a lively hook instead of "In this article I will…".' };
     }
     return { ok: true, value: { id, textType: v.textType, type: v.paraType, sentences, ...meta } };
 }

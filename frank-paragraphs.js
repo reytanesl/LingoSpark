@@ -1367,8 +1367,8 @@
     "type": "introduction",
     "sentences": [
       "Are you looking for a place to relax at the weekend without spending a fortune?",
-      "Then you should definitely visit the old harbour in my town.",
-      "In this article, I will explain why it has become my favourite place to spend a Saturday afternoon."
+      "Then skip the crowded shopping centre and head straight for the old harbour in my town.",
+      "Once you've spent a Saturday afternoon there, you will not want to go anywhere else."
     ]
   },
   {
