@@ -1499,11 +1499,6 @@
             font-size: 0.98rem;
             line-height: 1.25;
         }
-        .live-option-desc {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            line-height: 1.35;
-        }
         .live-setup-field {
             margin: 0 0 1rem;
         }
@@ -2482,12 +2477,6 @@
             color: var(--royal-blue);
             font-size: 0.95rem;
             line-height: 1.25;
-        }
-        #screen-setup .setup-choice-desc,
-        .game-setup-panel .setup-choice-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.35;
         }
         #screen-setup .setup-inline-field {
             display: flex;
@@ -3686,12 +3675,10 @@
                         <label class="setup-choice">
                             <input type="radio" name="test-dir" value="def" checked>
                             <span class="setup-choice-title">Definition → Term</span>
-                            <span class="setup-choice-desc">See the meaning, type the word</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="test-dir" value="term">
                             <span class="setup-choice-title">Term → Definition</span>
-                            <span class="setup-choice-desc">See the word, type the meaning</span>
                         </label>
                     </div>
                 </div>
@@ -3730,12 +3717,10 @@
                         <label class="setup-choice">
                             <input type="radio" name="grid-mode" value="bot" checked>
                             <span class="setup-choice-title">Solo vs bot</span>
-                            <span class="setup-choice-desc">You answer vocab; the bot just claims squares</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="grid-mode" value="pvp">
                             <span class="setup-choice-title">Two players</span>
-                            <span class="setup-choice-desc">Both teams answer to claim squares</span>
                         </label>
                     </div>
                 </div>
@@ -3847,22 +3832,18 @@
                             <label class="setup-choice">
                                 <input type="radio" name="adv-gaps-setup-genre" value="for-against" checked>
                                 <span class="setup-choice-title">Rozprawka — za i przeciw</span>
-                                <span class="setup-choice-desc">CKE · both sides, verdict in the ending · 200–250</span>
                             </label>
                             <label class="setup-choice">
                                 <input type="radio" name="adv-gaps-setup-genre" value="opinion">
                                 <span class="setup-choice-title">Rozprawka — opinia</span>
-                                <span class="setup-choice-desc">CKE · clear thesis + arguments · 200–250</span>
                             </label>
                             <label class="setup-choice">
                                 <input type="radio" name="adv-gaps-setup-genre" value="article">
                                 <span class="setup-choice-title">Artykuł publicystyczny</span>
-                                <span class="setup-choice-desc">CKE · title, lead, public voice · 200–250</span>
                             </label>
                             <label class="setup-choice">
                                 <input type="radio" name="adv-gaps-setup-genre" value="formal-letter">
                                 <span class="setup-choice-title">List formalny</span>
-                                <span class="setup-choice-desc">CKE · purpose, register, sign-off · 200–250</span>
                             </label>
                         </div>
                     </div>
@@ -3872,12 +3853,10 @@
                             <label class="setup-choice">
                                 <input type="radio" name="adv-gaps-setup-mode" value="translate" checked>
                                 <span class="setup-choice-title">Translate gaps</span>
-                                <span class="setup-choice-desc">Polish cues in brackets → English</span>
                             </label>
                             <label class="setup-choice">
                                 <input type="radio" name="adv-gaps-setup-mode" value="sentences">
                                 <span class="setup-choice-title">Missing sentences</span>
-                                <span class="setup-choice-desc">Numbered boxes under the text</span>
                             </label>
                         </div>
                     </div>
@@ -3902,12 +3881,10 @@
                             <label class="setup-choice">
                                 <input type="radio" name="e8-gaps-setup-mode" value="translate" checked>
                                 <span class="setup-choice-title">Translate gaps</span>
-                                <span class="setup-choice-desc">Translate Polish words or short phrases in brackets into English</span>
                             </label>
                             <label class="setup-choice">
                                 <input type="radio" name="e8-gaps-setup-mode" value="sentences">
                                 <span class="setup-choice-title">Missing sentences</span>
-                                <span class="setup-choice-desc">Write a suitable sentence for each numbered gap</span>
                             </label>
                         </div>
                     </div>
@@ -3940,12 +3917,10 @@
                             <label class="setup-choice">
                                 <input type="radio" name="dictation-mode" value="listen" checked>
                                 <span class="setup-choice-title">Listen &amp; repeat</span>
-                                <span class="setup-choice-desc">Hear the sentence and say it back</span>
                             </label>
                             <label class="setup-choice">
                                 <input type="radio" name="dictation-mode" value="gap">
                                 <span class="setup-choice-title">Gap fill</span>
-                                <span class="setup-choice-desc">Fill missing verbs, adjectives, nouns, adverbs</span>
                             </label>
                         </div>
                     </div>
@@ -3970,12 +3945,10 @@
                     <label class="setup-choice">
                         <input type="radio" name="colour-age" value="young" checked>
                         <span class="setup-choice-title">8–9 years</span>
-                        <span class="setup-choice-desc">There is/are, have got, can, like — one picture at a time</span>
                     </label>
                     <label class="setup-choice">
                         <input type="radio" name="colour-age" value="older">
                         <span class="setup-choice-title">10–12 years</span>
-                        <span class="setup-choice-desc">Plus must / have to — choose a goal, then check</span>
                     </label>
                 </div>
             </div>
@@ -4191,22 +4164,18 @@
                         <label class="setup-choice">
                             <input type="radio" name="adv-gaps-play-genre" value="for-against" checked onchange="syncAdvGapsInstructions()">
                             <span class="setup-choice-title">Rozprawka — za i przeciw</span>
-                            <span class="setup-choice-desc">200–250 wyrazów</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="adv-gaps-play-genre" value="opinion" onchange="syncAdvGapsInstructions()">
                             <span class="setup-choice-title">Rozprawka — opinia</span>
-                            <span class="setup-choice-desc">200–250 wyrazów</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="adv-gaps-play-genre" value="article" onchange="syncAdvGapsInstructions()">
                             <span class="setup-choice-title">Artykuł publicystyczny</span>
-                            <span class="setup-choice-desc">200–250 wyrazów</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="adv-gaps-play-genre" value="formal-letter" onchange="syncAdvGapsInstructions()">
                             <span class="setup-choice-title">List formalny</span>
-                            <span class="setup-choice-desc">200–250 wyrazów</span>
                         </label>
                     </div>
                 </div>
@@ -4216,12 +4185,10 @@
                         <label class="setup-choice">
                             <input type="radio" name="adv-gaps-play-mode" value="translate" checked onchange="syncAdvGapsInstructions()">
                             <span class="setup-choice-title">Translate gaps</span>
-                            <span class="setup-choice-desc">Polish cues → English</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="adv-gaps-play-mode" value="sentences" onchange="syncAdvGapsInstructions()">
                             <span class="setup-choice-title">Missing sentences</span>
-                            <span class="setup-choice-desc">Boxes under the text</span>
                         </label>
                     </div>
                 </div>
@@ -4841,12 +4808,10 @@
                         <label class="setup-choice">
                             <input type="radio" name="e8-gaps-play-mode" value="translate" checked onchange="syncPeE8GapsInstructions()">
                             <span class="setup-choice-title">Translate gaps</span>
-                            <span class="setup-choice-desc">Polish words or short phrases → English</span>
                         </label>
                         <label class="setup-choice">
                             <input type="radio" name="e8-gaps-play-mode" value="sentences" onchange="syncPeE8GapsInstructions()">
                             <span class="setup-choice-title">Missing sentences</span>
-                            <span class="setup-choice-desc">Numbered boxes under the text</span>
                         </label>
                     </div>
                 </div>
