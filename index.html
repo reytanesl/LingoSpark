@@ -2421,22 +2421,27 @@
             margin: 0;
             accent-color: #0e7490;
         }
-        #screen-setup .setup-choice-grid,
-        .game-setup-panel .setup-choice-grid {
+        /* Shared exclusive-choice cards for all game/section setups (not Live Spark). */
+        .setup-choice-grid {
             display: grid;
             gap: 0.5rem;
             margin-top: 0.25rem;
         }
-        #screen-setup .setup-choice-grid--2,
-        .game-setup-panel .setup-choice-grid--2 {
-            grid-template-columns: 1fr 1fr;
+        .setup-choice-grid--2 { grid-template-columns: 1fr 1fr; }
+        .setup-choice-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .setup-choice-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .setup-choice-grid--3 .setup-choice,
+        .setup-choice-grid--4 .setup-choice {
+            align-items: center;
+            text-align: center;
+            padding: 0.65rem 0.5rem;
         }
         @media (max-width: 560px) {
-            #screen-setup .setup-choice-grid--2,
-            .game-setup-panel .setup-choice-grid--2 { grid-template-columns: 1fr; }
+            .setup-choice-grid--2,
+            .setup-choice-grid--3 { grid-template-columns: 1fr; }
+            .setup-choice-grid--4 { grid-template-columns: 1fr 1fr; }
         }
-        #screen-setup .setup-choice,
-        .game-setup-panel .setup-choice {
+        .setup-choice {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -2452,27 +2457,23 @@
             color: var(--text-dark);
             position: relative;
         }
-        #screen-setup .setup-choice:hover,
-        .game-setup-panel .setup-choice:hover {
+        .setup-choice:hover {
             border-color: rgba(1, 33, 105, 0.3);
             background: rgba(1, 33, 105, 0.03);
         }
-        #screen-setup .setup-choice input,
-        .game-setup-panel .setup-choice input {
+        .setup-choice input {
             position: absolute;
             opacity: 0;
             width: 0;
             height: 0;
             pointer-events: none;
         }
-        #screen-setup .setup-choice:has(input:checked),
-        .game-setup-panel .setup-choice:has(input:checked) {
+        .setup-choice:has(input:checked) {
             border-color: var(--royal-blue);
             background: rgba(1, 33, 105, 0.06);
             box-shadow: 0 0 0 1px rgba(1, 33, 105, 0.1);
         }
-        #screen-setup .setup-choice-title,
-        .game-setup-panel .setup-choice-title {
+        .setup-choice-title {
             font-weight: 700;
             color: var(--royal-blue);
             font-size: 0.95rem;
@@ -3685,13 +3686,13 @@
 
                 <div class="form-group" id="odyssey-settings" style="display: none;">
                     <label id="odyssey-level-label"><i class="fa-solid fa-signal"></i> Language level</label>
-                    <div class="odyssey-level-pills" role="radiogroup" aria-labelledby="odyssey-level-label">
-                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="A2"><span><b>A2</b><small>Elementary</small></span></label>
-                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="B1" checked><span><b>B1</b><small>Intermediate</small></span></label>
-                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="B2"><span><b>B2</b><small>Upper-int.</small></span></label>
-                        <label class="odyssey-level-pill"><input type="radio" name="odyssey-level" value="C1"><span><b>C1</b><small>Advanced</small></span></label>
+                    <div class="setup-choice-grid setup-choice-grid--4" role="radiogroup" aria-labelledby="odyssey-level-label">
+                        <label class="setup-choice"><input type="radio" name="odyssey-level" value="A2"><span class="setup-choice-title">A2</span></label>
+                        <label class="setup-choice"><input type="radio" name="odyssey-level" value="B1" checked><span class="setup-choice-title">B1</span></label>
+                        <label class="setup-choice"><input type="radio" name="odyssey-level" value="B2"><span class="setup-choice-title">B2</span></label>
+                        <label class="setup-choice"><input type="radio" name="odyssey-level" value="C1"><span class="setup-choice-title">C1</span></label>
                     </div>
-                    <p class="odyssey-level-desc" id="odyssey-level-desc">The story, questions and feedback are written at this level. Your target words always stay in.</p>
+                    <p class="pe-setup-hint odyssey-level-desc" id="odyssey-level-desc">The story, questions and feedback are written at this level. Your target words always stay in.</p>
                     <label for="odyssey-genre"><i class="fa-solid fa-compass"></i> Adventure genre</label>
                     <div class="setup-inline-field">
                         <select id="odyssey-genre">
@@ -3729,11 +3730,11 @@
                     <label><i class="fa-solid fa-chart-bar"></i> Flashcard progress</label>
                     <div id="fc-setup-summary" class="fc-setup-summary">Study stats are saved in this browser for each word list.</div>
                     <div id="fc-revision-choice" style="display: none;">
-                        <p class="pe-setup-hint" style="margin-bottom: 0.45rem;">You’ve studied this list before — choose how to revise:</p>
-                        <div class="radio-group pe-setup-chips">
-                            <label><input type="radio" name="fc-revision-mode" value="original" checked> Original order</label>
-                            <label><input type="radio" name="fc-revision-mode" value="weakest"> Weakest first</label>
-                            <label><input type="radio" name="fc-revision-mode" value="fresh"> Start fresh</label>
+                        <label style="margin-bottom:0.45rem;">Revision order</label>
+                        <div class="setup-choice-grid setup-choice-grid--3">
+                            <label class="setup-choice"><input type="radio" name="fc-revision-mode" value="original" checked><span class="setup-choice-title">Original order</span></label>
+                            <label class="setup-choice"><input type="radio" name="fc-revision-mode" value="weakest"><span class="setup-choice-title">Weakest first</span></label>
+                            <label class="setup-choice"><input type="radio" name="fc-revision-mode" value="fresh"><span class="setup-choice-title">Start fresh</span></label>
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline" style="margin-top: 0.75rem;" onclick="openFcStatsFromSetup()"><i class="fa-solid fa-chart-bar"></i> View word stats</button>
@@ -3754,11 +3755,11 @@
                     <div id="tc-cram-warn" class="tc-warn" hidden></div>
 
                     <label id="tc-budget-label" style="display:block;margin-top:1rem;"><i class="fa-solid fa-clock"></i> Daily budget</label>
-                    <div class="tc-pill-row live-option-grid live-option-grid--3" style="margin-top:0.45rem;">
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="10" onchange="TestCountdown.onBudgetChange()"><span class="live-option-title">10 min</span></label>
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="15" checked onchange="TestCountdown.onBudgetChange()"><span class="live-option-title">15 min</span></label>
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="20" onchange="TestCountdown.onBudgetChange()"><span class="live-option-title">20 min</span></label>
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-budget" value="custom" onchange="TestCountdown.onBudgetChange()"><span class="live-option-title" data-tc-i18n="custom">Custom</span></label>
+                    <div class="setup-choice-grid setup-choice-grid--4" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="tc-budget" value="10" onchange="TestCountdown.onBudgetChange()"><span class="setup-choice-title">10 min</span></label>
+                        <label class="setup-choice"><input type="radio" name="tc-budget" value="15" checked onchange="TestCountdown.onBudgetChange()"><span class="setup-choice-title">15 min</span></label>
+                        <label class="setup-choice"><input type="radio" name="tc-budget" value="20" onchange="TestCountdown.onBudgetChange()"><span class="setup-choice-title">20 min</span></label>
+                        <label class="setup-choice"><input type="radio" name="tc-budget" value="custom" onchange="TestCountdown.onBudgetChange()"><span class="setup-choice-title" data-tc-i18n="custom">Custom</span></label>
                     </div>
                     <div id="tc-budget-custom-wrap" hidden style="margin-top:0.55rem;">
                         <div class="setup-inline-field">
@@ -3768,10 +3769,10 @@
                     </div>
 
                     <label id="tc-intensity-label" style="display:block;margin-top:1rem;"><i class="fa-solid fa-gauge-high"></i> Intensity</label>
-                    <div class="tc-pill-row live-option-grid live-option-grid--3" style="margin-top:0.45rem;">
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-intensity" value="calm"><span class="live-option-title" data-tc-i18n="calm">Calm</span></label>
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-intensity" value="standard" checked><span class="live-option-title" data-tc-i18n="standard">Standard</span></label>
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-intensity" value="cram"><span class="live-option-title" data-tc-i18n="cram">Cram</span></label>
+                    <div class="setup-choice-grid setup-choice-grid--3" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="tc-intensity" value="calm"><span class="setup-choice-title" data-tc-i18n="calm">Calm</span></label>
+                        <label class="setup-choice"><input type="radio" name="tc-intensity" value="standard" checked><span class="setup-choice-title" data-tc-i18n="standard">Standard</span></label>
+                        <label class="setup-choice"><input type="radio" name="tc-intensity" value="cram"><span class="setup-choice-title" data-tc-i18n="cram">Cram</span></label>
                     </div>
                 </div>
             </div>
@@ -3812,18 +3813,18 @@
 
             <div id="adv-gaps-setup-note" class="form-group setup-note" style="display:none; background: rgba(0,130,59,0.07); border-color: rgba(0,130,59,0.18);">
                 <label style="color: var(--success-green);"><i class="fa-solid fa-align-left"></i> Advanced Text Gaps</label>
-                <p>AI writes a CKE Matura rozszerzona model (200–250 words) with a Polish polecenie. Choose rozprawka (za i przeciw / opinia), artykuł publicystyczny, or list formalny — then translate Polish cues or restore missing sentences.</p>
+                <p>Pick a Matura form and activity type, then Launch. Optional topic for a themed text.</p>
             </div>
 
             <div class="form-group" id="adv-gaps-settings" style="display: none;">
                 <div class="pe-setup-compact">
                     <div class="pe-setup-field">
                         <label><i class="fa-solid fa-signal"></i> Level</label>
-                        <div class="radio-group pe-setup-chips">
-                            <label><input type="radio" name="adv-gaps-setup-level" value="A2"> A2</label>
-                            <label><input type="radio" name="adv-gaps-setup-level" value="B1"> B1</label>
-                            <label><input type="radio" name="adv-gaps-setup-level" value="B2" checked> B2</label>
-                            <label><input type="radio" name="adv-gaps-setup-level" value="B2+"> B2+</label>
+                        <div class="setup-choice-grid setup-choice-grid--4">
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="A2"><span class="setup-choice-title">A2</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B1"><span class="setup-choice-title">B1</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B2" checked><span class="setup-choice-title">B2</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B2+"><span class="setup-choice-title">B2+</span></label>
                         </div>
                     </div>
                     <div class="pe-setup-field">
@@ -3870,7 +3871,7 @@
 
             <div id="e8-gaps-setup-note" class="form-group setup-note" style="display:none; background: rgba(1,33,105,0.06); border-color: rgba(1,33,105,0.18);">
                 <label style="color: var(--royal-blue);"><i class="fa-solid fa-pen-to-square"></i> E8 Text Gaps</label>
-                <p>AI writes a CKE egzamin ósmoklasisty model: e-mail or blog, 50–120 words, Polish polecenie with exactly 3 podpunkty and a given opening. Choose translate gaps or missing sentences.</p>
+                <p>Pick an activity type, then Launch. Optional topic for a themed e-mail or blog.</p>
             </div>
 
             <div class="form-group" id="pe-e8-gaps-settings" style="display: none;">
@@ -3898,17 +3899,17 @@
 
             <div id="dictation-setup-note" class="form-group setup-note" style="display:none; background: rgba(0,130,59,0.07); border-color: rgba(0,130,59,0.18);">
                 <label style="color: var(--success-green);"><i class="fa-solid fa-headphones"></i> Dictation</label>
-                <p>Built-in sentence banks — no word list needed. Uses your browser’s text-to-speech. Pick any English voice installed on this device.</p>
+                <p>Pick a level and practice mode, then Launch. Uses this browser’s English voices.</p>
             </div>
 
             <div class="form-group" id="pe-dictation-settings" style="display: none;">
                 <div class="pe-setup-compact">
                     <div class="pe-setup-field">
                         <label><i class="fa-solid fa-layer-group"></i> Level</label>
-                        <div class="radio-group pe-setup-chips">
-                            <label><input type="radio" name="dictation-level" value="beginner" checked> Beginner (1–3)</label>
-                            <label><input type="radio" name="dictation-level" value="a1"> A1 (4–5)</label>
-                            <label><input type="radio" name="dictation-level" value="a2"> A2</label>
+                        <div class="setup-choice-grid setup-choice-grid--3">
+                            <label class="setup-choice"><input type="radio" name="dictation-level" value="beginner" checked><span class="setup-choice-title">Beginner</span></label>
+                            <label class="setup-choice"><input type="radio" name="dictation-level" value="a1"><span class="setup-choice-title">A1</span></label>
+                            <label class="setup-choice"><input type="radio" name="dictation-level" value="a2"><span class="setup-choice-title">A2</span></label>
                         </div>
                     </div>
                     <div class="pe-setup-field">
@@ -3936,7 +3937,7 @@
 
             <div id="colour-setup-note" class="form-group setup-note" style="display:none; background: rgba(124,58,237,0.07); border-color: rgba(124,58,237,0.18);">
                 <label style="color: #7c3aed;"><i class="fa-solid fa-cubes"></i> Colour Blocks</label>
-                <p>Build sentences with colour tiles. Ages 8–9: There is/are, have got, can, like. Ages 10–12: plus must / have to. Line Up is pictured scramble — drag tiles onto numbered boxes.</p>
+                <p>Pick an age band, then Launch. Build sentences with colour tiles.</p>
             </div>
 
             <div class="form-group" id="pe-colour-settings" style="display: none;">
@@ -3955,7 +3956,7 @@
 
             <div id="topic-setup-note" class="form-group setup-note" style="display:none; background: rgba(14,116,144,0.07); border-color: rgba(14,116,144,0.18);">
                 <label style="color: #0e7490;"><i class="fa-solid fa-layer-group"></i> Topic Challenge</label>
-                <p>Pick topic + grammar, then Launch. Picture / Tiles / Transform modes appear in the game.</p>
+                <p>Pick topic and grammar, then Launch.</p>
             </div>
 
             <div class="form-group" id="pe-topic-settings" style="display: none;">
@@ -3997,7 +3998,7 @@
 
             <div id="review-setup-note" class="form-group setup-note" style="display:none; background: rgba(14,116,144,0.07); border-color: rgba(14,116,144,0.18);">
                 <label style="color: #0e7490;"><i class="fa-solid fa-comments"></i> Review Chatbot</label>
-                <p>Class, ease, grammar and vocab — then chat in English or with a Polish tutor.</p>
+                <p>Set class, ease, grammar and vocab, then Launch.</p>
             </div>
 
             <div class="form-group" id="pe-review-settings" style="display: none;">
@@ -4039,9 +4040,9 @@
 
                     <div class="pe-setup-field">
                         <label><i class="fa-solid fa-book-open"></i> Vocabulary</label>
-                        <div class="pe-setup-chips">
-                            <label><input type="radio" name="review-setup-vocab-mode" value="topic" checked onchange="if(window.PEReviewChat)PEReviewChat.syncVocabModeUi()"> Topic pack</label>
-                            <label><input type="radio" name="review-setup-vocab-mode" value="custom" onchange="if(window.PEReviewChat)PEReviewChat.syncVocabModeUi()"> Custom list</label>
+                        <div class="setup-choice-grid setup-choice-grid--2">
+                            <label class="setup-choice"><input type="radio" name="review-setup-vocab-mode" value="topic" checked onchange="if(window.PEReviewChat)PEReviewChat.syncVocabModeUi()"><span class="setup-choice-title">Topic pack</span></label>
+                            <label class="setup-choice"><input type="radio" name="review-setup-vocab-mode" value="custom" onchange="if(window.PEReviewChat)PEReviewChat.syncVocabModeUi()"><span class="setup-choice-title">Custom list</span></label>
                         </div>
                         <div id="review-setup-topic-wrap" style="margin-top:0.55rem;">
                             <select id="review-setup-topic" onchange="if(window.PEReviewChat)PEReviewChat.syncScenePicker()">
@@ -4065,17 +4066,17 @@
                     <div class="pe-setup-row">
                         <div class="pe-setup-field">
                             <label><i class="fa-solid fa-comments"></i> Style</label>
-                            <div class="pe-setup-chips">
-                                <label><input type="radio" name="review-setup-coach-style" value="en" checked> English</label>
-                                <label><input type="radio" name="review-setup-coach-style" value="pl"> Polish tutor</label>
+                            <div class="setup-choice-grid setup-choice-grid--2">
+                                <label class="setup-choice"><input type="radio" name="review-setup-coach-style" value="en" checked><span class="setup-choice-title">English</span></label>
+                                <label class="setup-choice"><input type="radio" name="review-setup-coach-style" value="pl"><span class="setup-choice-title">Polish tutor</span></label>
                             </div>
                         </div>
                         <div class="pe-setup-field">
                             <label><i class="fa-solid fa-keyboard"></i> Input</label>
-                            <div class="pe-setup-chips">
-                                <label><input type="radio" name="review-setup-mode" value="text" checked> Text</label>
-                                <label><input type="radio" name="review-setup-mode" value="speech"> Speech</label>
-                                <label><input type="radio" name="review-setup-mode" value="both"> Both</label>
+                            <div class="setup-choice-grid setup-choice-grid--3">
+                                <label class="setup-choice"><input type="radio" name="review-setup-mode" value="text" checked><span class="setup-choice-title">Text</span></label>
+                                <label class="setup-choice"><input type="radio" name="review-setup-mode" value="speech"><span class="setup-choice-title">Speech</span></label>
+                                <label class="setup-choice"><input type="radio" name="review-setup-mode" value="both"><span class="setup-choice-title">Both</span></label>
                             </div>
                         </div>
                     </div>
@@ -4106,9 +4107,9 @@
                 <label><i class="fa-solid fa-puzzle-piece"></i> Frankenstein Builder</label>
                 <p>Ready-made models or <strong>Generate with AI</strong> with an exam-style polecenie. Pick a form and paragraph type — or the whole text — then put the sentences back in order.</p>
                 <div class="pe-setup-compact frank-options" data-frank-options>
-                    <div class="frank-source" role="radiogroup" aria-label="Where the text comes from">
-                        <label class="frank-source-pill"><input type="radio" name="setup-frank-source" value="bank" class="frank-opt-source"><span><i class="fa-solid fa-book-open"></i> Ready-made bank</span></label>
-                        <label class="frank-source-pill"><input type="radio" name="setup-frank-source" value="ai" class="frank-opt-source"><span><i class="fa-solid fa-wand-magic-sparkles"></i> Generate with AI</span></label>
+                    <div class="setup-choice-grid setup-choice-grid--2" role="radiogroup" aria-label="Where the text comes from">
+                        <label class="setup-choice"><input type="radio" name="setup-frank-source" value="bank" class="frank-opt-source" checked><span class="setup-choice-title">Ready-made bank</span></label>
+                        <label class="setup-choice"><input type="radio" name="setup-frank-source" value="ai" class="frank-opt-source"><span class="setup-choice-title">Generate with AI</span></label>
                     </div>
                     <div class="pe-setup-row">
                         <div class="pe-setup-field">
@@ -4151,11 +4152,11 @@
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.75rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-signal"></i> Level</label>
-                    <div class="radio-group pe-setup-chips" style="margin-top:0.4rem;">
-                        <label><input type="radio" name="adv-gaps-play-level" value="A2" onchange="syncAdvGapsChrome()"> A2</label>
-                        <label><input type="radio" name="adv-gaps-play-level" value="B1" onchange="syncAdvGapsChrome()"> B1</label>
-                        <label><input type="radio" name="adv-gaps-play-level" value="B2" checked onchange="syncAdvGapsChrome()"> B2</label>
-                        <label><input type="radio" name="adv-gaps-play-level" value="B2+" onchange="syncAdvGapsChrome()"> B2+</label>
+                    <div class="setup-choice-grid setup-choice-grid--4" style="margin-top:0.4rem;">
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="A2" onchange="syncAdvGapsChrome()"><span class="setup-choice-title">A2</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B1" onchange="syncAdvGapsChrome()"><span class="setup-choice-title">B1</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B2" checked onchange="syncAdvGapsChrome()"><span class="setup-choice-title">B2</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B2+" onchange="syncAdvGapsChrome()"><span class="setup-choice-title">B2+</span></label>
                     </div>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.75rem;">
@@ -4234,9 +4235,9 @@
             </div>
             <div class="game-setup-panel">
                 <div class="pe-setup-compact frank-options frank-options--game" data-frank-options>
-                    <div class="frank-source" role="radiogroup" aria-label="Where the text comes from">
-                        <label class="frank-source-pill"><input type="radio" name="game-frank-source" value="bank" class="frank-opt-source"><span><i class="fa-solid fa-book-open"></i> Ready-made bank</span></label>
-                        <label class="frank-source-pill"><input type="radio" name="game-frank-source" value="ai" class="frank-opt-source"><span><i class="fa-solid fa-wand-magic-sparkles"></i> Generate with AI</span></label>
+                    <div class="setup-choice-grid setup-choice-grid--2" role="radiogroup" aria-label="Where the text comes from">
+                        <label class="setup-choice"><input type="radio" name="game-frank-source" value="bank" class="frank-opt-source" checked><span class="setup-choice-title">Ready-made bank</span></label>
+                        <label class="setup-choice"><input type="radio" name="game-frank-source" value="ai" class="frank-opt-source"><span class="setup-choice-title">Generate with AI</span></label>
                     </div>
                     <div class="pe-setup-row">
                         <div class="pe-setup-field">
@@ -5157,10 +5158,10 @@
 
                 <div class="form-group" style="max-width:520px;margin:1rem auto;">
                     <label data-tc-i18n="modeLabel">Session mode</label>
-                    <div class="live-option-grid live-option-grid--3" style="margin-top:0.45rem;">
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-mode" value="know"><span class="live-option-title" data-tc-i18n="modeKnow">Know / Don’t know</span></label>
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-mode" value="typed"><span class="live-option-title" data-tc-i18n="modeTyped">Typed recall</span></label>
-                        <label class="live-option live-option--compact"><input type="radio" name="tc-mode" value="mixed" checked><span class="live-option-title" data-tc-i18n="modeMixed">Mixed</span></label>
+                    <div class="setup-choice-grid setup-choice-grid--3" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="tc-mode" value="know"><span class="setup-choice-title" data-tc-i18n="modeKnow">Know / Don’t know</span></label>
+                        <label class="setup-choice"><input type="radio" name="tc-mode" value="typed"><span class="setup-choice-title" data-tc-i18n="modeTyped">Typed recall</span></label>
+                        <label class="setup-choice"><input type="radio" name="tc-mode" value="mixed" checked><span class="setup-choice-title" data-tc-i18n="modeMixed">Mixed</span></label>
                     </div>
                 </div>
                 <div style="text-align:center;margin-top:1rem;">
@@ -8440,8 +8441,8 @@
                     if (ai.source === 'ai') {
                         count.classList.remove('is-empty');
                         count.textContent = FrankOptions.isWhole(choice)
-                            ? 'AI writes a new 200–250-word text to CKE extended-matura criteria, with an exam-style task. Up to 12 AI texts per hour.'
-                            : 'AI writes a new model paragraph to CKE extended-matura criteria, with an exam-style task. Up to 12 AI texts per hour.';
+                            ? 'AI will write a new whole text for this choice.'
+                            : 'AI will write a new paragraph for this choice.';
                     }
                 }
             });
