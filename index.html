@@ -4220,6 +4220,7 @@
             <div class="game-setup-panel">
                 <div class="game-setup-actions">
                     <button class="btn btn-outline" onclick="initAdvGaps()" id="adv-gaps-btn">New Text <i class="fa-solid fa-rotate"></i></button>
+                    <button class="btn btn-outline" onclick="printAdvGapsText()" id="adv-gaps-print" disabled title="Print the generated text"><i class="fa-solid fa-print"></i> Print text</button>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.75rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-signal"></i> Level</label>
@@ -4291,7 +4292,10 @@
                 </div>
                 <div class="e8-gaps-text" id="adv-gaps-text" aria-live="polite"></div>
                 <div class="e8-gaps-answers" id="adv-gaps-answers" hidden></div>
-                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkAdvGaps()" id="adv-gaps-check" disabled>Check answers</button>
+                <div class="gaps-action-row" style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.25rem;">
+                    <button class="btn btn-blue" style="flex:1 1 220px;padding:1rem;" onclick="checkAdvGaps()" id="adv-gaps-check" disabled>Check answers</button>
+                    <button class="btn btn-outline" style="flex:0 0 auto;padding:1rem 1.1rem;" onclick="printAdvGapsText()" id="adv-gaps-print-inline" disabled title="Print the generated text"><i class="fa-solid fa-print"></i> Print text</button>
+                </div>
             </div>
             <div id="adv-gaps-feedback" class="feedback"></div>
         </div>
@@ -4873,6 +4877,7 @@
             <div class="game-setup-panel">
                 <div class="game-setup-actions">
                     <button class="btn btn-outline" onclick="initPeE8Gaps()" id="pe-e8-gaps-btn">New Text <i class="fa-solid fa-rotate"></i></button>
+                    <button class="btn btn-outline" onclick="printPeE8GapsText()" id="pe-e8-gaps-print" disabled title="Print the generated text"><i class="fa-solid fa-print"></i> Print text</button>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.85rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-sliders"></i> Activity type</label>
@@ -4914,7 +4919,10 @@
                 </div>
                 <div class="e8-gaps-text" id="pe-e8-gaps-text" aria-live="polite"></div>
                 <div class="e8-gaps-answers" id="pe-e8-gaps-answers" hidden></div>
-                <button class="btn btn-blue" style="width:100%;padding:1rem;" onclick="checkPeE8Gaps()" id="pe-e8-gaps-check" disabled>Check answers</button>
+                <div class="gaps-action-row" style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.25rem;">
+                    <button class="btn btn-blue" style="flex:1 1 220px;padding:1rem;" onclick="checkPeE8Gaps()" id="pe-e8-gaps-check" disabled>Check answers</button>
+                    <button class="btn btn-outline" style="flex:0 0 auto;padding:1rem 1.1rem;" onclick="printPeE8GapsText()" id="pe-e8-gaps-print-inline" disabled title="Print the generated text"><i class="fa-solid fa-print"></i> Print text</button>
+                </div>
             </div>
             <div id="pe-e8-gaps-feedback" class="feedback"></div>
         </div>
@@ -12434,6 +12442,117 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             return out.replace(/[ \t]+\n/g, '\n').replace(/\n[ \t]+/g, '\n').replace(/[ \t]{2,}/g, ' ').trim();
         }
 
+        function setGapsPrintEnabled(ids, enabled) {
+            (ids || []).forEach((id) => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !enabled;
+            });
+        }
+
+        /** Print polecenie + completed model text (+ gap key) for E8 / Matura Text Gaps. */
+        function printGapsGeneratedText(task, meta) {
+            if (!task || !Array.isArray(task.parts) || !Array.isArray(task.gaps) || !task.gaps.length) {
+                appAlert('Generate a text first (New Text), then print.');
+                return;
+            }
+            const m = meta || {};
+            const full = rebuildGapsModelText(task.parts, task.gaps);
+            if (!full) {
+                appAlert('No text to print yet.');
+                return;
+            }
+            const title = m.activityTitle || 'Text Gaps';
+            const kind = task.mode === 'sentences' ? 'Missing sentences' : 'Translate gaps';
+            const form = task.form || task.genre || m.formLabel || '';
+            const level = task.level || m.level || '';
+            const topic = task.title || '';
+            const words = Number(task.wordCount) || countEnglishWords(full);
+            const taskBody = String(task.taskPl || task.taskEn || '').trim();
+            const bullets = Array.isArray(task.bullets) ? task.bullets.filter(Boolean) : [];
+            const opening = String(task.opening || '').trim();
+            const gapRows = task.gaps.map((g, i) => {
+                const n = g.n != null ? g.n : (i + 1);
+                const pl = String(g.pl || '').trim();
+                const ans = String(g.answer || '').trim();
+                const alts = Array.isArray(g.alts) ? g.alts.filter(Boolean).map(String) : [];
+                return { n, pl, ans, alts };
+            });
+
+            const esc = escapeHtml;
+            const bulletsHtml = bullets.length
+                ? `<ul>${bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>`
+                : '';
+            const keyHtml = gapRows.map((g) => {
+                const plBit = g.pl ? ` <span class="muted">(${esc(g.pl)})</span>` : '';
+                const altBit = g.alts.length ? ` <span class="muted">· also: ${esc(g.alts.join('; '))}</span>` : '';
+                return `<li><strong>${g.n}.</strong>${plBit} ${esc(g.ans)}${altBit}</li>`;
+            }).join('');
+
+            const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${esc(title)}${topic ? ' — ' + esc(topic) : ''}</title>
+<style>
+  body { font-family: Georgia, 'Times New Roman', serif; color: #222; max-width: 720px; margin: 1.5rem auto; padding: 0 1.25rem 2rem; line-height: 1.55; }
+  h1 { font-size: 1.35rem; color: #012169; margin: 0 0 0.35rem; }
+  h2 { font-size: 1.05rem; color: #012169; margin: 1.25rem 0 0.4rem; border-bottom: 1px solid #ddd; padding-bottom: 0.2rem; }
+  .meta { color: #555; font-size: 0.92rem; margin-bottom: 1rem; }
+  .task { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.85rem 1rem; white-space: pre-wrap; }
+  .model { white-space: pre-wrap; font-size: 1.05rem; }
+  .muted { color: #666; font-size: 0.92em; }
+  ul { margin: 0.35rem 0 0 1.1rem; padding: 0; }
+  .footer { margin-top: 1.75rem; font-size: 0.78rem; color: #777; text-align: center; }
+  @media print {
+    body { margin: 0; max-width: none; padding: 0; }
+    h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+  <h1>${esc(title)}</h1>
+  <p class="meta">${esc(kind)}${level ? ' · ' + esc(level) : ''}${form ? ' · ' + esc(form) : ''}${topic ? ' — ' + esc(topic) : ''}${words ? ' · ' + words + ' words' : ''}</p>
+  ${taskBody ? `<h2>Polecenie</h2><div class="task">${esc(taskBody)}</div>${bulletsHtml}` : ''}
+  ${opening ? `<p class="muted"><strong>Opening:</strong> ${esc(opening)}</p>` : ''}
+  <h2>Generated text</h2>
+  <div class="model">${esc(full)}</div>
+  <h2>Answer key</h2>
+  <ul>${keyHtml}</ul>
+  <p class="footer">LingoSpark · Copyright Karol Sęk</p>
+</body>
+</html>`;
+
+            const w = window.open('', '_blank');
+            if (!w) {
+                appAlert('Allow pop-ups to print, then try again.');
+                return;
+            }
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => {
+                try { w.print(); } catch (_) { /* ignore */ }
+            }, 350);
+        }
+
+        function printAdvGapsText() {
+            const genreLabel = ADV_GAPS_GENRES[advGapsTask?.genreKey]?.label || advGapsTask?.genre || 'Matura rozszerzona';
+            printGapsGeneratedText(advGapsTask, {
+                activityTitle: 'Advanced Text Gaps · Matura PR',
+                formLabel: genreLabel,
+                level: advGapsTask?.level || 'B2',
+            });
+        }
+
+        function printPeE8GapsText() {
+            printGapsGeneratedText(peE8GapsTask, {
+                activityTitle: 'E8 Text Gaps · egzamin ósmoklasisty',
+                formLabel: peE8GapsTask?.form || peE8GapsTask?.genre || 'e-mail / blog',
+                level: peE8GapsTask?.level || (typeof peLevelGuide === 'function' ? peLevelGuide().label : ''),
+            });
+        }
+
         function countGapsModelWords(data, opts) {
             const o = opts || {};
             let text = rebuildGapsModelText(data?.parts, data?.gaps);
@@ -12696,11 +12815,13 @@ ${JSON.stringify({
                 textEl.innerHTML = html || '<em>No text generated.</em>';
             }
             if (check) check.disabled = !gaps.length;
+            setGapsPrintEnabled(['adv-gaps-print', 'adv-gaps-print-inline'], gaps.length > 0);
         }
 
         async function initAdvGaps() {
             const feedback = document.getElementById('adv-gaps-feedback');
             if (feedback) feedback.textContent = '';
+            setGapsPrintEnabled(['adv-gaps-print', 'adv-gaps-print-inline'], false);
             syncAdvGapsInstructions();
             paintGapsExamTask({
                 wrapId: 'adv-gaps-task', bodyId: 'adv-gaps-task-body', langBtnId: 'adv-gaps-task-lang-btn',
@@ -12797,6 +12918,7 @@ Return ONLY JSON:
                 advGapsTask = null;
                 const check = document.getElementById('adv-gaps-check');
                 if (check) check.disabled = true;
+                setGapsPrintEnabled(['adv-gaps-print', 'adv-gaps-print-inline'], false);
                 return;
             }
             const examTask = normalizeGapsExamTask(data, { maxBullets: 2 });
@@ -13045,11 +13167,13 @@ Return ONLY JSON:
                 textEl.innerHTML = html || '<em>No text generated.</em>';
             }
             if (check) check.disabled = !gaps.length;
+            setGapsPrintEnabled(['pe-e8-gaps-print', 'pe-e8-gaps-print-inline'], gaps.length > 0);
         }
 
         async function initPeE8Gaps() {
             const feedback = document.getElementById('pe-e8-gaps-feedback');
             if (feedback) feedback.textContent = '';
+            setGapsPrintEnabled(['pe-e8-gaps-print', 'pe-e8-gaps-print-inline'], false);
             syncPeLevelBadges();
             syncPeE8GapsInstructions();
             paintGapsExamTask({
@@ -13155,6 +13279,7 @@ Return ONLY JSON:
                 peE8GapsTask = null;
                 const check = document.getElementById('pe-e8-gaps-check');
                 if (check) check.disabled = true;
+                setGapsPrintEnabled(['pe-e8-gaps-print', 'pe-e8-gaps-print-inline'], false);
                 return;
             }
             const examTask = normalizeGapsExamTask(data, { maxBullets: 3 });
