@@ -7,42 +7,30 @@
     const WHOLE = 'whole';
     const STORAGE_KEY = 'lingospark.frank.selection.v1';
 
+    /** CKE Matura rozszerzona writing forms only (shorter menu). */
     const TEXT_TYPES = [
         {
-            id: 'essay',
-            wholeHint: 'Typical shape: introduction → body paragraphs (arguments for and against, or your opinion and a counter-argument) → conclusion.',
-            label: 'Essay (for and against / opinion)',
-            short: 'Essay',
+            id: 'for_against',
+            wholeHint: 'Typical shape: introduction → arguments for → arguments against → conclusion with a balanced judgement.',
+            label: 'For–against essay',
+            short: 'For–against essay',
             paras: [
-                { id: 'introduction', role: 'start', label: 'Introduction', hint: 'Typical shape: general context → the debate or problem → the writer’s thesis or question.' },
+                { id: 'introduction', role: 'start', label: 'Introduction', hint: 'Typical shape: general context → the debate or problem → both sides promised (no final verdict yet).' },
                 { id: 'body_for', role: 'middle', label: 'Body paragraph — arguments for', hint: 'Typical shape: a point in favour → explanation → extra support → result or wrap-up.' },
                 { id: 'body_against', role: 'middle', label: 'Body paragraph — arguments against', hint: 'Typical shape: a contrasting point → explanation → extra support → result or wrap-up.' },
+                { id: 'conclusion_for_against', role: 'end', label: 'Conclusion — for and against', hint: 'Typical shape: a balanced summary → both sides in brief → a measured closing judgement.' },
+            ],
+        },
+        {
+            id: 'opinion',
+            wholeHint: 'Typical shape: introduction with a clear thesis → supporting arguments → counter-argument with rebuttal → conclusion.',
+            label: 'Opinion essay',
+            short: 'Opinion essay',
+            paras: [
+                { id: 'introduction', role: 'start', label: 'Introduction', hint: 'Typical shape: general context → the problem → a clear thesis stating your view.' },
                 { id: 'body_opinion', role: 'middle', label: 'Body paragraph — opinion', hint: 'Typical shape: a clear personal view → reasons → further justification → a firm close.' },
                 { id: 'body_counter', role: 'middle', label: 'Counter-argument and rebuttal', hint: 'Typical shape: the opposing view → why some people hold it → your rebuttal (However / Nevertheless) → your position restated.' },
-                { id: 'conclusion_for_against', role: 'end', label: 'Conclusion — for and against', hint: 'Typical shape: a balanced summary → both sides in brief → a measured closing judgement.' },
                 { id: 'conclusion_opinion', role: 'end', label: 'Conclusion — opinion', hint: 'Typical shape: a restated opinion → a key reason → a final recommendation.' },
-            ],
-        },
-        {
-            id: 'formal_letter',
-            wholeHint: 'Typical shape: greeting and reason for writing → main points → further details → what you expect next and a formal sign-off.',
-            label: 'Formal letter / email',
-            short: 'Formal letter',
-            paras: [
-                { id: 'opening', role: 'start', label: 'Opening — greeting and reason for writing', hint: 'Typical shape: Dear Sir or Madam / Dear Ms … → I am writing to / in response to … → what the letter is about.' },
-                { id: 'body', role: 'middle', label: 'Main body — details, request or complaint', hint: 'Typical shape: first point → more detail → next point, linked with Firstly / In addition / As a result.' },
-                { id: 'closing', role: 'end', label: 'Closing and sign-off', hint: 'Typical shape: what you expect next → I look forward to … → Yours faithfully / sincerely → your name.' },
-            ],
-        },
-        {
-            id: 'informal_letter',
-            wholeHint: 'Typical shape: friendly greeting → main news → more news or details → wrapping up and a casual sign-off.',
-            label: 'Informal letter / email',
-            short: 'Informal email',
-            paras: [
-                { id: 'opening', role: 'start', label: 'Opening — greeting and reason for writing', hint: 'Typical shape: Hi … → a friendly question or thanks → why you are writing.' },
-                { id: 'body', role: 'middle', label: 'Main body — news and details', hint: 'Typical shape: the main news → details → what happened next → how things are now.' },
-                { id: 'closing', role: 'end', label: 'Closing and sign-off', hint: 'Typical shape: wrapping up (Anyway …) → ask for a reply or suggest meeting → Love / Take care → your name.' },
             ],
         },
         {
@@ -57,39 +45,21 @@
             ],
         },
         {
-            id: 'review',
-            wholeHint: 'Typical shape: what it is → description → strengths and weaknesses → overall opinion and recommendation.',
-            label: 'Review (film, book, restaurant)',
-            short: 'Review',
+            id: 'formal_letter',
+            wholeHint: 'Typical shape: greeting and reason for writing → main points → further details → what you expect next and a formal sign-off.',
+            label: 'Formal letter',
+            short: 'Formal letter',
             paras: [
-                { id: 'introduction', role: 'start', label: 'Introduction — what, where and when', hint: 'Typical shape: what you saw, read or visited → basic background → your first impression.' },
-                { id: 'body', role: 'middle', label: 'Main body — description and evaluation', hint: 'Typical shape: what it is about → more detail → strong points → a weakness (My only criticism …).' },
-                { id: 'conclusion', role: 'end', label: 'Conclusion — recommendation', hint: 'Typical shape: overall opinion → balance of good and bad → who you recommend it to.' },
-            ],
-        },
-        {
-            id: 'story',
-            wholeHint: 'Typical shape: setting the scene → events build up → the key moment → how it all ended.',
-            label: 'Story',
-            short: 'Story',
-            paras: [
-                { id: 'opening', role: 'start', label: 'Opening — setting the scene', hint: 'Typical shape: time and place → the characters → a hint that something will happen.' },
-                { id: 'body', role: 'middle', label: 'Development and climax', hint: 'Typical shape: events in time order (At first … Then … Soon … Finally …) building to the key moment.' },
-                { id: 'ending', role: 'end', label: 'Ending', hint: 'Typical shape: how the problem is solved → what happened afterwards → a final reflection.' },
-            ],
-        },
-        {
-            id: 'report',
-            wholeHint: 'Typical shape: aim of the report → findings → further findings → conclusion and recommendations.',
-            label: 'Report',
-            short: 'Report',
-            paras: [
-                { id: 'introduction', role: 'start', label: 'Introduction — aim of the report', hint: 'Typical shape: The aim of this report is … → how the information was collected → what follows.' },
-                { id: 'body', role: 'middle', label: 'Findings', hint: 'Typical shape: main finding → a contrasting finding (However …) → further points (In addition …).' },
-                { id: 'conclusion', role: 'end', label: 'Conclusion and recommendations', hint: 'Typical shape: overall summary → Firstly / Secondly, I would recommend … → expected result.' },
+                { id: 'opening', role: 'start', label: 'Opening — greeting and reason for writing', hint: 'Typical shape: Dear Sir or Madam / Dear Ms … → I am writing to / in response to … → what the letter is about.' },
+                { id: 'body', role: 'middle', label: 'Main body — details, request or complaint', hint: 'Typical shape: first point → more detail → next point, linked with Firstly / In addition / As a result.' },
+                { id: 'closing', role: 'end', label: 'Closing and sign-off', hint: 'Typical shape: what you expect next → I look forward to … → Yours faithfully / sincerely → your name.' },
             ],
         },
     ];
+
+    const FOR_AGAINST_PARAS = new Set(['introduction', 'body_for', 'body_against', 'conclusion_for_against']);
+    const OPINION_PARAS = new Set(['introduction', 'body_opinion', 'body_counter', 'conclusion_opinion']);
+    const SHARED_ESSAY_INTROS = new Set(['introduction']);
 
     const ROLES = [
         { id: 'start', label: 'Beginning — introduction / opening' },
@@ -99,8 +69,36 @@
 
     const DEFAULT_SELECTION = Object.freeze({ textType: ANY, paraType: ANY });
 
+    /** Map bank / AI items onto the four active Matura forms (legacy essay → for_against / opinion). */
+    function resolveTextTypes(item) {
+        const raw = String((item && item.textType) || 'essay');
+        if (raw === 'formal_letter' || raw === 'article') return [raw];
+        if (raw === 'for_against' || raw === 'opinion') return [raw];
+        if (raw === 'essay' || !item || !item.textType) {
+            const typ = String((item && item.type) || '');
+            if (SHARED_ESSAY_INTROS.has(typ)) return ['for_against', 'opinion'];
+            if (FOR_AGAINST_PARAS.has(typ)) return ['for_against'];
+            if (OPINION_PARAS.has(typ)) return ['opinion'];
+            return ['for_against'];
+        }
+        return [raw];
+    }
+
     function textTypeOf(item) {
-        return (item && item.textType) || 'essay';
+        return resolveTextTypes(item)[0];
+    }
+
+    function isActiveTextType(id) {
+        return Boolean(findTextType(id));
+    }
+
+    function resolveWholeTextType(whole) {
+        const raw = String((whole && whole.textType) || 'essay');
+        if (raw === 'formal_letter' || raw === 'article' || raw === 'for_against' || raw === 'opinion') return raw;
+        if (raw === 'essay') {
+            return /opinion/i.test(String((whole && whole.essayKind) || '')) ? 'opinion' : 'for_against';
+        }
+        return raw;
     }
 
     function findTextType(id) {
@@ -109,7 +107,7 @@
 
     function findPara(textType, paraId) {
         const t = findTextType(textType);
-        return (t && t.paras.find((p) => p.id === paraId)) || null;
+        return t ? (t.paras.find((p) => p.id === paraId) || null) : null;
     }
 
     /** Options for the paragraph selector, filtered by text type ("any" → generic roles). */
@@ -133,8 +131,11 @@
     }
 
     function roleOf(item) {
-        const p = findPara(textTypeOf(item), item && item.type);
-        return p ? p.role : null;
+        for (const tt of resolveTextTypes(item)) {
+            const p = findPara(tt, item && item.type);
+            if (p) return p.role;
+        }
+        return null;
     }
 
     function isWhole(sel) {
@@ -145,7 +146,12 @@
         const s = normalizeSelection(sel);
         if (s.paraType === WHOLE) return false;
         if (!item || !Array.isArray(item.sentences) || item.sentences.length < 2) return false;
-        if (s.textType !== ANY && textTypeOf(item) !== s.textType) return false;
+        const types = resolveTextTypes(item);
+        if (s.textType === ANY) {
+            if (!types.some(isActiveTextType)) return false;
+        } else if (!types.includes(s.textType)) {
+            return false;
+        }
         if (s.paraType === ANY) return true;
         if (s.paraType.startsWith('role:')) return roleOf(item) === s.paraType.slice(5);
         return item.type === s.paraType;
@@ -191,9 +197,10 @@
         const byId = new Map((Array.isArray(bank) ? bank : []).map((p) => [p.id, p]));
         const paras = whole.paragraphs.map((id) => byId.get(id));
         if (paras.some((p) => !p)) return null;
+        const textType = resolveWholeTextType(whole);
         return {
             id: whole.id,
-            textType: whole.textType || 'essay',
+            textType,
             kind: whole.essayKind || '',
             topic: whole.topic || '',
             paragraphs: paras.map((p) => ({ id: p.id, type: p.type, sentences: p.sentences.slice(), lines: paragraphLines(p), text: paragraphLines(p).join('\n') })),
@@ -203,7 +210,11 @@
     function filterWholeTexts(bank, wholes, sel) {
         const s = normalizeSelection(sel);
         return (Array.isArray(wholes) ? wholes : [])
-            .filter((w) => s.textType === ANY || (w.textType || 'essay') === s.textType)
+            .filter((w) => {
+                const tt = resolveWholeTextType(w);
+                if (s.textType === ANY) return isActiveTextType(tt);
+                return tt === s.textType;
+            })
             .map((w) => resolveWholeText(bank, w))
             .filter(Boolean);
     }
@@ -280,7 +291,7 @@
     }
 
     function wholeInfo(whole) {
-        const t = findTextType(whole && whole.textType);
+        const t = findTextType(resolveWholeTextType(whole || {}));
         return {
             textLabel: (whole && whole.kind) || (t ? t.short : 'Text'),
             label: 'Whole text — order the sentences from beginning to end',
@@ -289,8 +300,9 @@
     }
 
     function typeInfo(item) {
-        const t = findTextType(textTypeOf(item));
-        const p = findPara(textTypeOf(item), item && item.type);
+        const tt = textTypeOf(item);
+        const t = findTextType(tt);
+        const p = findPara(tt, item && item.type);
         return {
             textLabel: t ? t.short : 'Text',
             label: p ? p.label : String((item && item.type) || 'Paragraph').replace(/_/g, ' '),
@@ -322,7 +334,7 @@
 
     const api = {
         ANY, WHOLE, STORAGE_KEY, isWhole, chunkWholeText, firstWrongPosition, isShortLine, paragraphLines, resolveWholeText, filterWholeTexts, pickWholeText, countFor, wholeInfo, TEXT_TYPES, ROLES, DEFAULT_SELECTION,
-        textTypeOf, findTextType, findPara, paragraphOptions, textTypeOptions, normalizeSelection,
+        textTypeOf, resolveTextTypes, resolveWholeTextType, isActiveTextType, findTextType, findPara, paragraphOptions, textTypeOptions, normalizeSelection,
         matches, filterBank, pickParagraph, typeInfo, selectionLabel, loadSelection, saveSelection,
     };
     if (typeof module === 'object' && module.exports) module.exports = api;

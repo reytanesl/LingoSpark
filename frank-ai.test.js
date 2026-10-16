@@ -61,18 +61,21 @@ test('fixture essay is a valid CKE-length whole text', () => {
 });
 
 test('request validation: whitelist, resolves Any, topic limits', () => {
-    assert.deepEqual(validateFrankAiRequest({ textType: 'essay', paraType: 'whole', topic: '  school  uniforms ' }).value,
-        { textType: 'essay', paraType: 'whole', whole: true, topic: 'school uniforms' });
+    assert.deepEqual(validateFrankAiRequest({ textType: 'for_against', paraType: 'whole', topic: '  school  uniforms ' }).value,
+        { textType: 'for_against', paraType: 'whole', whole: true, topic: 'school uniforms' });
     const anyWhole = validateFrankAiRequest({ textType: 'any', paraType: 'whole' }, () => 0).value;
     assert.equal(anyWhole.textType, FO.TEXT_TYPES[0].id);
     assert.equal(anyWhole.whole, true);
     const role = validateFrankAiRequest({ textType: 'any', paraType: 'role:end' }, () => 0).value;
-    assert.equal(role.textType, 'essay');
-    assert.equal(FO.findPara('essay', role.paraType).role, 'end');
-    assert.equal(validateFrankAiRequest({ textType: 'story', paraType: 'ending' }).value.paraType, 'ending');
-    const any = validateFrankAiRequest({ textType: 'review', paraType: 'any' }).value;
-    assert.ok(FO.findPara('review', any.paraType));
-    const bad = validateFrankAiRequest({ textType: 'essay', paraType: 'closing' }).value;
+    assert.equal(role.textType, 'for_against');
+    assert.equal(FO.findPara('for_against', role.paraType).role, 'end');
+    // Legacy / removed forms fall back to Any, then a concrete active type.
+    const legacy = validateFrankAiRequest({ textType: 'story', paraType: 'ending' }, () => 0).value;
+    assert.equal(legacy.textType, 'for_against');
+    assert.ok(FO.findPara(legacy.textType, legacy.paraType));
+    const opinionPara = validateFrankAiRequest({ textType: 'opinion', paraType: 'body_counter' }).value;
+    assert.equal(opinionPara.paraType, 'body_counter');
+    const bad = validateFrankAiRequest({ textType: 'for_against', paraType: 'closing' }).value;
     assert.notEqual(bad.paraType, 'closing', 'mismatched paragraph type falls back');
     assert.equal(validateFrankAiRequest({ topic: 'x'.repeat(200) }).ok, false);
     assert.ok(!/[<>{}]/.test(validateFrankAiRequest({ topic: '<script>{x}</script>' }).value.topic));
@@ -90,19 +93,21 @@ test('prompt targets CKE extended matura (2023+) requirements', () => {
     assert.match(whole, /POLISH/);
     assert.match(whole, /cycle lanes/);
     assert.match(whole, /Return ONLY valid JSON/);
-    const para = buildFrankAiPrompt({ textType: 'essay', paraType: 'body_counter', whole: false, topic: '' });
+    const para = buildFrankAiPrompt({ textType: 'opinion', paraType: 'body_counter', whole: false, topic: '' });
     assert.match(para, /ONE paragraph only/);
     assert.match(para, /Counter-argument and rebuttal/);
     assert.match(buildFrankAiPrompt({ textType: 'article', paraType: 'whole', whole: true, topic: '' }), /artykuł publicystyczny/);
-    assert.match(buildFrankAiPrompt({ textType: 'essay', paraType: 'whole', whole: true, topic: '' }, { retryNote: 'REJECTED: too short' }), /REJECTED: too short/);
+    assert.match(buildFrankAiPrompt({ textType: 'for_against', paraType: 'whole', whole: true, topic: '' }, { retryNote: 'REJECTED: too short' }), /REJECTED: too short/);
+    assert.match(buildFrankAiPrompt({ textType: 'for_against', paraType: 'whole', whole: true, topic: '' }), /for and against/);
+    assert.match(buildFrankAiPrompt({ textType: 'opinion', paraType: 'whole', whole: true, topic: '' }), /opinion/);
 });
 
 test('result validation: accepts good texts, chunks them, rejects bad ones with a reason', () => {
-    const v = { textType: 'essay', paraType: 'whole', whole: true, topic: '' };
+    const v = { textType: 'for_against', paraType: 'whole', whole: true, topic: '' };
     const ok = validateFrankAiResult(ESSAY_WHOLE, v);
     assert.equal(ok.ok, true, ok.error);
     assert.equal(ok.value.paragraphs.length, 4);
-    assert.equal(ok.value.textType, 'essay');
+    assert.equal(ok.value.textType, 'for_against');
     assert.equal(ok.value.ai, true);
     const chunks = FO.chunkWholeText(ok.value);
     assert.ok(chunks.length >= 8 && chunks.length <= 12);
@@ -120,7 +125,7 @@ test('result validation: accepts good texts, chunks them, rejects bad ones with 
     const dup = structuredClone(ESSAY_WHOLE); dup.paragraphs[3].sentences.push(dup.paragraphs[0].sentences[0]);
     assert.match(validateFrankAiResult(dup, v).error, /Duplicate/);
 
-    const pv = { textType: 'essay', paraType: 'body_counter', whole: false, topic: '' };
+    const pv = { textType: 'opinion', paraType: 'body_counter', whole: false, topic: '' };
     const p = validateFrankAiResult(COUNTER_PARAGRAPH, pv);
     assert.equal(p.ok, true, p.error);
     assert.equal(p.value.type, 'body_counter');
@@ -158,7 +163,7 @@ test('endpoint with mocked AI: success, retry after a bad reply, fallback on fai
     const replies = [{ task: 'x' }, ESSAY_WHOLE];
     const handler = createFrankGenerateHandler({ runPrompt: async (prompt) => { prompts.push(prompt); return replies.shift(); }, limiter: createRateLimiter({ minGapMs: 0 }) });
     await withApp(handler, async (post) => {
-        const res = await post({ textType: 'essay', paraType: 'whole', topic: 'homework' });
+        const res = await post({ textType: 'for_against', paraType: 'whole', topic: 'homework' });
         assert.equal(res.status, 200);
         const data = await res.json();
         assert.equal(data.item.task, ESSAY_WHOLE.task);
@@ -168,7 +173,7 @@ test('endpoint with mocked AI: success, retry after a bad reply, fallback on fai
     });
     const failing = createFrankGenerateHandler({ runPrompt: async () => { throw new Error('upstream down'); }, limiter: createRateLimiter({ minGapMs: 0 }) });
     await withApp(failing, async (post) => {
-        const res = await post({ textType: 'essay', paraType: 'whole' });
+        const res = await post({ textType: 'for_against', paraType: 'whole' });
         assert.equal(res.status, 502);
         const data = await res.json();
         assert.equal(data.fallback, true);
@@ -176,13 +181,13 @@ test('endpoint with mocked AI: success, retry after a bad reply, fallback on fai
     });
     const limited = createFrankGenerateHandler({ runPrompt: async () => COUNTER_PARAGRAPH, limiter: createRateLimiter({ max: 1, minGapMs: 0 }) });
     await withApp(limited, async (post) => {
-        assert.equal((await post({ textType: 'essay', paraType: 'body_counter' })).status, 200);
-        const r2 = await post({ textType: 'essay', paraType: 'body_counter' });
+        assert.equal((await post({ textType: 'opinion', paraType: 'body_counter' })).status, 200);
+        const r2 = await post({ textType: 'opinion', paraType: 'body_counter' });
         assert.equal(r2.status, 429);
         assert.ok(r2.headers.get('retry-after'));
     });
     const unconfigured = createFrankGenerateHandler({ runPrompt: async () => ESSAY_WHOLE, isConfigured: () => false });
-    await withApp(unconfigured, async (post) => assert.equal((await post({ textType: 'essay', paraType: 'whole' })).status, 503));
+    await withApp(unconfigured, async (post) => assert.equal((await post({ textType: 'for_against', paraType: 'whole' })).status, 503));
     await withApp(handler, async (post) => assert.equal((await post({ topic: 'y'.repeat(300) })).status, 400));
 });
 

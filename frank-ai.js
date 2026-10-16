@@ -13,12 +13,17 @@ export const PARA_WORDS = { min: 45, max: 140 };
 export const RATE_LIMIT = { max: 12, windowMs: 60 * 60 * 1000, minGapMs: 8000 };
 export const MAX_TOPIC_CHARS = 120;
 
-/** Exam forms on the 2023+ extended matura (tekst argumentacyjny, 200–250 words). */
+/** Exam forms on the 2023+ extended matura (tekst argumentacyjny / list / artykuł, 200–250 words). */
 const CKE_FORMS = {
-    essay: {
+    for_against: {
         exam: true,
-        form: 'rozprawka (argumentative essay) — either "for and against" (both sides, then a judgement) or "opinion" (thesis, arguments, a counter-argument with rebuttal, conclusion)',
+        form: 'rozprawka "for and against" (argumentative essay): introduce the issue, present arguments for and against, then a balanced judgement',
         register: 'formal / neutral academic register, no contractions, impersonal structures where natural',
+    },
+    opinion: {
+        exam: true,
+        form: 'rozprawka "opinion" (opinion essay): clear thesis, supporting arguments, a counter-argument with rebuttal, conclusion',
+        register: 'formal / neutral academic register, no contractions; a clear personal stance is expected',
     },
     formal_letter: {
         exam: true,
@@ -29,26 +34,6 @@ const CKE_FORMS = {
         exam: true,
         form: 'artykuł publicystyczny (opinion article for a magazine or website) arguing a clear position',
         register: 'semi-formal publicistic register: engaging opening (question, striking fact), direct address to readers allowed, no slang, no contractions',
-    },
-    informal_letter: {
-        exam: false,
-        form: 'informal letter / email to an English-speaking friend (not an extended-matura exam form; keep the same quality bar)',
-        register: 'friendly informal register: contractions and phrasal verbs welcome, but varied, accurate and rich language',
-    },
-    review: {
-        exam: false,
-        form: 'review (film, book, place or event) that evaluates and recommends (not an extended-matura exam form; keep the same quality bar)',
-        register: 'semi-formal, evaluative register with precise descriptive vocabulary',
-    },
-    story: {
-        exam: false,
-        form: 'narrative story (not an extended-matura exam form; keep the same quality bar)',
-        register: 'narrative past tenses, vivid but accurate language, clear time sequencing',
-    },
-    report: {
-        exam: false,
-        form: 'report with an aim, findings and recommendations (not an extended-matura exam form; keep the same quality bar)',
-        register: 'formal, impersonal report register, no contractions',
     },
 };
 
@@ -135,7 +120,7 @@ POLECENIE: write the exam-style task in POLISH, the way CKE phrases it (one or t
         return `${common}
 
 WRITE: the WHOLE text, ${WHOLE_WORDS.min}–${WHOLE_WORDS.max} words in total (count every word, including greeting, sign-off and title if any). 4 or 5 paragraphs. ${format}
-${v.textType === 'formal_letter' || v.textType === 'informal_letter' ? 'Put the greeting (e.g. "Dear Sir or Madam,") as the first string of the first paragraph, and the sign-off (e.g. "Yours faithfully,") and the full name as the last two strings of the last paragraph.' : ''}
+${v.textType === 'formal_letter' ? 'Put the greeting (e.g. "Dear Sir or Madam,") as the first string of the first paragraph, and the sign-off (e.g. "Yours faithfully,") and the full name as the last two strings of the last paragraph.' : ''}
 ${v.textType === 'article' ? 'Give the article a short catchy "title" (not part of the paragraphs).' : ''}
 Typical paragraph roles for this text type:
 ${rolePlan(v.textType)}
