@@ -197,6 +197,12 @@
                 <p class="ot-lead">${esc(L === 'en'
                     ? 'A short practice session (~15–20 minutes), tailored to you.'
                     : 'Krótka sesja ćwiczeń (~15–20 minut), dopasowana do Ciebie.')}</p>
+                <ol class="ot-how">
+                    <li><span class="ot-how-n">1</span><strong>${esc(t('Zrób 2–4 krótkie zadania', 'Do 2–4 short tasks'))}</strong><span>${esc(t('Każde ma kroki, przykład i podpowiedź.', 'Each has steps, an example and a hint.'))}</span></li>
+                    <li><span class="ot-how-n">2</span><strong>${esc(t('Sprawdź i odhacz listę', 'Check & tick the list'))}</strong><span>${esc(t('„Sprawdź” pokaże błędy; lista mówi, kiedy skończyłeś/aś.', '“Check” marks mistakes; the list tells you when you are done.'))}</span></li>
+                    <li><span class="ot-how-n">3</span><strong>${esc(t('Powiedz, jak było', 'Tell us how it went'))}</strong><span>${esc(t('Twoja opinia ustawia następną lekcję.', 'Your feedback shapes the next lesson.'))}</span></li>
+                </ol>
+                <p class="ot-time-note"><i class="fa-regular fa-clock"></i> ${esc(({ light: t('ok. 12–15 min', 'about 12–15 min'), stretch: t('ok. 18–20 min', 'about 18–20 min') })[p.intensity] || t('ok. 15–18 min', 'about 15–18 min'))} · ${esc(t('znajdź ciche miejsce i miej pod ręką słownik', 'find a quiet place; a dictionary is allowed'))}</p>
                 <ul class="ot-summary">
                     <li><strong>${esc(L === 'en' ? 'Level' : 'Poziom')}:</strong> ${esc(p.cefr)} · ${esc(p.classLabel || '—')} · ${esc(L === 'en' ? 'age' : 'wiek')} ${esc(p.age ?? '—')}</li>
                     <li><strong>${esc(L === 'en' ? 'Intensity' : 'Intensywność')}:</strong> ${esc(p.intensity)}</li>
@@ -231,6 +237,66 @@
         return ok.some((a) => a === v);
     }
 
+    const TYPE_LABELS = {
+        vocab_drill: { pl: 'Słownictwo', en: 'Vocabulary', icon: 'fa-spell-check' },
+        uoe: { pl: 'Gramatyka i słowa', en: 'Use of English', icon: 'fa-puzzle-piece' },
+        reading: { pl: 'Czytanie', en: 'Reading', icon: 'fa-book-open' },
+        writing: { pl: 'Pisanie', en: 'Writing', icon: 'fa-pen' },
+    };
+    function typeLabel(type) {
+        const x = TYPE_LABELS[type] || TYPE_LABELS.writing;
+        return lang() === 'en' ? x.en : x.pl;
+    }
+
+    /** Guidance with safe fallbacks for lessons generated before steps/criteria existed. */
+    function guidance(task) {
+        const closed = (task.items || []).length > 0;
+        const steps = Array.isArray(task.steps) && task.steps.length ? task.steps : (task.type === 'writing'
+            ? [t('Zaplanuj 2–3 pomysły.', 'Plan 2–3 ideas.'), t('Napisz tekst.', 'Write your text.'), t('Przeczytaj go jeszcze raz.', 'Read it again.')]
+            : [t('Przeczytaj polecenie.', 'Read the instruction.'), t('Odpowiedz na każdy punkt.', 'Answer every item.'), t('Kliknij „Sprawdź” i popraw błędy.', 'Press “Check” and fix mistakes.')]);
+        const criteria = Array.isArray(task.successCriteria) && task.successCriteria.length ? task.successCriteria
+            : (closed ? [t('Odpowiedziałem/am na każdy punkt.', 'I answered every item.'), t('Poprawiłem/am błędy.', 'I fixed my mistakes.')]
+                : [t('Wykonałem/am całe polecenie.', 'I did the whole task.'), t('Sprawdziłem/am pisownię.', 'I checked my spelling.')]);
+        return {
+            steps,
+            criteria,
+            example: task.example || '',
+            useful: Array.isArray(task.usefulLanguage) ? task.usefulLanguage : [],
+            hint: task.hint || '',
+            target: task.target || null,
+            minutes: Number(task.minutes) || 0,
+        };
+    }
+
+    function countText(text) {
+        const s = String(text || '').trim();
+        if (!s) return { words: 0, sentences: 0 };
+        const words = s.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+        const sentences = s.split(/[.!?]+(?:\s|$)/).filter((x) => /[\p{L}]/u.test(x)).length;
+        return { words, sentences };
+    }
+
+    function counterHtml(target, text) {
+        if (!target) return '';
+        const c = countText(text);
+        const min = Number(target.minSentences) || 0;
+        const max = Number(target.maxSentences) || min;
+        const state = c.sentences === 0 ? '' : (c.sentences < min ? 'low' : (c.sentences > max + 1 ? 'high' : 'ok'));
+        const words = target.minWords ? ` · ${t('ok.', 'about')} ${target.minWords}–${target.maxWords} ${t('słów', 'words')}` : '';
+        return `<span class="ot-count ${state}"><strong>${c.sentences}</strong> ${t('zdań', 'sentences')} · <strong>${c.words}</strong> ${t('słów', 'words')}</span>
+            <span class="ot-count-target">${t('Cel', 'Target')}: ${esc(min)}–${esc(max)} ${t('zdań', 'sentences')}${esc(words)}</span>`;
+    }
+
+    function stepperHtml(tasks) {
+        const cur = view === 'feedback' ? tasks.length : taskIndex;
+        return `<ol class="ot-stepper" aria-label="${esc(t('Postęp lekcji', 'Lesson progress'))}">
+            ${tasks.map((tk, i) => `<li class="${i < cur ? 'done' : (i === cur ? 'current' : '')}"${i === cur ? ' aria-current="step"' : ''}>
+                <span class="ot-step-dot">${i < cur ? '<i class="fa-solid fa-check"></i>' : i + 1}</span>
+                <span class="ot-step-name">${esc(typeLabel(tk.type))}</span></li>`).join('')}
+            <li class="${view === 'feedback' ? 'current' : ''}"><span class="ot-step-dot"><i class="fa-solid fa-flag-checkered"></i></span><span class="ot-step-name">${esc(t('Podsumowanie', 'Wrap-up'))}</span></li>
+        </ol>`;
+    }
+
     function renderTask() {
         const L = lang();
         const tasks = lesson.tasks || [];
@@ -239,56 +305,109 @@
 
         const key = `t${taskIndex}`;
         const saved = answers[key] || {};
-        let body = '';
+        const g = guidance(task);
+        const isWriting = task.type === 'writing' || !(task.items || []).length;
+        const itemRow = (it, i) => `
+            <li class="ot-item-row">
+                <label class="ot-item-q" for="ot-item-${i}"><span class="ot-item-n">${i + 1}</span>${esc(it.q || t(`Punkt ${i + 1}`, `Item ${i + 1}`))}</label>
+                <div class="ot-item-field">
+                    <input type="text" id="ot-item-${i}" class="pe-input ot-item" data-i="${i}" autocomplete="off" spellcheck="false" value="${esc((saved.items && saved.items[i]) || '')}">
+                    <span class="ot-mark" data-mark="${i}" aria-live="polite"></span>
+                </div>
+                <div class="ot-solution" data-sol="${i}" hidden>${esc(t('Odpowiedź', 'Answer'))}: <strong>${esc(it.answer || '')}</strong></div>
+            </li>`;
 
-        if (task.type === 'writing') {
-            body = `
-                <p class="ot-prompt">${esc(task.prompt)}</p>
-                <textarea class="pe-input ot-write" id="ot-answer" rows="5" placeholder="${esc(L === 'en' ? 'Write here…' : 'Napisz tutaj…')}">${esc(saved.text || '')}</textarea>`;
-        } else if (task.type === 'reading') {
-            body = `
-                <div class="ot-reading">${esc(task.prompt).replace(/\n/g, '<br>')}</div>
-                ${(task.items || []).map((it, i) => `
-                    <label class="ot-block-label">${esc(it.q)}
-                        <input type="text" class="pe-input ot-item" data-i="${i}" value="${esc((saved.items && saved.items[i]) || '')}">
-                    </label>`).join('')}`;
+        let body = '';
+        if (task.type === 'reading' && task.prompt) {
+            body += `<div class="ot-panel-label">${esc(t('Tekst', 'Text'))}</div><div class="ot-reading">${esc(task.prompt).replace(/\n/g, '<br>')}</div>`;
+        } else if (task.prompt) {
+            body += `<div class="ot-panel-label">${esc(isWriting ? t('Zadanie', 'Task') : t('Materiał', 'Material'))}</div><p class="ot-prompt">${esc(task.prompt).replace(/\n/g, '<br>')}</p>`;
+        }
+        if (!isWriting) {
+            body += `<ol class="ot-items">${(task.items || []).map(itemRow).join('')}</ol>`;
         } else {
-            // vocab_drill / uoe
-            if (task.prompt) body += `<p class="ot-prompt">${esc(task.prompt).replace(/\n/g, '<br>')}</p>`;
-            body += (task.items || []).map((it, i) => `
-                <label class="ot-block-label">${esc(it.q || (L === 'en' ? `Item ${i + 1}` : `Zadanie ${i + 1}`))}
-                    <input type="text" class="pe-input ot-item" data-i="${i}" value="${esc((saved.items && saved.items[i]) || '')}">
-                </label>`).join('');
-            if (!(task.items || []).length) {
-                body += `<textarea class="pe-input ot-write" id="ot-answer" rows="3">${esc(saved.text || '')}</textarea>`;
-            }
+            body += `
+                <details class="ot-plan"${saved.plan ? ' open' : ''}>
+                    <summary><i class="fa-solid fa-lightbulb"></i> ${esc(t('Plan (opcjonalnie) — zapisz 2–3 pomysły', 'Plan (optional) — note 2–3 ideas'))}</summary>
+                    <textarea id="ot-plan" class="pe-input" rows="2" placeholder="${esc(t('np. sklep z lodami · obsługa klientów · pieniądze na telefon', 'e.g. ice-cream shop · serve customers · save for a phone'))}">${esc(saved.plan || '')}</textarea>
+                </details>
+                <label class="ot-panel-label" for="ot-answer">${esc(t('Twoja odpowiedź', 'Your answer'))}</label>
+                <textarea class="pe-input ot-write" id="ot-answer" rows="6" placeholder="${esc(g.useful[0] ? `${g.useful[0]}` : (L === 'en' ? 'Write here…' : 'Napisz tutaj…'))}">${esc(saved.text || '')}</textarea>
+                <div class="ot-counter" id="ot-counter">${counterHtml(g.target, saved.text)}</div>`;
         }
 
+        const ticks = saved.criteria || [];
+        const help = `
+            ${g.example ? `<div class="ot-example"><div class="ot-side-title"><i class="fa-solid fa-eye"></i> ${esc(t('Przykład', 'Example'))}</div><p>${esc(g.example)}</p></div>` : ''}
+            ${g.useful.length ? `<div class="ot-useful"><div class="ot-side-title"><i class="fa-solid fa-comment-dots"></i> ${esc(isWriting ? t('Przydatne zwroty — kliknij, by wstawić', 'Useful language — click to insert') : t('Przydatne słowa', 'Useful words'))}</div>
+                <div class="ot-phrases">${g.useful.map((ph) => isWriting
+                    ? `<button type="button" class="ot-phrase" data-phrase="${esc(ph)}">${esc(ph)}</button>`
+                    : `<span class="ot-phrase is-static">${esc(ph)}</span>`).join('')}</div></div>` : ''}
+            ${g.hint ? `<details class="ot-hint"><summary><i class="fa-solid fa-circle-question"></i> ${esc(t('Utknąłeś/aś? Pokaż podpowiedź', 'Stuck? Show a hint'))}</summary><p>${esc(g.hint)}</p></details>` : ''}`;
+
+        const modelBtn = isWriting && (task.modelAnswers || []).length
+            ? `<details class="ot-model"><summary>${esc(t('Przykładowa odpowiedź (zajrzyj po napisaniu)', 'Model answer (look after you write)'))}</summary>${task.modelAnswers.map((m) => `<p>${esc(m)}</p>`).join('')}</details>` : '';
+
         return `
-            <div class="ot-card">
+            <div class="ot-card ot-lesson">
+                <div class="ot-lesson-head">
+                    <div>
+                        <div class="ot-eyebrow">${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}</div>
+                        <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
+                        ${lesson.goal ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
+                    </div>
+                    <div class="ot-time" title="${esc(t('Cała lekcja', 'Whole lesson'))}"><i class="fa-regular fa-clock"></i> ~${esc(lesson.minutes || 15)} min</div>
+                </div>
+                ${stepperHtml(tasks)}
                 <div class="ot-task-meta">
-                    <span class="ot-badge">${esc(task.type)}</span>
+                    <span class="ot-badge"><i class="fa-solid ${esc((TYPE_LABELS[task.type] || TYPE_LABELS.writing).icon)}"></i> ${esc(typeLabel(task.type))}</span>
                     <span>${esc(L === 'en' ? `Task ${taskIndex + 1} of ${tasks.length}` : `Zadanie ${taskIndex + 1} z ${tasks.length}`)}</span>
-                    <span>~${esc(lesson.minutes || 15)} min</span>
+                    ${g.minutes ? `<span><i class="fa-regular fa-clock"></i> ~${esc(g.minutes)} min</span>` : ''}
+                    ${g.target ? `<span><i class="fa-solid fa-ruler-horizontal"></i> ${esc(g.target.minSentences)}–${esc(g.target.maxSentences)} ${esc(t('zdań', 'sentences'))}</span>` : ''}
                 </div>
-                <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
                 <p class="ot-instruction">${esc(task.instruction)}</p>
-                ${body}
-                <div id="ot-task-check" class="ot-check-msg" hidden></div>
-                <div class="ot-actions">
-                    ${(task.items || []).length ? `<button type="button" class="btn btn-outline" id="ot-check">${esc(L === 'en' ? 'Check' : 'Sprawdź')}</button>` : ''}
-                    <button type="button" class="btn btn-blue" id="ot-next">${esc(taskIndex + 1 < tasks.length
-                        ? (L === 'en' ? 'Next' : 'Dalej')
-                        : (L === 'en' ? 'Finish' : 'Zakończ'))}</button>
+                <div class="ot-task-grid">
+                    <div class="ot-task-main">
+                        <ol class="ot-steps" aria-label="${esc(t('Jak to zrobić', 'How to do it'))}">${g.steps.map((st) => `<li>${esc(st)}</li>`).join('')}</ol>
+                        ${body}
+                        <div id="ot-task-check" class="ot-check-msg" hidden></div>
+                        ${modelBtn}
+                    </div>
+                    <aside class="ot-task-side">${help}
+                        <div class="ot-criteria"><div class="ot-side-title"><i class="fa-solid fa-list-check"></i> ${esc(t('Zanim przejdziesz dalej', 'Before you move on'))}</div>
+                            ${g.criteria.map((c, i) => `<label class="ot-crit"><input type="checkbox" data-crit="${i}"${ticks[i] ? ' checked' : ''}> <span>${esc(c)}</span></label>`).join('')}
+                        </div>
+                    </aside>
                 </div>
-                ${lesson.coachNote ? `<p class="ot-coach">${esc(lesson.coachNote)}</p>` : ''}
+                <div class="ot-actions">
+                    ${taskIndex > 0 ? `<button type="button" class="btn btn-grey" id="ot-prev"><i class="fa-solid fa-arrow-left"></i> ${esc(t('Wstecz', 'Back'))}</button>` : ''}
+                    ${(task.items || []).length ? `<button type="button" class="btn btn-outline" id="ot-check"><i class="fa-solid fa-check-double"></i> ${esc(L === 'en' ? 'Check' : 'Sprawdź')}</button>` : ''}
+                    <button type="button" class="btn btn-blue" id="ot-next">${esc(taskIndex + 1 < tasks.length
+                        ? (L === 'en' ? 'Next task' : 'Następne zadanie')
+                        : (L === 'en' ? 'Finish' : 'Zakończ'))} <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <p class="ot-crit-nudge" id="ot-crit-nudge" hidden>${esc(t('Odhacz listę po prawej, zanim przejdziesz dalej — albo kliknij jeszcze raz, by kontynuować.', 'Tick the checklist before moving on — or click again to continue anyway.'))}</p>
+                ${lesson.coachNote ? `<p class="ot-coach"><i class="fa-solid fa-heart"></i> ${esc(lesson.coachNote)}</p>` : ''}
             </div>`;
     }
 
     function renderFeedback() {
         const L = lang();
+        const tasks = (lesson && lesson.tasks) || [];
+        const summary = tasks.map((tk, i) => {
+            const a = answers[`t${i}`] || {};
+            const g = guidance(tk);
+            const ticked = (a.criteria || []).filter(Boolean).length;
+            let res = '';
+            if (a.checked) res = `${a.checked.ok}/${a.checked.total} ${t('poprawnie', 'correct')}`;
+            else if (tk.type === 'writing' || !(tk.items || []).length) { const c = countText(a.text); res = `${c.sentences} ${t('zdań', 'sentences')} · ${c.words} ${t('słów', 'words')}`; }
+            else res = t('nie sprawdzono', 'not checked');
+            return `<li><span class="ot-badge">${esc(typeLabel(tk.type))}</span> <span>${esc(res)}</span> <span class="ot-sum-crit"><i class="fa-solid fa-list-check"></i> ${ticked}/${g.criteria.length}</span></li>`;
+        }).join('');
         return `
             <div class="ot-card">
+                ${tasks.length ? stepperHtml(tasks) : ''}
+                ${tasks.length ? `<div class="ot-results"><div class="ot-side-title"><i class="fa-solid fa-trophy"></i> ${esc(t('Twoje wyniki', 'Your results'))}</div><ul>${summary}</ul></div>` : ''}
                 <h3 class="ot-heading">${esc(L === 'en' ? 'How was this lesson?' : 'Jak było na lekcji?')}</h3>
                 <p class="ot-lead">${esc(L === 'en'
                     ? 'Your answers help us plan the next session.'
@@ -340,10 +459,17 @@
             items[Number(inp.dataset.i)] = inp.value;
         });
         const textEl = document.getElementById('ot-answer');
+        const planEl = document.getElementById('ot-plan');
+        const criteria = [];
+        root().querySelectorAll('.ot-crit input').forEach((inp) => { criteria[Number(inp.dataset.crit)] = inp.checked; });
+        const prev = answers[key] || {};
         answers[key] = {
             type: task.type,
             text: textEl ? textEl.value : '',
             items,
+            plan: planEl ? planEl.value : '',
+            criteria,
+            ...(prev.checked ? { checked: prev.checked } : {}),
         };
         return answers[key];
     }
@@ -404,23 +530,74 @@
             let ok = 0;
             let total = 0;
             (task.items || []).forEach((it, i) => {
+                const mark = el.querySelector(`[data-mark="${i}"]`);
+                const input = el.querySelector(`.ot-item[data-i="${i}"]`);
                 if (!it.answer) return;
                 total += 1;
-                if (checkItem(it, ans.items[i])) ok += 1;
+                const good = checkItem(it, ans.items[i]);
+                if (good) ok += 1;
+                input?.classList.toggle('is-ok', good);
+                input?.classList.toggle('is-wrong', !good);
+                if (mark) {
+                    mark.innerHTML = good ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>';
+                    mark.className = 'ot-mark ' + (good ? 'ok' : 'wrong');
+                }
             });
+            answers[`t${taskIndex}`].checked = { ok, total };
             const box = document.getElementById('ot-task-check');
             if (box) {
                 box.hidden = false;
-                box.textContent = t(
-                    `Dobrze: ${ok}/${total || (task.items || []).length}`,
-                    `Correct: ${ok}/${total || (task.items || []).length}`
-                );
-                box.className = 'ot-check-msg ' + (ok === total && total > 0 ? 'ok' : 'partial');
+                const all = ok === total && total > 0;
+                box.innerHTML = `<span>${esc(t(`Dobrze: ${ok}/${total}`, `Correct: ${ok}/${total}`))}${all ? ' 🎉' : ` — ${esc(t('popraw czerwone pola i sprawdź ponownie.', 'fix the red ones and check again.'))}`}</span>
+                    ${all ? '' : `<button type="button" class="ot-link-btn" id="ot-show-answers">${esc(t('Pokaż odpowiedzi', 'Show answers'))}</button>`}`;
+                box.className = 'ot-check-msg ' + (all ? 'ok' : 'partial');
+                document.getElementById('ot-show-answers')?.addEventListener('click', () => {
+                    el.querySelectorAll('.ot-item.is-wrong').forEach((inp) => {
+                        const sol = el.querySelector(`[data-sol="${inp.dataset.i}"]`);
+                        if (sol) sol.hidden = false;
+                    });
+                });
             }
         });
 
-        document.getElementById('ot-next')?.addEventListener('click', () => {
+        // Writing helpers: insert phrase, live counter
+        const answerEl = document.getElementById('ot-answer');
+        el.querySelectorAll('.ot-phrase[data-phrase]').forEach((btn) => btn.addEventListener('click', () => {
+            if (!answerEl) return;
+            const ph = btn.dataset.phrase.replace(/…$/, '').trim();
+            const pos = answerEl.selectionStart ?? answerEl.value.length;
+            const before = answerEl.value.slice(0, pos);
+            const pad = before && !/\s$/.test(before) ? ' ' : '';
+            answerEl.value = before + pad + ph + ' ' + answerEl.value.slice(pos);
+            const caret = (before + pad + ph + ' ').length;
+            answerEl.focus();
+            answerEl.setSelectionRange(caret, caret);
+            btn.classList.add('used');
+            answerEl.dispatchEvent(new Event('input'));
+        }));
+        answerEl?.addEventListener('input', () => {
+            const task = lesson?.tasks?.[taskIndex];
+            const c = document.getElementById('ot-counter');
+            if (c && task) c.innerHTML = counterHtml(guidance(task).target, answerEl.value);
+        });
+
+        document.getElementById('ot-prev')?.addEventListener('click', () => {
             collectTaskAnswers();
+            taskIndex = Math.max(0, taskIndex - 1);
+            paint();
+        });
+
+        document.getElementById('ot-next')?.addEventListener('click', () => {
+            const a = collectTaskAnswers();
+            const nCrit = el.querySelectorAll('.ot-crit input').length;
+            const nTicked = (a.criteria || []).filter(Boolean).length;
+            const nudge = document.getElementById('ot-crit-nudge');
+            if (nCrit && nTicked < nCrit && nudge && nudge.hidden) {
+                nudge.hidden = false;
+                el.querySelector('.ot-criteria')?.classList.add('attention');
+                return;
+            }
+            window.scrollTo?.({ top: 0, behavior: 'smooth' });
             if (taskIndex + 1 < (lesson.tasks || []).length) {
                 taskIndex += 1;
                 paint();

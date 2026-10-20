@@ -2674,6 +2674,92 @@
         .ot-check-msg.ok { color: var(--success-green, #2b8a3e); }
         .ot-check-msg.partial { color: var(--pillarbox-red); }
         .ot-instr-lang { margin: 0.85rem 0; padding: 0.75rem; border: 1px dashed var(--border-light); border-radius: 8px; }
+        /* In your own time — guided student layout (navy / pale blue, matches worksheet design) */
+        #screen-own-time { --ot-navy: #1B2A4A; --ot-line: #8CA5C3; --ot-pale: #E8F0F8; --ot-bank: #D2E1F0; --ot-ok: #2b8a3e; --ot-bad: #c92a2a; }
+        #screen-own-time .ot-card { border-color: var(--ot-bank); box-shadow: 0 2px 10px rgba(27,42,74,0.06); }
+        #screen-own-time .ot-heading { color: var(--ot-navy); }
+        #screen-own-time .ot-badge { background: var(--ot-navy); text-transform: none; font-size: 0.8rem; }
+        #screen-own-time .ot-badge i { margin-right: 0.2rem; }
+        .ot-card.ot-lesson { max-width: 1000px; }
+        .ot-lesson-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+        .ot-eyebrow { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #4a6283; margin-bottom: 0.2rem; }
+        .ot-goal { margin: 0 0 0.6rem; color: var(--ot-navy); font-weight: 600; }
+        .ot-goal i { color: var(--ot-line); margin-right: 0.25rem; }
+        .ot-time { flex: none; background: var(--ot-pale); color: var(--ot-navy); border: 1px solid var(--ot-bank); border-radius: 999px; padding: 0.3rem 0.75rem; font-weight: 800; font-size: 0.9rem; white-space: nowrap; }
+        .ot-stepper { list-style: none; display: flex; gap: 0.35rem; padding: 0; margin: 0.4rem 0 1rem; counter-reset: none; }
+        .ot-stepper li { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.5rem; border-radius: 8px; background: #f4f7fb; color: #6b7c96; font-size: 0.82rem; font-weight: 700; min-width: 0; border-bottom: 3px solid transparent; }
+        .ot-stepper li.current { background: var(--ot-pale); color: var(--ot-navy); border-bottom-color: var(--ot-navy); }
+        .ot-stepper li.done { color: var(--ot-ok); }
+        .ot-step-dot { flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 2px solid currentColor; font-size: 0.75rem; }
+        .ot-stepper li.current .ot-step-dot { background: var(--ot-navy); color: #fff; border-color: var(--ot-navy); }
+        .ot-step-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ot-task-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 1.1rem; align-items: start; }
+        .ot-steps { margin: 0 0 0.9rem; padding: 0; list-style: none; counter-reset: otstep; display: grid; gap: 0.35rem; }
+        .ot-steps li { counter-increment: otstep; display: flex; gap: 0.55rem; align-items: baseline; line-height: 1.4; }
+        .ot-steps li::before { content: counter(otstep); flex: none; width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--ot-navy); color: #fff; font-size: 0.75rem; font-weight: 800; display: inline-grid; place-items: center; transform: translateY(-1px); }
+        .ot-panel-label { display: block; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #4a6283; margin: 0.4rem 0 0.3rem; }
+        #screen-own-time .ot-prompt, #screen-own-time .ot-reading { background: var(--ot-pale); border-left: 4px solid var(--ot-navy); border-radius: 0 8px 8px 0; color: var(--ot-navy); }
+        #screen-own-time .ot-reading { font-size: 1.02rem; line-height: 1.7; }
+        .ot-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; }
+        .ot-item-row { border: 1px solid var(--ot-bank); border-radius: 10px; padding: 0.55rem 0.7rem; background: #fff; }
+        .ot-item-q { display: flex; gap: 0.5rem; align-items: baseline; font-weight: 600; color: var(--ot-navy); margin-bottom: 0.35rem; }
+        .ot-item-n { flex: none; font-weight: 800; color: #4a6283; min-width: 1.1rem; }
+        .ot-item-field { display: flex; align-items: center; gap: 0.5rem; }
+        .ot-item-field .pe-input { flex: 1; }
+        #screen-own-time .ot-item.is-ok { border-color: var(--ot-ok); background: #ebfbee; }
+        #screen-own-time .ot-item.is-wrong { border-color: var(--ot-bad); background: #fff5f5; }
+        .ot-mark { width: 1.4rem; text-align: center; font-size: 1.1rem; }
+        .ot-mark.ok { color: var(--ot-ok); } .ot-mark.wrong { color: var(--ot-bad); }
+        .ot-solution { margin-top: 0.3rem; font-size: 0.88rem; color: var(--ot-navy); }
+        #screen-own-time .ot-check-msg { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.55rem 0.75rem; border-radius: 8px; }
+        #screen-own-time .ot-check-msg.ok { background: #ebfbee; }
+        #screen-own-time .ot-check-msg.partial { background: #fff5f5; color: var(--ot-bad); }
+        .ot-link-btn { background: none; border: 0; padding: 0; color: var(--ot-navy); font-weight: 800; text-decoration: underline; cursor: pointer; font: inherit; }
+        .ot-task-side { display: grid; gap: 0.7rem; }
+        .ot-task-side > * { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 10px; padding: 0.7rem 0.8rem; }
+        .ot-side-title { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ot-navy); margin-bottom: 0.4rem; }
+        .ot-side-title i { margin-right: 0.25rem; color: #4a6283; }
+        .ot-example p { margin: 0; font-style: italic; color: var(--ot-navy); line-height: 1.45; }
+        .ot-phrases { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .ot-phrase { border: 1px solid var(--ot-line); background: #fff; color: var(--ot-navy); border-radius: 999px; padding: 0.22rem 0.65rem; font: inherit; font-size: 0.86rem; cursor: pointer; }
+        button.ot-phrase:hover, button.ot-phrase:focus-visible { background: var(--ot-navy); color: #fff; }
+        .ot-phrase.used { border-style: dashed; opacity: 0.75; }
+        .ot-phrase.is-static { cursor: default; }
+        .ot-hint summary, .ot-plan summary, .ot-model summary { cursor: pointer; font-weight: 700; color: var(--ot-navy); }
+        .ot-hint p { margin: 0.45rem 0 0; }
+        .ot-plan { margin: 0.4rem 0 0.6rem; }
+        .ot-plan textarea { margin-top: 0.4rem; background: #fbfdff; border-style: dashed; }
+        .ot-model { margin-top: 0.75rem; border: 1px dashed var(--ot-line); border-radius: 8px; padding: 0.55rem 0.75rem; }
+        .ot-model p { margin: 0.45rem 0 0; color: var(--ot-navy); line-height: 1.5; }
+        .ot-counter { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.4rem; font-size: 0.86rem; color: #4a6283; margin-top: 0.35rem; }
+        .ot-count.ok { color: var(--ot-ok); } .ot-count.low { color: #b35c00; } .ot-count.high { color: var(--ot-bad); }
+        .ot-crit { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.3rem 0; cursor: pointer; line-height: 1.35; color: var(--ot-navy); }
+        .ot-crit input { width: 1.1rem; height: 1.1rem; margin: 0.08rem 0 0; accent-color: var(--ot-navy); flex: none; }
+        .ot-crit:has(input:checked) span { color: var(--ot-ok); }
+        .ot-criteria.attention { outline: 3px solid #f59f00; outline-offset: 2px; }
+        .ot-crit-nudge { color: #b35c00; font-weight: 700; margin: 0.5rem 0 0; }
+        #screen-own-time .ot-coach { background: #f4f7fb; border-radius: 8px; padding: 0.55rem 0.75rem; font-style: normal; }
+        #screen-own-time .ot-coach i { color: var(--pillarbox-red, #c92a2a); margin-right: 0.3rem; }
+        .ot-how { list-style: none; padding: 0; margin: 0 0 0.75rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
+        .ot-how li { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 10px; padding: 0.65rem 0.75rem; display: grid; gap: 0.2rem; color: var(--ot-navy); font-size: 0.88rem; line-height: 1.35; }
+        .ot-how-n { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--ot-navy); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 0.8rem; }
+        .ot-time-note { color: var(--ot-navy); font-weight: 600; margin: 0 0 0.9rem; }
+        .ot-results { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 1rem; }
+        .ot-results ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+        .ot-results li { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; color: var(--ot-navy); }
+        .ot-sum-crit { margin-left: auto; color: #4a6283; font-size: 0.86rem; }
+        @media (max-width: 760px) {
+            .ot-task-grid { grid-template-columns: 1fr; }
+            .ot-how { grid-template-columns: 1fr; }
+            .ot-stepper .ot-step-name { display: none; }
+            .ot-stepper li { justify-content: center; }
+            .ot-stepper li.current .ot-step-name { display: inline; }
+            .ot-stepper li.current { flex: 3; }
+        }
+        @media print {
+            .ot-task-grid { grid-template-columns: minmax(0, 1fr) 260px; }
+            .ot-hint p { display: block; }
+        }
         .e8-gaps-text {
             background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px;
             padding: 1.25rem 1.35rem; font-size: 1.08rem; line-height: 2.15; margin-bottom: 1rem;

@@ -87,6 +87,7 @@ import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson } from './own-time-prompts.js';
+import { OWN_TIME_MOCK_REPLY } from './own-time-fixtures.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
@@ -1022,6 +1023,10 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         const checked = validateOwnTimeGenerateRequest(req.body);
         if (!checked.ok) return res.status(400).json({ error: checked.error });
         const apiKey = process.env.CURSOR_API_KEY;
+        // Local testing without an AI key: OWN_TIME_MOCK=1 returns a fixed sample lesson (never in production).
+        if (!apiKey && process.env.OWN_TIME_MOCK === '1' && process.env.NODE_ENV !== 'production') {
+            return res.json({ lesson: normalizeOwnTimeLesson(OWN_TIME_MOCK_REPLY, checked.value), mock: true });
+        }
         if (!apiKey) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
         }

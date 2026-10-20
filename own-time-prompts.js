@@ -50,6 +50,72 @@ export function validateOwnTimeGenerateRequest(body = {}) {
     };
 }
 
+/** Writing length by CEFR (keeps the original "2–6 sentences depending on level" rule). */
+export const WRITING_TARGETS = {
+    A0: { sentences: [2, 3], words: [15, 30] },
+    A1: { sentences: [2, 3], words: [20, 40] },
+    A2: { sentences: [3, 4], words: [35, 60] },
+    B1: { sentences: [4, 5], words: [60, 90] },
+    B2: { sentences: [5, 6], words: [90, 120] },
+    C1: { sentences: [5, 6], words: [110, 150] },
+};
+
+export function writingTarget(cefr) {
+    return WRITING_TARGETS[String(cefr || '').toUpperCase()] || WRITING_TARGETS.A2;
+}
+
+/** Per-task minutes so the whole session stays inside 15–20 min (light: 12–15). */
+const TYPE_MINUTES = { vocab_drill: 4, uoe: 5, reading: 6, writing: 7 };
+
+/**
+ * Default student guidance per task type, used when the AI leaves a field out
+ * (and for lessons generated before guidance existed).
+ */
+export function defaultGuidance(type, instrLang, cefr) {
+    const en = instrLang === 'en';
+    const w = writingTarget(cefr);
+    const zd = w.sentences[1] <= 4 ? 'zdania' : 'zdań';
+    const T = {
+        vocab_drill: {
+            steps: en
+                ? ['Read the example first.', 'Fill in every item — guess if you are not sure.', 'Press “Check”, then fix the red ones.']
+                : ['Najpierw przeczytaj przykład.', 'Uzupełnij każdy punkt — jeśli nie wiesz, zgaduj.', 'Kliknij „Sprawdź” i popraw czerwone odpowiedzi.'],
+            successCriteria: en
+                ? ['I answered every item.', 'I checked my spelling.', 'I corrected my mistakes after “Check”.']
+                : ['Odpowiedziałem/am na każdy punkt.', 'Sprawdziłem/am pisownię.', 'Poprawiłem/am błędy po „Sprawdź”.'],
+            hint: en ? 'Say the word aloud — it helps you remember the spelling.' : 'Powiedz słowo na głos — łatwiej zapamiętasz pisownię.',
+        },
+        uoe: {
+            steps: en
+                ? ['Read the whole sentence before you write.', 'Decide what kind of word fits (verb, noun, adjective…).', 'Write one word per gap, then press “Check”.']
+                : ['Przeczytaj całe zdanie, zanim coś wpiszesz.', 'Zastanów się, jakie słowo pasuje (czasownik, rzeczownik, przymiotnik…).', 'Wpisz jedno słowo w lukę i kliknij „Sprawdź”.'],
+            successCriteria: en
+                ? ['Every gap has an answer.', 'The sentence sounds correct when I read it aloud.', 'I checked the word form (‑s, ‑ed, ‑ing…).']
+                : ['Każda luka ma odpowiedź.', 'Zdanie brzmi poprawnie, gdy czytam je na głos.', 'Sprawdziłem/am formę słowa (‑s, ‑ed, ‑ing…).'],
+            hint: en ? 'Look at the words just before and after the gap.' : 'Spójrz na słowa tuż przed luką i tuż po niej.',
+        },
+        reading: {
+            steps: en
+                ? ['Read the questions first.', 'Read the text and underline the answers in your head.', 'Answer in short English phrases, then press “Check”.']
+                : ['Najpierw przeczytaj pytania.', 'Przeczytaj tekst i znajdź w nim odpowiedzi.', 'Odpowiedz krótko po angielsku i kliknij „Sprawdź”.'],
+            successCriteria: en
+                ? ['I answered every question.', 'Each answer comes from the text.', 'My answers are in English.']
+                : ['Odpowiedziałem/am na każde pytanie.', 'Każda odpowiedź pochodzi z tekstu.', 'Odpowiadam po angielsku.'],
+            hint: en ? 'The answers are in the same order as the questions.' : 'Odpowiedzi są w tekście w tej samej kolejności co pytania.',
+        },
+        writing: {
+            steps: en
+                ? ['Plan: write 2–3 key words for your ideas.', `Write ${w.sentences[0]}–${w.sentences[1]} sentences. Use the useful language.`, 'Read it again and tick the checklist.']
+                : ['Zaplanuj: zapisz 2–3 słowa-klucze z pomysłami.', `Napisz ${w.sentences[0]}–${w.sentences[1]} ${zd}. Użyj przydatnych zwrotów.`, 'Przeczytaj jeszcze raz i odhacz listę kontrolną.'],
+            successCriteria: en
+                ? ['I answered every part of the task.', `I wrote ${w.sentences[0]}–${w.sentences[1]} sentences.`, 'I used at least 2 useful phrases.', 'I checked capital letters and full stops.']
+                : ['Odpowiedziałem/am na każdą część polecenia.', `Napisałem/am ${w.sentences[0]}–${w.sentences[1]} ${zd}.`, 'Użyłem/am co najmniej 2 przydatnych zwrotów.', 'Sprawdziłem/am wielkie litery i kropki.'],
+            hint: en ? 'Start with the starter sentence if you are stuck.' : 'Jeśli utkniesz, zacznij od zdania-startera.',
+        },
+    };
+    return T[type] || T.writing;
+}
+
 function intensityGuide(intensity) {
     if (intensity === 'light') return '2 short tasks, easier end of the CEFR band, ~12–15 minutes.';
     if (intensity === 'stretch') return '3–4 tasks, slightly challenging for the CEFR band, ~18–20 minutes.';
@@ -91,6 +157,15 @@ HARD RULES:
 8. For writing: one short prompt (2–6 sentences depending on level).
 9. For uoe: gap-fill or word-formation style items at ${v.cefr}.
 10. For vocab_drill: match / translate / gap with the session vocabulary.
+11. STUDENT GUIDANCE (every task): the student works ALONE at home, so each task must be self-explanatory.
+    - "steps": 2–4 very short numbered actions in ${instrLangName} (what to do first, next, last).
+    - "successCriteria": 2–4 "I can / I did" checklist lines in ${instrLangName} the student can tick (e.g. "Użyłem/am 2 zwrotów z ramki.").
+    - "example": ONE worked example in English showing exactly how to answer (for closed items: a solved item that is NOT one of the items).
+    - "usefulLanguage": 3–6 English words/phrases/sentence starters at ${v.cefr} that help with THIS task (writing: starters + linking words).
+    - "hint": one short tip in ${instrLangName} for when they are stuck.
+    - "minutes": realistic minutes for this task; all tasks together = the lesson "minutes".
+12. WRITING length at ${v.cefr}: ${writingTarget(v.cefr).sentences[0]}–${writingTarget(v.cefr).sentences[1]} sentences (about ${writingTarget(v.cefr).words[0]}–${writingTarget(v.cefr).words[1]} words); put {"minSentences": n, "maxSentences": n} in "target" and one full model answer in "modelAnswers".
+13. Lesson "goal": one sentence in ${instrLangName} starting "Po tej lekcji…" / "By the end…" saying what the student will be able to do.
 
 Return ONLY valid JSON (no markdown):
 {
@@ -99,12 +174,20 @@ Return ONLY valid JSON (no markdown):
   "cefr": "${v.cefr}",
   "instrLang": "${v.instrLang}",
   "focus": "short focus tag",
+  "goal": "what the student can do after this lesson — in ${instrLangName}",
   "coachNote": "one encouraging tip in ${instrLangName}",
   "tasks": [
     {
       "n": 1,
       "type": "vocab_drill",
       "instruction": "what to do — in ${instrLangName}",
+      "minutes": 4,
+      "steps": ["krok 1", "krok 2"],
+      "successCriteria": ["Odpowiedziałem/am na każdy punkt."],
+      "example": "worked example in English",
+      "usefulLanguage": ["phrase 1", "phrase 2", "phrase 3"],
+      "hint": "short tip in ${instrLangName}",
+      "target": {"minSentences": 3, "maxSentences": 4},
       "prompt": "English material / stem",
       "items": [
         {"q": "…", "answer": "…", "alts": ["…"]}
@@ -131,9 +214,26 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                     : [],
             })).filter((it) => it.q || it.answer)
             : [];
+        const strList = (arr, max, len) => (Array.isArray(arr) ? arr : [])
+            .map((x) => String(x ?? '').replace(/\s+/g, ' ').trim().slice(0, len)).filter(Boolean).slice(0, max);
+        const lang = raw.instrLang === 'en' || fallback.instrLang === 'en' ? 'en' : 'pl';
+        const cefr = String(raw.cefr || fallback.cefr || 'A2').toUpperCase();
+        const def = defaultGuidance(type, lang, cefr);
+        const wt = writingTarget(cefr);
+        const minS = Math.max(1, Math.min(10, Number(t?.target?.minSentences) || wt.sentences[0]));
+        const maxS = Math.max(minS, Math.min(12, Number(t?.target?.maxSentences) || wt.sentences[1]));
+        const steps = strList(t?.steps, 4, 160);
+        const criteria = strList(t?.successCriteria, 4, 160);
         return {
             n: Number(t?.n) || (i + 1),
             type,
+            minutes: Math.max(2, Math.min(12, Number(t?.minutes) || TYPE_MINUTES[type] || 5)),
+            steps: steps.length >= 2 ? steps : def.steps,
+            successCriteria: criteria.length >= 2 ? criteria : def.successCriteria,
+            example: String(t?.example || '').replace(/\s+/g, ' ').trim().slice(0, 300),
+            usefulLanguage: strList(t?.usefulLanguage, 6, 80),
+            hint: String(t?.hint || def.hint || '').slice(0, 200),
+            target: type === 'writing' ? { minSentences: minS, maxSentences: maxS, minWords: wt.words[0], maxWords: wt.words[1] } : null,
             instruction: String(t?.instruction || '').slice(0, 500),
             prompt: String(t?.prompt || t?.text || '').slice(0, 4000),
             items,
@@ -149,10 +249,16 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
         cefr: String(raw.cefr || fallback.cefr || 'A2').toUpperCase(),
         instrLang: raw.instrLang === 'en' || fallback.instrLang === 'en' ? 'en' : 'pl',
         focus: String(raw.focus || '').slice(0, 80),
+        goal: String(raw.goal || '').slice(0, 200),
         coachNote: String(raw.coachNote || '').slice(0, 400),
         tasks: tasks.length ? tasks : [{
             n: 1,
             type: 'writing',
+            minutes: 7,
+            ...(() => { const d = defaultGuidance('writing', fallback.instrLang === 'en' ? 'en' : 'pl', fallback.cefr); return { steps: d.steps, successCriteria: d.successCriteria, hint: d.hint }; })(),
+            example: '',
+            usefulLanguage: ['This week I…', 'First,', 'After that,', 'It was…because…'],
+            target: (() => { const w = writingTarget(fallback.cefr); return { minSentences: w.sentences[0], maxSentences: w.sentences[1], minWords: w.words[0], maxWords: w.words[1] }; })(),
             instruction: fallback.instrLang === 'en' ? 'Write 3–4 sentences about your day.' : 'Napisz 3–4 zdania o swoim dniu.',
             prompt: 'Write a short paragraph about something you did this week.',
             items: [],
