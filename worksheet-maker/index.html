@@ -1778,6 +1778,161 @@
     .pdf-print-root.teacher .teacher-only { display: block; }
     .pdf-print-root.student .answer { display: none; }
     .pdf-print-root.student .teacher-only { display: none; }
+
+    /* ==========================================================================
+       Worksheet design — "karty pracy Mat i E8" look (LingoSpark E8 / primary worksheets):
+       DejaVu/Verdana sans, navy #1B2A4A, navy pill kicker, bold navy title + heavy navy rule,
+       logo top-right, bold navy task headings, light-blue answer lines, pale-blue rounded
+       word-bank / info boxes, navy-rule footer with grey italic text.
+       Presentation only: no print setup / download logic lives here. !important is used where
+       the PDF export writes inline colours onto the cloned header and chips.
+       Polish-primary sheets (.pl-sp) keep their own subject theme.
+       ========================================================================== */
+    .sheet:not(.pl-sp) {
+      --kp-navy: #1B2A4A;
+      --kp-body: #191E2D;
+      --kp-grey: #64646E;
+      --kp-line: #8CA5C3;
+      --kp-fill: #DCE8F5;
+      --kp-bank: #D2E1F0;
+      --kp-box: #E8F0F8;
+      --kp-accent: #2D5A8C;
+      --kp-font: 'DejaVu Sans', Verdana, 'Segoe UI', Arial, sans-serif;
+    }
+    .sheet:not(.pl-sp) .sheet-body {
+      color: var(--kp-body);
+      font-family: var(--kp-font);
+      line-height: 1.42;
+    }
+    .sheet:not(.pl-sp) .sheet-body,
+    .sheet:not(.pl-sp) .task p, .sheet:not(.pl-sp) .task li,
+    .sheet:not(.pl-sp) .source-text, .sheet:not(.pl-sp) .intro,
+    .sheet:not(.pl-sp) .sheet-kicker, .sheet:not(.pl-sp) h2,
+    .sheet:not(.pl-sp) .task-head, .sheet:not(.pl-sp) .num,
+    .sheet:not(.pl-sp) .badge, .sheet:not(.pl-sp) table.vocab {
+      font-family: var(--kp-font);
+    }
+    .sheet:not(.pl-sp) .sheet-header {
+      border-bottom: 3px solid var(--kp-navy) !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      align-items: flex-end;
+      padding-bottom: 0.45rem;
+    }
+    .sheet:not(.pl-sp) .sheet-kicker {
+      background: var(--kp-navy);
+      color: #fff;
+      font-size: 0.66em;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 0.28em 0.75em;
+      border-radius: 0.55em;
+    }
+    .sheet:not(.pl-sp) h2 {
+      color: var(--kp-navy);
+      font-size: 1.42em;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      margin-top: 0.45em;
+    }
+    .sheet:not(.pl-sp) .task-head {
+      color: var(--kp-navy);
+      font-weight: 700;
+      font-size: 0.98em;
+      margin-top: 0.35em;
+    }
+    .sheet:not(.pl-sp) .task-head .n { color: var(--kp-navy); }
+    .sheet:not(.pl-sp) .num { color: var(--kp-navy); }
+    .sheet:not(.pl-sp) .intro { color: var(--kp-grey); font-style: italic; font-size: 0.9em; }
+    .sheet:not(.pl-sp) ol.q, .sheet:not(.pl-sp) ul.bank,
+    .sheet:not(.pl-sp) .options, .sheet:not(.pl-sp) .match-grid ol { color: var(--kp-body); }
+    .sheet:not(.pl-sp) ol.q li, .sheet:not(.pl-sp) .tf-item, .sheet:not(.pl-sp) .open-item,
+    .sheet:not(.pl-sp) .match-grid li { color: var(--kp-body); }
+    .sheet:not(.pl-sp) ol.q li::marker { color: var(--kp-navy); font-weight: 700; }
+    .sheet:not(.pl-sp) .lines div {
+      border-bottom: 1px solid var(--kp-line);
+      height: 1.75em;
+    }
+    .sheet:not(.pl-sp) .bank {
+      background: var(--kp-bank);
+      border: 1px solid var(--kp-navy);
+      border-radius: 8px;
+      padding: 0.45em 0.8em;
+      justify-content: center;
+      gap: 0.15em 0;
+      margin: 0.35em 0 0.55em;
+    }
+    .sheet:not(.pl-sp) .chip,
+    .sheet:not(.pl-sp) .chip:nth-child(even) {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0;
+      color: var(--kp-navy) !important;
+      font-weight: 700;
+      font-size: 0.92em;
+      padding: 0 0.15em;
+    }
+    .sheet:not(.pl-sp) .chip:not(:last-child)::after {
+      content: '\00B7';
+      color: var(--kp-navy);
+      font-weight: 700;
+      margin: 0 0.55em 0 0.7em;
+    }
+    .sheet:not(.pl-sp) .source-text {
+      background: var(--kp-box);
+      border: 1px solid var(--kp-navy);
+      border-left: 1px solid var(--kp-navy);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      color: var(--kp-body);
+    }
+    .sheet:not(.pl-sp) .listen-box {
+      background: var(--kp-box);
+      border: 1px solid var(--kp-navy);
+      border-radius: 8px;
+      color: var(--kp-body);
+    }
+    .sheet:not(.pl-sp) .vocab-wrap { border-color: var(--kp-navy); border-radius: 6px; }
+    .sheet:not(.pl-sp) table.vocab th {
+      background: var(--kp-navy);
+      font-size: 0.86em;
+      letter-spacing: 0.02em;
+    }
+    .sheet:not(.pl-sp) table.vocab th, .sheet:not(.pl-sp) table.vocab td {
+      border-right-color: var(--kp-line);
+      border-bottom-color: var(--kp-line);
+    }
+    .sheet:not(.pl-sp) table.vocab td:first-child {
+      color: var(--kp-navy);
+      font-weight: 700;
+      background: #fff;
+    }
+    .sheet:not(.pl-sp) .choice-card {
+      border: 1px solid var(--kp-navy);
+      background: var(--kp-box);
+      border-radius: 8px;
+    }
+    .sheet:not(.pl-sp) .choice-card strong,
+    .sheet:not(.pl-sp) .choice-card.con strong { color: var(--kp-navy); }
+    .sheet:not(.pl-sp) .choice-card.con { border-color: var(--kp-navy); background: #fff; }
+    .sheet:not(.pl-sp) .badge { background: var(--kp-fill); color: var(--kp-navy); }
+    .sheet:not(.pl-sp) .source-focus { color: var(--kp-accent); }
+    .sheet:not(.pl-sp) .answer { color: var(--kp-accent); font-style: italic; }
+    .sheet:not(.pl-sp) .tf-true, .sheet:not(.pl-sp) .tf-false { color: var(--kp-navy); }
+    .sheet-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1.1rem;
+      padding-top: 0.3rem;
+      border-top: 1px solid #1B2A4A;
+      color: #64646E;
+      font-style: italic;
+      font-size: 0.68em;
+      font-family: 'DejaVu Sans', Verdana, 'Segoe UI', Arial, sans-serif;
+      break-inside: avoid;
+    }
+    .sheet.pl-sp .sheet-footer { display: none; }
   </style>
 </head>
 <body class="student">
@@ -2763,6 +2918,7 @@
         <p class="sheet-edit-hint no-print">${escapeHtml(ui('sheetEditableHint'))}</p>
         ${topicPicker}
         ${leadHtml}
+        <div class="sheet-footer"><span>LingoSpark · Lesson Creator · ${escapeHtml(lesson.title || source.title || tx('fallbackTitle'))}</span><span>${escapeHtml(skillKicker)}</span></div>
         <div class="teacher-only">
           <p><strong>${tx('teacherNotes')}</strong> ${ed('teacherNotes', lesson.teacherNotes || '')}</p>
           ${(lesson.themes || []).length ? `<p>${tx('themes')} ${escapeHtml((lesson.themes || []).join(', '))}</p>` : ''}
