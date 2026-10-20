@@ -31,10 +31,10 @@ test('old-style lesson without guidance gets defaults (backwards compatible)', (
 
 test('guidance from AI is kept, trimmed and capped', () => {
     const l = normalizeOwnTimeLesson(OWN_TIME_MOCK_REPLY, { instrLang: 'pl', cefr: 'A2' });
-    assert.equal(l.tasks.length, 3);
+    assert.equal(l.tasks.length, 4);
     assert.match(l.goal, /Po tej lekcji/);
-    const w = l.tasks[2];
-    assert.equal(w.steps[0], OWN_TIME_MOCK_REPLY.tasks[2].steps[0]);
+    const w = l.tasks[3];
+    assert.equal(w.steps[0], OWN_TIME_MOCK_REPLY.tasks[3].steps[0]);
     assert.equal(w.usefulLanguage.length, 5);
     assert.equal(w.target.minSentences, 3);
     assert.ok(w.example);
@@ -94,4 +94,33 @@ test('Keep going: mock extra set has the same format and does not repeat base it
     assert.notEqual(extra.title, base.title);
     const baseAns = new Set(base.tasks.flatMap((t) => t.items.map((i) => i.answer)));
     for (const t of extra.tasks) for (const i of t.items) assert.ok(!baseAns.has(i.answer), i.answer);
+});
+
+import { normalizeGapMarker } from './own-time-prompts.js';
+
+test('One-screen layout: prompt asks for inline gap markers and short tasks', () => {
+    const p = buildOwnTimeLessonPrompt(validateOwnTimeGenerateRequest(req).value);
+    assert.match(p, /\{\{1\}\}, \{\{2\}\}/);
+    assert.match(p, /exactly ONE "___"/);
+    assert.match(p, /ONE-SCREEN RULE/);
+});
+
+test('Gap markers are canonicalised; old items without markers are left intact', () => {
+    assert.equal(normalizeGapMarker('I ______ (be) happy.'), 'I ___ (be) happy.');
+    assert.equal(normalizeGapMarker('She [...] tennis.'), 'She ___ tennis.');
+    assert.equal(normalizeGapMarker('What did Ola buy?'), 'What did Ola buy?');
+    const l = normalizeOwnTimeLesson({ tasks: [{ type: 'uoe', instruction: 'x', items: [{ q: 'He ____ (go) home.', answer: 'went' }, { q: 'Old item, no gap', answer: 'a' }] }] }, {});
+    assert.equal(l.tasks[0].items[0].q, 'He ___ (go) home.');
+    assert.equal(l.tasks[0].items[1].q, 'Old item, no gap');
+});
+
+test('Mock fixtures use inline gaps: {{n}} cover every item; ___ sentences have one gap', () => {
+    const all = [...OWN_TIME_MOCK_REPLY.tasks, ...OWN_TIME_MOCK_EXTRA_REPLY.tasks];
+    const gapped = all.find((t) => /\{\{1\}\}/.test(t.prompt));
+    assert.ok(gapped, 'a gapped-text task exists');
+    gapped.items.forEach((_, i) => assert.ok(gapped.prompt.includes(`{{${i + 1}}}`), `{{${i + 1}}}`));
+    const sentenceUoe = OWN_TIME_MOCK_EXTRA_REPLY.tasks.find((t) => t.type === 'uoe');
+    sentenceUoe.items.forEach((it) => assert.equal(it.q.split('___').length, 2, it.q));
+    assert.deepEqual(OWN_TIME_MOCK_REPLY.tasks.map((t) => t.type), ['vocab_drill', 'uoe', 'reading', 'writing']);
+    for (const t of all) assert.ok((t.items || []).length <= 6);
 });

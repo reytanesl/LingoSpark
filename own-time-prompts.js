@@ -183,10 +183,11 @@ HARD RULES:
         : 'Keep instructions clear and concise; still avoid dense meta jargon.'}
 5. Prefer the student's task types. Allowed types: vocab_drill, uoe, reading, writing (map prefs: vocab/drill→vocab_drill, uoe→uoe, reading→reading, writing→writing).
 6. Include modelAnswers or expected answers for closed items so the app can check locally.
-7. For reading: short English text + 2–3 comprehension questions (answers in English).
+7. For reading: short English text (60–120 words) + 2–3 comprehension questions with short answers (1–4 words, in English). A question may be a sentence to complete with ONE "___" gap.
 8. For writing: one short prompt (2–6 sentences depending on level).
-9. For uoe: gap-fill or word-formation style items at ${v.cefr}.
-10. For vocab_drill: match / translate / gap with the session vocabulary.
+9. For uoe: gap-fill or word-formation at ${v.cefr}. EITHER (a) a short connected text in "prompt" with numbered gaps {{1}}, {{2}}… (one per item, in order) and each item's "q" = the cue word in brackets or "" — OR (b) separate full sentences where each item's "q" contains exactly ONE "___" exactly where the answer goes (e.g. "Last July Tom ___ (start) work at 7 am."). Never put the gap only at the end as a separate question.
+10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.
+10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
 11. STUDENT GUIDANCE (every task): the student works ALONE at home, so each task must be self-explanatory.
     - "steps": 2–4 very short numbered actions in ${instrLangName} (what to do first, next, last).
     - "example": ONE worked example in English showing exactly how to answer (for closed items: a solved item that is NOT one of the items).
@@ -218,12 +219,17 @@ Return ONLY valid JSON (no markdown):
       "target": {"minSentences": 3, "maxSentences": 4},
       "prompt": "English material / stem",
       "items": [
-        {"q": "…", "answer": "…", "alts": ["…"]}
+        {"q": "sentence with ___ where the answer goes (or cue / question)", "answer": "…", "alts": ["…"]}
       ],
       "modelAnswers": []
     }
   ]
 }`;
+}
+
+/** Canonical gap marker in item text: ____ / … / [...] → "___" (prompt-level {{n}} markers are kept). */
+export function normalizeGapMarker(q) {
+    return String(q ?? '').replace(/_{3,}|\[\s*(?:…|\.\.\.)\s*\]/g, '___');
 }
 
 export function normalizeOwnTimeLesson(parsed, fallback = {}) {
@@ -235,7 +241,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
             : 'writing';
         const items = Array.isArray(t?.items)
             ? t.items.slice(0, 12).map((it) => ({
-                q: String(it?.q || it?.question || '').slice(0, 500),
+                q: normalizeGapMarker(it?.q || it?.question || '').slice(0, 500),
                 answer: String(it?.answer || it?.expected || '').slice(0, 300),
                 alts: Array.isArray(it?.alts)
                     ? it.alts.map((a) => String(a || '').slice(0, 300)).filter(Boolean).slice(0, 6)

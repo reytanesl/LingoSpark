@@ -352,6 +352,43 @@
         </ol>`;
     }
 
+    /** Normalise gap markers: ___ / ____ / {{n}} / […] → one canonical "___" (sentence items). */
+    const GAP_RE = /_{3,}|\{\{\s*\d*\s*\}\}|\[\s*(?:…|\.\.\.)\s*\]/;
+    function gapWidth(it) {
+        const longest = [it.answer, ...(it.alts || [])].reduce((m, x) => Math.max(m, String(x || '').length), 0);
+        return Math.max(4, Math.min(24, longest + 2));
+    }
+    function gapInput(it, i, saved) {
+        return `<span class="ot-gap"><input type="text" id="ot-item-${i}" class="pe-input ot-item ot-gap-input" data-i="${i}" autocomplete="off" spellcheck="false" aria-label="${esc(t(`Luka ${i + 1}`, `Gap ${i + 1}`))}" style="width:${gapWidth(it)}ch" value="${esc((saved.items && saved.items[i]) || '')}"><span class="ot-mark" data-mark="${i}" aria-live="polite"></span></span>`;
+    }
+    /** Sentence with its gap rendered as an inline input; old items without a marker get the input after the text. */
+    function inlineItem(it, i, saved) {
+        const q = String(it.q || '');
+        const m = q.match(GAP_RE);
+        if (m) {
+            const before = q.slice(0, m.index);
+            const after = q.slice(m.index + m[0].length);
+            return `${esc(before)}${gapInput(it, i, saved)}${esc(after)}`;
+        }
+        return `<span class="ot-q-text">${esc(q || t(`Punkt ${i + 1}`, `Item ${i + 1}`))}</span> ${gapInput(it, i, saved)}`;
+    }
+    /** Gapped text: prompt contains {{1}}, {{2}}… for items 1, 2… Returns null when the markers don't cover every item. */
+    function gappedPrompt(task, saved) {
+        const items = task.items || [];
+        const prompt = String(task.prompt || '');
+        if (!items.length || !/\{\{\s*\d+\s*\}\}/.test(prompt)) return null;
+        const seen = new Set();
+        const html = esc(prompt).replace(/\{\{\s*(\d+)\s*\}\}/g, (all, n) => {
+            const i = Number(n) - 1;
+            const it = items[i];
+            if (!it) return all;
+            seen.add(i);
+            const cue = it.q && !GAP_RE.test(it.q) && it.q.length <= 24 ? ` <span class="ot-cue">(${esc(it.q.replace(/^\(|\)$/g, ''))})</span>` : '';
+            return `<span class="ot-gap-n">${i + 1}</span>${gapInput(it, i, saved)}${cue}`;
+        }).replace(/\n/g, '<br>');
+        return seen.size === items.length ? html : null;
+    }
+
     function renderTask() {
         const L = lang();
         const tasks = lesson.tasks || [];
@@ -361,81 +398,80 @@
         const key = `t${taskIndex}`;
         const saved = answers[key] || {};
         const g = guidance(task);
-        const isWriting = task.type === 'writing' || !(task.items || []).length;
-        const itemRow = (it, i) => `
-            <li class="ot-item-row">
-                <label class="ot-item-q" for="ot-item-${i}"><span class="ot-item-n">${i + 1}</span>${esc(it.q || t(`Punkt ${i + 1}`, `Item ${i + 1}`))}</label>
-                <div class="ot-item-field">
-                    <input type="text" id="ot-item-${i}" class="pe-input ot-item" data-i="${i}" autocomplete="off" spellcheck="false" value="${esc((saved.items && saved.items[i]) || '')}">
-                    <span class="ot-mark" data-mark="${i}" aria-live="polite"></span>
-                </div>
-                <div class="ot-solution" data-sol="${i}" hidden>${esc(t('Odpowiedź', 'Answer'))}: <strong>${esc(it.answer || '')}</strong></div>
-            </li>`;
-
+        const items = task.items || [];
+        const isWriting = task.type === 'writing' || !items.length;
+        let layout = 'single';
         let body = '';
-        if (task.type === 'reading' && task.prompt) {
-            body += `<div class="ot-panel-label">${esc(t('Tekst', 'Text'))}</div><div class="ot-reading">${esc(task.prompt).replace(/\n/g, '<br>')}</div>`;
-        } else if (task.prompt) {
-            body += `<div class="ot-panel-label">${esc(isWriting ? t('Zadanie', 'Task') : t('Materiał', 'Material'))}</div><p class="ot-prompt">${esc(task.prompt).replace(/\n/g, '<br>')}</p>`;
-        }
-        if (!isWriting) {
-            body += `<ol class="ot-items">${(task.items || []).map(itemRow).join('')}</ol>`;
+
+        if (isWriting) {
+            layout = 'writing';
+            body = `
+                <div class="ot-col-main">
+                    ${task.prompt ? `<p class="ot-prompt">${esc(task.prompt).replace(/\n/g, '<br>')}</p>` : ''}
+                    <textarea class="pe-input ot-write" id="ot-answer" rows="6" aria-label="${esc(t('Twoja odpowiedź', 'Your answer'))}" placeholder="${esc(g.useful[0] || (L === 'en' ? 'Write here…' : 'Napisz tutaj…'))}">${esc(saved.text || '')}</textarea>
+                    <div class="ot-counter" id="ot-counter">${counterHtml(g.target, saved.text)}</div>
+                </div>`;
+        } else if (task.type === 'reading' && task.prompt) {
+            layout = 'reading';
+            body = `
+                <div class="ot-reading">${esc(task.prompt).replace(/\n/g, '<br>')}</div>
+                <ol class="ot-qs">${items.map((it, i) => `<li class="ot-q" data-row="${i}">${inlineItem(it, i, saved)}</li>`).join('')}</ol>`;
         } else {
-            body += `
-                ${panel('plan', 'fa-lightbulb', t('Plan (opcjonalnie) — zapisz 2–3 pomysły', 'Plan (optional) — note 2–3 ideas'),
-                    `<textarea id="ot-plan" class="pe-input" rows="2" placeholder="${esc(t('np. sklep z lodami · obsługa klientów · pieniądze na telefon', 'e.g. ice-cream shop · serve customers · save for a phone'))}">${esc(saved.plan || '')}</textarea>`, 'ot-plan')}
-                <label class="ot-panel-label" for="ot-answer">${esc(t('Twoja odpowiedź', 'Your answer'))}</label>
-                <textarea class="pe-input ot-write" id="ot-answer" rows="6" placeholder="${esc(g.useful[0] ? `${g.useful[0]}` : (L === 'en' ? 'Write here…' : 'Napisz tutaj…'))}">${esc(saved.text || '')}</textarea>
-                <div class="ot-counter" id="ot-counter">${counterHtml(g.target, saved.text)}</div>`;
+            const gapped = gappedPrompt(task, saved);
+            if (gapped) {
+                layout = 'gapped';
+                body = `<div class="ot-gapped-text">${gapped}</div>`;
+            } else {
+                if (task.prompt) body += `<p class="ot-prompt">${esc(task.prompt).replace(/\n/g, '<br>')}</p>`;
+                const sentences = items.some((it) => GAP_RE.test(String(it.q || '')));
+                layout = sentences ? 'sentences' : 'grid';
+                body += `<ol class="ot-qs ${sentences ? 'ot-qs--sentences' : 'ot-qs--grid'}">${items.map((it, i) => `<li class="ot-q" data-row="${i}">${inlineItem(it, i, saved)}</li>`).join('')}</ol>`;
+            }
         }
 
-        const help = [
+        const panels = [
+            panel('steps', 'fa-shoe-prints', t('Jak to zrobić', 'How to do it'), `<ol class="ot-steps">${g.steps.map((st) => `<li>${esc(st)}</li>`).join('')}</ol>`, 'ot-steps-panel'),
             g.example ? panel('example', 'fa-eye', t('Przykład', 'Example'), `<p>${esc(g.example)}</p>`, 'ot-example') : '',
             g.useful.length ? panel('useful', 'fa-comment-dots', isWriting ? t('Przydatne zwroty', 'Useful language') : t('Przydatne słowa', 'Useful words'),
                 `${isWriting ? `<p class="ot-panel-tip">${esc(t('Kliknij zwrot, by wstawić go do tekstu.', 'Click a phrase to insert it.'))}</p>` : ''}<div class="ot-phrases">${g.useful.map((ph) => isWriting
                     ? `<button type="button" class="ot-phrase" data-phrase="${esc(ph)}">${esc(ph)}</button>`
                     : `<span class="ot-phrase is-static">${esc(ph)}</span>`).join('')}</div>`, 'ot-useful') : '',
-            g.hint ? panel('hint', 'fa-circle-question', t('Utknąłeś/aś? Podpowiedź', 'Stuck? Hint'), `<p>${esc(g.hint)}</p>`, 'ot-hint') : '',
-        ].join('');
-
-        const modelBtn = isWriting && (task.modelAnswers || []).length
-            ? panel('model', 'fa-star', t('Przykładowa odpowiedź (zajrzyj po napisaniu)', 'Model answer (look after you write)'), task.modelAnswers.map((m) => `<p>${esc(m)}</p>`).join(''), 'ot-model') : '';
+            g.hint ? panel('hint', 'fa-circle-question', t('Podpowiedź', 'Hint'), `<p>${esc(g.hint)}</p>`, 'ot-hint') : '',
+            isWriting ? panel('plan', 'fa-lightbulb', t('Plan', 'Plan'),
+                `<textarea id="ot-plan" class="pe-input" rows="2" placeholder="${esc(t('2–3 pomysły, np. sklep z lodami · klienci · telefon', '2–3 ideas, e.g. ice-cream shop · customers · phone'))}">${esc(saved.plan || '')}</textarea>`, 'ot-plan') : '',
+            isWriting && (task.modelAnswers || []).length
+                ? panel('model', 'fa-star', t('Przykładowa odpowiedź', 'Model answer'), task.modelAnswers.map((m) => `<p>${esc(m)}</p>`).join(''), 'ot-model') : '',
+        ].filter(Boolean).join('');
 
         return `
-            <div class="ot-card ot-lesson">
+            <div class="ot-card ot-lesson" data-type="${esc(task.type)}" data-layout="${layout}">
                 <div class="ot-lesson-head">
-                    <div>
+                    <div class="ot-head-text">
                         <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}</div>
                         <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
-                        ${lesson.goal ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
                     </div>
                     <div class="ot-time" title="${esc(t('Cała lekcja', 'Whole lesson'))}"><i class="fa-regular fa-clock"></i> ~${esc(lesson.minutes || 15)} min</div>
                 </div>
+                ${lesson.goal && taskIndex === 0 ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
                 ${stepperHtml(tasks)}
-                <div class="ot-task-meta">
+                <div class="ot-task-line">
                     <span class="ot-badge"><i class="fa-solid ${esc((TYPE_LABELS[task.type] || TYPE_LABELS.writing).icon)}"></i> ${esc(typeLabel(task.type))}</span>
-                    <span>${esc(L === 'en' ? `Task ${taskIndex + 1} of ${tasks.length}` : `Zadanie ${taskIndex + 1} z ${tasks.length}`)}</span>
-                    ${g.minutes ? `<span><i class="fa-regular fa-clock"></i> ~${esc(g.minutes)} min</span>` : ''}
-                    ${g.target ? `<span><i class="fa-solid fa-ruler-horizontal"></i> ${esc(g.target.minSentences)}–${esc(g.target.maxSentences)} ${esc(t('zdań', 'sentences'))}</span>` : ''}
+                    <span class="ot-instruction">${esc(task.instruction)}</span>
+                    <span class="ot-task-meta">${esc(L === 'en' ? `${taskIndex + 1}/${tasks.length}` : `${taskIndex + 1}/${tasks.length}`)}${g.minutes ? ` · ~${esc(g.minutes)} min` : ''}${g.target ? ` · ${esc(g.target.minSentences)}–${esc(g.target.maxSentences)} ${esc(t('zdań', 'sentences'))}` : ''}</span>
                 </div>
-                <p class="ot-instruction">${esc(task.instruction)}</p>
-                <div class="ot-task-grid">
-                    <div class="ot-task-main">
-                        ${panel('steps', 'fa-shoe-prints', t(`Jak to zrobić (${g.steps.length} kroki)`, `How to do it (${g.steps.length} steps)`), `<ol class="ot-steps">${g.steps.map((st) => `<li>${esc(st)}</li>`).join('')}</ol>`, 'ot-steps-panel')}
-                        ${body}
-                        <div id="ot-task-check" class="ot-check-msg" hidden></div>
-                        ${modelBtn}
-                    </div>
-                    ${help ? `<aside class="ot-task-side">${help}</aside>` : ''}
+                <div class="ot-work ot-work--${layout}">
+                    <div class="ot-panels" role="group" aria-label="${esc(t('Pomoc', 'Help'))}">${panels}</div>
+                    <div class="ot-body ot-body--${layout}">${body}</div>
                 </div>
+                <div id="ot-task-check" class="ot-check-msg" hidden></div>
                 <div class="ot-actions">
                     ${taskIndex > 0 ? `<button type="button" class="btn btn-grey" id="ot-prev"><i class="fa-solid fa-arrow-left"></i> ${esc(t('Wstecz', 'Back'))}</button>` : ''}
-                    ${(task.items || []).length ? `<button type="button" class="btn btn-outline" id="ot-check"><i class="fa-solid fa-check-double"></i> ${esc(L === 'en' ? 'Check' : 'Sprawdź')}</button>` : ''}
+                    ${items.length ? `<button type="button" class="btn btn-outline" id="ot-check"><i class="fa-solid fa-check-double"></i> ${esc(L === 'en' ? 'Check' : 'Sprawdź')}</button>` : ''}
                     <button type="button" class="btn btn-blue" id="ot-next">${esc(taskIndex + 1 < tasks.length
                         ? (L === 'en' ? 'Next task' : 'Następne zadanie')
                         : (L === 'en' ? 'Finish' : 'Zakończ'))} <i class="fa-solid fa-arrow-right"></i></button>
+                    ${lesson.coachNote && taskIndex === 0 ? `<span class="ot-coach"><i class="fa-solid fa-heart"></i> ${esc(lesson.coachNote)}</span>` : ''}
                 </div>
-                ${lesson.coachNote ? `<p class="ot-coach"><i class="fa-solid fa-heart"></i> ${esc(lesson.coachNote)}</p>` : ''}
             </div>`;
     }
 
@@ -497,6 +533,12 @@
         else if (view === 'done') el.innerHTML = renderDone();
         else el.innerHTML = '';
         bind();
+        if (view === 'lesson') {
+            // Bring the whole task card into view so the task fits on one screen.
+            const card = el.querySelector('.ot-lesson');
+            const top = card ? card.getBoundingClientRect().top + window.scrollY - 8 : 0;
+            if (card && Math.abs(window.scrollY - top) > 4) window.scrollTo({ top, behavior: 'auto' });
+        }
     }
 
     function collectTaskAnswers() {
@@ -597,10 +639,18 @@
                     ${all ? '' : `<button type="button" class="ot-link-btn" id="ot-show-answers">${esc(t('Pokaż odpowiedzi', 'Show answers'))}</button>`}`;
                 box.className = 'ot-check-msg ' + (all ? 'ok' : 'partial');
                 document.getElementById('ot-show-answers')?.addEventListener('click', () => {
+                    // Fill the correct answer straight into each wrong gap (the student's attempt stays in the tooltip).
                     el.querySelectorAll('.ot-item.is-wrong').forEach((inp) => {
-                        const sol = el.querySelector(`[data-sol="${inp.dataset.i}"]`);
-                        if (sol) sol.hidden = false;
+                        const it = (task.items || [])[Number(inp.dataset.i)];
+                        if (!it?.answer) return;
+                        inp.title = t(`Twoja odpowiedź: ${inp.value || '—'}`, `You wrote: ${inp.value || '—'}`);
+                        inp.value = it.answer;
+                        inp.classList.remove('is-wrong');
+                        inp.classList.add('is-revealed');
+                        const mark = el.querySelector(`[data-mark="${inp.dataset.i}"]`);
+                        if (mark) { mark.innerHTML = '<i class="fa-solid fa-eye"></i>'; mark.className = 'ot-mark revealed'; }
                     });
+                    document.getElementById('ot-show-answers')?.remove();
                 });
             }
         });
@@ -638,7 +688,6 @@
 
         document.getElementById('ot-next')?.addEventListener('click', () => {
             collectTaskAnswers();
-            window.scrollTo?.({ top: 0, behavior: 'smooth' });
             if (taskIndex + 1 < (lesson.tasks || []).length) {
                 taskIndex += 1;
                 paint();
