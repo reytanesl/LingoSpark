@@ -68,7 +68,7 @@ export function writingTarget(cefr) {
 const TYPE_MINUTES = { vocab_drill: 4, uoe: 5, reading: 6, writing: 7 };
 
 /**
- * Default student guidance per task type, used when the AI leaves a field out
+ * Default student guidance per task type (steps + hint; the success checklist was removed), used when the AI leaves a field out
  * (and for lessons generated before guidance existed).
  */
 export function defaultGuidance(type, instrLang, cefr) {
@@ -80,36 +80,24 @@ export function defaultGuidance(type, instrLang, cefr) {
             steps: en
                 ? ['Read the example first.', 'Fill in every item — guess if you are not sure.', 'Press “Check”, then fix the red ones.']
                 : ['Najpierw przeczytaj przykład.', 'Uzupełnij każdy punkt — jeśli nie wiesz, zgaduj.', 'Kliknij „Sprawdź” i popraw czerwone odpowiedzi.'],
-            successCriteria: en
-                ? ['I answered every item.', 'I checked my spelling.', 'I corrected my mistakes after “Check”.']
-                : ['Odpowiedziałem/am na każdy punkt.', 'Sprawdziłem/am pisownię.', 'Poprawiłem/am błędy po „Sprawdź”.'],
             hint: en ? 'Say the word aloud — it helps you remember the spelling.' : 'Powiedz słowo na głos — łatwiej zapamiętasz pisownię.',
         },
         uoe: {
             steps: en
                 ? ['Read the whole sentence before you write.', 'Decide what kind of word fits (verb, noun, adjective…).', 'Write one word per gap, then press “Check”.']
                 : ['Przeczytaj całe zdanie, zanim coś wpiszesz.', 'Zastanów się, jakie słowo pasuje (czasownik, rzeczownik, przymiotnik…).', 'Wpisz jedno słowo w lukę i kliknij „Sprawdź”.'],
-            successCriteria: en
-                ? ['Every gap has an answer.', 'The sentence sounds correct when I read it aloud.', 'I checked the word form (‑s, ‑ed, ‑ing…).']
-                : ['Każda luka ma odpowiedź.', 'Zdanie brzmi poprawnie, gdy czytam je na głos.', 'Sprawdziłem/am formę słowa (‑s, ‑ed, ‑ing…).'],
             hint: en ? 'Look at the words just before and after the gap.' : 'Spójrz na słowa tuż przed luką i tuż po niej.',
         },
         reading: {
             steps: en
                 ? ['Read the questions first.', 'Read the text and underline the answers in your head.', 'Answer in short English phrases, then press “Check”.']
                 : ['Najpierw przeczytaj pytania.', 'Przeczytaj tekst i znajdź w nim odpowiedzi.', 'Odpowiedz krótko po angielsku i kliknij „Sprawdź”.'],
-            successCriteria: en
-                ? ['I answered every question.', 'Each answer comes from the text.', 'My answers are in English.']
-                : ['Odpowiedziałem/am na każde pytanie.', 'Każda odpowiedź pochodzi z tekstu.', 'Odpowiadam po angielsku.'],
             hint: en ? 'The answers are in the same order as the questions.' : 'Odpowiedzi są w tekście w tej samej kolejności co pytania.',
         },
         writing: {
             steps: en
-                ? ['Plan: write 2–3 key words for your ideas.', `Write ${w.sentences[0]}–${w.sentences[1]} sentences. Use the useful language.`, 'Read it again and tick the checklist.']
-                : ['Zaplanuj: zapisz 2–3 słowa-klucze z pomysłami.', `Napisz ${w.sentences[0]}–${w.sentences[1]} ${zd}. Użyj przydatnych zwrotów.`, 'Przeczytaj jeszcze raz i odhacz listę kontrolną.'],
-            successCriteria: en
-                ? ['I answered every part of the task.', `I wrote ${w.sentences[0]}–${w.sentences[1]} sentences.`, 'I used at least 2 useful phrases.', 'I checked capital letters and full stops.']
-                : ['Odpowiedziałem/am na każdą część polecenia.', `Napisałem/am ${w.sentences[0]}–${w.sentences[1]} ${zd}.`, 'Użyłem/am co najmniej 2 przydatnych zwrotów.', 'Sprawdziłem/am wielkie litery i kropki.'],
+                ? ['Plan: write 2–3 key words for your ideas.', `Write ${w.sentences[0]}–${w.sentences[1]} sentences. Use the useful language.`, 'Read it again and check spelling and full stops.']
+                : ['Zaplanuj: zapisz 2–3 słowa-klucze z pomysłami.', `Napisz ${w.sentences[0]}–${w.sentences[1]} ${zd}. Użyj przydatnych zwrotów.`, 'Przeczytaj jeszcze raz i sprawdź pisownię oraz kropki.'],
             hint: en ? 'Start with the starter sentence if you are stuck.' : 'Jeśli utkniesz, zacznij od zdania-startera.',
         },
     };
@@ -159,7 +147,6 @@ HARD RULES:
 10. For vocab_drill: match / translate / gap with the session vocabulary.
 11. STUDENT GUIDANCE (every task): the student works ALONE at home, so each task must be self-explanatory.
     - "steps": 2–4 very short numbered actions in ${instrLangName} (what to do first, next, last).
-    - "successCriteria": 2–4 "I can / I did" checklist lines in ${instrLangName} the student can tick (e.g. "Użyłem/am 2 zwrotów z ramki.").
     - "example": ONE worked example in English showing exactly how to answer (for closed items: a solved item that is NOT one of the items).
     - "usefulLanguage": 3–6 English words/phrases/sentence starters at ${v.cefr} that help with THIS task (writing: starters + linking words).
     - "hint": one short tip in ${instrLangName} for when they are stuck.
@@ -183,7 +170,6 @@ Return ONLY valid JSON (no markdown):
       "instruction": "what to do — in ${instrLangName}",
       "minutes": 4,
       "steps": ["krok 1", "krok 2"],
-      "successCriteria": ["Odpowiedziałem/am na każdy punkt."],
       "example": "worked example in English",
       "usefulLanguage": ["phrase 1", "phrase 2", "phrase 3"],
       "hint": "short tip in ${instrLangName}",
@@ -223,13 +209,11 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
         const minS = Math.max(1, Math.min(10, Number(t?.target?.minSentences) || wt.sentences[0]));
         const maxS = Math.max(minS, Math.min(12, Number(t?.target?.maxSentences) || wt.sentences[1]));
         const steps = strList(t?.steps, 4, 160);
-        const criteria = strList(t?.successCriteria, 4, 160);
         return {
             n: Number(t?.n) || (i + 1),
             type,
             minutes: Math.max(2, Math.min(12, Number(t?.minutes) || TYPE_MINUTES[type] || 5)),
             steps: steps.length >= 2 ? steps : def.steps,
-            successCriteria: criteria.length >= 2 ? criteria : def.successCriteria,
             example: String(t?.example || '').replace(/\s+/g, ' ').trim().slice(0, 300),
             usefulLanguage: strList(t?.usefulLanguage, 6, 80),
             hint: String(t?.hint || def.hint || '').slice(0, 200),
@@ -255,7 +239,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
             n: 1,
             type: 'writing',
             minutes: 7,
-            ...(() => { const d = defaultGuidance('writing', fallback.instrLang === 'en' ? 'en' : 'pl', fallback.cefr); return { steps: d.steps, successCriteria: d.successCriteria, hint: d.hint }; })(),
+            ...(() => { const d = defaultGuidance('writing', fallback.instrLang === 'en' ? 'en' : 'pl', fallback.cefr); return { steps: d.steps, hint: d.hint }; })(),
             example: '',
             usefulLanguage: ['This week I…', 'First,', 'After that,', 'It was…because…'],
             target: (() => { const w = writingTarget(fallback.cefr); return { minSentences: w.sentences[0], maxSentences: w.sentences[1], minWords: w.words[0], maxWords: w.words[1] }; })(),

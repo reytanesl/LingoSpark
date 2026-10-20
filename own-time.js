@@ -199,7 +199,7 @@
                     : 'Krótka sesja ćwiczeń (~15–20 minut), dopasowana do Ciebie.')}</p>
                 <ol class="ot-how">
                     <li><span class="ot-how-n">1</span><strong>${esc(t('Zrób 2–4 krótkie zadania', 'Do 2–4 short tasks'))}</strong><span>${esc(t('Każde ma kroki, przykład i podpowiedź.', 'Each has steps, an example and a hint.'))}</span></li>
-                    <li><span class="ot-how-n">2</span><strong>${esc(t('Sprawdź i odhacz listę', 'Check & tick the list'))}</strong><span>${esc(t('„Sprawdź” pokaże błędy; lista mówi, kiedy skończyłeś/aś.', '“Check” marks mistakes; the list tells you when you are done.'))}</span></li>
+                    <li><span class="ot-how-n">2</span><strong>${esc(t('Sprawdź odpowiedzi', 'Check your answers'))}</strong><span>${esc(t('„Sprawdź” pokaże błędy; potrzebujesz pomocy? Rozwiń podpowiedzi.', '“Check” marks mistakes; need help? Open the hints.'))}</span></li>
                     <li><span class="ot-how-n">3</span><strong>${esc(t('Powiedz, jak było', 'Tell us how it went'))}</strong><span>${esc(t('Twoja opinia ustawia następną lekcję.', 'Your feedback shapes the next lesson.'))}</span></li>
                 </ol>
                 <p class="ot-time-note"><i class="fa-regular fa-clock"></i> ${esc(({ light: t('ok. 12–15 min', 'about 12–15 min'), stretch: t('ok. 18–20 min', 'about 18–20 min') })[p.intensity] || t('ok. 15–18 min', 'about 15–18 min'))} · ${esc(t('znajdź ciche miejsce i miej pod ręką słownik', 'find a quiet place; a dictionary is allowed'))}</p>
@@ -248,18 +248,13 @@
         return lang() === 'en' ? x.en : x.pl;
     }
 
-    /** Guidance with safe fallbacks for lessons generated before steps/criteria existed. */
+    /** Guidance with safe fallbacks for older lessons. A saved successCriteria field is ignored (checklist removed). */
     function guidance(task) {
-        const closed = (task.items || []).length > 0;
         const steps = Array.isArray(task.steps) && task.steps.length ? task.steps : (task.type === 'writing'
             ? [t('Zaplanuj 2–3 pomysły.', 'Plan 2–3 ideas.'), t('Napisz tekst.', 'Write your text.'), t('Przeczytaj go jeszcze raz.', 'Read it again.')]
             : [t('Przeczytaj polecenie.', 'Read the instruction.'), t('Odpowiedz na każdy punkt.', 'Answer every item.'), t('Kliknij „Sprawdź” i popraw błędy.', 'Press “Check” and fix mistakes.')]);
-        const criteria = Array.isArray(task.successCriteria) && task.successCriteria.length ? task.successCriteria
-            : (closed ? [t('Odpowiedziałem/am na każdy punkt.', 'I answered every item.'), t('Poprawiłem/am błędy.', 'I fixed my mistakes.')]
-                : [t('Wykonałem/am całe polecenie.', 'I did the whole task.'), t('Sprawdziłem/am pisownię.', 'I checked my spelling.')]);
         return {
             steps,
-            criteria,
             example: task.example || '',
             useful: Array.isArray(task.usefulLanguage) ? task.usefulLanguage : [],
             hint: task.hint || '',
@@ -344,7 +339,6 @@
                 <div class="ot-counter" id="ot-counter">${counterHtml(g.target, saved.text)}</div>`;
         }
 
-        const ticks = saved.criteria || [];
         const help = [
             g.example ? panel('example', 'fa-eye', t('Przykład', 'Example'), `<p>${esc(g.example)}</p>`, 'ot-example') : '',
             g.useful.length ? panel('useful', 'fa-comment-dots', isWriting ? t('Przydatne zwroty', 'Useful language') : t('Przydatne słowa', 'Useful words'),
@@ -382,10 +376,7 @@
                         <div id="ot-task-check" class="ot-check-msg" hidden></div>
                         ${modelBtn}
                     </div>
-                    <aside class="ot-task-side">${help}
-                        ${panel('criteria', 'fa-list-check', `${t('Zanim przejdziesz dalej', 'Before you move on')} · ${ticks.filter(Boolean).length}/${g.criteria.length}`,
-                            g.criteria.map((c, i) => `<label class="ot-crit"><input type="checkbox" data-crit="${i}"${ticks[i] ? ' checked' : ''}> <span>${esc(c)}</span></label>`).join(''), 'ot-criteria')}
-                    </aside>
+                    ${help ? `<aside class="ot-task-side">${help}</aside>` : ''}
                 </div>
                 <div class="ot-actions">
                     ${taskIndex > 0 ? `<button type="button" class="btn btn-grey" id="ot-prev"><i class="fa-solid fa-arrow-left"></i> ${esc(t('Wstecz', 'Back'))}</button>` : ''}
@@ -394,7 +385,6 @@
                         ? (L === 'en' ? 'Next task' : 'Następne zadanie')
                         : (L === 'en' ? 'Finish' : 'Zakończ'))} <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
-                <p class="ot-crit-nudge" id="ot-crit-nudge" hidden>${esc(t('Odhacz listę po prawej, zanim przejdziesz dalej — albo kliknij jeszcze raz, by kontynuować.', 'Tick the checklist before moving on — or click again to continue anyway.'))}</p>
                 ${lesson.coachNote ? `<p class="ot-coach"><i class="fa-solid fa-heart"></i> ${esc(lesson.coachNote)}</p>` : ''}
             </div>`;
     }
@@ -404,13 +394,11 @@
         const tasks = (lesson && lesson.tasks) || [];
         const summary = tasks.map((tk, i) => {
             const a = answers[`t${i}`] || {};
-            const g = guidance(tk);
-            const ticked = (a.criteria || []).filter(Boolean).length;
             let res = '';
             if (a.checked) res = `${a.checked.ok}/${a.checked.total} ${t('poprawnie', 'correct')}`;
             else if (tk.type === 'writing' || !(tk.items || []).length) { const c = countText(a.text); res = `${c.sentences} ${t('zdań', 'sentences')} · ${c.words} ${t('słów', 'words')}`; }
             else res = t('nie sprawdzono', 'not checked');
-            return `<li><span class="ot-badge">${esc(typeLabel(tk.type))}</span> <span>${esc(res)}</span> <span class="ot-sum-crit"><i class="fa-solid fa-list-check"></i> ${ticked}/${g.criteria.length}</span></li>`;
+            return `<li><span class="ot-badge">${esc(typeLabel(tk.type))}</span> <span>${esc(res)}</span></li>`;
         }).join('');
         return `
             <div class="ot-card">
@@ -468,15 +456,12 @@
         });
         const textEl = document.getElementById('ot-answer');
         const planEl = document.getElementById('ot-plan');
-        const criteria = [];
-        root().querySelectorAll('.ot-crit input').forEach((inp) => { criteria[Number(inp.dataset.crit)] = inp.checked; });
         const prev = answers[key] || {};
         answers[key] = {
             type: task.type,
             text: textEl ? textEl.value : '',
             items,
             plan: planEl ? planEl.value : '',
-            criteria,
             ...(prev.checked ? { checked: prev.checked } : {}),
         };
         return answers[key];
@@ -572,15 +557,6 @@
             const k = `${taskIndex}:${d.dataset.panel}`;
             if (d.open) openPanels.add(k); else openPanels.delete(k);
         }));
-        el.querySelectorAll('.ot-crit input').forEach((inp) => inp.addEventListener('change', () => {
-            const box = el.querySelector('.ot-criteria');
-            const all = box.querySelectorAll('input');
-            const n = [...all].filter((x) => x.checked).length;
-            const span = box.querySelector('summary span');
-            if (span) span.textContent = span.textContent.replace(/\d+\/\d+$/, `${n}/${all.length}`);
-            if (n === all.length) box.classList.remove('attention');
-        }));
-
         // Writing helpers: insert phrase, live counter
         const answerEl = document.getElementById('ot-answer');
         el.querySelectorAll('.ot-phrase[data-phrase]').forEach((btn) => btn.addEventListener('click', () => {
@@ -609,21 +585,7 @@
         });
 
         document.getElementById('ot-next')?.addEventListener('click', () => {
-            const a = collectTaskAnswers();
-            const nCrit = el.querySelectorAll('.ot-crit input').length;
-            const nTicked = (a.criteria || []).filter(Boolean).length;
-            const nudge = document.getElementById('ot-crit-nudge');
-            if (nCrit && nTicked < nCrit && nudge && nudge.hidden) {
-                nudge.hidden = false;
-                const crit = el.querySelector('.ot-criteria');
-                if (crit) {
-                    crit.open = true;
-                    crit.classList.add('attention');
-                    crit.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
-                    crit.querySelector('summary')?.focus();
-                }
-                return;
-            }
+            collectTaskAnswers();
             window.scrollTo?.({ top: 0, behavior: 'smooth' });
             if (taskIndex + 1 < (lesson.tasks || []).length) {
                 taskIndex += 1;
