@@ -6,7 +6,7 @@
   <title>Lesson Creator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&family=Lexend:wght@400;500;600;700&family=Nunito:wght@400;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&family=Lexend:wght@400;500;600;700&family=Nunito:wght@400;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -30,7 +30,7 @@
       --font-primary: 'Poppins', system-ui, sans-serif;
       --font-body: 'Nunito', system-ui, sans-serif;
       --font: var(--font-body);
-      --slide-font: 'Barlow', var(--font-primary);
+      --slide-font: 'Inter', 'Segoe UI', Arial, sans-serif;
       --royal-blue: var(--sd-navy);
       --pillarbox-red: var(--sd-red);
       --bright-white: #FFFFFF;
@@ -1070,7 +1070,7 @@
     #slideFrame { width: 100%; height: 100%; }
     .slide-view {
       width: 100%; height: 100%;
-      padding: 4% 5% 8.8%;
+      padding: 3.2% 4.2% 7.6%;
       display: flex; flex-direction: column;
       justify-content: space-between;
       font-family: var(--slide-font);
@@ -1078,9 +1078,11 @@
       position: relative;
       overflow: hidden;
       overflow-wrap: break-word;
-      line-height: 1.35;
+      line-height: 1.26;
+      letter-spacing: -0.005em;
     }
-    .slide-view.title-slide { justify-content: center; padding-bottom: 8.8%; }
+    .slide-view h2, .slide-view h3, .slide-view .sv-kicker, .slide-view .sv-badge { font-family: var(--slide-font); }
+    .slide-view.title-slide { justify-content: center; padding-bottom: 7.6%; }
     .slide-view.title-slide.has-photo {
       flex-direction: row;
       align-items: stretch;
@@ -1152,7 +1154,7 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 0.28em;
+      gap: 0.22em;
     }
     .sv-body > p,
     .sv-body > ul {
@@ -1168,15 +1170,15 @@
     }
     .slide-view li { margin: 0.2em 0; }
     .slide-view .sv-kicker {
-      font-size: 0.55em;
-      letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.35em;
+      font-size: 0.6em;
+      letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.3em;
     }
     .slide-view h2 {
-      font-size: 1em; line-height: 1.35; margin: 0 0 0.4em; font-weight: 800;
+      font-size: 1.08em; line-height: 1.22; margin: 0 0 0.32em; font-weight: 800; letter-spacing: -0.01em;
       flex: 0 0 auto;
     }
     .slide-view.title-slide h2 {
-      font-size: 1.55em; line-height: 1.12; margin: 0 0 0.35em;
+      font-size: 1.6em; line-height: 1.1; margin: 0 0 0.35em;
     }
     .slide-view .sv-sub { font-size: 1em; opacity: 0.92; }
     .slide-view.title-slide .sv-sub { font-size: 0.78em; }
@@ -1197,8 +1199,8 @@
     .sv-card h3 { font-size: 1em; margin: 0 0 0.25em; font-weight: 800; }
     .sv-vocab {
       display: grid;
-      grid-template-columns: 0.36fr 1fr;
-      gap: 0.28em 0.85em;
+      grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+      gap: 0.24em 0.9em;
       align-content: start;
       flex: 1 1 auto;
       min-height: 0;
@@ -1206,8 +1208,8 @@
     }
     .sv-vocab-word { font-weight: 800; }
     .sv-read {
-      min-height: 0; overflow: hidden; line-height: 1.4;
-      background: rgba(255,255,255,0.72); border-radius: 0.45em; padding: 0.5em 0.6em;
+      min-height: 0; overflow: hidden; line-height: 1.34;
+      background: rgba(255,255,255,0.72); border-radius: 0.45em; padding: 0.42em 0.55em;
       display: flex; flex-direction: column; justify-content: space-evenly;
     }
     .sv-read p { margin: 0 0 0.4em; }
@@ -1781,7 +1783,7 @@
 
     /* ==========================================================================
        Worksheet design — "karty pracy Mat i E8" look (LingoSpark E8 / primary worksheets):
-       DejaVu/Verdana sans, navy #1B2A4A, navy pill kicker, bold navy title + heavy navy rule,
+       Inter (Google Fonts, latin-ext for Polish; Segoe UI/Arial fallback), navy #1B2A4A, navy pill kicker, bold navy title + heavy navy rule,
        logo top-right, bold navy task headings, light-blue answer lines, pale-blue rounded
        word-bank / info boxes, navy-rule footer with grey italic text.
        Presentation only: no print setup / download logic lives here. !important is used where
@@ -1797,7 +1799,7 @@
       --kp-bank: #D2E1F0;
       --kp-box: #E8F0F8;
       --kp-accent: #2D5A8C;
-      --kp-font: 'DejaVu Sans', Verdana, 'Segoe UI', Arial, sans-serif;
+      --kp-font: 'Inter', 'Segoe UI', Arial, sans-serif;
     }
     .sheet:not(.pl-sp) .sheet-body {
       color: var(--kp-body);
@@ -1929,7 +1931,7 @@
       color: #64646E;
       font-style: italic;
       font-size: 0.68em;
-      font-family: 'DejaVu Sans', Verdana, 'Segoe UI', Arial, sans-serif;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
       break-inside: avoid;
     }
     .sheet.pl-sp .sheet-footer { display: none; }
@@ -4025,19 +4027,19 @@
       const view = $('slideFrame')?.querySelector('.slide-view');
       if (!view || !stage || stage.clientHeight < 40) return;
       if (view.classList.contains('title-slide')) {
-        view.style.fontSize = `${Math.max(14, stage.clientHeight * 0.045)}px`;
+        view.style.fontSize = `${Math.max(16, stage.clientHeight * 0.058)}px`;
         return;
       }
       if (view.querySelector('.sv-video-stage')) {
-        view.style.fontSize = `${Math.max(15, stage.clientHeight * 0.034)}px`;
+        view.style.fontSize = `${Math.max(16, stage.clientHeight * 0.042)}px`;
         return;
       }
 
       const answerReveal = view.classList.contains('is-answer-reveal');
       const minPx = answerReveal
-        ? Math.max(10, stage.clientHeight * 0.02)
-        : Math.max(11, stage.clientHeight * 0.024);
-      const maxPx = Math.max(minPx + 6, stage.clientHeight * (answerReveal ? 0.078 : 0.092));
+        ? Math.max(11, stage.clientHeight * 0.026)
+        : Math.max(12, stage.clientHeight * 0.03);
+      const maxPx = Math.max(minPx + 6, stage.clientHeight * (answerReveal ? 0.095 : 0.11));
       let lo = minPx;
       let hi = maxPx;
       let best = minPx;
@@ -4747,9 +4749,9 @@
       if (!view || !stage || stage.clientHeight < 40) return;
       const answerReveal = view.classList.contains('is-answer-reveal');
       const minPx = answerReveal
-        ? Math.max(10, stage.clientHeight * 0.02)
-        : Math.max(11, stage.clientHeight * 0.024);
-      const maxPx = Math.max(minPx + 6, stage.clientHeight * (answerReveal ? 0.078 : 0.092));
+        ? Math.max(11, stage.clientHeight * 0.026)
+        : Math.max(12, stage.clientHeight * 0.03);
+      const maxPx = Math.max(minPx + 6, stage.clientHeight * (answerReveal ? 0.095 : 0.11));
       let lo = minPx;
       let hi = maxPx;
       let best = minPx;
