@@ -23,7 +23,10 @@
     let taskIndex = 0;
     let answers = {};
     let startedAt = 0;
-    let view = 'loading'; // loading | onboard | dash | lesson | feedback
+    let view = 'loading'; // loading | onboard | dash | lesson | feedback | done
+    let today = null; // { lessonDone, extrasUsed, extrasLimit, extrasLeft } from the server
+    let lastFinished = null; // { lesson, answers } of the set just completed — context for "Keep going"
+    let capMessage = '';
 
     function esc(s) {
         return String(s ?? '')
@@ -210,6 +213,7 @@
                     <li><strong>${esc(L === 'en' ? 'Interests' : 'Zainteresowania')}:</strong> ${esc((p.interests || []).join(', ') || '—')}</li>
                     ${p.topic ? `<li><strong>${esc(L === 'en' ? 'Topic' : 'Temat')}:</strong> ${esc(p.topic)}</li>` : ''}
                 </ul>
+                ${today?.lessonDone ? `<div class="ot-today-done"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${esc(t('Dzisiejsza lekcja zrobiona.', "Today's lesson is done."))}</div>${keepGoingHtml({ title: t('Chcesz poćwiczyć więcej?', 'Want more practice?') })}` : ''}
                 ${lastNote || lastLevel ? `<p class="ot-last-fb"><strong>${esc(L === 'en' ? 'Last feedback' : 'Ostatnia opinia')}:</strong> ${esc(lastLevel)} ${esc(lastNote)}</p>` : ''}
                 <div class="ot-form-grid">
                     <label>${esc(L === 'en' ? 'Topic this time (optional)' : 'Temat tym razem (opcjonalnie)')}
@@ -292,6 +296,52 @@
         </details>`;
     }
 
+    /** Mirrors buildOwnTimeExtraContext in own-time-prompts.js: items to avoid + weak spots from the set just done. */
+    function extraContextFrom(src) {
+        if (!src) return {};
+        if (src.saved) return { previousTitle: src.saved.title || '', focus: src.saved.focus || '', avoid: src.saved.avoid || [], weak: src.saved.weak || [] };
+        const avoid = [];
+        const weak = [];
+        (src.lesson?.tasks || []).forEach((tk, i) => {
+            const a = src.answers?.[`t${i}`] || {};
+            (tk.items || []).forEach((it, j) => {
+                if (it.answer) avoid.push(String(it.answer));
+                if (it.q) avoid.push(String(it.q).slice(0, 80));
+                const given = String((a.items || [])[j] || '').trim();
+                if (it.answer && !checkItem(it, given)) weak.push(`${it.q} → ${it.answer}${given ? ` (wrote: ${given})` : ' (blank)'}`);
+            });
+        });
+        return { previousTitle: src.lesson?.title || '', focus: src.lesson?.focus || '', avoid: avoid.slice(0, 40), weak: weak.slice(0, 12) };
+    }
+
+    function keepGoingHtml(opts = {}) {
+        const left = today ? today.extrasLeft : null;
+        const limit = today?.extrasLimit || 3;
+        if (capMessage || left === 0) {
+            return `<div class="ot-keep ot-keep--cap" role="status"><i class="fa-solid fa-moon" aria-hidden="true"></i>
+                <div><strong>${esc(t('To wszystko na dziś — świetna robota!', "That's all for today — great work!"))}</strong>
+                <p>${esc(t(`Zrobiłeś/aś już ${limit} dodatkowe zestawy. Odpocznij — jutro czeka nowa lekcja.`, `You've done ${limit} extra sets today. Have a rest — a new lesson is waiting tomorrow.`))}</p></div></div>`;
+        }
+        return `<div class="ot-keep">
+            <div><strong>${esc(opts.title || t('Masz jeszcze siłę?', 'Still got energy?'))}</strong>
+            <p>${esc(t('Dodatkowy zestaw w tym samym formacie i na tym samym poziomie — nowe zadania, powtórka trudniejszych miejsc.', 'An extra set in the same format and level — new items that revisit your tricky spots.'))}</p></div>
+            <button type="button" class="btn btn-blue ot-keep-going" id="ot-keep-going"><i class="fa-solid fa-forward" aria-hidden="true"></i> ${esc(t('Ćwicz dalej', 'Keep going'))}</button>
+            ${left != null ? `<span class="ot-keep-left">${esc(t(`Zostało dziś: ${left} z ${limit}`, `${left} of ${limit} extra sets left today`))}</span>` : ''}
+        </div>`;
+    }
+
+    function renderDone() {
+        const wasExtra = !!lastFinished?.lesson?.extra;
+        return `
+            <div class="ot-card ot-done">
+                <div class="ot-done-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+                <h3 class="ot-heading">${esc(wasExtra ? t('Dodatkowy zestaw zrobiony!', 'Extra set done!') : t('Dzisiejsza lekcja zrobiona!', "Today's lesson is done!"))}</h3>
+                <p class="ot-lead">${esc(t('Zapisaliśmy Twoje odpowiedzi i opinię.', 'Your answers and feedback are saved.'))}</p>
+                ${keepGoingHtml()}
+                <div class="ot-actions"><button type="button" class="btn btn-outline" id="ot-to-dash">${esc(t('Wróć do panelu', 'Back to dashboard'))}</button></div>
+            </div>`;
+    }
+
     function stepperHtml(tasks) {
         const cur = view === 'feedback' ? tasks.length : taskIndex;
         return `<ol class="ot-stepper" aria-label="${esc(t('Postęp lekcji', 'Lesson progress'))}">
@@ -355,7 +405,7 @@
             <div class="ot-card ot-lesson">
                 <div class="ot-lesson-head">
                     <div>
-                        <div class="ot-eyebrow">${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}</div>
+                        <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}</div>
                         <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
                         ${lesson.goal ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
                     </div>
@@ -432,6 +482,7 @@
                 </label>
                 <div class="ot-actions">
                     <button type="button" class="btn btn-blue" id="ot-save-fb">${esc(L === 'en' ? 'Save & finish' : 'Zapisz i zakończ')}</button>
+                    ${today && today.extrasLeft === 0 ? '' : `<button type="button" class="btn btn-outline ot-keep-going" id="ot-save-keep"><i class="fa-solid fa-forward" aria-hidden="true"></i> ${esc(t('Zapisz i ćwicz dalej', 'Save & keep going'))}</button>`}
                 </div>
             </div>`;
     }
@@ -443,6 +494,7 @@
         else if (view === 'dash') el.innerHTML = renderDash();
         else if (view === 'lesson') el.innerHTML = renderTask();
         else if (view === 'feedback') el.innerHTML = renderFeedback();
+        else if (view === 'done') el.innerHTML = renderDone();
         else el.innerHTML = '';
         bind();
     }
@@ -596,14 +648,23 @@
             }
         });
 
-        document.getElementById('ot-save-fb')?.addEventListener('click', saveFeedback);
+        document.getElementById('ot-save-fb')?.addEventListener('click', () => saveFeedback(false));
+        document.getElementById('ot-save-keep')?.addEventListener('click', () => saveFeedback(true));
+        document.getElementById('ot-keep-going')?.addEventListener('click', keepGoing);
+        document.getElementById('ot-to-dash')?.addEventListener('click', () => { view = 'dash'; paint(); });
     }
 
-    async function startLesson() {
+    async function keepGoing() {
+        const src = lastFinished || (lessons[0]?.lesson ? { saved: lessons[0].lesson } : null);
+        await startLesson({ extra: true, extraContext: extraContextFrom(src) });
+    }
+
+    async function startLesson(opts) {
+        const extra = opts?.extra === true;
         const L = lang();
         try {
             toggleLoading(true);
-            setStatus(L === 'en' ? 'Building your lesson…' : 'Układam lekcję…', 'neutral');
+            setStatus(extra ? t('Układam dodatkowy zestaw…', 'Building an extra set…') : (L === 'en' ? 'Building your lesson…' : 'Układam lekcję…'), 'neutral');
             const topic = document.getElementById('ot-session-topic')?.value ?? profile.topic;
             const vocab = document.getElementById('ot-session-vocab')?.value ?? profile.vocab;
             const recentFeedback = lessons.slice(0, 2).map((l) => l.feedback || {});
@@ -614,9 +675,15 @@
                     topic,
                     vocab,
                     recentFeedback,
+                    ...(extra ? { extra: true, extraContext: opts.extraContext || {} } : {}),
                 }),
             });
             lesson = data.lesson;
+            if (extra) {
+                lesson.extra = true;
+                if (today && data.extrasLimit) today = { ...today, extrasUsed: data.extrasUsed, extrasLeft: data.extrasLeft, extrasLimit: data.extrasLimit };
+            }
+            openPanels.clear();
             taskIndex = 0;
             openPanels.clear();
             answers = {};
@@ -627,11 +694,18 @@
             setStatus('');
         } catch (err) {
             toggleLoading(false);
+            if (err.data?.code === 'own_time_extra_cap') {
+                capMessage = err.message;
+                if (today) today = { ...today, extrasLeft: 0, extrasUsed: err.data.extrasLimit };
+                paint();
+                setStatus(t('Na dziś wystarczy — limit dodatkowych zestawów osiągnięty.', 'That’s enough for today — extra set limit reached.'), 'neutral');
+                return;
+            }
             setStatus(esc(err.message || (L === 'en' ? 'Could not generate lesson.' : 'Nie udało się utworzyć lekcji.')), 'error');
         }
     }
 
-    async function saveFeedback() {
+    async function saveFeedback(keepGoingAfter) {
         const L = lang();
         const feedback = {
             levelOk: document.querySelector('input[name="ot-level"]:checked')?.value || 'ok',
@@ -645,6 +719,10 @@
             cefr: lesson?.cefr,
             focus: lesson?.focus,
             minutes: lesson?.minutes,
+            extra: !!lesson?.extra,
+            // Stored so "Keep going" from the dashboard (after reload) can avoid repeats and revisit weak spots.
+            avoid: extraContextFrom({ lesson, answers }).avoid,
+            weak: extraContextFrom({ lesson, answers }).weak,
             tasks: (lesson?.tasks || []).map((t, i) => ({
                 n: t.n,
                 type: t.type,
@@ -668,10 +746,18 @@
             }
             const list = await api('/api/own-time/lessons?limit=20');
             lessons = list.lessons || [];
+            today = list.today || today;
+            lastFinished = { lesson, answers };
             lesson = null;
-            view = 'dash';
+            view = 'done';
+            if (keepGoingAfter && !(today && today.extrasLeft === 0)) {
+                setStatus('');
+                await keepGoing();
+                return;
+            }
+            view = 'done';
             paint();
-            setStatus(L === 'en' ? 'Saved. See you next time!' : 'Zapisano. Do następnego razu!', 'success');
+            setStatus(L === 'en' ? 'Saved.' : 'Zapisano.', 'success');
         } catch (err) {
             setStatus(esc(err.message || (L === 'en' ? 'Could not save.' : 'Nie udało się zapisać.')), 'error');
         }
@@ -679,6 +765,7 @@
 
     async function initOwnTime() {
         view = 'loading';
+        capMessage = '';
         setStatus('');
         toggleLoading(true);
         const el = root();
@@ -690,6 +777,7 @@
             ]);
             profile = pRes.profile;
             lessons = lRes.lessons || [];
+            today = lRes.today || null;
             toggleLoading(false);
             if (!profile) {
                 view = 'onboard';

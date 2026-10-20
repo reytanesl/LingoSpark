@@ -62,3 +62,47 @@ export const OWN_TIME_MOCK_REPLY = {
         },
     ],
 };
+
+/** Mock "Keep going" extra set: same format/level, new items that recycle the base lesson's words. */
+export const OWN_TIME_MOCK_EXTRA_REPLY = {
+    title: 'Dodatkowa porcja: praca w sklepie',
+    minutes: 15,
+    cefr: 'A2',
+    instrLang: 'pl',
+    focus: 'work · past simple (extra)',
+    goal: 'Utrwalisz słowa o pracy i napiszesz krótką wiadomość o swoim dniu w pracy.',
+    coachNote: 'Świetnie, że ćwiczysz dalej — to najlepszy sposób, by zapamiętać nowe słowa!',
+    tasks: [
+        {
+            n: 1,
+            type: 'uoe',
+            minutes: 5,
+            instruction: 'Uzupełnij zdania czasownikiem w czasie Past Simple.',
+            steps: ['Przeczytaj całe zdanie.', 'Wpisz czasownik w formie przeszłej.', 'Kliknij „Sprawdź”.'],
+            example: 'Yesterday I ___ (work) in a shop. → worked',
+            usefulLanguage: ['worked', 'started', 'earned', 'served'],
+            hint: 'Czasowniki regularne mają końcówkę -ed.',
+            prompt: '',
+            items: [
+                { q: 'Last July Tom ___ (start) work at 7 am.', answer: 'started', alts: [] },
+                { q: 'He ___ (serve) about fifty customers a day.', answer: 'served', alts: [] },
+                { q: 'In August he ___ (earn) enough money for a camera.', answer: 'earned', alts: [] },
+            ],
+            modelAnswers: [],
+        },
+        {
+            n: 2,
+            type: 'writing',
+            minutes: 8,
+            instruction: 'Napisz SMS do koleżanki o pierwszym dniu w pracy wakacyjnej.',
+            steps: ['Zapisz 2–3 słowa-klucze.', 'Napisz 3–4 zdania: gdzie, co robiłeś/aś, jak było.', 'Przeczytaj i sprawdź pisownię.'],
+            example: 'Today was my first day at the café!',
+            usefulLanguage: ['Today was my first day at…', 'I served…', 'The customers were…', 'I was tired but…'],
+            hint: 'Pisz w czasie przeszłym: was, served, started.',
+            target: { minSentences: 3, maxSentences: 4 },
+            prompt: 'Text your friend Mia about your first day at your summer job: where you were, what you did and how it was.',
+            items: [],
+            modelAnswers: ['Hi Mia! Today was my first day at the ice-cream shop. I served a lot of customers and cleaned the tables. I was tired but it was fun!'],
+        },
+    ],
+};

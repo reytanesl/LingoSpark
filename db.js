@@ -254,6 +254,15 @@ export async function initDb() {
         );
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_own_time_lessons_user ON own_time_lessons (user_id, created_at DESC)`);
+    // "Keep going" extra practice sets: one row per generated extra set (daily cap, Europe/Warsaw day).
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS own_time_extra_log (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_own_time_extra_log_user ON own_time_extra_log (user_id, created_at DESC)`);
 }
 
 /** Clear timed premium when the paid/admin period has ended (keeps access_until for history). */
@@ -1859,6 +1868,37 @@ export async function listOwnTimeLessons(userId, { limit = 20 } = {}) {
     }));
 }
 
+const OWN_TIME_TODAY_SQL = `(created_at AT TIME ZONE 'Europe/Warsaw')::date = (NOW() AT TIME ZONE 'Europe/Warsaw')::date`;
+
+/** Today's status: main lesson done? how many extra sets used? (extras never count as the daily lesson) */
+export async function getOwnTimeToday(userId, limit) {
+    const db = getPool();
+    const [main, extras] = await Promise.all([
+        db.query(`SELECT COUNT(*)::int AS n FROM own_time_lessons WHERE user_id = $1 AND COALESCE(lesson->>'extra', 'false') <> 'true' AND ${OWN_TIME_TODAY_SQL}`, [userId]),
+        db.query(`SELECT COUNT(*)::int AS n FROM own_time_extra_log WHERE user_id = $1 AND ${OWN_TIME_TODAY_SQL}`, [userId]),
+    ]);
+    const used = extras.rows[0].n;
+    return { lessonDone: main.rows[0].n > 0, lessonsToday: main.rows[0].n, extrasUsed: used, extrasLimit: limit, extrasLeft: Math.max(0, limit - used) };
+}
+
+/** Reserve one extra set for today; returns { ok, id, used } — ok=false when the daily cap is already reached. */
+export async function reserveOwnTimeExtra(userId, limit) {
+    const db = getPool();
+    const ins = await db.query(`INSERT INTO own_time_extra_log (user_id) VALUES ($1) RETURNING id`, [userId]);
+    const id = ins.rows[0].id;
+    const c = await db.query(`SELECT COUNT(*)::int AS n FROM own_time_extra_log WHERE user_id = $1 AND id <= $2 AND ${OWN_TIME_TODAY_SQL}`, [userId, id]);
+    if (c.rows[0].n > limit) {
+        await db.query(`DELETE FROM own_time_extra_log WHERE id = $1`, [id]);
+        return { ok: false, used: limit };
+    }
+    return { ok: true, id, used: c.rows[0].n };
+}
+
+export async function releaseOwnTimeExtra(id) {
+    if (!id) return;
+    await getPool().query(`DELETE FROM own_time_extra_log WHERE id = $1`, [id]);
+}
+
 function softTweakOwnTimeProfile(profile, feedback) {
     if (!profile || !feedback) return null;
     const level = String(feedback.levelOk || feedback.level || '').toLowerCase();
@@ -1893,7 +1933,8 @@ export async function saveOwnTimeLesson(userId, { lesson = {}, feedback = {}, du
     );
 
     const profile = await getOwnTimeProfile(userId);
-    const tweaked = softTweakOwnTimeProfile(profile, cleanFeedback);
+    // Extra "Keep going" sets don't re-tune intensity/focus (only the daily lesson's feedback does).
+    const tweaked = cleanLesson.extra === true ? null : softTweakOwnTimeProfile(profile, cleanFeedback);
     if (tweaked) {
         await upsertOwnTimeProfile(userId, {
             age: tweaked.age,

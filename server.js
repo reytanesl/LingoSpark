@@ -67,6 +67,9 @@ import {
     upsertOwnTimeProfile,
     listOwnTimeLessons,
     saveOwnTimeLesson,
+    getOwnTimeToday,
+    reserveOwnTimeExtra,
+    releaseOwnTimeExtra,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { createMailer } from './mailer.js';
@@ -86,8 +89,8 @@ import {
 import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
-import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson } from './own-time-prompts.js';
-import { OWN_TIME_MOCK_REPLY } from './own-time-fixtures.js';
+import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
+import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY } from './own-time-fixtures.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
@@ -998,7 +1001,8 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
     app.get('/api/own-time/lessons', requireWritingAccess, async (req, res) => {
         try {
             const lessons = await listOwnTimeLessons(req.user.id, { limit: req.query?.limit });
-            res.json({ lessons });
+            const today = await getOwnTimeToday(req.user.id, OWN_TIME_EXTRA_DAILY_LIMIT);
+            res.json({ lessons, today });
         } catch (err) {
             console.error('own-time lessons list:', err);
             res.status(500).json({ error: 'Failed to load lessons.' });
@@ -1023,22 +1027,53 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         const checked = validateOwnTimeGenerateRequest(req.body);
         if (!checked.ok) return res.status(400).json({ error: checked.error });
         const apiKey = process.env.CURSOR_API_KEY;
-        // Local testing without an AI key: OWN_TIME_MOCK=1 returns a fixed sample lesson (never in production).
-        if (!apiKey && process.env.OWN_TIME_MOCK === '1' && process.env.NODE_ENV !== 'production') {
-            return res.json({ lesson: normalizeOwnTimeLesson(OWN_TIME_MOCK_REPLY, checked.value), mock: true });
-        }
-        if (!apiKey) {
+        const mock = !apiKey && process.env.OWN_TIME_MOCK === '1' && process.env.NODE_ENV !== 'production';
+        if (!apiKey && !mock) {
             return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+        }
+        // "Keep going": capped extra sets per day; reserve before calling the AI, release on failure.
+        let reservation = null;
+        if (checked.value.extra) {
+            try {
+                reservation = await reserveOwnTimeExtra(req.user.id, OWN_TIME_EXTRA_DAILY_LIMIT);
+            } catch (err) {
+                console.error('own-time extra reserve:', err);
+                return res.status(500).json({ error: 'Could not start an extra set.' });
+            }
+            if (!reservation.ok) {
+                return res.status(429).json({
+                    error: `Daily limit reached: ${OWN_TIME_EXTRA_DAILY_LIMIT} extra sets per day.`,
+                    code: 'own_time_extra_cap',
+                    extrasUsed: OWN_TIME_EXTRA_DAILY_LIMIT,
+                    extrasLimit: OWN_TIME_EXTRA_DAILY_LIMIT,
+                });
+            }
+            checked.value.extraContext.setNumber = reservation.used;
+        }
+        const extraInfo = reservation ? {
+            extra: true,
+            extrasUsed: reservation.used,
+            extrasLimit: OWN_TIME_EXTRA_DAILY_LIMIT,
+            extrasLeft: Math.max(0, OWN_TIME_EXTRA_DAILY_LIMIT - reservation.used),
+        } : {};
+        // Local testing without an AI key: OWN_TIME_MOCK=1 returns fixed sample lessons (never in production).
+        if (mock) {
+            const reply = checked.value.extra ? OWN_TIME_MOCK_EXTRA_REPLY : OWN_TIME_MOCK_REPLY;
+            const lesson = normalizeOwnTimeLesson(reply, checked.value);
+            if (reservation) lesson.extra = true;
+            return res.json({ lesson, mock: true, ...extraInfo });
         }
         try {
             const parsed = await runVisionJsonPrompt({
                 apiKey,
                 prompt: buildOwnTimeLessonPrompt(checked.value),
-                label: `own-time-${checked.value.cefr}`,
+                label: `own-time-${checked.value.cefr}${reservation ? '-extra' : ''}`,
             });
             const lesson = normalizeOwnTimeLesson(parsed, checked.value);
-            res.json({ lesson });
+            if (reservation) lesson.extra = true;
+            res.json({ lesson, ...extraInfo });
         } catch (error) {
+            if (reservation) await releaseOwnTimeExtra(reservation.id).catch(() => {});
             console.error('Own-time generation error:', error);
             res.status(500).json({ error: error.message || 'Failed to generate lesson' });
         }

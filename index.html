@@ -2758,6 +2758,20 @@
         .ot-how li { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 10px; padding: 0.65rem 0.75rem; display: grid; gap: 0.2rem; color: var(--ot-navy); font-size: 0.88rem; line-height: 1.35; }
         .ot-how-n { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--ot-navy); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 0.8rem; }
         .ot-time-note { color: var(--ot-navy); font-weight: 600; margin: 0 0 0.9rem; }
+        .ot-keep { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; background: var(--ot-pale); border: 1px solid var(--ot-bank); border-left: 4px solid var(--ot-navy); border-radius: 10px; padding: 0.8rem 0.95rem; margin: 0 0 1rem; color: var(--ot-navy); }
+        .ot-keep > div { flex: 1 1 260px; min-width: 0; }
+        .ot-keep p { margin: 0.2rem 0 0; font-size: 0.9rem; color: #4a6283; }
+        .ot-keep .ot-keep-going { flex: none; }
+        .ot-keep-left { flex-basis: 100%; font-size: 0.82rem; color: #4a6283; font-weight: 700; }
+        .ot-keep--cap { border-left-color: #8CA5C3; align-items: flex-start; }
+        .ot-keep--cap > i { font-size: 1.3rem; margin-top: 0.15rem; color: #4a6283; }
+        .ot-today-done { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--ot-ok); font-weight: 800; margin: 0 0 0.6rem; }
+        .ot-done { text-align: center; }
+        .ot-done .ot-keep { text-align: left; }
+        .ot-done .ot-actions { justify-content: center; }
+        .ot-done-icon { font-size: 2.6rem; color: var(--ot-ok); margin-bottom: 0.3rem; }
+        .ot-extra-badge { display: inline-block; background: var(--ot-navy); color: #fff; border-radius: 999px; padding: 0.05rem 0.5rem; letter-spacing: 0.02em; }
+        @media (max-width: 520px) { .ot-keep .ot-keep-going { width: 100%; justify-content: center; } }
         .ot-results { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 1rem; }
         .ot-results ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
         .ot-results li { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; color: var(--ot-navy); }

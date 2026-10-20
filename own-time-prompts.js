@@ -6,6 +6,26 @@ const CEFR_OK = new Set(['A0', 'A1', 'A2', 'B1', 'B2', 'C1']);
 const INTENSITY_OK = new Set(['light', 'standard', 'stretch']);
 const TASK_OK = new Set(['writing', 'drill', 'uoe', 'reading', 'vocab']);
 
+/** Max "Keep going" extra practice sets per student per day (Europe/Warsaw day). */
+export const OWN_TIME_EXTRA_DAILY_LIMIT = 3;
+
+/** Context sent with an extra set, built from the lesson just finished (for prompt + storage). */
+export function buildOwnTimeExtraContext(lesson, answers = {}) {
+    const avoid = [];
+    const weak = [];
+    (lesson?.tasks || []).forEach((t, i) => {
+        const a = answers[`t${i}`] || {};
+        (t.items || []).forEach((it, j) => {
+            if (it.answer) avoid.push(String(it.answer));
+            if (it.q) avoid.push(String(it.q).slice(0, 80));
+            const given = String((a.items || [])[j] || '').trim().toLowerCase();
+            const ok = [it.answer, ...(it.alts || [])].map((x) => String(x || '').trim().toLowerCase());
+            if (it.answer && !ok.includes(given)) weak.push(`${it.q} → ${it.answer}${given ? ` (wrote: ${given})` : ' (blank)'}`);
+        });
+    });
+    return { previousTitle: lesson?.title || '', focus: lesson?.focus || '', avoid: avoid.slice(0, 40), weak: weak.slice(0, 12) };
+}
+
 export function validateOwnTimeGenerateRequest(body = {}) {
     const profile = body.profile && typeof body.profile === 'object' ? body.profile : null;
     if (!profile) return { ok: false, error: 'Profile is required.' };
@@ -31,6 +51,17 @@ export function validateOwnTimeGenerateRequest(body = {}) {
     const recentFeedback = Array.isArray(body.recentFeedback)
         ? body.recentFeedback.slice(0, 2)
         : [];
+    const extra = body.extra === true;
+    const ctx = body.extraContext && typeof body.extraContext === 'object' ? body.extraContext : {};
+    const strs = (arr, max, len) => (Array.isArray(arr) ? arr : [])
+        .map((x) => String(x ?? '').replace(/\s+/g, ' ').trim().slice(0, len)).filter(Boolean).slice(0, max);
+    const extraContext = extra ? {
+        previousTitle: String(ctx.previousTitle || '').trim().slice(0, 120),
+        focus: String(ctx.focus || '').trim().slice(0, 80),
+        avoid: strs(ctx.avoid, 40, 80),
+        weak: strs(ctx.weak, 12, 160),
+        setNumber: Math.max(1, Math.min(OWN_TIME_EXTRA_DAILY_LIMIT, Number(ctx.setNumber) || 1)),
+    } : null;
 
     return {
         ok: true,
@@ -46,6 +77,8 @@ export function validateOwnTimeGenerateRequest(body = {}) {
             topic,
             vocab,
             recentFeedback,
+            extra,
+            extraContext,
         },
     };
 }
@@ -113,6 +146,15 @@ function intensityGuide(intensity) {
 export function buildOwnTimeLessonPrompt(v) {
     const instrLangName = v.instrLang === 'en' ? 'English' : 'Polish';
     const young = (v.age != null && v.age < 15) || ['A0', 'A1', 'A2'].includes(v.cefr);
+    const x = v.extraContext;
+    const extraBlock = v.extra && x ? `
+EXTRA PRACTICE ("Keep going" set ${x.setNumber} today): the student already finished today's lesson${x.previousTitle ? ` "${x.previousTitle}"` : ''} and wants more.
+- Same format, level and rules as below; build on the same topic/focus${x.focus ? ` (${x.focus})` : ''} from a fresh angle.
+- Recycle the weak spots below with NEW sentences/items (do not copy them):
+${x.weak.length ? x.weak.map((w) => `  * ${w}`).join('\n') : '  * (none recorded — consolidate the same skills)'}
+- Do NOT reuse any of these items, answers or texts: ${x.avoid.length ? x.avoid.join(' | ') : '(none)'}
+- Use a different title from the previous lesson.
+` : '';
     const feedbackBlock = v.recentFeedback.length
         ? `Recent student feedback (adapt level/focus):\n${JSON.stringify(v.recentFeedback)}`
         : 'No prior feedback yet — start gently at the stated level.';
@@ -130,7 +172,7 @@ STUDENT:
 - Intensity: ${v.intensity} → ${intensityGuide(v.intensity)}
 - Optional topic for this session: ${v.topic || '(invent a fresh topic from interests)'}
 - Optional vocabulary to weave in: ${v.vocab || '(none — pick useful words for the topic/level)'}
-${feedbackBlock}
+${feedbackBlock}${extraBlock}
 
 HARD RULES:
 1. Target about 15–20 minutes total (${intensityGuide(v.intensity)}).

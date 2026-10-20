@@ -55,3 +55,43 @@ test('saved/old lessons with successCriteria are accepted and the field is dropp
     assert.equal(l.tasks.length, 1);
     assert.equal(l.tasks[0].successCriteria, undefined);
 });
+
+import { OWN_TIME_EXTRA_DAILY_LIMIT, buildOwnTimeExtraContext } from './own-time-prompts.js';
+import { OWN_TIME_MOCK_EXTRA_REPLY } from './own-time-fixtures.js';
+
+test('Keep going: extra request is validated, capped and adds an extra block to the prompt', () => {
+    assert.equal(OWN_TIME_EXTRA_DAILY_LIMIT, 3);
+    const plain = validateOwnTimeGenerateRequest(req).value;
+    assert.equal(plain.extra, false);
+    assert.equal(plain.extraContext, null);
+    assert.ok(!buildOwnTimeLessonPrompt(plain).includes('EXTRA PRACTICE'));
+    const v = validateOwnTimeGenerateRequest({ ...req, extra: true, extraContext: { avoid: Array(99).fill('tip'), weak: ['shift → shift (wrote: shit)'], previousTitle: 'Café', setNumber: 9 } }).value;
+    assert.equal(v.extra, true);
+    assert.equal(v.extraContext.avoid.length, 40);
+    assert.equal(v.extraContext.setNumber, 3);
+    const p = buildOwnTimeLessonPrompt(v);
+    assert.match(p, /EXTRA PRACTICE \("Keep going" set 3 today\)/);
+    assert.match(p, /Do NOT reuse any of these items.*tip/);
+    assert.match(p, /shift → shift \(wrote: shit\)/);
+    assert.match(p, /"Café"/);
+    // only a literal true enables extra
+    assert.equal(validateOwnTimeGenerateRequest({ ...req, extra: 'yes' }).value.extra, false);
+});
+
+test('Keep going: extra context lists previous items and wrong answers', () => {
+    const lesson = normalizeOwnTimeLesson(OWN_TIME_MOCK_REPLY, { instrLang: 'pl', cefr: 'A2' });
+    const ctx = buildOwnTimeExtraContext(lesson, { t0: { items: ['customer', 'tip', 'shit', ''] } });
+    assert.ok(ctx.avoid.includes('customer'));
+    assert.deepEqual(ctx.weak.filter((w) => w.startsWith('the hours') || w.startsWith('giving')).length, 2);
+    assert.match(ctx.weak.find((w) => w.includes('shift')), /wrote: shit/);
+    assert.equal(ctx.previousTitle, OWN_TIME_MOCK_REPLY.title);
+});
+
+test('Keep going: mock extra set has the same format and does not repeat base items', () => {
+    const base = normalizeOwnTimeLesson(OWN_TIME_MOCK_REPLY, { instrLang: 'pl', cefr: 'A2' });
+    const extra = normalizeOwnTimeLesson(OWN_TIME_MOCK_EXTRA_REPLY, { instrLang: 'pl', cefr: 'A2' });
+    assert.ok(extra.tasks.length >= 2);
+    assert.notEqual(extra.title, base.title);
+    const baseAns = new Set(base.tasks.flatMap((t) => t.items.map((i) => i.answer)));
+    for (const t of extra.tasks) for (const i of t.items) assert.ok(!baseAns.has(i.answer), i.answer);
+});
