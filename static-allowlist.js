@@ -38,6 +38,7 @@ export const PUBLIC_SCRIPTS = new Set([
     'pe-colour-blocks.js',
     'pe-dictation-banks.js',
     'pe-line-up.js',
+    'own-time.js',
     'pe-review-chat.js',
     'pe-topic-challenge-banks.js',
     'pe-topic-challenge-cues.js',

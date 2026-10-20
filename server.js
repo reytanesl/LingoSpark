@@ -63,6 +63,10 @@ import {
     recordMaturaAssessUsage,
     getWorksheetMakerAvailability,
     consumeWorksheetMakerCredit,
+    getOwnTimeProfile,
+    upsertOwnTimeProfile,
+    listOwnTimeLessons,
+    saveOwnTimeLesson,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { createMailer } from './mailer.js';
@@ -82,6 +86,7 @@ import {
 import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
+import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson } from './own-time-prompts.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
@@ -967,6 +972,72 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         }
     }
 }
+
+    // ---- In your own time (personalized practice coach) ----
+    app.get('/api/own-time/profile', requireWritingAccess, async (req, res) => {
+        try {
+            const profile = await getOwnTimeProfile(req.user.id);
+            res.json({ profile });
+        } catch (err) {
+            console.error('own-time profile get:', err);
+            res.status(500).json({ error: 'Failed to load profile.' });
+        }
+    });
+
+    app.put('/api/own-time/profile', requireWritingAccess, async (req, res) => {
+        try {
+            const profile = await upsertOwnTimeProfile(req.user.id, req.body || {});
+            res.json({ profile });
+        } catch (err) {
+            console.error('own-time profile put:', err);
+            res.status(500).json({ error: 'Failed to save profile.' });
+        }
+    });
+
+    app.get('/api/own-time/lessons', requireWritingAccess, async (req, res) => {
+        try {
+            const lessons = await listOwnTimeLessons(req.user.id, { limit: req.query?.limit });
+            res.json({ lessons });
+        } catch (err) {
+            console.error('own-time lessons list:', err);
+            res.status(500).json({ error: 'Failed to load lessons.' });
+        }
+    });
+
+    app.post('/api/own-time/lessons', requireWritingAccess, async (req, res) => {
+        try {
+            const saved = await saveOwnTimeLesson(req.user.id, {
+                lesson: req.body?.lesson,
+                feedback: req.body?.feedback,
+                durationMs: req.body?.durationMs,
+            });
+            res.json(saved);
+        } catch (err) {
+            console.error('own-time lesson save:', err);
+            res.status(500).json({ error: 'Failed to save lesson.' });
+        }
+    });
+
+    app.post('/api/own-time/generate', requireWritingAccess, async (req, res) => {
+        const checked = validateOwnTimeGenerateRequest(req.body);
+        if (!checked.ok) return res.status(400).json({ error: checked.error });
+        const apiKey = process.env.CURSOR_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+        }
+        try {
+            const parsed = await runVisionJsonPrompt({
+                apiKey,
+                prompt: buildOwnTimeLessonPrompt(checked.value),
+                label: `own-time-${checked.value.cefr}`,
+            });
+            const lesson = normalizeOwnTimeLesson(parsed, checked.value);
+            res.json({ lesson });
+        } catch (error) {
+            console.error('Own-time generation error:', error);
+            res.status(500).json({ error: error.message || 'Failed to generate lesson' });
+        }
+    });
 
     app.post('/api/generate', requireWritingAccess, async (req, res) => {
     const prompt = req.body?.prompt;

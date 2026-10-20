@@ -225,6 +225,35 @@ export async function initDb() {
         );
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens (user_id)`);
+
+    // In your own time — personalized practice coach profile + lesson history
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS own_time_profiles (
+            user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+            age INTEGER,
+            class_label TEXT NOT NULL DEFAULT '',
+            cefr TEXT NOT NULL DEFAULT 'A2',
+            interests JSONB NOT NULL DEFAULT '[]'::jsonb,
+            task_prefs JSONB NOT NULL DEFAULT '[]'::jsonb,
+            purpose TEXT NOT NULL DEFAULT '',
+            intensity TEXT NOT NULL DEFAULT 'standard',
+            instr_lang TEXT NOT NULL DEFAULT 'pl',
+            topic TEXT NOT NULL DEFAULT '',
+            vocab TEXT NOT NULL DEFAULT '',
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS own_time_lessons (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            lesson JSONB NOT NULL DEFAULT '{}'::jsonb,
+            feedback JSONB NOT NULL DEFAULT '{}'::jsonb,
+            duration_ms INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_own_time_lessons_user ON own_time_lessons (user_id, created_at DESC)`);
 }
 
 /** Clear timed premium when the paid/admin period has ended (keeps access_until for history). */
@@ -1370,7 +1399,7 @@ const VALID_GAME_KEYS = new Set([
     'flashcards', 'memory_flip', 'word_repair', 'speed_match', 'bomb', 'grid', 'odyssey', 'mission', 'auction', 'penalty_match', 'live_host',
     'test_countdown',
     'pe_boring', 'pe_detail', 'pe_link', 'pe_exam', 'pe_e8_gaps', 'pe_dictation', 'pe_colour', 'pe_line', 'pe_topic',
-    'frank', 'trans', 'devil', 'bloat', 'tight', 'vocab_upgrade', 'matura', 'adv_gaps',
+    'frank', 'trans', 'devil', 'bloat', 'tight', 'vocab_upgrade', 'matura', 'adv_gaps', 'own_time',
 ]);
 
 export async function recordGameSession(userId, { gameKey, wordSetId, score = 0, pointsEarned = 0, durationMs = 0, wordsTotal = 0, wordsMastered = 0, result = null }) {
@@ -1684,5 +1713,206 @@ export async function getGamePopularityStats({ days = 30 } = {}) {
             total_dwell_ms: 0,
         },
         pages: result.rows,
+    };
+}
+
+// ==========================================
+// IN YOUR OWN TIME
+// ==========================================
+
+const OWN_TIME_CEFR = new Set(['A0', 'A1', 'A2', 'B1', 'B2', 'C1']);
+const OWN_TIME_INTENSITY = new Set(['light', 'standard', 'stretch']);
+const OWN_TIME_TASK_TYPES = new Set(['writing', 'drill', 'uoe', 'reading', 'vocab']);
+
+function normalizeOwnTimeStringList(value, { maxItems = 12, maxLen = 80 } = {}) {
+    const arr = Array.isArray(value)
+        ? value
+        : String(value || '').split(/[,;\n]+/);
+    const out = [];
+    const seen = new Set();
+    for (const raw of arr) {
+        const s = String(raw || '').trim().slice(0, maxLen);
+        if (!s) continue;
+        const key = s.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(s);
+        if (out.length >= maxItems) break;
+    }
+    return out;
+}
+
+export function defaultOwnTimeInstrLang(age, cefr) {
+    const a = Number(age);
+    const c = String(cefr || '').toUpperCase();
+    if ((Number.isFinite(a) && a >= 15) || ['B1', 'B2', 'C1', 'C2'].includes(c)) {
+        return 'pl'; // still Polish until the student opts into English
+    }
+    return 'pl';
+}
+
+export function ownTimeCanOfferEnglish(age, cefr) {
+    const a = Number(age);
+    const c = String(cefr || '').toUpperCase();
+    return (Number.isFinite(a) && a >= 15) || ['B1', 'B2', 'C1', 'C2'].includes(c);
+}
+
+function rowToOwnTimeProfile(row) {
+    if (!row) return null;
+    return {
+        age: row.age == null ? null : Number(row.age),
+        classLabel: String(row.class_label || ''),
+        cefr: String(row.cefr || 'A2'),
+        interests: Array.isArray(row.interests) ? row.interests : [],
+        taskPrefs: Array.isArray(row.task_prefs) ? row.task_prefs : [],
+        purpose: String(row.purpose || ''),
+        intensity: String(row.intensity || 'standard'),
+        instrLang: row.instr_lang === 'en' ? 'en' : 'pl',
+        topic: String(row.topic || ''),
+        vocab: String(row.vocab || ''),
+        updatedAt: row.updated_at || null,
+        canOfferEnglish: ownTimeCanOfferEnglish(row.age, row.cefr),
+    };
+}
+
+export async function getOwnTimeProfile(userId) {
+    if (!userId) return null;
+    const db = getPool();
+    const r = await db.query(`SELECT * FROM own_time_profiles WHERE user_id = $1`, [userId]);
+    return rowToOwnTimeProfile(r.rows[0] || null);
+}
+
+export function sanitizeOwnTimeProfileInput(body = {}) {
+    const ageRaw = Number(body.age);
+    const age = Number.isFinite(ageRaw) ? Math.max(6, Math.min(99, Math.round(ageRaw))) : null;
+    let cefr = String(body.cefr || 'A2').toUpperCase();
+    if (!OWN_TIME_CEFR.has(cefr)) cefr = 'A2';
+    let intensity = String(body.intensity || 'standard').toLowerCase();
+    if (!OWN_TIME_INTENSITY.has(intensity)) intensity = 'standard';
+    let instrLang = String(body.instrLang || body.instr_lang || defaultOwnTimeInstrLang(age, cefr)).toLowerCase();
+    if (instrLang !== 'en') instrLang = 'pl';
+    if (instrLang === 'en' && !ownTimeCanOfferEnglish(age, cefr)) instrLang = 'pl';
+    const taskPrefs = normalizeOwnTimeStringList(body.taskPrefs || body.task_prefs, { maxItems: 6, maxLen: 24 })
+        .map((t) => t.toLowerCase())
+        .filter((t) => OWN_TIME_TASK_TYPES.has(t));
+    return {
+        age,
+        classLabel: String(body.classLabel || body.class_label || '').trim().slice(0, 80),
+        cefr,
+        interests: normalizeOwnTimeStringList(body.interests, { maxItems: 12, maxLen: 60 }),
+        taskPrefs: taskPrefs.length ? taskPrefs : ['writing', 'vocab'],
+        purpose: String(body.purpose || '').trim().slice(0, 200),
+        intensity,
+        instrLang,
+        topic: String(body.topic || '').trim().slice(0, 200),
+        vocab: String(body.vocab || '').trim().slice(0, 2000),
+    };
+}
+
+export async function upsertOwnTimeProfile(userId, body) {
+    const p = sanitizeOwnTimeProfileInput(body);
+    const db = getPool();
+    const r = await db.query(
+        `INSERT INTO own_time_profiles (
+            user_id, age, class_label, cefr, interests, task_prefs, purpose, intensity, instr_lang, topic, vocab, updated_at
+         ) VALUES ($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,$9,$10,$11,NOW())
+         ON CONFLICT (user_id) DO UPDATE SET
+            age = EXCLUDED.age,
+            class_label = EXCLUDED.class_label,
+            cefr = EXCLUDED.cefr,
+            interests = EXCLUDED.interests,
+            task_prefs = EXCLUDED.task_prefs,
+            purpose = EXCLUDED.purpose,
+            intensity = EXCLUDED.intensity,
+            instr_lang = EXCLUDED.instr_lang,
+            topic = EXCLUDED.topic,
+            vocab = EXCLUDED.vocab,
+            updated_at = NOW()
+         RETURNING *`,
+        [
+            userId, p.age, p.classLabel, p.cefr,
+            JSON.stringify(p.interests), JSON.stringify(p.taskPrefs),
+            p.purpose, p.intensity, p.instrLang, p.topic, p.vocab,
+        ]
+    );
+    return rowToOwnTimeProfile(r.rows[0]);
+}
+
+export async function listOwnTimeLessons(userId, { limit = 20 } = {}) {
+    if (!userId) return [];
+    const db = getPool();
+    const lim = Math.max(1, Math.min(Number(limit) || 20, 50));
+    const r = await db.query(
+        `SELECT id, lesson, feedback, duration_ms, created_at
+         FROM own_time_lessons
+         WHERE user_id = $1
+         ORDER BY created_at DESC
+         LIMIT $2`,
+        [userId, lim]
+    );
+    return r.rows.map((row) => ({
+        id: row.id,
+        lesson: row.lesson || {},
+        feedback: row.feedback || {},
+        durationMs: Number(row.duration_ms) || 0,
+        createdAt: row.created_at,
+    }));
+}
+
+function softTweakOwnTimeProfile(profile, feedback) {
+    if (!profile || !feedback) return null;
+    const level = String(feedback.levelOk || feedback.level || '').toLowerCase();
+    let intensity = profile.intensity || 'standard';
+    const order = ['light', 'standard', 'stretch'];
+    let idx = order.indexOf(intensity);
+    if (idx < 0) idx = 1;
+    if (level === 'too_hard' || level === 'hard') idx = Math.max(0, idx - 1);
+    if (level === 'too_easy' || level === 'easy') idx = Math.min(order.length - 1, idx + 1);
+    const next = { ...profile, intensity: order[idx] };
+    if (feedback.focusNext) {
+        const focus = String(feedback.focusNext).toLowerCase();
+        const map = { drill: 'drill', uoe: 'uoe', reading: 'reading', writing: 'writing', vocab: 'vocab' };
+        if (map[focus]) {
+            const prefs = [map[focus], ...(profile.taskPrefs || []).filter((t) => t !== map[focus])];
+            next.taskPrefs = prefs.slice(0, 6);
+        }
+    }
+    return next;
+}
+
+export async function saveOwnTimeLesson(userId, { lesson = {}, feedback = {}, durationMs = 0 } = {}) {
+    const db = getPool();
+    const cleanLesson = lesson && typeof lesson === 'object' ? lesson : {};
+    const cleanFeedback = feedback && typeof feedback === 'object' ? feedback : {};
+    const dur = Math.max(0, Math.min(Number(durationMs) || 0, 86400000));
+    const r = await db.query(
+        `INSERT INTO own_time_lessons (user_id, lesson, feedback, duration_ms)
+         VALUES ($1, $2::jsonb, $3::jsonb, $4)
+         RETURNING id, created_at, duration_ms`,
+        [userId, JSON.stringify(cleanLesson), JSON.stringify(cleanFeedback), dur]
+    );
+
+    const profile = await getOwnTimeProfile(userId);
+    const tweaked = softTweakOwnTimeProfile(profile, cleanFeedback);
+    if (tweaked) {
+        await upsertOwnTimeProfile(userId, {
+            age: tweaked.age,
+            classLabel: tweaked.classLabel,
+            cefr: tweaked.cefr,
+            interests: tweaked.interests,
+            taskPrefs: tweaked.taskPrefs,
+            purpose: tweaked.purpose,
+            intensity: tweaked.intensity,
+            instrLang: tweaked.instrLang,
+            topic: tweaked.topic,
+            vocab: tweaked.vocab,
+        });
+    }
+
+    return {
+        id: r.rows[0].id,
+        createdAt: r.rows[0].created_at,
+        durationMs: Number(r.rows[0].duration_ms) || 0,
+        profile: await getOwnTimeProfile(userId),
     };
 }

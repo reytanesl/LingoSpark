@@ -34,6 +34,7 @@
     <script src="pe-topic-challenge-hotspots.js"></script>
     <script src="pe-topic-challenge.js"></script>
     <script src="pe-review-chat.js"></script>
+    <script src="own-time.js"></script>
     <script src="test-countdown.js"></script>
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="lucky-lanterns-fx.js" defer></script>
@@ -2637,6 +2638,42 @@
         .dictation-gap-input.dictation-gap-correct { border-bottom-color: var(--success-green); background: rgba(0,130,59,0.1); }
         .dictation-gap-input.dictation-gap-wrong { border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.1); }
 
+        .ws-own-time-row { max-width: 420px; margin-left: auto; margin-right: auto; }
+        .ot-card {
+            background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px;
+            padding: 1.25rem 1.35rem; margin: 0 auto 1rem; max-width: 720px; text-align: left;
+        }
+        .ot-heading { font-family: var(--font-primary); color: var(--royal-blue); margin: 0 0 0.5rem; font-size: 1.35rem; }
+        .ot-lead { color: var(--text-muted); margin: 0 0 1rem; line-height: 1.45; }
+        .ot-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 0.85rem; }
+        .ot-form-grid label, .ot-block-label { display: block; font-weight: 700; color: var(--royal-blue); font-size: 0.92rem; margin: 0.65rem 0 0.35rem; }
+        .ot-form-grid .pe-input, .ot-card .pe-input { margin-bottom: 0; }
+        .ot-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+        .ot-chip {
+            display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.65rem;
+            border: 1px solid var(--border-light); border-radius: 8px; background: rgba(0,86,184,0.04);
+            font-size: 0.9rem; cursor: pointer; user-select: none;
+        }
+        .ot-chip:has(input:checked) { border-color: var(--royal-blue); background: rgba(0,86,184,0.12); font-weight: 700; }
+        .ot-chip input { margin: 0; }
+        .ot-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1rem; }
+        .ot-summary { margin: 0 0 1rem; padding-left: 1.1rem; line-height: 1.55; }
+        .ot-last-fb { background: rgba(0,86,184,0.06); border-radius: 8px; padding: 0.65rem 0.8rem; margin: 0 0 1rem; }
+        .ot-task-meta { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem; }
+        .ot-badge {
+            display: inline-block; padding: 0.15rem 0.55rem; border-radius: 6px;
+            background: var(--royal-blue); color: #fff; font-weight: 800; font-size: 0.78rem; text-transform: uppercase;
+        }
+        .ot-instruction { font-weight: 700; margin: 0 0 0.75rem; color: var(--text-dark); }
+        .ot-prompt, .ot-reading {
+            background: rgba(0,0,0,0.03); border-left: 3px solid var(--royal-blue);
+            padding: 0.75rem 0.9rem; margin: 0 0 0.85rem; line-height: 1.55; white-space: pre-wrap;
+        }
+        .ot-coach { font-size: 0.92rem; color: var(--text-muted); margin: 1rem 0 0; font-style: italic; }
+        .ot-check-msg { margin: 0.65rem 0; font-weight: 700; }
+        .ot-check-msg.ok { color: var(--success-green, #2b8a3e); }
+        .ot-check-msg.partial { color: var(--pillarbox-red); }
+        .ot-instr-lang { margin: 0.85rem 0; padding: 0.75rem; border: 1px dashed var(--border-light); border-radius: 8px; }
         .e8-gaps-text {
             background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px;
             padding: 1.25rem 1.35rem; font-size: 1.08rem; line-height: 2.15; margin-bottom: 1rem;
@@ -3469,6 +3506,7 @@
                 <div class="guide-item"><strong>Word Board</strong><p>Build high-scoring words from letter tiles on a shared board with your team.</p></div>
 
                 <h3>Writing Suite</h3>
+                <div class="guide-item"><strong>In your own time</strong><p>Personalised 15–20 minute practice: set age, class, level, interests and task preferences. Lessons adapt from your feedback. Lower levels get Polish instructions; older or B1+ students can switch instructions to English.</p></div>
                 <h4 style="font-family: var(--font-primary); color: var(--royal-blue); margin: 0.8rem 0 0.4rem; font-size: 1.1rem;">Primary English</h4>
                 <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
@@ -3709,6 +3747,15 @@
                     <i class="fa-solid fa-pen-nib cat-icon"></i><h2>Writing Suite</h2>
                 </div>
                 <p style="text-align: center; margin-bottom: 1.25rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills.</p>
+
+                <div class="grid ws-own-time-row" style="margin-bottom: 1.5rem;">
+                    <div class="card">
+                        <div class="icon-container"><i class="fa-solid fa-clock"></i></div>
+                        <h2>In your own time</h2>
+                        <p>Personalised 15–20 minute practice from your age, level and interests — with feedback that shapes the next session.</p>
+                        <a href="#/setup/own-time" class="btn btn-outline">Start</a>
+                    </div>
+                </div>
 
                 <div class="writing-pack-row">
                     <button type="button" class="pe-pack-toggle writing-pack-tile" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
@@ -4273,6 +4320,9 @@
                 </div>
             </div>
 
+            <div id="own-time-setup-note" class="form-group setup-note" style="display:none; background: rgba(0,86,184,0.07); border-color: rgba(0,86,184,0.18);">
+                <p style="margin:0;"><strong>In your own time</strong> — set age, class, level and interests in the activity. Each session is about 15–20 minutes; feedback shapes the next lesson. Signed-in Writing Suite access required (profile syncs across devices).</p>
+            </div>
             <div id="writing-setup-note" class="form-group setup-note" style="display:none; background: rgba(79,70,229,0.07); border-color: rgba(79,70,229,0.18);">
                 <label style="color: #4f46e5;"><i class="fa-solid fa-robot"></i> Cursor AI Generation</label>
                 <p>Writing Suite access required (sign in, then buy a plan — or teacher approval). Content is generated via Cursor AI on the server.</p>
@@ -4312,6 +4362,32 @@
             </div>
         </div>
 
+
+        <!-- IN YOUR OWN TIME -->
+        <div id="screen-own-time" class="screen engine-container">
+            <div class="game-setup-bar">
+            <div class="game-setup-bar-row">
+                <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                <div class="game-setup-bar-title">In your own time <span class="live-badge">Cursor AI</span></div>
+                <div class="game-setup-bar-right"><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
+            </div>
+            <div class="game-setup-panel">
+                <div class="game-setup-actions">
+                    <button class="btn btn-outline" onclick="initOwnTime()" id="own-time-btn">Reload <i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div class="pe-instr">
+                    <div class="pe-instr-head"><strong>Instructions</strong></div>
+                    <div class="pe-instr-en">Build a short personalised practice session (~15–20 min). Lower levels get Polish instructions; older or B1+ students can switch to English instructions. English practice material stays at your CEFR level.</div>
+                    <div class="pe-instr-pl">Krótka, spersonalizowana sesja (~15–20 min). Niższe poziomy mają instrukcje po polsku; starsze / B1+ mogą przełączyć instrukcje na angielski. Materiał do ćwiczeń pozostaje po angielsku na Twoim poziomie CEFR.</div>
+                </div>
+            </div>
+            </div>
+            <div id="own-time-loading" class="loading-spinner" style="display:none;"><i class="fa-solid fa-spinner fa-spin"></i> Preparing…</div>
+            <div id="own-time-content">
+                <div id="own-time-root"></div>
+                <div id="own-time-status" class="feedback"></div>
+            </div>
+        </div>
 
         <!-- ADVANCED ENGLISH: TEXT GAPS -->
         <div id="screen-adv-gaps" class="screen engine-container">
@@ -6172,7 +6248,7 @@
         // Hash routing — browser back + open in new tab
         let applyingRoute = false;
         const PE_GAMES = new Set(['pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-boring', 'pe-topic', 'pe-review']);
-        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'adv-gaps', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review']);
+        const WRITING_GAMES = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'adv-gaps', 'own-time', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review']);
         const FREE_PE_GAMES = new Set(['pe-dictation', 'pe-colour']);
         const VOCAB_GAMES = new Set(['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown']);
 
@@ -6435,6 +6511,7 @@
                         if (arg === 'pe-colour') initColourBlocks();
                         if (arg === 'pe-topic') initTopicChallenge();
                         if (arg === 'pe-review') initPeReview();
+                        if (arg === 'own-time') initOwnTime();
                     }
                 } else {
                     showScreen('home');
@@ -7451,7 +7528,7 @@
                     html += '<div class="progress-grid">';
                     const gameNames = {
                         flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction', penalty_match: 'Penalty Match',
-                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_e8_gaps: 'E8 Text Gaps', adv_gaps: 'Advanced Text Gaps', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_e8_gaps: 'E8 Text Gaps', adv_gaps: 'Advanced Text Gaps', own_time: 'In your own time', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
                     };
@@ -7487,7 +7564,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', penalty_match:'Penalty Match', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_e8_gaps:'E8 Text Gaps', adv_gaps:'Advanced Text Gaps', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', penalty_match:'Penalty Match', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_e8_gaps:'E8 Text Gaps', adv_gaps:'Advanced Text Gaps', own_time:'In your own time', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -8318,7 +8395,7 @@
             document.getElementById('setup-title').innerText = 'Game Setup';
             
             const vocabGames = ['flashcard', 'memory-flip', 'word-repair', 'speed-match', 'bomb', 'grid', 'test-countdown'];
-            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'adv-gaps', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review'];
+            const writingGames = ['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'adv-gaps', 'own-time', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review'];
             const hybridGames = ['odyssey'];
             
             document.getElementById('vocab-setup-section').style.display = (vocabGames.includes(gameType) || hybridGames.includes(gameType)) ? 'block' : 'none';
@@ -8352,6 +8429,8 @@
             if (peReviewSettings) peReviewSettings.style.display = (gameType === 'pe-review') ? 'block' : 'none';
             const reviewSetupNote = document.getElementById('review-setup-note');
             if (reviewSetupNote) reviewSetupNote.style.display = (gameType === 'pe-review') ? 'block' : 'none';
+            const ownTimeSetupNote = document.getElementById('own-time-setup-note');
+            if (ownTimeSetupNote) ownTimeSetupNote.style.display = (gameType === 'own-time') ? 'block' : 'none';
             if (gameType === 'pe-review' && window.PEReviewChat) {
                 PEReviewChat.syncVocabModeUi();
                 PEReviewChat.syncClassHint();
@@ -8360,11 +8439,14 @@
                 PEReviewChat.renderRunInstructionPresets();
             }
             document.getElementById('frank-setup-note').style.display = (gameType === 'frank') ? 'block' : 'none';
-            document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType) && gameType !== 'frank') ? 'block' : 'none';
+            document.getElementById('writing-setup-note').style.display = (writingGames.includes(gameType) && !FREE_PE_GAMES.has(gameType) && gameType !== 'frank' && gameType !== 'own-time') ? 'block' : 'none';
 
             if (gameType === 'mission') renderMissionPicker();
             if (gameType === 'matura') {
                 document.getElementById('setup-title').innerText = 'Matura Writing Assessment';
+            }
+            if (gameType === 'own-time') {
+                document.getElementById('setup-title').innerText = 'In your own time';
             }
             if (gameType === 'pe-dictation') {
                 document.getElementById('setup-title').innerText = 'Dictation Setup';
@@ -8591,6 +8673,7 @@
             if(activeGame === 'pe-colour') initColourBlocks();
             if(activeGame === 'pe-topic') initTopicChallenge();
             if(activeGame === 'pe-review') initPeReview();
+            if(activeGame === 'own-time') initOwnTime();
         }
 
         function toggleLoading(prefix, isLoading) {
