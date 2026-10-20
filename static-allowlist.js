@@ -52,6 +52,16 @@ export const PUBLIC_SCRIPTS = new Set([
     'word-cannon-fx.js',
 ]);
 
+/**
+ * Exact vendor files the Lesson Creator (worksheet-maker) loads at runtime for PDF export
+ * (presentation "Download PDF" and Drive export). Both packages are in package.json
+ * "dependencies", so `npm ci` on Render installs them. Nothing else under node_modules is public.
+ */
+export const PUBLIC_VENDOR_FILES = new Set([
+    'node_modules/jspdf/dist/jspdf.umd.min.js',
+    'node_modules/html2canvas/dist/html2canvas.min.js',
+]);
+
 const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.ico', '.avif']);
 const AUDIO_EXT = new Set(['.mp3', '.ogg', '.wav', '.m4a']);
 const FONT_EXT = new Set(['.woff', '.woff2', '.ttf', '.otf']);
@@ -99,6 +109,8 @@ export function isPublicStaticPath(urlPath) {
         if (IMAGE_EXT.has(ext) || AUDIO_EXT.has(ext)) return true;
         return false;
     }
+
+    if (PUBLIC_VENDOR_FILES.has(rel)) return true;
 
     for (const rule of PUBLIC_DIRS) {
         if (!rel.startsWith(rule.dir)) continue;

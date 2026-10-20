@@ -118,3 +118,20 @@ test('HTTP: blocked paths 404, allowed paths 200 (server without DB)', async (t)
         server.kill();
     }
 });
+
+test('only the two worksheet-maker PDF libraries are public under node_modules', async () => {
+    const { PUBLIC_VENDOR_FILES } = await import('./static-allowlist.js');
+    const fs = await import('node:fs');
+    const pkg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+    assert.ok(pkg.dependencies.jspdf && pkg.dependencies.html2canvas, 'must be runtime dependencies');
+    for (const f of PUBLIC_VENDOR_FILES) {
+        assert.equal(isPublicStaticPath('/' + f), true, f);
+        assert.ok(fs.existsSync(new URL('./' + f, import.meta.url)), `${f} missing after install`);
+    }
+    const html = fs.readFileSync(new URL('./worksheet-maker/index.html', import.meta.url), 'utf8');
+    for (const m of html.matchAll(/['"]\/(node_modules\/[^'"]+)['"]/g)) assert.ok(PUBLIC_VENDOR_FILES.has(m[1]), m[1]);
+    for (const bad of ['/node_modules/jspdf/package.json', '/node_modules/jspdf/dist/jspdf.es.min.js', '/node_modules/html2canvas/dist/html2canvas.js',
+        '/node_modules/express/index.js', '/node_modules/', '/node_modules/jspdf/dist/../../express/index.js', '/node_modules/.bin/jspdf']) {
+        assert.equal(isPublicStaticPath(bad), false, bad);
+    }
+});
