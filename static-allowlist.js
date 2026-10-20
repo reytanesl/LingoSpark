@@ -28,6 +28,8 @@ export const PUBLIC_SCRIPTS = new Set([
     'demo-sets.js',
     'frank-paragraphs.js',
     'frank-options.js',
+    'wordset-import-core.js',
+    'wordset-import-ui.js',
     'live-entry.js',
     'live-game-client.js',
     'lucky-lanterns-fx.js',

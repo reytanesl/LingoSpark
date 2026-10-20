@@ -1,4 +1,5 @@
 import './matura-mistakes.js';
+import './wordset-import-core.js';
 import pg from 'pg';
 import crypto from 'crypto';
 
@@ -1232,6 +1233,47 @@ export async function appendWordSetItems(userId, { name, items = [], setType = '
         [count, ws.id]
     );
     return { set: updated.rows[0], added, itemCount: count };
+}
+
+/**
+ * Append reviewed import cards to an owned set (by id) as consecutive cards after the
+ * current last card. Terms already in the set are skipped and reported, never merged.
+ * Returns null when the set does not exist or belongs to someone else.
+ */
+export async function appendItemsToWordSet(setId, userId, items = []) {
+    const { planAppend } = globalThis.WordSetImportCore;
+    const db = getPool();
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+        const ws = (await client.query(
+            'SELECT * FROM word_sets WHERE id = $1 AND user_id = $2 FOR UPDATE',
+            [setId, userId]
+        )).rows[0];
+        if (!ws) { await client.query('ROLLBACK'); return null; }
+        const existing = await client.query('SELECT term, position FROM word_set_items WHERE set_id = $1', [setId]);
+        const plan = planAppend(existing.rows, items, WORD_SET_ITEM_CAP);
+        const added = [];
+        for (const it of plan.toInsert) {
+            const ins = await client.query(
+                `INSERT INTO word_set_items (set_id, term, definition, position)
+                 VALUES ($1, $2, $3, $4) RETURNING id, term, definition, position`,
+                [setId, it.term, it.definition, it.position]
+            );
+            added.push(ins.rows[0]);
+        }
+        const updated = await client.query(
+            'UPDATE word_sets SET item_count = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+            [plan.itemCount, setId]
+        );
+        await client.query('COMMIT');
+        return { set: updated.rows[0], added, skipped: plan.skipped, itemCount: plan.itemCount };
+    } catch (err) {
+        try { await client.query('ROLLBACK'); } catch { /* ignore */ }
+        throw err;
+    } finally {
+        client.release();
+    }
 }
 
 export async function loadWordSetForGame(setId, userId) {

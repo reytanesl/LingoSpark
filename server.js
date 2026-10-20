@@ -39,6 +39,7 @@ import {
     updateWordSet,
     deleteWordSet,
     appendWordSetItems,
+    appendItemsToWordSet,
     loadWordSetForGame,
     enableWordSetShare,
     revokeWordSetShare,
@@ -82,6 +83,7 @@ import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
+import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
 import { createWorksheetMakerRouter } from './worksheet-maker/server.js';
 import './matura-mistakes.js';
@@ -533,6 +535,18 @@ async function start() {
             res.json({ set: ws });
         } catch (err) { res.status(400).json({ error: err.message }); }
     });
+
+    /**
+     * Import from photo / typed list (Writing Suite plan for the WHOLE feature, 403 without it):
+     * AI extraction + learner definitions (per-user rate limits in wordset-import-ai.js), then append
+     * reviewed cards to an owned set as consecutive cards (ownership checked, duplicates skipped).
+     */
+    const wordSetImport = createWordSetImportHandlers({
+        runPrompt: ({ prompt, images = [], label }) => runVisionJsonPrompt({ apiKey: process.env.CURSOR_API_KEY, prompt, images, label }),
+        appendItems: (setId, userId, items) => appendItemsToWordSet(setId, userId, items),
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
+    });
+    mountWordSetImportRoutes(app, { gate: requireWritingAccess, handlers: wordSetImport });
 
     app.post('/api/word-sets/append', requireLogin, async (req, res) => {
         try {

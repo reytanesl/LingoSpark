@@ -24,6 +24,8 @@
     <script src="matura-mistakes.js"></script>
     <script src="frank-paragraphs.js"></script>
     <script src="frank-options.js"></script>
+    <script src="wordset-import-core.js"></script>
+    <script src="wordset-import-ui.js"></script>
     <script src="pe-dictation-banks.js"></script>
     <script src="pe-colour-blocks.js"></script>
     <script src="pe-line-up.js"></script>
@@ -2929,6 +2931,62 @@
             padding: 0.85rem 0 0.35rem;
         }
         .ws-editor-actions .btn { pointer-events: auto; box-shadow: 0 8px 22px rgba(1, 33, 105, 0.22); }
+        /* Word Sets: import from photo or list */
+        .ws-import .ws-editor-head h3 i { color: var(--pillarbox-red); margin-right: 0.3rem; }
+        .wsi-steps { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; padding: 0; margin: 0.35rem 0 0; font-size: 0.8rem; }
+        .wsi-steps li { padding: 0.15rem 0.6rem; border-radius: 999px; background: var(--light-grey); color: var(--text-muted); font-weight: 600; }
+        .wsi-steps li.is-on { background: var(--royal-blue); color: #fff; }
+        .wsi-steps li.is-done { background: rgba(0, 130, 59, 0.12); color: var(--success-green); }
+        .wsi-tabs { display: flex; gap: 0.4rem; margin: 0 0 0.8rem; }
+        .wsi-tab { flex: 1; padding: 0.6rem 0.8rem; border: 2px solid var(--border-light); border-radius: 10px; background: #fff; font: 600 0.95rem var(--font-primary); color: var(--royal-blue); cursor: pointer; }
+        .wsi-tab.is-on { border-color: var(--royal-blue); background: rgba(1, 33, 105, 0.06); box-shadow: inset 0 -3px 0 var(--pillarbox-red); }
+        .wsi-help, .wsi-limits { font-size: 0.88rem; color: var(--text-muted); line-height: 1.45; margin: 0 0 0.7rem; }
+        .wsi-limits { font-size: 0.8rem; margin: 0.5rem 0 0; }
+        .wsi-plan { font-size: 0.85rem; background: #FFF6E5; border-left: 4px solid #E0A100; padding: 0.55rem 0.75rem; border-radius: 8px; margin: 0 0 0.7rem; }
+        .wsi-info { font-size: 0.9rem; background: rgba(1, 33, 105, 0.05); border-left: 4px solid var(--royal-blue); padding: 0.55rem 0.75rem; border-radius: 8px; }
+        .wsi-drop { border: 2px dashed var(--border-light); border-radius: 12px; padding: 1rem; text-align: center; background: var(--light-grey); }
+        .wsi-drop-icon { font-size: 2.4rem; color: var(--royal-blue); opacity: 0.5; margin: 0.4rem 0 0.8rem; display: block; }
+        .wsi-preview { max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); background: #fff; }
+        .wsi-file { font-size: 0.8rem; color: var(--text-muted); margin: 0.35rem 0 0.6rem; word-break: break-all; }
+        .wsi-pick { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+        .wsi-pick label.btn { cursor: pointer; }
+        .wsi-text { width: 100%; min-height: 170px; box-sizing: border-box; padding: 0.75rem 0.85rem; border: 2px solid var(--border-light); border-radius: 10px; font: 0.95rem var(--font-secondary); }
+        .wsi-row-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-end; justify-content: space-between; margin: 0.9rem 0; }
+        .wsi-row-actions--top { margin-top: 0; }
+        .wsi-row-actions--center { justify-content: center; }
+        .wsi-level { display: flex; flex-direction: column; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); gap: 0.2rem; }
+        .wsi-level select, .wsi-input { padding: 0.5rem 0.6rem; border: 2px solid var(--border-light); border-radius: 8px; font: 0.95rem var(--font-secondary); background: #fff; }
+        .wsi-input { width: 100%; box-sizing: border-box; margin: 0.5rem 0; }
+        .wsi-rows { display: flex; flex-direction: column; gap: 0.6rem; }
+        .wsi-row { background: #fff; border: 2px solid var(--border-light); border-radius: 12px; padding: 0.55rem 0.8rem 0.7rem; }
+        .wsi-row.is-dup { border-color: #E0A100; background: #FFFBF0; }
+        .wsi-row-top { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.3rem; }
+        .wsi-row-tools { margin-left: auto; display: flex; gap: 0.25rem; }
+        .wsi-icon { width: 34px; height: 34px; border: none; border-radius: 8px; background: var(--light-grey); color: var(--royal-blue); cursor: pointer; }
+        .wsi-icon:hover { background: rgba(200, 16, 46, 0.1); color: var(--pillarbox-red); }
+        .wsi-icon:disabled { opacity: 0.6; cursor: wait; }
+        .wsi-badge { font-size: 0.72rem; font-weight: 700; padding: 0.12rem 0.5rem; border-radius: 999px; background: rgba(1, 33, 105, 0.08); color: var(--royal-blue); }
+        .wsi-badge--dup { background: #FDEBC8; color: #8A5A00; }
+        .wsi-dest { border: 2px solid var(--border-light); border-left: 4px solid var(--pillarbox-red); border-radius: 10px; padding: 0.7rem 0.9rem; margin: 1rem 0 0; }
+        .wsi-dest legend { font-weight: 700; color: var(--royal-blue); padding: 0 0.3rem; }
+        .wsi-radio { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0.2rem 1rem 0.2rem 0; font-weight: 600; cursor: pointer; }
+        .wsi-done { text-align: center; padding: 0.6rem 0; }
+        .wsi-done-icon { font-size: 2.6rem; color: var(--success-green); }
+        .wsi-done h4 { margin: 0.5rem 0 0.3rem; color: var(--royal-blue); font-size: 1.15rem; }
+        .wsi-added { list-style: none; padding: 0; margin: 0.7rem auto; max-width: 420px; text-align: left; }
+        .wsi-added li { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--border-light); }
+        .wsi-skipped { font-size: 0.88rem; color: #8A5A00; background: #FFFBF0; border-radius: 8px; padding: 0.5rem 0.7rem; display: inline-block; }
+        @media (max-width: 480px) {
+            .wsi-row-actions { flex-direction: column; align-items: stretch; }
+            .wsi-row-actions .btn { width: 100%; }
+            .wsi-pick label.btn { flex: 1 1 100%; }
+            .wsi-radio { display: flex; }
+        }
+        #ws-import-open .ws-import-lock { margin-left: 0.3rem; color: var(--pillarbox-red); font-size: 0.85em; }
+        #ws-import-open.is-unlocked .ws-import-lock, .ws-import-upsell[hidden] { display: none; }
+        .ws-import-upsell { font-size: 0.85rem; color: var(--text-muted); margin: 0.55rem auto 0; max-width: 520px; }
+        .ws-import-upsell i { color: var(--pillarbox-red); }
+        .ws-import-upsell a { color: var(--royal-blue); font-weight: 700; }
         .ws-paste-panel {
             background: rgba(1, 33, 105, 0.04); border: 2px solid var(--border-light);
             border-left: 4px solid var(--royal-blue); border-radius: 10px;
@@ -3493,9 +3551,12 @@
             </div>
             <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — tag them with a <strong>category</strong> and <strong>class</strong>, then use the filters below to show only the lists you need. Use <strong>Share</strong> to copy a student link (no login needed). Open <strong>Edit</strong> to rename a list or change words.</p>
             <div id="ws-editor" class="ws-editor" hidden></div>
+            <div id="ws-import" class="ws-editor ws-import" hidden></div>
             <div id="mysets-browse">
             <div style="text-align:center; margin-bottom: 1rem;">
                 <button type="button" class="btn btn-blue" onclick="createWordSetFromVocab()"><i class="fa-solid fa-plus"></i> Create word set</button>
+                <button type="button" class="btn btn-outline" id="ws-import-open" onclick="WordSetImport.open()" title="Writing Suite plan"><i class="fa-solid fa-camera"></i> Import from photo or list <i class="fa-solid fa-lock ws-import-lock" aria-label="Writing Suite plan required"></i></button>
+                <p class="ws-import-upsell" id="ws-import-upsell"><i class="fa-solid fa-lock"></i> Photo &amp; list import with automatic definitions is part of the <a href="#" onclick="WordSetImport.open(); return false;">Writing Suite plan</a>.</p>
             </div>
             <div class="ws-filters" id="ws-filters" hidden>
                 <p class="ws-filters-title"><i class="fa-solid fa-filter"></i> Filter word lists</p>
@@ -6531,6 +6592,7 @@
         }
 
         function updateAuthBarNav() {
+            if (window.WordSetImport) window.WordSetImport.syncButton();
             const logged = isLoggedIn();
             const setsBtn = document.getElementById('auth-nav-mysets');
             const progBtn = document.getElementById('auth-nav-progress');
