@@ -287,6 +287,16 @@
             <span class="ot-count-target">${t('Cel', 'Target')}: ${esc(min)}–${esc(max)} ${t('zdań', 'sentences')}${esc(words)}</span>`;
     }
 
+    /** Guidance panels are collapsed by default; remember what the student opened within this lesson. */
+    const openPanels = new Set();
+    function panel(id, icon, title, inner, cls) {
+        const key = `${taskIndex}:${id}`;
+        return `<details class="ot-panel ${cls || ''}" data-panel="${esc(id)}"${openPanels.has(key) ? ' open' : ''}>
+            <summary><i class="fa-solid ${esc(icon)}" aria-hidden="true"></i> <span>${esc(title)}</span><i class="fa-solid fa-chevron-down ot-panel-chev" aria-hidden="true"></i></summary>
+            <div class="ot-panel-body">${inner}</div>
+        </details>`;
+    }
+
     function stepperHtml(tasks) {
         const cur = view === 'feedback' ? tasks.length : taskIndex;
         return `<ol class="ot-stepper" aria-label="${esc(t('Postęp lekcji', 'Lesson progress'))}">
@@ -327,26 +337,25 @@
             body += `<ol class="ot-items">${(task.items || []).map(itemRow).join('')}</ol>`;
         } else {
             body += `
-                <details class="ot-plan"${saved.plan ? ' open' : ''}>
-                    <summary><i class="fa-solid fa-lightbulb"></i> ${esc(t('Plan (opcjonalnie) — zapisz 2–3 pomysły', 'Plan (optional) — note 2–3 ideas'))}</summary>
-                    <textarea id="ot-plan" class="pe-input" rows="2" placeholder="${esc(t('np. sklep z lodami · obsługa klientów · pieniądze na telefon', 'e.g. ice-cream shop · serve customers · save for a phone'))}">${esc(saved.plan || '')}</textarea>
-                </details>
+                ${panel('plan', 'fa-lightbulb', t('Plan (opcjonalnie) — zapisz 2–3 pomysły', 'Plan (optional) — note 2–3 ideas'),
+                    `<textarea id="ot-plan" class="pe-input" rows="2" placeholder="${esc(t('np. sklep z lodami · obsługa klientów · pieniądze na telefon', 'e.g. ice-cream shop · serve customers · save for a phone'))}">${esc(saved.plan || '')}</textarea>`, 'ot-plan')}
                 <label class="ot-panel-label" for="ot-answer">${esc(t('Twoja odpowiedź', 'Your answer'))}</label>
                 <textarea class="pe-input ot-write" id="ot-answer" rows="6" placeholder="${esc(g.useful[0] ? `${g.useful[0]}` : (L === 'en' ? 'Write here…' : 'Napisz tutaj…'))}">${esc(saved.text || '')}</textarea>
                 <div class="ot-counter" id="ot-counter">${counterHtml(g.target, saved.text)}</div>`;
         }
 
         const ticks = saved.criteria || [];
-        const help = `
-            ${g.example ? `<div class="ot-example"><div class="ot-side-title"><i class="fa-solid fa-eye"></i> ${esc(t('Przykład', 'Example'))}</div><p>${esc(g.example)}</p></div>` : ''}
-            ${g.useful.length ? `<div class="ot-useful"><div class="ot-side-title"><i class="fa-solid fa-comment-dots"></i> ${esc(isWriting ? t('Przydatne zwroty — kliknij, by wstawić', 'Useful language — click to insert') : t('Przydatne słowa', 'Useful words'))}</div>
-                <div class="ot-phrases">${g.useful.map((ph) => isWriting
+        const help = [
+            g.example ? panel('example', 'fa-eye', t('Przykład', 'Example'), `<p>${esc(g.example)}</p>`, 'ot-example') : '',
+            g.useful.length ? panel('useful', 'fa-comment-dots', isWriting ? t('Przydatne zwroty', 'Useful language') : t('Przydatne słowa', 'Useful words'),
+                `${isWriting ? `<p class="ot-panel-tip">${esc(t('Kliknij zwrot, by wstawić go do tekstu.', 'Click a phrase to insert it.'))}</p>` : ''}<div class="ot-phrases">${g.useful.map((ph) => isWriting
                     ? `<button type="button" class="ot-phrase" data-phrase="${esc(ph)}">${esc(ph)}</button>`
-                    : `<span class="ot-phrase is-static">${esc(ph)}</span>`).join('')}</div></div>` : ''}
-            ${g.hint ? `<details class="ot-hint"><summary><i class="fa-solid fa-circle-question"></i> ${esc(t('Utknąłeś/aś? Pokaż podpowiedź', 'Stuck? Show a hint'))}</summary><p>${esc(g.hint)}</p></details>` : ''}`;
+                    : `<span class="ot-phrase is-static">${esc(ph)}</span>`).join('')}</div>`, 'ot-useful') : '',
+            g.hint ? panel('hint', 'fa-circle-question', t('Utknąłeś/aś? Podpowiedź', 'Stuck? Hint'), `<p>${esc(g.hint)}</p>`, 'ot-hint') : '',
+        ].join('');
 
         const modelBtn = isWriting && (task.modelAnswers || []).length
-            ? `<details class="ot-model"><summary>${esc(t('Przykładowa odpowiedź (zajrzyj po napisaniu)', 'Model answer (look after you write)'))}</summary>${task.modelAnswers.map((m) => `<p>${esc(m)}</p>`).join('')}</details>` : '';
+            ? panel('model', 'fa-star', t('Przykładowa odpowiedź (zajrzyj po napisaniu)', 'Model answer (look after you write)'), task.modelAnswers.map((m) => `<p>${esc(m)}</p>`).join(''), 'ot-model') : '';
 
         return `
             <div class="ot-card ot-lesson">
@@ -368,15 +377,14 @@
                 <p class="ot-instruction">${esc(task.instruction)}</p>
                 <div class="ot-task-grid">
                     <div class="ot-task-main">
-                        <ol class="ot-steps" aria-label="${esc(t('Jak to zrobić', 'How to do it'))}">${g.steps.map((st) => `<li>${esc(st)}</li>`).join('')}</ol>
+                        ${panel('steps', 'fa-shoe-prints', t(`Jak to zrobić (${g.steps.length} kroki)`, `How to do it (${g.steps.length} steps)`), `<ol class="ot-steps">${g.steps.map((st) => `<li>${esc(st)}</li>`).join('')}</ol>`, 'ot-steps-panel')}
                         ${body}
                         <div id="ot-task-check" class="ot-check-msg" hidden></div>
                         ${modelBtn}
                     </div>
                     <aside class="ot-task-side">${help}
-                        <div class="ot-criteria"><div class="ot-side-title"><i class="fa-solid fa-list-check"></i> ${esc(t('Zanim przejdziesz dalej', 'Before you move on'))}</div>
-                            ${g.criteria.map((c, i) => `<label class="ot-crit"><input type="checkbox" data-crit="${i}"${ticks[i] ? ' checked' : ''}> <span>${esc(c)}</span></label>`).join('')}
-                        </div>
+                        ${panel('criteria', 'fa-list-check', `${t('Zanim przejdziesz dalej', 'Before you move on')} · ${ticks.filter(Boolean).length}/${g.criteria.length}`,
+                            g.criteria.map((c, i) => `<label class="ot-crit"><input type="checkbox" data-crit="${i}"${ticks[i] ? ' checked' : ''}> <span>${esc(c)}</span></label>`).join(''), 'ot-criteria')}
                     </aside>
                 </div>
                 <div class="ot-actions">
@@ -560,6 +568,19 @@
             }
         });
 
+        el.querySelectorAll('details.ot-panel').forEach((d) => d.addEventListener('toggle', () => {
+            const k = `${taskIndex}:${d.dataset.panel}`;
+            if (d.open) openPanels.add(k); else openPanels.delete(k);
+        }));
+        el.querySelectorAll('.ot-crit input').forEach((inp) => inp.addEventListener('change', () => {
+            const box = el.querySelector('.ot-criteria');
+            const all = box.querySelectorAll('input');
+            const n = [...all].filter((x) => x.checked).length;
+            const span = box.querySelector('summary span');
+            if (span) span.textContent = span.textContent.replace(/\d+\/\d+$/, `${n}/${all.length}`);
+            if (n === all.length) box.classList.remove('attention');
+        }));
+
         // Writing helpers: insert phrase, live counter
         const answerEl = document.getElementById('ot-answer');
         el.querySelectorAll('.ot-phrase[data-phrase]').forEach((btn) => btn.addEventListener('click', () => {
@@ -594,7 +615,13 @@
             const nudge = document.getElementById('ot-crit-nudge');
             if (nCrit && nTicked < nCrit && nudge && nudge.hidden) {
                 nudge.hidden = false;
-                el.querySelector('.ot-criteria')?.classList.add('attention');
+                const crit = el.querySelector('.ot-criteria');
+                if (crit) {
+                    crit.open = true;
+                    crit.classList.add('attention');
+                    crit.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+                    crit.querySelector('summary')?.focus();
+                }
                 return;
             }
             window.scrollTo?.({ top: 0, behavior: 'smooth' });
@@ -629,6 +656,7 @@
             });
             lesson = data.lesson;
             taskIndex = 0;
+            openPanels.clear();
             answers = {};
             startedAt = Date.now();
             view = 'lesson';

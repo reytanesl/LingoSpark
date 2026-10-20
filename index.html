@@ -2231,8 +2231,13 @@
             display: grid;
         }
         #section-writing .writing-pack-row {
-            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 1.15rem; margin-top: 1.2rem;
+        }
+        #section-writing a.writing-pack-tile { text-decoration: none; box-sizing: border-box; }
+        #section-writing .writing-pack-tile--own:hover .chevron { transform: translateX(3px); }
+        @media (max-width: 760px) {
+            #section-writing .writing-pack-row { grid-template-columns: minmax(0, 1fr); }
         }
         #section-writing .writing-pack-tile {
             width: auto; margin-top: 0; padding: 1.55rem 1.15rem 1.25rem;
@@ -2638,7 +2643,6 @@
         .dictation-gap-input.dictation-gap-correct { border-bottom-color: var(--success-green); background: rgba(0,130,59,0.1); }
         .dictation-gap-input.dictation-gap-wrong { border-bottom-color: var(--pillarbox-red); background: rgba(200,16,46,0.1); }
 
-        .ws-own-time-row { max-width: 420px; margin-left: auto; margin-right: auto; }
         .ot-card {
             background: var(--bright-white); border: 2px solid var(--border-light); border-radius: 12px;
             padding: 1.25rem 1.35rem; margin: 0 auto 1rem; max-width: 720px; text-align: left;
@@ -2726,6 +2730,22 @@
         .ot-phrase.used { border-style: dashed; opacity: 0.75; }
         .ot-phrase.is-static { cursor: default; }
         .ot-hint summary, .ot-plan summary, .ot-model summary { cursor: pointer; font-weight: 700; color: var(--ot-navy); }
+        .ot-panel { border: 1px solid var(--ot-bank); border-radius: 10px; background: var(--ot-pale); margin: 0 0 0.6rem; }
+        .ot-panel > summary { list-style: none; display: flex; align-items: center; gap: 0.45rem; padding: 0.55rem 0.75rem; cursor: pointer; font-weight: 700; color: var(--ot-navy); border-radius: 10px; min-height: 44px; box-sizing: border-box; }
+        .ot-panel > summary::-webkit-details-marker { display: none; }
+        .ot-panel > summary > i:first-child { color: #4a6283; width: 1.1rem; text-align: center; }
+        .ot-panel > summary span { flex: 1; }
+        .ot-panel > summary:focus-visible { outline: 3px solid var(--ot-navy); outline-offset: 2px; }
+        .ot-panel > summary:hover { background: var(--ot-bank); }
+        .ot-panel-chev { font-size: 0.8rem; color: #4a6283; transition: transform 0.2s; }
+        .ot-panel[open] > summary .ot-panel-chev { transform: rotate(180deg); }
+        .ot-panel-body { padding: 0 0.8rem 0.7rem; }
+        .ot-panel-body > p { margin: 0.2rem 0 0; }
+        .ot-panel-tip { font-size: 0.82rem; color: #4a6283; margin: 0 0 0.4rem !important; }
+        .ot-panel .ot-steps { margin: 0.2rem 0 0; }
+        #screen-own-time .ot-task-side > .ot-panel { padding: 0; margin: 0; }
+        .ot-panel.ot-model, .ot-panel.ot-plan { background: #fbfdff; border-style: dashed; border-color: var(--ot-line); padding: 0; }
+        .ot-panel.ot-criteria.attention { outline: 3px solid #f59f00; outline-offset: 2px; }
         .ot-hint p { margin: 0.45rem 0 0; }
         .ot-plan { margin: 0.4rem 0 0.6rem; }
         .ot-plan textarea { margin-top: 0.4rem; background: #fbfdff; border-style: dashed; }
@@ -3834,16 +3854,13 @@
                 </div>
                 <p style="text-align: center; margin-bottom: 1.25rem; color: var(--text-muted);">Master essay structure, style, and essential writing skills.</p>
 
-                <div class="grid ws-own-time-row" style="margin-bottom: 1.5rem;">
-                    <div class="card">
-                        <div class="icon-container"><i class="fa-solid fa-clock"></i></div>
-                        <h2>In your own time</h2>
-                        <p>Personalised 15–20 minute practice from your age, level and interests — with feedback that shapes the next session.</p>
-                        <a href="#/setup/own-time" class="btn btn-outline">Start</a>
-                    </div>
-                </div>
-
                 <div class="writing-pack-row">
+                    <a href="#/setup/own-time" class="pe-pack-toggle writing-pack-tile writing-pack-tile--own" id="own-time-tile">
+                        <span class="writing-pack-icon writing-pack-icon--own" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
+                        <span class="writing-pack-label">In your own time</span>
+                        <span class="pe-pack-meta">Personalised 15–20 min practice from your age, level &amp; interests</span>
+                        <i class="fa-solid fa-arrow-right chevron" aria-hidden="true"></i>
+                    </a>
                     <button type="button" class="pe-pack-toggle writing-pack-tile" id="pe-pack-toggle" onclick="togglePrimaryEnglishPack()">
                         <span class="writing-pack-icon" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></span>
                         <span class="writing-pack-label">Primary English</span>
