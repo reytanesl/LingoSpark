@@ -2850,6 +2850,147 @@
         .ot-done-icon { font-size: 2.6rem; color: var(--ot-ok); margin-bottom: 0.3rem; }
         .ot-extra-badge { display: inline-block; background: var(--ot-navy); color: #fff; border-radius: 999px; padding: 0.05rem 0.5rem; letter-spacing: 0.02em; }
         @media (max-width: 520px) { .ot-keep .ot-keep-going { width: 100%; justify-content: center; } }
+        /* ===== In your own time — sleek theme (calm navy / pale blue, soft cards, micro-interactions) ===== */
+        #screen-own-time { --ot-navy: #1B2A4A; --ot-navy-2: #2C4370; --ot-ink: #22324f; --ot-muted: #5d6f8c; --ot-line: #9db3cf; --ot-pale: #EEF4FA; --ot-bank: #DCE7F3; --ot-accent: #F2A93B; --ot-accent-soft: #FFF4E2; --ot-ok: #1f8a4c; --ot-ok-soft: #e7f6ed; --ot-bad: #c8364a; --ot-bad-soft: #fdecee; --ot-radius: 16px; --ot-shadow: 0 1px 2px rgba(27,42,74,0.05), 0 8px 24px rgba(27,42,74,0.07); }
+        #screen-own-time #own-time-root { font-family: var(--font-secondary); color: var(--ot-ink); }
+        #screen-own-time .ot-card { border: 1px solid rgba(27,42,74,0.08); border-radius: var(--ot-radius); box-shadow: var(--ot-shadow); background: #fff; padding: 1.35rem 1.5rem; animation: otFadeUp 0.28s ease both; }
+        #screen-own-time .ot-heading { font-family: var(--font-primary); font-weight: 700; letter-spacing: -0.01em; color: var(--ot-navy); }
+        #screen-own-time .ot-lead { color: var(--ot-muted); }
+        #screen-own-time .btn { border-radius: 12px; font-weight: 700; box-shadow: none; transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+        #screen-own-time .btn:active { transform: translateY(1px) scale(0.99); }
+        #screen-own-time #own-time-root .btn-blue { background: var(--ot-navy); border: 1px solid var(--ot-navy); color: #fff; box-shadow: 0 4px 14px rgba(27,42,74,0.22); }
+        #screen-own-time #own-time-root .btn-blue:hover { background: var(--ot-navy-2); box-shadow: 0 6px 18px rgba(27,42,74,0.28); transform: translateY(-1px); }
+        #screen-own-time #own-time-root .btn-outline, #screen-own-time #own-time-root .btn-grey { background: #fff; border: 1px solid var(--ot-bank); color: var(--ot-navy); }
+        #screen-own-time #own-time-root .btn-outline:hover, #screen-own-time #own-time-root .btn-grey:hover { border-color: var(--ot-line); background: var(--ot-pale); }
+        #screen-own-time .pe-input { border: 1px solid var(--ot-bank); border-radius: 10px; background: #fbfdff; transition: border-color 0.15s, box-shadow 0.15s; }
+        #screen-own-time .pe-input:focus { border-color: var(--ot-navy-2); box-shadow: 0 0 0 3px rgba(44,67,112,0.14); outline: none; background: #fff; }
+        #screen-own-time .ot-form-grid label, #screen-own-time .ot-block-label { color: var(--ot-ink); font-weight: 600; font-size: 0.88rem; }
+        #screen-own-time .ot-chip { border: 1px solid var(--ot-bank); border-radius: 999px; background: #fff; padding: 0.3rem 0.8rem; transition: all 0.15s ease; }
+        #screen-own-time .ot-chip:hover { border-color: var(--ot-line); }
+        #screen-own-time .ot-chip:has(input:checked) { border-color: var(--ot-navy); background: var(--ot-navy); color: #fff; }
+        #screen-own-time .ot-chip { position: relative; cursor: pointer; }
+        #screen-own-time .ot-chip input { position: absolute; opacity: 0; pointer-events: none; }
+        #screen-own-time .ot-chip:has(input:focus-visible) { outline: 3px solid var(--ot-accent); outline-offset: 2px; }
+        #screen-own-time .ot-chip:has(input:checked)::before { content: '✓'; margin-right: 0.3rem; font-weight: 800; color: var(--ot-accent); }
+        #screen-own-time .ot-instr-lang { border: 1px solid var(--ot-bank); border-style: solid; background: var(--ot-pale); border-radius: 12px; }
+        #screen-own-time .ot-summary { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        #screen-own-time .ot-summary li { background: var(--ot-pale); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.88rem; color: var(--ot-ink); }
+        #screen-own-time .ot-summary li strong { color: var(--ot-muted); font-weight: 600; }
+        #screen-own-time .ot-how li { background: #fff; border: 1px solid var(--ot-bank); border-radius: 14px; box-shadow: 0 1px 2px rgba(27,42,74,0.04); }
+        #screen-own-time .ot-how-n { background: var(--ot-accent-soft); color: #9a5b00; }
+        #screen-own-time .ot-time-note { color: var(--ot-muted); font-weight: 600; }
+        #screen-own-time .ot-time-note i { color: var(--ot-accent); }
+        #screen-own-time .ot-last-fb { background: var(--ot-pale); border-radius: 12px; }
+        #screen-own-time .ot-time { background: var(--ot-accent-soft); border-color: transparent; color: #8a5200; }
+        #screen-own-time .ot-badge { background: var(--ot-pale); color: var(--ot-navy); border-radius: 999px; font-weight: 700; padding: 0.2rem 0.65rem; }
+        #screen-own-time .ot-eyebrow { color: var(--ot-muted); }
+        #screen-own-time .ot-stepper li { background: transparent; border-bottom: 0; padding-left: 0.2rem; position: relative; }
+        #screen-own-time .ot-stepper li::after { content: ''; position: absolute; left: 0.2rem; right: 0.2rem; bottom: -2px; height: 3px; border-radius: 3px; background: var(--ot-bank); }
+        #screen-own-time .ot-stepper li.done::after { background: var(--ot-ok); }
+        #screen-own-time .ot-stepper li.current::after { background: linear-gradient(90deg, var(--ot-navy), var(--ot-navy-2)); }
+        #screen-own-time .ot-stepper li.current { background: transparent; }
+        #screen-own-time .ot-stepper li.done .ot-step-dot { background: var(--ot-ok); border-color: var(--ot-ok); color: #fff; }
+        #screen-own-time .ot-panel { background: #fff; border: 1px solid var(--ot-bank); border-radius: 12px; transition: box-shadow 0.15s, border-color 0.15s; }
+        #screen-own-time .ot-panel > summary:hover { background: var(--ot-pale); }
+        #screen-own-time .ot-panel[open] { border-color: var(--ot-line); box-shadow: 0 4px 14px rgba(27,42,74,0.06); }
+        #screen-own-time .ot-panel[open] > .ot-panel-body { animation: otFadeUp 0.2s ease both; }
+        #screen-own-time .ot-panel.ot-model, #screen-own-time .ot-panel.ot-plan { background: #fff; }
+        #screen-own-time .ot-body .ot-prompt, #screen-own-time .ot-body .ot-reading, #screen-own-time .ot-gapped-text { background: var(--ot-pale); border-left: 0; border-radius: 12px; box-shadow: inset 3px 0 0 var(--ot-navy-2); }
+        #screen-own-time .ot-gap-input { background: #fff; border-bottom-color: var(--ot-line); transition: background-color 0.2s, border-color 0.2s; }
+        #screen-own-time .ot-gap-input.is-ok { background: var(--ot-ok-soft); border-bottom-color: var(--ot-ok); animation: otPop 0.3s ease; }
+        #screen-own-time .ot-gap-input.is-wrong { background: var(--ot-bad-soft); border-bottom-color: var(--ot-bad); animation: otShake 0.35s ease; }
+        #screen-own-time .ot-check-msg { border-radius: 12px; animation: otFadeUp 0.2s ease both; }
+        #screen-own-time .ot-check-msg.ok { background: var(--ot-ok-soft); color: var(--ot-ok); }
+        #screen-own-time .ot-check-msg.partial { background: var(--ot-bad-soft); color: var(--ot-bad); }
+        #screen-own-time .ot-coach { background: var(--ot-accent-soft); color: #7a4a00; }
+        #screen-own-time .ot-coach i { color: var(--ot-accent); }
+        #screen-own-time .ot-keep { background: linear-gradient(135deg, #fff 0%, var(--ot-pale) 100%); border: 1px solid var(--ot-bank); border-left: 0; box-shadow: inset 4px 0 0 var(--ot-accent); border-radius: 14px; }
+        #screen-own-time .ot-keep--cap { box-shadow: inset 4px 0 0 var(--ot-line); }
+        #screen-own-time .ot-done-icon { color: var(--ot-ok); animation: otPop 0.45s ease; }
+        #screen-own-time .ot-results { background: var(--ot-pale); border: 0; border-radius: 14px; }
+        #screen-own-time .ot-extra-badge { background: var(--ot-accent); color: #3d2600; }
+        /* tile tasks */
+        .ot-qs--tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 1rem; }
+        .ot-qs--letters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .ot-tiles-item { line-height: 1.3; padding: 0.55rem 0.65rem 0.6rem 2rem; background: #fff; border: 1px solid var(--ot-bank); border-radius: 14px; transition: border-color 0.2s, background-color 0.2s; }
+        .ot-tiles-item::before { top: 0.55rem; left: 0.7rem; }
+        .ot-tiles-cue { font-size: 0.86rem; color: var(--ot-muted); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem; }
+        .ot-emoji { font-size: 1.25rem; line-height: 1; }
+        .ot-line-wrap { display: flex; align-items: center; gap: 0.4rem; }
+        .ot-line { flex: 1; min-height: 2.35rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; padding: 0.25rem 0.35rem; border-radius: 10px; background: var(--ot-pale); border: 1.5px dashed var(--ot-line); transition: border-color 0.15s, background-color 0.15s; }
+        .ot-line.is-over { border-color: var(--ot-navy-2); background: #e4edf8; }
+        .ot-line-ph { font-size: 0.82rem; color: var(--ot-muted); padding: 0 0.3rem; }
+        .ot-bank { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; align-items: center; min-height: 2.1rem; border-radius: 10px; }
+        .ot-bank.is-over { background: var(--ot-pale); }
+        .ot-tile { font: inherit; font-size: 0.95rem; font-weight: 600; color: var(--ot-navy); background: #fff; border: 1px solid var(--ot-line); border-bottom-width: 2px; border-radius: 9px; padding: 0.22rem 0.6rem; min-height: 2rem; cursor: pointer; user-select: none; touch-action: manipulation; transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s; }
+        .ot-tile:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(27,42,74,0.12); }
+        .ot-tile:focus-visible { outline: 3px solid var(--ot-accent); outline-offset: 1px; }
+        .ot-line .ot-tile { background: var(--ot-navy); color: #fff; border-color: var(--ot-navy); }
+        .ot-tile.pop { animation: otPop 0.25s ease; }
+        .ot-tile.is-dragging { opacity: 0.45; }
+        .ot-tile--ghost { visibility: visible; opacity: 0.28; border-style: dashed; cursor: default; pointer-events: none; }
+        .ot-tile--letter { min-width: 2.1rem; text-align: center; text-transform: lowercase; font-size: 1.05rem; padding: 0.2rem 0.45rem; }
+        .ot-tile--letter.is-used { opacity: 0.25; transform: scale(0.92); cursor: default; box-shadow: none; }
+        .ot-tile-reset { margin-left: auto; border: 0; background: transparent; color: var(--ot-muted); width: 2rem; height: 2rem; border-radius: 8px; cursor: pointer; }
+        .ot-tile-reset:hover { background: var(--ot-pale); color: var(--ot-navy); }
+        #screen-own-time .ot-unscramble-input { flex: 0 0 auto; letter-spacing: 0.08em; text-transform: lowercase; height: 2.1rem; font-size: 1.05rem; }
+        .ot-tiles-item.is-ok { border-color: var(--ot-ok); background: var(--ot-ok-soft); animation: otPop 0.3s ease; }
+        .ot-tiles-item.is-ok .ot-line { border-color: var(--ot-ok); border-style: solid; background: #fff; }
+        .ot-tiles-item.is-ok .ot-line .ot-tile { background: var(--ot-ok); border-color: var(--ot-ok); }
+        .ot-tiles-item.is-wrong { border-color: var(--ot-bad); background: var(--ot-bad-soft); animation: otShake 0.35s ease; }
+        .ot-tiles-item.is-revealed { border-color: var(--ot-line); background: var(--ot-pale); }
+        .ot-tiles-item .ot-mark.ok { color: var(--ot-ok); } .ot-tiles-item .ot-mark.wrong { color: var(--ot-bad); }
+        @keyframes otPop { 0% { transform: scale(0.94); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+        @keyframes otShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+        @keyframes otFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { #screen-own-time *, #screen-own-time *::before { animation: none !important; transition: none !important; } }
+        @media (max-width: 760px) {
+            #screen-own-time .ot-card { padding: 1rem; border-radius: 14px; }
+            .ot-qs--tiles, .ot-qs--letters { grid-template-columns: 1fr; gap: 0.45rem; }
+            .ot-tiles-item { padding: 0.45rem 0.5rem 0.5rem 1.75rem; }
+            .ot-tiles-item::before { left: 0.55rem; top: 0.45rem; }
+            .ot-tile { min-height: 2.25rem; font-size: 0.95rem; }
+            .ot-tile--letter { min-width: 2.3rem; }
+            .ot-unscr-row { flex-wrap: nowrap; gap: 0.4rem; }
+            .ot-unscr-row .ot-bank { flex: 1 1 auto; margin-top: 0; }
+            .ot-tile { min-height: 2.05rem; padding: 0.15rem 0.5rem; font-size: 0.92rem; }
+            .ot-tile--letter { min-width: 2rem; padding: 0.1rem 0.3rem; }
+            .ot-line { min-height: 2.2rem; padding: 0.2rem 0.3rem; gap: 0.25rem; }
+            .ot-bank { margin-top: 0.3rem; gap: 0.25rem; min-height: 0; }
+            .ot-tiles-cue { margin-bottom: 0.25rem; font-size: 0.82rem; }
+            #screen-own-time .ot-unscramble-input { height: 2rem; }
+            .ot-tile-reset { width: 1.8rem; height: 1.8rem; }
+        }
+        .ot-unscr-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.6rem; }
+        .ot-unscr-row .ot-line-wrap { flex: none; }
+        .ot-unscr-row .ot-bank { margin-top: 0; flex: 1 1 100%; }
+        .ot-tiles-item { position: relative; }
+        @media (max-width: 760px) {
+            .ot-unscr-row { flex-wrap: wrap; gap: 0.25rem 0.35rem; }
+            .ot-unscr-row .ot-bank { flex: 0 1 auto; }
+            .ot-tiles-item .ot-tile-reset { position: absolute; top: 0.25rem; right: 0.25rem; width: 1.7rem; height: 1.7rem; }
+            .ot-tiles-item .ot-tiles-cue { padding-right: 1.8rem; }
+            #screen-own-time .ot-unscramble-input { min-width: 0; padding: 0.1rem 0.3rem; }
+            .ot-qs--letters .ot-tiles-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.3rem 0.4rem; }
+            .ot-qs--letters .ot-unscr-row { display: contents; }
+            .ot-qs--letters .ot-tiles-cue { grid-column: 1; grid-row: 1; margin: 0; padding-right: 0; }
+            .ot-qs--letters .ot-line-wrap { grid-column: 2; grid-row: 1; }
+            .ot-qs--letters .ot-bank { grid-column: 1 / -1; grid-row: 2; }
+            .ot-qs--letters .ot-tile-reset { position: static; }
+            #screen-own-time .ot-lesson .ot-check-msg { font-size: 0.86rem; padding: 0.3rem 0.55rem; }
+            .ot-qs--letters .ot-tile--letter { min-width: 1.85rem; min-height: 1.95rem; font-size: 0.98rem; }
+            .ot-qs--letters .ot-bank { gap: 0.2rem; }
+            .ot-qs--letters .ot-tiles-cue { font-size: 0.8rem; line-height: 1.25; }
+            .ot-qs--letters .ot-line-wrap { gap: 0.15rem; }
+        }
+        #screen-own-time .ot-short { display: none; }
+        @media (max-width: 760px) {
+            #screen-own-time .ot-lesson .ot-long { display: none; }
+            #screen-own-time .ot-lesson .ot-short { display: inline; }
+            #screen-own-time .ot-lesson .ot-actions { flex-wrap: nowrap; }
+            #screen-own-time .ot-lesson .ot-actions #ot-prev { flex: 0 0 auto; }
+        }
+        .ot-bank-done { font-size: 0.8rem; color: var(--ot-muted); padding-left: 0.2rem; }
         .ot-results { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 1rem; }
         .ot-results ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
         .ot-results li { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; color: var(--ot-navy); }

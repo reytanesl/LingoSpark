@@ -98,7 +98,55 @@ export function writingTarget(cefr) {
 }
 
 /** Per-task minutes so the whole session stays inside 15–20 min (light: 12–15). */
-const TYPE_MINUTES = { vocab_drill: 4, uoe: 5, reading: 6, writing: 7 };
+const TYPE_MINUTES = { vocab_drill: 4, uoe: 5, reading: 6, writing: 7, word_order: 4, unscramble: 3 };
+
+export const OWN_TIME_TASK_TYPES = ['vocab_drill', 'uoe', 'reading', 'writing', 'word_order', 'unscramble'];
+
+/** Small deterministic PRNG so the same item always gets the same scramble (stable re-renders, testable). */
+function seededShuffle(arr, seedText) {
+    let h = 2166136261;
+    for (const ch of String(seedText)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; }
+    const out = arr.slice();
+    for (let i = out.length - 1; i > 0; i -= 1) {
+        h = (Math.imul(h ^ (h >>> 15), 2246822507) + 0x6d2b79f5) >>> 0;
+        const j = h % (i + 1);
+        [out[i], out[j]] = [out[j], out[i]];
+    }
+    if (out.length > 1 && out.join('\u0001') === arr.join('\u0001')) out.push(out.shift());
+    return out;
+}
+
+/** Comparison key: case-, punctuation- and spacing-insensitive (word order + unscramble). */
+export function looseKey(s) {
+    return String(s ?? '').toLowerCase().replace(/[’']/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Word tiles for a sentence: words in order, final punctuation dropped (added back by the app). */
+export function sentenceTiles(answer) {
+    return String(answer || '').trim().replace(/[.!?]+$/, '').split(/\s+/).filter(Boolean);
+}
+
+/** Build a word_order / unscramble item with shuffled tiles; returns null if unusable. */
+export function buildTileItem(type, it) {
+    const answer = String(it?.answer || '').replace(/\s+/g, ' ').trim();
+    if (!answer) return null;
+    const alts = (Array.isArray(it?.alts) ? it.alts : []).map((a) => String(a || '').replace(/\s+/g, ' ').trim().slice(0, 200)).filter(Boolean).slice(0, 6);
+    const q = String(it?.q || it?.clue || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+    if (type === 'word_order') {
+        const words = sentenceTiles(answer);
+        if (words.length < 3 || words.length > 12) return null;
+        const end = (answer.match(/[.!?]+$/) || ['.'])[0];
+        // Don't give the first word away with its capital letter (the app capitalises the built sentence).
+        const shown = words.map((w, i) => (i === 0 && w !== 'I' && !/^I'/.test(w) ? w.charAt(0).toLowerCase() + w.slice(1) : w));
+        return { q, answer: answer.slice(0, 200), alts, tiles: seededShuffle(shown, answer), end };
+    }
+    const word = answer.replace(/[^\p{L}'-]/gu, '');
+    if (word.length < 3 || word.length > 12 || /\s/.test(answer)) return null;
+    const emoji = String(it?.emoji || '').trim().slice(0, 8);
+    return { q, answer: word, alts, emoji, tiles: seededShuffle(word.toLowerCase().split(''), word) };
+}
+
+
 
 /**
  * Default student guidance per task type (steps + hint; the success checklist was removed), used when the AI leaves a field out
@@ -109,6 +157,18 @@ export function defaultGuidance(type, instrLang, cefr) {
     const w = writingTarget(cefr);
     const zd = w.sentences[1] <= 4 ? 'zdania' : 'zdań';
     const T = {
+        word_order: {
+            steps: en
+                ? ['Tap the words in the right order (or drag them).', 'Tap a word in your sentence to send it back.', 'Press “Check”.']
+                : ['Klikaj słowa we właściwej kolejności (albo je przeciągnij).', 'Kliknij słowo w zdaniu, żeby je cofnąć.', 'Kliknij „Sprawdź”.'],
+            hint: en ? 'English sentences usually go: who → does what → what/where → when.' : 'Szyk angielski: kto → co robi → co/gdzie → kiedy.',
+        },
+        unscramble: {
+            steps: en
+                ? ['Read the clue.', 'Tap the letters in order — or type the word.', 'Press “Check”.']
+                : ['Przeczytaj podpowiedź.', 'Klikaj litery po kolei — albo wpisz słowo.', 'Kliknij „Sprawdź”.'],
+            hint: en ? 'Find the first letter, then say the word aloud.' : 'Znajdź pierwszą literę i powiedz słowo na głos.',
+        },
         vocab_drill: {
             steps: en
                 ? ['Read the example first.', 'Fill in every item — guess if you are not sure.', 'Press “Check”, then fix the red ones.']
@@ -146,6 +206,7 @@ function intensityGuide(intensity) {
 export function buildOwnTimeLessonPrompt(v) {
     const instrLangName = v.instrLang === 'en' ? 'English' : 'Polish';
     const young = (v.age != null && v.age < 15) || ['A0', 'A1', 'A2'].includes(v.cefr);
+    const lowLevel = ['A0', 'A1', 'A2'].includes(v.cefr) || (v.age != null && v.age < 12 && v.cefr !== 'B2' && v.cefr !== 'C1');
     const x = v.extraContext;
     const extraBlock = v.extra && x ? `
 EXTRA PRACTICE ("Keep going" set ${x.setNumber} today): the student already finished today's lesson${x.previousTitle ? ` "${x.previousTitle}"` : ''} and wants more.
@@ -181,7 +242,12 @@ HARD RULES:
 4. ${young
         ? 'Keep instructions VERY short and concrete (e.g. Polish: "Uzupełnij lukę." / "Napisz 2–3 zdania."). No teacher jargon.'
         : 'Keep instructions clear and concise; still avoid dense meta jargon.'}
-5. Prefer the student's task types. Allowed types: vocab_drill, uoe, reading, writing (map prefs: vocab/drill→vocab_drill, uoe→uoe, reading→reading, writing→writing).
+5. Prefer the student's task types. Allowed types: vocab_drill, uoe, reading, writing, word_order, unscramble (map prefs: vocab/drill→vocab_drill or unscramble, uoe→uoe or word_order, reading→reading, writing→writing).
+5b. LOWER LEVELS: ${lowLevel
+        ? `this student is ${v.cefr}${v.age != null ? `, age ${v.age}` : ''} — include exactly ONE (light intensity) or ONE–TWO tile tasks ("word_order" and/or "unscramble") as part of the normal task count (they replace, not add to, other tasks; keep the 15–20 min total).`
+        : v.cefr === 'B1' ? 'B1: you MAY use one short "word_order" task (tricky word order: adverbs, questions) — optional.' : 'B2+: do NOT use word_order or unscramble.'}
+    - "word_order": 3–5 items; each item "answer" = ONE correct English sentence of 4–9 words using the session topic/vocabulary (the app shuffles the words; don't start with a name); "q" = short ${instrLangName} translation or cue (optional); "alts" = other fully correct word orders if any (e.g. moved time phrase).
+    - "unscramble": 4–6 items; each "answer" = ONE English word (3–10 letters, from the session vocabulary); "q" = short English clue/definition (or ${instrLangName} translation for A0–A1); "emoji" = one fitting emoji or "".
 6. Include modelAnswers or expected answers for closed items so the app can check locally.
 7. For reading: short English text (60–120 words) + 2–3 comprehension questions with short answers (1–4 words, in English). A question may be a sentence to complete with ONE "___" gap.
 8. For writing: one short prompt (2–6 sentences depending on level).
@@ -236,10 +302,13 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
     const raw = parsed && typeof parsed === 'object' ? parsed : {};
     const tasksIn = Array.isArray(raw.tasks) ? raw.tasks : [];
     const tasks = tasksIn.slice(0, 4).map((t, i) => {
-        const type = ['vocab_drill', 'uoe', 'reading', 'writing'].includes(t?.type)
+        const type = OWN_TIME_TASK_TYPES.includes(t?.type)
             ? t.type
             : 'writing';
-        const items = Array.isArray(t?.items)
+        const isTile = type === 'word_order' || type === 'unscramble';
+        const items = isTile
+            ? (Array.isArray(t?.items) ? t.items : []).map((it) => buildTileItem(type, it)).filter(Boolean).slice(0, type === 'word_order' ? 5 : 6)
+            : Array.isArray(t?.items)
             ? t.items.slice(0, 12).map((it) => ({
                 q: normalizeGapMarker(it?.q || it?.question || '').slice(0, 500),
                 answer: String(it?.answer || it?.expected || '').slice(0, 300),
@@ -273,7 +342,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                 ? t.modelAnswers.map((a) => String(a || '').slice(0, 500)).filter(Boolean).slice(0, 8)
                 : [],
         };
-    }).filter((t) => t.instruction || t.prompt || t.items.length);
+    }).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
 
     return {
         title: String(raw.title || 'Practice').slice(0, 120),

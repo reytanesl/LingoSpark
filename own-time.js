@@ -234,15 +234,74 @@
         return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
     }
 
+    /** Case-, punctuation- and spacing-insensitive key (mirrors looseKey in own-time-prompts.js). */
+    function looseKey(s) {
+        return String(s ?? '').toLowerCase().replace(/[’']/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+    }
+
     function checkItem(item, value) {
-        const v = normalizeAns(value);
+        // Tile tasks (word order / unscramble) ignore case and punctuation; other items keep exact matching.
+        const norm = Array.isArray(item.tiles) ? looseKey : normalizeAns;
+        const v = norm(value);
         if (!v) return false;
-        const ok = [item.answer, ...(item.alts || [])].map(normalizeAns).filter(Boolean);
+        const ok = [item.answer, ...(item.alts || [])].map(norm).filter(Boolean);
         return ok.some((a) => a === v);
+    }
+
+    /* ---------- Tile tasks: word order + unscramble ---------- */
+    const tileState = {}; // `${taskIndex}:${i}` -> array of tile indexes placed in the answer line (word order)
+    function placed(i) {
+        const k = `${taskIndex}:${i}`;
+        if (!tileState[k]) tileState[k] = [];
+        return tileState[k];
+    }
+    function sentenceFrom(it, order) {
+        const words = order.map((k) => it.tiles[k]);
+        if (!words.length) return '';
+        const txt = words.join(' ');
+        return txt.charAt(0).toUpperCase() + txt.slice(1) + (order.length === it.tiles.length ? (it.end || '.') : '');
+    }
+    function wordOrderInner(it, i) {
+        const order = placed(i);
+        const inLine = new Set(order);
+        const tile = (k, where) => `<button type="button" class="ot-tile" data-k="${k}" data-where="${where}" draggable="true" aria-label="${esc(it.tiles[k])}${where === 'line' ? esc(t(' — kliknij, by cofnąć', ' — click to remove')) : ''}">${esc(it.tiles[k])}</button>`;
+        return `
+            ${it.q ? `<div class="ot-tiles-cue">${esc(it.q)}</div>` : ''}
+            <div class="ot-line-wrap">
+                <div class="ot-line${order.length ? '' : ' is-empty'}" data-zone="line" data-i="${i}" aria-label="${esc(t('Twoje zdanie', 'Your sentence'))}" role="group">${order.map((k) => tile(k, 'line')).join('')}${order.length ? '' : `<span class="ot-line-ph">${esc(t('Klikaj lub przeciągaj słowa tutaj', 'Tap or drag words here'))}</span>`}</div>
+                <span class="ot-mark" data-mark="${i}" aria-live="polite"></span>
+            </div>
+            <div class="ot-bank" data-zone="bank" data-i="${i}" role="group" aria-label="${esc(t('Słowa do ułożenia', 'Words to use'))}">${it.tiles.map((w, k) => (inLine.has(k) ? '' : tile(k, 'bank'))).join('')}${inLine.size === it.tiles.length ? `<span class="ot-bank-done">${esc(t('Wszystkie słowa użyte', 'All words placed'))}</span>` : ''}
+                <button type="button" class="ot-tile-reset" data-reset="${i}" title="${esc(t('Zacznij od nowa', 'Reset'))}" aria-label="${esc(t('Zacznij od nowa', 'Reset'))}"><i class="fa-solid fa-rotate-left"></i></button>
+            </div>
+            <input type="hidden" class="ot-item" data-i="${i}" value="${esc(sentenceFrom(it, order))}">`;
+    }
+    function letterUse(it, value) {
+        // Greedily mark which letter tiles the typed/built word already uses.
+        const pool = it.tiles.map((l, k) => ({ l: l.toLowerCase(), k }));
+        const used = new Set();
+        for (const ch of String(value || '').toLowerCase()) {
+            const hit = pool.find((p) => !used.has(p.k) && p.l === ch);
+            if (hit) used.add(hit.k);
+        }
+        return used;
+    }
+    function unscrambleInner(it, i, value) {
+        const used = letterUse(it, value);
+        return `
+            <div class="ot-tiles-cue">${it.emoji ? `<span class="ot-emoji" aria-hidden="true">${esc(it.emoji)}</span>` : ''}${esc(it.q || t('Ułóż słowo', 'Build the word'))}</div>
+            <div class="ot-unscr-row"><div class="ot-line-wrap">
+                <input type="text" class="pe-input ot-item ot-gap-input ot-unscramble-input" data-i="${i}" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="${it.tiles.length + 2}" style="width:${Math.max(4, it.tiles.length + 1)}ch" aria-label="${esc(t(`Słowo ${i + 1}`, `Word ${i + 1}`))}" value="${esc(value || '')}">
+                <span class="ot-mark" data-mark="${i}" aria-live="polite"></span>
+                <button type="button" class="ot-tile-reset" data-reset="${i}" title="${esc(t('Wyczyść', 'Clear'))}" aria-label="${esc(t('Wyczyść', 'Clear'))}"><i class="fa-solid fa-delete-left"></i></button>
+            </div>
+            <div class="ot-bank ot-bank--letters" data-zone="letters" data-i="${i}" role="group" aria-label="${esc(t('Litery', 'Letters'))}">${it.tiles.map((l, k) => `<button type="button" class="ot-tile ot-tile--letter${used.has(k) ? ' is-used' : ''}" data-l="${k}"${used.has(k) ? ' disabled' : ''}>${esc(l)}</button>`).join('')}</div></div>`;
     }
 
     const TYPE_LABELS = {
         vocab_drill: { pl: 'Słownictwo', en: 'Vocabulary', icon: 'fa-spell-check' },
+        word_order: { pl: 'Szyk zdania', en: 'Word order', icon: 'fa-shuffle' },
+        unscramble: { pl: 'Rozsypanka', en: 'Unscramble', icon: 'fa-font' },
         uoe: { pl: 'Gramatyka i słowa', en: 'Use of English', icon: 'fa-puzzle-piece' },
         reading: { pl: 'Czytanie', en: 'Reading', icon: 'fa-book-open' },
         writing: { pl: 'Pisanie', en: 'Writing', icon: 'fa-pen' },
@@ -403,7 +462,12 @@
         let layout = 'single';
         let body = '';
 
-        if (isWriting) {
+        if (task.type === 'word_order' || task.type === 'unscramble') {
+            layout = task.type === 'word_order' ? 'words' : 'letters';
+            body = `<ol class="ot-qs ot-qs--tiles ot-qs--${layout}">${items.map((it, i) => `<li class="ot-q ot-tiles-item" data-row="${i}" data-kind="${layout}">${layout === 'words'
+                ? wordOrderInner(it, i)
+                : unscrambleInner(it, i, (saved.items && saved.items[i]) || '')}</li>`).join('')}</ol>`;
+        } else if (isWriting) {
             layout = 'writing';
             body = `
                 <div class="ot-col-main">
@@ -465,11 +529,11 @@
                 </div>
                 <div id="ot-task-check" class="ot-check-msg" hidden></div>
                 <div class="ot-actions">
-                    ${taskIndex > 0 ? `<button type="button" class="btn btn-grey" id="ot-prev"><i class="fa-solid fa-arrow-left"></i> ${esc(t('Wstecz', 'Back'))}</button>` : ''}
+                    ${taskIndex > 0 ? `<button type="button" class="btn btn-grey" id="ot-prev"><i class="fa-solid fa-arrow-left"></i> <span class="ot-long">${esc(t('Wstecz', 'Back'))}</span></button>` : ''}
                     ${items.length ? `<button type="button" class="btn btn-outline" id="ot-check"><i class="fa-solid fa-check-double"></i> ${esc(L === 'en' ? 'Check' : 'Sprawdź')}</button>` : ''}
-                    <button type="button" class="btn btn-blue" id="ot-next">${esc(taskIndex + 1 < tasks.length
-                        ? (L === 'en' ? 'Next task' : 'Następne zadanie')
-                        : (L === 'en' ? 'Finish' : 'Zakończ'))} <i class="fa-solid fa-arrow-right"></i></button>
+                    <button type="button" class="btn btn-blue" id="ot-next">${taskIndex + 1 < tasks.length
+                        ? `<span class="ot-long">${esc(L === 'en' ? 'Next task' : 'Następne zadanie')}</span><span class="ot-short">${esc(L === 'en' ? 'Next' : 'Dalej')}</span>`
+                        : esc(L === 'en' ? 'Finish' : 'Zakończ')} <i class="fa-solid fa-arrow-right"></i></button>
                     ${lesson.coachNote && taskIndex === 0 ? `<span class="ot-coach"><i class="fa-solid fa-heart"></i> ${esc(lesson.coachNote)}</span>` : ''}
                 </div>
             </div>`;
@@ -561,6 +625,153 @@
         return answers[key];
     }
 
+    function rerenderTileRow(i, focusSel) {
+        const task = lesson?.tasks?.[taskIndex];
+        const row = root()?.querySelector(`.ot-tiles-item[data-row="${i}"]`);
+        if (!task || !row) return;
+        const it = task.items[i];
+        if (row.dataset.kind === 'words') row.innerHTML = wordOrderInner(it, i);
+        else row.innerHTML = unscrambleInner(it, i, row.querySelector('.ot-unscramble-input')?.value || '');
+        row.classList.remove('is-ok', 'is-wrong');
+        const mark = row.querySelector('.ot-mark');
+        if (mark) mark.innerHTML = '';
+        if (focusSel) (row.querySelector(focusSel) || row.querySelector('.ot-tile, .ot-unscramble-input'))?.focus();
+    }
+
+    function revealTileRow(task, i) {
+        const it = task.items[i];
+        const row = root()?.querySelector(`.ot-tiles-item[data-row="${i}"]`);
+        if (!it || !row) return;
+        if (row.dataset.kind === 'words') {
+            // Map the answer's words onto tile indexes (case/punctuation-insensitive).
+            const want = looseKey(it.answer).split(' ');
+            const free = it.tiles.map((w, k) => ({ w: looseKey(w), k }));
+            const order = [];
+            for (const w of want) {
+                const hit = free.find((f) => f.w === w && !order.includes(f.k));
+                if (hit) order.push(hit.k);
+            }
+            if (order.length === it.tiles.length) tileState[`${taskIndex}:${i}`] = order;
+            rerenderTileRow(i);
+        } else {
+            const inp = row.querySelector('.ot-unscramble-input');
+            if (inp) inp.value = it.answer;
+            rerenderTileRow(i);
+        }
+        row.classList.add('is-revealed');
+        const mark = row.querySelector('.ot-mark');
+        if (mark) { mark.innerHTML = '<i class="fa-solid fa-eye"></i>'; mark.className = 'ot-mark revealed'; }
+    }
+
+    function bindTiles(el) {
+        const items = () => lesson?.tasks?.[taskIndex]?.items || [];
+        el.querySelectorAll('.ot-qs--tiles').forEach((list) => {
+            list.addEventListener('click', (ev) => {
+                const reset = ev.target.closest('[data-reset]');
+                if (reset) {
+                    const i = Number(reset.dataset.reset);
+                    tileState[`${taskIndex}:${i}`] = [];
+                    const inp = list.querySelector(`.ot-unscramble-input[data-i="${i}"]`);
+                    if (inp) inp.value = '';
+                    rerenderTileRow(i, '.ot-bank .ot-tile');
+                    return;
+                }
+                const tile = ev.target.closest('button.ot-tile');
+                if (!tile) return;
+                const row = tile.closest('.ot-tiles-item');
+                const i = Number(row.dataset.row);
+                if (row.dataset.kind === 'words') {
+                    const k = Number(tile.dataset.k);
+                    const order = placed(i);
+                    if (tile.dataset.where === 'bank') order.push(k);
+                    else order.splice(order.indexOf(k), 1);
+                    rerenderTileRow(i, tile.dataset.where === 'bank' ? '.ot-bank button.ot-tile' : '.ot-line .ot-tile:last-child');
+                    const added = tile.dataset.where === 'bank' ? row.querySelector('.ot-line .ot-tile:last-child') : null;
+                    added?.classList.add('pop');
+                } else {
+                    const it = items()[i];
+                    const inp = row.querySelector('.ot-unscramble-input');
+                    inp.value += it.tiles[Number(tile.dataset.l)];
+                    rerenderTileRow(i, '.ot-tile--letter:not([disabled])');
+                }
+            });
+            // Keyboard: arrows move a placed word left/right; Backspace/Delete sends it back.
+            list.addEventListener('keydown', (ev) => {
+                const tile = ev.target.closest('.ot-line .ot-tile');
+                if (!tile) return;
+                const row = tile.closest('.ot-tiles-item');
+                const i = Number(row.dataset.row);
+                const order = placed(i);
+                const k = Number(tile.dataset.k);
+                const pos = order.indexOf(k);
+                let to = null;
+                if (ev.key === 'ArrowLeft' && pos > 0) to = pos - 1;
+                if (ev.key === 'ArrowRight' && pos < order.length - 1) to = pos + 1;
+                if (to != null) {
+                    ev.preventDefault();
+                    order.splice(pos, 1);
+                    order.splice(to, 0, k);
+                    rerenderTileRow(i, `.ot-line .ot-tile[data-k="${k}"]`);
+                } else if (ev.key === 'Backspace' || ev.key === 'Delete') {
+                    ev.preventDefault();
+                    order.splice(pos, 1);
+                    rerenderTileRow(i, '.ot-line .ot-tile:last-child');
+                }
+            });
+            list.addEventListener('input', (ev) => {
+                const inp = ev.target.closest('.ot-unscramble-input');
+                if (!inp) return;
+                const row = inp.closest('.ot-tiles-item');
+                const it = items()[Number(row.dataset.row)];
+                const used = letterUse(it, inp.value);
+                row.querySelectorAll('.ot-tile--letter').forEach((b) => {
+                    const u = used.has(Number(b.dataset.l));
+                    b.classList.toggle('is-used', u);
+                    b.disabled = u;
+                });
+                row.classList.remove('is-ok', 'is-wrong');
+            });
+            // Desktop drag & drop (tap/click and keyboard work everywhere).
+            let drag = null;
+            list.addEventListener('dragstart', (ev) => {
+                const tile = ev.target.closest('.ot-tile[data-k]');
+                if (!tile) return;
+                drag = { i: Number(tile.closest('.ot-tiles-item').dataset.row), k: Number(tile.dataset.k) };
+                ev.dataTransfer.effectAllowed = 'move';
+                ev.dataTransfer.setData('text/plain', String(drag.k));
+                tile.classList.add('is-dragging');
+            });
+            list.addEventListener('dragend', () => { drag = null; list.querySelectorAll('.is-over').forEach((z) => z.classList.remove('is-over')); });
+            list.addEventListener('dragover', (ev) => {
+                const zone = ev.target.closest('[data-zone="line"], [data-zone="bank"]');
+                if (!zone || !drag || Number(zone.dataset.i) !== drag.i) return;
+                ev.preventDefault();
+                zone.classList.add('is-over');
+            });
+            list.addEventListener('dragleave', (ev) => ev.target.closest?.('[data-zone]')?.classList.remove('is-over'));
+            list.addEventListener('drop', (ev) => {
+                const zone = ev.target.closest('[data-zone="line"], [data-zone="bank"]');
+                if (!zone || !drag || Number(zone.dataset.i) !== drag.i) return;
+                ev.preventDefault();
+                const order = placed(drag.i);
+                const from = order.indexOf(drag.k);
+                if (from >= 0) order.splice(from, 1);
+                if (zone.dataset.zone === 'line') {
+                    const before = ev.target.closest('.ot-line .ot-tile');
+                    let at = order.length;
+                    if (before && Number(before.dataset.k) !== drag.k) {
+                        const r = before.getBoundingClientRect();
+                        at = order.indexOf(Number(before.dataset.k)) + (ev.clientX > r.left + r.width / 2 ? 1 : 0);
+                    }
+                    order.splice(at, 0, drag.k);
+                }
+                const i = drag.i;
+                drag = null;
+                rerenderTileRow(i);
+            });
+        });
+    }
+
     function bind() {
         const el = root();
         if (!el) return;
@@ -625,6 +836,12 @@
                 if (good) ok += 1;
                 input?.classList.toggle('is-ok', good);
                 input?.classList.toggle('is-wrong', !good);
+                const row = el.querySelector(`.ot-tiles-item[data-row="${i}"]`);
+                if (row) {
+                    row.classList.remove('is-ok', 'is-wrong', 'is-revealed');
+                    void row.offsetWidth; // restart the pop/shake animation
+                    row.classList.add(good ? 'is-ok' : 'is-wrong');
+                }
                 if (mark) {
                     mark.innerHTML = good ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>';
                     mark.className = 'ot-mark ' + (good ? 'ok' : 'wrong');
@@ -635,12 +852,14 @@
             if (box) {
                 box.hidden = false;
                 const all = ok === total && total > 0;
-                box.innerHTML = `<span>${esc(t(`Dobrze: ${ok}/${total}`, `Correct: ${ok}/${total}`))}${all ? ' 🎉' : ` — ${esc(t('popraw czerwone pola i sprawdź ponownie.', 'fix the red ones and check again.'))}`}</span>
+                box.innerHTML = `<span>${esc(t(`Dobrze: ${ok}/${total}`, `Correct: ${ok}/${total}`))}${all ? ' 🎉' : `<span class="ot-long"> — ${esc(t('popraw czerwone pola i sprawdź ponownie.', 'fix the red ones and check again.'))}</span>`}</span>
                     ${all ? '' : `<button type="button" class="ot-link-btn" id="ot-show-answers">${esc(t('Pokaż odpowiedzi', 'Show answers'))}</button>`}`;
                 box.className = 'ot-check-msg ' + (all ? 'ok' : 'partial');
                 document.getElementById('ot-show-answers')?.addEventListener('click', () => {
                     // Fill the correct answer straight into each wrong gap (the student's attempt stays in the tooltip).
+                    el.querySelectorAll('.ot-tiles-item.is-wrong').forEach((row) => revealTileRow(task, Number(row.dataset.row)));
                     el.querySelectorAll('.ot-item.is-wrong').forEach((inp) => {
+                        if (inp.type === 'hidden' || inp.classList.contains('ot-unscramble-input')) return;
                         const it = (task.items || [])[Number(inp.dataset.i)];
                         if (!it?.answer) return;
                         inp.title = t(`Twoja odpowiedź: ${inp.value || '—'}`, `You wrote: ${inp.value || '—'}`);
@@ -659,6 +878,8 @@
             const k = `${taskIndex}:${d.dataset.panel}`;
             if (d.open) openPanels.add(k); else openPanels.delete(k);
         }));
+        bindTiles(el);
+
         // Writing helpers: insert phrase, live counter
         const answerEl = document.getElementById('ot-answer');
         el.querySelectorAll('.ot-phrase[data-phrase]').forEach((btn) => btn.addEventListener('click', () => {
@@ -733,6 +954,7 @@
                 if (today && data.extrasLimit) today = { ...today, extrasUsed: data.extrasUsed, extrasLeft: data.extrasLeft, extrasLimit: data.extrasLimit };
             }
             openPanels.clear();
+            Object.keys(tileState).forEach((k) => delete tileState[k]);
             taskIndex = 0;
             openPanels.clear();
             answers = {};

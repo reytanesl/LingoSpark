@@ -90,7 +90,7 @@ import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
-import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY } from './own-time-fixtures.js';
+import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY } from './own-time-fixtures.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
@@ -1058,7 +1058,9 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         } : {};
         // Local testing without an AI key: OWN_TIME_MOCK=1 returns fixed sample lessons (never in production).
         if (mock) {
-            const reply = checked.value.extra ? OWN_TIME_MOCK_EXTRA_REPLY : OWN_TIME_MOCK_REPLY;
+            // Lower levels (A0–A1 or under 12) get the sample with word-order + unscramble tile tasks.
+            const low = ['A0', 'A1'].includes(checked.value.cefr) || (checked.value.age != null && checked.value.age < 12);
+            const reply = checked.value.extra ? OWN_TIME_MOCK_EXTRA_REPLY : (low ? OWN_TIME_MOCK_LOW_REPLY : OWN_TIME_MOCK_REPLY);
             const lesson = normalizeOwnTimeLesson(reply, checked.value);
             if (reservation) lesson.extra = true;
             return res.json({ lesson, mock: true, ...extraInfo });

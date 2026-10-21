@@ -124,3 +124,67 @@ test('Mock fixtures use inline gaps: {{n}} cover every item; ___ sentences have 
     assert.deepEqual(OWN_TIME_MOCK_REPLY.tasks.map((t) => t.type), ['vocab_drill', 'uoe', 'reading', 'writing']);
     for (const t of all) assert.ok((t.items || []).length <= 6);
 });
+
+// ---- tile tasks (word_order / unscramble) ----
+import { buildTileItem, looseKey, OWN_TIME_TASK_TYPES } from './own-time-prompts.js';
+import { OWN_TIME_MOCK_LOW_REPLY } from './own-time-fixtures.js';
+
+test('looseKey ignores case, punctuation and apostrophe styles', () => {
+    assert.equal(looseKey('I’m  happy!'), looseKey("i'm happy"));
+    assert.equal(looseKey('Where do you live?'), 'where do you live');
+});
+
+test('buildTileItem word_order shuffles deterministically and keeps the word set', () => {
+    const a = buildTileItem('word_order', { q: 'Lubię pływać.', answer: 'I like swimming in the sea.', alts: ['In the sea I like swimming.'] });
+    const b = buildTileItem('word_order', { q: 'Lubię pływać.', answer: 'I like swimming in the sea.' });
+    assert.ok(a && b);
+    assert.deepEqual(a.tiles, b.tiles);
+    assert.deepEqual([...a.tiles].sort(), ['I', 'in', 'like', 'sea', 'swimming', 'the'].sort());
+    assert.notEqual(a.tiles.join(' '), 'I like swimming in the sea');
+    assert.equal(a.end, '.');
+    assert.equal(a.alts.length, 1);
+    assert.equal(buildTileItem('word_order', { answer: 'Hi there' }), null, 'too short');
+});
+
+test('buildTileItem unscramble needs one word and yields letter tiles', () => {
+    const u = buildTileItem('unscramble', { q: 'You buy food here', answer: 'Shop', emoji: '🛒' });
+    assert.equal(u.answer.toLowerCase(), 'shop');
+    assert.deepEqual([...u.tiles].sort(), ['h', 'o', 'p', 's']);
+    assert.notEqual(u.tiles.join(''), 'shop');
+    assert.equal(u.emoji, '🛒');
+    assert.equal(buildTileItem('unscramble', { answer: 'two words' }), null);
+    assert.equal(buildTileItem('unscramble', { answer: 'ab' }), null);
+});
+
+test('normalizer accepts tile types, drops bad items and empty tile tasks', () => {
+    assert.ok(OWN_TIME_TASK_TYPES.includes('word_order') && OWN_TIME_TASK_TYPES.includes('unscramble'));
+    const l = normalizeOwnTimeLesson({ title: 't', tasks: [
+        { type: 'word_order', instruction: 'Ułóż', items: [{ answer: 'She goes to school by bus.' }, { answer: 'no' }] },
+        { type: 'unscramble', instruction: 'Ułóż', items: [{ answer: 'x y' }] },
+        { type: 'uoe', instruction: 'Uzupełnij', items: [{ q: 'I ___ happy', answer: 'am' }] },
+    ] }, { cefr: 'A1', instrLang: 'pl' });
+    const types = l.tasks.map(t => t.type);
+    assert.deepEqual(types, ['word_order', 'uoe']);
+    assert.equal(l.tasks[0].items.length, 1);
+    assert.ok(Array.isArray(l.tasks[0].items[0].tiles));
+    assert.ok(l.tasks[0].steps.length && l.tasks[0].hint);
+});
+
+test('prompt mixes tile tasks in for low levels only', () => {
+    const low = validateOwnTimeGenerateRequest({ ...req, profile: { ...req.profile, cefr: 'A1', age: 10 } });
+    const pLow = buildOwnTimeLessonPrompt(low.value);
+    assert.match(pLow, /include exactly ONE/);
+    assert.match(pLow, /15–20/);
+    const hi = validateOwnTimeGenerateRequest({ ...req, profile: { ...req.profile, cefr: 'B2', age: 16 } });
+    assert.match(buildOwnTimeLessonPrompt(hi.value), /B2\+: do NOT use word_order or unscramble/);
+    const b1 = validateOwnTimeGenerateRequest({ ...req, profile: { ...req.profile, cefr: 'B1', age: 14 } });
+    assert.match(buildOwnTimeLessonPrompt(b1.value), /MAY use one short "word_order"/);
+});
+
+test('low mock fixture normalizes with both tile types intact', () => {
+    const l = normalizeOwnTimeLesson(OWN_TIME_MOCK_LOW_REPLY, { cefr: 'A1', instrLang: 'pl' });
+    const byType = Object.fromEntries(l.tasks.map(t => [t.type, t]));
+    assert.equal(byType.unscramble.items.length, 5);
+    assert.equal(byType.word_order.items.length, 4);
+    assert.ok(l.tasks.length >= 3 && l.tasks.length <= 5);
+});
