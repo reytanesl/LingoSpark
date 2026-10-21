@@ -2,6 +2,7 @@ import './matura-mistakes.js';
 import './wordset-import-core.js';
 import pg from 'pg';
 import crypto from 'crypto';
+import { OWN_TIME_PROFILE_LIMIT, OWN_TIME_DEFAULT_PROFILE_NAME, sanitizeOwnTimeProfileName, sanitizeOwnTimeProgress, ownTimeProgressSummary } from './own-time-profiles.js';
 
 const { Pool } = pg;
 
@@ -263,6 +264,48 @@ export async function initDb() {
         );
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_own_time_extra_log_user ON own_time_extra_log (user_id, created_at DESC)`);
+    // Several named student profiles per account (each with its own history, daily lesson, extras and in-progress lesson).
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS own_time_student_profiles (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            name TEXT NOT NULL DEFAULT '',
+            is_active BOOLEAN NOT NULL DEFAULT FALSE,
+            configured BOOLEAN NOT NULL DEFAULT TRUE,
+            age INTEGER,
+            class_label TEXT NOT NULL DEFAULT '',
+            cefr TEXT NOT NULL DEFAULT 'A2',
+            interests JSONB NOT NULL DEFAULT '[]'::jsonb,
+            task_prefs JSONB NOT NULL DEFAULT '[]'::jsonb,
+            purpose TEXT NOT NULL DEFAULT '',
+            intensity TEXT NOT NULL DEFAULT 'standard',
+            instr_lang TEXT NOT NULL DEFAULT 'pl',
+            topic TEXT NOT NULL DEFAULT '',
+            vocab TEXT NOT NULL DEFAULT '',
+            progress JSONB,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+    `);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_own_time_student_profiles_user ON own_time_student_profiles (user_id, id)`);
+    await db.query(`ALTER TABLE own_time_lessons ADD COLUMN IF NOT EXISTS profile_id INTEGER`);
+    await db.query(`ALTER TABLE own_time_extra_log ADD COLUMN IF NOT EXISTS profile_id INTEGER`);
+    await migrateOwnTimeProfiles(db);
+}
+
+/** Startup migration (idempotent): the old single profile becomes the user's default, active profile; old lessons/extras attach to it. */
+export async function migrateOwnTimeProfiles(db = getPool()) {
+    await db.query(`
+        INSERT INTO own_time_student_profiles (user_id, name, is_active, configured, age, class_label, cefr, interests, task_prefs, purpose, intensity, instr_lang, topic, vocab, created_at, updated_at)
+        SELECT p.user_id, '${OWN_TIME_DEFAULT_PROFILE_NAME}', TRUE, TRUE, p.age, p.class_label, p.cefr, p.interests, p.task_prefs, p.purpose, p.intensity, p.instr_lang, p.topic, p.vocab, p.updated_at, p.updated_at
+        FROM own_time_profiles p
+        WHERE NOT EXISTS (SELECT 1 FROM own_time_student_profiles s WHERE s.user_id = p.user_id)`);
+    const attach = (table) => db.query(`
+        UPDATE ${table} t SET profile_id = s.id
+        FROM (SELECT DISTINCT ON (user_id) id, user_id FROM own_time_student_profiles ORDER BY user_id, is_active DESC, id) s
+        WHERE t.profile_id IS NULL AND t.user_id = s.user_id`);
+    await attach('own_time_lessons');
+    await attach('own_time_extra_log');
 }
 
 /** Clear timed premium when the paid/admin period has ended (keeps access_until for history). */
@@ -1769,6 +1812,8 @@ export function ownTimeCanOfferEnglish(age, cefr) {
 function rowToOwnTimeProfile(row) {
     if (!row) return null;
     return {
+        id: row.id != null ? Number(row.id) : null,
+        name: String(row.name || ''),
         age: row.age == null ? null : Number(row.age),
         classLabel: String(row.class_label || ''),
         cefr: String(row.cefr || 'A2'),
@@ -1784,11 +1829,117 @@ function rowToOwnTimeProfile(row) {
     };
 }
 
+/** Active student profile row (falls back to the first one and marks it active). */
+async function activeOwnTimeRow(userId) {
+    const db = getPool();
+    let r = await db.query(`SELECT * FROM own_time_student_profiles WHERE user_id = $1 ORDER BY is_active DESC, id LIMIT 1`, [userId]);
+    const row = r.rows[0] || null;
+    if (row && !row.is_active) {
+        await db.query(`UPDATE own_time_student_profiles SET is_active = (id = $2) WHERE user_id = $1`, [userId, row.id]);
+        row.is_active = true;
+    }
+    return row;
+}
+
+/** Active profile (null until the student has filled one in). */
 export async function getOwnTimeProfile(userId) {
     if (!userId) return null;
+    const row = await activeOwnTimeRow(userId);
+    return row && row.configured ? rowToOwnTimeProfile(row) : null;
+}
+
+/** Id of the active profile (or of a given profile owned by the user). */
+export async function resolveOwnTimeProfileId(userId, profileId) {
     const db = getPool();
-    const r = await db.query(`SELECT * FROM own_time_profiles WHERE user_id = $1`, [userId]);
-    return rowToOwnTimeProfile(r.rows[0] || null);
+    if (profileId != null && profileId !== '') {
+        const r = await db.query(`SELECT id FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, Number(profileId) || 0]);
+        return r.rows[0] ? Number(r.rows[0].id) : null;
+    }
+    const row = await activeOwnTimeRow(userId);
+    return row ? Number(row.id) : null;
+}
+
+export async function listOwnTimeProfiles(userId) {
+    const db = getPool();
+    await activeOwnTimeRow(userId);
+    const r = await db.query(`SELECT * FROM own_time_student_profiles WHERE user_id = $1 ORDER BY id`, [userId]);
+    return {
+        profiles: r.rows.map((row) => ({
+            ...rowToOwnTimeProfile(row),
+            configured: !!row.configured,
+            active: !!row.is_active,
+            progress: ownTimeProgressSummary(row.progress),
+        })),
+        activeId: Number((r.rows.find((x) => x.is_active) || {}).id) || null,
+        limit: OWN_TIME_PROFILE_LIMIT,
+    };
+}
+
+/** Create a named profile (becomes active; settings filled in next). Returns { ok, profile } or { ok:false, code }. */
+export async function createOwnTimeProfile(userId, body = {}) {
+    const db = getPool();
+    const name = sanitizeOwnTimeProfileName(body.name);
+    if (!name) return { ok: false, code: 'name_required' };
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query(`SELECT pg_advisory_xact_lock(hashtext('own_time_profiles'), $1)`, [userId]);
+        const c = await client.query(`SELECT COUNT(*)::int AS n FROM own_time_student_profiles WHERE user_id = $1`, [userId]);
+        if (c.rows[0].n >= OWN_TIME_PROFILE_LIMIT) { await client.query('ROLLBACK'); return { ok: false, code: 'limit' }; }
+        await client.query(`UPDATE own_time_student_profiles SET is_active = FALSE WHERE user_id = $1`, [userId]);
+        const r = await client.query(
+            `INSERT INTO own_time_student_profiles (user_id, name, is_active, configured) VALUES ($1, $2, TRUE, FALSE) RETURNING *`,
+            [userId, name]);
+        await client.query('COMMIT');
+        return { ok: true, profile: { ...rowToOwnTimeProfile(r.rows[0]), configured: false, active: true } };
+    } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+export async function renameOwnTimeProfile(userId, profileId, name) {
+    const clean = sanitizeOwnTimeProfileName(name);
+    if (!clean) return { ok: false, code: 'name_required' };
+    const r = await getPool().query(`UPDATE own_time_student_profiles SET name = $3, updated_at = NOW() WHERE user_id = $1 AND id = $2 RETURNING id`, [userId, Number(profileId) || 0, clean]);
+    return r.rows[0] ? { ok: true } : { ok: false, code: 'not_found' };
+}
+
+/** Delete a profile with its history, extras and saved progress; another profile becomes active. */
+export async function deleteOwnTimeProfile(userId, profileId) {
+    const db = getPool();
+    const id = Number(profileId) || 0;
+    const r = await db.query(`DELETE FROM own_time_student_profiles WHERE user_id = $1 AND id = $2 RETURNING is_active`, [userId, id]);
+    if (!r.rows[0]) return { ok: false, code: 'not_found' };
+    await db.query(`DELETE FROM own_time_lessons WHERE user_id = $1 AND profile_id = $2`, [userId, id]);
+    await db.query(`DELETE FROM own_time_extra_log WHERE user_id = $1 AND profile_id = $2`, [userId, id]);
+    await activeOwnTimeRow(userId);
+    return { ok: true };
+}
+
+export async function activateOwnTimeProfile(userId, profileId) {
+    const db = getPool();
+    const id = Number(profileId) || 0;
+    const own = await db.query(`SELECT id FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, id]);
+    if (!own.rows[0]) return { ok: false, code: 'not_found' };
+    await db.query(`UPDATE own_time_student_profiles SET is_active = (id = $2) WHERE user_id = $1`, [userId, id]);
+    return { ok: true };
+}
+
+export async function getOwnTimeProgress(userId, profileId) {
+    const r = await getPool().query(`SELECT progress FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, Number(profileId) || 0]);
+    return r.rows[0]?.progress || null;
+}
+
+/** Save (or clear with null) the in-progress lesson of one profile. */
+export async function saveOwnTimeProgress(userId, profileId, progress) {
+    const clean = progress == null ? null : sanitizeOwnTimeProgress(progress);
+    const r = await getPool().query(
+        `UPDATE own_time_student_profiles SET progress = $3::jsonb WHERE user_id = $1 AND id = $2 RETURNING id`,
+        [userId, Number(profileId) || 0, clean == null ? null : JSON.stringify(clean)]);
+    return { ok: !!r.rows[0], saved: !!clean };
 }
 
 export function sanitizeOwnTimeProfileInput(body = {}) {
@@ -1818,28 +1969,25 @@ export function sanitizeOwnTimeProfileInput(body = {}) {
     };
 }
 
-export async function upsertOwnTimeProfile(userId, body) {
+/** Save settings of the active profile (creates the default profile for a brand-new student). */
+export async function upsertOwnTimeProfile(userId, body, profileId = null) {
     const p = sanitizeOwnTimeProfileInput(body);
     const db = getPool();
+    let id = await resolveOwnTimeProfileId(userId, profileId);
+    if (!id) {
+        const ins = await db.query(
+            `INSERT INTO own_time_student_profiles (user_id, name, is_active, configured) VALUES ($1, $2, TRUE, FALSE) RETURNING id`,
+            [userId, sanitizeOwnTimeProfileName(body?.name, OWN_TIME_DEFAULT_PROFILE_NAME)]);
+        id = ins.rows[0].id;
+    }
     const r = await db.query(
-        `INSERT INTO own_time_profiles (
-            user_id, age, class_label, cefr, interests, task_prefs, purpose, intensity, instr_lang, topic, vocab, updated_at
-         ) VALUES ($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,$9,$10,$11,NOW())
-         ON CONFLICT (user_id) DO UPDATE SET
-            age = EXCLUDED.age,
-            class_label = EXCLUDED.class_label,
-            cefr = EXCLUDED.cefr,
-            interests = EXCLUDED.interests,
-            task_prefs = EXCLUDED.task_prefs,
-            purpose = EXCLUDED.purpose,
-            intensity = EXCLUDED.intensity,
-            instr_lang = EXCLUDED.instr_lang,
-            topic = EXCLUDED.topic,
-            vocab = EXCLUDED.vocab,
-            updated_at = NOW()
+        `UPDATE own_time_student_profiles SET
+            configured = TRUE, age = $3, class_label = $4, cefr = $5, interests = $6::jsonb, task_prefs = $7::jsonb,
+            purpose = $8, intensity = $9, instr_lang = $10, topic = $11, vocab = $12, updated_at = NOW()
+         WHERE user_id = $1 AND id = $2
          RETURNING *`,
         [
-            userId, p.age, p.classLabel, p.cefr,
+            userId, id, p.age, p.classLabel, p.cefr,
             JSON.stringify(p.interests), JSON.stringify(p.taskPrefs),
             p.purpose, p.intensity, p.instrLang, p.topic, p.vocab,
         ]
@@ -1847,17 +1995,18 @@ export async function upsertOwnTimeProfile(userId, body) {
     return rowToOwnTimeProfile(r.rows[0]);
 }
 
-export async function listOwnTimeLessons(userId, { limit = 20 } = {}) {
+export async function listOwnTimeLessons(userId, { limit = 20, profileId = null } = {}) {
     if (!userId) return [];
     const db = getPool();
     const lim = Math.max(1, Math.min(Number(limit) || 20, 50));
+    const pid = await resolveOwnTimeProfileId(userId, profileId);
     const r = await db.query(
         `SELECT id, lesson, feedback, duration_ms, created_at
          FROM own_time_lessons
-         WHERE user_id = $1
+         WHERE user_id = $1 AND profile_id IS NOT DISTINCT FROM $3
          ORDER BY created_at DESC
          LIMIT $2`,
-        [userId, lim]
+        [userId, lim, pid]
     );
     return r.rows.map((row) => ({
         id: row.id,
@@ -1871,22 +2020,24 @@ export async function listOwnTimeLessons(userId, { limit = 20 } = {}) {
 const OWN_TIME_TODAY_SQL = `(created_at AT TIME ZONE 'Europe/Warsaw')::date = (NOW() AT TIME ZONE 'Europe/Warsaw')::date`;
 
 /** Today's status: main lesson done? how many extra sets used? (extras never count as the daily lesson) */
-export async function getOwnTimeToday(userId, limit) {
+export async function getOwnTimeToday(userId, limit, profileId = null) {
     const db = getPool();
+    const pid = await resolveOwnTimeProfileId(userId, profileId);
     const [main, extras] = await Promise.all([
-        db.query(`SELECT COUNT(*)::int AS n FROM own_time_lessons WHERE user_id = $1 AND COALESCE(lesson->>'extra', 'false') <> 'true' AND ${OWN_TIME_TODAY_SQL}`, [userId]),
-        db.query(`SELECT COUNT(*)::int AS n FROM own_time_extra_log WHERE user_id = $1 AND ${OWN_TIME_TODAY_SQL}`, [userId]),
+        db.query(`SELECT COUNT(*)::int AS n FROM own_time_lessons WHERE user_id = $1 AND profile_id IS NOT DISTINCT FROM $2 AND COALESCE(lesson->>'extra', 'false') <> 'true' AND ${OWN_TIME_TODAY_SQL}`, [userId, pid]),
+        db.query(`SELECT COUNT(*)::int AS n FROM own_time_extra_log WHERE user_id = $1 AND profile_id IS NOT DISTINCT FROM $2 AND ${OWN_TIME_TODAY_SQL}`, [userId, pid]),
     ]);
     const used = extras.rows[0].n;
     return { lessonDone: main.rows[0].n > 0, lessonsToday: main.rows[0].n, extrasUsed: used, extrasLimit: limit, extrasLeft: Math.max(0, limit - used) };
 }
 
 /** Reserve one extra set for today; returns { ok, id, used } — ok=false when the daily cap is already reached. */
-export async function reserveOwnTimeExtra(userId, limit) {
+export async function reserveOwnTimeExtra(userId, limit, profileId = null) {
     const db = getPool();
-    const ins = await db.query(`INSERT INTO own_time_extra_log (user_id) VALUES ($1) RETURNING id`, [userId]);
+    const pid = await resolveOwnTimeProfileId(userId, profileId);
+    const ins = await db.query(`INSERT INTO own_time_extra_log (user_id, profile_id) VALUES ($1, $2) RETURNING id`, [userId, pid]);
     const id = ins.rows[0].id;
-    const c = await db.query(`SELECT COUNT(*)::int AS n FROM own_time_extra_log WHERE user_id = $1 AND id <= $2 AND ${OWN_TIME_TODAY_SQL}`, [userId, id]);
+    const c = await db.query(`SELECT COUNT(*)::int AS n FROM own_time_extra_log WHERE user_id = $1 AND profile_id IS NOT DISTINCT FROM $3 AND id <= $2 AND ${OWN_TIME_TODAY_SQL}`, [userId, id, pid]);
     if (c.rows[0].n > limit) {
         await db.query(`DELETE FROM own_time_extra_log WHERE id = $1`, [id]);
         return { ok: false, used: limit };
@@ -1920,19 +2071,23 @@ function softTweakOwnTimeProfile(profile, feedback) {
     return next;
 }
 
-export async function saveOwnTimeLesson(userId, { lesson = {}, feedback = {}, durationMs = 0 } = {}) {
+export async function saveOwnTimeLesson(userId, { lesson = {}, feedback = {}, durationMs = 0, profileId = null } = {}) {
     const db = getPool();
+    const pid = await resolveOwnTimeProfileId(userId, profileId);
     const cleanLesson = lesson && typeof lesson === 'object' ? lesson : {};
     const cleanFeedback = feedback && typeof feedback === 'object' ? feedback : {};
     const dur = Math.max(0, Math.min(Number(durationMs) || 0, 86400000));
     const r = await db.query(
-        `INSERT INTO own_time_lessons (user_id, lesson, feedback, duration_ms)
-         VALUES ($1, $2::jsonb, $3::jsonb, $4)
+        `INSERT INTO own_time_lessons (user_id, lesson, feedback, duration_ms, profile_id)
+         VALUES ($1, $2::jsonb, $3::jsonb, $4, $5)
          RETURNING id, created_at, duration_ms`,
-        [userId, JSON.stringify(cleanLesson), JSON.stringify(cleanFeedback), dur]
+        [userId, JSON.stringify(cleanLesson), JSON.stringify(cleanFeedback), dur, pid]
     );
+    // The lesson is finished: drop that profile's saved in-progress state.
+    if (pid) await db.query(`UPDATE own_time_student_profiles SET progress = NULL WHERE user_id = $1 AND id = $2`, [userId, pid]);
 
-    const profile = await getOwnTimeProfile(userId);
+    const pr = pid ? await db.query(`SELECT * FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, pid]) : { rows: [] };
+    const profile = pr.rows[0] ? rowToOwnTimeProfile(pr.rows[0]) : null;
     // Extra "Keep going" sets don't re-tune intensity/focus (only the daily lesson's feedback does).
     const tweaked = cleanLesson.extra === true ? null : softTweakOwnTimeProfile(profile, cleanFeedback);
     if (tweaked) {
@@ -1947,13 +2102,13 @@ export async function saveOwnTimeLesson(userId, { lesson = {}, feedback = {}, du
             instrLang: tweaked.instrLang,
             topic: tweaked.topic,
             vocab: tweaked.vocab,
-        });
+        }, pid);
     }
 
     return {
         id: r.rows[0].id,
         createdAt: r.rows[0].created_at,
         durationMs: Number(r.rows[0].duration_ms) || 0,
-        profile: await getOwnTimeProfile(userId),
+        profile: pid ? rowToOwnTimeProfile((await db.query(`SELECT * FROM own_time_student_profiles WHERE id = $1`, [pid])).rows[0]) : null,
     };
 }

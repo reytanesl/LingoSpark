@@ -2997,6 +2997,73 @@
         #screen-own-time .ot-instr-more { display: none; margin-left: 0.3rem; padding: 0 0.4rem; border: 0; border-radius: 999px; background: var(--ot-pale); color: var(--ot-navy-2); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
         #screen-own-time .ot-instr-rest { color: var(--ot-muted); font-weight: 500; }
         #screen-own-time .ot-tf-key { margin-left: 0.25rem; }
+        /* Profiles: switcher chip + popover (create / rename / delete / switch) */
+        #screen-own-time .ot-pbar { position: relative; display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0.75rem; }
+        #screen-own-time .ot-pbar--compact { margin: 0 0 0 auto; flex: 0 0 auto; }
+        #screen-own-time .ot-lesson-head .ot-head-text { min-width: 0; flex: 1 1 auto; }
+        #screen-own-time .ot-pchip { display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.3rem 0.75rem 0.3rem 0.32rem; border: 1px solid #dbe5f1; border-radius: 999px; background: #fff; box-shadow: var(--ot-shadow); color: var(--ot-ink); font: inherit; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s; max-width: 100%; }
+        #screen-own-time .ot-pchip:hover { border-color: var(--ot-line); }
+        #screen-own-time .ot-pchip:active { transform: scale(0.98); }
+        #screen-own-time .ot-pchip:focus-visible { outline: 3px solid var(--ot-accent); outline-offset: 2px; }
+        #screen-own-time .ot-pchip-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; min-width: 0; }
+        #screen-own-time .ot-pchip-text strong { font-size: 0.95rem; color: var(--ot-navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 12rem; }
+        #screen-own-time .ot-pchip-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ot-muted); }
+        #screen-own-time .ot-pchip-chev { font-size: 0.7rem; color: var(--ot-muted); transition: transform 0.2s; }
+        #screen-own-time .ot-pchip[aria-expanded="true"] .ot-pchip-chev { transform: rotate(180deg); }
+        #screen-own-time .ot-plevel { padding: 0.05rem 0.45rem; border-radius: 999px; background: var(--ot-pale); color: var(--ot-navy-2); font-size: 0.72rem; font-weight: 800; }
+        #screen-own-time .ot-pcount { color: var(--ot-muted); font-size: 0.8rem; font-weight: 600; }
+        #screen-own-time .ot-avatar { display: inline-grid; place-items: center; flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%; background: var(--ot-av, var(--ot-navy)); color: #fff; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.02em; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25); }
+        #screen-own-time .ot-pbar--compact .ot-pchip { padding: 0.18rem 0.55rem 0.18rem 0.2rem; box-shadow: none; gap: 0.4rem; }
+        #screen-own-time .ot-pbar--compact .ot-avatar { width: 1.6rem; height: 1.6rem; font-size: 0.66rem; }
+        #screen-own-time .ot-pbar--compact .ot-pchip-label, #screen-own-time .ot-pbar--compact .ot-plevel { display: none; }
+        #screen-own-time .ot-pbar--compact .ot-pchip-text strong { font-size: 0.82rem; max-width: 7rem; }
+        #screen-own-time .ot-pmenu { position: absolute; top: calc(100% + 0.45rem); left: 0; z-index: 30; width: min(26rem, calc(100vw - 2rem)); padding: 0.75rem; border: 1px solid #dbe5f1; border-radius: var(--ot-radius); background: #fff; box-shadow: 0 2px 4px rgba(27,42,74,0.06), 0 18px 40px rgba(27,42,74,0.18); animation: otFadeUp 0.18s ease; }
+        #screen-own-time .ot-pbar--compact .ot-pmenu { left: auto; right: 0; }
+        #screen-own-time .ot-pmenu-head { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.1rem 0.25rem 0.55rem; border-bottom: 1px solid #edf2f8; }
+        #screen-own-time .ot-pmenu-head strong { color: var(--ot-navy); font-size: 0.98rem; }
+        #screen-own-time .ot-pmenu-head span { color: var(--ot-muted); font-size: 0.78rem; }
+        #screen-own-time .ot-plist { list-style: none; margin: 0.45rem 0; padding: 0; display: grid; gap: 0.3rem; }
+        #screen-own-time .ot-prow { display: flex; align-items: center; gap: 0.35rem; padding: 0.15rem; border-radius: 12px; transition: background-color 0.15s; }
+        #screen-own-time .ot-prow:hover { background: #f6f9fd; }
+        #screen-own-time .ot-prow.is-active { background: var(--ot-pale); }
+        #screen-own-time .ot-pmain { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 0.55rem; padding: 0.35rem 0.4rem; border: 0; border-radius: 10px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+        #screen-own-time .ot-pmain:focus-visible, #screen-own-time .ot-picon:focus-visible, #screen-own-time .ot-pbtn:focus-visible, #screen-own-time .ot-padd:focus-visible { outline: 3px solid var(--ot-accent); outline-offset: 1px; }
+        #screen-own-time .ot-pinfo { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+        #screen-own-time .ot-pinfo strong { color: var(--ot-navy); font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #screen-own-time .ot-pinfo span { color: var(--ot-muted); font-size: 0.76rem; }
+        #screen-own-time .ot-pprog { margin-left: auto; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--ot-accent-soft); color: #8a5200; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
+        #screen-own-time .ot-pactive { margin-left: auto; color: var(--ot-ok); font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
+        #screen-own-time .ot-pprog + .ot-pactive { margin-left: 0.25rem; }
+        #screen-own-time .ot-prow-actions { display: inline-flex; gap: 0.2rem; flex: 0 0 auto; }
+        #screen-own-time .ot-picon { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border: 0; border-radius: 50%; background: transparent; color: var(--ot-muted); cursor: pointer; transition: background-color 0.15s, color 0.15s; }
+        #screen-own-time .ot-picon:hover { background: #fff; color: var(--ot-navy); }
+        #screen-own-time .ot-picon.is-danger:hover { color: var(--ot-bad); background: var(--ot-bad-soft); }
+        #screen-own-time .ot-picon:disabled { opacity: 0.35; cursor: not-allowed; }
+        #screen-own-time .ot-pform { flex: 1 1 auto; display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
+        #screen-own-time .ot-pform .pe-input { flex: 1 1 auto; min-width: 0; height: 2.1rem; padding: 0.2rem 0.6rem; margin: 0; }
+        #screen-own-time .ot-pbtn { flex: 0 0 auto; padding: 0.35rem 0.75rem; border: 1px solid #cfdbea; border-radius: 999px; background: #fff; color: var(--ot-navy); font: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+        #screen-own-time .ot-pbtn.is-primary { background: var(--ot-navy); border-color: var(--ot-navy); color: #fff; }
+        #screen-own-time .ot-pbtn.is-danger { background: var(--ot-bad); border-color: var(--ot-bad); color: #fff; }
+        #screen-own-time .ot-pconfirm { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding: 0.45rem 0.55rem; border-radius: 10px; background: var(--ot-bad-soft); color: #7a1f2b; font-size: 0.84rem; font-weight: 600; }
+        #screen-own-time .ot-pconfirm > span:first-of-type { flex: 1 1 12rem; }
+        #screen-own-time .ot-pfoot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding-top: 0.55rem; border-top: 1px solid #edf2f8; }
+        #screen-own-time .ot-pfoot .ot-pform { width: 100%; }
+        #screen-own-time .ot-padd { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.85rem; border: 1px dashed var(--ot-line); border-radius: 999px; background: #fff; color: var(--ot-navy); font: inherit; font-size: 0.86rem; font-weight: 700; cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
+        #screen-own-time .ot-padd:hover { background: var(--ot-pale); border-style: solid; }
+        #screen-own-time .ot-padd:disabled { opacity: 0.45; cursor: not-allowed; }
+        #screen-own-time .ot-plimit { color: var(--ot-muted); font-size: 0.76rem; font-weight: 600; }
+        @media (max-width: 520px) {
+            #screen-own-time .ot-pmenu { left: 0; right: 0; width: auto; padding: 0.6rem; }
+            #screen-own-time .ot-pbar--compact { position: static; }
+            #screen-own-time .ot-lesson .ot-lesson-head { position: relative; }
+            #screen-own-time .ot-pbar--compact .ot-pmenu { left: 0; right: 0; }
+            #screen-own-time .ot-pactive-txt { display: none; }
+            #screen-own-time .ot-pmain { gap: 0.45rem; padding: 0.3rem; }
+            #screen-own-time .ot-picon { width: 1.8rem; height: 1.8rem; }
+            #screen-own-time .ot-pbar--compact .ot-pchip-text { display: none; }
+            #screen-own-time .ot-pbar--compact .ot-pchip { padding: 0.15rem 0.4rem 0.15rem 0.15rem; }
+            #screen-own-time .ot-pprog { font-size: 0.68rem; }
+        }
         @media (prefers-reduced-motion: reduce) { #screen-own-time *, #screen-own-time *::before { animation: none !important; transition: none !important; } }
         @media (max-width: 760px) {
             #screen-own-time .ot-card { padding: 1rem; border-radius: 14px; }

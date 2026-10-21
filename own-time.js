@@ -27,6 +27,12 @@
     let today = null; // { lessonDone, extrasUsed, extrasLimit, extrasLeft } from the server
     let lastFinished = null; // { lesson, answers } of the set just completed — context for "Keep going"
     let capMessage = '';
+    // Several named profiles per account; each keeps its own in-progress lesson on the server.
+    let profiles = [];
+    let profileId = null;
+    let profileLimit = 5;
+    const pmenu = { open: false, renaming: null, deleting: null, creating: false };
+    let progressTimer = null;
 
     function esc(s) {
         return String(s ?? '')
@@ -129,9 +135,12 @@
             return `<label class="ot-chip"><input type="checkbox" value="${esc(tt.id)}"${checked}> ${esc(label)}</label>`;
         }).join('');
 
+        const active = profiles.find((x) => x.id === profileId);
         const title = editMode
             ? (L === 'en' ? 'Edit your profile' : 'Edytuj profil')
-            : (L === 'en' ? 'Tell us about you' : 'Opowiedz o sobie');
+            : (active && profiles.length > 1
+                ? t(`Nowy profil „${active.name}” — opowiedz o sobie`, `New profile “${active.name}” — tell us about you`)
+                : (L === 'en' ? 'Tell us about you' : 'Opowiedz o sobie'));
 
         return `
             <div class="ot-card">
@@ -575,6 +584,7 @@
                         <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}</div>
                         <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
                     </div>
+                    ${profiles.length ? profileBarHtml(true) : ''}
                     <div class="ot-time" aria-live="polite">${esc(t(`Zadanie ${taskIndex + 1} z ${tasks.length}`, `Task ${taskIndex + 1} of ${tasks.length}`))}</div>
                 </div>
                 ${lesson.goal && taskIndex === 0 ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
@@ -649,15 +659,244 @@
             </div>`;
     }
 
+    /* ---------- Profiles: switcher + server-side progress ---------- */
+    function initials(name) {
+        const s = String(name || '?').trim();
+        const words = s.split(/\s+/).filter((w) => /\p{L}/u.test(w));
+        return (words.slice(0, 2).map((w) => w.match(/\p{L}/u)[0]).join('') || '?').toUpperCase();
+    }
+    const AVATAR_TONES = ['#1B2A4A', '#2C6E8F', '#7A4FA0', '#B5651D', '#2F7D5B'];
+    function avatarHtml(p, cls) {
+        const tone = AVATAR_TONES[(Number(p?.id) || 0) % AVATAR_TONES.length];
+        return `<span class="ot-avatar ${cls || ''}" style="--ot-av:${tone}" aria-hidden="true">${esc(initials(p?.name))}</span>`;
+    }
+    function progressLabel(pr) {
+        if (!pr) return '';
+        return pr.view === 'feedback' ? t('Podsumowanie', 'Wrap-up') : t(`Zadanie ${pr.taskIndex + 1} z ${pr.tasks}`, `Task ${pr.taskIndex + 1} of ${pr.tasks}`);
+    }
+    function profileBarHtml(compact) {
+        const cur = profiles.find((x) => x.id === profileId) || profiles[0];
+        if (!cur) return '';
+        return `<div class="ot-pbar${compact ? ' ot-pbar--compact' : ''}">
+            <button type="button" class="ot-pchip" id="ot-pswitch" aria-haspopup="dialog" aria-expanded="${pmenu.open}" aria-controls="ot-pmenu">
+                ${avatarHtml(cur)}<span class="ot-pchip-text"><span class="ot-pchip-label">${esc(t('Profil', 'Profile'))}</span><strong>${esc(cur.name)}</strong></span>
+                ${cur.configured ? `<span class="ot-plevel">${esc(cur.cefr)}</span>` : ''}<i class="fa-solid fa-chevron-down ot-pchip-chev" aria-hidden="true"></i>
+            </button>
+            ${profiles.length > 1 && !compact ? `<span class="ot-pcount">${esc(t(`${profiles.length} ${profiles.length < 5 ? 'profile' : 'profili'}`, `${profiles.length} profiles`))}</span>` : ''}
+            <div id="ot-pmenu-host">${pmenu.open ? profileMenuHtml() : ''}</div>
+        </div>`;
+    }
+    function profileMenuHtml() {
+        // The active profile's progress comes from the live lesson (the list may be a few seconds old).
+        const live = lesson && (view === 'lesson' || view === 'feedback')
+            ? { title: lesson.title || '', taskIndex, tasks: (lesson.tasks || []).length, view } : null;
+        const rows = profiles.map((p0) => {
+            const p = p0.id === profileId ? { ...p0, progress: live } : p0;
+            if (pmenu.deleting === p.id) {
+                return `<li class="ot-prow is-confirm" data-pid="${p.id}">
+                    <div class="ot-pconfirm" role="alertdialog" aria-label="${esc(t('Potwierdź usunięcie', 'Confirm delete'))}">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <span>${esc(t(`Usunąć profil „${p.name}” razem z historią lekcji?`, `Delete “${p.name}” and its lesson history?`))}</span>
+                        <span class="ot-prow-actions"><button type="button" class="ot-pbtn is-danger" data-pact="confirm-delete" data-pid="${p.id}">${esc(t('Usuń', 'Delete'))}</button>
+                        <button type="button" class="ot-pbtn" data-pact="cancel">${esc(t('Anuluj', 'Cancel'))}</button></span>
+                    </div></li>`;
+            }
+            if (pmenu.renaming === p.id) {
+                return `<li class="ot-prow is-edit" data-pid="${p.id}">${avatarHtml(p)}
+                    <form class="ot-pform" data-pform="rename" data-pid="${p.id}"><input type="text" class="pe-input" id="ot-prename" maxlength="40" value="${esc(p.name)}" aria-label="${esc(t('Nowa nazwa profilu', 'New profile name'))}" required>
+                    <button type="submit" class="ot-pbtn is-primary">${esc(t('Zapisz', 'Save'))}</button><button type="button" class="ot-pbtn" data-pact="cancel">${esc(t('Anuluj', 'Cancel'))}</button></form></li>`;
+            }
+            const meta = p.configured ? `${p.cefr}${p.age != null ? ` · ${t('wiek', 'age')} ${p.age}` : ''}` : t('do uzupełnienia', 'not set up yet');
+            return `<li class="ot-prow${p.id === profileId ? ' is-active' : ''}" data-pid="${p.id}">
+                <button type="button" class="ot-pmain" data-pact="switch" data-pid="${p.id}" ${p.id === profileId ? 'aria-current="true"' : ''}>
+                    ${avatarHtml(p)}<span class="ot-pinfo"><strong>${esc(p.name)}</strong><span>${esc(meta)}</span></span>
+                    ${p.progress ? `<span class="ot-pprog" title="${esc(p.progress.title)}"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> ${esc(progressLabel(p.progress))}</span>` : ''}
+                    ${p.id === profileId ? `<span class="ot-pactive" title="${esc(t('Aktywny', 'Active'))}"><i class="fa-solid fa-check" aria-hidden="true"></i><span class="ot-pactive-txt"> ${esc(t('Aktywny', 'Active'))}</span></span>` : ''}
+                </button>
+                <span class="ot-prow-actions">
+                    <button type="button" class="ot-picon" data-pact="rename" data-pid="${p.id}" title="${esc(t('Zmień nazwę', 'Rename'))}" aria-label="${esc(t(`Zmień nazwę: ${p.name}`, `Rename ${p.name}`))}"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="ot-picon is-danger" data-pact="delete" data-pid="${p.id}" title="${esc(t('Usuń', 'Delete'))}" aria-label="${esc(t(`Usuń: ${p.name}`, `Delete ${p.name}`))}"${profiles.length <= 1 ? ' disabled' : ''}><i class="fa-solid fa-trash"></i></button>
+                </span></li>`;
+        }).join('');
+        const full = profiles.length >= profileLimit;
+        const create = pmenu.creating
+            ? `<form class="ot-pform ot-pcreate" data-pform="create"><input type="text" class="pe-input" id="ot-pnew" maxlength="40" placeholder="${esc(t('np. Ola, Kuba, Matura', 'e.g. Ola, Kuba, Exam'))}" aria-label="${esc(t('Nazwa nowego profilu', 'New profile name'))}" required>
+                <button type="submit" class="ot-pbtn is-primary">${esc(t('Utwórz', 'Create'))}</button><button type="button" class="ot-pbtn" data-pact="cancel">${esc(t('Anuluj', 'Cancel'))}</button></form>`
+            : `<button type="button" class="ot-padd" data-pact="new"${full ? ' disabled' : ''}><i class="fa-solid fa-plus" aria-hidden="true"></i> ${esc(t('Nowy profil', 'New profile'))}</button>
+               <span class="ot-plimit">${esc(full ? t(`Limit: ${profileLimit} profili`, `Limit: ${profileLimit} profiles`) : t(`${profiles.length} z ${profileLimit}`, `${profiles.length} of ${profileLimit}`))}</span>`;
+        return `<div class="ot-pmenu" id="ot-pmenu" role="dialog" aria-label="${esc(t('Profile', 'Profiles'))}">
+            <div class="ot-pmenu-head"><strong>${esc(t('Twoje profile', 'Your profiles'))}</strong><span>${esc(t('Postęp każdego profilu zapisuje się automatycznie.', 'Each profile’s progress is saved automatically.'))}</span></div>
+            <ul class="ot-plist">${rows}</ul>
+            <div class="ot-pfoot">${create}</div>
+        </div>`;
+    }
+    function repaintMenu(focusSel) {
+        const host = document.getElementById('ot-pmenu-host');
+        if (!host) return;
+        host.innerHTML = pmenu.open ? profileMenuHtml() : '';
+        document.getElementById('ot-pswitch')?.setAttribute('aria-expanded', String(pmenu.open));
+        if (focusSel) host.querySelector(focusSel)?.focus();
+    }
+    function closeMenu() { Object.assign(pmenu, { open: false, renaming: null, deleting: null, creating: false }); repaintMenu(); }
+
+    /** Snapshot of the current lesson (answers typed so far, current task, word-order tiles). */
+    function progressSnapshot() {
+        if (!lesson || (view !== 'lesson' && view !== 'feedback')) return null;
+        if (view === 'lesson' && root()?.querySelector('.ot-lesson')) collectTaskAnswers();
+        return { lesson, taskIndex, view, answers, tileState: { ...tileState }, openPanels: [...openPanels], startedAt };
+    }
+    async function saveProgressNow(opts = {}) {
+        clearTimeout(progressTimer);
+        progressTimer = null;
+        const pid = profileId;
+        if (!pid) return;
+        const progress = progressSnapshot();
+        if (!progress && !opts.clear) return;
+        const body = JSON.stringify({ profileId: pid, progress: opts.clear ? null : progress });
+        try {
+            await fetch('/api/own-time/progress', { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body, keepalive: !!opts.keepalive });
+        } catch (_) { /* best effort; retried on the next change */ }
+    }
+    function scheduleProgressSave() {
+        if (!lesson || (view !== 'lesson' && view !== 'feedback')) return;
+        clearTimeout(progressTimer);
+        progressTimer = setTimeout(() => saveProgressNow(), 1200);
+    }
+    function restoreProgress(pr) {
+        if (!pr || !pr.lesson) return false;
+        lesson = pr.lesson;
+        taskIndex = Math.max(0, Math.min((lesson.tasks || []).length - 1, Number(pr.taskIndex) || 0));
+        answers = pr.answers || {};
+        Object.keys(tileState).forEach((k) => delete tileState[k]);
+        Object.assign(tileState, pr.tileState || {});
+        openPanels.clear();
+        (pr.openPanels || []).forEach((k) => openPanels.add(k));
+        startedAt = Number(pr.startedAt) || Date.now();
+        view = pr.view === 'feedback' ? 'feedback' : 'lesson';
+        return true;
+    }
+    async function loadProfiles() {
+        const data = await api('/api/own-time/profiles');
+        profiles = data.profiles || [];
+        profileId = data.activeId || profiles[0]?.id || null;
+        profileLimit = data.limit || profileLimit;
+    }
+    /** Load the active profile: settings, its history/today, and resume its in-progress lesson if any. */
+    async function loadActive() {
+        const [pRes, lRes] = await Promise.all([
+            api('/api/own-time/profile'),
+            api(`/api/own-time/lessons?limit=20${profileId ? `&profileId=${profileId}` : ''}`),
+        ]);
+        profile = pRes.profile;
+        if (pRes.profileId) profileId = pRes.profileId;
+        lessons = lRes.lessons || [];
+        today = lRes.today || null;
+        capMessage = '';
+        lastFinished = null;
+        lesson = null;
+        answers = {};
+        taskIndex = 0;
+        if (!profile) { view = 'onboard'; return false; }
+        if (restoreProgress(pRes.progress)) return true;
+        view = 'dash';
+        return false;
+    }
+    async function switchProfile(id) {
+        if (id === profileId) { closeMenu(); return; }
+        await saveProgressNow();
+        try {
+            toggleLoading(true);
+            await api(`/api/own-time/profiles/${id}/activate`, { method: 'POST', body: '{}' });
+            await loadProfiles();
+            closeMenu();
+            const resumed = await loadActive();
+            toggleLoading(false);
+            paint();
+            const name = profiles.find((x) => x.id === profileId)?.name || '';
+            setStatus(resumed
+                ? esc(t(`Profil „${name}” — wznowiono: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Profile “${name}” — resumed at ${view === 'feedback' ? 'the wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`))
+                : esc(t(`Przełączono na profil „${name}”.`, `Switched to “${name}”.`)), 'success');
+        } catch (err) {
+            toggleLoading(false);
+            setStatus(esc(err.message || t('Nie udało się przełączyć profilu.', 'Could not switch profile.')), 'error');
+        }
+    }
+    async function profileAction(act, id, value) {
+        try {
+            if (act === 'create') {
+                await saveProgressNow();
+                await api('/api/own-time/profiles', { method: 'POST', body: JSON.stringify({ name: value }) });
+                await loadProfiles();
+                closeMenu();
+                await loadActive();
+                paint();
+                setStatus(esc(t(`Utworzono profil „${value}”. Uzupełnij go poniżej.`, `Created “${value}”. Fill it in below.`)), 'success');
+            } else if (act === 'rename') {
+                const data = await api(`/api/own-time/profiles/${id}`, { method: 'PATCH', body: JSON.stringify({ name: value }) });
+                profiles = data.profiles || profiles;
+                pmenu.renaming = null;
+                const chip = document.querySelector('#ot-pswitch strong');
+                if (chip && id === profileId) chip.textContent = value;
+                repaintMenu(`[data-pact="switch"][data-pid="${id}"]`);
+            } else if (act === 'delete') {
+                const wasActive = id === profileId;
+                await api(`/api/own-time/profiles/${id}`, { method: 'DELETE' });
+                await loadProfiles();
+                pmenu.deleting = null;
+                if (wasActive) { closeMenu(); await loadActive(); paint(); } else { pmenu.open = true; repaintMenu(); }
+                setStatus(esc(t('Profil usunięty.', 'Profile deleted.')), 'success');
+            }
+        } catch (err) {
+            setStatus(esc(err.data?.code === 'limit'
+                ? t(`Możesz mieć maksymalnie ${profileLimit} profili.`, `You can have up to ${profileLimit} profiles.`)
+                : (err.message || t('Coś poszło nie tak.', 'Something went wrong.'))), 'error');
+        }
+    }
+    function bindProfiles(el) {
+        const bar = el.querySelector('.ot-pbar');
+        if (!bar) return;
+        document.getElementById('ot-pswitch')?.addEventListener('click', () => {
+            pmenu.open = !pmenu.open;
+            pmenu.renaming = pmenu.deleting = null;
+            pmenu.creating = false;
+            repaintMenu(pmenu.open ? '.ot-prow.is-active .ot-pmain, .ot-pmain' : null);
+        });
+        bar.addEventListener('click', (ev) => {
+            const b = ev.target.closest('[data-pact]');
+            if (!b || b.disabled) return;
+            const id = Number(b.dataset.pid) || null;
+            const act = b.dataset.pact;
+            if (act === 'switch') switchProfile(id);
+            else if (act === 'rename') { pmenu.renaming = id; pmenu.deleting = null; pmenu.creating = false; repaintMenu('#ot-prename'); }
+            else if (act === 'delete') { pmenu.deleting = id; pmenu.renaming = null; pmenu.creating = false; repaintMenu('[data-pact="cancel"]'); }
+            else if (act === 'confirm-delete') profileAction('delete', id);
+            else if (act === 'new') { pmenu.creating = true; pmenu.renaming = pmenu.deleting = null; repaintMenu('#ot-pnew'); }
+            else if (act === 'cancel') { pmenu.renaming = pmenu.deleting = null; pmenu.creating = false; repaintMenu('#ot-pswitch'); }
+        });
+        bar.addEventListener('submit', (ev) => {
+            const f = ev.target.closest('[data-pform]');
+            if (!f) return;
+            ev.preventDefault();
+            const v = String(f.querySelector('input')?.value || '').trim();
+            if (!v) return;
+            if (f.dataset.pform === 'create') profileAction('create', null, v);
+            else profileAction('rename', Number(f.dataset.pid), v);
+        });
+        bar.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape' && pmenu.open) { ev.preventDefault(); closeMenu(); document.getElementById('ot-pswitch')?.focus(); }
+        });
+    }
+
     function paint() {
         const el = root();
         if (!el) return;
-        if (view === 'onboard' || view === 'edit') el.innerHTML = renderOnboard(view === 'edit');
-        else if (view === 'dash') el.innerHTML = renderDash();
-        else if (view === 'lesson') el.innerHTML = renderTask();
-        else if (view === 'feedback') el.innerHTML = renderFeedback();
-        else if (view === 'done') el.innerHTML = renderDone();
-        else el.innerHTML = '';
+        let html = '';
+        if (view === 'onboard' || view === 'edit') html = renderOnboard(view === 'edit');
+        else if (view === 'dash') html = renderDash();
+        else if (view === 'lesson') html = renderTask();
+        else if (view === 'feedback') html = renderFeedback();
+        else if (view === 'done') html = renderDone();
+        el.innerHTML = html && profiles.length && view !== 'lesson' ? profileBarHtml() + html : html;
         bind();
         if (view === 'lesson') {
             // Bring the whole task card into view so the task fits on one screen.
@@ -859,6 +1098,13 @@
     function bind() {
         const el = root();
         if (!el) return;
+        bindProfiles(el);
+        // Autosave the in-progress lesson (debounced) whenever the student types or taps something.
+        if (view === 'lesson' || view === 'feedback') {
+            const work = el.querySelector('.ot-lesson, .ot-card');
+            work?.addEventListener('input', scheduleProgressSave);
+            work?.addEventListener('click', (ev) => { if (ev.target.closest('.ot-tile, .ot-opt, [data-reset], #ot-check, #ot-show-answers, .ot-phrase')) scheduleProgressSave(); });
+        }
         el.querySelectorAll('.ot-instr-more').forEach((b) => b.addEventListener('click', () => {
             const open = b.parentElement.classList.toggle('is-open');
             b.setAttribute('aria-expanded', String(open));
@@ -896,6 +1142,7 @@
                     body: JSON.stringify(readForm()),
                 });
                 profile = data.profile;
+                await loadProfiles().catch(() => {});
                 view = 'dash';
                 paint();
                 setStatus(t('Profil zapisany.', 'Profile saved.'), 'success');
@@ -1013,6 +1260,7 @@
             collectTaskAnswers();
             taskIndex = Math.max(0, taskIndex - 1);
             paint();
+            saveProgressNow();
         });
 
         document.getElementById('ot-next')?.addEventListener('click', () => {
@@ -1024,6 +1272,7 @@
                 view = 'feedback';
                 paint();
             }
+            saveProgressNow();
         });
 
         document.getElementById('ot-save-fb')?.addEventListener('click', () => saveFeedback(false));
@@ -1050,6 +1299,7 @@
                 method: 'POST',
                 body: JSON.stringify({
                     profile,
+                    profileId,
                     topic,
                     vocab,
                     recentFeedback,
@@ -1071,6 +1321,7 @@
             toggleLoading(false);
             paint();
             setStatus('');
+            saveProgressNow();
         } catch (err) {
             toggleLoading(false);
             if (err.data?.code === 'own_time_extra_cap') {
@@ -1112,7 +1363,7 @@
             setStatus(L === 'en' ? 'Saving…' : 'Zapisuję…', 'neutral');
             const saved = await api('/api/own-time/lessons', {
                 method: 'POST',
-                body: JSON.stringify({ lesson: lessonPayload, feedback, durationMs }),
+                body: JSON.stringify({ lesson: lessonPayload, feedback, durationMs, profileId }),
             });
             if (saved.profile) profile = saved.profile;
             if (typeof recordGameSessionApi === 'function') {
@@ -1123,7 +1374,9 @@
                     result: { focus: lesson?.focus, levelOk: feedback.levelOk },
                 });
             }
-            const list = await api('/api/own-time/lessons?limit=20');
+            clearTimeout(progressTimer);
+            const list = await api(`/api/own-time/lessons?limit=20${profileId ? `&profileId=${profileId}` : ''}`);
+            loadProfiles().catch(() => {});
             lessons = list.lessons || [];
             today = list.today || today;
             lastFinished = { lesson, answers };
@@ -1150,20 +1403,12 @@
         const el = root();
         if (el) el.innerHTML = '';
         try {
-            const [pRes, lRes] = await Promise.all([
-                api('/api/own-time/profile'),
-                api('/api/own-time/lessons?limit=20'),
-            ]);
-            profile = pRes.profile;
-            lessons = lRes.lessons || [];
-            today = lRes.today || null;
+            closeMenu();
+            await loadProfiles();
+            const resumed = await loadActive();
             toggleLoading(false);
-            if (!profile) {
-                view = 'onboard';
-            } else {
-                view = 'dash';
-            }
             paint();
+            if (resumed) setStatus(esc(t(`Wznowiono lekcję: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Lesson resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');
         } catch (err) {
             toggleLoading(false);
             if (err.status === 401) {
@@ -1173,6 +1418,10 @@
             }
         }
     }
+
+    // Leaving the page mid-lesson: flush the latest answers so a reload resumes exactly here.
+    window.addEventListener('pagehide', () => { if (lesson && (view === 'lesson' || view === 'feedback')) saveProgressNow({ keepalive: true }); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && lesson && (view === 'lesson' || view === 'feedback')) saveProgressNow({ keepalive: true }); });
 
     window.initOwnTime = initOwnTime;
     window.OwnTime = { init: initOwnTime };

@@ -69,6 +69,14 @@ import {
     saveOwnTimeLesson,
     getOwnTimeToday,
     reserveOwnTimeExtra,
+    listOwnTimeProfiles,
+    createOwnTimeProfile,
+    renameOwnTimeProfile,
+    deleteOwnTimeProfile,
+    activateOwnTimeProfile,
+    getOwnTimeProgress,
+    saveOwnTimeProgress,
+    resolveOwnTimeProfileId,
     releaseOwnTimeExtra,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
@@ -406,6 +414,7 @@ async function start() {
                 visitId: req.body?.visitId,
                 visitorSessionId: req.body?.visitorSessionId,
                 durationMs: req.body?.durationMs,
+                profileId: req.body?.profileId ?? null,
             });
             if (!row) return res.status(400).json({ error: 'Invalid visit' });
             res.json({ ok: true, durationMs: row.duration_ms });
@@ -978,10 +987,79 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
 }
 
     // ---- In your own time (personalized practice coach) ----
+    // Several named student profiles: list / create / rename / delete / switch, and per-profile in-progress lesson.
+    app.get('/api/own-time/profiles', requireWritingAccess, async (req, res) => {
+        try {
+            res.json(await listOwnTimeProfiles(req.user.id));
+        } catch (err) {
+            console.error('own-time profiles list:', err);
+            res.status(500).json({ error: 'Failed to load profiles.' });
+        }
+    });
+
+    app.post('/api/own-time/profiles', requireWritingAccess, async (req, res) => {
+        try {
+            const r = await createOwnTimeProfile(req.user.id, req.body || {});
+            if (!r.ok) {
+                return res.status(r.code === 'limit' ? 409 : 400).json({ error: r.code === 'limit' ? 'Profile limit reached.' : 'A profile name is required.', code: r.code });
+            }
+            res.json({ profile: r.profile, ...(await listOwnTimeProfiles(req.user.id)) });
+        } catch (err) {
+            console.error('own-time profile create:', err);
+            res.status(500).json({ error: 'Failed to create profile.' });
+        }
+    });
+
+    app.patch('/api/own-time/profiles/:id', requireWritingAccess, async (req, res) => {
+        try {
+            const r = await renameOwnTimeProfile(req.user.id, req.params.id, req.body?.name);
+            if (!r.ok) return res.status(r.code === 'not_found' ? 404 : 400).json({ error: r.code === 'not_found' ? 'Profile not found.' : 'A profile name is required.', code: r.code });
+            res.json(await listOwnTimeProfiles(req.user.id));
+        } catch (err) {
+            console.error('own-time profile rename:', err);
+            res.status(500).json({ error: 'Failed to rename profile.' });
+        }
+    });
+
+    app.delete('/api/own-time/profiles/:id', requireWritingAccess, async (req, res) => {
+        try {
+            const r = await deleteOwnTimeProfile(req.user.id, req.params.id);
+            if (!r.ok) return res.status(404).json({ error: 'Profile not found.', code: r.code });
+            res.json(await listOwnTimeProfiles(req.user.id));
+        } catch (err) {
+            console.error('own-time profile delete:', err);
+            res.status(500).json({ error: 'Failed to delete profile.' });
+        }
+    });
+
+    app.post('/api/own-time/profiles/:id/activate', requireWritingAccess, async (req, res) => {
+        try {
+            const r = await activateOwnTimeProfile(req.user.id, req.params.id);
+            if (!r.ok) return res.status(404).json({ error: 'Profile not found.', code: r.code });
+            res.json(await listOwnTimeProfiles(req.user.id));
+        } catch (err) {
+            console.error('own-time profile activate:', err);
+            res.status(500).json({ error: 'Failed to switch profile.' });
+        }
+    });
+
+    app.put('/api/own-time/progress', requireWritingAccess, async (req, res) => {
+        try {
+            const pid = await resolveOwnTimeProfileId(req.user.id, req.body?.profileId);
+            if (!pid) return res.status(404).json({ error: 'Profile not found.' });
+            res.json(await saveOwnTimeProgress(req.user.id, pid, req.body?.progress ?? null));
+        } catch (err) {
+            console.error('own-time progress save:', err);
+            res.status(500).json({ error: 'Failed to save progress.' });
+        }
+    });
+
     app.get('/api/own-time/profile', requireWritingAccess, async (req, res) => {
         try {
             const profile = await getOwnTimeProfile(req.user.id);
-            res.json({ profile });
+            const profileId = await resolveOwnTimeProfileId(req.user.id);
+            const progress = profileId ? await getOwnTimeProgress(req.user.id, profileId) : null;
+            res.json({ profile, profileId, progress });
         } catch (err) {
             console.error('own-time profile get:', err);
             res.status(500).json({ error: 'Failed to load profile.' });
@@ -1000,8 +1078,9 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
 
     app.get('/api/own-time/lessons', requireWritingAccess, async (req, res) => {
         try {
-            const lessons = await listOwnTimeLessons(req.user.id, { limit: req.query?.limit });
-            const today = await getOwnTimeToday(req.user.id, OWN_TIME_EXTRA_DAILY_LIMIT);
+            const profileId = req.query?.profileId || null;
+            const lessons = await listOwnTimeLessons(req.user.id, { limit: req.query?.limit, profileId });
+            const today = await getOwnTimeToday(req.user.id, OWN_TIME_EXTRA_DAILY_LIMIT, profileId);
             res.json({ lessons, today });
         } catch (err) {
             console.error('own-time lessons list:', err);
@@ -1035,7 +1114,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         let reservation = null;
         if (checked.value.extra) {
             try {
-                reservation = await reserveOwnTimeExtra(req.user.id, OWN_TIME_EXTRA_DAILY_LIMIT);
+                reservation = await reserveOwnTimeExtra(req.user.id, OWN_TIME_EXTRA_DAILY_LIMIT, req.body?.profileId ?? null);
             } catch (err) {
                 console.error('own-time extra reserve:', err);
                 return res.status(500).json({ error: 'Could not start an extra set.' });

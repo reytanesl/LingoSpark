@@ -122,7 +122,7 @@ test('Mock fixtures use inline gaps: {{n}} cover every item; ___ sentences have 
     gapped.items.forEach((_, i) => assert.ok(gapped.prompt.includes(`{{${i + 1}}}`), `{{${i + 1}}}`));
     const sentenceUoe = OWN_TIME_MOCK_EXTRA_REPLY.tasks.find((t) => t.type === 'uoe');
     sentenceUoe.items.forEach((it) => assert.equal(it.q.split('___').length, 2, it.q));
-    assert.deepEqual(OWN_TIME_MOCK_REPLY.tasks.map((t) => t.type), ['vocab_drill', 'uoe', 'uoe', 'uoe', 'reading', 'writing']);
+    assert.deepEqual(OWN_TIME_MOCK_REPLY.tasks.map((t) => t.type), ['vocab_drill', 'uoe', 'word_order', 'uoe', 'reading', 'writing']);
     for (const t of all) assert.ok((t.items || []).length <= 6);
 });
 
