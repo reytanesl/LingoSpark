@@ -475,6 +475,9 @@ If tf is selected: 4–6 items. Mix true and false. False sentences are subtle, 
 If open is selected: 3–4 questions at the CEFR (short factual at A1; justified opinion and inference at B2+). For combined lessons each item needs sourceFocus "video" or "reading"; do not ask learners to compare or combine both sources here.
 
 If vocabBuild is selected: three practice tasks on idioms, collocations, and phrases from the text, at this CEFR. One of them must be a collocation match (kind "match"): left column = one part of each collocation (numbered); right column = the other parts in scrambled order, with no letters. Instruction e.g. "Match each word on the left with the word it collocates with in the text." Do NOT add "Write the letter." items[].prompt is the left part; items[].answer is the right-hand collocate.
+The other two vocabBuilding tasks are fixed formats:
+- kind "box": instruction "Complete the sentences with one word from the box." ALWAYS include wordBank[] — the exact answer words (one per sentence) plus at most one distractor, scrambled (not in answer order). 5–6 items; each items[].prompt is a sentence based on the source with ONE inline gap "____"; items[].answer is the missing word (must be in wordBank). Never write this instruction without a wordBank.
+- kind "translate": instruction "Translate the words in brackets into English to finish each phrase from the video." (say "text" instead of "video" for a reading source; German lessons: "into German"). 5–6 items; each items[].prompt is a useful phrase from the source with ONE inline gap "____" and the Polish meaning of the missing word(s) in brackets right after the gap, e.g. "I ____ (zgadzam się) with you." items[].answer is the English (or German) word(s) that fill the gap exactly as in the source. Do not put the answer anywhere in the prompt.
 
 If vocabMatch is selected: 6–8 words from the text. Number the words 1, 2, 3… Definitions must be lettered A, B, C… in a DIFFERENT order from the words so students can match. answers[i] is the letter for word i. Definitions stay CEFR-appropriate.
 
@@ -536,7 +539,8 @@ Return ONLY valid JSON (the first character of your reply must be { and the last
   },
   "vocabBuilding": [
     {"instruction": "Match each word on the left with the word it collocates with in the text.", "kind": "match", "items": [{"prompt": "left part", "answer": "right-hand collocate"}]},
-    {"instruction": "student instruction, no pedagogical heading", "kind": "gap|sentence", "items": [{"prompt": "...", "answer": "..."}]}
+    {"instruction": "Complete the sentences with one word from the box.", "kind": "box", "wordBank": ["scrambled", "answer", "words"], "items": [{"prompt": "She ____ the bus every morning.", "answer": "catches"}]},
+    {"instruction": "Translate the words in brackets into English to finish each phrase from the text.", "kind": "translate", "items": [{"prompt": "I ____ (zgadzam się) with you.", "answer": "agree"}]}
   ],
   "vocabMatch": {
     "instruction": "Match each word to its meaning. Write the letter.",

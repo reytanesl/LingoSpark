@@ -91,7 +91,7 @@ Role fields:
 - mcq: header, mcqs[] {question, options[4], answer: "A"|"B"|"C"|"D"}. Vary the correct letter across items so A–D are all used when there are four or more questions. Do not show the answer on the student slide; still include the answer field.
 - tf: header, statements[] as {text, answer: true|false}.
 - open: header, bullets (the questions), sampleAnswers[] matching each bullet.
-- vocabbuild: header, bullets or sentences[] for the practice items (each sentence must contain ______), answers[].
+- vocabbuild: header, bullets or sentences[] for the practice items (each sentence must contain ______), answers[]; for a "…one word from the box" task ALWAYS add wordBank[] (the answer words, scrambled); for a translate task keep the Polish cue in brackets right after the gap, e.g. "I ______ (zgadzam się) with you."
 - match: header, words[] (numbered), definitions[] {letter, text} in shuffled order, answers[] (letter for each word).
 - wordform: header, sentences[] each with a ______ gap and a CAPITAL prompt word in brackets, answers[].
 - whatif: header, bullets (hypothesizing prompts; not all “What if…”), sampleAnswers[].

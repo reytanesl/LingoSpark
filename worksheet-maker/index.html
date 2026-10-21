@@ -1155,6 +1155,7 @@
       flex-direction: column;
       justify-content: flex-start;
       gap: 0.22em;
+      padding-bottom: 0.2em; /* keep the last gap's underline inside the clip */
     }
     .sv-body > p,
     .sv-body > ul {
@@ -1288,6 +1289,15 @@
       border-radius: 0.45em; padding: 0.4em 0.55em; color: #fff; margin-bottom: 0.45em;
       flex: 0 0 auto;
     }
+    /* Word box — "karty pracy Mat i E8" navy / pale-blue look, Inter */
+    .sv-bank.sv-wordbox {
+      background: #D2E1F0 !important; color: #1B2A4A; border: 2px solid #1B2A4A;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif; font-weight: 700;
+      text-align: center; padding: 0.45em 0.9em; border-radius: 0.5em;
+    }
+    .sv-wordbox .sv-wordbox-label { font-weight: 600; color: #64646E; margin-right: 0.5em; }
+    .sv-wordbox .sv-wordbox-sep { color: #1B2A4A; margin: 0 0.55em; }
+    .q-gaps li { margin: 0.45em 0; line-height: 1.7; }
     .sv-mark {
       color: #00823B;
       font-weight: 800;
@@ -2529,14 +2539,19 @@
           </div>
           <div class="answer">${tx('answers')} ${keyLine}</div>`;
         }
+        const inlineGap = task.kind === 'box' || task.kind === 'translate';
         const items = (task.items || []).map((it, ii) => `
-          <li>
+          <li${inlineGap ? ' class="gap-item"' : ''}>
             ${ed(`vocabBuilding.${ti}.items.${ii}.prompt`, it.prompt)}
-            ${lines(task.kind === 'sentence' ? 2 : 1)}
+            ${inlineGap ? '' : lines(task.kind === 'sentence' ? 2 : 1)}
             <div class="answer">${ed(`vocabBuilding.${ti}.items.${ii}.answer`, it.answer || '')}</div>
           </li>
         `).join('');
-        return `<p>${ed(`vocabBuilding.${ti}.instruction`, task.instruction)}</p><ol class="q">${items}</ol>`;
+        const boxChips = task.kind === 'box'
+          ? (task.wordBank || []).map((w) => `<span class="chip">${escapeHtml(w)}</span>`).join('')
+          : '';
+        const box = boxChips ? `<div class="bank word-box" role="list" aria-label="${escapeHtml(tx('wordBank'))}">${boxChips}</div>` : '';
+        return `<p>${ed(`vocabBuilding.${ti}.instruction`, task.instruction)}</p>${box}<ol class="q${inlineGap ? ' q-gaps' : ''}">${items}</ol>`;
       });
 
       const renderVocabActivity = (ti) => {
@@ -3868,7 +3883,7 @@
       }
       if (slide.role === 'cloze' || slide.role === 'gapfill') {
         const bank = (slide.wordBank || []).length
-          ? `<div class="sv-bank" style="background:${theme.accent}">${tx('wordBank')} ${escapeHtml(slide.wordBank.join('  ·  '))}</div>`
+          ? `<div class="sv-bank sv-wordbox"><span class="sv-wordbox-label">${tx('wordBank')}</span>${slide.wordBank.map((w) => escapeHtml(w)).join('<span class="sv-wordbox-sep">·</span>')}</div>`
           : '';
         const text = clozeFilledHtml(
           slide.clozeText || slide.bodyContent || '',
@@ -3890,7 +3905,7 @@
       }
       if (slide.role === 'wordbank' || slide.role === 'vocabbuild' || slide.role === 'wordform') {
         const bank = (slide.wordBank || []).length
-          ? `<div class="sv-bank" style="background:${theme.accent}">${tx('wordBank')} ${escapeHtml(slide.wordBank.join('  ·  '))}</div>`
+          ? `<div class="sv-bank sv-wordbox"><span class="sv-wordbox-label">${tx('wordBank')}</span>${slide.wordBank.map((w) => escapeHtml(w)).join('<span class="sv-wordbox-sep">·</span>')}</div>`
           : '';
         const linesHtml = (slide.sentences || []).length
           ? slide.sentences.map((line, i) => {
@@ -4017,7 +4032,7 @@
     }
 
     function slideOverflows(view) {
-      const over = (el) => el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2;
+      const over = (el) => el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth + 2;
       if (over(view)) return true;
       return [...view.querySelectorAll('.sv-body, .sv-grid, .sv-vocab, .sv-read, .sv-card, .sv-qcol, .sv-quote, .sv-reflection-q, .sv-video-stage')].some(over);
     }

@@ -7,6 +7,9 @@ import {
   sanitizeLessonStudentText,
   isScramblePracticeKind,
   normalizeScramblePracticeItem,
+  isVocabBoxTask,
+  isVocabTranslateTask,
+  ensureInlineGap,
 } from './lesson-display.js';
 
 /** Resolve closed-task answers whether the model used a letter, a word, or a boolean. */
@@ -605,8 +608,31 @@ export function prepareLessonAnswers(lesson, sourceText = '') {
   }
   if (Array.isArray(next.vocabBuilding)) {
     next.vocabBuilding = next.vocabBuilding.map((task) => {
-      if (!task || task.kind !== 'match') return task;
-      return { ...task, instruction: stripWriteTheLetter(task.instruction) };
+      if (!task) return task;
+      if (task.kind === 'match') return { ...task, instruction: stripWriteTheLetter(task.instruction) };
+      if (isVocabBoxTask(task)) {
+        const answers = (task.items || []).map((it) => answerWord(it?.answer)).filter(Boolean);
+        const given = (task.wordBank || []).map((w) => String(w).trim()).filter(Boolean);
+        const lower = new Set(given.map((w) => w.toLowerCase()));
+        const bank = given.concat(answers.filter((a) => !lower.has(a.toLowerCase())));
+        return {
+          ...task,
+          kind: 'box',
+          wordBank: scrambleBank([...new Set(bank)], answers),
+          items: (task.items || []).map((it) => ({ ...it, prompt: ensureInlineGap(it?.prompt || it?.sentence) })),
+        };
+      }
+      if (isVocabTranslateTask(task)) {
+        return {
+          ...task,
+          kind: 'translate',
+          instruction: /translat|przetłumacz|übersetz/i.test(String(task.instruction || ''))
+            ? task.instruction
+            : String(task.instruction || '').replace(/^Write the missing word to finish each phrase/i, 'Translate the words in brackets into English to finish each phrase') || task.instruction,
+          items: (task.items || []).map((it) => ({ ...it, prompt: ensureInlineGap(it?.prompt || it?.sentence) })),
+        };
+      }
+      return task;
     });
   }
   if (next.wordFormation) {
@@ -659,6 +685,12 @@ export function prepareLessonAnswers(lesson, sourceText = '') {
     next.wordBankTask = {
       ...verified.wordBankTask,
       wordBank: scrambleBank(verified.wordBankTask.wordBank, verified.wordBankTask.answers),
+    };
+  } else if ((verified.wordBankTask?.answers || []).length) {
+    // The box must always be shown: rebuild it from the answers when the model left it out.
+    next.wordBankTask = {
+      ...verified.wordBankTask,
+      wordBank: scrambleBank(exactAnswerBank(verified.wordBankTask.answers.map(answerWord)), verified.wordBankTask.answers),
     };
   }
   if (Array.isArray(next.grammarPractice)) {

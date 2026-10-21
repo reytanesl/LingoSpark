@@ -181,3 +181,28 @@ export function definitionLetter(item) {
 export function matchUsesLetters(definitions = []) {
   return (definitions || []).some((item) => definitionLetter(item));
 }
+
+/** Vocabulary-building task that needs a word box ("…one word from the box"). */
+export function isVocabBoxTask(task) {
+  if (!task || String(task.kind || '').toLowerCase() === 'match') return false;
+  if (String(task.kind || '').toLowerCase() === 'box') return true;
+  if ((task.wordBank || []).length) return true;
+  return /\b(from|in) the (word )?box\b|\bword box\b|\bfrom the (word )?(list|bank)\b/i.test(String(task.instruction || ''));
+}
+
+/** Vocabulary-building task where each gap carries an L1 (Polish) cue in brackets. */
+export function isVocabTranslateTask(task) {
+  if (!task || String(task.kind || '').toLowerCase() === 'match') return false;
+  if (String(task.kind || '').toLowerCase() === 'translate') return true;
+  return /translat|missing word to finish|finish each phrase|przetłumacz/i.test(String(task.instruction || ''));
+}
+
+/** Make sure a gapped prompt has an inline gap; put it before a trailing (cue) when missing. */
+export function ensureInlineGap(prompt) {
+  const s = String(prompt || '').trim();
+  // Written gaps need room on the printed sheet: widen short ____ runs.
+  if (/_{2,}/.test(s)) return s.replace(/_{2,}/g, (m) => (m.length < 10 ? '__________' : m));
+  if (!s || /…|\.{3}/.test(s)) return s;
+  const m = s.match(/^(.*?)\s*(\([^)]+\))\s*([.!?]?)$/);
+  return m ? `${m[1]} __________ ${m[2]}${m[3]}` : s;
+}

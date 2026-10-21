@@ -288,6 +288,7 @@ export function lessonToDeck(lesson, source = {}, {
         slides.push({
           role: 'vocabbuild',
           header: header(task.instruction, label('vocabBuild')),
+          wordBank: task.kind === 'box' ? (task.wordBank || []) : [],
           sentences: items.map((it) => it.prompt || it.sentence || ''),
           answers: items.map((it) => answerWord(it.answer)),
         });
