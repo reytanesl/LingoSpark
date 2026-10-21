@@ -90,7 +90,7 @@ import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
-import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY } from './own-time-fixtures.js';
+import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY, OWN_TIME_MOCK_B1_REPLY, OWN_TIME_MOCK_B2_REPLY, OWN_TIME_MOCK_C1_REPLY } from './own-time-fixtures.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
@@ -1059,19 +1059,24 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         // Local testing without an AI key: OWN_TIME_MOCK=1 returns fixed sample lessons (never in production).
         if (mock) {
             // Lower levels (A0–A1 or under 12) get the sample with word-order + unscramble tile tasks.
-            const low = ['A0', 'A1'].includes(checked.value.cefr) || (checked.value.age != null && checked.value.age < 12);
-            const reply = checked.value.extra ? OWN_TIME_MOCK_EXTRA_REPLY : (low ? OWN_TIME_MOCK_LOW_REPLY : OWN_TIME_MOCK_REPLY);
+            const cefr = checked.value.cefr;
+            const low = ['A0', 'A1'].includes(cefr) || (checked.value.age != null && checked.value.age < 12 && !['B1', 'B2', 'C1'].includes(cefr));
+            const byLevel = { B1: OWN_TIME_MOCK_B1_REPLY, B2: OWN_TIME_MOCK_B2_REPLY, C1: OWN_TIME_MOCK_C1_REPLY };
+            const reply = checked.value.extra ? OWN_TIME_MOCK_EXTRA_REPLY : (low ? OWN_TIME_MOCK_LOW_REPLY : (byLevel[cefr] || OWN_TIME_MOCK_REPLY));
             const lesson = normalizeOwnTimeLesson(reply, checked.value);
             if (reservation) lesson.extra = true;
             return res.json({ lesson, mock: true, ...extraInfo });
         }
         try {
-            const parsed = await runVisionJsonPrompt({
-                apiKey,
-                prompt: buildOwnTimeLessonPrompt(checked.value),
-                label: `own-time-${checked.value.cefr}${reservation ? '-extra' : ''}`,
-            });
-            const lesson = normalizeOwnTimeLesson(parsed, checked.value);
+            const prompt = buildOwnTimeLessonPrompt(checked.value);
+            const label = `own-time-${checked.value.cefr}${reservation ? '-extra' : ''}`;
+            let lesson = normalizeOwnTimeLesson(await runVisionJsonPrompt({ apiKey, prompt, label }), checked.value);
+            if (!lesson.taskCountOk) {
+                // Every lesson / extra set must have 5–6 tasks: ask once more, then reject.
+                const retry = `${prompt}\n\nIMPORTANT: your previous reply had ${lesson.tasks.length} usable task(s). Return EXACTLY 5 or 6 valid tasks.`;
+                lesson = normalizeOwnTimeLesson(await runVisionJsonPrompt({ apiKey, prompt: retry, label: `${label}-retry` }), checked.value);
+                if (!lesson.taskCountOk) throw new Error('The lesson generator returned too few tasks. Please try again.');
+            }
             if (reservation) lesson.extra = true;
             res.json({ lesson, ...extraInfo });
         } catch (error) {

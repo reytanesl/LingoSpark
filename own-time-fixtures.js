@@ -32,23 +32,57 @@ export const OWN_TIME_MOCK_REPLY = {
         {
             n: 2,
             type: 'uoe',
+            format: 'mc_sentences',
+            instruction: 'Wybierz właściwą odpowiedź spośród podanych.',
+            steps: ['Przeczytaj całe zdanie.', 'Wybierz A, B albo C.', 'Kliknij „Sprawdź”.'],
+            example: 'I ___ to the cinema yesterday. A. go B. went C. going → B',
+            usefulLanguage: ['yesterday → Past Simple', 'every day → Present Simple', 'now → Present Continuous'],
+            hint: 'Szukaj słów-kluczy czasu: yesterday, now, every day.',
+            items: [
+                { q: 'My sister ___ in a café last summer.', options: ['works', 'worked', 'is working'], answer: 'worked' },
+                { q: 'A: Can I help you?\nB: Yes, ___ a cup of tea, please.', options: ['I’d like', 'I like', 'I liking'], answer: 'I’d like' },
+                { q: 'The customers were very ___ and left big tips.', options: ['friend', 'friendly', 'friendship'], answer: 'friendly' },
+                { q: 'How ___ money did you earn?', options: ['many', 'much', 'lot'], answer: 'much' },
+            ],
+            modelAnswers: [],
+        },
+        {
+            n: 3,
+            type: 'uoe',
+            format: 'mc_translation',
+            instruction: 'Wybierz poprawne tłumaczenie fragmentu w nawiasie.',
+            steps: ['Przeczytaj zdanie i polski fragment.', 'Wybierz A, B albo C.', 'Kliknij „Sprawdź”.'],
+            example: 'I (muszę wstać) ___ early. → have to get up',
+            usefulLanguage: ['have to', 'used to', 'be good at'],
+            hint: 'Uważaj na czas i szyk wyrazów.',
+            items: [
+                { q: 'Last July I ___ at 6 am every day.', pl: 'musiałem wstawać', options: ['had to get up', 'must get up', 'have to get up'], answer: 'had to get up' },
+                { q: 'My cousin ___ customers.', pl: 'jest dobry w obsłudze', options: ['is good at serving', 'is good in serve', 'good at serving'], answer: 'is good at serving' },
+                { q: '___ a summer job this year?', pl: 'Czy szukasz', options: ['Are you looking for', 'Do you look', 'Are you look for'], answer: 'Are you looking for' },
+            ],
+            modelAnswers: [],
+        },
+        {
+            n: 4,
+            type: 'uoe',
+            format: 'brackets',
             minutes: 4,
             instruction: 'Uzupełnij luki w tekście czasownikami w Past Simple.',
             steps: ['Przeczytaj cały tekst.', 'Wpisz czasownik z nawiasu w czasie przeszłym.', 'Kliknij „Sprawdź”.'],
             example: 'I ___ (work) in a café. → worked',
             usefulLanguage: ['worked', 'started', 'served', 'earned'],
             hint: 'Czasowniki regularne: dodaj -ed. Uwaga: get → got.',
-            prompt: 'Last summer my brother {{1}} in a pizza place. He {{2}} at nine every morning and {{3}} up very early. He {{4}} a lot of money!',
+            prompt: '',
             items: [
-                { q: 'work', answer: 'worked', alts: [] },
-                { q: 'start', answer: 'started', alts: [] },
-                { q: 'get', answer: 'got', alts: [] },
-                { q: 'earn', answer: 'earned', alts: [] },
+                { q: 'Last summer my brother ___ in a pizza place.', cue: 'work', answer: 'worked' },
+                { q: 'He ___ the job at first.', cue: 'not / like', answer: 'didn’t like', alts: ['did not like', "didn't like"] },
+                { q: '___ a lot of money in August?', cue: 'he / earn', answer: 'Did he earn' },
+                { q: 'Now he ___ for a new bike.', cue: 'save', answer: 'is saving', alts: ['’s saving', "'s saving"] },
             ],
             modelAnswers: [],
         },
         {
-            n: 3,
+            n: 5,
             type: 'reading',
             minutes: 6,
             instruction: 'Przeczytaj tekst i odpowiedz krótko po angielsku.',
@@ -65,7 +99,7 @@ export const OWN_TIME_MOCK_REPLY = {
             modelAnswers: [],
         },
         {
-            n: 4,
+            n: 6,
             type: 'writing',
             minutes: 6,
             instruction: 'Napisz do kolegi z Anglii o pracy wakacyjnej, którą chcesz mieć.',
@@ -110,6 +144,41 @@ export const OWN_TIME_MOCK_EXTRA_REPLY = {
         },
         {
             n: 2,
+            type: 'vocab_drill',
+            instruction: 'Wpisz słowo pasujące do opisu.',
+            steps: ['Przeczytaj opis.', 'Wpisz jedno słowo.', 'Kliknij „Sprawdź”.'],
+            example: 'you pay this to see a film → ticket',
+            usefulLanguage: ['shop assistant', 'till', 'receipt', 'price'],
+            hint: 'Słowa są w „Przydatnych słowach”.',
+            items: [
+                { q: 'a person who helps customers in a shop', answer: 'shop assistant', alts: ['assistant'] },
+                { q: 'the paper you get after you pay', answer: 'receipt', alts: ['a receipt'] },
+                { q: 'how much something costs', answer: 'price', alts: ['the price'] },
+            ],
+        },
+        {
+            n: 3,
+            type: 'uoe',
+            format: 'mc_dialogue',
+            instruction: 'Wybierz właściwą odpowiedź.',
+            items: [
+                { q: 'A: How much is this T-shirt?\nB: ___ ten pounds.', options: ['It’s', 'They’re', 'There is'], answer: 'It’s' },
+                { q: 'A: Can I pay by card?\nB: ___ , of course.', options: ['Yes, you can', 'No, you can', 'Yes, I do'], answer: 'Yes, you can' },
+                { q: 'A: What time ___ you finish yesterday?\nB: At five.', options: ['did', 'do', 'were'], answer: 'did' },
+            ],
+        },
+        {
+            n: 4,
+            type: 'word_order',
+            instruction: 'Ułóż słowa w zdania.',
+            items: [
+                { q: 'Zacząłem pracę o ósmej.', answer: 'I started work at eight.', alts: ['At eight I started work.'] },
+                { q: 'Klienci byli bardzo mili.', answer: 'The customers were very nice.' },
+                { q: 'Czy sprzedałeś dużo lodów?', answer: 'Did you sell a lot of ice cream?' },
+            ],
+        },
+        {
+            n: 5,
             type: 'writing',
             minutes: 8,
             instruction: 'Napisz SMS do koleżanki o pierwszym dniu w pracy wakacyjnej.',
@@ -171,6 +240,7 @@ export const OWN_TIME_MOCK_LOW_REPLY = {
         {
             n: 3,
             type: 'uoe',
+            format: 'simple',
             minutes: 4,
             instruction: 'Wpisz am, is albo are.',
             steps: ['Przeczytaj tekst.', 'Wpisz am / is / are.', 'Kliknij „Sprawdź”.'],
@@ -187,6 +257,37 @@ export const OWN_TIME_MOCK_LOW_REPLY = {
         },
         {
             n: 4,
+            type: 'vocab_drill',
+            instruction: 'Wpisz angielskie słowo.',
+            steps: ['Przeczytaj polskie słowo.', 'Wpisz je po angielsku.', 'Kliknij „Sprawdź”.'],
+            example: 'pies → dog',
+            usefulLanguage: ['waiter', 'cook', 'teacher', 'farmer'],
+            hint: 'Wszystkie słowa są w „Przydatnych słowach”.',
+            items: [
+                { q: 'kelner', answer: 'waiter' },
+                { q: 'kucharz', answer: 'cook', alts: ['chef'] },
+                { q: 'nauczyciel', answer: 'teacher' },
+                { q: 'rolnik', answer: 'farmer' },
+            ],
+        },
+        {
+            n: 5,
+            type: 'uoe',
+            format: 'simple',
+            instruction: 'Wpisz do albo does.',
+            steps: ['Przeczytaj pytanie.', 'Wpisz do albo does.', 'Kliknij „Sprawdź”.'],
+            example: '___ you like pizza? → Do',
+            usefulLanguage: ['Do I / you / we / they…?', 'Does he / she / it…?'],
+            hint: 'he / she / it → does.',
+            items: [
+                { q: '___ your mum work in a shop?', answer: 'Does' },
+                { q: '___ you help at home?', answer: 'Do' },
+                { q: '___ they sell ice cream?', answer: 'Do' },
+                { q: '___ Tom like his job?', answer: 'Does' },
+            ],
+        },
+        {
+            n: 6,
             type: 'writing',
             minutes: 5,
             instruction: 'Napisz 2–3 zdania o pracy, którą chcesz mieć.',
@@ -199,5 +300,129 @@ export const OWN_TIME_MOCK_LOW_REPLY = {
             items: [],
             modelAnswers: ['I want to be a cook. I like food. It is a fun job.'],
         },
+    ],
+};
+
+/* ---------- CKE exam-format fixtures (B1 matura podstawowa, B2 rozszerzona, C1 dwujęzyczna) ---------- */
+const vocabTask = (instruction, items, useful) => ({ type: 'vocab_drill', instruction, items, usefulLanguage: useful, hint: 'Słowa są w „Przydatnych słowach”.' });
+const readingTask = (prompt, items) => ({ type: 'reading', instruction: 'Przeczytaj tekst i odpowiedz krótko po angielsku.', prompt, items });
+const writingTask = (instruction, prompt, model, min, max) => ({ type: 'writing', instruction, prompt, target: { minSentences: min, maxSentences: max }, items: [], modelAnswers: [model] });
+
+export const OWN_TIME_MOCK_B1_REPLY = {
+    title: 'Praca dorywcza a nauka', cefr: 'B1', instrLang: 'pl', focus: 'work & study · matura podstawowa',
+    goal: 'Po tej lekcji rozwiążesz zadania maturalne ze środków językowych na temat pracy.',
+    coachNote: 'Na maturze liczy się uważne czytanie całego zdania — tu też!',
+    tasks: [
+        vocabTask('Wpisz słowo pasujące do definicji.', [
+            { q: 'money you get every month for your job', answer: 'salary', alts: ['wage', 'pay'] },
+            { q: 'a job for only a few hours a week', answer: 'part-time job', alts: ['part-time', 'part time job'] },
+            { q: 'to leave your job because you want to', answer: 'resign', alts: ['quit'] },
+            { q: 'a person who works for a company', answer: 'employee', alts: ['an employee'] },
+        ], ['salary', 'part-time job', 'resign', 'employee', 'apply for']),
+        { type: 'uoe', format: 'mc_text', instruction: 'Wybierz właściwą odpowiedź.',
+            prompt: 'Many students in Poland {{1}} a part-time job during the school year. Some of them work in cafés, {{2}} others help in shops or give private lessons. Working teaches you {{3}} to manage your time. However, it is important not to spend {{4}} many hours at work, because school must come first.',
+            items: [
+                { options: ['have', 'make', 'take'], answer: 'have' },
+                { options: ['when', 'while', 'which'], answer: 'while' },
+                { options: ['how', 'what', 'that'], answer: 'how' },
+                { options: ['so', 'too', 'very'], answer: 'too' },
+            ] },
+        { type: 'uoe', format: 'two_sentences', instruction: 'Wybierz wyraz pasujący do obu zdań.',
+            items: [
+                { q: 'Could you ___ me a hand with these boxes?\nThey ___ every new worker a uniform.', options: ['give', 'take', 'make'], answer: 'give' },
+                { q: 'I need to ___ a decision about the job offer.\nDon’t ___ a noise — the baby is sleeping.', options: ['do', 'make', 'have'], answer: 'make' },
+                { q: 'My boss ___ me to work late on Fridays.\nShe ___ for a pay rise last month.', options: ['asked', 'told', 'said'], answer: 'asked' },
+            ] },
+        readingTask('Kasia, 17, works at a bookshop on Saturdays. She started last October because she wanted to save for a trip to Spain. At first she found it hard to study and work, but now she plans her week carefully. Her favourite part of the job is recommending books to children.', [
+            { q: 'When does Kasia work?', answer: 'on Saturdays', alts: ['Saturdays', 'Saturday', 'on Saturday'] },
+            { q: 'Why did she start the job?', answer: 'to save for a trip', alts: ['to save for a trip to Spain', 'to save money', 'save for a trip to Spain'] },
+            { q: 'Her favourite part is recommending books to ___.', answer: 'children', alts: ['kids'] },
+        ]),
+        { type: 'uoe', format: 'translation', instruction: 'Przetłumacz fragmenty w nawiasach.',
+            items: [
+                { q: 'I ___ in a café since June.', pl: 'pracuję', answer: 'have been working', alts: ['have worked', '’ve been working', "'ve been working", '’ve worked', "'ve worked"] },
+                { q: 'If I had more time, ___ a part-time job.', pl: 'znalazłbym', answer: 'I would find', alts: ['I’d find', "I'd find", 'I would get'] },
+                { q: 'My parents ___ work during the exams.', pl: 'nie pozwalają mi', answer: 'don’t let me', alts: ["don't let me", 'do not let me', 'don’t allow me to', "don't allow me to"] },
+            ] },
+        writingTask('Napisz wpis na blogu o swojej pierwszej pracy dorywczej (prawdziwej lub wymyślonej).', 'Write a blog post: where you worked, what you learnt and whether you would recommend it.', 'Last summer I worked in a small bakery near my house. I learnt how to talk to customers and how to work in a team. It was tiring, but I earned my own money. I would recommend it to anyone who wants to become more independent.', 4, 5),
+    ],
+};
+
+export const OWN_TIME_MOCK_B2_REPLY = {
+    title: 'Technologia w pracy', cefr: 'B2', instrLang: 'pl', focus: 'technology · matura rozszerzona',
+    goal: 'Po tej lekcji przećwiczysz słowotwórstwo, transformacje i tłumaczenia jak na maturze rozszerzonej.',
+    coachNote: 'W transformacjach najpierw znajdź strukturę, którą wymusza podany wyraz.',
+    tasks: [
+        vocabTask('Wpisz słowo pasujące do definicji.', [
+            { q: 'to make a process work by machines instead of people', answer: 'automate' },
+            { q: 'a person who is very good at a particular job', answer: 'expert', alts: ['specialist'] },
+            { q: 'able to change easily (e.g. working hours)', answer: 'flexible' },
+            { q: 'to work from home using the internet', answer: 'telecommute', alts: ['work remotely', 'remote work'] },
+        ], ['automate', 'flexible', 'expert', 'remote work']),
+        { type: 'uoe', format: 'word_formation', instruction: 'Przekształć wyrazy w nawiasach.',
+            prompt: 'Remote work has become increasingly {{1}} among young professionals. Its greatest advantage is {{2}}: employees can organise their day as they wish. On the other hand, some people suffer from {{3}} because they rarely meet their colleagues. Experts say that a clear {{4}} between work and free time is essential.',
+            items: [
+                { cue: 'POPULARITY', answer: 'popular' },
+                { cue: 'FLEXIBLE', answer: 'flexibility' },
+                { cue: 'LONELY', answer: 'loneliness' },
+                { cue: 'DIVIDE', answer: 'division' },
+            ] },
+        { type: 'uoe', format: 'transformation', instruction: 'Uzupełnij zdania, używając wyrazu wielkimi literami.',
+            items: [
+                { lead: 'It wasn’t necessary for us to come to the office yesterday.', key: 'NEED', q: 'We ___ to the office yesterday.', answer: 'didn’t need to come', alts: ["didn't need to come", 'did not need to come', 'needn’t have come', "needn't have come", 'need not have come'] },
+                { lead: 'I started using this app three years ago.', key: 'FOR', q: 'I ___ three years.', answer: 'have been using this app for', alts: ['have used this app for', '’ve been using this app for', "'ve been using this app for", '’ve used this app for', "'ve used this app for"] },
+                { lead: 'People say that robots will replace many workers.', key: 'SAID', q: 'Robots ___ many workers.', answer: 'are said to replace', alts: ['are said to be going to replace'] },
+            ] },
+        { type: 'uoe', format: 'translation', instruction: 'Przetłumacz fragmenty w nawiasach.',
+            items: [
+                { q: 'I ___ my laptop to work if I had known about the meeting.', pl: 'zabrałbym', answer: 'would have taken', alts: ['would have brought', '’d have taken', "'d have taken"] },
+                { q: 'My manager ___ late again.', pl: 'kazała mi nie przychodzić', answer: 'told me not to come', alts: ['told me not to be'] },
+                { q: 'We spend ___ time in the office.', pl: 'coraz mniej', answer: 'less and less' },
+            ] },
+        readingTask('Many companies now offer a four-day week. Supporters claim that workers are happier and just as productive. Critics, however, warn that some tasks cannot be squeezed into fewer days and that customers expect services every day.', [
+            { q: 'What do supporters say about productivity?', answer: 'it is the same', alts: ['just as productive', 'workers are just as productive', 'the same'] },
+            { q: 'Customers expect services ___.', answer: 'every day', alts: ['daily'] },
+        ]),
+        writingTask('Napisz rozprawkę w skrócie: czy praca zdalna jest przyszłością?', 'Write a short opinion paragraph: Is remote work the future? Give two arguments.', 'In my opinion, remote work is the future for many office jobs. Firstly, it saves time because people do not have to commute. Secondly, it lets workers organise their day more flexibly. However, companies must make sure employees do not feel isolated. Overall, a mix of home and office work seems the best solution.', 5, 6),
+    ],
+};
+
+export const OWN_TIME_MOCK_C1_REPLY = {
+    title: 'Media i dezinformacja', cefr: 'C1', instrLang: 'pl', focus: 'media · matura dwujęzyczna',
+    goal: 'Po tej lekcji przećwiczysz zaawansowane środki językowe jak na maturze dwujęzycznej.',
+    coachNote: 'Na tym poziomie liczą się kolokacje — czytaj całe zdanie, nie tylko lukę.',
+    tasks: [
+        vocabTask('Wpisz wyraz pasujący do definicji.', [
+            { q: 'false information spread on purpose', answer: 'disinformation', alts: ['propaganda'] },
+            { q: 'to check that something is true', answer: 'verify', alts: ['fact-check'] },
+            { q: 'not showing personal opinion; fair', answer: 'impartial', alts: ['unbiased', 'objective'] },
+        ], ['disinformation', 'verify', 'impartial', 'gullible']),
+        { type: 'uoe', format: 'open_cloze', instruction: 'Uzupełnij każdą lukę jednym wyrazem.',
+            prompt: 'Hardly a day goes {{1}} without a new fake story going viral. {{2}} the efforts of fact-checkers, many readers share articles without reading {{3}} than the headline. What is more, algorithms tend to show us content we already agree {{4}}, which makes it all the more difficult to spot manipulation.',
+            items: [
+                { answer: 'by' },
+                { answer: 'Despite', alts: ['Notwithstanding'] },
+                { answer: 'more', alts: ['further'] },
+                { answer: 'with' },
+            ] },
+        { type: 'uoe', format: 'lexical_set', instruction: 'Wpisz jeden wyraz pasujący do trzech zdań.',
+            items: [
+                { q: 'The scandal ___ the headlines for weeks.\nShe ___ a hard bargain with the publisher.\nThe film ___ huge crowds on its opening night.', answer: 'drew' },
+                { q: 'You should take his claims with a pinch of ___.\nThe ___ of the earth — that’s my grandma.\nAdd a little ___ to the soup.', answer: 'salt' },
+                { q: 'Whether we publish it ___ on the evidence.\nIt all ___ on the weather.\nThe town ___ heavily on tourism.', answer: 'depends' },
+            ] },
+        { type: 'uoe', format: 'transformation', instruction: 'Uzupełnij zdania, używając wyrazu wielkimi literami.',
+            items: [
+                { lead: 'I regret believing that article.', key: 'WISH', q: 'I ___ that article.', answer: 'wish I hadn’t believed', alts: ["wish I hadn't believed", 'wish I had not believed', 'wish I’d never believed', "wish I'd never believed"] },
+                { lead: 'As soon as the story was published, it went viral.', key: 'SOONER', q: 'No ___ than it went viral.', answer: 'sooner had the story been published', alts: ['sooner was the story published'] },
+                { lead: 'It’s possible that the editor didn’t see the error.', key: 'MAY', q: 'The editor ___ the error.', answer: 'may not have seen', alts: ['may not have noticed'] },
+            ] },
+        { type: 'uoe', format: 'translation', instruction: 'Przetłumacz fragmenty w nawiasach.',
+            items: [
+                { q: 'By the time the truth came out, the post ___ by millions.', pl: 'zostało już udostępnione', answer: 'had already been shared', alts: ['had been shared already'] },
+                { q: 'It’s high time ___ more critically.', pl: 'zaczęliśmy myśleć', answer: 'we started thinking', alts: ['we started to think', 'we began thinking', 'we began to think'] },
+                { q: 'He ___ of spreading rumours.', pl: 'został oskarżony', answer: 'was accused', alts: ['has been accused', 'got accused'] },
+            ] },
+        writingTask('Napisz akapit: jak szkoła powinna uczyć rozpoznawania fake newsów?', 'Write a paragraph: How should schools teach students to recognise fake news?', 'Schools should treat media literacy as seriously as maths. Students ought to practise verifying sources, comparing headlines with the actual content and recognising emotional manipulation. Teachers could analyse real viral posts in class, which would make the topic far more engaging. Ultimately, critical thinking is the best protection against disinformation.', 5, 6),
     ],
 };

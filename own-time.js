@@ -1,5 +1,5 @@
 /**
- * In your own time — personalized 15–20 min practice coach (Writing Suite).
+ * In your own time — personalized practice coach (Writing Suite): every lesson / extra set = 5–6 tasks.
  */
 (function () {
     'use strict';
@@ -137,8 +137,8 @@
             <div class="ot-card">
                 <h3 class="ot-heading">${esc(title)}</h3>
                 <p class="ot-lead">${esc(L === 'en'
-                    ? 'We will build short 15–20 minute practice sessions for you.'
-                    : 'Przygotujemy krótkie ćwiczenia na 15–20 minut dopasowane do Ciebie.')}</p>
+                    ? 'We will build practice lessons of 5–6 short tasks for you.'
+                    : 'Przygotujemy dla Ciebie lekcje z 5–6 krótkich zadań.')}</p>
                 <div class="ot-form-grid">
                     <label>${esc(L === 'en' ? 'Age' : 'Wiek')}
                         <input type="number" id="ot-age" class="pe-input" min="6" max="99" value="${p.age != null ? esc(p.age) : ''}" required>
@@ -152,11 +152,9 @@
                                 `<option value="${c}"${(p.cefr || 'A2') === c ? ' selected' : ''}>${c}</option>`).join('')}
                         </select>
                     </label>
-                    <label>${esc(L === 'en' ? 'Intensity' : 'Intensywność')}
+                    <label>${esc(L === 'en' ? 'Difficulty' : 'Poziom trudności')}
                         <select id="ot-intensity" class="pe-input">
-                            <option value="light"${p.intensity === 'light' ? ' selected' : ''}>${esc(L === 'en' ? 'Light' : 'Lekko')}</option>
-                            <option value="standard"${!p.intensity || p.intensity === 'standard' ? ' selected' : ''}>${esc(L === 'en' ? 'Standard' : 'Standard')}</option>
-                            <option value="stretch"${p.intensity === 'stretch' ? ' selected' : ''}>${esc(L === 'en' ? 'Stretch' : 'Więcej wyzwania')}</option>
+                            ${['light', 'standard', 'stretch'].map((d) => `<option value="${d}"${(p.intensity || 'standard') === d ? ' selected' : ''}>${esc(difficultyLabel(d))}</option>`).join('')}
                         </select>
                     </label>
                 </div>
@@ -188,6 +186,11 @@
             </div>`;
     }
 
+    /** The stored "intensity" setting is difficulty only — every lesson has 5–6 tasks. */
+    function difficultyLabel(d) {
+        return ({ light: t('Łatwiej', 'Easier'), stretch: t('Wyzwanie', 'Challenge') })[d] || t('Standard', 'Standard');
+    }
+
     function renderDash() {
         const p = profile;
         const L = lang();
@@ -198,17 +201,17 @@
             <div class="ot-card">
                 <h3 class="ot-heading">${esc(L === 'en' ? 'In your own time' : 'We własnym tempie')}</h3>
                 <p class="ot-lead">${esc(L === 'en'
-                    ? 'A short practice session (~15–20 minutes), tailored to you.'
-                    : 'Krótka sesja ćwiczeń (~15–20 minut), dopasowana do Ciebie.')}</p>
+                    ? 'A practice lesson of 5–6 short tasks, tailored to you.'
+                    : 'Lekcja z 5–6 krótkich zadań, dopasowana do Ciebie.')}</p>
                 <ol class="ot-how">
-                    <li><span class="ot-how-n">1</span><strong>${esc(t('Zrób 2–4 krótkie zadania', 'Do 2–4 short tasks'))}</strong><span>${esc(t('Każde ma kroki, przykład i podpowiedź.', 'Each has steps, an example and a hint.'))}</span></li>
+                    <li><span class="ot-how-n">1</span><strong>${esc(t('Zrób 5–6 krótkich zadań', 'Do 5–6 short tasks'))}</strong><span>${esc(t('Każde ma kroki, przykład i podpowiedź.', 'Each has steps, an example and a hint.'))}</span></li>
                     <li><span class="ot-how-n">2</span><strong>${esc(t('Sprawdź odpowiedzi', 'Check your answers'))}</strong><span>${esc(t('„Sprawdź” pokaże błędy; potrzebujesz pomocy? Rozwiń podpowiedzi.', '“Check” marks mistakes; need help? Open the hints.'))}</span></li>
                     <li><span class="ot-how-n">3</span><strong>${esc(t('Powiedz, jak było', 'Tell us how it went'))}</strong><span>${esc(t('Twoja opinia ustawia następną lekcję.', 'Your feedback shapes the next lesson.'))}</span></li>
                 </ol>
-                <p class="ot-time-note"><i class="fa-regular fa-clock"></i> ${esc(({ light: t('ok. 12–15 min', 'about 12–15 min'), stretch: t('ok. 18–20 min', 'about 18–20 min') })[p.intensity] || t('ok. 15–18 min', 'about 15–18 min'))} · ${esc(t('znajdź ciche miejsce i miej pod ręką słownik', 'find a quiet place; a dictionary is allowed'))}</p>
+                <p class="ot-time-note"><i class="fa-solid fa-list-check"></i> ${esc(t('5–6 zadań · każde mieści się na jednym ekranie · pracuj we własnym tempie', '5–6 tasks · each fits on one screen · work at your own pace'))}</p>
                 <ul class="ot-summary">
                     <li><strong>${esc(L === 'en' ? 'Level' : 'Poziom')}:</strong> ${esc(p.cefr)} · ${esc(p.classLabel || '—')} · ${esc(L === 'en' ? 'age' : 'wiek')} ${esc(p.age ?? '—')}</li>
-                    <li><strong>${esc(L === 'en' ? 'Intensity' : 'Intensywność')}:</strong> ${esc(p.intensity)}</li>
+                    <li><strong>${esc(L === 'en' ? 'Difficulty' : 'Trudność')}:</strong> ${esc(difficultyLabel(p.intensity))}</li>
                     <li><strong>${esc(L === 'en' ? 'Likes' : 'Lubisz')}:</strong> ${esc((p.taskPrefs || []).join(', ') || '—')}</li>
                     <li><strong>${esc(L === 'en' ? 'Interests' : 'Zainteresowania')}:</strong> ${esc((p.interests || []).join(', ') || '—')}</li>
                     ${p.topic ? `<li><strong>${esc(L === 'en' ? 'Topic' : 'Temat')}:</strong> ${esc(p.topic)}</li>` : ''}
@@ -224,14 +227,10 @@
                     </label>
                 </div>
                 <div class="ot-actions">
-                    <button type="button" class="btn btn-blue" id="ot-start">${esc(L === 'en' ? 'Start practice (~15–20 min)' : 'Zacznij ćwiczenia (~15–20 min)')}</button>
+                    <button type="button" class="btn btn-blue" id="ot-start">${esc(L === 'en' ? 'Start practice (5–6 tasks)' : 'Zacznij ćwiczenia (5–6 zadań)')}</button>
                     <button type="button" class="btn btn-outline" id="ot-edit-profile">${esc(L === 'en' ? 'Edit profile' : 'Edytuj profil')}</button>
                 </div>
             </div>`;
-    }
-
-    function normalizeAns(s) {
-        return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
     }
 
     /** Case-, punctuation- and spacing-insensitive key (mirrors looseKey in own-time-prompts.js). */
@@ -241,7 +240,8 @@
 
     function checkItem(item, value) {
         // Tile tasks (word order / unscramble) ignore case and punctuation; other items keep exact matching.
-        const norm = Array.isArray(item.tiles) ? looseKey : normalizeAns;
+        // All items: case-, punctuation- and spacing-insensitive (alternatives from the AI count too).
+        const norm = looseKey;
         const v = norm(value);
         if (!v) return false;
         const ok = [item.answer, ...(item.alts || [])].map(norm).filter(Boolean);
@@ -322,7 +322,6 @@
             useful: Array.isArray(task.usefulLanguage) ? task.usefulLanguage : [],
             hint: task.hint || '',
             target: task.target || null,
-            minutes: Number(task.minutes) || 0,
         };
     }
 
@@ -442,10 +441,62 @@
             const it = items[i];
             if (!it) return all;
             seen.add(i);
-            const cue = it.q && !GAP_RE.test(it.q) && it.q.length <= 24 ? ` <span class="ot-cue">(${esc(it.q.replace(/^\(|\)$/g, ''))})</span>` : '';
+            if (Array.isArray(it.options)) return `<span class="ot-gap-n">${i + 1}</span>${slotHtml(it, i, saved)}`;
+            const cueText = it.cue || (it.q && !GAP_RE.test(it.q) && it.q.length <= 24 ? it.q.replace(/^\(|\)$/g, '') : '');
+            const cue = cueText ? ` <span class="ot-cue${task.format === 'word_formation' ? ' ot-cue--caps' : ''}">(${esc(cueText)})</span>` : '';
             return `<span class="ot-gap-n">${i + 1}</span>${gapInput(it, i, saved)}${cue}`;
         }).replace(/\n/g, '<br>');
         return seen.size === items.length ? html : null;
+    }
+
+    /* ---------- Use of English in CKE exam formats ---------- */
+    const UOE_FORMAT_NAMES = {
+        simple: 'Luki', mc_sentences: 'Wybór wielokrotny', mc_dialogue: 'Minidialogi', mc_translation: 'Tłumaczenie — wybór',
+        mc_text: 'Tekst z lukami — wybór', two_sentences: 'Jeden wyraz, dwa zdania', brackets: 'Wyrazy z nawiasu',
+        translation: 'Tłumaczenie fragmentów', word_formation: 'Słowotwórstwo', open_cloze: 'Tekst z lukami',
+        transformation: 'Transformacje', lexical_set: 'Set leksykalny',
+    };
+    const EXAM_SHORT = { E8: 'E8', MP: 'Matura PP', MR: 'Matura PR', MD: 'Matura DJ' };
+    const EXAM_NAMES = { E8: 'Egzamin ósmoklasisty', MP: 'Matura — poziom podstawowy', MR: 'Matura — poziom rozszerzony', MD: 'Matura — poziom dwujęzyczny' };
+    const LETTERS = 'ABCD';
+    function savedVal(saved, i) { return (saved.items && saved.items[i]) || ''; }
+    /** The gap of a closed item: shows the chosen option (or a blank line) and carries the hidden value. */
+    function slotHtml(it, i, saved) {
+        const v = savedVal(saved, i);
+        return `<span class="ot-slot${v ? ' is-filled' : ''}" data-slot="${i}">${v ? esc(v) : '&nbsp;'}</span><span class="ot-mark" data-mark="${i}" aria-live="polite"></span>`;
+    }
+    function optionsHtml(it, i, saved) {
+        const v = savedVal(saved, i);
+        return `<span class="ot-opts" role="radiogroup" aria-label="${esc(t(`Odpowiedzi do luki ${i + 1}`, `Options for gap ${i + 1}`))}">${it.options.map((o, k) => `<button type="button" class="ot-opt${v === o ? ' is-picked' : ''}" role="radio" aria-checked="${v === o}" data-opt="${i}" data-v="${esc(o)}"><b>${LETTERS[k]}</b> ${esc(o)}</button>`).join('')}</span><input type="hidden" class="ot-item" data-i="${i}" value="${esc(v)}">`;
+    }
+    /** Item text with every gap rendered; the first gap is the answer field, the others mirror it (two-sentence / lexical sets). */
+    function gapLines(it, i, saved, task) {
+        const mc = Array.isArray(it.options);
+        const parts = String(it.q || '').split(/_{3,}|\{\{\s*\d*\s*\}\}/);
+        if (parts.length === 1) return `<span class="ot-q-text">${esc(it.q || '')}</span> ${mc ? slotHtml(it, i, saved) : gapInput(it, i, saved)}`;
+        const pl = it.pl ? `<span class="ot-pl">(${esc(it.pl)})</span> ` : '';
+        const cue = it.cue ? ` <span class="ot-cue">(${esc(it.cue)})</span>` : '';
+        return parts.map((txt, k) => {
+            const lineHtml = esc(txt).replace(/\n/g, '<br>');
+            if (k === parts.length - 1) return lineHtml;
+            const gap = k === 0 ? `${pl}${mc ? slotHtml(it, i, saved) : gapInput(it, i, saved)}${cue}` : `<span class="ot-mirror" data-mirror="${i}">${esc(savedVal(saved, i)) || '&nbsp;'}</span>`;
+            return lineHtml + gap;
+        }).join('');
+    }
+    function uoeItemHtml(task, it, i, saved) {
+        if (task.format === 'transformation' && it.lead) {
+            return `<div class="ot-tf-lead">${esc(it.lead)} <span class="ot-tf-key">${esc(it.key || '')}</span></div><div class="ot-tf-line">${gapLines(it, i, saved, task)}</div>`;
+        }
+        const lines = `<div class="ot-q-line">${gapLines(it, i, saved, task)}</div>`;
+        return Array.isArray(it.options) ? `${lines}${optionsHtml(it, i, saved)}` : lines;
+    }
+
+    /** Long CKE-style instructions: first sentence always visible; the exam rules fold away on phones. */
+    function instructionHtml(text) {
+        const s = String(text || '');
+        const m = s.match(/^(.+?[.!?])\s+(.{40,})$/s);
+        if (!m) return `<span class="ot-instruction">${esc(s)}</span>`;
+        return `<span class="ot-instruction ot-instruction--long">${esc(m[1])} <span class="ot-instr-rest">${esc(m[2])}</span><button type="button" class="ot-instr-more" aria-expanded="false">${esc(t('więcej', 'more'))}</button></span>`;
     }
 
     function renderTask() {
@@ -485,11 +536,21 @@
             if (gapped) {
                 layout = 'gapped';
                 body = `<div class="ot-gapped-text">${gapped}</div>`;
+                // Closed text formats (CKE "tekst z lukami — wybór"): one row of A/B/C(/D) options per gap under the text.
+                if (items.some((it) => Array.isArray(it.options))) {
+                    layout = 'gapped-mc';
+                    body += `<ol class="ot-opt-rows">${items.map((it, i) => `<li class="ot-q" data-row="${i}"><span class="ot-gap-n">${i + 1}</span>${optionsHtml(it, i, saved)}</li>`).join('')}</ol>`;
+                }
             } else {
                 if (task.prompt) body += `<p class="ot-prompt">${esc(task.prompt).replace(/\n/g, '<br>')}</p>`;
                 const sentences = items.some((it) => GAP_RE.test(String(it.q || '')));
+                if (task.type === 'uoe' && task.format && task.format !== 'simple') {
+                    layout = 'exam';
+                    body += `<ol class="ot-qs ot-qs--exam ot-fmt--${esc(task.format)}">${items.map((it, i) => `<li class="ot-q" data-row="${i}">${uoeItemHtml(task, it, i, saved)}</li>`).join('')}</ol>`;
+                } else {
                 layout = sentences ? 'sentences' : 'grid';
                 body += `<ol class="ot-qs ${sentences ? 'ot-qs--sentences' : 'ot-qs--grid'}">${items.map((it, i) => `<li class="ot-q" data-row="${i}">${inlineItem(it, i, saved)}</li>`).join('')}</ol>`;
+                }
             }
         }
 
@@ -514,14 +575,15 @@
                         <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}</div>
                         <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
                     </div>
-                    <div class="ot-time" title="${esc(t('Cała lekcja', 'Whole lesson'))}"><i class="fa-regular fa-clock"></i> ~${esc(lesson.minutes || 15)} min</div>
+                    <div class="ot-time" aria-live="polite">${esc(t(`Zadanie ${taskIndex + 1} z ${tasks.length}`, `Task ${taskIndex + 1} of ${tasks.length}`))}</div>
                 </div>
                 ${lesson.goal && taskIndex === 0 ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
                 ${stepperHtml(tasks)}
                 <div class="ot-task-line">
                     <span class="ot-badge"><i class="fa-solid ${esc((TYPE_LABELS[task.type] || TYPE_LABELS.writing).icon)}"></i> ${esc(typeLabel(task.type))}</span>
-                    <span class="ot-instruction">${esc(task.instruction)}</span>
-                    <span class="ot-task-meta">${esc(L === 'en' ? `${taskIndex + 1}/${tasks.length}` : `${taskIndex + 1}/${tasks.length}`)}${g.minutes ? ` · ~${esc(g.minutes)} min` : ''}${g.target ? ` · ${esc(g.target.minSentences)}–${esc(g.target.maxSentences)} ${esc(t('zdań', 'sentences'))}` : ''}</span>
+                    ${instructionHtml(task.instruction)}
+                    ${task.format && UOE_FORMAT_NAMES[task.format] && task.format !== 'simple' ? `<span class="ot-exam-tag" title="${esc(EXAM_NAMES[task.exam] || '')}">${esc(task.exam ? `${EXAM_SHORT[task.exam] || task.exam} · ` : '')}${esc(UOE_FORMAT_NAMES[task.format])}</span>` : ''}
+                    ${g.target ? `<span class="ot-task-meta">${esc(g.target.minSentences)}–${esc(g.target.maxSentences)} ${esc(t('zdań', 'sentences'))}</span>` : ''}
                 </div>
                 <div class="ot-work ot-work--${layout}">
                     <div class="ot-panels" role="group" aria-label="${esc(t('Pomoc', 'Help'))}">${panels}</div>
@@ -772,9 +834,41 @@
         });
     }
 
+    /** Choose an option for a closed (A/B/C/D) item: hidden value, chips, gap slot and mirrors. */
+    function pickOption(el, i, v) {
+        const inp = el.querySelector(`.ot-item[data-i="${i}"]`);
+        if (inp) { inp.value = v; inp.classList.remove('is-ok', 'is-wrong'); }
+        el.querySelectorAll(`.ot-opt[data-opt="${i}"]`).forEach((b) => {
+            const on = b.dataset.v === v;
+            b.classList.toggle('is-picked', on);
+            b.setAttribute('aria-checked', String(on));
+            b.classList.remove('is-ok', 'is-wrong');
+        });
+        el.querySelectorAll(`[data-slot="${i}"], [data-mirror="${i}"]`).forEach((s) => {
+            s.textContent = v || '\u00a0';
+            s.classList.toggle('is-filled', !!v);
+            s.classList.remove('is-ok', 'is-wrong', 'is-revealed', 'pop');
+            void s.offsetWidth;
+            s.classList.add('pop');
+        });
+        el.querySelectorAll(`[data-row="${i}"]`).forEach((r) => r.classList.remove('is-ok', 'is-wrong'));
+        const mark = el.querySelector(`[data-mark="${i}"]`);
+        if (mark) { mark.innerHTML = ''; mark.className = 'ot-mark'; }
+    }
+
     function bind() {
         const el = root();
         if (!el) return;
+        el.querySelectorAll('.ot-instr-more').forEach((b) => b.addEventListener('click', () => {
+            const open = b.parentElement.classList.toggle('is-open');
+            b.setAttribute('aria-expanded', String(open));
+            b.textContent = open ? t('mniej', 'less') : t('więcej', 'more');
+        }));
+        el.querySelectorAll('.ot-opt').forEach((b) => b.addEventListener('click', () => pickOption(el, Number(b.dataset.opt), b.dataset.v)));
+        // Two-sentence / lexical-set items: the typed word also appears in the other gaps.
+        el.querySelectorAll('input.ot-item').forEach((inp) => inp.addEventListener('input', () => {
+            el.querySelectorAll(`[data-mirror="${inp.dataset.i}"]`).forEach((m) => { m.textContent = inp.value || '\u00a0'; m.classList.toggle('is-filled', !!inp.value); });
+        }));
 
         const ageEl = document.getElementById('ot-age');
         const cefrEl = document.getElementById('ot-cefr');
@@ -836,6 +930,10 @@
                 if (good) ok += 1;
                 input?.classList.toggle('is-ok', good);
                 input?.classList.toggle('is-wrong', !good);
+                if (Array.isArray(it.options)) {
+                    el.querySelectorAll(`[data-slot="${i}"], [data-mirror="${i}"]`).forEach((s) => { s.classList.remove('is-ok', 'is-wrong', 'is-revealed'); s.classList.add(good ? 'is-ok' : 'is-wrong'); });
+                    el.querySelectorAll(`.ot-opt[data-opt="${i}"].is-picked`).forEach((b) => { b.classList.toggle('is-ok', good); b.classList.toggle('is-wrong', !good); });
+                }
                 const row = el.querySelector(`.ot-tiles-item[data-row="${i}"]`);
                 if (row) {
                     row.classList.remove('is-ok', 'is-wrong', 'is-revealed');
@@ -858,12 +956,22 @@
                 document.getElementById('ot-show-answers')?.addEventListener('click', () => {
                     // Fill the correct answer straight into each wrong gap (the student's attempt stays in the tooltip).
                     el.querySelectorAll('.ot-tiles-item.is-wrong').forEach((row) => revealTileRow(task, Number(row.dataset.row)));
+                    (task.items || []).forEach((it, i) => {
+                        if (!Array.isArray(it.options)) return;
+                        const inp = el.querySelector(`.ot-item[data-i="${i}"]`);
+                        if (!inp || checkItem(it, inp.value)) return;
+                        pickOption(el, i, it.answer);
+                        el.querySelectorAll(`[data-slot="${i}"], [data-mirror="${i}"]`).forEach((s) => s.classList.add('is-revealed'));
+                        const mark = el.querySelector(`[data-mark="${i}"]`);
+                        if (mark) { mark.innerHTML = '<i class="fa-solid fa-eye"></i>'; mark.className = 'ot-mark revealed'; }
+                    });
                     el.querySelectorAll('.ot-item.is-wrong').forEach((inp) => {
                         if (inp.type === 'hidden' || inp.classList.contains('ot-unscramble-input')) return;
                         const it = (task.items || [])[Number(inp.dataset.i)];
                         if (!it?.answer) return;
                         inp.title = t(`Twoja odpowiedź: ${inp.value || '—'}`, `You wrote: ${inp.value || '—'}`);
                         inp.value = it.answer;
+                        inp.dispatchEvent(new Event('input'));
                         inp.classList.remove('is-wrong');
                         inp.classList.add('is-revealed');
                         const mark = el.querySelector(`[data-mark="${inp.dataset.i}"]`);

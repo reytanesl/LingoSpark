@@ -2943,6 +2943,60 @@
         @keyframes otPop { 0% { transform: scale(0.94); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
         @keyframes otShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
         @keyframes otFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        /* Use of English — CKE exam formats (E8 / matura PP / PR / DJ) */
+        #screen-own-time .ot-exam-tag { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.6rem; border-radius: 999px; background: var(--ot-accent-soft); color: #8a5200; font-size: 0.74rem; font-weight: 800; white-space: nowrap; }
+        #screen-own-time .ot-qs--exam { display: grid; gap: 0.55rem; margin: 0; padding-left: 1.4rem; }
+        #screen-own-time .ot-qs--exam > li { line-height: 1.75; padding: 0.35rem 0.6rem; border-radius: 12px; background: #fff; border: 1px solid #e3ebf5; transition: border-color 0.2s, background-color 0.2s; }
+        #screen-own-time .ot-qs--exam > li::marker { font-weight: 800; color: var(--ot-navy); }
+        #screen-own-time .ot-q-line { color: var(--ot-ink); }
+        #screen-own-time .ot-slot, #screen-own-time .ot-mirror { display: inline-block; min-width: 5ch; padding: 0 0.45rem; margin: 0 0.15rem; border-bottom: 2px dashed var(--ot-line); border-radius: 4px 4px 0 0; background: #f6f9fd; color: var(--ot-navy); font-weight: 800; line-height: 1.5; text-align: center; vertical-align: baseline; }
+        #screen-own-time .ot-slot.is-filled, #screen-own-time .ot-mirror.is-filled { border-bottom-style: solid; background: var(--ot-pale); }
+        #screen-own-time .ot-slot.pop, #screen-own-time .ot-mirror.pop { animation: otPop 0.25s ease; }
+        #screen-own-time .ot-slot.is-ok, #screen-own-time .ot-mirror.is-ok { border-bottom-color: var(--ot-ok); background: var(--ot-ok-soft); }
+        #screen-own-time .ot-slot.is-wrong, #screen-own-time .ot-mirror.is-wrong { border-bottom-color: var(--ot-bad); background: var(--ot-bad-soft); animation: otShake 0.35s ease; }
+        #screen-own-time .ot-slot.is-revealed, #screen-own-time .ot-mirror.is-revealed { border-bottom-color: #4a6283; font-style: italic; }
+        #screen-own-time .ot-mirror { color: var(--ot-muted); }
+        #screen-own-time .ot-opts { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem; }
+        #screen-own-time .ot-opt { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.22rem 0.7rem 0.22rem 0.3rem; border: 1px solid #cfdbea; border-radius: 999px; background: #fff; color: var(--ot-ink); font: inherit; font-size: 0.92rem; font-weight: 600; line-height: 1.3; cursor: pointer; transition: background-color 0.15s, border-color 0.15s, transform 0.1s; }
+        #screen-own-time .ot-opt b { display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--ot-pale); color: var(--ot-navy); font-size: 0.72rem; font-weight: 800; }
+        #screen-own-time .ot-opt:hover { border-color: var(--ot-navy-2); background: #f6f9fd; }
+        #screen-own-time .ot-opt:active { transform: scale(0.97); }
+        #screen-own-time .ot-opt:focus-visible { outline: 3px solid var(--ot-accent); outline-offset: 2px; }
+        #screen-own-time .ot-opt.is-picked { background: var(--ot-navy); border-color: var(--ot-navy); color: #fff; }
+        #screen-own-time .ot-opt.is-picked b { background: var(--ot-accent); color: var(--ot-navy); }
+        #screen-own-time .ot-opt.is-picked.is-ok { background: var(--ot-ok); border-color: var(--ot-ok); }
+        #screen-own-time .ot-opt.is-picked.is-wrong { background: var(--ot-bad); border-color: var(--ot-bad); }
+        #screen-own-time .ot-opt-rows { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 0.4rem 0.9rem; margin: 0.6rem 0 0; padding: 0; }
+        #screen-own-time .ot-opt-rows > li { display: flex; align-items: center; gap: 0.4rem; list-style: none; padding: 0; margin: 0; }
+        #screen-own-time .ot-opt-rows > li::marker { content: none; }
+        #screen-own-time .ot-opt-rows .ot-opts { margin-top: 0; }
+        #screen-own-time .ot-pl { color: #8a5200; font-style: italic; font-weight: 600; }
+        #screen-own-time .ot-cue--caps { text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; color: var(--ot-navy-2); font-size: 0.85em; }
+        #screen-own-time .ot-tf-lead { color: var(--ot-ink); }
+        #screen-own-time .ot-tf-key { display: inline-block; margin: 0.1rem 0; padding: 0 0.5rem; border-radius: 6px; background: var(--ot-navy); color: #fff; font-weight: 800; letter-spacing: 0.08em; font-size: 0.85rem; }
+        #screen-own-time .ot-fmt--lexical_set .ot-q-line, #screen-own-time .ot-fmt--two_sentences .ot-q-line { line-height: 1.85; }
+        @media (max-width: 520px) {
+            #screen-own-time .ot-qs--exam { padding-left: 1.15rem; gap: 0.4rem; }
+            #screen-own-time .ot-qs--exam > li { padding: 0.25rem 0.45rem; line-height: 1.6; font-size: 0.93rem; }
+            #screen-own-time .ot-opt { font-size: 0.86rem; padding: 0.16rem 0.55rem 0.16rem 0.22rem; }
+            #screen-own-time .ot-opt b { width: 1.2rem; height: 1.2rem; }
+            #screen-own-time .ot-opt-rows { grid-template-columns: 1fr; gap: 0.3rem; }
+            #screen-own-time .ot-exam-tag { font-size: 0.68rem; }
+            #screen-own-time .ot-instruction--long .ot-instr-rest { display: none; }
+            #screen-own-time .ot-instruction--long.is-open .ot-instr-rest { display: inline; }
+            #screen-own-time .ot-instruction .ot-instr-more { display: inline; }
+            #screen-own-time .ot-qs--exam .ot-gap-input { max-width: 14ch; font-size: 0.92rem; }
+            #screen-own-time .ot-fmt--transformation .ot-gap-input { max-width: 100%; }
+            #screen-own-time .ot-opt-rows > li { gap: 0.25rem; }
+            #screen-own-time .ot-task-line:has(.ot-exam-tag) .ot-badge { display: none; }
+            #screen-own-time .ot-qs--exam .ot-opts { gap: 0.25rem; margin-top: 0.15rem; }
+            #screen-own-time .ot-qs--exam .ot-opt, #screen-own-time .ot-opt-rows .ot-opt { font-size: 0.8rem; line-height: 1.15; padding: 0.12rem 0.5rem 0.12rem 0.18rem; gap: 0.3rem; }
+            #screen-own-time .ot-qs--exam .ot-opt b, #screen-own-time .ot-opt-rows .ot-opt b { width: 1.05rem; height: 1.05rem; font-size: 0.64rem; }
+            #screen-own-time .ot-qs--exam > li { line-height: 1.5; }
+        }
+        #screen-own-time .ot-instr-more { display: none; margin-left: 0.3rem; padding: 0 0.4rem; border: 0; border-radius: 999px; background: var(--ot-pale); color: var(--ot-navy-2); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        #screen-own-time .ot-instr-rest { color: var(--ot-muted); font-weight: 500; }
+        #screen-own-time .ot-tf-key { margin-left: 0.25rem; }
         @media (prefers-reduced-motion: reduce) { #screen-own-time *, #screen-own-time *::before { animation: none !important; transition: none !important; } }
         @media (max-width: 760px) {
             #screen-own-time .ot-card { padding: 1rem; border-radius: 14px; }
