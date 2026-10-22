@@ -103,6 +103,7 @@ import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
 import { createWorksheetMakerRouter } from './worksheet-maker/server.js';
+import { cleanHandwrittenTranscript, stripStruckText, countEssayWords, HANDWRITING_STRIKE_RULES } from './handwriting-clean.js';
 import './matura-mistakes.js';
 const { sanitizeMistakes: sanitizeMaturaMistakes, PROMPT_TYPES: MATURA_MISTAKE_TYPES } = globalThis.MaturaMistakes;
 
@@ -1292,7 +1293,8 @@ Return ONLY valid JSON:
      */
     app.post('/api/assess-writing', requireWritingAccess, async (req, res) => {
         const task = (req.body?.task || '').trim();
-        const essayText = (req.body?.essayText || '').trim();
+        // Typed/edited text never carries strikethrough markup into the assessment either.
+        let essayText = stripStruckText((req.body?.essayText || '').trim());
         const images = Array.isArray(req.body?.images) ? req.body.images : [];
 
         if (!task) {
@@ -1371,6 +1373,39 @@ Return ONLY valid JSON:
             }
         }
 
+        // Pass 1 (photos only): transcribe the handwriting, then strip every crossed-out fragment on the
+        // server before anything is assessed. Pass 2 assesses the cleaned text only — no images — so
+        // struck text can never influence the score, the mistakes list or the word count.
+        let handwritingNote = '';
+        if (images.length) {
+            try {
+                const tr = await runVisionJsonPrompt({
+                    apiKey,
+                    images,
+                    label: 'matura-transcribe',
+                    prompt: `Transcribe the student's handwritten English essay from the attached image(s), page by page in order, exactly as written (keep their spelling and grammar mistakes; do not correct anything). Keep paragraph breaks as blank lines.
+
+${HANDWRITING_STRIKE_RULES}
+
+Mark a word you cannot read as [?]. ${essayText ? `The student also typed this (use it only to help read the handwriting):\n"""\n${essayText}\n"""` : ''}
+
+Return ONLY valid JSON:
+{ "transcript": "the essay text without any crossed-out text", "removedFragments": ["every crossed-out fragment you saw"], "illegible": false, "note": "" }`,
+                });
+                const cleaned = cleanHandwrittenTranscript(String(tr?.transcript || ''), tr?.removedFragments);
+                if (cleaned) essayText = cleaned;
+                if (tr?.illegible || tr?.note) handwritingNote = String(tr?.note || 'Parts of the handwriting were hard to read.').slice(0, 300);
+            } catch (e) {
+                if (recheck?.free) {
+                    try { await releaseMaturaFreeRecheck(assessUser.id, recheck.rootId); } catch { /* ignore */ }
+                }
+                console.error('Matura transcription error:', e);
+                const status = /Unsupported image|too large|valid JSON/i.test(e.message || '') ? 400 : 500;
+                return res.status(status).json({ error: e.message || 'Could not read the handwriting.' });
+            }
+            if (!essayText) return res.status(400).json({ error: 'Could not read any essay text from the photos.' });
+        }
+
         const prompt = `Matura rozszerzona English writing feedback TO THE STUDENT (you/your). Total 13 pts: Content 0–5, Coherence 0–2, Range 0–3, Accuracy 0–3.
 
 TASK:
@@ -1378,7 +1413,11 @@ TASK:
 ${task}
 """
 
-${essayText ? `TYPED TEXT (also use images if attached):\n"""\n${essayText}\n"""` : 'No typed text — read the essay from the attached image(s).'}
+ESSAY${images.length ? ' (transcribed from handwriting; crossed-out text has already been removed — assess exactly this text)' : ''}:
+"""
+${essayText}
+"""
+${handwritingNote ? `Transcription note: ${handwritingNote}\n` : ''}
 
 Also give conciseness coaching (does NOT change the 13 pts): redundancy, strong verbs, active voice, fillers, short phrases, avoid nominalizations, simpler sentences. 3–6 "conciseness" bullets with before→after hints from THEIR wording. Weave 1–2 into improvements. Do NOT rewrite paragraphs or give a model essay.
 
@@ -1408,10 +1447,14 @@ Return ONLY valid JSON:
             const parsed = await runVisionJsonPrompt({
                 apiKey,
                 prompt,
-                images,
+                images: [],
                 label: 'matura-assess',
             });
             parsed.mistakes = sanitizeMaturaMistakes(parsed?.mistakes);
+            // The cleaned text is authoritative for the transcript and word count.
+            parsed.transcribedEssay = essayText;
+            parsed.markedTranscript = stripStruckText(String(parsed.markedTranscript || '')) || essayText;
+            parsed.wordCount = countEssayWords(essayText);
             let maturaAssess = cooldown;
             if (!admin && !recheck?.free) {
                 try {
@@ -1429,7 +1472,7 @@ Return ONLY valid JSON:
             let assessmentId = null;
             try {
                 assessmentId = await recordMaturaAssessRun(assessUser.id, {
-                    essayText: parsed.transcribedEssay || essayText,
+                    essayText,
                     rootId: recheck?.rootId || null,
                 });
             } catch (runErr) {
