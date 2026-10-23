@@ -198,14 +198,31 @@
             <div class="ot-ppicker-grid">${cards}${add}</div>
         </div>`;
     }
+    /** Entry step: a dedicated one-screen "Kto ćwiczy?" (always shown on entry, even with one profile). */
+    function renderPick() {
+        return `<div class="ot-card ot-pickscreen">${profilePickerHtml()}</div>`;
+    }
+    /** Picking a profile (card or pencil) on the entry step opens that profile's settings page. */
+    async function pickProfile(id) {
+        if (id !== profileId) {
+            await switchProfile(id);
+            if (id !== profileId) return; // switch failed
+        }
+        if (!profile) { view = 'onboard'; paint(); return; }
+        editReturn = lesson ? (view === 'feedback' ? 'feedback' : 'lesson') : 'dash';
+        view = 'edit';
+        paint();
+        setStatus('');
+        window.scrollTo({ top: 0 });
+    }
     function bindProfilePicker(el) {
         const host = el.querySelector('.ot-ppicker');
         if (!host) return;
         host.addEventListener('click', (ev) => {
             const ed = ev.target.closest('[data-ppick-edit]');
-            if (ed) { editProfile(Number(ed.dataset.ppickEdit)); return; }
+            if (ed) { pickProfile(Number(ed.dataset.ppickEdit)); return; }
             const card = ev.target.closest('[data-ppick]');
-            if (card) { const id = Number(card.dataset.ppick); if (id !== profileId) switchProfile(id); return; }
+            if (card) { pickProfile(Number(card.dataset.ppick)); return; }
             if (ev.target.closest('[data-ppick-new]')) { pickCreating = true; paint(); document.getElementById('ot-ppick-new')?.focus(); return; }
             if (ev.target.closest('[data-ppick-cancel]')) { pickCreating = false; paint(); }
         });
@@ -274,14 +291,14 @@
 
         const active = profiles.find((x) => x.id === profileId);
         const title = editMode
-            ? (L === 'en' ? 'Edit your profile' : 'Edytuj profil')
+            ? (active ? t(`Ustawienia profilu „${active.name}”`, `Settings for “${active.name}”`) : (L === 'en' ? 'Edit your profile' : 'Edytuj profil'))
             : (active && profiles.length > 1
                 ? t(`Nowy profil „${active.name}” — opowiedz o sobie`, `New profile “${active.name}” — tell us about you`)
                 : (L === 'en' ? 'Tell us about you' : 'Opowiedz o sobie'));
 
         return `
             <div class="ot-card">
-                ${editMode ? '' : profilePickerHtml()}
+                ${profiles.length ? `<button type="button" class="ot-link-btn ot-change-profile" data-change-profile><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> ${esc(t('Zmień profil', 'Change profile'))}</button>` : ''}
                 <h3 class="ot-heading">${esc(title)}</h3>
                 <p class="ot-lead">${esc(L === 'en'
                     ? 'We will build practice lessons of 5–6 short tasks for you.'
@@ -327,11 +344,11 @@
                     <label class="ot-chip"><input type="radio" name="ot-instr-lang" value="en"${p.instrLang === 'en' ? ' checked' : ''}> English</label>
                 </div>
                 ${voicePickerHtml()}
-                <div class="ot-actions">
-                    <button type="button" class="btn btn-blue" id="ot-save-profile">${esc(editMode
-                        ? (L === 'en' ? 'Save' : 'Zapisz')
-                        : (L === 'en' ? 'Save & continue' : 'Zapisz i dalej'))}</button>
-                    ${editMode ? `<button type="button" class="btn btn-grey" id="ot-cancel-edit">${esc(L === 'en' ? 'Cancel' : 'Anuluj')}</button>` : ''}
+                <div class="ot-actions${editMode ? ' ot-actions--sticky' : ''}">
+                    <button type="button" class="btn btn-blue" id="ot-save-profile">${editMode
+                        ? (lesson ? `<i class="fa-solid fa-circle-play" aria-hidden="true"></i> ${esc(t('Kontynuuj zestaw', 'Continue set'))}` : `<i class="fa-solid fa-play" aria-hidden="true"></i> ${esc(t('Zacznij', 'Start'))}`)
+                        : esc(L === 'en' ? 'Save & continue' : 'Zapisz i dalej')}</button>
+                    ${editMode ? `<button type="button" class="btn btn-outline" id="ot-save-only">${esc(t('Tylko zapisz', 'Save only'))}</button>` : ''}
                 </div>
             </div>`;
     }
@@ -1115,13 +1132,14 @@
         if (!el) return;
         stopSpeaking(); // leaving / re-rendering a task always stops the read-aloud
         let html = '';
-        if (view === 'onboard' || view === 'edit') html = renderOnboard(view === 'edit');
+        if (view === 'pick') html = renderPick();
+        else if (view === 'onboard' || view === 'edit') html = renderOnboard(view === 'edit');
         else if (view === 'dash') html = renderDash();
         else if (view === 'lesson') html = renderTask();
         else if (view === 'feedback') html = renderFeedback();
         else if (view === 'done') html = renderDone();
         // The initial setup screen has its own profile picker, so the dropdown bar is not repeated there.
-        el.innerHTML = html && profiles.length && view !== 'lesson' && view !== 'onboard' ? profileBarHtml() + html : html;
+        el.innerHTML = html && profiles.length && view !== 'lesson' && view !== 'onboard' && view !== 'pick' && view !== 'edit' ? profileBarHtml() + html : html;
         bind();
         if (view === 'lesson') {
             // Bring the whole task card into view so the task fits on one screen.
@@ -1377,7 +1395,7 @@
         ageEl?.addEventListener('change', syncOffer);
         cefrEl?.addEventListener('change', syncOffer);
 
-        document.getElementById('ot-save-profile')?.addEventListener('click', async () => {
+        const saveProfile = async (mode) => {
             const form = readForm();
             const bad = profileFormError(form);
             if (bad) { setStatus(esc(bad.msg), 'error'); document.getElementById(bad.field)?.focus(); return; }
@@ -1392,13 +1410,21 @@
                 const voiceSel = document.getElementById('ot-voice');
                 if (voiceSel) { try { localStorage.setItem(VOICE_KEY(profileId), voiceSel.value); } catch (_) { /* private mode */ } }
                 await loadProfiles().catch(() => {});
+                // Primary "Kontynuuj zestaw" / "Zacznij": resume the in-progress set (unchanged) or build a new one.
+                if (wasEdit && mode === 'go') {
+                    if (lesson) { editReturn = editReturn === 'feedback' ? 'feedback' : 'lesson'; leaveEdit(); paint(); setStatus(t('Profil zapisany — kontynuujesz zestaw. Zmiany obowiązują od następnego zestawu.', 'Profile saved — continuing your set. Changes apply from the next set.'), 'success'); return; }
+                    view = 'dash'; paint(); startLesson(); return;
+                }
                 if (wasEdit) leaveEdit(); else view = 'dash';
                 paint();
                 setStatus(wasEdit && lesson ? t('Profil zapisany. Zmiany obowiązują od następnego zestawu.', 'Profile saved. Changes apply from the next set.') : t('Profil zapisany.', 'Profile saved.'), 'success');
             } catch (err) {
                 setStatus(esc(err.message || t('Nie udało się zapisać.', 'Could not save.')), 'error');
             }
-        });
+        };
+        document.getElementById('ot-save-profile')?.addEventListener('click', () => saveProfile(view === 'edit' ? 'go' : 'save'));
+        document.getElementById('ot-save-only')?.addEventListener('click', () => saveProfile('save'));
+        el.querySelector('[data-change-profile]')?.addEventListener('click', () => { view = 'pick'; editReturn = 'dash'; paint(); window.scrollTo({ top: 0 }); });
 
         document.getElementById('ot-cancel-edit')?.addEventListener('click', () => {
             leaveEdit();
@@ -1708,8 +1734,10 @@
             await loadProfiles();
             const resumed = await loadActive();
             toggleLoading(false);
+            // Every entry (tile, deep link, reload) starts at "Kto ćwiczy?"; the restored set stays in memory for "Kontynuuj zestaw".
+            if (profiles.length) view = 'pick';
             paint();
-            if (resumed) setStatus(esc(t(`Wznowiono lekcję: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Lesson resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');
+            if (resumed && view !== 'pick') setStatus(esc(t(`Wznowiono lekcję: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Lesson resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');
         } catch (err) {
             toggleLoading(false);
             if (err.status === 401) {

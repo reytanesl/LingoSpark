@@ -6,13 +6,15 @@ const src = fs.readFileSync(new URL('./own-time.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 
 test('initial setup shows the profile picker (not in edit mode) instead of the dropdown bar', () => {
-    assert.match(src, /\$\{editMode \? '' : profilePickerHtml\(\)\}/);
-    assert.match(src, /view !== 'lesson' && view !== 'onboard' \? profileBarHtml\(\)/);
+    assert.match(src, /function renderPick\(\) \{\s*return `<div class="ot-card ot-pickscreen">\$\{profilePickerHtml\(\)\}/);
+    assert.doesNotMatch(src.slice(src.indexOf('function renderOnboard'), src.indexOf('function profileIdentityHtml')), /profilePickerHtml\(\)/);
+    assert.match(src, /view !== 'lesson' && view !== 'onboard' && view !== 'pick' && view !== 'edit' \? profileBarHtml\(\)/);
 });
 
 test('picker reuses the profile APIs: switch (activate + resume) and create', () => {
     const fn = src.slice(src.indexOf('function bindProfilePicker'), src.indexOf('function readForm'));
-    assert.match(fn, /switchProfile\(id\)/);
+    assert.match(fn, /pickProfile\(Number\(card\.dataset\.ppick\)\)/);
+    assert.match(src, /async function pickProfile\(id\)[\s\S]*?switchProfile\(id\)/);
     assert.match(fn, /profileAction\('create', null, v\)/);
     assert.match(src, /async function switchProfile[\s\S]*?\/activate[\s\S]*?loadActive\(\)/);
 });

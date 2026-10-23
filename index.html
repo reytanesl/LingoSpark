@@ -3083,6 +3083,22 @@
             #screen-own-time .ot-pbar--compact .ot-pchip { padding: 0.15rem 0.4rem 0.15rem 0.15rem; }
             #screen-own-time .ot-pprog { font-size: 0.68rem; }
         }
+        /* Entry step: dedicated "Kto ćwiczy?" screen; settings page "Zmień profil" link */
+        #screen-own-time .ot-pickscreen { max-width: 46rem; margin: 0 auto; padding: 1.1rem; }
+        #screen-own-time .ot-pickscreen .ot-ppicker { margin: 0; padding: 1rem 1.1rem 1.1rem; }
+        #screen-own-time .ot-pickscreen .ot-ppicker-head strong { font-size: 1.25rem; font-family: var(--font-primary); }
+        #screen-own-time .ot-pickscreen .ot-ppicker-grid { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 0.6rem; }
+        #screen-own-time .ot-pickscreen .ot-ppick { min-height: 3.6rem; }
+        #screen-own-time .ot-change-profile { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0 0 0.4rem; padding: 0; font-size: 0.82rem; font-weight: 700; color: var(--ot-navy-2); background: none; border: 0; cursor: pointer; }
+        #screen-own-time .ot-actions--sticky { position: sticky; bottom: 2.1rem; flex-wrap: nowrap; z-index: 3; margin: 0.75rem -0.5rem -0.5rem; padding: 0.6rem 0.5rem; background: linear-gradient(180deg, rgba(255,255,255,0.85), #fff 35%); border-top: 1px solid var(--ot-bank); }
+        #screen-own-time .ot-change-profile:hover { color: #9a5b00; text-decoration: underline; }
+        @media (max-width: 520px) {
+            #screen-own-time .ot-pickscreen { padding: 0.6rem; }
+            #screen-own-time .ot-actions--sticky .btn { width: auto; min-width: 0; margin: 0; flex: 1 1 auto; padding: 0.6rem 0.7rem; font-size: 0.9rem; white-space: nowrap; }
+            #screen-own-time .ot-actions--sticky #ot-save-only { flex: 0 1 auto; }
+            #screen-own-time .ot-pickscreen .ot-ppicker { padding: 0.75rem; }
+            #screen-own-time .ot-pickscreen .ot-ppicker-grid { grid-template-columns: 1fr; gap: 0.45rem; }
+        }
         /* Full profile edit: name + avatar row, notes, picker pencil */
         #screen-own-time .ot-identity { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem 1rem; margin: 0 0 0.8rem; padding: 0.7rem 0.8rem; border-radius: 14px; background: var(--ot-accent-soft); border: 1px solid #f6d29a; }
         #screen-own-time .ot-identity-name { flex: 1 1 12rem; display: flex; flex-direction: column; gap: 0.25rem; font-weight: 700; color: var(--ot-navy); font-size: 0.85rem; }
