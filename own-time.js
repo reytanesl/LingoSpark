@@ -176,6 +176,48 @@
         window.addEventListener('pagehide', stopSpeaking);
     }
 
+    /* ---------- Profile picker on the initial setup screen ---------- */
+    let pickCreating = false;
+    function profilePickerHtml() {
+        if (!profiles.length) return '';
+        const full = profiles.length >= profileLimit;
+        const cards = profiles.map((p) => {
+            const meta = p.configured ? `${p.cefr}${p.age != null ? ` · ${t('wiek', 'age')} ${p.age}` : ''}` : t('do uzupełnienia', 'not set up yet');
+            const on = p.id === profileId;
+            return `<button type="button" class="ot-ppick${on ? ' is-active' : ''}" data-ppick="${p.id}" aria-pressed="${on}">
+                ${avatarHtml(p)}<span class="ot-pinfo"><strong>${esc(p.name)}</strong><span>${esc(meta)}</span>${p.progress ? `<em class="ot-ppick-prog"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> ${esc(progressLabel(p.progress))}</em>` : ''}</span>
+                ${on ? `<i class="fa-solid fa-check ot-ppick-check" aria-hidden="true"></i>` : ''}
+            </button>`;
+        }).join('');
+        const add = pickCreating
+            ? `<form class="ot-ppick ot-ppick--form" data-pickform="create"><input type="text" class="pe-input" id="ot-ppick-new" maxlength="40" placeholder="${esc(t('Imię, np. Ola', 'Name, e.g. Ola'))}" aria-label="${esc(t('Nazwa nowego profilu', 'New profile name'))}" required>
+                <button type="submit" class="ot-pbtn is-primary">${esc(t('Utwórz', 'Create'))}</button><button type="button" class="ot-pbtn" data-ppick-cancel>${esc(t('Anuluj', 'Cancel'))}</button></form>`
+            : `<button type="button" class="ot-ppick ot-ppick--add" data-ppick-new${full ? ' disabled' : ''} title="${esc(full ? t(`Limit: ${profileLimit} profili`, `Limit: ${profileLimit} profiles`) : '')}"><i class="fa-solid fa-plus" aria-hidden="true"></i> <span>${esc(full ? t(`Limit ${profileLimit} profili`, `${profileLimit} profiles max`) : t('Nowy profil', 'New profile'))}</span></button>`;
+        return `<div class="ot-ppicker" role="group" aria-label="${esc(t('Wybierz profil', 'Choose a profile'))}">
+            <div class="ot-ppicker-head"><strong>${esc(t('Kto ćwiczy?', 'Who is practising?'))}</strong><span>${esc(t(`Wybierz profil albo utwórz nowy (${profiles.length} z ${profileLimit}).`, `Pick a profile or create a new one (${profiles.length} of ${profileLimit}).`))}</span></div>
+            <div class="ot-ppicker-grid">${cards}${add}</div>
+        </div>`;
+    }
+    function bindProfilePicker(el) {
+        const host = el.querySelector('.ot-ppicker');
+        if (!host) return;
+        host.addEventListener('click', (ev) => {
+            const card = ev.target.closest('[data-ppick]');
+            if (card) { const id = Number(card.dataset.ppick); if (id !== profileId) switchProfile(id); return; }
+            if (ev.target.closest('[data-ppick-new]')) { pickCreating = true; paint(); document.getElementById('ot-ppick-new')?.focus(); return; }
+            if (ev.target.closest('[data-ppick-cancel]')) { pickCreating = false; paint(); }
+        });
+        host.addEventListener('submit', (ev) => {
+            const f = ev.target.closest('[data-pickform]');
+            if (!f) return;
+            ev.preventDefault();
+            const v = String(f.querySelector('input')?.value || '').trim();
+            if (!v) return;
+            pickCreating = false;
+            profileAction('create', null, v);
+        });
+    }
+
     function readForm() {
         const age = Number(document.getElementById('ot-age')?.value);
         const cefr = document.getElementById('ot-cefr')?.value || 'A2';
@@ -229,6 +271,7 @@
 
         return `
             <div class="ot-card">
+                ${editMode ? '' : profilePickerHtml()}
                 <h3 class="ot-heading">${esc(title)}</h3>
                 <p class="ot-lead">${esc(L === 'en'
                     ? 'We will build practice lessons of 5–6 short tasks for you.'
@@ -1008,7 +1051,8 @@
         else if (view === 'lesson') html = renderTask();
         else if (view === 'feedback') html = renderFeedback();
         else if (view === 'done') html = renderDone();
-        el.innerHTML = html && profiles.length && view !== 'lesson' ? profileBarHtml() + html : html;
+        // The initial setup screen has its own profile picker, so the dropdown bar is not repeated there.
+        el.innerHTML = html && profiles.length && view !== 'lesson' && view !== 'onboard' ? profileBarHtml() + html : html;
         bind();
         if (view === 'lesson') {
             // Bring the whole task card into view so the task fits on one screen.
@@ -1211,6 +1255,7 @@
         const el = root();
         if (!el) return;
         bindProfiles(el);
+        bindProfilePicker(el);
         // Autosave the in-progress lesson (debounced) whenever the student types or taps something.
         if (view === 'lesson' || view === 'feedback') {
             const work = el.querySelector('.ot-lesson, .ot-card');
