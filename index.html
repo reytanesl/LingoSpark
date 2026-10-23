@@ -2852,7 +2852,7 @@
         .ot-extra-badge { display: inline-block; background: var(--ot-navy); color: #fff; border-radius: 999px; padding: 0.05rem 0.5rem; letter-spacing: 0.02em; }
         @media (max-width: 520px) { .ot-keep .ot-keep-going { width: 100%; justify-content: center; } }
         /* ===== In your own time — sleek theme (calm navy / pale blue, soft cards, micro-interactions) ===== */
-        #screen-own-time { --ot-navy: #1B2A4A; --ot-navy-2: #2C4370; --ot-ink: #22324f; --ot-muted: #5d6f8c; --ot-line: #9db3cf; --ot-pale: #EEF4FA; --ot-bank: #DCE7F3; --ot-accent: #F2A93B; --ot-accent-soft: #FFF4E2; --ot-ok: #1f8a4c; --ot-ok-soft: #e7f6ed; --ot-bad: #c8364a; --ot-bad-soft: #fdecee; --ot-radius: 16px; --ot-shadow: 0 1px 2px rgba(27,42,74,0.05), 0 8px 24px rgba(27,42,74,0.07); }
+        #screen-own-time, #screen-adv-gaps, #screen-pe-e8-gaps { --ot-navy: #1B2A4A; --ot-navy-2: #2C4370; --ot-ink: #22324f; --ot-muted: #5d6f8c; --ot-line: #9db3cf; --ot-pale: #EEF4FA; --ot-bank: #DCE7F3; --ot-accent: #F2A93B; --ot-accent-soft: #FFF4E2; --ot-ok: #1f8a4c; --ot-ok-soft: #e7f6ed; --ot-bad: #c8364a; --ot-bad-soft: #fdecee; --ot-radius: 16px; --ot-shadow: 0 1px 2px rgba(27,42,74,0.05), 0 8px 24px rgba(27,42,74,0.07); }
         #screen-own-time #own-time-root { font-family: var(--font-secondary); color: var(--ot-ink); }
         #screen-own-time .ot-card { border: 1px solid rgba(27,42,74,0.08); border-radius: var(--ot-radius); box-shadow: var(--ot-shadow); background: #fff; padding: 1.35rem 1.5rem; animation: otFadeUp 0.28s ease both; }
         #screen-own-time .ot-heading { font-family: var(--font-primary); font-weight: 700; letter-spacing: -0.01em; color: var(--ot-navy); }
@@ -3308,6 +3308,42 @@
         }
         .gaps-feedback-suggestion {
             color: #ea580c; font-weight: 700;
+        }
+        /* Advanced Text Gaps + E8 Text Gaps: 'In your own time' look (shared --ot-* tokens; restyle only). */
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) #adv-gaps-content, :is(#screen-adv-gaps, #screen-pe-e8-gaps) #pe-e8-gaps-content { font-family: var(--font-secondary); color: var(--ot-ink); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .pe-prompt-box { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 12px; color: var(--ot-ink); font-size: 0.88rem; padding: 0.55rem 0.8rem; box-shadow: none; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .pe-prompt-box strong { color: var(--ot-navy); font-weight: 700; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-exam-task { background: linear-gradient(135deg, #fff 0%, var(--ot-accent-soft) 100%); border: 1px solid #f6d29a; border-left: 1px solid #f6d29a; box-shadow: inset 4px 0 0 var(--ot-accent); border-radius: var(--ot-radius); padding: 0.85rem 1rem 0.9rem 1.15rem; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-exam-task-label { color: #8a5200; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 800; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-exam-task-body { color: var(--ot-ink); font-size: 0.97rem; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-exam-task-meta { color: var(--ot-muted); font-size: 0.82rem; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-exam-task .btn { padding: 0.25rem 0.7rem !important; font-size: 0.78rem !important; border-radius: 999px; background: #fff; border: 1px solid #f6d29a; color: var(--ot-navy); box-shadow: none; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-text { background: #fff; border: 1px solid rgba(27,42,74,0.08); border-radius: var(--ot-radius); box-shadow: var(--ot-shadow); padding: 1.15rem 1.35rem; font-size: 1.02rem; line-height: 2.05; color: var(--ot-ink); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank .e8-gaps-input { height: 1.85rem; padding: 0.1rem 0.45rem; border: 0; border-bottom: 2px solid var(--ot-line); border-radius: 6px 6px 0 0; background: #f4f8fc; color: var(--ot-navy); font-weight: 700; font-size: 0.97rem; min-width: 6rem; transition: background-color 0.2s, border-color 0.2s; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank .e8-gaps-input:focus { border-bottom-color: var(--ot-accent); background: var(--ot-accent-soft); box-shadow: none; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank.e8-gaps-blank--sentence .e8-gaps-input { height: auto; min-height: 1.85rem; font-weight: 600; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank .e8-gaps-blank-num, :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-answer-num { background: var(--ot-accent); color: #3d2600; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-pl { color: var(--ot-muted); font-style: italic; font-weight: 600; font-size: 0.82rem; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank .e8-gaps-input.dictation-gap-correct, :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-answer-input.dictation-gap-correct { border-bottom-color: var(--ot-ok); background: var(--ot-ok-soft); color: var(--ot-ok); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank .e8-gaps-input.dictation-gap-wrong, :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-answer-input.dictation-gap-wrong { border-bottom-color: var(--ot-bad); background: var(--ot-bad-soft); color: var(--ot-bad); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) :is(#adv-gaps-content, #pe-e8-gaps-content) .btn { border-radius: 12px; font-weight: 700; box-shadow: none; transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) :is(#adv-gaps-content, #pe-e8-gaps-content) .btn-outline { background: #fff; border: 1px solid var(--ot-bank); color: var(--ot-navy); padding: 0.45rem 0.85rem; font-size: 0.85rem; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) :is(#adv-gaps-content, #pe-e8-gaps-content) .btn-outline:hover:not(:disabled) { border-color: var(--ot-line); background: var(--ot-pale); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) :is(#adv-gaps-content, #pe-e8-gaps-content) .btn-blue { background: var(--ot-navy); border: 1px solid var(--ot-navy); color: #fff; padding: 0.8rem 1rem !important; box-shadow: 0 4px 14px rgba(27,42,74,0.22); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) :is(#adv-gaps-content, #pe-e8-gaps-content) .btn-blue:hover:not(:disabled) { background: var(--ot-navy-2); transform: translateY(-1px); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-export-row { margin-bottom: 0.75rem !important; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .feedback { border-radius: 12px; border: 1px solid transparent; font-family: var(--font-secondary); text-align: left; padding: 0.75rem 0.95rem; box-shadow: none; }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .feedback.success { background: var(--ot-ok-soft); color: var(--ot-ok); border-color: rgba(31,138,76,0.2); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .feedback.error { background: var(--ot-bad-soft); color: var(--ot-bad); border-color: rgba(200,54,74,0.2); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .feedback.neutral { background: var(--ot-pale); color: var(--ot-ink); }
+        :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-feedback-suggestion { color: #9a5b00; }
+        @media (max-width: 520px) {
+            :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-text { padding: 0.85rem 0.9rem; font-size: 0.95rem; line-height: 1.95; }
+            :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-exam-task { padding: 0.7rem 0.75rem 0.75rem 0.9rem; }
+            :is(#screen-adv-gaps, #screen-pe-e8-gaps) .gaps-exam-task-body { font-size: 0.9rem; }
+            :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank .e8-gaps-input { min-width: 5rem; font-size: 0.92rem; }
+            :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-blank { flex-wrap: wrap; max-width: 100%; row-gap: 0; }
+            :is(#screen-adv-gaps, #screen-pe-e8-gaps) .e8-gaps-pl { white-space: normal; line-height: 1.3; }
         }
         .gaps-exam-task {
             background: #fff; border: 2px solid rgba(1, 33, 105, 0.18); border-left: 5px solid var(--royal-blue);
