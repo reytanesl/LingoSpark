@@ -1071,7 +1071,13 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
 
     app.put('/api/own-time/profile', requireWritingAccess, async (req, res) => {
         try {
-            const profile = await upsertOwnTimeProfile(req.user.id, req.body || {});
+            const b = req.body || {};
+            // Validation (full-profile edit): a sent name must not be empty; age is required and 6–99.
+            if (b.name !== undefined && b.name !== null && !String(b.name).replace(/[\u0000-\u001f<>]/g, '').trim()) return res.status(400).json({ error: 'Podaj nazwę profilu.', code: 'name' });
+            const ageN = Number(b.age);
+            if (b.age === undefined || b.age === null || b.age === '' || !Number.isFinite(ageN) || ageN < 6 || ageN > 99) return res.status(400).json({ error: 'Podaj wiek (6–99).', code: 'age' });
+            // Settings only: the in-progress set and saved progress are left untouched; changes apply to the next set.
+            const profile = await upsertOwnTimeProfile(req.user.id, b);
             res.json({ profile });
         } catch (err) {
             console.error('own-time profile put:', err);

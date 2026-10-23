@@ -8,6 +8,13 @@ export const OWN_TIME_DEFAULT_PROFILE_NAME = 'Mój profil';
 /** Max serialized size of a saved in-progress lesson (lesson JSON + answers). */
 export const OWN_TIME_PROGRESS_MAX_BYTES = 200000;
 
+/** Avatar colours a student can pick (index into the browser's palette; '' = automatic by profile id). */
+export const OWN_TIME_AVATAR_TONES = ['navy', 'teal', 'violet', 'amber', 'green', 'rose'];
+export function sanitizeOwnTimeAvatar(v) {
+    const s = String(v ?? '').trim().toLowerCase();
+    return OWN_TIME_AVATAR_TONES.includes(s) ? s : '';
+}
+
 export function sanitizeOwnTimeProfileName(name, fallback = '') {
     const s = String(name ?? '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
     return s || fallback;

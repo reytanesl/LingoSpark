@@ -3083,6 +3083,34 @@
             #screen-own-time .ot-pbar--compact .ot-pchip { padding: 0.15rem 0.4rem 0.15rem 0.15rem; }
             #screen-own-time .ot-pprog { font-size: 0.68rem; }
         }
+        /* Full profile edit: name + avatar row, notes, picker pencil */
+        #screen-own-time .ot-identity { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem 1rem; margin: 0 0 0.8rem; padding: 0.7rem 0.8rem; border-radius: 14px; background: var(--ot-accent-soft); border: 1px solid #f6d29a; }
+        #screen-own-time .ot-identity-name { flex: 1 1 12rem; display: flex; flex-direction: column; gap: 0.25rem; font-weight: 700; color: var(--ot-navy); font-size: 0.85rem; }
+        #screen-own-time .ot-identity-av { border: 0; margin: 0; padding: 0; min-width: 0; }
+        #screen-own-time .ot-identity-av legend { font-weight: 700; color: var(--ot-navy); font-size: 0.85rem; margin-bottom: 0.3rem; padding: 0; }
+        #screen-own-time .ot-swatches { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        #screen-own-time .ot-swatch { position: relative; cursor: pointer; }
+        #screen-own-time .ot-swatch .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+        #screen-own-time .ot-swatch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        #screen-own-time .ot-swatch > span[aria-hidden] { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--ot-av, #fff); color: #fff; font-size: 0.7rem; font-weight: 800; border: 2px solid transparent; box-shadow: 0 0 0 1px rgba(27,42,74,0.15); transition: transform 0.15s, border-color 0.15s; }
+        #screen-own-time .ot-swatch.is-auto > span[aria-hidden] { background: #fff; color: var(--ot-muted); box-shadow: inset 0 0 0 1px var(--ot-line); }
+        #screen-own-time .ot-swatch input:checked + span { border-color: #fff; box-shadow: 0 0 0 3px var(--ot-accent); transform: scale(1.06); }
+        #screen-own-time .ot-swatch input:focus-visible + span { outline: 3px solid var(--ot-accent); outline-offset: 2px; }
+        #screen-own-time .ot-edit-note, #screen-own-time .ot-level-note { display: block; margin: 0 0 0.7rem; font-size: 0.78rem; font-weight: 600; color: #8a5200; }
+        #screen-own-time .ot-level-note { margin: 0.25rem 0 0; font-weight: 600; }
+        #screen-own-time .ot-level-note[hidden] { display: none; }
+        #screen-own-time .ot-ppick-wrap { position: relative; display: flex; }
+        #screen-own-time .ot-ppick-wrap .ot-ppick { flex: 1 1 auto; padding-right: 2.1rem; min-width: 0; }
+        #screen-own-time .ot-ppick-wrap .ot-ppick.is-active { padding-right: calc(2.1rem - 1px); }
+        #screen-own-time .ot-ppick-wrap .ot-ppick-check { margin-right: 0.15rem; }
+        #screen-own-time .ot-ppick-edit { position: absolute; top: 0.3rem; right: 0.3rem; width: 1.65rem; height: 1.65rem; display: grid; place-items: center; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--ot-muted); font-size: 0.72rem; cursor: pointer; }
+        #screen-own-time .ot-ppick-edit:hover, #screen-own-time .ot-ppick-edit:focus-visible { color: var(--ot-navy); background: var(--ot-accent-soft); border-color: #f6d29a; }
+        #screen-own-time .ot-ppick-wrap .ot-ppick-check { position: absolute; right: 0.55rem; bottom: 0.4rem; font-size: 0.75rem; }
+        @media (max-width: 520px) {
+            #screen-own-time .ot-identity { padding: 0.55rem 0.6rem; gap: 0.5rem; }
+            #screen-own-time .ot-swatch > span[aria-hidden] { width: 1.75rem; height: 1.75rem; }
+            #screen-own-time .ot-ppick-wrap .ot-ppick { padding-right: 1.9rem; }
+        }
         /* Open-answer verdicts (typo / other valid version / appeal) */
         #screen-own-time .ot-mark.almost { color: #b26b00; }
         #screen-own-time .ot-verdict { display: block; margin-top: 0.25rem; font-size: 0.8rem; line-height: 1.35; color: var(--ot-muted); }

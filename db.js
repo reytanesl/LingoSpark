@@ -2,7 +2,7 @@ import './matura-mistakes.js';
 import './wordset-import-core.js';
 import pg from 'pg';
 import crypto from 'crypto';
-import { OWN_TIME_PROFILE_LIMIT, OWN_TIME_DEFAULT_PROFILE_NAME, sanitizeOwnTimeProfileName, sanitizeOwnTimeProgress, ownTimeProgressSummary } from './own-time-profiles.js';
+import { OWN_TIME_PROFILE_LIMIT, OWN_TIME_DEFAULT_PROFILE_NAME, sanitizeOwnTimeProfileName, sanitizeOwnTimeAvatar, sanitizeOwnTimeProgress, ownTimeProgressSummary } from './own-time-profiles.js';
 
 const { Pool } = pg;
 
@@ -291,6 +291,7 @@ export async function initDb() {
     await db.query(`ALTER TABLE own_time_lessons ADD COLUMN IF NOT EXISTS profile_id INTEGER`);
     await db.query(`ALTER TABLE own_time_extra_log ADD COLUMN IF NOT EXISTS profile_id INTEGER`);
     await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS voice TEXT NOT NULL DEFAULT ''`);
+    await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS avatar TEXT NOT NULL DEFAULT ''`);
     await migrateOwnTimeProfiles(db);
 }
 
@@ -1826,6 +1827,7 @@ function rowToOwnTimeProfile(row) {
         topic: String(row.topic || ''),
         vocab: String(row.vocab || ''),
         voice: String(row.voice || ''),
+        avatar: sanitizeOwnTimeAvatar(row.avatar),
         updatedAt: row.updated_at || null,
         canOfferEnglish: ownTimeCanOfferEnglish(row.age, row.cefr),
     };
@@ -1970,6 +1972,9 @@ export function sanitizeOwnTimeProfileInput(body = {}) {
         vocab: String(body.vocab || '').trim().slice(0, 2000),
         // Read-aloud voice name (speechSynthesis); null = not sent → keep the saved one.
         voice: body.voice === undefined || body.voice === null ? null : sanitizeOwnTimeVoice(body.voice),
+        // Full-profile edit: name / avatar are optional (null = keep the saved value).
+        name: body.name === undefined || body.name === null ? null : (sanitizeOwnTimeProfileName(body.name) || null),
+        avatar: body.avatar === undefined || body.avatar === null ? null : sanitizeOwnTimeAvatar(body.avatar),
     };
 }
 
@@ -1992,13 +1997,14 @@ export async function upsertOwnTimeProfile(userId, body, profileId = null) {
     const r = await db.query(
         `UPDATE own_time_student_profiles SET
             configured = TRUE, age = $3, class_label = $4, cefr = $5, interests = $6::jsonb, task_prefs = $7::jsonb,
-            purpose = $8, intensity = $9, instr_lang = $10, topic = $11, vocab = $12, voice = COALESCE($13, voice), updated_at = NOW()
+            purpose = $8, intensity = $9, instr_lang = $10, topic = $11, vocab = $12, voice = COALESCE($13, voice),
+            name = COALESCE($14, name), avatar = COALESCE($15, avatar), updated_at = NOW()
          WHERE user_id = $1 AND id = $2
          RETURNING *`,
         [
             userId, id, p.age, p.classLabel, p.cefr,
             JSON.stringify(p.interests), JSON.stringify(p.taskPrefs),
-            p.purpose, p.intensity, p.instrLang, p.topic, p.vocab, p.voice,
+            p.purpose, p.intensity, p.instrLang, p.topic, p.vocab, p.voice, p.name, p.avatar,
         ]
     );
     return rowToOwnTimeProfile(r.rows[0]);

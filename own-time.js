@@ -184,10 +184,10 @@
         const cards = profiles.map((p) => {
             const meta = p.configured ? `${p.cefr}${p.age != null ? ` · ${t('wiek', 'age')} ${p.age}` : ''}` : t('do uzupełnienia', 'not set up yet');
             const on = p.id === profileId;
-            return `<button type="button" class="ot-ppick${on ? ' is-active' : ''}" data-ppick="${p.id}" aria-pressed="${on}">
+            return `<div class="ot-ppick-wrap"><button type="button" class="ot-ppick${on ? ' is-active' : ''}" data-ppick="${p.id}" aria-pressed="${on}">
                 ${avatarHtml(p)}<span class="ot-pinfo"><strong>${esc(p.name)}</strong><span>${esc(meta)}</span>${p.progress ? `<em class="ot-ppick-prog"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> ${esc(progressLabel(p.progress))}</em>` : ''}</span>
                 ${on ? `<i class="fa-solid fa-check ot-ppick-check" aria-hidden="true"></i>` : ''}
-            </button>`;
+            </button><button type="button" class="ot-ppick-edit" data-ppick-edit="${p.id}" title="${esc(t('Edytuj profil', 'Edit profile'))}" aria-label="${esc(t(`Edytuj profil: ${p.name}`, `Edit profile: ${p.name}`))}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></div>`;
         }).join('');
         const add = pickCreating
             ? `<form class="ot-ppick ot-ppick--form" data-pickform="create"><input type="text" class="pe-input" id="ot-ppick-new" maxlength="40" placeholder="${esc(t('Imię, np. Ola', 'Name, e.g. Ola'))}" aria-label="${esc(t('Nazwa nowego profilu', 'New profile name'))}" required>
@@ -202,6 +202,8 @@
         const host = el.querySelector('.ot-ppicker');
         if (!host) return;
         host.addEventListener('click', (ev) => {
+            const ed = ev.target.closest('[data-ppick-edit]');
+            if (ed) { editProfile(Number(ed.dataset.ppickEdit)); return; }
             const card = ev.target.closest('[data-ppick]');
             if (card) { const id = Number(card.dataset.ppick); if (id !== profileId) switchProfile(id); return; }
             if (ev.target.closest('[data-ppick-new]')) { pickCreating = true; paint(); document.getElementById('ot-ppick-new')?.focus(); return; }
@@ -241,7 +243,15 @@
             topic: String(document.getElementById('ot-topic')?.value || '').trim(),
             vocab: String(document.getElementById('ot-vocab')?.value || '').trim(),
             ...(document.getElementById('ot-voice') ? { voice: document.getElementById('ot-voice').value } : {}),
+            ...(document.getElementById('ot-pname') ? { name: String(document.getElementById('ot-pname').value || '').trim() } : {}),
+            ...(document.querySelector('input[name="ot-avatar"]') ? { avatar: document.querySelector('input[name="ot-avatar"]:checked')?.value || '' } : {}),
         };
+    }
+    function profileFormError(f) {
+        if (f.name !== undefined && !f.name) return { field: 'ot-pname', msg: t('Podaj nazwę profilu.', 'Enter a profile name.') };
+        if (f.age == null || f.age < 6 || f.age > 99) return { field: 'ot-age', msg: t('Podaj wiek (6–99).', 'Enter an age (6–99).') };
+        if (!f.taskPrefs.length) return { field: 'ot-task-prefs', msg: t('Wybierz przynajmniej jeden typ zadań.', 'Pick at least one task type.') };
+        return null;
     }
 
     function renderOnboard(editMode) {
@@ -276,6 +286,7 @@
                 <p class="ot-lead">${esc(L === 'en'
                     ? 'We will build practice lessons of 5–6 short tasks for you.'
                     : 'Przygotujemy dla Ciebie lekcje z 5–6 krótkich zadań.')}</p>
+                ${editMode ? profileIdentityHtml(active, L) : ''}
                 <div class="ot-form-grid">
                     <label>${esc(L === 'en' ? 'Age' : 'Wiek')}
                         <input type="number" id="ot-age" class="pe-input" min="6" max="99" value="${p.age != null ? esc(p.age) : ''}" required>
@@ -288,6 +299,7 @@
                             ${['A0', 'A1', 'A2', 'B1', 'B2', 'C1'].map((c) =>
                                 `<option value="${c}"${(p.cefr || 'A2') === c ? ' selected' : ''}>${c}</option>`).join('')}
                         </select>
+                        ${editMode ? `<span class="ot-level-note" id="ot-level-note" hidden>${esc(t('Nowy poziom obowiązuje od następnego zestawu — trwający zestaw i postępy zostają.', 'The new level applies from the next set — your current set and progress stay.'))}</span>` : ''}
                     </label>
                     <label>${esc(L === 'en' ? 'Difficulty' : 'Poziom trudności')}
                         <select id="ot-intensity" class="pe-input">
@@ -322,6 +334,20 @@
                     ${editMode ? `<button type="button" class="btn btn-grey" id="ot-cancel-edit">${esc(L === 'en' ? 'Cancel' : 'Anuluj')}</button>` : ''}
                 </div>
             </div>`;
+    }
+
+    function profileIdentityHtml(active, L) {
+        const cur = active || {};
+        const chosen = cur.avatar || (profile && profile.avatar) || '';
+        const sw = Object.entries(AVATAR_PICK).map(([k, col]) => `<label class="ot-swatch" style="--ot-av:${col}" title="${esc(k)}"><input type="radio" name="ot-avatar" value="${k}"${chosen === k ? ' checked' : ''}><span aria-hidden="true">${esc(initials(cur.name))}</span><span class="sr-only">${esc(k)}</span></label>`).join('');
+        return `<div class="ot-identity">
+            <label class="ot-identity-name">${esc(L === 'en' ? 'Profile name' : 'Nazwa profilu')}
+                <input type="text" id="ot-pname" class="pe-input" maxlength="40" value="${esc(cur.name || '')}" required>
+            </label>
+            <fieldset class="ot-identity-av"><legend>${esc(L === 'en' ? 'Avatar colour' : 'Kolor awatara')}</legend><div class="ot-swatches">
+                <label class="ot-swatch is-auto" title="${esc(t('Automatyczny', 'Automatic'))}"><input type="radio" name="ot-avatar" value=""${chosen ? '' : ' checked'}><span aria-hidden="true">A</span><span class="sr-only">${esc(t('Automatyczny', 'Automatic'))}</span></label>${sw}</div></fieldset>
+        </div>
+        ${lesson ? `<p class="ot-edit-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> ${esc(t('Zmiany obowiązują od następnego zestawu. Trwający zestaw i postępy nie zostaną usunięte.', 'Changes apply from the next set. Your current set and progress are kept.'))}</p>` : ''}`;
     }
 
     /** The stored "intensity" setting is difficulty only — every lesson has 5–6 tasks. */
@@ -828,8 +854,10 @@
         return (words.slice(0, 2).map((w) => w.match(/\p{L}/u)[0]).join('') || '?').toUpperCase();
     }
     const AVATAR_TONES = ['#1B2A4A', '#2C6E8F', '#7A4FA0', '#B5651D', '#2F7D5B'];
+    // Chosen avatar colours (same keys as OWN_TIME_AVATAR_TONES on the server).
+    const AVATAR_PICK = { navy: '#1B2A4A', teal: '#2C6E8F', violet: '#7A4FA0', amber: '#B5651D', green: '#2F7D5B', rose: '#B23A5B' };
     function avatarHtml(p, cls) {
-        const tone = AVATAR_TONES[(Number(p?.id) || 0) % AVATAR_TONES.length];
+        const tone = AVATAR_PICK[p?.avatar] || AVATAR_TONES[(Number(p?.id) || 0) % AVATAR_TONES.length];
         return `<span class="ot-avatar ${cls || ''}" style="--ot-av:${tone}" aria-hidden="true">${esc(initials(p?.name))}</span>`;
     }
     function progressLabel(pr) {
@@ -876,7 +904,7 @@
                     ${p.id === profileId ? `<span class="ot-pactive" title="${esc(t('Aktywny', 'Active'))}"><i class="fa-solid fa-check" aria-hidden="true"></i><span class="ot-pactive-txt"> ${esc(t('Aktywny', 'Active'))}</span></span>` : ''}
                 </button>
                 <span class="ot-prow-actions">
-                    <button type="button" class="ot-picon" data-pact="rename" data-pid="${p.id}" title="${esc(t('Zmień nazwę', 'Rename'))}" aria-label="${esc(t(`Zmień nazwę: ${p.name}`, `Rename ${p.name}`))}"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="ot-picon" data-pact="edit" data-pid="${p.id}" title="${esc(t('Edytuj profil', 'Edit profile'))}" aria-label="${esc(t(`Edytuj profil: ${p.name}`, `Edit profile: ${p.name}`))}"><i class="fa-solid fa-pen"></i></button>
                     <button type="button" class="ot-picon is-danger" data-pact="delete" data-pid="${p.id}" title="${esc(t('Usuń', 'Delete'))}" aria-label="${esc(t(`Usuń: ${p.name}`, `Delete ${p.name}`))}"${profiles.length <= 1 ? ' disabled' : ''}><i class="fa-solid fa-trash"></i></button>
                 </span></li>`;
         }).join('');
@@ -898,6 +926,22 @@
         host.innerHTML = pmenu.open ? profileMenuHtml() : '';
         document.getElementById('ot-pswitch')?.setAttribute('aria-expanded', String(pmenu.open));
         if (focusSel) host.querySelector(focusSel)?.focus();
+    }
+    /** Full preferences edit for any profile (switches to it first; the in-progress set is kept). */
+    let editReturn = 'dash';
+    async function editProfile(id) {
+        closeMenu();
+        if (id && id !== profileId) await switchProfile(id);
+        if (id && id !== profileId) return; // switch failed
+        if (view === 'onboard') { paint(); return; } // not set up yet: the setup form is the editor
+        editReturn = view === 'edit' ? editReturn : view;
+        view = 'edit';
+        paint();
+        root()?.querySelector('.ot-card')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+    function leaveEdit() {
+        view = editReturn === 'lesson' && lesson ? 'lesson' : (editReturn === 'feedback' && lesson ? 'feedback' : 'dash');
+        editReturn = 'dash';
     }
     function closeMenu() { Object.assign(pmenu, { open: false, renaming: null, deleting: null, creating: false }); repaintMenu(); }
 
@@ -1045,6 +1089,7 @@
             const id = Number(b.dataset.pid) || null;
             const act = b.dataset.pact;
             if (act === 'switch') switchProfile(id);
+            else if (act === 'edit') editProfile(id);
             else if (act === 'rename') { pmenu.renaming = id; pmenu.deleting = null; pmenu.creating = false; repaintMenu('#ot-prename'); }
             else if (act === 'delete') { pmenu.deleting = id; pmenu.renaming = null; pmenu.creating = false; repaintMenu('[data-pact="cancel"]'); }
             else if (act === 'confirm-delete') profileAction('delete', id);
@@ -1333,32 +1378,42 @@
         cefrEl?.addEventListener('change', syncOffer);
 
         document.getElementById('ot-save-profile')?.addEventListener('click', async () => {
+            const form = readForm();
+            const bad = profileFormError(form);
+            if (bad) { setStatus(esc(bad.msg), 'error'); document.getElementById(bad.field)?.focus(); return; }
+            const wasEdit = view === 'edit';
             try {
                 setStatus(t('Zapisuję…', 'Saving…'), 'neutral');
                 const data = await api('/api/own-time/profile', {
                     method: 'PUT',
-                    body: JSON.stringify(readForm()),
+                    body: JSON.stringify(form),
                 });
                 profile = data.profile;
                 const voiceSel = document.getElementById('ot-voice');
                 if (voiceSel) { try { localStorage.setItem(VOICE_KEY(profileId), voiceSel.value); } catch (_) { /* private mode */ } }
                 await loadProfiles().catch(() => {});
-                view = 'dash';
+                if (wasEdit) leaveEdit(); else view = 'dash';
                 paint();
-                setStatus(t('Profil zapisany.', 'Profile saved.'), 'success');
+                setStatus(wasEdit && lesson ? t('Profil zapisany. Zmiany obowiązują od następnego zestawu.', 'Profile saved. Changes apply from the next set.') : t('Profil zapisany.', 'Profile saved.'), 'success');
             } catch (err) {
                 setStatus(esc(err.message || t('Nie udało się zapisać.', 'Could not save.')), 'error');
             }
         });
 
         document.getElementById('ot-cancel-edit')?.addEventListener('click', () => {
-            view = 'dash';
+            leaveEdit();
             paint();
         });
 
         document.getElementById('ot-edit-profile')?.addEventListener('click', () => {
+            editReturn = view;
             view = 'edit';
             paint();
+        });
+
+        document.getElementById('ot-cefr')?.addEventListener('change', (ev) => {
+            const note = document.getElementById('ot-level-note');
+            if (note) note.hidden = !profile || ev.target.value === profile.cefr;
         });
 
         document.getElementById('ot-start')?.addEventListener('click', startLesson);
