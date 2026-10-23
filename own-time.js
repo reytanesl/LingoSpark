@@ -92,6 +92,90 @@
         if (content) content.style.display = on ? 'none' : 'block';
     }
 
+    /* ---------- Read aloud (browser speechSynthesis) ---------- */
+    const VOICE_KEY = (pid) => `ls-ot-voice-${pid || 'default'}`;
+    function ttsSupported() {
+        return typeof window !== 'undefined' && 'speechSynthesis' in window && typeof window.SpeechSynthesisUtterance === 'function';
+    }
+    /** Language the student practises (own time is English; a German profile/lesson would use de-*). */
+    function targetLangCode() {
+        return (profile?.targetLang || lesson?.targetLang) === 'de' ? 'de' : 'en';
+    }
+    function voicesForTarget() {
+        if (!ttsSupported()) return [];
+        const pre = targetLangCode();
+        return (window.speechSynthesis.getVoices() || [])
+            .filter((v) => String(v.lang || '').toLowerCase().replace('_', '-').startsWith(pre))
+            .sort((a, b) => String(a.lang).localeCompare(String(b.lang)) || String(a.name).localeCompare(String(b.name)));
+    }
+    function savedVoiceName() {
+        if (profile?.voice) return profile.voice;
+        try { return localStorage.getItem(VOICE_KEY(profileId)) || ''; } catch (_) { return ''; }
+    }
+    /** Saved voice if this device has it, else the default voice for the target language. */
+    function pickVoice(name = savedVoiceName()) {
+        const list = voicesForTarget();
+        return list.find((v) => v.name === name)
+            || list.find((v) => v.default)
+            || list.find((v) => /^(en-GB|de-DE)$/i.test(String(v.lang).replace('_', '-')))
+            || list[0] || null;
+    }
+    let speakingBtn = null;
+    function setSpeakBtn(b, on) {
+        if (!b) return;
+        b.classList.toggle('is-playing', on);
+        b.setAttribute('aria-pressed', String(on));
+        const label = on ? t('Zatrzymaj czytanie', 'Stop reading') : t('Przeczytaj tekst na głos', 'Read the text aloud');
+        b.setAttribute('aria-label', label);
+        b.title = label;
+        const i = b.querySelector('i');
+        if (i) i.className = `fa-solid ${on ? 'fa-stop' : 'fa-volume-high'}`;
+    }
+    function stopSpeaking() {
+        if (!ttsSupported()) return;
+        try { window.speechSynthesis.cancel(); } catch (_) { /* ignore */ }
+        setSpeakBtn(speakingBtn, false);
+        speakingBtn = null;
+    }
+    function speakText(text, btn, voiceName) {
+        if (!ttsSupported() || !String(text || '').trim()) return;
+        stopSpeaking();
+        const u = new window.SpeechSynthesisUtterance(String(text));
+        const v = pickVoice(voiceName);
+        u.lang = v?.lang || (targetLangCode() === 'de' ? 'de-DE' : 'en-GB');
+        if (v) { try { u.voice = v; } catch (_) { /* voice list changed: keep lang only */ } }
+        u.rate = 0.95;
+        const done = () => { if (speakingBtn === btn) { setSpeakBtn(btn, false); speakingBtn = null; } };
+        u.onend = done;
+        u.onerror = done;
+        speakingBtn = btn || null;
+        setSpeakBtn(btn, true);
+        window.speechSynthesis.speak(u);
+    }
+    function voicePickerHtml() {
+        if (!ttsSupported()) return '';
+        return `<div class="ot-voice" id="ot-voice-wrap">
+                    <label class="ot-block-label" for="ot-voice">${esc(t('Głos lektora (czytanie tekstów)', 'Reading voice'))}</label>
+                    <div class="ot-voice-row">
+                        <select id="ot-voice" class="pe-input"><option value="">${esc(t('Domyślny głos', 'Default voice'))}</option></select>
+                        <button type="button" class="btn btn-outline ot-voice-preview" id="ot-voice-preview" aria-pressed="false" aria-label="${esc(t('Posłuchaj głosu', 'Preview voice'))}" title="${esc(t('Posłuchaj głosu', 'Preview voice'))}"><i class="fa-solid fa-volume-high"></i> <span>${esc(t('Posłuchaj', 'Preview'))}</span></button>
+                    </div>
+                </div>`;
+    }
+    function fillVoiceSelect() {
+        const sel = document.getElementById('ot-voice');
+        if (!sel) return;
+        const want = savedVoiceName();
+        const list = voicesForTarget();
+        sel.innerHTML = `<option value="">${esc(t('Domyślny głos', 'Default voice'))}</option>${list.map((v) => `<option value="${esc(v.name)}"${v.name === want ? ' selected' : ''}>${esc(v.name)} (${esc(v.lang)})</option>`).join('')}`;
+        // A saved voice this device doesn't have falls back to the default.
+        if (want && !list.some((v) => v.name === want)) sel.value = '';
+    }
+    if (ttsSupported()) {
+        window.speechSynthesis.addEventListener?.('voiceschanged', fillVoiceSelect);
+        window.addEventListener('pagehide', stopSpeaking);
+    }
+
     function readForm() {
         const age = Number(document.getElementById('ot-age')?.value);
         const cefr = document.getElementById('ot-cefr')?.value || 'A2';
@@ -114,6 +198,7 @@
             instrLang,
             topic: String(document.getElementById('ot-topic')?.value || '').trim(),
             vocab: String(document.getElementById('ot-vocab')?.value || '').trim(),
+            ...(document.getElementById('ot-voice') ? { voice: document.getElementById('ot-voice').value } : {}),
         };
     }
 
@@ -186,6 +271,7 @@
                     <label class="ot-chip"><input type="radio" name="ot-instr-lang" value="pl"${(p.instrLang || 'pl') !== 'en' ? ' checked' : ''}> Polski</label>
                     <label class="ot-chip"><input type="radio" name="ot-instr-lang" value="en"${p.instrLang === 'en' ? ' checked' : ''}> English</label>
                 </div>
+                ${voicePickerHtml()}
                 <div class="ot-actions">
                     <button type="button" class="btn btn-blue" id="ot-save-profile">${esc(editMode
                         ? (L === 'en' ? 'Save' : 'Zapisz')
@@ -546,7 +632,7 @@
         } else if (task.type === 'reading' && task.prompt) {
             layout = 'reading';
             body = `
-                <div class="ot-reading">${esc(task.prompt).replace(/\n/g, '<br>')}</div>
+                <div class="ot-reading">${ttsSupported() ? `<button type="button" class="ot-speak" id="ot-speak" aria-pressed="false" aria-label="${esc(t('Przeczytaj tekst na głos', 'Read the text aloud'))}" title="${esc(t('Przeczytaj tekst na głos', 'Read the text aloud'))}"><i class="fa-solid fa-volume-high"></i></button>` : ''}${esc(task.prompt).replace(/\n/g, '<br>')}</div>
                 <ol class="ot-qs">${items.map((it, i) => `<li class="ot-q" data-row="${i}">${inlineItem(it, i, saved)}</li>`).join('')}</ol>`;
         } else {
             const gapped = gappedPrompt(task, saved);
@@ -898,6 +984,7 @@
     function paint() {
         const el = root();
         if (!el) return;
+        stopSpeaking(); // leaving / re-rendering a task always stops the read-aloud
         let html = '';
         if (view === 'onboard' || view === 'edit') html = renderOnboard(view === 'edit');
         else if (view === 'dash') html = renderDash();
@@ -1124,6 +1211,22 @@
             el.querySelectorAll(`[data-mirror="${inp.dataset.i}"]`).forEach((m) => { m.textContent = inp.value || '\u00a0'; m.classList.toggle('is-filled', !!inp.value); });
         }));
 
+        document.getElementById('ot-speak')?.addEventListener('click', (ev) => {
+            const btn = ev.currentTarget;
+            if (speakingBtn === btn) { stopSpeaking(); return; }
+            speakText(lesson?.tasks?.[taskIndex]?.prompt || '', btn);
+        });
+        if (document.getElementById('ot-voice')) {
+            fillVoiceSelect();
+            document.getElementById('ot-voice').addEventListener('change', stopSpeaking);
+            document.getElementById('ot-voice-preview')?.addEventListener('click', (ev) => {
+                const btn = ev.currentTarget;
+                if (speakingBtn === btn) { stopSpeaking(); return; }
+                const sample = targetLangCode() === 'de' ? 'Hallo! So klingt diese Stimme beim Vorlesen.' : 'Hello! This is how this voice sounds when it reads a text to you.';
+                speakText(sample, btn, document.getElementById('ot-voice').value);
+            });
+        }
+
         const ageEl = document.getElementById('ot-age');
         const cefrEl = document.getElementById('ot-cefr');
         const syncOffer = () => {
@@ -1150,6 +1253,8 @@
                     body: JSON.stringify(readForm()),
                 });
                 profile = data.profile;
+                const voiceSel = document.getElementById('ot-voice');
+                if (voiceSel) { try { localStorage.setItem(VOICE_KEY(profileId), voiceSel.value); } catch (_) { /* private mode */ } }
                 await loadProfiles().catch(() => {});
                 view = 'dash';
                 paint();
