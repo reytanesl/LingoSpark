@@ -311,6 +311,7 @@ HARD RULES:
 8. For writing: one short prompt (2–6 sentences depending on level).
 9. USE OF ENGLISH ("uoe"): ${uoeRuleText(v.cefr)} Never put a gap only at the end as a separate question; text gaps are {{1}}, {{2}}… in order, one per item.
 10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.
+10a. WORD CUE (mandatory for EVERY gap-fill: vocab_drill gap sentences, verb-form / "correct form" tasks, "simple", "brackets", "word_formation", "open_cloze", "lexical_set" and any word-bank task): the student must always get a cue. EITHER give a task-level "wordBank": [the answer words, + at most 1 distractor] shown as a box above the items, OR give every item a bracket cue in "cue" (verb-form tasks: the BASE verb, e.g. "go" for "went"; word formation: the stem in CAPITALS). A cue must never be the answer itself unless the student has to change its form — give the base form, never the inflected answer. Do NOT add a box or cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options.
 10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
 11. STUDENT GUIDANCE (every task): the student works ALONE at home, so each task must be self-explanatory.
     - "steps": 2–4 very short numbered actions in ${instrLangName} (what to do first, next, last).
@@ -332,6 +333,7 @@ Return ONLY valid JSON (no markdown):
     {
       "n": 1,
       "type": "vocab_drill",
+      "wordBank": ["(gap-fill without per-item cues) the answer words, shuffled"],
       "instruction": "what to do — in ${instrLangName}",
       "format": "(uoe only) one of the allowed formats",
       "steps": ["krok 1", "krok 2"],
@@ -434,6 +436,122 @@ function splitToMinimum(tasks) {
     return out.map((t, i) => ({ ...t, n: i + 1 }));
 }
 
+/* ---------- Word cues for gap-fill tasks ---------- */
+const CUE_EXEMPT_FORMATS = new Set(['mc_sentences', 'mc_dialogue', 'mc_translation', 'mc_text', 'two_sentences', 'translation', 'transformation']);
+const CUE_REQUIRED_FORMATS = new Set(['brackets', 'word_formation']);
+const BRACKET_AFTER_GAP = /(_{3,})\s*\(([^()]{1,40})\)/;
+const lowKey = (s) => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}' ]/gu, '').replace(/\s+/g, ' ').trim();
+
+/** Stable shuffle that never leaves the words in answer order (so the box doesn't give the key away). */
+export function shuffleWordBank(words, seedText = '') {
+    const list = [...new Set(words.map((w) => String(w || '').trim()).filter(Boolean))];
+    if (list.length < 2) return list;
+    let seed = 0;
+    for (const ch of seedText + list.join('|')) seed = (seed * 31 + ch.codePointAt(0)) >>> 0;
+    const out = list.slice();
+    for (let i = out.length - 1; i > 0; i -= 1) {
+        seed = (seed * 1103515245 + 12345) >>> 0;
+        const j = seed % (i + 1);
+        [out[i], out[j]] = [out[j], out[i]];
+    }
+    if (out.every((w, i) => w === list[i])) out.push(out.shift());
+    return out;
+}
+
+/** Is this task a gap-fill that needs a word cue (box or bracket)? Translation / options / tile tasks are exempt. */
+export function needsWordCue(task) {
+    if (!task || !Array.isArray(task.items) || !task.items.length) return false;
+    if (!['vocab_drill', 'uoe'].includes(task.type)) return false;
+    if (task.format && CUE_EXEMPT_FORMATS.has(task.format)) return false;
+    if (task.items.some((it) => Array.isArray(it.options) || it.pl)) return false;
+    if (/przetłumacz|tłumacz|translat/i.test(String(task.instruction || ''))) return false;
+    const textGaps = /\{\{\s*\d+\s*\}\}/.test(String(task.prompt || ''));
+    return textGaps || task.items.some((it) => /_{3,}/.test(String(it.q || '')));
+}
+
+/**
+ * Every gap-fill task must give a word cue: a bracket cue on each gap OR a word box above the items.
+ * Bracket cues written into the sentence ("___ (go)") move into item.cue; a cue that simply equals
+ * the answer is dropped (it would give the answer away). If some gaps have no cue, the task gets a
+ * shuffled word box of the answers (plus any box words the AI sent). Verb-form / word-formation
+ * tasks drop cue-less items when at least 2 cued items remain, else they fall back to a box too.
+ */
+export function applyWordCues(task) {
+    if (!needsWordCue(task)) {
+        if (task && task.wordBank) { const { wordBank, ...rest } = task; return rest; }
+        return task;
+    }
+    const textGaps = /\{\{\s*\d+\s*\}\}/.test(String(task.prompt || ''));
+    let items = task.items.map((it) => {
+        const out = { ...it };
+        const m = String(out.q || '').match(BRACKET_AFTER_GAP);
+        if (m && !out.cue) { out.cue = m[2].trim(); out.q = out.q.replace(m[0], m[1]); }
+        if (out.cue && lowKey(out.cue) === lowKey(out.answer) && task.format !== 'word_formation') {
+            // Same as the answer: allowed only when it is a base form to be changed — here it isn't, so drop it.
+            delete out.cue;
+        }
+        return out;
+    });
+    const isGap = (it) => textGaps || /_{3,}/.test(String(it.q || ''));
+    const cued = (it) => !isGap(it) || Boolean(it.cue) || (textGaps && it.q && !/_{3,}/.test(it.q) && it.q.length <= 24);
+    const verbForm = isVerbFormTask(task);
+    if ((verbForm || CUE_REQUIRED_FORMATS.has(task.format)) && !textGaps) {
+        const withCue = items.filter(cued);
+        if (withCue.length >= 2 && withCue.length < items.length) items = withCue;
+    }
+    const given = (Array.isArray(task.wordBank) && !task.autoWordBank ? task.wordBank : []).map((w) => clean(w, 40)).filter(Boolean).slice(0, 12);
+    const { wordBank: _wb, autoWordBank: _auto, needsCueRepair: _rep, ...base } = task;
+    if (items.every(cued) && !given.length) return { ...base, items };
+    const answers = items.filter(isGap).map((it) => clean(it.answer, 40)).filter(Boolean);
+    const have = new Set(given.map(lowKey));
+    const bank = given.concat(answers.filter((a) => !have.has(lowKey(a))));
+    const out = { ...base, items, wordBank: shuffleWordBank(bank, task.instruction || '') };
+    if (!given.length) out.autoWordBank = true;
+    // A box of inflected answers is a weak cue for "correct form" tasks: the server asks the AI for base-form cues.
+    if (verbForm && !given.length) out.needsCueRepair = true;
+    return out;
+}
+
+/** "Correct form" tasks (verb forms, tenses, word in brackets) — their cue should be the base form. */
+export function isVerbFormTask(task) {
+    if (task?.format === 'brackets') return true;
+    return /\b(correct|right) (verb )?form|verb form|tense|odpowiedniej formie|właściwej formie|poprawnej formie|form[ęie] czasownik|czas(ie|u) /i.test(String(task?.instruction || ''));
+}
+
+/** Prompt asking for base-form cues for the items of verb-form tasks that arrived without cues. */
+export function buildCueRepairPrompt(lesson) {
+    const todo = (lesson?.tasks || []).map((t, i) => ({ t, i })).filter(({ t }) => t.needsCueRepair);
+    if (!todo.length) return '';
+    const list = todo.map(({ t, i }) => ({ task: i + 1, instruction: t.instruction, items: t.items.map((it) => ({ q: it.q, answer: it.answer })) }));
+    return `For each gap sentence below, give the bracket cue a student needs: the BASE form of the word(s) to put in the right form (e.g. answer "went" → cue "go"; "are playing" → "play"; "doesn't like" → "not / like"). The cue must not be the answer itself.
+${JSON.stringify(list)}
+Return ONLY valid JSON: {"tasks": [{"task": 1, "cues": ["go", "play"]}]} — one cue per item, same order.`;
+}
+
+/** Merge AI cue repairs: tasks whose every item got a valid cue lose the fallback word box. */
+export function applyCueRepair(lesson, reply) {
+    const byTask = new Map((Array.isArray(reply?.tasks) ? reply.tasks : []).map((r) => [Number(r?.task) - 1, Array.isArray(r?.cues) ? r.cues : []]));
+    const tasks = (lesson?.tasks || []).map((t, i) => {
+        if (!t.needsCueRepair) return t;
+        const cues = byTask.get(i) || [];
+        const items = t.items.map((it, k) => {
+            const cue = clean(cues[k], 60).replace(/^\(|\)$/g, '');
+            return it.cue || !cue || lowKey(cue) === lowKey(it.answer) ? it : { ...it, cue };
+        });
+        if (items.every((it) => it.cue)) {
+            const { wordBank, autoWordBank, needsCueRepair, ...rest } = t;
+            return { ...rest, items };
+        }
+        return t;
+    });
+    return { ...lesson, tasks };
+}
+
+/** Drop server-internal flags before a lesson goes to the browser. */
+export function publicOwnTimeLesson(lesson) {
+    return { ...lesson, tasks: (lesson?.tasks || []).map(({ needsCueRepair, ...t }) => t) };
+}
+
 export function normalizeOwnTimeLesson(parsed, fallback = {}) {
     const raw = parsed && typeof parsed === 'object' ? parsed : {};
     const tasksIn = Array.isArray(raw.tasks) ? raw.tasks : [];
@@ -465,6 +583,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                     alts: Array.isArray(it?.alts)
                         ? it.alts.map((a) => String(a || '').slice(0, 300)).filter(Boolean).slice(0, 6)
                         : [],
+                    ...(clean(it?.cue, 60) ? { cue: clean(it.cue, 60).replace(/^\(|\)$/g, '') } : {}),
                 })).filter((it) => it.q || it.answer)
                 : [];
         }
@@ -492,11 +611,12 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
             instruction: examInstr || String(t?.instruction || '').slice(0, 500),
             prompt: String(t?.prompt || t?.text || '').slice(0, 4000),
             items,
+            ...(Array.isArray(t?.wordBank) && t.wordBank.length ? { wordBank: t.wordBank } : {}),
             modelAnswers: Array.isArray(t?.modelAnswers)
                 ? t.modelAnswers.map((a) => String(a || '').slice(0, 500)).filter(Boolean).slice(0, 8)
                 : [],
         };
-    }).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
+    }).map(applyWordCues).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
     if (tasks.length && tasks.length < OWN_TIME_TASKS_MIN) tasks = splitToMinimum(tasks);
 
     return {

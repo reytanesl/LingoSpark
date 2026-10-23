@@ -97,7 +97,7 @@ import {
 import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
-import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
+import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, buildCueRepairPrompt, applyCueRepair, publicOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
 import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY, OWN_TIME_MOCK_B1_REPLY, OWN_TIME_MOCK_B2_REPLY, OWN_TIME_MOCK_C1_REPLY } from './own-time-fixtures.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
@@ -1143,7 +1143,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             const low = ['A0', 'A1'].includes(cefr) || (checked.value.age != null && checked.value.age < 12 && !['B1', 'B2', 'C1'].includes(cefr));
             const byLevel = { B1: OWN_TIME_MOCK_B1_REPLY, B2: OWN_TIME_MOCK_B2_REPLY, C1: OWN_TIME_MOCK_C1_REPLY };
             const reply = checked.value.extra ? OWN_TIME_MOCK_EXTRA_REPLY : (low ? OWN_TIME_MOCK_LOW_REPLY : (byLevel[cefr] || OWN_TIME_MOCK_REPLY));
-            const lesson = normalizeOwnTimeLesson(reply, checked.value);
+            const lesson = publicOwnTimeLesson(normalizeOwnTimeLesson(reply, checked.value));
             if (reservation) lesson.extra = true;
             return res.json({ lesson, mock: true, ...extraInfo });
         }
@@ -1157,6 +1157,16 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
                 lesson = normalizeOwnTimeLesson(await runVisionJsonPrompt({ apiKey, prompt: retry, label: `${label}-retry` }), checked.value);
                 if (!lesson.taskCountOk) throw new Error('The lesson generator returned too few tasks. Please try again.');
             }
+            // Verb-form gap tasks without base-form cues: one short repair call; the word box stays as fallback.
+            const cuePrompt = buildCueRepairPrompt(lesson);
+            if (cuePrompt) {
+                try {
+                    lesson = applyCueRepair(lesson, await runVisionJsonPrompt({ apiKey, prompt: cuePrompt, label: `${label}-cues` }));
+                } catch (e) {
+                    console.warn('Own-time cue repair failed (word box kept):', e.message);
+                }
+            }
+            lesson = publicOwnTimeLesson(lesson);
             if (reservation) lesson.extra = true;
             res.json({ lesson, ...extraInfo });
         } catch (error) {

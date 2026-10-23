@@ -111,7 +111,9 @@ test('Gap markers are canonicalised; old items without markers are left intact',
     assert.equal(normalizeGapMarker('She [...] tennis.'), 'She ___ tennis.');
     assert.equal(normalizeGapMarker('What did Ola buy?'), 'What did Ola buy?');
     const l = normalizeOwnTimeLesson({ tasks: [{ type: 'uoe', instruction: 'x', items: [{ q: 'He ____ (go) home.', answer: 'went' }, { q: 'Old item, no gap', answer: 'a' }] }] }, {});
-    assert.equal(l.tasks[0].items[0].q, 'He ___ (go) home.');
+    // A bracket cue right after the gap becomes the item cue (rendered as "(go)" next to the gap).
+    assert.equal(l.tasks[0].items[0].q, 'He ___ home.');
+    assert.equal(l.tasks[0].items[0].cue, 'go');
     assert.equal(l.tasks[0].items[1].q, 'Old item, no gap');
 });
 

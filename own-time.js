@@ -435,7 +435,8 @@
         if (m) {
             const before = q.slice(0, m.index);
             const after = q.slice(m.index + m[0].length);
-            return `${esc(before)}${gapInput(it, i, saved)}${esc(after)}`;
+            const cue = it.cue ? ` <span class="ot-cue">(${esc(it.cue)})</span>` : '';
+            return `${esc(before)}${gapInput(it, i, saved)}${cue}${esc(after)}`;
         }
         return `<span class="ot-q-text">${esc(q || t(`Punkt ${i + 1}`, `Item ${i + 1}`))}</span> ${gapInput(it, i, saved)}`;
     }
@@ -506,6 +507,13 @@
         const m = s.match(/^(.+?[.!?])\s+(.{40,})$/s);
         if (!m) return `<span class="ot-instruction">${esc(s)}</span>`;
         return `<span class="ot-instruction ot-instruction--long">${esc(m[1])} <span class="ot-instr-rest">${esc(m[2])}</span><button type="button" class="ot-instr-more" aria-expanded="false">${esc(t('więcej', 'more'))}</button></span>`;
+    }
+
+    /** Word box above a gap-fill task's items (the cue when gaps have no bracket cue). */
+    function wordBoxHtml(task) {
+        const words = Array.isArray(task.wordBank) ? task.wordBank.filter(Boolean) : [];
+        if (!words.length) return '';
+        return `<div class="ot-wordbox" role="note" aria-label="${esc(t('Słowa do wykorzystania', 'Words to use'))}"><span class="ot-wordbox-label">${esc(t('Użyj słów', 'Use these words'))}</span>${words.map((w) => `<span class="ot-wordbox-word">${esc(w)}</span>`).join('')}</div>`;
     }
 
     function renderTask() {
@@ -597,7 +605,7 @@
                 </div>
                 <div class="ot-work ot-work--${layout}">
                     <div class="ot-panels" role="group" aria-label="${esc(t('Pomoc', 'Help'))}">${panels}</div>
-                    <div class="ot-body ot-body--${layout}">${body}</div>
+                    <div class="ot-body ot-body--${layout}">${wordBoxHtml(task)}${body}</div>
                 </div>
                 <div id="ot-task-check" class="ot-check-msg" hidden></div>
                 <div class="ot-actions">
