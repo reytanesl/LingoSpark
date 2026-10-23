@@ -187,7 +187,7 @@
             return `<div class="ot-ppick-wrap"><button type="button" class="ot-ppick${on ? ' is-active' : ''}" data-ppick="${p.id}" aria-pressed="${on}">
                 ${avatarHtml(p)}<span class="ot-pinfo"><strong>${esc(p.name)}</strong><span>${esc(meta)}</span>${p.progress ? `<em class="ot-ppick-prog"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> ${esc(progressLabel(p.progress))}</em>` : ''}</span>
                 ${on ? `<i class="fa-solid fa-check ot-ppick-check" aria-hidden="true"></i>` : ''}
-            </button><button type="button" class="ot-ppick-edit" data-ppick-edit="${p.id}" title="${esc(t('Edytuj profil', 'Edit profile'))}" aria-label="${esc(t(`Edytuj profil: ${p.name}`, `Edit profile: ${p.name}`))}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></div>`;
+            </button>${p.progress ? `<button type="button" class="ot-ppick-go" data-ppick-go="${p.id}" title="${esc(t('Wróć do zestawu', 'Back to your set'))}" aria-label="${esc(t(`Kontynuuj zestaw: ${p.name}`, `Continue set: ${p.name}`))}"><i class="fa-solid fa-play" aria-hidden="true"></i> ${esc(t('Kontynuuj', 'Continue'))}</button>` : ''}<button type="button" class="ot-ppick-edit" data-ppick-edit="${p.id}" title="${esc(t('Edytuj profil', 'Edit profile'))}" aria-label="${esc(t(`Edytuj profil: ${p.name}`, `Edit profile: ${p.name}`))}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></div>`;
         }).join('');
         const add = pickCreating
             ? `<form class="ot-ppick ot-ppick--form" data-pickform="create"><input type="text" class="pe-input" id="ot-ppick-new" maxlength="40" placeholder="${esc(t('Imię, np. Ola', 'Name, e.g. Ola'))}" aria-label="${esc(t('Nazwa nowego profilu', 'New profile name'))}" required>
@@ -215,12 +215,23 @@
         setStatus('');
         window.scrollTo({ top: 0 });
     }
+    /** "▶ Kontynuuj" shortcut: straight back into that profile's saved set (skips settings). */
+    let entryResumeView = null;
+    async function continueProfile(id) {
+        if (id !== profileId) { await switchProfile(id); return; } // switch restores and opens the saved set
+        if (!lesson) { pickProfile(id); return; }
+        view = entryResumeView === 'feedback' ? 'feedback' : 'lesson';
+        paint();
+        setStatus(esc(t(`Wznowiono: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');
+    }
     function bindProfilePicker(el) {
         const host = el.querySelector('.ot-ppicker');
         if (!host) return;
         host.addEventListener('click', (ev) => {
             const ed = ev.target.closest('[data-ppick-edit]');
             if (ed) { pickProfile(Number(ed.dataset.ppickEdit)); return; }
+            const go = ev.target.closest('[data-ppick-go]');
+            if (go) { continueProfile(Number(go.dataset.ppickGo)); return; }
             const card = ev.target.closest('[data-ppick]');
             if (card) { pickProfile(Number(card.dataset.ppick)); return; }
             if (ev.target.closest('[data-ppick-new]')) { pickCreating = true; paint(); document.getElementById('ot-ppick-new')?.focus(); return; }
@@ -1734,6 +1745,7 @@
             const resumed = await loadActive();
             toggleLoading(false);
             // Every entry (tile, deep link, reload) starts at "Kto ćwiczy?"; the restored set stays in memory for "Kontynuuj zestaw".
+            entryResumeView = resumed ? view : null;
             if (profiles.length) view = 'pick';
             paint();
             if (resumed && view !== 'pick') setStatus(esc(t(`Wznowiono lekcję: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Lesson resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');
