@@ -679,6 +679,7 @@
                         <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
                     </div>
                     ${profiles.length ? profileBarHtml(true) : ''}
+                    <button type="button" class="ot-reset-set" id="ot-reset-set" title="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}" aria-label="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}"><i class="fa-solid fa-rotate-left"></i><span class="ot-reset-label">${esc(t('Od nowa', 'Restart'))}</span></button>
                     <div class="ot-time" aria-live="polite">${esc(t(`Zadanie ${taskIndex + 1} z ${tasks.length}`, `Task ${taskIndex + 1} of ${tasks.length}`))}</div>
                 </div>
                 ${lesson.goal && taskIndex === 0 ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
@@ -832,6 +833,22 @@
         if (focusSel) host.querySelector(focusSel)?.focus();
     }
     function closeMenu() { Object.assign(pmenu, { open: false, renaming: null, deleting: null, creating: false }); repaintMenu(); }
+
+    /** Back to task 1 of the same set with a clean slate; persisted immediately (server progress). */
+    function resetCurrentSet() {
+        if (!lesson) return;
+        stopSpeaking();
+        answers = {};
+        Object.keys(tileState).forEach((k) => delete tileState[k]);
+        openPanels.clear();
+        taskIndex = 0;
+        startedAt = Date.now();
+        view = 'lesson';
+        paint();
+        root()?.querySelector('.ot-lesson')?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+        saveProgressNow();
+        setStatus(t('Zestaw zaczęty od nowa — te same zadania, czyste odpowiedzi.', 'Set restarted — same tasks, clean answers.'), 'success');
+    }
 
     /** Snapshot of the current lesson (answers typed so far, current task, word-order tiles). */
     function progressSnapshot() {
@@ -1367,6 +1384,20 @@
             const task = lesson?.tasks?.[taskIndex];
             const c = document.getElementById('ot-counter');
             if (c && task) c.innerHTML = counterHtml(guidance(task).target, answerEl.value);
+        });
+
+        // "Od nowa": reset ONLY the current set to its start (answers, checks, hints, tiles) — same tasks, no
+        // new generation, no Keep going quota. Two taps (second within 4 s) so it can't happen by accident.
+        document.getElementById('ot-reset-set')?.addEventListener('click', (ev) => {
+            const btn = ev.currentTarget;
+            if (!btn.classList.contains('is-confirm')) {
+                btn.classList.add('is-confirm');
+                btn.querySelector('.ot-reset-label').textContent = t('Na pewno? Kliknij znowu', 'Sure? Tap again');
+                clearTimeout(btn._t);
+                btn._t = setTimeout(() => { btn.classList.remove('is-confirm'); btn.querySelector('.ot-reset-label').textContent = t('Od nowa', 'Restart'); }, 4000);
+                return;
+            }
+            resetCurrentSet();
         });
 
         document.getElementById('ot-prev')?.addEventListener('click', () => {
