@@ -45,14 +45,14 @@ test('layer 3: prompt/reply/mock helpers', () => {
     assert.equal(m[0].correct, true);
     assert.equal(m[2].correct, false);
 });
-test('server route behind the paywall, mocked AI, client wiring + 3 appeals', () => {
+test('server route behind the paywall, mocked AI, client wiring + AI verify limit', () => {
     const srv = fs.readFileSync(new URL('./server.js', import.meta.url), 'utf8');
     assert.match(srv, /app\.post\('\/api\/own-time\/check-open', requireWritingAccess,/);
     assert.match(srv, /AnswerCheck\.examRuleViolation[\s\S]*mock \? AnswerCheck\.mockOpenCheck/);
     const ot = fs.readFileSync(new URL('./own-time.js', import.meta.url), 'utf8');
     assert.match(ot, /Poprawne — inna wersja niż w kluczu/);
-    assert.match(ot, /Moja odpowiedź też jest poprawna/);
-    assert.equal(A.APPEALS_PER_SET, 3);
+    assert.match(ot, /'Zweryfikuj'/);
+    assert.equal(A.APPEALS_PER_SET, 5);
     assert.ok(PUBLIC_SCRIPTS.has('answer-check.js'));
     assert.ok(typeof staticAllowlist === 'function' || staticAllowlist);
 });

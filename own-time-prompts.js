@@ -318,6 +318,8 @@ HARD RULES:
     - "unscramble": 4–6 items; each "answer" = ONE English word (3–10 letters, from the session vocabulary); "q" = short English clue/definition (or ${instrLangName} translation for A0–A1); "emoji" = one fitting emoji or "".
 6. Include modelAnswers or expected answers for closed items so the app can check locally.
 7. For reading: short English text (60–120 words) + 2–3 comprehension questions with short answers (1–4 words, in English). A question may be a sentence to complete with ONE "___" gap.
+7a. READING CLARITY (especially A0–A2 and under-12): simple, direct, age-appropriate sentences. State facts and relations directly ("Nina is Leo's cousin.", "Leo lives in a small town near a lake.") — never convoluted kinship or relational phrasing (NOT "Nina is his aunt and uncle's child"), no ambiguity, no apparent contradictions, no trick questions. Give reading items "acceptedAnswers" with the short key phrase AND natural variants (e.g. "small town", "in a small town", "a small town near a lake").
+7b. SELF-CHECK before replying: for every reading question, the text contains exactly ONE clear, unambiguous answer, stated in plain words a ${v.cefr} learner understands; rewrite the text or the question if not.
 8. For writing: one short prompt (2–6 sentences depending on level).
 9. USE OF ENGLISH ("uoe"): ${uoeRuleText(v.cefr)} Never put a gap only at the end as a separate question; text gaps are {{1}}, {{2}}… in order, one per item.
 10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.

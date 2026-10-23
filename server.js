@@ -1139,7 +1139,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             const mock = !apiKey && process.env.OWN_TIME_MOCK === '1' && process.env.NODE_ENV !== 'production';
             if (!apiKey && !mock) return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
             try {
-                const judged = mock ? AnswerCheck.mockOpenCheck(toAi)
+                const judged = mock ? AnswerCheck.mockOpenCheck(toAi, format)
                     : AnswerCheck.parseOpenCheckReply(await runVisionJsonPrompt({ apiKey, prompt: AnswerCheck.buildOpenCheckPrompt({ format, cefr, prompt: b.prompt, items: toAi }), label: 'own-time-check' }), toAi.map((x) => x.i));
                 Object.assign(results, judged);
             } catch (err) {

@@ -385,8 +385,8 @@
                     ? 'A practice lesson of 5–6 short tasks, tailored to you.'
                     : 'Lekcja z 5–6 krótkich zadań, dopasowana do Ciebie.')}</p>
                 <ol class="ot-how">
-                    <li><span class="ot-how-n">1</span><strong>${esc(t('Zrób 5–6 krótkich zadań', 'Do 5–6 short tasks'))}</strong><span>${esc(t('Każde ma kroki, przykład i podpowiedź.', 'Each has steps, an example and a hint.'))}</span></li>
-                    <li><span class="ot-how-n">2</span><strong>${esc(t('Sprawdź odpowiedzi', 'Check your answers'))}</strong><span>${esc(t('„Sprawdź” pokaże błędy; potrzebujesz pomocy? Rozwiń podpowiedzi.', '“Check” marks mistakes; need help? Open the hints.'))}</span></li>
+                    <li><span class="ot-how-n">1</span><strong>${esc(t('Zrób 5–6 krótkich zadań', 'Do 5–6 short tasks'))}</strong><span>${esc(t('Każde ma kroki i przykład.', 'Each has steps and an example.'))}</span></li>
+                    <li><span class="ot-how-n">2</span><strong>${esc(t('Sprawdź odpowiedzi', 'Check your answers'))}</strong><span>${esc(t('„Sprawdź” pokaże błędy; „Zweryfikuj” poprosi AI o drugą opinię.', '“Check” marks mistakes; “Verify” asks AI for a second opinion.'))}</span></li>
                     <li><span class="ot-how-n">3</span><strong>${esc(t('Powiedz, jak było', 'Tell us how it went'))}</strong><span>${esc(t('Twoja opinia ustawia następną lekcję.', 'Your feedback shapes the next lesson.'))}</span></li>
                 </ol>
                 <p class="ot-time-note"><i class="fa-solid fa-list-check"></i> ${esc(t('5–6 zadań · każde mieści się na jednym ekranie · pracuj we własnym tempie', '5–6 tasks · each fits on one screen · work at your own pace'))}</p>
@@ -421,18 +421,19 @@
 
     const AC = window.AnswerCheck;
     /** ok | almost | wrong | empty | alt (AI: correct, other than the key). Options/tiles keep loose exact matching. */
-    function gradeItem(item, value, verdict) {
+    function gradeItem(item, value, verdict, kind) {
         if (Array.isArray(item.options) || Array.isArray(item.tiles) || !AC) {
             const v = looseKey(value);
             if (!v) return 'empty';
             return [item.answer, ...(item.alts || [])].map(looseKey).includes(v) ? 'ok' : 'wrong';
         }
-        const g = AC.gradeAnswer(item, value).status;
+        // Reading comprehension is about meaning (key phrases, no article/preposition/case penalty); exam rules stay for UoE.
+        const g = (kind === 'reading' ? AC.gradeReading(item, value) : AC.gradeAnswer(item, value)).status;
         if (g !== 'ok' && g !== 'empty' && verdict && AC.normAnswer(verdict.value) === AC.normAnswer(value)) return verdict.correct ? 'alt' : 'wrong';
         return g;
     }
-    function checkItem(item, value, verdict) {
-        const g = gradeItem(item, value, verdict);
+    function checkItem(item, value, verdict, kind) {
+        const g = gradeItem(item, value, verdict, kind);
         return g === 'ok' || g === 'alt';
     }
     function appealsUsed() { return Number(answers._appeals) || 0; }
@@ -442,7 +443,7 @@
         a.verdicts = a.verdicts || {};
         try {
             const r = await api('/api/own-time/check-open', { method: 'POST', body: JSON.stringify({
-                format: task.format || 'simple', cefr: lesson.cefr || profile?.cefr || '', prompt: task.prompt || '', appeal: !!appeal,
+                format: task.type === 'reading' ? 'reading' : (task.format || 'simple'), cefr: lesson.cefr || profile?.cefr || '', prompt: task.prompt || '', appeal: !!appeal,
                 items: list.map(({ it, i, given }) => ({ i, q: it.q, lead: it.lead, key: it.key, cue: it.cue, pl: it.pl, answer: it.answer, accepted: it.alts || [], given })),
             }) });
             list.forEach(({ i, given }) => { const v = r.results?.[i] || { correct: false, explanation: '' }; a.verdicts[i] = { value: given, correct: !!v.correct, why: v.explanation || '' }; });
@@ -571,7 +572,7 @@
                 if (it.answer) avoid.push(String(it.answer));
                 if (it.q) avoid.push(String(it.q).slice(0, 80));
                 const given = String((a.items || [])[j] || '').trim();
-                if (it.answer && !checkItem(it, given)) weak.push(`${it.q} → ${it.answer}${given ? ` (wrote: ${given})` : ' (blank)'}`);
+                if (it.answer && !checkItem(it, given, a.verdicts?.[j], tk.type)) weak.push(`${it.q} → ${it.answer}${given ? ` (wrote: ${given})` : ' (blank)'}`);
             });
         });
         return { previousTitle: src.lesson?.title || '', focus: src.lesson?.focus || '', avoid: avoid.slice(0, 40), weak: weak.slice(0, 12) };
@@ -774,7 +775,6 @@
                 `${isWriting ? `<p class="ot-panel-tip">${esc(t('Kliknij zwrot, by wstawić go do tekstu.', 'Click a phrase to insert it.'))}</p>` : ''}<div class="ot-phrases">${g.useful.map((ph) => isWriting
                     ? `<button type="button" class="ot-phrase" data-phrase="${esc(ph)}">${esc(ph)}</button>`
                     : `<span class="ot-phrase is-static">${esc(ph)}</span>`).join('')}</div>`, 'ot-useful') : '',
-            g.hint ? panel('hint', 'fa-circle-question', t('Podpowiedź', 'Hint'), `<p>${esc(g.hint)}</p>`, 'ot-hint') : '',
             isWriting ? panel('plan', 'fa-lightbulb', t('Plan', 'Plan'),
                 `<textarea id="ot-plan" class="pe-input" rows="2" placeholder="${esc(t('2–3 pomysły, np. sklep z lodami · klienci · telefon', '2–3 ideas, e.g. ice-cream shop · customers · phone'))}">${esc(saved.plan || '')}</textarea>`, 'ot-plan') : '',
             isWriting && (task.modelAnswers || []).length
@@ -1456,10 +1456,9 @@
                 if (!it.answer) return;
                 total += 1;
                 const verdict = answers[`t${taskIndex}`].verdicts?.[i];
-                const grade = gradeItem(it, ans.items[i], verdict);
+                const grade = gradeItem(it, ans.items[i], verdict, task.type);
                 const good = grade === 'ok' || grade === 'alt';
-                if (grade === 'wrong' && !verdict?.value && !Array.isArray(it.options) && !Array.isArray(it.tiles)) mismatched.push({ it, i, given: ans.items[i] });
-                else if (grade === 'wrong' && verdict && AC && AC.normAnswer(verdict.value) !== AC.normAnswer(ans.items[i]) && !Array.isArray(it.options) && !Array.isArray(it.tiles)) mismatched.push({ it, i, given: ans.items[i] });
+                // "Sprawdź" is local matching only; the AI re-check runs only when the student clicks "Zweryfikuj".
                 if (good) ok += 1;
                 input?.classList.toggle('is-ok', good);
                 input?.classList.toggle('is-wrong', !good);
@@ -1478,14 +1477,15 @@
                     mark.className = 'ot-mark ' + (good ? 'ok' : (grade === 'almost' ? 'almost' : 'wrong'));
                     let note = el.querySelector(`[data-verdict="${i}"]`);
                     const typed = !Array.isArray(it.options) && !Array.isArray(it.tiles);
-                    const pending = mismatched.some((m) => m.i === i);
-                    const canAppeal = typed && !good && !pending && grade !== 'empty' && !(verdict?.appealed && AC?.normAnswer(verdict.value) === AC?.normAnswer(ans.items[i]));
+                    const pending = false;
+                    const sameVerdict = verdict && AC?.normAnswer(verdict.value) === AC?.normAnswer(ans.items[i]);
+                    const canAppeal = typed && !good && grade !== 'empty' && !sameVerdict;
                     let html = '';
                     if (grade === 'alt') html = `<strong>${esc(t('Poprawne — inna wersja niż w kluczu.', 'Correct — a different version from the key.'))}</strong> ${esc(verdict.why)}`;
                     else if (grade === 'almost') html = esc(t('Prawie — jedna litera się nie zgadza. Pisownia się liczy, popraw i sprawdź ponownie.', 'Almost — one letter is off. Spelling counts: fix it and check again.'));
                     else if (pending) html = `<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> ${esc(t('Sprawdzam, czy to też poprawna wersja…', 'Checking if this is also correct…'))}`;
                     else if (grade === 'wrong' && verdict?.why && AC?.normAnswer(verdict.value) === AC?.normAnswer(ans.items[i])) html = esc(verdict.why);
-                    if (canAppeal) html += ` <button type="button" class="ot-appeal" data-appeal="${i}"${appealsUsed() >= (AC?.APPEALS_PER_SET || 3) ? ' disabled' : ''}>${esc(t('Moja odpowiedź też jest poprawna', 'My answer is also correct'))} <span>(${(AC?.APPEALS_PER_SET || 3) - appealsUsed()})</span></button>`;
+                    if (canAppeal) html += ` <button type="button" class="ot-appeal" data-appeal="${i}"${appealsUsed() >= (AC?.APPEALS_PER_SET || 5) ? ' disabled' : ''} title="${esc(t('Poproś AI o sprawdzenie, czy Twoja odpowiedź też jest poprawna', 'Ask AI whether your answer is also correct'))}"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> ${esc(t('Zweryfikuj', 'Verify'))} <span>(${(AC?.APPEALS_PER_SET || 5) - appealsUsed()})</span></button>`;
                     if (html) {
                         if (!note) { note = document.createElement('span'); note.className = 'ot-verdict'; note.dataset.verdict = i; (el.querySelector(`.ot-q[data-row="${i}"]`) || mark.parentElement).appendChild(note); }
                         note.innerHTML = html; note.dataset.state = grade === 'alt' ? 'alt' : (pending ? 'pending' : grade);
@@ -1493,16 +1493,15 @@
                 }
             });
             const checkKey = `t${taskIndex}`;
-            if (mismatched.length) recheckOpen(task, checkKey, mismatched);
             el.querySelectorAll('[data-appeal]').forEach((btn) => btn.addEventListener('click', () => {
-                if (appealsUsed() >= (AC?.APPEALS_PER_SET || 3)) return;
+                if (appealsUsed() >= (AC?.APPEALS_PER_SET || 5)) return;
                 const i = Number(btn.dataset.appeal);
                 answers._appeals = appealsUsed() + 1;
                 btn.disabled = true;
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${esc(t('Sprawdzam…', 'Checking…'))}`;
                 const given = collectTaskAnswers().items[i];
                 recheckOpen(task, checkKey, [{ it: task.items[i], i, given }], true).then(() => {
-                    const v = answers[checkKey].verdicts?.[i]; if (v) { v.appealed = true; document.getElementById('ot-check')?.click(); }
+                    const v = answers[checkKey].verdicts?.[i]; if (v) v.appealed = true;
                 });
             }));
             answers[`t${taskIndex}`].checked = { ok, total };
@@ -1519,7 +1518,7 @@
                     (task.items || []).forEach((it, i) => {
                         if (!Array.isArray(it.options)) return;
                         const inp = el.querySelector(`.ot-item[data-i="${i}"]`);
-                        if (!inp || checkItem(it, inp.value, answers[`t${taskIndex}`]?.verdicts?.[i])) return;
+                        if (!inp || checkItem(it, inp.value, answers[`t${taskIndex}`]?.verdicts?.[i], task.type)) return;
                         pickOption(el, i, it.answer);
                         el.querySelectorAll(`[data-slot="${i}"], [data-mirror="${i}"]`).forEach((s) => s.classList.add('is-revealed'));
                         const mark = el.querySelector(`[data-mark="${i}"]`);

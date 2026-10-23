@@ -45,6 +45,23 @@
         if (keys.some((k) => k.replace(/\s/g, '').length >= 4 && editDistance(k, v) === 1)) return { status: 'almost' };
         return { status: 'wrong' };
     }
+    /* Reading comprehension: meaning, not grammar. Articles, prepositions, auxiliaries, pronouns, case and
+       small typos don't matter; a short answer / key phrase counts when it contains the key's content words. */
+    const FUNCTION_WORDS = new Set('a an the in on at to of for by with from into near about is are was were be been am do does did has have had he she it they we you i his her its their our my your this that these those there and or but because so very'.split(' '));
+    const contentWords = (s) => normAnswer(s).split(' ').filter((w) => w && !FUNCTION_WORDS.has(w));
+    const wordMatch = (a, b) => a === b || (a.length >= 4 && b.length >= 4 && editDistance(a, b) <= 1) || (a.length >= 4 && (a + 's' === b || b + 's' === a));
+    function gradeReading(item, value) {
+        const v = normAnswer(value);
+        if (!v) return { status: 'empty' };
+        const got = contentWords(v);
+        for (const key of [item?.answer, ...(item?.alts || []), ...(item?.acceptedAnswers || [])].filter(Boolean)) {
+            const need = contentWords(key);
+            if (!need.length) { if (normAnswer(key) === v) return { status: 'ok' }; continue; }
+            // every key content word present (fuzzy), and the answer isn't a long text that just happens to include them
+            if (need.every((w) => got.some((g) => wordMatch(w, g))) && got.length <= need.length + 6) return { status: 'ok' };
+        }
+        return { status: 'wrong' };
+    }
     const wordCount = (s) => normAnswer(s).split(' ').filter(Boolean).length;
     /** Hard exam rules (checked before any AI): returns a short Polish reason, or ''. */
     function examRuleViolation(format, item, value, cefr) {
@@ -65,6 +82,13 @@
         return '';
     }
     function buildOpenCheckPrompt({ format, cefr, prompt, items }) {
+        if (format === 'reading') {
+            const rl = items.map((it) => JSON.stringify({ i: it.i, question: it.q || '', key: [it.answer, ...(it.accepted || [])], student: it.given }));
+            return `You check READING COMPREHENSION answers of a ${cefr || 'A2'} English learner. Judge MEANING only, not grammar: short answers and key phrases are fine (e.g. "small town" = "in a small town"); ignore missing articles or prepositions, case, capitals and spelling mistakes when the meaning is clear. The answer is correct if it states the same fact as the key according to the text; wrong if it gives a different fact or is unclear.
+${prompt ? `Text:\n${String(prompt).slice(0, 1500)}\n` : ''}Items:
+${rl.join('\n')}
+Reply with JSON only: {"results":[{"i":<n>,"correct":true|false,"explanation":"ONE short sentence in Polish (max 15 words), without giving away the key answer"}]}`;
+        }
         const lines = items.map((it) => JSON.stringify({ i: it.i, sentence: it.q || '', original: it.lead || undefined, keyWord: it.key || undefined, givenWord: it.cue || undefined, polish: it.pl || undefined, key: [it.answer, ...(it.accepted || [])], student: it.given }));
         return `You are a strict but fair CKE (Polish matura / exam) examiner of English Use of English answers. Task format: "${format}", level ${cefr || 'B1'}.
 ${prompt ? `Task text (gaps as {{n}}):\n${String(prompt).slice(0, 1500)}\n` : ''}Each item below has the official key and the student's answer, which did NOT match the key. Decide if the student's answer is ALSO fully correct: grammatically correct, same meaning, fits the context, correct spelling, AND obeys exam rules (word limits; key word used unchanged in transformations; derived from the given word in word formation; one word in open cloze). Over the word limit = wrong. If in doubt, mark it wrong.
@@ -83,16 +107,18 @@ Reply with JSON only: {"results":[{"i":<n>,"correct":true|false,"explanation":"O
     }
     /** OWN_TIME_MOCK=1 stand-in for the AI: knows a few classic key-equivalents. */
     const MOCK_EQUIV = [['despite', 'in spite of'], ['although', 'though', 'even though'], ['so as to', 'in order to'], ['big', 'large'], ['till', 'until'], ['shop assistant', 'sales assistant'], ['price', 'cost']];
-    function mockOpenCheck(items) {
+    function mockOpenCheck(items, format) {
+        items = items.map((it) => ({ ...it, format: it.format || format }));
         const out = {};
         for (const it of items) {
             const g = normAnswer(it.given), keys = [it.answer, ...(it.accepted || [])].map(normAnswer);
+            if (it.format === 'reading' && gradeReading({ answer: it.answer, alts: it.accepted }, it.given).status === 'ok') { out[it.i] = { correct: true, explanation: 'Odpowiedź podaje tę samą informację co tekst.' }; continue; }
             const hit = MOCK_EQUIV.find((set) => set.includes(g) && keys.some((k) => set.includes(k)));
             out[it.i] = hit ? { correct: true, explanation: `„${it.given}” znaczy tu to samo co „${it.answer}” i pasuje gramatycznie.` }
                 : { correct: false, explanation: `„${it.given}” nie pasuje tu znaczeniowo lub gramatycznie.` };
         }
         return out;
     }
-    const api = { normAnswer, editDistance, gradeAnswer, examRuleViolation, wordCount, buildOpenCheckPrompt, parseOpenCheckReply, mockOpenCheck, APPEALS_PER_SET: 3 };
+    const api = { normAnswer, editDistance, gradeAnswer, gradeReading, contentWords, examRuleViolation, wordCount, buildOpenCheckPrompt, parseOpenCheckReply, mockOpenCheck, APPEALS_PER_SET: 5 };
     root.AnswerCheck = api;
 })(typeof window !== 'undefined' ? window : globalThis);
