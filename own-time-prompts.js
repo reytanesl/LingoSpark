@@ -312,6 +312,7 @@ HARD RULES:
 9. USE OF ENGLISH ("uoe"): ${uoeRuleText(v.cefr)} Never put a gap only at the end as a separate question; text gaps are {{1}}, {{2}}… in order, one per item.
 10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.
 10a. WORD CUE (mandatory for EVERY gap-fill: vocab_drill gap sentences, verb-form / "correct form" tasks, "simple", "brackets", "word_formation", "open_cloze", "lexical_set" and any word-bank task): the student must always get a cue. EITHER give a task-level "wordBank": [the answer words, + at most 1 distractor] shown as a box above the items, OR give every item a bracket cue in "cue" (verb-form tasks: the BASE verb, e.g. "go" for "went"; word formation: the stem in CAPITALS). A cue must never be the answer itself unless the student has to change its form — give the base form, never the inflected answer. Do NOT add a box or cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options.
+    ${cueRuleText(cueTier(v))} (Challenge rises gradually with the level and the chosen difficulty.)
 10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
 11. STUDENT GUIDANCE (every task): the student works ALONE at home, so each task must be self-explanatory.
     - "steps": 2–4 very short numbered actions in ${instrLangName} (what to do first, next, last).
@@ -476,7 +477,40 @@ export function needsWordCue(task) {
  * shuffled word box of the answers (plus any box words the AI sent). Verb-form / word-formation
  * tasks drop cue-less items when at least 2 cued items remain, else they fall back to a box too.
  */
-export function applyWordCues(task) {
+/**
+ * How much help a gap-fill cue gives, rising gradually with the level (0 = most help … 3 = exam):
+ * A0–A2 or under 12 → 0, B1 → 1, B2 → 2, C1 → 3; "Łatwiej" (light) one step down, "Wyzwanie" (stretch) one up.
+ */
+export function cueTier({ cefr, age, intensity } = {}) {
+    const base = { A0: 0, A1: 0, A2: 0, B1: 1, B2: 2, C1: 3 }[String(cefr || 'A2').toUpperCase()] ?? 0;
+    let tier = Number.isFinite(Number(age)) && age != null && Number(age) < 12 ? Math.min(base, 0) : base;
+    if (intensity === 'light') tier -= 1;
+    if (intensity === 'stretch') tier += 1;
+    return Math.max(0, Math.min(3, tier));
+}
+/** Max distractors kept in a word box per tier (tier 0: exact answers only). */
+const BOX_DISTRACTORS = [0, 2, 4, 4];
+/** Formats with no cue at all at this tier (exam-style): B2+ open cloze, C1 open cloze + lexical sets. */
+function cueFreeFormat(format, tier) {
+    return (tier >= 2 && format === 'open_cloze') || (tier >= 3 && format === 'lexical_set');
+}
+
+/** Prompt text for the cue rule at this tier. */
+export function cueRuleText(tier) {
+    return [
+        'LEVEL CUES (most help): use a word box with EXACTLY the answer words (no distractors), or a base-form bracket cue on every gap. open_cloze / lexical_set also get a box.',
+        'LEVEL CUES (B1): word box with the answers + 1–2 distractors, OR base-form bracket cues (verb forms: base verb).',
+        'LEVEL CUES (B2): prefer bracket / root cues (base verb, word-family root); a word box may have up to 4 distractors. open_cloze has NO box and no cues (exam format).',
+        'LEVEL CUES (C1 exam format): open_cloze and lexical_set have NO box and NO cues. Give cues only where the CKE exam has them (word_formation: root in CAPITALS; transformation: key word; brackets: words in brackets). Other vocabulary gaps: bracket root cues or a box with several distractors.',
+    ][tier] || '';
+}
+
+export function applyWordCues(task, ctx = {}) {
+    const tier = Number.isInteger(ctx.tier) ? ctx.tier : 0;
+    if (task?.type === 'uoe' && cueFreeFormat(task.format, tier)) {
+        const { wordBank, autoWordBank, needsCueRepair, ...rest } = task;
+        return rest;
+    }
     if (!needsWordCue(task)) {
         if (task && task.wordBank) { const { wordBank, ...rest } = task; return rest; }
         return task;
@@ -499,10 +533,15 @@ export function applyWordCues(task) {
         const withCue = items.filter(cued);
         if (withCue.length >= 2 && withCue.length < items.length) items = withCue;
     }
-    const given = (Array.isArray(task.wordBank) && !task.autoWordBank ? task.wordBank : []).map((w) => clean(w, 40)).filter(Boolean).slice(0, 12);
+    const answers = items.filter(isGap).map((it) => clean(it.answer, 40)).filter(Boolean);
+    const answerKeys = new Set(answers.map(lowKey));
+    const rawGiven = (Array.isArray(task.wordBank) && !task.autoWordBank ? task.wordBank : []).map((w) => clean(w, 40)).filter(Boolean).slice(0, 12);
+    // Distractors (box words that answer no gap) are capped by level: none at the easiest tier.
+    const maxDistractors = BOX_DISTRACTORS[tier] ?? 0;
+    let distractors = 0;
+    const given = rawGiven.filter((w) => answerKeys.has(lowKey(w)) || distractors++ < maxDistractors);
     const { wordBank: _wb, autoWordBank: _auto, needsCueRepair: _rep, ...base } = task;
     if (items.every(cued) && !given.length) return { ...base, items };
-    const answers = items.filter(isGap).map((it) => clean(it.answer, 40)).filter(Boolean);
     const have = new Set(given.map(lowKey));
     const bank = given.concat(answers.filter((a) => !have.has(lowKey(a))));
     const out = { ...base, items, wordBank: shuffleWordBank(bank, task.instruction || '') };
@@ -616,7 +655,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                 ? t.modelAnswers.map((a) => String(a || '').slice(0, 500)).filter(Boolean).slice(0, 8)
                 : [],
         };
-    }).map(applyWordCues).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
+    }).map((t) => applyWordCues(t, { tier: cueTier({ cefr: lessonCefr, age: fallback.age, intensity: fallback.intensity }) })).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
     if (tasks.length && tasks.length < OWN_TIME_TASKS_MIN) tasks = splitToMinimum(tasks);
 
     return {

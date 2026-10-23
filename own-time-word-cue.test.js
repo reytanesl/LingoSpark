@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
     normalizeOwnTimeLesson, applyWordCues, needsWordCue, shuffleWordBank, isVerbFormTask,
-    buildCueRepairPrompt, applyCueRepair, publicOwnTimeLesson, buildOwnTimeLessonPrompt, validateOwnTimeGenerateRequest,
+    buildCueRepairPrompt, cueTier, cueRuleText, applyCueRepair, publicOwnTimeLesson, buildOwnTimeLessonPrompt, validateOwnTimeGenerateRequest,
 } from './own-time-prompts.js';
 import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY, OWN_TIME_MOCK_B1_REPLY, OWN_TIME_MOCK_B2_REPLY, OWN_TIME_MOCK_C1_REPLY } from './own-time-fixtures.js';
 
@@ -20,7 +20,7 @@ test('gap-fill without cues gets a shuffled word box containing every answer', (
 });
 
 test('AI word box is kept and completed with missing answers', () => {
-    const t = applyWordCues(gapTask({ wordBank: ['am', 'is', 'were'] }));
+    const t = applyWordCues(gapTask({ wordBank: ['am', 'is', 'were'] }), { tier: 1 });
     assert.deepEqual([...t.wordBank].sort(), ['am', 'are', 'is', 'were']);
     assert.equal(t.autoWordBank, undefined);
 });
@@ -72,7 +72,8 @@ test('translation, options, transformation and tile tasks are exempt', () => {
 test('every gap-fill task in every mock lesson has a cue (box or bracket per gap)', () => {
     for (const reply of [OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY, OWN_TIME_MOCK_B1_REPLY, OWN_TIME_MOCK_B2_REPLY, OWN_TIME_MOCK_C1_REPLY]) {
         const l = normalizeOwnTimeLesson(reply, { cefr: reply.cefr, instrLang: 'pl' });
-        for (const t of l.tasks.filter(needsWordCue)) {
+        const tier = cueTier({ cefr: reply.cefr });
+        for (const t of l.tasks.filter(needsWordCue).filter((x) => !(tier >= 2 && x.format === 'open_cloze') && !(tier >= 3 && x.format === 'lexical_set'))) {
             const textGaps = /\{\{\s*\d+\s*\}\}/.test(t.prompt);
             const ok = (t.wordBank || []).length || t.items.every((it) => it.cue || (textGaps && it.q && it.q.length <= 24));
             assert.ok(ok, `${reply.title} / ${t.instruction}`);
@@ -94,4 +95,44 @@ test('prompt requires a word cue for every gap-fill and exempts translation', ()
     assert.match(p, /WORD CUE \(mandatory for EVERY gap-fill/);
     assert.match(p, /BASE verb/);
     assert.match(p, /Do NOT add a box or cue to translation tasks/);
+});
+
+test('cue tier rises with level; difficulty shifts it one step; young learners get most help', () => {
+    assert.deepEqual(['A0', 'A1', 'A2', 'B1', 'B2', 'C1'].map((cefr) => cueTier({ cefr })), [0, 0, 0, 1, 2, 3]);
+    assert.equal(cueTier({ cefr: 'B1', intensity: 'light' }), 0);
+    assert.equal(cueTier({ cefr: 'B1', intensity: 'stretch' }), 2);
+    assert.equal(cueTier({ cefr: 'C1', intensity: 'stretch' }), 3);
+    assert.equal(cueTier({ cefr: 'A1', intensity: 'light' }), 0);
+    assert.equal(cueTier({ cefr: 'B2', age: 10 }), 0);
+});
+
+const boxTask = () => ({ type: 'vocab_drill', instruction: 'Uzupełnij.', wordBank: ['am', 'is', 'are', 'was', 'were', 'be', 'been'], items: [
+    { q: 'I ___ ok.', answer: 'am' }, { q: 'He ___ ok.', answer: 'is' }, { q: 'We ___ ok.', answer: 'are' }] });
+
+test('distractors in the box are capped per tier: 0 / 2 / 4 / 4', () => {
+    assert.deepEqual([0, 1, 2, 3].map((tier) => applyWordCues(boxTask(), { tier }).wordBank.length), [3, 5, 7, 7]);
+    assert.deepEqual([...applyWordCues(boxTask(), { tier: 0 }).wordBank].sort(), ['am', 'are', 'is']);
+});
+
+test('open cloze: box at A2/B1, no box/cues from B2; lexical sets exam-style (no cue) at C1 only', () => {
+    const oc = { type: 'uoe', format: 'open_cloze', instruction: 'x', prompt: 'A {{1}} b {{2}}.', items: [{ q: '', answer: 'the' }, { q: '', answer: 'of' }], wordBank: ['the', 'of'] };
+    assert.ok(applyWordCues(oc, { tier: 0 }).wordBank);
+    assert.ok(applyWordCues(oc, { tier: 1 }).wordBank);
+    assert.equal(applyWordCues(oc, { tier: 2 }).wordBank, undefined);
+    const ls = { type: 'uoe', format: 'lexical_set', instruction: 'x', items: [{ q: 'a ___ b ___ c ___', answer: 'run' }, { q: 'd ___ e ___ f ___', answer: 'set' }] };
+    assert.ok(applyWordCues(ls, { tier: 2 }).wordBank);
+    assert.equal(applyWordCues(ls, { tier: 3 }).wordBank, undefined);
+    const wf = { type: 'uoe', format: 'word_formation', instruction: 'x', prompt: 'A {{1}}.', items: [{ q: '', cue: 'CREATE', answer: 'creative' }] };
+    assert.equal(applyWordCues(wf, { tier: 3 }).items[0].cue, 'CREATE');
+});
+
+test('normaliser uses lesson level + profile difficulty; prompt has the tier rule', () => {
+    const c1 = normalizeOwnTimeLesson(OWN_TIME_MOCK_C1_REPLY, { cefr: 'C1', instrLang: 'pl', intensity: 'standard' });
+    assert.ok(c1.tasks.filter((t) => ['open_cloze', 'lexical_set'].includes(t.format)).every((t) => !t.wordBank));
+    const c1easy = normalizeOwnTimeLesson(OWN_TIME_MOCK_C1_REPLY, { cefr: 'C1', instrLang: 'pl', intensity: 'light' });
+    assert.ok(c1easy.tasks.find((t) => t.format === 'lexical_set').wordBank);
+    assert.match(cueRuleText(0), /EXACTLY the answer words/);
+    assert.match(cueRuleText(3), /NO box and NO cues/);
+    const p = buildOwnTimeLessonPrompt(validateOwnTimeGenerateRequest({ profile: { age: 17, cefr: 'C1', taskPrefs: ['uoe'], instrLang: 'pl', intensity: 'standard' }, topic: 'x' }).value);
+    assert.match(p, /LEVEL CUES \(C1 exam format\)/);
 });
