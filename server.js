@@ -105,6 +105,8 @@ import { staticAllowlist } from './static-allowlist.js';
 import { createWorksheetMakerRouter } from './worksheet-maker/server.js';
 import { cleanHandwrittenTranscript, stripStruckText, countEssayWords, HANDWRITING_STRIKE_RULES } from './handwriting-clean.js';
 import './matura-mistakes.js';
+import './answer-check.js';
+const AnswerCheck = globalThis.AnswerCheck;
 const { sanitizeMistakes: sanitizeMaturaMistakes, PROMPT_TYPES: MATURA_MISTAKE_TYPES } = globalThis.MaturaMistakes;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1101,6 +1103,45 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             console.error('own-time lesson save:', err);
             res.status(500).json({ error: 'Failed to save lesson.' });
         }
+    });
+
+    // Open-answer re-check: only items that did not match the key (batched per task); exam rules first, then a short AI check.
+    const openCheckHits = new Map(); // userId -> recent call timestamps (abuse guard; the 3 appeals per set are counted client-side)
+    app.post('/api/own-time/check-open', requireWritingAccess, async (req, res) => {
+        const b = req.body || {};
+        const format = String(b.format || 'simple').slice(0, 40);
+        const cefr = String(b.cefr || '').slice(0, 3);
+        const items = (Array.isArray(b.items) ? b.items : []).slice(0, 8).map((it) => ({
+            i: Number(it?.i), q: String(it?.q || '').slice(0, 400), lead: String(it?.lead || '').slice(0, 300), key: String(it?.key || '').slice(0, 40),
+            cue: String(it?.cue || '').slice(0, 60), pl: String(it?.pl || '').slice(0, 200), answer: String(it?.answer || '').slice(0, 200),
+            accepted: (Array.isArray(it?.accepted) ? it.accepted : []).map((x) => String(x).slice(0, 200)).slice(0, 8), given: String(it?.given || '').trim().slice(0, 200),
+        })).filter((it) => Number.isInteger(it.i) && it.answer && it.given);
+        if (!items.length) return res.status(400).json({ error: 'No answers to check.' });
+        const now = Date.now();
+        const recent = (openCheckHits.get(req.user.id) || []).filter((ts) => now - ts < 10 * 60 * 1000);
+        if (recent.length >= 40) return res.status(429).json({ error: 'Too many checks, try again in a few minutes.', code: 'rate' });
+        recent.push(now); openCheckHits.set(req.user.id, recent);
+        const results = {};
+        const toAi = [];
+        for (const it of items) {
+            const rule = AnswerCheck.examRuleViolation(format, it, it.given, cefr);
+            if (rule) results[it.i] = { correct: false, explanation: rule, rule: true };
+            else toAi.push(it);
+        }
+        if (toAi.length) {
+            const apiKey = process.env.CURSOR_API_KEY;
+            const mock = !apiKey && process.env.OWN_TIME_MOCK === '1' && process.env.NODE_ENV !== 'production';
+            if (!apiKey && !mock) return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+            try {
+                const judged = mock ? AnswerCheck.mockOpenCheck(toAi)
+                    : AnswerCheck.parseOpenCheckReply(await runVisionJsonPrompt({ apiKey, prompt: AnswerCheck.buildOpenCheckPrompt({ format, cefr, prompt: b.prompt, items: toAi }), label: 'own-time-check' }), toAi.map((x) => x.i));
+                Object.assign(results, judged);
+            } catch (err) {
+                console.error('own-time open check:', err);
+                return res.status(502).json({ error: 'Could not re-check the answers.' });
+            }
+        }
+        res.json({ results, ...(process.env.OWN_TIME_MOCK === '1' && !process.env.CURSOR_API_KEY ? { mock: true } : {}) });
     });
 
     app.post('/api/own-time/generate', requireWritingAccess, async (req, res) => {

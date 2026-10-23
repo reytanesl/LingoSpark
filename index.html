@@ -34,6 +34,7 @@
     <script src="pe-topic-challenge-hotspots.js"></script>
     <script src="pe-topic-challenge.js"></script>
     <script src="pe-review-chat.js"></script>
+    <script src="answer-check.js"></script>
     <script src="own-time.js"></script>
     <script src="test-countdown.js"></script>
     <script src="/socket.io/socket.io.js" defer></script>
@@ -3082,6 +3083,17 @@
             #screen-own-time .ot-pbar--compact .ot-pchip { padding: 0.15rem 0.4rem 0.15rem 0.15rem; }
             #screen-own-time .ot-pprog { font-size: 0.68rem; }
         }
+        /* Open-answer verdicts (typo / other valid version / appeal) */
+        #screen-own-time .ot-mark.almost { color: #b26b00; }
+        #screen-own-time .ot-verdict { display: block; margin-top: 0.25rem; font-size: 0.8rem; line-height: 1.35; color: var(--ot-muted); }
+        #screen-own-time .ot-verdict[data-state="alt"] { color: #17663a; }
+        #screen-own-time .ot-verdict[data-state="alt"] strong { color: #0f5130; }
+        #screen-own-time .ot-verdict[data-state="almost"] { color: #8a5200; }
+        #screen-own-time .ot-verdict[data-state="wrong"] { color: #9b2c2c; }
+        #screen-own-time .ot-appeal { margin-left: 0.25rem; padding: 0.1rem 0.5rem; font: inherit; font-size: 0.74rem; font-weight: 700; color: var(--ot-navy); background: var(--ot-accent-soft); border: 1px solid #f6d29a; border-radius: 999px; cursor: pointer; }
+        #screen-own-time .ot-appeal:hover:not(:disabled) { border-color: var(--ot-accent); }
+        #screen-own-time .ot-appeal:disabled { opacity: 0.5; cursor: not-allowed; }
+        #screen-own-time .ot-appeal span { color: var(--ot-muted); font-weight: 600; }
         /* Profile picker on the initial setup screen */
         #screen-own-time .ot-ppicker { margin: -0.2rem 0 1rem; padding: 0.75rem 0.85rem 0.85rem; border-radius: 14px; background: linear-gradient(135deg, #fff 0%, var(--ot-accent-soft) 100%); border: 1px solid #f6d29a; box-shadow: inset 4px 0 0 var(--ot-accent); }
         #screen-own-time .ot-ppicker-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.6rem; margin-bottom: 0.55rem; }

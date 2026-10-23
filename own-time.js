@@ -376,14 +376,38 @@
         return String(s ?? '').toLowerCase().replace(/[’']/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
     }
 
-    function checkItem(item, value) {
-        // Tile tasks (word order / unscramble) ignore case and punctuation; other items keep exact matching.
-        // All items: case-, punctuation- and spacing-insensitive (alternatives from the AI count too).
-        const norm = looseKey;
-        const v = norm(value);
-        if (!v) return false;
-        const ok = [item.answer, ...(item.alts || [])].map(norm).filter(Boolean);
-        return ok.some((a) => a === v);
+    const AC = window.AnswerCheck;
+    /** ok | almost | wrong | empty | alt (AI: correct, other than the key). Options/tiles keep loose exact matching. */
+    function gradeItem(item, value, verdict) {
+        if (Array.isArray(item.options) || Array.isArray(item.tiles) || !AC) {
+            const v = looseKey(value);
+            if (!v) return 'empty';
+            return [item.answer, ...(item.alts || [])].map(looseKey).includes(v) ? 'ok' : 'wrong';
+        }
+        const g = AC.gradeAnswer(item, value).status;
+        if (g !== 'ok' && g !== 'empty' && verdict && AC.normAnswer(verdict.value) === AC.normAnswer(value)) return verdict.correct ? 'alt' : 'wrong';
+        return g;
+    }
+    function checkItem(item, value, verdict) {
+        const g = gradeItem(item, value, verdict);
+        return g === 'ok' || g === 'alt';
+    }
+    function appealsUsed() { return Number(answers._appeals) || 0; }
+    /** Layer 3: one batched AI re-check per task for typed items that did not match the key. */
+    async function recheckOpen(task, key, list, appeal) {
+        const a = answers[key] || (answers[key] = {});
+        a.verdicts = a.verdicts || {};
+        try {
+            const r = await api('/api/own-time/check-open', { method: 'POST', body: JSON.stringify({
+                format: task.format || 'simple', cefr: lesson.cefr || profile?.cefr || '', prompt: task.prompt || '', appeal: !!appeal,
+                items: list.map(({ it, i, given }) => ({ i, q: it.q, lead: it.lead, key: it.key, cue: it.cue, pl: it.pl, answer: it.answer, accepted: it.alts || [], given })),
+            }) });
+            list.forEach(({ i, given }) => { const v = r.results?.[i] || { correct: false, explanation: '' }; a.verdicts[i] = { value: given, correct: !!v.correct, why: v.explanation || '' }; });
+        } catch (e) {
+            list.forEach(({ i, given }) => { a.verdicts[i] = { value: given, correct: false, why: t('Nie udało się sprawdzić — spróbuj później.', 'Could not re-check — try later.'), failed: true }; });
+        }
+        saveProgressNow();
+        document.getElementById('ot-check')?.click();
     }
 
     /* ---------- Tile tasks: word order + unscramble ---------- */
@@ -1078,6 +1102,7 @@
             items,
             plan: planEl ? planEl.value : '',
             ...(prev.checked ? { checked: prev.checked } : {}),
+            ...(prev.verdicts ? { verdicts: prev.verdicts } : {}), // AI re-check results (layer 3), keyed by item
         };
         return answers[key];
     }
@@ -1343,12 +1368,17 @@
             const ans = collectTaskAnswers();
             let ok = 0;
             let total = 0;
+            const mismatched = [];
             (task.items || []).forEach((it, i) => {
                 const mark = el.querySelector(`[data-mark="${i}"]`);
                 const input = el.querySelector(`.ot-item[data-i="${i}"]`);
                 if (!it.answer) return;
                 total += 1;
-                const good = checkItem(it, ans.items[i]);
+                const verdict = answers[`t${taskIndex}`].verdicts?.[i];
+                const grade = gradeItem(it, ans.items[i], verdict);
+                const good = grade === 'ok' || grade === 'alt';
+                if (grade === 'wrong' && !verdict?.value && !Array.isArray(it.options) && !Array.isArray(it.tiles)) mismatched.push({ it, i, given: ans.items[i] });
+                else if (grade === 'wrong' && verdict && AC && AC.normAnswer(verdict.value) !== AC.normAnswer(ans.items[i]) && !Array.isArray(it.options) && !Array.isArray(it.tiles)) mismatched.push({ it, i, given: ans.items[i] });
                 if (good) ok += 1;
                 input?.classList.toggle('is-ok', good);
                 input?.classList.toggle('is-wrong', !good);
@@ -1363,10 +1393,37 @@
                     row.classList.add(good ? 'is-ok' : 'is-wrong');
                 }
                 if (mark) {
-                    mark.innerHTML = good ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>';
-                    mark.className = 'ot-mark ' + (good ? 'ok' : 'wrong');
+                    mark.innerHTML = good ? '<i class="fa-solid fa-check"></i>' : (grade === 'almost' ? '<i class="fa-solid fa-spell-check"></i>' : '<i class="fa-solid fa-xmark"></i>');
+                    mark.className = 'ot-mark ' + (good ? 'ok' : (grade === 'almost' ? 'almost' : 'wrong'));
+                    let note = el.querySelector(`[data-verdict="${i}"]`);
+                    const typed = !Array.isArray(it.options) && !Array.isArray(it.tiles);
+                    const pending = mismatched.some((m) => m.i === i);
+                    const canAppeal = typed && !good && !pending && grade !== 'empty' && !(verdict?.appealed && AC?.normAnswer(verdict.value) === AC?.normAnswer(ans.items[i]));
+                    let html = '';
+                    if (grade === 'alt') html = `<strong>${esc(t('Poprawne — inna wersja niż w kluczu.', 'Correct — a different version from the key.'))}</strong> ${esc(verdict.why)}`;
+                    else if (grade === 'almost') html = esc(t('Prawie — jedna litera się nie zgadza. Pisownia się liczy, popraw i sprawdź ponownie.', 'Almost — one letter is off. Spelling counts: fix it and check again.'));
+                    else if (pending) html = `<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> ${esc(t('Sprawdzam, czy to też poprawna wersja…', 'Checking if this is also correct…'))}`;
+                    else if (grade === 'wrong' && verdict?.why && AC?.normAnswer(verdict.value) === AC?.normAnswer(ans.items[i])) html = esc(verdict.why);
+                    if (canAppeal) html += ` <button type="button" class="ot-appeal" data-appeal="${i}"${appealsUsed() >= (AC?.APPEALS_PER_SET || 3) ? ' disabled' : ''}>${esc(t('Moja odpowiedź też jest poprawna', 'My answer is also correct'))} <span>(${(AC?.APPEALS_PER_SET || 3) - appealsUsed()})</span></button>`;
+                    if (html) {
+                        if (!note) { note = document.createElement('span'); note.className = 'ot-verdict'; note.dataset.verdict = i; (el.querySelector(`.ot-q[data-row="${i}"]`) || mark.parentElement).appendChild(note); }
+                        note.innerHTML = html; note.dataset.state = grade === 'alt' ? 'alt' : (pending ? 'pending' : grade);
+                    } else note?.remove();
                 }
             });
+            const checkKey = `t${taskIndex}`;
+            if (mismatched.length) recheckOpen(task, checkKey, mismatched);
+            el.querySelectorAll('[data-appeal]').forEach((btn) => btn.addEventListener('click', () => {
+                if (appealsUsed() >= (AC?.APPEALS_PER_SET || 3)) return;
+                const i = Number(btn.dataset.appeal);
+                answers._appeals = appealsUsed() + 1;
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${esc(t('Sprawdzam…', 'Checking…'))}`;
+                const given = collectTaskAnswers().items[i];
+                recheckOpen(task, checkKey, [{ it: task.items[i], i, given }], true).then(() => {
+                    const v = answers[checkKey].verdicts?.[i]; if (v) { v.appealed = true; document.getElementById('ot-check')?.click(); }
+                });
+            }));
             answers[`t${taskIndex}`].checked = { ok, total };
             const box = document.getElementById('ot-task-check');
             if (box) {
@@ -1381,7 +1438,7 @@
                     (task.items || []).forEach((it, i) => {
                         if (!Array.isArray(it.options)) return;
                         const inp = el.querySelector(`.ot-item[data-i="${i}"]`);
-                        if (!inp || checkItem(it, inp.value)) return;
+                        if (!inp || checkItem(it, inp.value, answers[`t${taskIndex}`]?.verdicts?.[i])) return;
                         pickOption(el, i, it.answer);
                         el.querySelectorAll(`[data-slot="${i}"], [data-mirror="${i}"]`).forEach((s) => s.classList.add('is-revealed'));
                         const mark = el.querySelector(`[data-mark="${i}"]`);

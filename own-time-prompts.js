@@ -153,6 +153,16 @@ function seededShuffle(arr, seedText) {
 }
 
 /** Comparison key: case-, punctuation- and spacing-insensitive (word order + unscramble). */
+/** Item alternatives: "acceptedAnswers" (all valid key variants, CKE-key style) merged with legacy "alts", de-duplicated. */
+export function acceptedList(it) {
+    const seen = new Set(), out = [];
+    for (const a of [...(Array.isArray(it?.acceptedAnswers) ? it.acceptedAnswers : []), ...(Array.isArray(it?.alts) ? it.alts : [])]) {
+        const k = looseKey(a);
+        if (k && !seen.has(k)) { seen.add(k); out.push(a); }
+    }
+    return out;
+}
+
 export function looseKey(s) {
     return String(s ?? '').toLowerCase().replace(/[’']/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -166,7 +176,7 @@ export function sentenceTiles(answer) {
 export function buildTileItem(type, it) {
     const answer = String(it?.answer || '').replace(/\s+/g, ' ').trim();
     if (!answer) return null;
-    const alts = (Array.isArray(it?.alts) ? it.alts : []).map((a) => String(a || '').replace(/\s+/g, ' ').trim().slice(0, 200)).filter(Boolean).slice(0, 6);
+    const alts = acceptedList(it).map((a) => String(a || '').replace(/\s+/g, ' ').trim().slice(0, 200)).filter(Boolean).slice(0, 6);
     const q = String(it?.q || it?.clue || '').replace(/\s+/g, ' ').trim().slice(0, 140);
     if (type === 'word_order') {
         const words = sentenceTiles(answer);
@@ -311,6 +321,7 @@ HARD RULES:
 8. For writing: one short prompt (2–6 sentences depending on level).
 9. USE OF ENGLISH ("uoe"): ${uoeRuleText(v.cefr)} Never put a gap only at the end as a separate question; text gaps are {{1}}, {{2}}… in order, one per item.
 10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.
+10b. ACCEPTED ANSWERS (every typed/open item): besides "answer", give "acceptedAnswers": an array with ALL other fully correct variants, like a CKE answer key — synonyms that fit the context and the rules (e.g. "despite" / "in spite of"), contracted and full forms ("don't" / "do not"), British/American spelling. Respect the format's word limits and key/given words in every variant. [] if there is truly only one answer.
 10a. WORD CUE (mandatory for EVERY gap-fill: vocab_drill gap sentences, verb-form / "correct form" tasks, "simple", "brackets", "word_formation", "open_cloze", "lexical_set" and any word-bank task): the student must always get a cue. EITHER give a task-level "wordBank": [the answer words, + at most 1 distractor] shown as a box above the items, OR give every item a bracket cue in "cue" (verb-form tasks: the BASE verb, e.g. "go" for "went"; word formation: the stem in CAPITALS). A cue must never be the answer itself unless the student has to change its form — give the base form, never the inflected answer. Do NOT add a box or cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options.
     ${cueRuleText(cueTier(v))} (Challenge rises gradually with the level and the chosen difficulty.)
 10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
@@ -344,7 +355,7 @@ Return ONLY valid JSON (no markdown):
       "target": {"minSentences": 3, "maxSentences": 4},
       "prompt": "English material / stem",
       "items": [
-        {"q": "sentence with ___ where the answer goes (or cue / question)", "answer": "…", "alts": ["…"], "options": ["(mc formats only)"], "cue": "(brackets / word_formation)", "pl": "(translation formats: Polish fragment)", "lead": "(transformation: original sentence)", "key": "(transformation: KEY WORD)"}
+        {"q": "sentence with ___ where the answer goes (or cue / question)", "answer": "…", "acceptedAnswers": ["(every OTHER fully correct variant, CKE-key style)"], "options": ["(mc formats only)"], "cue": "(brackets / word_formation)", "pl": "(translation formats: Polish fragment)", "lead": "(transformation: original sentence)", "key": "(transformation: KEY WORD)"}
       ],
       "modelAnswers": []
     }
@@ -381,7 +392,7 @@ export function buildUoeItem(format, it, cefr) {
     const f = UOE_FORMATS[format] || UOE_FORMATS.simple;
     const q = normalizeGapMarker(clean(it?.q || it?.question, 500));
     let answer = clean(it?.answer || it?.expected, 300);
-    const alts = (Array.isArray(it?.alts) ? it.alts : []).map((a) => clean(a, 300)).filter(Boolean).slice(0, 8);
+    const alts = acceptedList(it).map((a) => clean(a, 300)).filter((a) => a && looseKey(a) !== looseKey(it?.answer)).slice(0, 8);
     const out = { q, answer, alts };
     if (f.kind === 'mc') {
         const lv = UOE_LEVELS[cefr];
@@ -619,8 +630,8 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                 ? t.items.slice(0, 12).map((it) => ({
                     q: normalizeGapMarker(it?.q || it?.question || '').slice(0, 500),
                     answer: String(it?.answer || it?.expected || '').slice(0, 300),
-                    alts: Array.isArray(it?.alts)
-                        ? it.alts.map((a) => String(a || '').slice(0, 300)).filter(Boolean).slice(0, 6)
+                    alts: acceptedList(it).length
+                        ? acceptedList(it).map((a) => String(a || '').slice(0, 300)).filter(Boolean).slice(0, 6)
                         : [],
                     ...(clean(it?.cue, 60) ? { cue: clean(it.cue, 60).replace(/^\(|\)$/g, '') } : {}),
                 })).filter((it) => it.q || it.answer)
