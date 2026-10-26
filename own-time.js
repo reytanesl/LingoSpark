@@ -187,7 +187,7 @@
             return `<div class="ot-ppick-wrap"><button type="button" class="ot-ppick${on ? ' is-active' : ''}" data-ppick="${p.id}" aria-pressed="${on}">
                 ${avatarHtml(p)}<span class="ot-pinfo"><strong>${esc(p.name)}</strong><span>${esc(meta)}</span>${p.progress ? `<em class="ot-ppick-prog"><i class="fa-solid fa-circle-play" aria-hidden="true"></i> ${esc(progressLabel(p.progress))}</em>` : ''}</span>
                 ${on ? `<i class="fa-solid fa-check ot-ppick-check" aria-hidden="true"></i>` : ''}
-            </button>${p.progress ? `<button type="button" class="ot-ppick-go" data-ppick-go="${p.id}" title="${esc(t('Wróć do zestawu', 'Back to your set'))}" aria-label="${esc(t(`Kontynuuj zestaw: ${p.name}`, `Continue set: ${p.name}`))}"><i class="fa-solid fa-play" aria-hidden="true"></i> ${esc(t('Kontynuuj', 'Continue'))}</button>` : ''}<button type="button" class="ot-ppick-edit" data-ppick-edit="${p.id}" title="${esc(t('Edytuj profil', 'Edit profile'))}" aria-label="${esc(t(`Edytuj profil: ${p.name}`, `Edit profile: ${p.name}`))}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></div>`;
+            </button><button type="button" class="ot-ppick-edit" data-ppick-edit="${p.id}" title="${esc(t('Edytuj profil', 'Edit profile'))}" aria-label="${esc(t(`Edytuj profil: ${p.name}`, `Edit profile: ${p.name}`))}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></div>`;
         }).join('');
         const add = pickCreating
             ? `<form class="ot-ppick ot-ppick--form" data-pickform="create"><input type="text" class="pe-input" id="ot-ppick-new" maxlength="40" placeholder="${esc(t('Imię, np. Ola', 'Name, e.g. Ola'))}" aria-label="${esc(t('Nazwa nowego profilu', 'New profile name'))}" required>
@@ -215,23 +215,12 @@
         setStatus('');
         window.scrollTo({ top: 0 });
     }
-    /** "▶ Kontynuuj" shortcut: straight back into that profile's saved set (skips settings). */
-    let entryResumeView = null;
-    async function continueProfile(id) {
-        if (id !== profileId) { await switchProfile(id); return; } // switch restores and opens the saved set
-        if (!lesson) { pickProfile(id); return; }
-        view = entryResumeView === 'feedback' ? 'feedback' : 'lesson';
-        paint();
-        setStatus(esc(t(`Wznowiono: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');
-    }
     function bindProfilePicker(el) {
         const host = el.querySelector('.ot-ppicker');
         if (!host) return;
         host.addEventListener('click', (ev) => {
             const ed = ev.target.closest('[data-ppick-edit]');
             if (ed) { pickProfile(Number(ed.dataset.ppickEdit)); return; }
-            const go = ev.target.closest('[data-ppick-go]');
-            if (go) { continueProfile(Number(go.dataset.ppickGo)); return; }
             const card = ev.target.closest('[data-ppick]');
             if (card) { pickProfile(Number(card.dataset.ppick)); return; }
             if (ev.target.closest('[data-ppick-new]')) { pickCreating = true; paint(); document.getElementById('ot-ppick-new')?.focus(); return; }
@@ -407,6 +396,7 @@
                     <li><strong>${esc(L === 'en' ? 'Likes' : 'Lubisz')}:</strong> ${esc((p.taskPrefs || []).join(', ') || '—')}</li>
                     <li><strong>${esc(L === 'en' ? 'Interests' : 'Zainteresowania')}:</strong> ${esc((p.interests || []).join(', ') || '—')}</li>
                     ${p.topic ? `<li><strong>${esc(L === 'en' ? 'Topic' : 'Temat')}:</strong> ${esc(p.topic)}</li>` : ''}
+                    ${vocabListLine(p)}
                 </ul>
                 ${today?.lessonDone ? `<div class="ot-today-done"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${esc(t('Dzisiejsza lekcja zrobiona.', "Today's lesson is done."))}</div>${keepGoingHtml({ title: t('Chcesz poćwiczyć więcej?', 'Want more practice?') })}` : ''}
                 ${lastNote || lastLevel ? `<p class="ot-last-fb"><strong>${esc(L === 'en' ? 'Last feedback' : 'Ostatnia opinia')}:</strong> ${esc(lastLevel)} ${esc(lastNote)}</p>` : ''}
@@ -423,6 +413,73 @@
                     <button type="button" class="btn btn-outline" id="ot-edit-profile">${esc(L === 'en' ? 'Edit profile' : 'Edytuj profil')}</button>
                 </div>
             </div>`;
+    }
+
+    /* ---------- Imported vocabulary list (10+ items): progress, end-of-material choice ---------- */
+    let vocabEndOpts = null; // the start options to continue with after the student chooses what to do at the end of the list
+    function vocabListLine(p) {
+        const s = p.vocabState;
+        if (!s) return '';
+        if (s.free) return `<li><strong>${esc(t('Lista słów', 'Word list'))}:</strong> ${esc(t('wyłączona — własne tematy', 'off — free topics'))} <button type="button" class="ot-link-btn" id="ot-vocab-back">${esc(t('Wróć do listy', 'Back to the list'))}</button></li>`;
+        const done = s.cursor >= s.total;
+        return `<li><strong>${esc(t('Lista słów', 'Word list'))}:</strong> ${esc(t(`${Math.min(s.cursor, s.total)} z ${s.total} przerobionych`, `${Math.min(s.cursor, s.total)} of ${s.total} covered`))} · ${esc(s.nextMode === 'revise' ? t('następny zestaw: powtórka', 'next set: revision') : (done ? t('cała lista przerobiona', 'list finished') : t('następny zestaw: nowe słowa', 'next set: new words')))}</li>`;
+    }
+    function vocabListFinished() {
+        const s = profile?.vocabState;
+        return !!(s && !s.free && s.cursor >= s.total && s.nextMode !== 'revise');
+    }
+    function vocabEndBlock(total) {
+        return `<div class="ot-vocabend" role="region" aria-label="${esc(t('Koniec listy słów', 'End of the word list'))}">
+            <div class="ot-vocabend-head"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i><div><strong>${esc(t('Przerobiłeś/aś całą listę!', 'You have worked through the whole list!'))}</strong>
+            <p>${esc(t(`Wszystkie ${total} pozycji z Twojej listy już się pojawiło w zadaniach. Co dalej?`, `All ${total} items from your list have appeared in the tasks. What next?`))}</p></div></div>
+            <div class="ot-vocabend-opts">
+                <button type="button" class="btn btn-blue" id="ot-vocab-free"><i class="fa-solid fa-shuffle" aria-hidden="true"></i> ${esc(t('Ćwicz dalej na własnych tematach', 'Keep going on free topics'))}</button>
+                <button type="button" class="btn btn-outline" id="ot-vocab-new"><i class="fa-solid fa-list-ul" aria-hidden="true"></i> ${esc(t('Nowa lista słów', 'A new word list'))}</button>
+                <button type="button" class="btn btn-outline" id="ot-vocab-revise"><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${esc(t('Powtórz słowa z listy', 'Revise the list'))}</button>
+            </div>
+            <div class="ot-vocabend-new" id="ot-vocab-newbox" hidden>
+                <textarea id="ot-vocab-newlist" class="pe-input" rows="4" placeholder="${esc(t('Wklej nową listę — jedno słowo lub zwrot w linii (min. 10)', 'Paste the new list — one word or phrase per line (min. 10)'))}"></textarea>
+                <button type="button" class="btn btn-blue" id="ot-vocab-newgo">${esc(t('Zapisz listę i zacznij', 'Save the list and start'))}</button>
+            </div>
+        </div>`;
+    }
+    function renderVocabEnd() {
+        const total = profile?.vocabState?.total || 0;
+        return `<div class="ot-card ot-vocabend-card">${vocabEndBlock(total)}
+            <div class="ot-actions"><button type="button" class="btn btn-outline" id="ot-to-dash">${esc(t('Wróć do panelu', 'Back to dashboard'))}</button></div></div>`;
+    }
+    async function vocabEndAction(kind) {
+        try {
+            if (kind === 'free') {
+                setStatus(t('Zapisuję…', 'Saving…'), 'neutral');
+                const data = await api('/api/own-time/vocab', { method: 'POST', body: JSON.stringify({ action: 'free', profileId }) });
+                profile = data.profile;
+            } else if (kind === 'revise') {
+                profile = { ...profile, vocabState: { ...profile.vocabState, nextMode: 'revise' } };
+            } else if (kind === 'newgo') {
+                const text = String(document.getElementById('ot-vocab-newlist')?.value || '').trim();
+                if (!text) { setStatus(t('Wklej nową listę słów.', 'Paste the new word list.'), 'error'); return; }
+                setStatus(t('Zapisuję listę…', 'Saving the list…'), 'neutral');
+                const { vocabState, id, name, avatar, updatedAt, canOfferEnglish: _c, ...settings } = profile;
+                const data = await api('/api/own-time/profile', { method: 'PUT', body: JSON.stringify({ ...settings, vocab: text }) });
+                profile = data.profile;
+            }
+            const opts = vocabEndOpts || {};
+            vocabEndOpts = null;
+            view = 'dash';
+            await startLesson(opts);
+        } catch (err) {
+            setStatus(esc(err.message || t('Nie udało się zapisać.', 'Could not save.')), 'error');
+        }
+    }
+    function bindVocabEnd(el) {
+        el.querySelector('#ot-vocab-free')?.addEventListener('click', () => vocabEndAction('free'));
+        el.querySelector('#ot-vocab-revise')?.addEventListener('click', () => vocabEndAction('revise'));
+        el.querySelector('#ot-vocab-new')?.addEventListener('click', () => { const b = el.querySelector('#ot-vocab-newbox'); if (b) { b.hidden = !b.hidden; if (!b.hidden) el.querySelector('#ot-vocab-newlist')?.focus(); } });
+        el.querySelector('#ot-vocab-newgo')?.addEventListener('click', () => vocabEndAction('newgo'));
+        el.querySelector('#ot-vocab-back')?.addEventListener('click', async () => {
+            try { const data = await api('/api/own-time/vocab', { method: 'POST', body: JSON.stringify({ action: 'list', profileId }) }); profile = data.profile; paint(); } catch (err) { setStatus(esc(err.message), 'error'); }
+        });
     }
 
     /** Case-, punctuation- and spacing-insensitive key (mirrors looseKey in own-time-prompts.js). */
@@ -612,7 +669,7 @@
                 <div class="ot-done-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
                 <h3 class="ot-heading">${esc(wasExtra ? t('Dodatkowy zestaw zrobiony!', 'Extra set done!') : t('Dzisiejsza lekcja zrobiona!', "Today's lesson is done!"))}</h3>
                 <p class="ot-lead">${esc(t('Zapisaliśmy Twoje odpowiedzi i opinię.', 'Your answers and feedback are saved.'))}</p>
-                ${keepGoingHtml()}
+                ${vocabListFinished() ? vocabEndBlock(profile.vocabState.total) : keepGoingHtml()}
                 <div class="ot-actions"><button type="button" class="btn btn-outline" id="ot-to-dash">${esc(t('Wróć do panelu', 'Back to dashboard'))}</button></div>
             </div>`;
     }
@@ -796,7 +853,7 @@
             <div class="ot-card ot-lesson" data-type="${esc(task.type)}" data-layout="${layout}">
                 <div class="ot-lesson-head">
                     <div class="ot-head-text">
-                        <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}</div>
+                        <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}${lesson.vocabPlan ? ` · <span class="ot-listchip" title="${esc(t('Zestaw z Twojej listy słów', 'A set from your word list'))}"><i class="fa-solid fa-list-ul" aria-hidden="true"></i> ${esc(lesson.vocabPlan.mode === 'revise' ? t('powtórka', 'revision') : t('lista', 'list'))} ${lesson.vocabPlan.from}–${lesson.vocabPlan.to}/${lesson.vocabPlan.total}</span>` : ''}</div>
                         <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
                     </div>
                     ${profiles.length ? profileBarHtml(true) : ''}
@@ -857,13 +914,13 @@
                     <label class="ot-chip"><input type="radio" name="ot-mode" value="new" checked> ${esc(L === 'en' ? 'Something new' : 'Coś nowego')}</label>
                     <label class="ot-chip"><input type="radio" name="ot-mode" value="revise"> ${esc(L === 'en' ? 'Revise' : 'Powtórka')}</label>
                 </div>
-                <label class="ot-block-label">${esc(L === 'en' ? 'I want to practise' : 'Chcę ćwiczyć')}</label>
-                <div class="ot-chips" id="ot-fb-focus">
-                    <label class="ot-chip"><input type="radio" name="ot-focus" value="drill"> ${esc(L === 'en' ? 'Drills' : 'Drill')}</label>
-                    <label class="ot-chip"><input type="radio" name="ot-focus" value="uoe" checked> Use of English</label>
-                    <label class="ot-chip"><input type="radio" name="ot-focus" value="reading"> ${esc(L === 'en' ? 'Reading' : 'Czytanie')}</label>
-                    <label class="ot-chip"><input type="radio" name="ot-focus" value="writing"> ${esc(L === 'en' ? 'Writing' : 'Pisanie')}</label>
-                    <label class="ot-chip"><input type="radio" name="ot-focus" value="vocab"> ${esc(L === 'en' ? 'Vocabulary' : 'Słownictwo')}</label>
+                <label class="ot-block-label">${esc(L === 'en' ? 'I want to practise' : 'Chcę ćwiczyć')} <span class="ot-block-hint">${esc(L === 'en' ? '(pick one or more)' : '(możesz zaznaczyć kilka)')}</span></label>
+                <div class="ot-chips" id="ot-fb-focus" role="group" aria-label="${esc(L === 'en' ? 'I want to practise' : 'Chcę ćwiczyć')}">
+                    <label class="ot-chip"><input type="checkbox" name="ot-focus" value="drill"> ${esc(L === 'en' ? 'Drills' : 'Drill')}</label>
+                    <label class="ot-chip"><input type="checkbox" name="ot-focus" value="uoe" checked> Use of English</label>
+                    <label class="ot-chip"><input type="checkbox" name="ot-focus" value="reading"> ${esc(L === 'en' ? 'Reading' : 'Czytanie')}</label>
+                    <label class="ot-chip"><input type="checkbox" name="ot-focus" value="writing"> ${esc(L === 'en' ? 'Writing' : 'Pisanie')}</label>
+                    <label class="ot-chip"><input type="checkbox" name="ot-focus" value="vocab"> ${esc(L === 'en' ? 'Vocabulary' : 'Słownictwo')}</label>
                 </div>
                 <label class="ot-block-label">${esc(L === 'en' ? 'Note for next time (optional)' : 'Notatka na następny raz (opcjonalnie)')}
                     <textarea id="ot-fb-note" class="pe-input" rows="2"></textarea>
@@ -1149,6 +1206,7 @@
         else if (view === 'lesson') html = renderTask();
         else if (view === 'feedback') html = renderFeedback();
         else if (view === 'done') html = renderDone();
+        else if (view === 'vocabend') html = renderVocabEnd();
         // The initial setup screen has its own profile picker, so the dropdown bar is not repeated there.
         el.innerHTML = html && profiles.length && view !== 'lesson' && view !== 'onboard' && view !== 'pick' && view !== 'edit' ? profileBarHtml() + html : html;
         bind();
@@ -1616,6 +1674,7 @@
         document.getElementById('ot-save-keep')?.addEventListener('click', () => saveFeedback(true));
         document.getElementById('ot-keep-going')?.addEventListener('click', keepGoing);
         document.getElementById('ot-to-dash')?.addEventListener('click', () => { view = 'dash'; paint(); });
+        bindVocabEnd(el);
     }
 
     async function keepGoing() {
@@ -1632,6 +1691,8 @@
             const topic = document.getElementById('ot-session-topic')?.value ?? profile.topic;
             const vocab = document.getElementById('ot-session-vocab')?.value ?? profile.vocab;
             const recentFeedback = lessons.slice(0, 2).map((l) => l.feedback || {});
+            const pl0 = lessons[0]?.lesson;
+            const prevSet = pl0 ? { title: pl0.title || '', weak: pl0.weak || [] } : null;
             const data = await api('/api/own-time/generate', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -1640,9 +1701,19 @@
                     topic,
                     vocab,
                     recentFeedback,
+                    prevSet,
                     ...(extra ? { extra: true, extraContext: opts.extraContext || {} } : {}),
                 }),
             });
+            if (data.exhausted) {
+                // Every item of the imported list has been used: ask what to do next (free topics / new list / revise).
+                toggleLoading(false);
+                vocabEndOpts = opts || {};
+                view = 'vocabend';
+                paint();
+                setStatus('');
+                return;
+            }
             lesson = data.lesson;
             if (extra) {
                 lesson.extra = true;
@@ -1674,10 +1745,13 @@
 
     async function saveFeedback(keepGoingAfter) {
         const L = lang();
+        const focusNexts = [...document.querySelectorAll('input[name="ot-focus"]:checked')].map((i) => i.value);
         const feedback = {
             levelOk: document.querySelector('input[name="ot-level"]:checked')?.value || 'ok',
             modeNext: document.querySelector('input[name="ot-mode"]:checked')?.value || 'new',
-            focusNext: document.querySelector('input[name="ot-focus"]:checked')?.value || 'uoe',
+            // "Chcę ćwiczyć" is multi-select: all ticked focuses count for the next set (focusNext = the first, for older data).
+            focusNexts,
+            focusNext: focusNexts[0] || '',
             note: String(document.getElementById('ot-fb-note')?.value || '').trim(),
         };
         const durationMs = startedAt ? Date.now() - startedAt : 0;
@@ -1687,6 +1761,7 @@
             focus: lesson?.focus,
             minutes: lesson?.minutes,
             extra: !!lesson?.extra,
+            ...(lesson?.vocabPlan ? { vocabPlan: lesson.vocabPlan } : {}),
             // Stored so "Keep going" from the dashboard (after reload) can avoid repeats and revisit weak spots.
             avoid: extraContextFrom({ lesson, answers }).avoid,
             weak: extraContextFrom({ lesson, answers }).weak,
@@ -1745,7 +1820,6 @@
             const resumed = await loadActive();
             toggleLoading(false);
             // Every entry (tile, deep link, reload) starts at "Kto ćwiczy?"; the restored set stays in memory for "Kontynuuj zestaw".
-            entryResumeView = resumed ? view : null;
             if (profiles.length) view = 'pick';
             paint();
             if (resumed && view !== 'pick') setStatus(esc(t(`Wznowiono lekcję: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Lesson resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');

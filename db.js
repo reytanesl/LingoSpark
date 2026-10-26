@@ -2,6 +2,7 @@ import './matura-mistakes.js';
 import './wordset-import-core.js';
 import pg from 'pg';
 import crypto from 'crypto';
+import { advanceVocabState, sanitizeVocabState, OWN_TIME_VOCAB_TEXT_MAX } from './own-time-vocab.js';
 import { OWN_TIME_PROFILE_LIMIT, OWN_TIME_DEFAULT_PROFILE_NAME, sanitizeOwnTimeProfileName, sanitizeOwnTimeAvatar, sanitizeOwnTimeProgress, ownTimeProgressSummary } from './own-time-profiles.js';
 
 const { Pool } = pg;
@@ -292,6 +293,8 @@ export async function initDb() {
     await db.query(`ALTER TABLE own_time_extra_log ADD COLUMN IF NOT EXISTS profile_id INTEGER`);
     await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS voice TEXT NOT NULL DEFAULT ''`);
     await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS avatar TEXT NOT NULL DEFAULT ''`);
+    // Progress through an imported vocabulary list (indexes only): see own-time-vocab.js.
+    await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS vocab_state JSONB`);
     await migrateOwnTimeProfiles(db);
 }
 
@@ -1828,6 +1831,7 @@ function rowToOwnTimeProfile(row) {
         vocab: String(row.vocab || ''),
         voice: String(row.voice || ''),
         avatar: sanitizeOwnTimeAvatar(row.avatar),
+        vocabState: sanitizeVocabState(row.vocab_state),
         updatedAt: row.updated_at || null,
         canOfferEnglish: ownTimeCanOfferEnglish(row.age, row.cefr),
     };
@@ -1969,7 +1973,7 @@ export function sanitizeOwnTimeProfileInput(body = {}) {
         intensity,
         instrLang,
         topic: String(body.topic || '').trim().slice(0, 200),
-        vocab: String(body.vocab || '').trim().slice(0, 2000),
+        vocab: String(body.vocab || '').trim().slice(0, OWN_TIME_VOCAB_TEXT_MAX),
         // Read-aloud voice name (speechSynthesis); null = not sent → keep the saved one.
         voice: body.voice === undefined || body.voice === null ? null : sanitizeOwnTimeVoice(body.voice),
         // Full-profile edit: name / avatar are optional (null = keep the saved value).
@@ -1997,7 +2001,8 @@ export async function upsertOwnTimeProfile(userId, body, profileId = null) {
     const r = await db.query(
         `UPDATE own_time_student_profiles SET
             configured = TRUE, age = $3, class_label = $4, cefr = $5, interests = $6::jsonb, task_prefs = $7::jsonb,
-            purpose = $8, intensity = $9, instr_lang = $10, topic = $11, vocab = $12, voice = COALESCE($13, voice),
+            purpose = $8, intensity = $9, instr_lang = $10, topic = $11,
+            vocab_state = CASE WHEN vocab IS DISTINCT FROM $12 THEN NULL ELSE vocab_state END, vocab = $12, voice = COALESCE($13, voice),
             name = COALESCE($14, name), avatar = COALESCE($15, avatar), updated_at = NOW()
          WHERE user_id = $1 AND id = $2
          RETURNING *`,
@@ -2075,22 +2080,48 @@ function softTweakOwnTimeProfile(profile, feedback) {
     if (level === 'too_hard' || level === 'hard') idx = Math.max(0, idx - 1);
     if (level === 'too_easy' || level === 'easy') idx = Math.min(order.length - 1, idx + 1);
     const next = { ...profile, intensity: order[idx] };
-    if (feedback.focusNext) {
-        const focus = String(feedback.focusNext).toLowerCase();
-        const map = { drill: 'drill', uoe: 'uoe', reading: 'reading', writing: 'writing', vocab: 'vocab' };
-        if (map[focus]) {
-            const prefs = [map[focus], ...(profile.taskPrefs || []).filter((t) => t !== map[focus])];
-            next.taskPrefs = prefs.slice(0, 6);
-        }
-    }
+    // All selected "Chcę ćwiczyć" focuses go to the front of the preferred task types.
+    const focuses = (Array.isArray(feedback.focusNexts) && feedback.focusNexts.length ? feedback.focusNexts : (feedback.focusNext ? [feedback.focusNext] : []))
+        .map((f) => String(f).toLowerCase()).filter((f) => OWN_TIME_FOCUS_KEYS.includes(f));
+    if (focuses.length) next.taskPrefs = [...focuses, ...(profile.taskPrefs || []).filter((t) => !focuses.includes(t))].slice(0, 6);
     return next;
+}
+
+/** Student chose free topics after finishing the imported list (or goes back to it with 'list'). */
+export async function setOwnTimeVocabFree(userId, profileId, free) {
+    const db = getPool();
+    const pid = await resolveOwnTimeProfileId(userId, profileId);
+    if (!pid) return null;
+    const r = await db.query(`SELECT vocab_state FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, pid]);
+    const st = sanitizeVocabState(r.rows[0]?.vocab_state);
+    if (!st) return rowToOwnTimeProfile((await db.query(`SELECT * FROM own_time_student_profiles WHERE id = $1`, [pid])).rows[0]);
+    st.free = !!free;
+    const u = await db.query(`UPDATE own_time_student_profiles SET vocab_state = $3::jsonb, updated_at = NOW() WHERE user_id = $1 AND id = $2 RETURNING *`, [userId, pid, JSON.stringify(st)]);
+    return rowToOwnTimeProfile(u.rows[0]);
+}
+
+const OWN_TIME_FOCUS_KEYS = ['drill', 'uoe', 'reading', 'writing', 'vocab'];
+/** Feedback as stored: known keys only; "Chcę ćwiczyć" may hold several focuses (focusNexts), focusNext = the first. */
+export function sanitizeOwnTimeFeedback(f) {
+    const src = f && typeof f === 'object' ? f : {};
+    const pick = (v, allowed, dflt) => (allowed.includes(String(v)) ? String(v) : dflt);
+    const list = (Array.isArray(src.focusNexts) ? src.focusNexts : (src.focusNext ? [src.focusNext] : []))
+        .map((x) => String(x || '').toLowerCase()).filter((x) => OWN_TIME_FOCUS_KEYS.includes(x));
+    const focusNexts = [...new Set(list)];
+    return {
+        levelOk: pick(src.levelOk, ['too_easy', 'ok', 'too_hard'], 'ok'),
+        modeNext: pick(src.modeNext, ['new', 'revise'], 'new'),
+        focusNext: focusNexts[0] || '',
+        focusNexts,
+        note: String(src.note || '').slice(0, 500),
+    };
 }
 
 export async function saveOwnTimeLesson(userId, { lesson = {}, feedback = {}, durationMs = 0, profileId = null } = {}) {
     const db = getPool();
     const pid = await resolveOwnTimeProfileId(userId, profileId);
     const cleanLesson = lesson && typeof lesson === 'object' ? lesson : {};
-    const cleanFeedback = feedback && typeof feedback === 'object' ? feedback : {};
+    const cleanFeedback = sanitizeOwnTimeFeedback(feedback);
     const dur = Math.max(0, Math.min(Number(durationMs) || 0, 86400000));
     const r = await db.query(
         `INSERT INTO own_time_lessons (user_id, lesson, feedback, duration_ms, profile_id)
@@ -2100,6 +2131,12 @@ export async function saveOwnTimeLesson(userId, { lesson = {}, feedback = {}, du
     );
     // The lesson is finished: drop that profile's saved in-progress state.
     if (pid) await db.query(`UPDATE own_time_student_profiles SET progress = NULL WHERE user_id = $1 AND id = $2`, [userId, pid]);
+    // A set built from an imported list moves the list progress on (new → next unused part, revise → next covered items).
+    if (pid && cleanLesson.vocabPlan && typeof cleanLesson.vocabPlan === 'object') {
+        const cur = await db.query(`SELECT vocab_state FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, pid]);
+        const next = advanceVocabState(cur.rows[0]?.vocab_state, cleanLesson.vocabPlan, cleanFeedback.modeNext);
+        if (next) await db.query(`UPDATE own_time_student_profiles SET vocab_state = $3::jsonb WHERE user_id = $1 AND id = $2`, [userId, pid, JSON.stringify(next)]);
+    }
 
     const pr = pid ? await db.query(`SELECT * FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, pid]) : { rows: [] };
     const profile = pr.rows[0] ? rowToOwnTimeProfile(pr.rows[0]) : null;

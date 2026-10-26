@@ -3083,16 +3083,25 @@
             #screen-own-time .ot-pbar--compact .ot-pchip { padding: 0.15rem 0.4rem 0.15rem 0.15rem; }
             #screen-own-time .ot-pprog { font-size: 0.68rem; }
         }
+        /* Imported word list: lesson chip, end-of-material choice, multi-select focus hint */
+        #screen-own-time .ot-listchip { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.05rem 0.5rem; border-radius: 999px; background: var(--ot-accent-soft); border: 1px solid #f6d29a; color: #8a5200; font-weight: 800; font-size: 0.72rem; white-space: nowrap; }
+        #screen-own-time .ot-block-hint { font-weight: 600; color: var(--ot-muted); font-size: 0.78rem; }
+        #screen-own-time .ot-vocabend { display: grid; gap: 0.8rem; padding: 1rem 1.1rem; border-radius: 14px; background: linear-gradient(135deg, #fff 0%, var(--ot-accent-soft) 100%); border: 1px solid #f6d29a; box-shadow: inset 4px 0 0 var(--ot-accent); margin: 0.9rem 0; }
+        #screen-own-time .ot-vocabend-head { display: flex; gap: 0.75rem; align-items: flex-start; }
+        #screen-own-time .ot-vocabend-head > i { flex: 0 0 auto; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--ot-accent); color: #3d2600; font-size: 1rem; }
+        #screen-own-time .ot-vocabend-head strong { display: block; color: var(--ot-navy); font-size: 1.1rem; font-family: var(--font-primary); }
+        #screen-own-time .ot-vocabend-head p { margin: 0.15rem 0 0; color: var(--ot-ink); font-size: 0.9rem; }
+        #screen-own-time .ot-vocabend-opts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        #screen-own-time .ot-vocabend-opts .btn { flex: 1 1 13rem; }
+        #screen-own-time .ot-vocabend-new { display: grid; gap: 0.5rem; }
+        #screen-own-time .ot-vocabend-new[hidden] { display: none; }
+        @media (max-width: 520px) { #screen-own-time .ot-vocabend { padding: 0.75rem; } #screen-own-time .ot-vocabend-opts .btn { flex-basis: 100%; padding: 0.55rem 0.8rem; } }
         /* Entry step: dedicated "Kto ćwiczy?" screen; settings page "Zmień profil" link */
         #screen-own-time .ot-pickscreen { max-width: 46rem; margin: 0 auto; padding: 1.1rem; }
         #screen-own-time .ot-pickscreen .ot-ppicker { margin: 0; padding: 1rem 1.1rem 1.1rem; }
         #screen-own-time .ot-pickscreen .ot-ppicker-head strong { font-size: 1.25rem; font-family: var(--font-primary); }
         #screen-own-time .ot-pickscreen .ot-ppicker-grid { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 0.6rem; }
         #screen-own-time .ot-pickscreen .ot-ppick { min-height: 3.6rem; }
-        #screen-own-time .ot-ppick-go { position: absolute; right: 0.35rem; bottom: 0.35rem; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.55rem; font: inherit; font-size: 0.72rem; font-weight: 800; color: #3d2600; background: var(--ot-accent); border: 0; border-radius: 999px; cursor: pointer; box-shadow: 0 2px 6px rgba(242,169,59,0.35); transition: transform 0.15s, box-shadow 0.15s; }
-        #screen-own-time .ot-ppick-go:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(242,169,59,0.45); }
-        #screen-own-time .ot-ppick-go:focus-visible { outline: 3px solid var(--ot-navy-2); outline-offset: 2px; }
-        #screen-own-time .ot-ppick-wrap:has(.ot-ppick-go) .ot-ppick-check { display: none; }
         #screen-own-time .ot-change-profile { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0 0 0.4rem; padding: 0; font-size: 0.82rem; font-weight: 700; color: var(--ot-navy-2); background: none; border: 0; cursor: pointer; }
         #screen-own-time .ot-actions--sticky { position: sticky; bottom: 2.1rem; flex-wrap: nowrap; z-index: 3; margin: 0.75rem -0.5rem -0.5rem; padding: 0.6rem 0.5rem; background: linear-gradient(180deg, rgba(255,255,255,0.85), #fff 35%); border-top: 1px solid var(--ot-bank); }
         #screen-own-time .ot-change-profile:hover { color: #9a5b00; text-decoration: underline; }

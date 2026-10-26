@@ -74,6 +74,7 @@ import {
     renameOwnTimeProfile,
     deleteOwnTimeProfile,
     activateOwnTimeProfile,
+    setOwnTimeVocabFree,
     getOwnTimeProgress,
     saveOwnTimeProgress,
     resolveOwnTimeProfileId,
@@ -105,6 +106,7 @@ import { staticAllowlist } from './static-allowlist.js';
 import { createWorksheetMakerRouter } from './worksheet-maker/server.js';
 import { cleanHandwrittenTranscript, stripStruckText, countEssayWords, HANDWRITING_STRIKE_RULES } from './handwriting-clean.js';
 import './matura-mistakes.js';
+import { planVocab, publicVocabPlan } from './own-time-vocab.js';
 import './answer-check.js';
 const AnswerCheck = globalThis.AnswerCheck;
 const { sanitizeMistakes: sanitizeMaturaMistakes, PROMPT_TYPES: MATURA_MISTAKE_TYPES } = globalThis.MaturaMistakes;
@@ -1103,6 +1105,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
                 lesson: req.body?.lesson,
                 feedback: req.body?.feedback,
                 durationMs: req.body?.durationMs,
+                profileId: req.body?.profileId ?? null,
             });
             res.json(saved);
         } catch (err) {
@@ -1150,9 +1153,29 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         res.json({ results, ...(process.env.OWN_TIME_MOCK === '1' && !process.env.CURSOR_API_KEY ? { mock: true } : {}) });
     });
 
+    // Imported vocabulary list: "free" = stop using the list and generate on free topics; "list" = go back to it.
+    app.post('/api/own-time/vocab', requireWritingAccess, async (req, res) => {
+        try {
+            const action = String(req.body?.action || '');
+            if (!['free', 'list'].includes(action)) return res.status(400).json({ error: 'Unknown action.' });
+            const profile = await setOwnTimeVocabFree(req.user.id, req.body?.profileId ?? null, action === 'free');
+            if (!profile) return res.status(404).json({ error: 'Profile not found.' });
+            res.json({ profile });
+        } catch (err) {
+            console.error('own-time vocab:', err);
+            res.status(500).json({ error: 'Failed to update the vocabulary list state.' });
+        }
+    });
+
     app.post('/api/own-time/generate', requireWritingAccess, async (req, res) => {
         const checked = validateOwnTimeGenerateRequest(req.body);
         if (!checked.ok) return res.status(400).json({ error: checked.error });
+        // Imported list (10+ items): every set is built from the next batch (new) or from covered items (revise).
+        const vplan = planVocab({ vocabText: checked.value.vocab, state: checked.value.vocabState, cefr: checked.value.cefr });
+        if (vplan.active && vplan.exhausted) return res.json({ exhausted: true, vocabPlan: publicVocabPlan(vplan) });
+        checked.value.vocabPlan = vplan;
+        if (vplan.active || vplan.free) checked.value.vocab = ''; // the list is replaced by its batch (or ignored in free-topic mode)
+        const lessonVocabPlan = publicVocabPlan(vplan);
         const apiKey = process.env.CURSOR_API_KEY;
         const mock = !apiKey && process.env.OWN_TIME_MOCK === '1' && process.env.NODE_ENV !== 'production';
         if (!apiKey && !mock) {
@@ -1192,6 +1215,10 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             const reply = checked.value.extra ? OWN_TIME_MOCK_EXTRA_REPLY : (low ? OWN_TIME_MOCK_LOW_REPLY : (byLevel[cefr] || OWN_TIME_MOCK_REPLY));
             const lesson = publicOwnTimeLesson(normalizeOwnTimeLesson(reply, checked.value));
             if (reservation) lesson.extra = true;
+            if (lessonVocabPlan) {
+                lesson.vocabPlan = lessonVocabPlan;
+                lesson.title = `${lessonVocabPlan.mode === 'revise' ? 'Powtórka' : 'Nowe słowa'} z listy (${lessonVocabPlan.from}–${lessonVocabPlan.to}): ${lessonVocabPlan.words.slice(0, 3).join(', ')}…`.slice(0, 120);
+            }
             return res.json({ lesson, mock: true, ...extraInfo });
         }
         try {
@@ -1215,6 +1242,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             }
             lesson = publicOwnTimeLesson(lesson);
             if (reservation) lesson.extra = true;
+            if (lessonVocabPlan) lesson.vocabPlan = lessonVocabPlan;
             res.json({ lesson, ...extraInfo });
         } catch (error) {
             if (reservation) await releaseOwnTimeExtra(reservation.id).catch(() => {});

@@ -24,11 +24,7 @@ test('Od nowa reset is untouched', () => {
     assert.match(src, /function resetCurrentSet\(\)/);
 });
 
-test('"▶ Kontynuuj" shortcut on cards with a set in progress goes straight back into the set', () => {
-    assert.match(src, /\$\{p\.progress \? `<button type="button" class="ot-ppick-go" data-ppick-go=/);
-    assert.match(src, /if \(go\) \{ continueProfile\(Number\(go\.dataset\.ppickGo\)\); return; \}/);
-    const fn = src.slice(src.indexOf('async function continueProfile'), src.indexOf('function bindProfilePicker'));
-    assert.match(fn, /await switchProfile\(id\)/);
-    assert.match(fn, /view = entryResumeView === 'feedback' \? 'feedback' : 'lesson'/);
-    assert.match(src, /entryResumeView = resumed \? view : null;/);
+test('no "▶ Kontynuuj" shortcut on profile cards any more (the settings page keeps "Kontynuuj zestaw")', () => {
+    assert.ok(!/data-ppick-go|ot-ppick-go|continueProfile|entryResumeView/.test(src));
+    assert.match(src, /Kontynuuj zestaw/);
 });

@@ -2,6 +2,8 @@
  * Server-owned prompts for "In your own time" practice lessons.
  */
 
+import { OWN_TIME_VOCAB_TEXT_MAX, vocabPromptBlock } from './own-time-vocab.js';
+
 const CEFR_OK = new Set(['A0', 'A1', 'A2', 'B1', 'B2', 'C1']);
 const INTENSITY_OK = new Set(['light', 'standard', 'stretch']);
 const TASK_OK = new Set(['writing', 'drill', 'uoe', 'reading', 'vocab']);
@@ -26,6 +28,21 @@ export function buildOwnTimeExtraContext(lesson, answers = {}) {
     return { previousTitle: lesson?.title || '', focus: lesson?.focus || '', avoid: avoid.slice(0, 40), weak: weak.slice(0, 12) };
 }
 
+const FOCUS_KEYS = ['drill', 'uoe', 'reading', 'writing', 'vocab'];
+/** Feedback passed to the prompt: known keys only ("Chcę ćwiczyć" may list several focuses). */
+export function cleanRecentFeedback(list) {
+    return (Array.isArray(list) ? list : []).slice(0, 2).map((f) => {
+        const src = f && typeof f === 'object' ? f : {};
+        const focus = [...new Set((Array.isArray(src.focusNexts) ? src.focusNexts : (src.focusNext ? [src.focusNext] : [])).map((x) => String(x).toLowerCase()).filter((x) => FOCUS_KEYS.includes(x)))];
+        return {
+            levelOk: ['too_easy', 'ok', 'too_hard'].includes(src.levelOk) ? src.levelOk : 'ok',
+            modeNext: src.modeNext === 'revise' ? 'revise' : 'new',
+            focusNexts: focus,
+            note: String(src.note || '').replace(/\s+/g, ' ').trim().slice(0, 300),
+        };
+    });
+}
+
 export function validateOwnTimeGenerateRequest(body = {}) {
     const profile = body.profile && typeof body.profile === 'object' ? body.profile : null;
     if (!profile) return { ok: false, error: 'Profile is required.' };
@@ -47,10 +64,11 @@ export function validateOwnTimeGenerateRequest(body = {}) {
         .slice(0, 12);
 
     const topic = String(body.topic != null ? body.topic : profile.topic || '').trim().slice(0, 200);
-    const vocab = String(body.vocab != null ? body.vocab : profile.vocab || '').trim().slice(0, 2000);
-    const recentFeedback = Array.isArray(body.recentFeedback)
-        ? body.recentFeedback.slice(0, 2)
-        : [];
+    const vocab = String(body.vocab != null ? body.vocab : profile.vocab || '').trim().slice(0, OWN_TIME_VOCAB_TEXT_MAX);
+    const recentFeedback = cleanRecentFeedback(body.recentFeedback);
+    const ps = body.prevSet && typeof body.prevSet === 'object' ? body.prevSet : null;
+    const prevSet = ps ? { title: String(ps.title || '').trim().slice(0, 120), weak: (Array.isArray(ps.weak) ? ps.weak : []).map((x) => String(x ?? '').replace(/\s+/g, ' ').trim().slice(0, 160)).filter(Boolean).slice(0, 8) } : null;
+    const vocabState = body.vocabState ?? profile.vocabState ?? null;
     const extra = body.extra === true;
     const ctx = body.extraContext && typeof body.extraContext === 'object' ? body.extraContext : {};
     const strs = (arr, max, len) => (Array.isArray(arr) ? arr : [])
@@ -76,6 +94,8 @@ export function validateOwnTimeGenerateRequest(body = {}) {
             instrLang,
             topic,
             vocab,
+            vocabState,
+            prevSet,
             recentFeedback,
             extra,
             extraContext,
@@ -283,9 +303,12 @@ ${x.weak.length ? x.weak.map((w) => `  * ${w}`).join('\n') : '  * (none recorded
 - Do NOT reuse any of these items, answers or texts: ${x.avoid.length ? x.avoid.join(' | ') : '(none)'}
 - Use a different title from the previous lesson.
 ` : '';
-    const feedbackBlock = v.recentFeedback.length
+    const lastFocus = v.recentFeedback[0]?.focusNexts || [];
+    const feedbackBlock = (v.recentFeedback.length
         ? `Recent student feedback (adapt level/focus):\n${JSON.stringify(v.recentFeedback)}`
-        : 'No prior feedback yet — start gently at the stated level.';
+        : 'No prior feedback yet — start gently at the stated level.')
+        + (lastFocus.length > 1 ? `\nThe student wants to practise ALL of: ${lastFocus.join(', ')} (drill → vocab_drill/unscramble, uoe → uoe/word_order, vocab → vocab_drill) — give EVERY one of these focuses at least one task in this set.` : '');
+    const vocabBlock = v.vocabPlan?.active ? vocabPromptBlock(v.vocabPlan, { instrLangName, prevSet: v.prevSet }) : '';
 
     return `You are a friendly English practice coach for Polish school students (LingoSpark "In your own time").
 Create ONE short personalised practice lesson JSON for this student.
@@ -299,8 +322,8 @@ STUDENT:
 - Why they need English: ${v.purpose || 'school'}
 - Difficulty: ${v.intensity} → ${difficultyGuide(v.intensity)}
 - Optional topic for this session: ${v.topic || '(invent a fresh topic from interests)'}
-- Optional vocabulary to weave in: ${v.vocab || '(none — pick useful words for the topic/level)'}
-${feedbackBlock}${extraBlock}
+- Optional vocabulary to weave in: ${v.vocabPlan?.active ? '(see VOCABULARY LIST MODE below)' : (v.vocab || '(none — pick useful words for the topic/level)')}
+${vocabBlock}${feedbackBlock}${extraBlock}
 
 HARD RULES:
 1. The lesson has EXACTLY 5 or 6 tasks (never fewer than 5, never more than 6) — also for extra sets. No time limits or minutes anywhere.
@@ -324,6 +347,7 @@ HARD RULES:
 9. USE OF ENGLISH ("uoe"): ${uoeRuleText(v.cefr)} Never put a gap only at the end as a separate question; text gaps are {{1}}, {{2}}… in order, one per item.
 10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.
 10b. ACCEPTED ANSWERS (every typed/open item): besides "answer", give "acceptedAnswers": an array with ALL other fully correct variants, like a CKE answer key — synonyms that fit the context and the rules (e.g. "despite" / "in spite of"), contracted and full forms ("don't" / "do not"), British/American spelling. Respect the format's word limits and key/given words in every variant. [] if there is truly only one answer.
+10c. CHANGE OF FORM (Use of English gaps with a given word or expression — verb/word in brackets, "brackets", "word_formation", "correct form" gaps): the answer must ALWAYS require changing the given word (inflection, tense, plural, comparative, auxiliary + verb, negation, derivation with a prefix/suffix…). NEVER write a gap whose answer is the given word unchanged (e.g. "(play)" → "play" is forbidden; "(play)" → "played" / "is playing" is right). Exception: "transformation" keeps its KEY word unchanged on purpose.
 10a. WORD CUE (mandatory for EVERY gap-fill: vocab_drill gap sentences, verb-form / "correct form" tasks, "simple", "brackets", "word_formation", "open_cloze", "lexical_set" and any word-bank task): the student must always get a cue. EITHER give a task-level "wordBank": [the answer words, + at most 1 distractor] shown as a box above the items, OR give every item a bracket cue in "cue" (verb-form tasks: the BASE verb, e.g. "go" for "went"; word formation: the stem in CAPITALS). A cue must never be the answer itself unless the student has to change its form — give the base form, never the inflected answer. Do NOT add a box or cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options.
     ${cueRuleText(cueTier(v))} (Challenge rises gradually with the level and the chosen difficulty.)
 10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
@@ -518,6 +542,65 @@ export function cueRuleText(tier) {
     ][tier] || '';
 }
 
+/**
+ * Randomise the order of multiple-choice options so the key is not always in the same slot:
+ * the correct option never lands in the same position twice in a row. The answer is stored as option TEXT,
+ * so checking is unaffected by the order. Seeded from the item text (stable per lesson).
+ */
+export function shuffleChoices(items, seedText = '') {
+    let prev = -1;
+    return items.map((it, n) => {
+        if (!it || !Array.isArray(it.options) || it.options.length < 2) return it;
+        const opts = it.options;
+        const k = opts.length;
+        let seed = n + 17;
+        for (const ch of `${seedText}|${it.q}|${it.answer}|${opts.join('|')}`) seed = (seed * 31 + ch.codePointAt(0)) >>> 0;
+        const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+        const others = opts.filter((o) => o !== it.answer);
+        for (let i = others.length - 1; i > 0; i -= 1) { const j = Math.floor(rnd() * (i + 1)); [others[i], others[j]] = [others[j], others[i]]; }
+        const slots = [...Array(k).keys()].filter((s) => s !== prev);
+        const pos = slots[Math.floor(rnd() * slots.length)];
+        prev = pos;
+        others.splice(pos, 0, it.answer);
+        return { ...it, options: others };
+    });
+}
+
+/* ---------- Use of English: the given word must change form ---------- */
+const cueWords = (cue) => lowKey(String(cue || '').replace(/[\/,+]/g, ' ')).split(' ').filter(Boolean);
+/**
+ * A gap whose answer just repeats the given word(s) unchanged (cue "play" → answer "play"; cue "not / like" → "not like").
+ * Not used for "transformation" (its key word stays unchanged by design).
+ */
+export function isUnchangedGap(it) {
+    const inQ = String(it?.q || '').match(BRACKET_AFTER_GAP);
+    const cue = cueWords(it?.cue || (inQ ? inQ[2] : ''));
+    const ans = lowKey(it?.answer).split(' ').filter(Boolean);
+    if (!cue.length || !ans.length) return false;
+    if (ans.length !== cue.length) return false;
+    return [...ans].sort().join(' ') === [...cue].sort().join(' ');
+}
+
+/**
+ * Safety net: in Use of English gap tasks every item with a given word must need a changed form.
+ * Unchanged items are removed (text gaps are filled in and the remaining {{n}} renumbered); if that would
+ * leave fewer than 2 items the task is left as it is.
+ */
+export function enforceFormChange(task) {
+    if (!task || task.type !== 'uoe' || task.format === 'transformation' || !Array.isArray(task.items)) return task;
+    const bad = task.items.map((it, i) => (isUnchangedGap(it) ? i : -1)).filter((i) => i >= 0);
+    if (!bad.length || task.items.length - bad.length < 2) return task;
+    const textGaps = /\{\{\s*\d+\s*\}\}/.test(String(task.prompt || ''));
+    let prompt = task.prompt;
+    if (textGaps) {
+        // Fill the dropped gaps with their answers, then renumber the remaining markers in order.
+        bad.forEach((i) => { prompt = prompt.replace(new RegExp(`\\{\\{\\s*${i + 1}\\s*\\}\\}`), () => task.items[i].answer); });
+        let n = 0;
+        prompt = prompt.replace(/\{\{\s*\d+\s*\}\}/g, () => `{{${++n}}}`);
+    }
+    return { ...task, prompt, items: task.items.filter((_, i) => !bad.includes(i)), formChangeDropped: bad.length };
+}
+
 export function applyWordCues(task, ctx = {}) {
     const tier = Number.isInteger(ctx.tier) ? ctx.tier : 0;
     if (task?.type === 'uoe' && cueFreeFormat(task.format, tier)) {
@@ -668,7 +751,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                 ? t.modelAnswers.map((a) => String(a || '').slice(0, 500)).filter(Boolean).slice(0, 8)
                 : [],
         };
-    }).map((t) => applyWordCues(t, { tier: cueTier({ cefr: lessonCefr, age: fallback.age, intensity: fallback.intensity }) })).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
+    }).map((t) => (t.type === 'uoe' ? { ...t, items: shuffleChoices(t.items, t.prompt || t.instruction) } : t)).map(enforceFormChange).map((t) => applyWordCues(t, { tier: cueTier({ cefr: lessonCefr, age: fallback.age, intensity: fallback.intensity }) })).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
     if (tasks.length && tasks.length < OWN_TIME_TASKS_MIN) tasks = splitToMinimum(tasks);
 
     return {
