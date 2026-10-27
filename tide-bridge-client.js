@@ -212,12 +212,94 @@
         document.addEventListener('keydown', retry, true);
     }
 
-    function startMusic() {
-        ensureHostDom();
+    // ---- Web Audio engine (sample-accurate loop, no MP3 padding gap) ----------------------
+    // The theme is a pre-crossfaded seamless loop. <audio loop> can leave a ~25 ms gap from MP3
+    // encoder padding, so we decode the file once and loop an AudioBufferSourceNode between the
+    // first and last non-silent samples (this also strips any decoder padding). If Web Audio or
+    // the fetch/decode fails, the hidden <audio loop> element is used instead.
+    const web = { ctx: null, gain: null, buffer: null, source: null, loading: null, failed: false, loopStart: 0, loopEnd: 0 };
+
+    function webSupported() {
+        return !web.failed && !!(window.AudioContext || window.webkitAudioContext);
+    }
+
+    function trimEdges(buf) {
+        const eps = 1e-3;
+        let first = buf.length;
+        let last = 0;
+        for (let c = 0; c < buf.numberOfChannels; c++) {
+            const d = buf.getChannelData(c);
+            for (let i = 0; i < d.length; i++) { if (Math.abs(d[i]) > eps) { if (i < first) first = i; break; } }
+            for (let i = d.length - 1; i >= 0; i--) { if (Math.abs(d[i]) > eps) { if (i > last) last = i; break; } }
+        }
+        if (last <= first) { first = 0; last = buf.length - 1; }
+        return { start: first / buf.sampleRate, end: (last + 1) / buf.sampleRate };
+    }
+
+    function webLoad() {
+        if (web.buffer) return Promise.resolve(web.buffer);
+        if (web.loading) return web.loading;
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        web.loading = (async () => {
+            web.ctx = web.ctx || new Ctx();
+            web.gain = web.ctx.createGain();
+            web.gain.gain.value = MUSIC_VOLUME;
+            web.gain.connect(web.ctx.destination);
+            const res = await fetch(MUSIC_SRC);
+            if (!res.ok) throw new Error('theme ' + res.status);
+            const data = await res.arrayBuffer();
+            const buf = await new Promise((resolve, reject) => {
+                const p = web.ctx.decodeAudioData(data, resolve, reject);   // callback form for old Safari
+                if (p && p.catch) p.catch(reject);
+            });
+            const edges = trimEdges(buf);
+            web.loopStart = edges.start;
+            web.loopEnd = edges.end;
+            web.buffer = buf;
+            return buf;
+        })().catch((err) => { web.failed = true; web.loading = null; throw err; });
+        return web.loading;
+    }
+
+    function webSource() {
+        if (web.source) return web.source;
+        const src = web.ctx.createBufferSource();
+        src.buffer = web.buffer;
+        src.loop = true;
+        src.loopStart = web.loopStart;
+        src.loopEnd = web.loopEnd;
+        src.connect(web.gain);
+        src.start(0, web.loopStart);
+        web.source = src;
+        return src;
+    }
+
+    function webPlay() {
+        if (!web.buffer || !musicWanted || isMuted()) return;
+        webSource();
+        if (web.ctx.state !== 'running') {
+            const p = web.ctx.resume();
+            if (p && p.catch) p.catch(() => armGesture());
+            armGesture();   // resume() stays pending until a user gesture; the next click retries
+        }
+    }
+
+    function webStop() {
+        if (web.source) {
+            try { web.source.stop(); } catch { /* already stopped */ }
+            try { web.source.disconnect(); } catch { /* ignore */ }
+            web.source = null;
+        }
+        if (web.ctx && web.ctx.state === 'running') web.ctx.suspend().catch(() => {});
+    }
+
+    function webPause() {
+        if (web.ctx && web.source && web.ctx.state === 'running') web.ctx.suspend().catch(() => {});
+    }
+
+    function elementPlay() {
         const a = musicEl();
         if (!a) return;
-        musicWanted = true;
-        if (isMuted()) return;
         a.preload = 'auto';
         a.loop = true;
         a.volume = MUSIC_VOLUME;
@@ -226,20 +308,58 @@
         if (p && p.catch) p.catch(() => armGesture());   // autoplay blocked until the first click/key
     }
 
-    function stopMusic() {
-        musicWanted = false;
+    function elementStop() {
         const a = musicEl();
         if (!a) return;
         a.pause();
         try { a.currentTime = 0; } catch { /* ignore */ }
     }
 
+    function startMusic() {
+        ensureHostDom();
+        musicWanted = true;
+        if (isMuted()) return;
+        if (!webSupported()) { elementPlay(); return; }
+        if (web.buffer) { webPlay(); return; }
+        webLoad().then(() => { if (musicWanted && !isMuted()) webPlay(); })
+            .catch(() => { if (musicWanted && !isMuted()) elementPlay(); });
+    }
+
+    function stopMusic() {
+        musicWanted = false;
+        webStop();
+        elementStop();
+    }
+
+    function musicState() {
+        const a = musicEl();
+        return {
+            engine: web.source ? 'webaudio' : (a && !a.paused ? 'element' : 'none'),
+            webAudioSupported: webSupported(),
+            ctxState: web.ctx ? web.ctx.state : null,
+            sourceLoop: web.source ? web.source.loop : null,
+            loopStart: web.loopStart,
+            loopEnd: web.loopEnd,
+            bufferDuration: web.buffer ? web.buffer.duration : null,
+            volume: web.gain ? web.gain.gain.value : null,
+            elementLoop: a ? a.loop : null,
+            elementPaused: a ? a.paused : null,
+            wanted: musicWanted,
+            muted: isMuted(),
+        };
+    }
+
     function toggleMute() {
         const muted = !isMuted();
         try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch { /* ignore */ }
         syncMuteButton();
-        const a = musicEl();
-        if (muted) { if (a) a.pause(); } else if (musicWanted) startMusic();
+        if (muted) {
+            webPause();
+            const a = musicEl();
+            if (a) a.pause();
+        } else if (musicWanted) {
+            startMusic();
+        }
     }
 
     function setHostMode(on) {
@@ -551,5 +671,6 @@
         stopMusic,
         toggleMute,
         isMuted,
+        musicState,
     };
 })(typeof window !== 'undefined' ? window : globalThis);

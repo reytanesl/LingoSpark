@@ -79,3 +79,29 @@ test('The Bridge soundtrack: file exists, is served, and is a looped host-only <
     assert.equal((live.match(/LiveAudio\.startGame\(\)/g) || []).length, 1, 'only the generic helper may call LiveAudio.startGame()');
     assert.match(read('tide-bridge.css'), /#tb-mute\.is-muted/);
 });
+
+test('The Bridge soundtrack: seamless Web Audio loop with <audio loop> fallback', () => {
+    const client = read('tide-bridge-client.js');
+    // Web Audio engine: decoded buffer, loop=true between the trimmed edges, volume 0.35
+    assert.match(client, /decodeAudioData/);
+    assert.match(client, /src\.loop = true;/);
+    assert.match(client, /src\.loopStart = web\.loopStart;/);
+    assert.match(client, /src\.loopEnd = web\.loopEnd;/);
+    assert.match(client, /MUSIC_VOLUME = 0\.35/);
+    assert.match(client, /web\.gain\.gain\.value = MUSIC_VOLUME/);
+    // fallback to the element when Web Audio is missing / fetch or decode fails
+    assert.match(client, /if \(!webSupported\(\)\) \{ elementPlay\(\); return; \}/);
+    assert.match(client, /\.catch\(\(\) => \{ if \(musicWanted && !isMuted\(\)\) elementPlay\(\); \}\)/);
+    // stop paths release the Web Audio source and the element
+    assert.match(client, /function stopMusic\(\) \{\s*musicWanted = false;\s*webStop\(\);\s*elementStop\(\);/);
+    assert.match(client, /musicState,/);
+});
+
+test('The Bridge soundtrack: mp3 is a valid ~2 MB-or-less loop with a LAME/Xing header', () => {
+    const buf = fs.readFileSync(new URL('./audio/the-bridge-theme.mp3', import.meta.url));
+    assert.ok(buf.length < 2_100_000, `file too large: ${buf.length}`);
+    // ffmpeg/LAME writes an Xing/Info frame near the start; it carries the gapless delay/padding data
+    const headBytes = buf.subarray(0, 600).toString('latin1');
+    assert.ok(/Xing|Info/.test(headBytes), 'missing Xing/Info (LAME) header');
+});
+
