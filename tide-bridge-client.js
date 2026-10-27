@@ -14,6 +14,12 @@
     const GOLD_STONES = { 3: 7, 5: 10, 8: 14, 10: 17 };   // = gold threshold per game length (tide-bridge.js tideTier)
     const AV_COLORS = ['#7c4dff', '#ff7043', '#26a69a', '#ec407a', '#42a5f5', '#9ccc65', '#ffa726'];
     const ctx = { hostEnd: null, fullscreen: null, roomCode: null };
+    // soundtrack: HOST BOARD only (projector); players get no music. Mute persists in localStorage.
+    const MUSIC_SRC = '/audio/the-bridge-theme.mp3';
+    const MUSIC_VOLUME = 0.35;
+    const MUTE_KEY = 'ls_the_bridge_muted';
+    let musicWanted = false;
+    let gestureArmed = false;
 
     const last = { state: null, recvAt: 0, gameMinutes: 5 };
     const seen = { host: null, phone: null };
@@ -37,6 +43,8 @@
     const ICON_SHELL = '<svg viewBox="0 0 32 28" width="1.4em" height="1.2em"><path d="M16 3 C6 3 2 12 3 19 Q4 25 16 25 Q28 25 29 19 C30 12 26 3 16 3Z" fill="currentColor"/><path d="M16 6 V24 M10 8 L12 24 M22 8 L20 24" stroke="rgba(0,0,0,.25)" stroke-width="1.6" fill="none"/></svg>';
     const ICON_STAR = '<svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 1l3 7 7 1-5.3 4.8L18 21l-6-3.7L6 21l1.3-7.2L2 9l7-1z" fill="#ffd23f"/></svg>';
     const LOGO = '<div class="logo">Lingo<span>Spark</span><svg viewBox="0 0 24 24"><path d="M12 1l3 7 7 1-5.3 4.8L18 21l-6-3.7L6 21l1.3-7.2L2 9l7-1z" fill="#ffd23f"/></svg></div>';
+    const ICON_SOUND_ON = '<svg class="ico-on" viewBox="0 0 24 24" width="20" height="20"><path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+    const ICON_SOUND_OFF = '<svg class="ico-off" viewBox="0 0 24 24" width="20" height="20"><path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
     const ICON_FULL = '<svg viewBox="0 0 20 20" width="18" height="18"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
 
     /* ---------------------------------------------------------------- state helpers */
@@ -139,13 +147,17 @@
                     <div class="cap">${ICON_STAR}<span id="tb-caption"></span></div>
                     <div class="btns">
                         <button type="button" id="tb-lobby" hidden>Back to lobby</button>
+                        <button type="button" id="tb-mute" class="sq" title="Mute music" aria-label="Mute music" aria-pressed="false">${ICON_SOUND_ON}${ICON_SOUND_OFF}</button>
                         <button type="button" id="tb-end">End</button>
                         <button type="button" id="tb-full" class="sq" title="Fullscreen" aria-label="Fullscreen">${ICON_FULL}</button>
                     </div>
                 </div>
+                <audio id="tb-music" loop preload="none" src="${MUSIC_SRC}" hidden></audio>
             </div>`;
         panel.appendChild(root);
         root.querySelector('#tb-end').addEventListener('click', () => { if (ctx.hostEnd) ctx.hostEnd(); else $('live-host-end')?.click(); });
+        root.querySelector('#tb-mute').addEventListener('click', toggleMute);
+        syncMuteButton();
         root.querySelector('#tb-lobby').addEventListener('click', () => setHostMode(false));
         root.querySelector('#tb-full').addEventListener('click', () => {
             if (ctx.fullscreen) ctx.fullscreen(root);
@@ -164,6 +176,70 @@
         const h = root.clientHeight || window.innerHeight;
         const s = Math.min(w / STAGE_W, h / STAGE_H);
         stage.style.transform = `translate(${((w - STAGE_W * s) / 2).toFixed(1)}px, ${((h - STAGE_H * s) / 2).toFixed(1)}px) scale(${s.toFixed(4)})`;
+    }
+
+    /* ---------------------------------------------------------------- soundtrack (host only) */
+
+    function isMuted() {
+        try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; }
+    }
+
+    function musicEl() {
+        return $('tb-music');
+    }
+
+    function syncMuteButton() {
+        const btn = $('tb-mute');
+        if (!btn) return;
+        const muted = isMuted();
+        btn.classList.toggle('is-muted', muted);
+        btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+        const label = muted ? 'Unmute music' : 'Mute music';
+        btn.title = label;
+        btn.setAttribute('aria-label', label);
+    }
+
+    function armGesture() {
+        if (gestureArmed) return;
+        gestureArmed = true;
+        const retry = () => {
+            document.removeEventListener('pointerdown', retry, true);
+            document.removeEventListener('keydown', retry, true);
+            gestureArmed = false;
+            if (musicWanted) startMusic();
+        };
+        document.addEventListener('pointerdown', retry, true);
+        document.addEventListener('keydown', retry, true);
+    }
+
+    function startMusic() {
+        ensureHostDom();
+        const a = musicEl();
+        if (!a) return;
+        musicWanted = true;
+        if (isMuted()) return;
+        a.preload = 'auto';
+        a.loop = true;
+        a.volume = MUSIC_VOLUME;
+        if (!a.paused) return;
+        const p = a.play();
+        if (p && p.catch) p.catch(() => armGesture());   // autoplay blocked until the first click/key
+    }
+
+    function stopMusic() {
+        musicWanted = false;
+        const a = musicEl();
+        if (!a) return;
+        a.pause();
+        try { a.currentTime = 0; } catch { /* ignore */ }
+    }
+
+    function toggleMute() {
+        const muted = !isMuted();
+        try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch { /* ignore */ }
+        syncMuteButton();
+        const a = musicEl();
+        if (muted) { if (a) a.pause(); } else if (musicWanted) startMusic();
     }
 
     function setHostMode(on) {
@@ -192,6 +268,7 @@
             if (panel && home && panel.parentElement !== home) home.appendChild(panel);
             seen.host = null;
             clearTimeout(hostBurstTimer);
+            stopMusic();
         }
     }
 
@@ -202,6 +279,8 @@
         root.hidden = false;
         setHostMode(true);
         applyHost(true);
+        if (state.finished || state.phase === 'finished') stopMusic();
+        else if (!musicWanted) startMusic();
     }
 
     function hostCaption(v) {
@@ -468,5 +547,9 @@
         ensureHostDom,
         formatClock,
         fitStage,
+        startMusic,
+        stopMusic,
+        toggleMute,
+        isMuted,
     };
 })(typeof window !== 'undefined' ? window : globalThis);

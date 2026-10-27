@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import { PUBLIC_SCRIPTS } from './static-allowlist.js';
+import { PUBLIC_SCRIPTS, isPublicStaticPath } from './static-allowlist.js';
 
 const read = (f) => fs.readFileSync(new URL(`./${f}`, import.meta.url), 'utf8');
 
@@ -59,4 +59,23 @@ test('the visual layer does not touch game mechanics modules', () => {
         assert.doesNotMatch(src, /\.emit\(/, `${f} must not emit socket events`);
         assert.doesNotMatch(src, /live:(answer|submit|skip|end)/);
     }
+});
+
+test('The Bridge soundtrack: file exists, is served, and is a looped host-only <audio>', () => {
+    const file = new URL('./audio/the-bridge-theme.mp3', import.meta.url);
+    assert.ok(fs.existsSync(file), 'audio/the-bridge-theme.mp3 missing');
+    const size = fs.statSync(file).size;
+    assert.ok(size > 200_000 && size < 3_000_000, `unexpected size ${size}`);
+    assert.ok(isPublicStaticPath('/audio/the-bridge-theme.mp3'));
+    const client = read('tide-bridge-client.js');
+    assert.match(client, /<audio id="tb-music" loop preload="none" src="\$\{MUSIC_SRC\}"/);
+    assert.match(client, /MUSIC_SRC = '\/audio\/the-bridge-theme\.mp3'/);
+    assert.match(client, /MUTE_KEY = 'ls_the_bridge_muted'/);
+    assert.match(client, /id="tb-mute"/);
+    const live = read('live-game-client.js');
+    // host starts the theme, players do not; generic gameplay loop is skipped only for tide-bridge
+    assert.match(live, /if \(role === 'host'\) window\.TideBridgeUI\?\.startMusic/);
+    assert.match(live, /window\.TideBridgeUI\?\.stopMusic\?\.\(\);/);
+    assert.equal((live.match(/LiveAudio\.startGame\(\)/g) || []).length, 1, 'only the generic helper may call LiveAudio.startGame()');
+    assert.match(read('tide-bridge.css'), /#tb-mute\.is-muted/);
 });

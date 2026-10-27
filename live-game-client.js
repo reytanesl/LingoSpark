@@ -500,6 +500,21 @@
 
     const CHOICE_COLORS = ['#C8102E', '#012169', '#00823B', '#E8A317']; // legacy fallback
 
+    /**
+     * Game-phase music. The Bridge (tide-bridge) plays its own looped theme on the HOST board only,
+     * so it skips the generic gameplay loop; every other format is unchanged.
+     */
+    function startGameAudio(format, role) {
+        if (isTideBridgeFormat(format)) {
+            LiveAudio.stopLobby();
+            LiveAudio.stopGame();
+            LiveAudio.stopFanfare();
+            if (role === 'host') window.TideBridgeUI?.startMusic?.();
+            return;
+        }
+        LiveAudio.startGame();
+    }
+
     const LiveAudio = {
         lobby: null,
         game: null,
@@ -608,6 +623,7 @@
             this.stopLobby();
             this.stopGame();
             this.stopFanfare();
+            window.TideBridgeUI?.stopMusic?.();
         },
 
         /** Short WebAudio cues for Lucky Lanterns (synthesised; no audio files). */
@@ -1516,7 +1532,7 @@
             if (data.snapshot?.phase === 'playing') {
                 stopHostLobbyPoll();
                 LiveAudio.stopLobby();
-                LiveAudio.startGame();
+                startGameAudio(data.snapshot?.gameFormat, 'host');
             } else {
                 LiveAudio.startLobby();
                 startHostLobbyPoll(hostState?.code);
@@ -1626,7 +1642,7 @@
             if (playAgain) playAgain.hidden = true;
             stopHostLobbyPoll();
             LiveAudio.stopLobby();
-            LiveAudio.startGame();
+            startGameAudio(hostState.gameFormat, 'host');
             if (isLuckyLanternsFormat(hostState.gameFormat)) setHostLanternMode(true);
             else if (isWordCannonFormat(hostState.gameFormat)) setHostCannonMode(true);
             else if (isTideBridgeFormat(hostState.gameFormat) && window.TideBridgeUI) {
@@ -1810,7 +1826,7 @@
             renderProgressBoard($('live-play-progress-board'), data.progress?.players || []);
             if (data.phase === 'playing') {
                 setLiveGameActive(true);
-                LiveAudio.startGame();
+                startGameAudio(data.gameFormat || data.snapshot?.gameFormat || playerState.gameFormat, 'player');
                 if (data.question) showPlayerQuestion(data.question);
                 else if (!data.awaitingChallenge) {
                     showPlayerWaiting('Starting…');
@@ -1845,7 +1861,7 @@
             setLiveGameActive(true);
             syncPlayerLanternLobby();
             syncPlayerCannonLobby();
-            LiveAudio.startGame();
+            startGameAudio(playerState.gameFormat, 'player');
             showLiveError('');
             showPlayerWaiting('Starting…');
             requestPlayerQuestion();
