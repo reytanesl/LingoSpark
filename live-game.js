@@ -50,11 +50,25 @@ import {
     submitCannonAnswer,
     tickCannon,
 } from './word-cannon.js';
+import {
+    TIDE_FORMAT,
+    TIDE_DEFAULT_MINUTES,
+    TIDE_BETWEEN_MS,
+    createTideMatch,
+    finishTideEarly,
+    renameTidePlayer,
+    settleTideChallenge,
+    submitTideAnswer,
+    tickTide,
+    tidePublicView,
+    tideQuestionPayload,
+    tideWinners,
+} from './tide-bridge.js';
 
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
 export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
-export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay', 'lucky-lanterns', 'word-cannon'];
+export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay', 'lucky-lanterns', 'word-cannon', 'tide-bridge'];
 export const LIVE_TEAM_ASSIGNMENT = ['random', 'pick'];
 export const LIVE_TEAM_MIN = 2;
 export const LIVE_TEAM_MAX = 4;
@@ -264,6 +278,10 @@ function isTeamFormat(room) {
 
 function isWordCannon(room) {
     return room?.gameFormat === 'word-cannon';
+}
+
+function isTideBridge(room) {
+    return room?.gameFormat === 'tide-bridge' || room?.gameFormat === TIDE_FORMAT;
 }
 
 /** Formats whose lobby has teams (join / pick / random). */
@@ -578,6 +596,7 @@ export function tagChallengeResult(room, result) {
 export function questionSecondsForRoom(room) {
     if (isLuckyLanterns(room)) return room?.questionSeconds || LANTERN_QUESTION_MS / 1000;
     if (isWordCannon(room)) return room?.questionSeconds || CANNON_QUESTION_MS / 1000;
+    if (isTideBridge(room)) return room?.questionSeconds || 20;
     return room?.questionSeconds || null;
 }
 
@@ -803,6 +822,12 @@ function playerQuestionPayloadInner(player, room) {
         if (!q) return null;
         const team = match.playerTeam[player.id];
         return { ...q, progress: match.stats?.[player.id]?.correct || 0, team, teamName: CANNON_TEAM_NAMES[team] };
+    }
+    if (isTideBridge(room)) {
+        const match = room.tide;
+        const q = tideQuestionPayload(match, player.id);
+        if (!q) return null;
+        return q;
     }
     if (isLuckyLanterns(room)) {
         const match = room.lantern;
@@ -1212,6 +1237,18 @@ function emitPlayerSession(socket, room, player) {
         emitCannonPlayerSession(socket, room, player, payload);
         return;
     }
+    if (isTideBridge(room) && room.tide && (room.phase === 'finished' || room.phase === 'playing')) {
+        renameTidePlayer(room.tide, player.id, player.nickname);
+        socket.emit('live:player-joined', payload);
+        socket.emit('live:tide-state', tidePublicView(room.tide, { now: Date.now() }));
+        if (room.phase === 'finished') {
+            socket.emit('live:game-finished', gameFinishedPayload(room));
+            return;
+        }
+        const q = playerQuestionPayload(player, room);
+        if (q) socket.emit('live:your-question', q);
+        return;
+    }
     if (room.phase === 'finished' && isLuckyLanterns(room) && room.lantern) {
         socket.emit('live:player-joined', payload);
         socket.emit('live:game-finished', gameFinishedPayload(room));
@@ -1369,6 +1406,27 @@ function gameFinishedPayload(room) {
                 avatar: row.avatar,
                 shield: Boolean(row.shield),
                 termsToWin: room.lantern.rounds,
+            })),
+        };
+    }
+    if (isTideBridge(room) && room.tide) {
+        const w = tideWinners(room.tide);
+        return {
+            winnerId: null,
+            winnerNickname: w.winnerNickname,
+            coop: true,
+            tide: true,
+            tier: w.tier,
+            cleared: w.cleared,
+            termsToWin: 0,
+            gameFormat: 'tide-bridge',
+            players: w.players.map((row) => ({
+                id: row.id,
+                nickname: row.nickname,
+                progress: row.correct,
+                correct: row.correct,
+                rank: row.rank,
+                termsToWin: 0,
             })),
         };
     }
@@ -1557,6 +1615,8 @@ export function resetRoomToLobby(room) {
     room.lantern = null;
     clearCannonTimer(room);
     room.cannon = null;
+    clearTideTimer(room);
+    room.tide = null;
     room.phase = 'lobby';
     room.winnerId = null;
     room.winnerNickname = null;
@@ -1919,7 +1979,7 @@ function assertCurrentQuestion(room, entity, questionId) {
 }
 
 function handleQuestionTimeouts(io, room, now = Date.now()) {
-    if (room.phase !== 'playing' || isLuckyLanterns(room) || isWordCannon(room) || !questionSecondsForRoom(room)) return;
+    if (room.phase !== 'playing' || isLuckyLanterns(room) || isWordCannon(room) || isTideBridge(room) || !questionSecondsForRoom(room)) return;
     const isTeam = isTeamFormat(room);
     const entities = isTeam ? Array.from(room.teams.values()) : Array.from(room.players.values());
     for (const entity of entities) {
@@ -2009,6 +2069,30 @@ function startGame(room) {
         touchRoom(room);
         return true;
     }
+    if (isTideBridge(room)) {
+        clearTideTimer(room);
+        room.challenges = new Map();
+        room.tide = createTideMatch({
+            players: Array.from(room.players.values()).map((p) => ({ id: p.id, nickname: p.nickname })),
+            deck: room.masterDeck,
+            answerMode: room.answerMode,
+            level: room.level,
+            questionMs: questionSecondsForRoom(room) * 1000,
+            gameMinutes: room.gameMinutes || TIDE_DEFAULT_MINUTES,
+        });
+        for (const player of room.players.values()) {
+            player.pendingChallenge = null;
+            player.answerLocked = false;
+            player.finished = false;
+            player.termIndex = 0;
+        }
+        room.phase = 'playing';
+        room.startedAt = Date.now();
+        room.winnerId = null;
+        room.winnerNickname = null;
+        touchRoom(room);
+        return true;
+    }
     if (isTeamFormat(room)) {
         if (room.teamAssignment === 'random' || !teamsCoverPlayers(room)) {
             if (room.teamAssignment === 'random') {
@@ -2076,6 +2160,13 @@ function endGame(room) {
         room.winnerNickname = w.winnerNickname;
     }
     clearCannonTimer(room);
+    if (isTideBridge(room) && room.tide) {
+        finishTideEarly(room.tide);
+        const w = tideWinners(room.tide);
+        room.winnerId = w.winnerId;
+        room.winnerNickname = w.winnerNickname;
+    }
+    clearTideTimer(room);
     if (isLuckyLanterns(room) && room.lantern) {
         finishLanternEarly(room.lantern);
         const winners = lanternWinners(room.lantern);
@@ -2234,6 +2325,95 @@ function clearCannonTimer(room) {
         room.cannonTimer = null;
         room.cannonEmitTimer = null;
     }
+}
+
+const TIDE_TICK_MS = 250;
+
+function clearTideTimer(room) {
+    if (room?.tideTimer) clearInterval(room.tideTimer);
+    if (room) room.tideTimer = null;
+}
+
+function emitTideState(io, room) {
+    if (!io || !room?.tide) return;
+    const view = tidePublicView(room.tide, { now: Date.now() });
+    if (room.hostSocketId) io.to(room.hostSocketId).emit('live:tide-state', view);
+    for (const player of room.players.values()) {
+        if (!player.socketId) continue;
+        io.to(player.socketId).emit('live:tide-state', view);
+    }
+}
+
+function sendTideQuestion(io, room, playerId) {
+    const player = room.players.get(playerId);
+    if (!player?.socketId) return;
+    const q = playerQuestionPayload(player, room);
+    if (q) io.to(player.socketId).emit('live:your-question', q);
+}
+
+function finishTideRoom(io, room, onGameEnd) {
+    clearTideTimer(room);
+    if (room.phase !== 'finished') {
+        room.phase = 'finished';
+        room.finishedAt = Date.now();
+    }
+    if (room.tide && !room.tide.finished) finishTideEarly(room.tide);
+    const w = tideWinners(room.tide);
+    room.winnerId = w.winnerId;
+    room.winnerNickname = w.winnerNickname;
+    const finished = gameFinishedPayload(room);
+    io.to(`room:${room.code}`).emit('live:game-finished', finished);
+    emitTideState(io, room);
+    if (onGameEnd) onGameEnd(room);
+}
+
+function runTideTick(io, room, onGameEnd) {
+    const match = room?.tide;
+    if (!match || room.phase !== 'playing') {
+        clearTideTimer(room);
+        return;
+    }
+    const out = tickTide(match, Date.now());
+    if (out.finished || match.finished) {
+        finishTideRoom(io, room, onGameEnd);
+        return;
+    }
+    if (out.changed) {
+        emitTideState(io, room);
+        for (const id of out.dealt || []) sendTideQuestion(io, room, id);
+        if (match.phase === 'between') {
+            // clear player question UIs during between beat
+            for (const player of room.players.values()) {
+                if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: TIDE_BETWEEN_MS });
+            }
+        }
+    }
+}
+
+function afterTideChange(io, room, onGameEnd, { deliverQuestions = false } = {}) {
+    if (!room?.tide) return;
+    if (room.tide.finished || room.tide.phase === 'finished') {
+        finishTideRoom(io, room, onGameEnd);
+        return;
+    }
+    if (deliverQuestions) {
+        for (const player of room.players.values()) sendTideQuestion(io, room, player.id);
+    }
+    emitTideState(io, room);
+    if (!room.tideTimer && room.phase === 'playing') {
+        const code = room.code;
+        room.tideTimer = setInterval(() => {
+            const live = getRoom(code);
+            if (!live || live.tide !== room.tide) {
+                clearInterval(room.tideTimer);
+                room.tideTimer = null;
+                return;
+            }
+            runTideTick(io, live, onGameEnd);
+        }, TIDE_TICK_MS);
+        room.tideTimer.unref?.();
+    }
+    touchRoom(room);
 }
 
 function cannonViewFor(room, opts) {
@@ -2477,6 +2657,9 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
             if (isWordCannon(room) && room.cannon && room.phase === 'playing') {
                 socket.emit('live:cannon-state', cannonViewFor(room, { forHost: true }));
             }
+            if (isTideBridge(room) && room.tide && room.phase === 'playing') {
+                socket.emit('live:tide-state', tidePublicView(room.tide, { now: Date.now() }));
+            }
         });
 
         socket.on('live:player-join', ({ code, playerId, playerToken }) => {
@@ -2498,6 +2681,9 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
             }
             if (isWordCannon(room) && room.cannon && room.phase === 'playing') {
                 emitCannonState(io, room);
+            }
+            if (isTideBridge(room) && room.tide && room.phase === 'playing') {
+                emitTideState(io, room);
             }
         });
 
@@ -2530,6 +2716,12 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     playerId: player.id,
                     connected: lanternConnectedMap(room),
                 }));
+                return;
+            }
+            if (isTideBridge(room) && room.tide) {
+                socket.emit('live:tide-state', tidePublicView(room.tide, { now: Date.now() }));
+                const q = playerQuestionPayload(player, room);
+                if (q) socket.emit('live:your-question', q);
                 return;
             }
             const team = getPlayerTeam(room, player);
@@ -2689,6 +2881,10 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     afterLanternChange(io, room, onGameEnd, { deliverQuestions: true });
                     return;
                 }
+                if (isTideBridge(room)) {
+                    afterTideChange(io, room, onGameEnd, { deliverQuestions: true });
+                    return;
+                }
                 await deliverQuestionsToAllPlayers(io, room);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
@@ -2750,6 +2946,27 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     }
                     socket.emit('live:answer-result', tagChallengeResult(room, result));
                     afterLanternChange(io, room, onGameEnd);
+                    return;
+                }
+                if (isTideBridge(room)) {
+                    if (!room.tide) throw new Error('Tide Bridge has not started.');
+                    const out = submitTideAnswer(
+                        room.tide, socket.data.playerId, text ?? answer, questionId ?? null, Date.now(),
+                    );
+                    noteAnswer(room, socket.data.playerId, out.result);
+                    if (out.pendingChallenge && player) {
+                        setPendingChallenge(player, out.pendingChallenge.entry, out.pendingChallenge.answerText);
+                        player.questionId = out.result.questionId;
+                        player.answerLocked = true;
+                    }
+                    socket.emit('live:answer-result', tagChallengeResult(room, out.result));
+                    afterTideChange(io, room, onGameEnd, {
+                        deliverQuestions: Boolean(out.cleared && room.tide.phase === 'vocab'),
+                    });
+                    if (out.cleared && room.tide.phase === 'breaker') {
+                        // breaker just started after between — wait for tick; emit state now
+                        emitTideState(io, room);
+                    }
                     return;
                 }
                 if (isCaptainCrew(room)) {
@@ -2973,6 +3190,26 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     });
                     noteAccepted();
                     afterLanternChange(io, room, onGameEnd);
+                    return;
+                }
+                if (isTideBridge(room)) {
+                    if (!room.tide) throw new Error('Tide Bridge has not started.');
+                    const challenge = room.challenges.get(challengeId);
+                    if (!challenge || challenge.status !== 'pending') {
+                        throw new Error('Challenge not found or already resolved.');
+                    }
+                    const { result, cleared } = settleTideChallenge(room.tide, challenge.entityId, accept, Date.now());
+                    const player = room.players.get(challenge.entityId);
+                    if (player) clearPendingChallenge(player);
+                    room.challenges.delete(challengeId);
+                    if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    io.to(room.hostSocketId).emit('live:challenge-resolved', {
+                        id: challengeId,
+                        accepted: accept,
+                        entityId: challenge.entityId,
+                    });
+                    noteAccepted();
+                    afterTideChange(io, room, onGameEnd, { deliverQuestions: Boolean(cleared && room.tide.phase === 'vocab') });
                     return;
                 }
                 resolveChallenge(io, room, challengeId, accept, onGameEnd);

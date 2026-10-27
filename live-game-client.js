@@ -337,9 +337,10 @@
         const screen = $('live-winner-screen');
         const content = $('live-winner-content');
         const cannon = Boolean(options.cannon) && Boolean(window.WCB && window.WCFX);
-        if (!screen || !content || (!winnerNickname && !cannon)) return;
+        const tide = Boolean(options.tide) && Boolean(window.TideBridgeUI);
+        if (!screen || !content || (!winnerNickname && !cannon && !tide)) return;
         const teamMode = Boolean(options.teamMode);
-        const lantern = !cannon && Boolean(options.lantern) && Boolean(window.LLFX);
+        const lantern = !cannon && !tide && Boolean(options.lantern) && Boolean(window.LLFX);
         const youMsg = isYou ? (teamMode ? " That's your team!" : " That's you!") : '';
         const ranking = options.ranking || [];
         screen.classList.toggle('live-winner-screen--lanterns', lantern);
@@ -351,11 +352,13 @@
         LiveAudio.stopAll();
         window.WCFX?.rainLoop(false);
         LiveAudio.playFanfare();
-        launchConfetti(lantern || cannon ? 9000 : 12000, lantern ? LLFX.CONFETTI : cannon ? WCFX.CONFETTI : null);
+        launchConfetti(lantern || cannon || tide ? 9000 : 12000, lantern ? LLFX.CONFETTI : cannon ? WCFX.CONFETTI : null);
         let headline;
         if (cannon) {
             WCB.mountWinBackdrop(screen, options.cannonData?.winner || null);
             headline = WCB.winnerHtml(options.cannonData || {}, { playerId: options.playerId });
+        } else if (tide) {
+            headline = `<h2>🌊 Tide Bridge</h2>${TideBridgeUI.winnerHtml(options.tideData || options)}`;
         } else if (lantern) {
             LLFX.ensureDefs();
             const backdrop = document.createElement('div');
@@ -1303,6 +1306,10 @@
         return format === 'word-cannon';
     }
 
+    function isTideBridgeFormat(format) {
+        return format === 'tide-bridge';
+    }
+
     /** Formats whose lobby has teams (Captain & Crew, Hot Spark, Word Cannon's Red vs Blue). */
     function usesTeamLobbyValue(format) {
         return isTeamFormatValue(format) || isWordCannonFormat(format);
@@ -1468,7 +1475,7 @@
     function bindHostSocket() {
         const s = ensureSocket();
         bindSocketReconnect('host');
-        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:lantern-state', 'live:cannon-state', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:lantern-state', 'live:cannon-state', 'live:tide-state', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
@@ -1487,6 +1494,7 @@
             if (data.snapshot?.phase === 'playing') {
                 if (isLuckyLanternsFormat(hostState.gameFormat)) setHostLanternMode(true);
                 else if (isWordCannonFormat(hostState.gameFormat)) setHostCannonMode(true);
+                else if (isTideBridgeFormat(hostState.gameFormat) && window.TideBridgeUI) TideBridgeUI.setHostMode(true);
                 else {
                     setHostRaceMode(true);
                     renderHostRaceBoard(data.progress?.players || []);
@@ -1614,7 +1622,10 @@
             LiveAudio.startGame();
             if (isLuckyLanternsFormat(hostState.gameFormat)) setHostLanternMode(true);
             else if (isWordCannonFormat(hostState.gameFormat)) setHostCannonMode(true);
-            else {
+            else if (isTideBridgeFormat(hostState.gameFormat) && window.TideBridgeUI) {
+                TideBridgeUI.setHostMode(true);
+                TideBridgeUI.ensureHostDom();
+            } else {
                 setHostRaceMode(true);
                 renderHostRaceBoard(data.progress?.players || []);
             }
@@ -1640,6 +1651,18 @@
             WCB.renderHost(state);
         });
 
+        s.on('live:tide-state', (state) => {
+            if (!state || !hostState || !window.TideBridgeUI) return;
+            hostState.gameFormat = 'tide-bridge';
+            if (state.phase === 'finished') {
+                TideBridgeUI.renderHost(state);
+                return;
+            }
+            hostState.phase = 'playing';
+            TideBridgeUI.setHostMode(true);
+            TideBridgeUI.renderHost(state);
+        });
+
         s.on('live:game-finished', (data) => {
             // Let the last Lucky Lanterns reveal finish on screen before the podium.
             clearTimeout(llHost.finishTimer);
@@ -1663,11 +1686,29 @@
             stopHostLobbyPoll();
             LiveAudio.stopAll();
             setHostRaceMode(false);
+            if (window.TideBridgeUI) TideBridgeUI.setHostMode(false);
+            const tideWin = Boolean(data.tide) || isTideBridgeFormat(hostState?.gameFormat);
             const cannonWin = Boolean(data.cannon) || isWordCannonFormat(hostState?.gameFormat);
-            if (data.winnerNickname || cannonWin) {
-                showLiveWinnerScreen(data.winnerNickname, false, {
+            if (tideWin && window.TideBridgeUI) {
+                TideBridgeUI.setHostMode(true);
+                TideBridgeUI.renderHost({
+                    ...data,
+                    finished: true,
+                    remainingMs: 0,
+                    tideRatio: 1,
+                    cleared: data.cleared || 0,
+                    gotCorrect: 0,
+                    neededCorrect: 3,
+                    phase: 'finished',
+                    tier: data.tier,
+                });
+            }
+            if (data.winnerNickname || cannonWin || tideWin) {
+                showLiveWinnerScreen(data.winnerNickname || data.tier?.title || 'Tide Bridge', false, {
                     cannon: cannonWin,
+                    tide: tideWin,
                     cannonData: data,
+                    tideData: data,
                     teamMode: isTeamFormatValue(hostState?.gameFormat),
                     lantern: Boolean(data.lantern) || isLuckyLanternsFormat(hostState?.gameFormat),
                     ranking: data.players || [],
@@ -1749,7 +1790,7 @@
     function bindPlayerSocket() {
         const s = ensureSocket();
         bindSocketReconnect('player');
-        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:lobby-reset', 'live:player-removed', 'live:challenge-submitted', 'live:challenge-resolved', 'live:lantern-state', 'live:cannon-state', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:player-joined', 'live:room-state', 'live:game-started', 'live:your-question', 'live:answer-result', 'live:crew-vote-update', 'live:progress-update', 'live:game-finished', 'live:lobby-reset', 'live:player-removed', 'live:challenge-submitted', 'live:challenge-resolved', 'live:lantern-state', 'live:cannon-state', 'live:tide-state', 'live:tide-between', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:player-joined', (data) => {
             showLiveError('');
@@ -1793,6 +1834,7 @@
             window.WCB?.resetPhone();
             if (isLuckyLanternsFormat(playerState.gameFormat)) document.body.classList.add('live-lantern-player');
             if (isWordCannonFormat(playerState.gameFormat)) document.body.classList.add('live-cannon-player');
+            if (isTideBridgeFormat(playerState.gameFormat)) document.body.classList.add('live-tide-player');
             setLiveGameActive(true);
             syncPlayerLanternLobby();
             syncPlayerCannonLobby();
@@ -1800,6 +1842,20 @@
             showLiveError('');
             showPlayerWaiting('Starting…');
             requestPlayerQuestion();
+        });
+
+        s.on('live:tide-state', (state) => {
+            if (!playerState || !window.TideBridgeUI) return;
+            playerState.gameFormat = 'tide-bridge';
+            document.body.classList.add('live-tide-player');
+            TideBridgeUI.syncPlayerBanner(state);
+            if (state.phase === 'between') {
+                showPlayerWaiting('Next span…');
+            }
+        });
+
+        s.on('live:tide-between', () => {
+            showPlayerWaiting('Nice! Get ready for the next challenge…');
         });
 
         s.on('live:crew-vote-update', (data) => {
@@ -1980,12 +2036,16 @@
             const phone = $('live-play-lantern');
             if (phone) phone.hidden = true;
             const cannonWin = Boolean(data.cannon) || isWordCannonFormat(playerState?.gameFormat);
+            const tideWin = Boolean(data.tide) || isTideBridgeFormat(playerState?.gameFormat);
             if (cannonWin) window.WCB?.resetPhone();
-            if (data.winnerNickname || cannonWin) {
+            document.body.classList.remove('live-tide-player');
+            if (data.winnerNickname || cannonWin || tideWin) {
                 const myCannonTeam = (data.players || []).find((p) => p.id === playerState?.playerId)?.team;
-                showLiveWinnerScreen(data.winnerNickname, cannonWin ? Boolean(data.winner) && data.winner === myCannonTeam : isWinner, {
+                showLiveWinnerScreen(data.winnerNickname || data.tier?.title || 'Tide Bridge', cannonWin ? Boolean(data.winner) && data.winner === myCannonTeam : isWinner, {
                     cannon: cannonWin,
+                    tide: tideWin,
                     cannonData: data,
+                    tideData: data,
                     playerId: playerState?.playerId,
                     teamMode: isTeamMode(),
                     lantern: lanternWin,
@@ -2072,6 +2132,7 @@
         'hot-spark-relay': 'Hot Spark Relay',
         'lucky-lanterns': 'Lucky Lanterns',
         'word-cannon': 'Word Cannon Battle',
+        'tide-bridge': 'Tide Bridge',
     };
 
     function answerModeLabel(mode) {
@@ -2120,16 +2181,20 @@
         if (lanternRow) lanternRow.hidden = format !== 'lucky-lanterns';
         const cannonRow = $('live-host-lobby-cannon-row');
         if (cannonRow) cannonRow.hidden = !isWordCannonFormat(format);
+        const tideRow = $('live-host-lobby-tide-row');
+        if (tideRow) tideRow.hidden = !isTideBridgeFormat(format);
         const minutesSelect = $('live-lobby-game-minutes');
-        if (minutesSelect && document.activeElement !== minutesSelect) {
+        const tideMinutesSelect = $('live-lobby-tide-minutes');
+        const minutesEl = isTideBridgeFormat(format) ? tideMinutesSelect : minutesSelect;
+        if (minutesEl && document.activeElement !== minutesEl) {
             const minutes = String(snap?.gameMinutes || hostState?.gameMinutes || 5);
-            if (!minutesSelect.querySelector(`option[value="${minutes}"]`)) {
+            if (!minutesEl.querySelector(`option[value="${minutes}"]`)) {
                 const opt = document.createElement('option');
                 opt.value = minutes;
                 opt.textContent = `${minutes} minutes`;
-                minutesSelect.appendChild(opt);
+                minutesEl.appendChild(opt);
             }
-            minutesSelect.value = minutes;
+            minutesEl.value = minutes;
         }
         const roundsInput = $('live-lobby-rounds');
         if (roundsInput && document.activeElement !== roundsInput) {
@@ -2220,7 +2285,10 @@
         const questionSeconds = timeValue ? Number(timeValue) : null;
         hostState.questionSeconds = questionSeconds;
         syncQuestionTimeUI(gameFormat, questionSeconds);
-        const gameMinutes = Number($('live-lobby-game-minutes')?.value || hostState.gameMinutes || 5);
+        const minutesEl = isTideBridgeFormat(gameFormat)
+            ? $('live-lobby-tide-minutes')
+            : $('live-lobby-game-minutes');
+        const gameMinutes = Number(minutesEl?.value || hostState.gameMinutes || 5);
         hostState.gameMinutes = gameMinutes;
         const challenges = $('live-lobby-challenges') ? $('live-lobby-challenges').checked : hostState.challengesEnabled !== false;
         hostState.challengesEnabled = challenges;
@@ -4992,6 +5060,8 @@
                         if (lanternRow) lanternRow.hidden = el.value !== 'lucky-lanterns';
                         const cannonRow = $('live-host-lobby-cannon-row');
                         if (cannonRow) cannonRow.hidden = !isWordCannonFormat(el.value);
+                        const tideRow = $('live-host-lobby-tide-row');
+                        if (tideRow) tideRow.hidden = !isTideBridgeFormat(el.value);
                         if (teamMode) {
                             // Prefer random teams when entering a team format so Start is not blocked.
                             const checked = document.querySelector('input[name="live-lobby-team"]:checked');
@@ -5053,6 +5123,7 @@
         });
         $('live-lobby-rounds')?.addEventListener('change', emitHostLobbySettings);
         $('live-lobby-game-minutes')?.addEventListener('change', emitHostLobbySettings);
+        $('live-lobby-tide-minutes')?.addEventListener('change', emitHostLobbySettings);
         window.WCB?.init({
             emit: (event, payload) => ensureSocket().emit(event, payload),
             hostEnd,
