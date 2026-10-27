@@ -41,6 +41,7 @@ export const PUBLIC_SCRIPTS = new Set([
     'own-time.js',
     'answer-check.js',
     'tide-bridge-client.js',
+    'tide-bridge-scene.js',
     'pe-review-chat.js',
     'pe-topic-challenge-banks.js',
     'pe-topic-challenge-cues.js',

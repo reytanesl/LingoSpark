@@ -106,11 +106,11 @@ export function createTideMatch(opts) {
         id: String(p.id),
         nickname: String(p.nickname || 'Player'),
     }));
-    if (players.length < 2) throw new Error('Tide Bridge needs at least 2 players.');
+    if (players.length < 2) throw new Error('The Bridge needs at least 2 players.');
     const deck = (opts.deck || [])
         .map((e) => ({ term: String(e.term || '').trim(), definition: String(e.definition || '').trim() }))
         .filter((e) => e.term && e.definition);
-    if (deck.length < 12) throw new Error('Tide Bridge needs at least 12 terms.');
+    if (deck.length < 12) throw new Error('The Bridge needs at least 12 terms.');
 
     const seed = Number.isFinite(opts.seed) ? Number(opts.seed) : (Date.now() ^ (Math.random() * 1e9));
     const rng = mulberry32(seed >>> 0);

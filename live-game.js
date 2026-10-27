@@ -2949,7 +2949,7 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     return;
                 }
                 if (isTideBridge(room)) {
-                    if (!room.tide) throw new Error('Tide Bridge has not started.');
+                    if (!room.tide) throw new Error('The Bridge has not started.');
                     const out = submitTideAnswer(
                         room.tide, socket.data.playerId, text ?? answer, questionId ?? null, Date.now(),
                     );
@@ -3193,7 +3193,7 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     return;
                 }
                 if (isTideBridge(room)) {
-                    if (!room.tide) throw new Error('Tide Bridge has not started.');
+                    if (!room.tide) throw new Error('The Bridge has not started.');
                     const challenge = room.challenges.get(challengeId);
                     if (!challenge || challenge.status !== 'pending') {
                         throw new Error('Challenge not found or already resolved.');

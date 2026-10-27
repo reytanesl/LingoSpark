@@ -11,7 +11,7 @@
     <!-- Google Fonts Import -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Poppins:wght@700;800&family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Poppins:wght@700;800&family=Luckiest+Guy&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
     
     <!-- FontAwesome for sleek icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -43,6 +43,7 @@
     <script src="word-cannon-fx.js" defer></script>
     <script src="challenge-deck.js" defer></script>
     <script src="word-cannon-client.js" defer></script>
+    <script src="tide-bridge-scene.js" defer></script>
     <script src="tide-bridge-client.js" defer></script>
     <script src="live-entry.js" defer></script>
     <script src="password-reset-client.js" defer></script>
@@ -4104,8 +4105,8 @@
                 <div class="guide-item"><strong>Share or export a word list</strong><p>In Word Sets, use <strong>Share</strong> to copy a student link, or <strong>Export</strong> to download a clean glossary (<code>Term = Definition</code>, one per line). Students open a share link without signing in — the glossary loads into Vocab Review. Use the unlink button to turn sharing off.</p></div>
 
                 <h3>Live Spark</h3>
-                <div class="guide-item"><strong>Live Spark</strong><p>Teachers sign in and host a live classroom race. Choose Solo Race, Captain &amp; Crew, Hot Spark Relay, Lucky Lanterns, Word Cannon, or Tide Bridge. At least 2 players join with a room code and nickname (4+ for team race modes).</p></div>
-                <div class="guide-item"><strong>Tide Bridge</strong><p>Co-op vs the clock: the class builds a stone bridge before the tide returns. Each player gets a random vocab card from the full deck; correct answers clear shared spans. Between spans, short shore mini-challenges (not from your word list). When time ends, bronze / silver / gold shows how far you got.</p></div>
+                <div class="guide-item"><strong>Live Spark</strong><p>Teachers sign in and host a live classroom race. Choose Solo Race, Captain &amp; Crew, Hot Spark Relay, Lucky Lanterns, Word Cannon, or The Bridge. At least 2 players join with a room code and nickname (4+ for team race modes).</p></div>
+                <div class="guide-item"><strong>The Bridge</strong><p>Co-op vs the clock: the class builds a stone bridge before the tide returns. Each player gets a random vocab card from the full deck; correct answers clear shared spans. Between spans, short shore mini-challenges (not from your word list). When time ends, bronze / silver / gold shows how far you got.</p></div>
 
                 <h3>Team Challenge</h3>
                 <div class="guide-item"><strong>Board Game Challenge</strong><p>2–4 players on a shared board: choose a theme, roll the dice, answer tasks (customisable), survive bonus/trap squares, and hit Finish with an exact roll. Best on a classroom screen.</p></div>
@@ -6271,7 +6272,7 @@
                                 </label>
                                 <label class="live-option live-option--compact live-option--wide">
                                     <input type="radio" name="live-lobby-format" value="tide-bridge">
-                                    <span class="live-option-title">Tide Bridge</span>
+                                    <span class="live-option-title">The Bridge</span>
                                 </label>
                             </div>
                             <div id="live-host-lobby-cannon-row" class="wc-length-row" hidden>
@@ -6581,7 +6582,7 @@
                             <ul class="lse-how">
                                 <li><i class="fa-solid fa-list-check"></i><span><b>Pick words</b> — a level, your word set or a pasted list.</span></li>
                                 <li><i class="fa-solid fa-qrcode"></i><span><b>Share the code</b> — students join on any phone, no accounts.</span></li>
-                                <li><i class="fa-solid fa-gamepad"></i><span><b>Choose a mode</b> — Race, Captain &amp; Crew, Lucky Lanterns, Word Cannon, Tide Bridge.</span></li>
+                                <li><i class="fa-solid fa-gamepad"></i><span><b>Choose a mode</b> — Race, Captain &amp; Crew, Lucky Lanterns, Word Cannon, The Bridge.</span></li>
                                 <li><i class="fa-solid fa-trophy"></i><span><b>Play</b> — you control rounds from the big screen.</span></li>
                             </ul>
                             <div class="lse-resume lse-resume--side" hidden><i class="fa-solid fa-rotate-left"></i><span>Room <b class="lse-resume-code">----</b> is still open</span><a href="#" class="lse-resume-link">Resume</a></div>

@@ -345,10 +345,12 @@
         const ranking = options.ranking || [];
         screen.classList.toggle('live-winner-screen--lanterns', lantern);
         screen.classList.toggle('live-winner-screen--cannon', cannon);
+        screen.classList.toggle('live-winner-screen--tide', tide);
         document.body.classList.toggle('ll-winner', lantern);
         document.body.classList.toggle('wc-winner', cannon);
         screen.querySelector('.ll-win-backdrop')?.remove();
         screen.querySelector('.wc-win-backdrop')?.remove();
+        window.TideBridgeUI?.removeWinBackdrop(screen);
         LiveAudio.stopAll();
         window.WCFX?.rainLoop(false);
         LiveAudio.playFanfare();
@@ -358,7 +360,8 @@
             WCB.mountWinBackdrop(screen, options.cannonData?.winner || null);
             headline = WCB.winnerHtml(options.cannonData || {}, { playerId: options.playerId });
         } else if (tide) {
-            headline = `<h2>🌊 Tide Bridge</h2>${TideBridgeUI.winnerHtml(options.tideData || options)}`;
+            TideBridgeUI.mountWinBackdrop(screen, options.tideData || options);
+            headline = TideBridgeUI.winnerHtml(options.tideData || options);
         } else if (lantern) {
             LLFX.ensureDefs();
             const backdrop = document.createElement('div');
@@ -374,7 +377,7 @@
             headline = `<h2>🏆 Champion!</h2><p><strong>${esc(winnerNickname)}</strong> completed all 12 terms first!${youMsg}</p>`;
         }
         const podiumIds = new Set(llPodiumOrder(ranking).slice(0, 3).map((row) => row.id));
-        const rest = cannon ? [] : lantern ? ranking.filter((row) => !podiumIds.has(row.id)) : ranking;
+        const rest = cannon || tide ? [] : lantern ? ranking.filter((row) => !podiumIds.has(row.id)) : ranking;
         content.innerHTML = `
             ${headline}
             ${rest.length ? `<ol class="live-winner-scores" aria-label="${teamMode ? 'Team scores' : 'Player scores'}">${rankingRowsHtml(rest, options.winnerId, { scoreMode: lantern })}</ol>` : ''}
@@ -383,7 +386,7 @@
         screen.hidden = false;
         $('live-winner-dismiss')?.addEventListener('click', () => {
             hideLiveWinnerScreen();
-            showLiveRankingScreen(ranking, options.winnerId, { teamMode, lantern, cannon });
+            showLiveRankingScreen(ranking, options.winnerId, { teamMode, lantern, cannon, tide });
         }, { once: true });
     }
 
@@ -391,6 +394,7 @@
         const screen = $('live-winner-screen');
         if (screen) screen.hidden = true;
         document.body.classList.remove('ll-winner', 'wc-winner');
+        window.TideBridgeUI?.removeWinBackdrop(screen);
         LiveAudio.stopFanfare();
         const canvas = $('live-confetti-canvas');
         if (canvas) {
@@ -407,9 +411,10 @@
         const list = $('live-ranking-list');
         if (!screen || !list) return;
         const title = screen.querySelector('h2');
-        if (title) title.textContent = options.cannon ? 'Word Cannon Battle: top gunners' : options.lantern ? 'Lucky Lanterns ranking' : (options.teamMode ? 'Final team ranking' : 'Final ranking');
+        if (title) title.textContent = options.cannon ? 'Word Cannon Battle: top gunners' : options.tide ? 'The Bridge: top builders' : options.lantern ? 'Lucky Lanterns ranking' : (options.teamMode ? 'Final team ranking' : 'Final ranking');
         screen.classList.toggle('live-ranking-screen--lanterns', Boolean(options.lantern));
         screen.classList.toggle('live-ranking-screen--cannon', Boolean(options.cannon));
+        screen.classList.toggle('live-ranking-screen--tide', Boolean(options.tide));
         list.innerHTML = rankingRowsHtml(players, winnerId, { scoreMode: Boolean(options.lantern), cannonMode: Boolean(options.cannon) });
         screen.hidden = false;
         const dismiss = $('live-ranking-dismiss');
@@ -989,9 +994,11 @@
         const lanterns = $('live-host-lanterns');
         const cannon = $('live-host-cannon');
         const race = $('live-host-race');
+        const tide = $('live-host-tide');
         let host = null;
         if (lanterns && !lanterns.hidden) host = lanterns;
         else if (cannon && !cannon.hidden) host = cannon;
+        else if (tide && !tide.hidden) host = tide;
         else if (race && !race.hidden) host = race;
         else host = panel.parentElement;
         if (host && panel.parentElement !== host) host.appendChild(panel);
@@ -1704,7 +1711,7 @@
                 });
             }
             if (data.winnerNickname || cannonWin || tideWin) {
-                showLiveWinnerScreen(data.winnerNickname || data.tier?.title || 'Tide Bridge', false, {
+                showLiveWinnerScreen(data.winnerNickname || data.tier?.title || 'The Bridge', false, {
                     cannon: cannonWin,
                     tide: tideWin,
                     cannonData: data,
@@ -2041,7 +2048,7 @@
             document.body.classList.remove('live-tide-player');
             if (data.winnerNickname || cannonWin || tideWin) {
                 const myCannonTeam = (data.players || []).find((p) => p.id === playerState?.playerId)?.team;
-                showLiveWinnerScreen(data.winnerNickname || data.tier?.title || 'Tide Bridge', cannonWin ? Boolean(data.winner) && data.winner === myCannonTeam : isWinner, {
+                showLiveWinnerScreen(data.winnerNickname || data.tier?.title || 'The Bridge', cannonWin ? Boolean(data.winner) && data.winner === myCannonTeam : isWinner, {
                     cannon: cannonWin,
                     tide: tideWin,
                     cannonData: data,
@@ -2132,7 +2139,7 @@
         'hot-spark-relay': 'Hot Spark Relay',
         'lucky-lanterns': 'Lucky Lanterns',
         'word-cannon': 'Word Cannon Battle',
-        'tide-bridge': 'Tide Bridge',
+        'tide-bridge': 'The Bridge',
     };
 
     function answerModeLabel(mode) {
@@ -5124,6 +5131,13 @@
         $('live-lobby-rounds')?.addEventListener('change', emitHostLobbySettings);
         $('live-lobby-game-minutes')?.addEventListener('change', emitHostLobbySettings);
         $('live-lobby-tide-minutes')?.addEventListener('change', emitHostLobbySettings);
+        window.TideBridgeUI?.init({
+            hostEnd,
+            fullscreen: (el) => toggleLiveFullscreen(el || document.documentElement).catch(() => {
+                showLiveError('Fullscreen is not available in this browser.');
+            }),
+            roomCode: () => hostState?.code || $('live-host-code')?.textContent || '',
+        });
         window.WCB?.init({
             emit: (event, payload) => ensureSocket().emit(event, payload),
             hostEnd,
