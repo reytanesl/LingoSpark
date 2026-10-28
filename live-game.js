@@ -1418,6 +1418,10 @@ function gameFinishedPayload(room) {
             tide: true,
             tier: w.tier,
             cleared: w.cleared,
+            roundsCompleted: w.roundsCompleted,
+            failedRound: w.failedRound,
+            endReason: w.endReason,
+            totalSpans: w.totalSpans,
             termsToWin: 0,
             gameFormat: 'tide-bridge',
             players: w.players.map((row) => ({
@@ -2381,10 +2385,10 @@ function runTideTick(io, room, onGameEnd) {
     if (out.changed) {
         emitTideState(io, room);
         for (const id of out.dealt || []) sendTideQuestion(io, room, id);
-        if (match.phase === 'between') {
-            // clear player question UIs during between beat
+        if (match.phase === 'between' || match.phase === 'roundTransition') {
+            // clear player question UIs during the pause / round transition beat
             for (const player of room.players.values()) {
-                if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: TIDE_BETWEEN_MS });
+                if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: TIDE_BETWEEN_MS, kind: match.transition?.kind || 'span' });
             }
         }
     }
@@ -2400,6 +2404,11 @@ function afterTideChange(io, room, onGameEnd, { deliverQuestions = false } = {})
         for (const player of room.players.values()) sendTideQuestion(io, room, player.id);
     }
     emitTideState(io, room);
+    if (room.tide.phase === 'between' || room.tide.phase === 'roundTransition') {
+        for (const player of room.players.values()) {
+            if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: TIDE_BETWEEN_MS, kind: room.tide.transition?.kind || 'span' });
+        }
+    }
     if (!room.tideTimer && room.phase === 'playing') {
         const code = room.code;
         room.tideTimer = setInterval(() => {
@@ -2726,7 +2735,7 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
             }
             const team = getPlayerTeam(room, player);
             const entity = isCaptainCrew(room) && team ? team : player;
-            if (entity?.pendingChallenge) return;
+            if (entity?.pendingChallenge && !isTideBridge(room)) return;
             const q = playerQuestionPayload(player, room);
             if (q) socket.emit('live:your-question', q);
         });
@@ -2950,6 +2959,8 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                 }
                 if (isTideBridge(room)) {
                     if (!room.tide) throw new Error('The Bridge has not started.');
+                    // A new attempt supersedes an un-challenged "marked wrong" card: input is never frozen between attempts.
+                    if (player?.pendingChallenge && !player.pendingChallenge.challenged) clearPendingChallenge(player);
                     const out = submitTideAnswer(
                         room.tide, socket.data.playerId, text ?? answer, questionId ?? null, Date.now(),
                     );
@@ -3120,6 +3131,11 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     if (player) clearPendingChallenge(player);
                     if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
                     afterLanternChange(io, room, onGameEnd);
+                    return;
+                }
+                if (isTideBridge(room)) {
+                    // The Bridge: "Continue" just dismisses the marked-wrong card; the same question stays open.
+                    if (player && !player.pendingChallenge?.challenged) clearPendingChallenge(player);
                     return;
                 }
                 const result = skipChallenge(room, socket.data.playerId);

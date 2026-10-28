@@ -30,27 +30,62 @@ test('tide-bridge.css only styles Tide Bridge hooks (no bare/global selectors)',
     assert.deepEqual(bad, []);
 });
 
-test('scene generator scales the bridge to the stone count and keeps SVG ids unique per instance', () => {
+function loadScene() {
     const sandbox = { globalThis: null };
     sandbox.globalThis = sandbox;
     vm.createContext(sandbox);
     vm.runInContext(read('tide-bridge-scene.js'), sandbox);
-    const S = sandbox.TideBridgeScene;
-    for (const n of [7, 10, 14, 17]) {
-        const svg = S.bridgeSvg('t1', { n });
-        assert.match(svg, /<svg[^>]+data-uid="t1"/);
-        const ids = [...svg.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
-        assert.equal(new Set(ids).size, ids.length, 'duplicate ids inside one svg');
-        assert.ok(ids.every((id) => id.startsWith('t1')), 'ids must carry the instance prefix');
-        assert.equal(S.geom(n).n, n);
-        assert.ok(Math.abs(S.geom(n).w * n - 702) < 1e-6);
+    return sandbox.TideBridgeScene;
+}
+
+test('scene generator draws six themed bridges, scaled to the span count, with unique SVG ids per instance', () => {
+    const S = loadScene();
+    const themes = ['footbridge', 'arch', 'viaduct', 'rapids', 'storm', 'citadel'];
+    assert.deepEqual([...Object.keys(S.THEMES)], themes);
+    assert.deepEqual([...S.THEME_BY_ROUND].slice(0, 6), themes);
+    for (const theme of themes) {
+        for (const n of [1, 2, 3, 4, 5]) {
+            const svg = S.bridgeSvg('t1', { n, theme });
+            assert.match(svg, /<svg[^>]+data-uid="t1"/);
+            assert.match(svg, new RegExp(`data-theme="${theme}"`));
+            const ids = [...svg.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
+            assert.equal(new Set(ids).size, ids.length, `duplicate ids inside one svg (${theme}/${n})`);
+            assert.ok(ids.every((id) => id.startsWith('t1')), 'ids must carry the instance prefix');
+            assert.equal(S.geom(n, theme).n, n);
+            assert.ok(S.geom(n, theme).w > 40);
+        }
     }
-    const a = S.bridgeSvg('ua', { n: 10 });
-    const b = S.bridgeSvg('ub', { n: 10 });
+    // the storm theme has rain + lightning, every theme animates its waves from the --tbs-wave variable
+    assert.match(S.bridgeSvg('s', { n: 3, theme: 'storm', wave: 3 }), /tbs-rain[\s\S]*tbs-flash|tbs-flash[\s\S]*tbs-rain/);
+    assert.match(S.bridgeSvg('s', { n: 3, theme: 'footbridge', wave: 9 }), /--tbs-wave:9s/);
+    assert.match(S.bridgeSvg('c', { n: 3, theme: 'citadel' }), /tbs-citadel/);
+    const a = S.bridgeSvg('ua', { n: 4, theme: 'arch' });
+    const b = S.bridgeSvg('ub', { n: 4, theme: 'arch' });
     const idsA = new Set([...a.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]));
     assert.ok([...b.matchAll(/ id="([^"]+)"/g)].every((m) => !idsA.has(m[1])));
-    assert.ok(S.tideY(0) > S.tideY(1));
+    for (const theme of themes) assert.ok(S.tideY(0, theme) > S.tideY(1, theme), `${theme}: tide must rise with the ratio`);
     assert.match(S.beachSvg('bb'), /<svg/);
+});
+
+test('the six-round client is wired to the new state: labelled clock + round tide, round strip, new end copy', () => {
+    const client = read('tide-bridge-client.js');
+    assert.match(client, /MATCH CLOCK/);
+    assert.match(client, /ROUND TIDE/);
+    assert.match(client, /Mid-Bridge Obstacle!/);
+    assert.match(client, /id="tb-bar-round"/);
+    assert.match(client, /id="tb-bar-span"/);
+    assert.match(client, /id="tb-strip"/);
+    assert.match(client, /The tide took the bridge!/i);
+    assert.match(client, /bridges completed/);
+    assert.match(client, /Swept Back to Shore/);
+    assert.match(client, /Mid-Channel Explorers/);
+    assert.match(client, /Reached the Far Cliff/);
+    assert.doesNotMatch(client, /ROUNDS CLEARED|GOLD_STONES/);
+    const css = read('tide-bridge.css');
+    assert.match(css, /animation: tbsWaveA var\(--tbs-wave/);
+    assert.match(css, /\.tb-result/);
+    const live = read('live-game-client.js');
+    assert.match(live, /TideBridgeUI\?\.showResult/);
 });
 
 test('the visual layer does not touch game mechanics modules', () => {

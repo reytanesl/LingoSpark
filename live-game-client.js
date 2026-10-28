@@ -1718,10 +1718,7 @@
                     ...data,
                     finished: true,
                     remainingMs: 0,
-                    tideRatio: 1,
                     cleared: data.cleared || 0,
-                    gotCorrect: 0,
-                    neededCorrect: 3,
                     phase: 'finished',
                     tier: data.tier,
                 });
@@ -1877,8 +1874,12 @@
             }
         });
 
-        s.on('live:tide-between', () => {
-            showPlayerWaiting('Nice! Get ready for the next challenge…');
+        s.on('live:tide-between', (data) => {
+            const kind = data?.kind;
+            showPlayerWaiting(kind === 'victory' ? 'Bridge cleared — you reached the far cliff!'
+                : kind === 'cleared' ? 'Bridge cleared! Crossing to the next chasm…'
+                : kind === 'failed' ? 'The tide took the bridge…'
+                : 'Nice! Get ready for the next span…');
         });
 
         s.on('live:crew-vote-update', (data) => {
@@ -1916,7 +1917,7 @@
             let result = incoming;
             if (result?.challengeable) playerChallengesOff = Boolean(result.challengesOff);
             // Host switched challenges off: no Challenge button — continue automatically after a short look.
-            if (result?.challengeable && result.challengesOff) {
+            if (result?.challengeable && result.challengesOff && !(result.tide || result.gameFormat === 'tide-bridge')) {
                 result = { ...result, challengeable: false };
                 scheduleAutoContinue(result);
             }
@@ -1933,6 +1934,25 @@
                 if (result.challengeable) showChallengeActions(result);
                 else hideChallengeActions();
                 window.WCB?.phoneResult(result);
+                return;
+            }
+            if (result?.tide || result?.gameFormat === 'tide-bridge') {
+                // The Bridge: an instant, non-blocking result card; input is never frozen for the next attempt.
+                answerPending = false;
+                playerCrewVote = null;
+                stopPlayTimer();
+                hideChallengeActions();
+                clearTimeout(autoContinueTimer);
+                if (result.finished || result.tideFailed) return;
+                window.TideBridgeUI?.showResult(result, { onChallenge: result.challengeable && !result.challengesOff ? submitChallenge : null });
+                spawnPlayerFeedbackBubble(Boolean(result.correct), false);
+                if (result.correct) {
+                    setAnswerInputsEnabled(false);
+                    if (!result.cleared) showPlayerWaiting(`Correct! Waiting for your classmates… ${result.gotCorrect ?? ''}/${result.neededCorrect ?? ''}`.replace(' /', ''));
+                } else {
+                    setAnswerInputsEnabled(true);
+                    if (result.nextQuestion && typeof result.nextQuestion === 'object') showPlayerQuestion(result.nextQuestion);
+                }
                 return;
             }
             playerCrewVote = null;
@@ -1992,10 +2012,22 @@
                 window.WCB?.phoneChallengeSent();
                 return;
             }
+            if (data?.tide || isTideBridgeFormat(playerState?.gameFormat)) {
+                playerChallengePending = false;
+                window.TideBridgeUI?.showNote('Sent to your teacher — keep going!');
+                return;
+            }
             showChallengeWaiting();
         });
 
         s.on('live:challenge-resolved', (result) => {
+            if (result?.tide || result?.gameFormat === 'tide-bridge') {
+                hideChallengeActions();
+                answerPending = false;
+                window.TideBridgeUI?.showNote(result.accepted || result.challengeAccepted ? 'Teacher accepted your answer — it counts!' : 'Teacher said not this time — try again!', result.accepted || result.challengeAccepted ? 'ok' : 'wrong');
+                if (!(result.accepted || result.challengeAccepted)) setAnswerInputsEnabled(true);
+                return;
+            }
             if (result?.lantern || result?.gameFormat === 'lucky-lanterns') {
                 hideChallengeActions();
                 answerPending = false;
