@@ -33,6 +33,9 @@
     let profileLimit = 5;
     const pmenu = { open: false, renaming: null, deleting: null, creating: false };
     let progressTimer = null;
+    // "Sprawdzian za X dni": public plan summary from /api/own-time/test-prep (null = no plan), last set result.
+    let testPrep = null;
+    let tpResult = null;
 
     function esc(s) {
         return String(s ?? '')
@@ -338,6 +341,7 @@
                 <label class="ot-block-label">${esc(L === 'en' ? 'Vocabulary to practise (optional)' : 'Słownictwo do ćwiczenia (opcjonalnie)')}
                     <textarea id="ot-vocab" class="pe-input" rows="3" placeholder="${esc(L === 'en' ? 'One word or phrase per line' : 'Jedno słowo lub zwrot w linii')}">${esc(p.vocab || '')}</textarea>
                 </label>
+                ${testPrepSetupHtml()}
                 <div class="ot-instr-lang" id="ot-instr-lang-wrap" style="${offerEn || canOfferEnglish(p) ? '' : 'display:none'}">
                     <p class="ot-block-label">${esc('Czy chcesz instrukcje po angielsku? / Do you want instructions in English?')}</p>
                     <label class="ot-chip"><input type="radio" name="ot-instr-lang" value="pl"${(p.instrLang || 'pl') !== 'en' ? ' checked' : ''}> Polski</label>
@@ -396,8 +400,9 @@
                     <li><strong>${esc(L === 'en' ? 'Likes' : 'Lubisz')}:</strong> ${esc((p.taskPrefs || []).join(', ') || '—')}</li>
                     <li><strong>${esc(L === 'en' ? 'Interests' : 'Zainteresowania')}:</strong> ${esc((p.interests || []).join(', ') || '—')}</li>
                     ${p.topic ? `<li><strong>${esc(L === 'en' ? 'Topic' : 'Temat')}:</strong> ${esc(p.topic)}</li>` : ''}
-                    ${vocabListLine(p)}
+                    ${testPrep ? '' : vocabListLine(p)}
                 </ul>
+                ${testPrep ? planCardHtml(testPrep) : ''}
                 ${today?.lessonDone ? `<div class="ot-today-done"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${esc(t('Dzisiejsza lekcja zrobiona.', "Today's lesson is done."))}</div>${keepGoingHtml({ title: t('Chcesz poćwiczyć więcej?', 'Want more practice?') })}` : ''}
                 ${lastNote || lastLevel ? `<p class="ot-last-fb"><strong>${esc(L === 'en' ? 'Last feedback' : 'Ostatnia opinia')}:</strong> ${esc(lastLevel)} ${esc(lastNote)}</p>` : ''}
                 <div class="ot-form-grid">
@@ -781,6 +786,242 @@
         return `<div class="ot-wordbox" role="note" aria-label="${esc(t('Słowa do wykorzystania', 'Words to use'))}"><span class="ot-wordbox-label">${esc(t('Użyj słów', 'Use these words'))}</span>${words.map((w) => `<span class="ot-wordbox-word">${esc(w)}</span>`).join('')}</div>`;
     }
 
+    /* ---------- "Sprawdzian za X dni" (test-prep plan; server logic in own-time-testprep.js) ---------- */
+    let tpSetupError = '';
+    function localToday(offset = 0) {
+        const d = new Date(Date.now() + offset * 86400000);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+    async function tpCall(action, extra = {}) {
+        const data = await api('/api/own-time/test-prep', { method: 'POST', body: JSON.stringify({ action, profileId, today: localToday(), ...extra }) });
+        if (data && 'testPrep' in data) testPrep = data.testPrep;
+        return data;
+    }
+    function tpDateLabel(iso) {
+        const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!m) return '';
+        return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(lang() === 'en' ? 'en-GB' : 'pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    function inDaysLabel(n) {
+        if (n == null) return '';
+        if (n <= 0) return n === 0 ? t('dziś', 'today') : t('termin minął', 'date passed');
+        if (n === 1) return t('jutro', 'tomorrow');
+        return t(`za ${n} dni`, `in ${n} days`);
+    }
+    /** Settings: "Przygotowanie do sprawdzianu" toggle with a date picker or "za ile dni" (1–14). */
+    function testPrepSetupHtml() {
+        const on = !!(testPrep && testPrep.status !== 'off');
+        const days = testPrep?.daysLeft > 0 ? testPrep.daysLeft : 3;
+        return `<fieldset class="ot-tp-setup${on ? ' is-on' : ''}" id="ot-tp-setup">
+            <label class="ot-tp-toggle"><input type="checkbox" id="ot-tp-on"${on ? ' checked' : ''}> <span class="ot-tp-switch" aria-hidden="true"></span>
+                <span><strong>${esc(t('Przygotowanie do sprawdzianu', 'Test preparation'))}</strong><small>${esc(t('Plan dzień po dniu z listy słówek powyżej; ostatni dzień: powtórka i próbny sprawdzian.', 'A day-by-day plan from the word list above; last day: revision and a mock test.'))}</small></span></label>
+            <div class="ot-tp-fields" id="ot-tp-fields"${on ? '' : ' hidden'}>
+                <label>${esc(t('Data sprawdzianu', 'Test date'))}
+                    <input type="date" id="ot-tp-date" class="pe-input" min="${localToday(1)}" max="${localToday(14)}" value="${esc(testPrep?.testDate || localToday(days))}"></label>
+                <span class="ot-tp-or">${esc(t('albo', 'or'))}</span>
+                <label>${esc(t('Za ile dni', 'In how many days'))}
+                    <input type="number" id="ot-tp-days" class="pe-input" min="1" max="14" value="${esc(days)}"></label>
+            </div>
+            ${on && testPrep ? planCardHtml(testPrep) : ''}
+        </fieldset>`;
+    }
+    /** After "Zapisz": create / re-create / switch off the plan to match the settings form. */
+    async function applyTestPrepSettings() {
+        tpSetupError = '';
+        const box = document.getElementById('ot-tp-on');
+        if (!box) return;
+        try {
+            if (!box.checked) { if (testPrep) await tpCall('off'); testPrep = null; return; }
+            const testDate = document.getElementById('ot-tp-date')?.value || '';
+            const st = await tpCall('status');
+            if (st.testPrep && st.testPrep.testDate === testDate && st.testPrep.status !== 'expired') return; // same plan: keep progress
+            await tpCall('setup', { testDate, inDays: Number(document.getElementById('ot-tp-days')?.value) || null });
+        } catch (err) {
+            tpSetupError = err.message || t('Nie udało się ułożyć planu.', 'Could not build the plan.');
+            testPrep = null;
+        }
+    }
+    function readinessHtml(tp, compact) {
+        const pct = tp.total ? Math.round((tp.mastered / tp.total) * 100) : 0;
+        return `<div class="ot-tp-ready${compact ? ' is-compact' : ''}" role="group" aria-label="${esc(t('Gotowość do sprawdzianu', 'Test readiness'))}">
+            <span class="ot-tp-ready-label"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> ${esc(t(`Opanowane ${tp.mastered}/${tp.total}`, `Mastered ${tp.mastered}/${tp.total}`))}</span>
+            <span class="ot-tp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${tp.total}" aria-valuenow="${tp.mastered}"><span style="width:${pct}%"></span></span>
+            <span class="ot-tp-pct">${pct}%</span>
+            ${tp.bag ? `<span class="ot-tp-bag" title="${esc(t('Słówka z błędami wracają częściej; wychodzą z worka po 2 poprawnych odpowiedziach z rzędu.', 'Missed words come back more often; they leave after 2 correct answers in a row.'))}"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> ${esc(t(`Worek błędów: ${tp.bag}`, `Mistake bag: ${tp.bag}`))}</span>` : ''}
+        </div>`;
+    }
+    function planCardHtml(tp) {
+        const rows = tp.plan.map((d) => {
+            const cur = d.day === tp.day && tp.status === 'active';
+            const past = d.day < tp.day || tp.status !== 'active';
+            const secs = d.sections.length ? `${d.sections.slice(0, 2).join(', ')}${d.sections.length > 2 ? '…' : ''}` : '';
+            const what = d.kind === 'revision'
+                ? t('Powtórka + próbny sprawdzian', 'Revision + mock test')
+                : `${secs ? `${secs} ` : ''}${t(`${d.count} słówek`, `${d.count} words`)}${d.kind === 'learn+mock' ? t(' + próbny sprawdzian', ' + mock test') : ''}`;
+            const prog = d.kind === 'revision' ? '' : `<span class="ot-tp-dprog">${esc(t(`nowe ${Math.min(d.done, d.count)}/${d.count} · opanowane ${d.mastered}`, `new ${Math.min(d.done, d.count)}/${d.count} · mastered ${d.mastered}`))}</span>`;
+            return `<li class="${cur ? 'is-current' : ''}${past && !cur ? ' is-past' : ''}"><span class="ot-tp-dot" aria-hidden="true">${past && !cur ? '<i class="fa-solid fa-check"></i>' : d.day}</span>
+                <span class="ot-tp-drow"><strong>${esc(t(`Dzień ${d.day}/${tp.days}:`, `Day ${d.day}/${tp.days}:`))}</strong> ${esc(what)}${prog}</span></li>`;
+        }).join('');
+        return `<div class="ot-tp-card" role="region" aria-label="${esc(t('Plan przygotowania do sprawdzianu', 'Test-prep plan'))}">
+            <div class="ot-tp-card-head"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                <div><strong>${esc(t('Sprawdzian', 'Test'))}: ${esc(tpDateLabel(tp.testDate))}</strong> <span class="ot-tp-when">${esc(inDaysLabel(tp.daysLeft))}</span></div></div>
+            ${readinessHtml(tp)}
+            <ol class="ot-tp-days">${rows}</ol>
+        </div>`;
+    }
+    /** Task line chip: how many items of this task are review / mistake-bag items. */
+    function reviewChipHtml(task) {
+        const tp = lesson.testPrep || {};
+        const bag = new Set(tp.bagIdx || []);
+        const rev = new Set(tp.reviewIdx || []);
+        let b = 0;
+        let r = 0;
+        (task.items || []).forEach((it) => { if (bag.has(it.ix)) b += 1; else if (rev.has(it.ix)) r += 1; });
+        if (!b && !r) return '';
+        return `<span class="ot-tp-review">${r ? `<span><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${esc(t(`powtórka: ${r}`, `review: ${r}`))}</span>` : ''}${b ? `<span class="is-bag"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> ${esc(t(`z worka błędów: ${b}`, `from the mistake bag: ${b}`))}</span>` : ''}</span>`;
+    }
+    async function startTestPrepSet(mode = 'next') {
+        if (!testPrep) return startLesson();
+        if (testPrep.status !== 'active' && mode !== 'bag') { view = 'tpdone'; paint(); return; }
+        try {
+            toggleLoading(true);
+            setStatus(mode === 'mock' ? t('Układam próbny sprawdzian…', 'Building the mock test…') : t('Układam zestaw…', 'Building the set…'), 'neutral');
+            const data = await tpCall('set', { mode });
+            toggleLoading(false);
+            if (!data.lesson) { tpResult = null; view = 'tpdone'; paint(); setStatus(''); return; }
+            lesson = data.lesson;
+            openPanels.clear();
+            Object.keys(tileState).forEach((k) => delete tileState[k]);
+            taskIndex = 0;
+            answers = {};
+            startedAt = Date.now();
+            view = 'lesson';
+            paint();
+            setStatus('');
+            saveProgressNow();
+        } catch (err) {
+            toggleLoading(false);
+            setStatus(esc(err.message || t('Nie udało się ułożyć zestawu.', 'Could not build the set.')), 'error');
+        }
+    }
+    /** Grade every item of the finished set (Check not needed), send per-item results, show the summary. */
+    async function finishTestPrepSet() {
+        const mock = !!lesson.mockTest;
+        const results = [];
+        const wrong = [];
+        let ok = 0;
+        let total = 0;
+        (lesson.tasks || []).forEach((task, i) => {
+            const a = answers[`t${i}`] || {};
+            (task.items || []).forEach((it, j) => {
+                if (it.ix == null || !it.answer) return;
+                const v = (a.items || [])[j] || '';
+                if (!String(v).trim() && !mock) return; // skipped in practice: no information
+                const g = gradeItem(it, v, a.verdicts?.[j], task.type);
+                const good = g === 'ok' || g === 'alt';
+                results.push({ ix: it.ix, kind: task.tp?.kind || '', ok: good });
+                total += 1;
+                if (good) ok += 1;
+                else if (!wrong.some((w) => w.ix === it.ix)) wrong.push({ ix: it.ix, q: it.pl || it.q, answer: it.answer, given: v });
+            });
+        });
+        try {
+            setStatus(t('Zapisuję wynik…', 'Saving the result…'), 'neutral');
+            const data = await tpCall('result', { meta: lesson.testPrep, results });
+            tpResult = { ok, total, mock, mockResult: data.mockResult || null, wrong: wrong.slice(0, 12), title: lesson.title };
+            const durationMs = startedAt ? Date.now() - startedAt : 0;
+            // History + "today" (best effort): the set is stored like any other set.
+            api('/api/own-time/lessons', { method: 'POST', body: JSON.stringify({
+                lesson: { title: lesson.title, cefr: lesson.cefr, focus: lesson.focus, extra: false, tasks: (lesson.tasks || []).map((tk, i) => ({ n: tk.n, type: tk.type, student: answers[`t${i}`] || null })) },
+                feedback: { levelOk: 'ok', modeNext: 'new', focusNexts: ['vocab'], focusNext: 'vocab', note: '' }, durationMs, profileId,
+            }) }).catch(() => {});
+            if (typeof recordGameSessionApi === 'function') recordGameSessionApi('own_time', { score: total ? ok / total : 0, pointsEarned: 10, durationMs, result: { focus: 'test-prep', mock } });
+            lesson = null;
+            answers = {};
+            saveProgressNow({ clear: true });
+            view = 'tpdone';
+            paint();
+            setStatus('');
+            window.scrollTo({ top: 0 });
+        } catch (err) {
+            setStatus(esc(err.message || t('Nie udało się zapisać wyniku.', 'Could not save the result.')), 'error');
+        }
+    }
+    function mockResultHtml(r) {
+        const m = r.mockResult;
+        const weak = (m?.weak || []).map((w) => {
+            const pct = w.total ? Math.round((w.ok / w.total) * 100) : 0;
+            return `<li><span class="ot-tp-wname">${esc(w.pl || w.name)}</span><span class="ot-tp-bar is-weak"><span style="width:${pct}%"></span></span><span class="ot-tp-wscore">${w.ok}/${w.total}</span></li>`;
+        }).join('');
+        return `<div class="ot-tp-mockres">
+            <div class="ot-tp-score"><span class="ot-tp-big">${m ? m.score : r.ok}/${m ? m.total : r.total}</span><span>${m ? `${m.pct}% · ${esc(t(`ocena ${m.grade}`, `grade ${m.grade}`))}` : ''}</span></div>
+            ${weak ? `<h4 class="ot-tp-sub">${esc(t('Najsłabsze działy', 'Weakest categories'))}</h4><ul class="ot-tp-weak">${weak}</ul>` : `<p class="ot-lead">${esc(t('Wszystkie działy bez błędów — świetnie!', 'No mistakes in any category — great!'))}</p>`}
+        </div>`;
+    }
+    function wrongListHtml(r) {
+        if (!r.wrong.length) return '';
+        return `<details class="ot-tp-wrong"${r.mock ? ' open' : ''}><summary>${esc(t(`Błędy (${r.wrong.length}) — trafiły do worka błędów`, `Mistakes (${r.wrong.length}) — added to the mistake bag`))}</summary><ul>${r.wrong.map((w) => `<li><span>${esc(w.q)}</span> → <strong>${esc(w.answer)}</strong>${w.given ? ` <s>${esc(w.given)}</s>` : ''}</li>`).join('')}</ul></details>`;
+    }
+    function renderTpDone() {
+        const tp = testPrep;
+        const r = tpResult;
+        if (!tp) return `<div class="ot-card"><p class="ot-lead">${esc(t('Brak planu.', 'No plan.'))}</p></div>`;
+        const next = tp.next || {};
+        const active = tp.status === 'active';
+        let head = '';
+        if (r && r.mock) head = `<h3 class="ot-heading"><i class="fa-solid fa-file-pen" aria-hidden="true"></i> ${esc(t('Wynik próbnego sprawdzianu', 'Mock test result'))}</h3>${mockResultHtml(r)}`;
+        else if (r) head = `<h3 class="ot-heading">${esc(t(`Zestaw zrobiony: ${r.ok}/${r.total} dobrze`, `Set done: ${r.ok}/${r.total} correct`))}</h3>`;
+        let ended = '';
+        if (!active) {
+            const expired = tp.status === 'expired';
+            ended = `<div class="ot-tp-ended"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i><div><strong>${esc(expired ? t('Termin sprawdzianu minął', 'The test date has passed') : t('Plan zakończony', 'Plan finished'))}</strong>
+                <p>${esc(t(`Opanowane ${tp.mastered} z ${tp.total} słówek${tp.mock ? ` · próbny sprawdzian: ${tp.mock.score}/${tp.mock.total}` : ''}. Możesz ćwiczyć dalej z tej listy w zwykłym trybie.`, `Mastered ${tp.mastered} of ${tp.total} words${tp.mock ? ` · mock test: ${tp.mock.score}/${tp.mock.total}` : ''}. You can keep practising this list in the normal list mode.`))}</p></div></div>`;
+        }
+        const btns = [];
+        if (active && ['learn', 'review', 'revision'].includes(next.kind)) btns.push(`<button type="button" class="btn btn-blue" id="ot-tp-next"><i class="fa-solid fa-play" aria-hidden="true"></i> ${esc(next.kind === 'learn' ? t(`Następny zestaw (${next.newCount} nowych)`, `Next set (${next.newCount} new)`) : t('Następny zestaw: powtórka', 'Next set: review'))}</button>`);
+        if (active && next.mockAvailable) btns.push(`<button type="button" class="btn ${next.kind === 'mock-ready' ? 'btn-blue' : 'btn-outline'}" id="ot-tp-mock"><i class="fa-solid fa-file-pen" aria-hidden="true"></i> ${esc(t('Próbny sprawdzian', 'Mock test'))}</button>`);
+        if (active && next.dayDone && tp.day < tp.days) btns.push(`<button type="button" class="btn ${next.kind === 'day-done' ? 'btn-blue' : 'btn-outline'}" id="ot-tp-nextday"><i class="fa-solid fa-forward" aria-hidden="true"></i> ${esc(t(`Przejdź do dnia ${tp.day + 1}`, `Go to day ${tp.day + 1}`))}</button>`);
+        if (tp.bag) btns.push(`<button type="button" class="btn ${r && r.mock ? 'btn-blue' : 'btn-outline'}" id="ot-tp-bag"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> ${esc(t(`Ćwicz błędy (${tp.bag})`, `Drill mistakes (${tp.bag})`))}</button>`);
+        if (!active) btns.push(`<button type="button" class="btn ${tp.bag ? 'btn-outline' : 'btn-blue'}" id="ot-tp-tolist"><i class="fa-solid fa-list-ul" aria-hidden="true"></i> ${esc(t('Ćwicz dalej w trybie listy', 'Keep practising in list mode'))}</button>`);
+        btns.push(`<button type="button" class="btn btn-grey" id="ot-edit-profile">${esc(t('Ustawienia', 'Settings'))}</button>`);
+        return `<div class="ot-card ot-tp-done">
+            ${profiles.length ? profileBarHtml(true) : ''}
+            ${head}
+            ${r ? wrongListHtml(r) : ''}
+            ${ended}
+            ${planCardHtml(tp)}
+            <div class="ot-actions">${btns.join('')}</div>
+        </div>`;
+    }
+    function bindTestPrep(el) {
+        el.querySelector('#ot-tp-on')?.addEventListener('change', (ev) => {
+            const f = el.querySelector('#ot-tp-fields');
+            if (f) f.hidden = !ev.target.checked;
+            el.querySelector('#ot-tp-setup')?.classList.toggle('is-on', ev.target.checked);
+        });
+        const dateEl = el.querySelector('#ot-tp-date');
+        const daysEl = el.querySelector('#ot-tp-days');
+        dateEl?.addEventListener('change', () => {
+            const a = new Date(`${localToday()}T00:00:00`);
+            const b = new Date(`${dateEl.value}T00:00:00`);
+            const n = Math.round((b - a) / 86400000);
+            if (daysEl && n >= 1 && n <= 14) daysEl.value = n;
+        });
+        daysEl?.addEventListener('input', () => {
+            const n = Math.max(1, Math.min(14, Number(daysEl.value) || 1));
+            if (dateEl) dateEl.value = localToday(n);
+        });
+        el.querySelector('#ot-tp-next')?.addEventListener('click', () => startTestPrepSet('next'));
+        el.querySelector('#ot-tp-mock')?.addEventListener('click', () => startTestPrepSet('mock'));
+        el.querySelector('#ot-tp-bag')?.addEventListener('click', () => startTestPrepSet('bag'));
+        el.querySelector('#ot-tp-nextday')?.addEventListener('click', async () => {
+            try { await tpCall('next-day'); tpResult = null; startTestPrepSet('next'); } catch (err) { setStatus(esc(err.message), 'error'); }
+        });
+        el.querySelector('#ot-tp-tolist')?.addEventListener('click', async () => {
+            try { await tpCall('off'); testPrep = null; tpResult = null; view = 'dash'; startLesson(); } catch (err) { setStatus(esc(err.message), 'error'); }
+        });
+    }
+
     function renderTask() {
         const L = lang();
         const tasks = lesson.tasks || [];
@@ -850,35 +1091,38 @@
         ].filter(Boolean).join('');
 
         return `
-            <div class="ot-card ot-lesson" data-type="${esc(task.type)}" data-layout="${layout}">
+            <div class="ot-card ot-lesson${lesson.testPrep ? ' ot-lesson--tp' : ''}${lesson.mockTest ? ' ot-lesson--mock' : ''}" data-type="${esc(task.type)}" data-layout="${layout}">
                 <div class="ot-lesson-head">
                     <div class="ot-head-text">
-                        <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}${lesson.vocabPlan ? ` · <span class="ot-listchip" title="${esc(t('Zestaw z Twojej listy słów', 'A set from your word list'))}"><i class="fa-solid fa-list-ul" aria-hidden="true"></i> ${esc(lesson.vocabPlan.mode === 'revise' ? t('powtórka', 'revision') : t('lista', 'list'))} ${lesson.vocabPlan.from}–${lesson.vocabPlan.to}/${lesson.vocabPlan.total}</span>` : ''}</div>
+                        <div class="ot-eyebrow">${lesson.extra ? `<span class="ot-extra-badge">${esc(t('Dodatkowy zestaw', 'Extra set'))}</span> ` : ''}${lesson.testPrep ? `<span class="ot-tp-chip"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> ${esc(lesson.mockTest ? t('Próbny sprawdzian', 'Mock test') : t(`Sprawdzian · dzień ${lesson.testPrep.day}/${lesson.testPrep.days}`, `Test prep · day ${lesson.testPrep.day}/${lesson.testPrep.days}`))}</span> ` : ''}${esc(lesson.focus || t('Twoja lekcja', 'Your lesson'))} · ${esc(lesson.cefr || '')}${lesson.vocabPlan ? ` · <span class="ot-listchip" title="${esc(t('Zestaw z Twojej listy słów', 'A set from your word list'))}"><i class="fa-solid fa-list-ul" aria-hidden="true"></i> ${esc(lesson.vocabPlan.mode === 'revise' ? t('powtórka', 'revision') : t('lista', 'list'))} ${lesson.vocabPlan.from}–${lesson.vocabPlan.to}/${lesson.vocabPlan.total}</span>` : ''}</div>
                         <h3 class="ot-heading">${esc(lesson.title || '')}</h3>
                     </div>
                     ${profiles.length ? profileBarHtml(true) : ''}
                     <button type="button" class="ot-reset-set" id="ot-reset-set" title="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}" aria-label="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}"><i class="fa-solid fa-rotate-left"></i><span class="ot-reset-label">${esc(t('Od nowa', 'Restart'))}</span></button>
                     <div class="ot-time" aria-live="polite">${esc(t(`Zadanie ${taskIndex + 1} z ${tasks.length}`, `Task ${taskIndex + 1} of ${tasks.length}`))}</div>
                 </div>
+                ${lesson.testPrep && testPrep ? readinessHtml(testPrep, true) : ''}
                 ${lesson.goal && taskIndex === 0 ? `<p class="ot-goal"><i class="fa-solid fa-bullseye"></i> ${esc(lesson.goal)}</p>` : ''}
                 ${stepperHtml(tasks)}
                 <div class="ot-task-line">
                     <span class="ot-badge"><i class="fa-solid ${esc((TYPE_LABELS[task.type] || TYPE_LABELS.writing).icon)}"></i> ${esc(typeLabel(task.type))}</span>
+                    ${task.mockSection ? `<span class="ot-tp-part">${esc(t(`Część ${task.mockSection}`, `Part ${task.mockSection}`))}</span>` : ''}
                     ${instructionHtml(task.instruction)}
+                    ${lesson.testPrep && !lesson.mockTest ? reviewChipHtml(task) : ''}
                     ${task.format && UOE_FORMAT_NAMES[task.format] && task.format !== 'simple' ? `<span class="ot-exam-tag" title="${esc(EXAM_NAMES[task.exam] || '')}">${esc(task.exam ? `${EXAM_SHORT[task.exam] || task.exam} · ` : '')}${esc(UOE_FORMAT_NAMES[task.format])}</span>` : ''}
                     ${g.target ? `<span class="ot-task-meta">${esc(g.target.minSentences)}–${esc(g.target.maxSentences)} ${esc(t('zdań', 'sentences'))}</span>` : ''}
                 </div>
                 <div class="ot-work ot-work--${layout}">
-                    <div class="ot-panels" role="group" aria-label="${esc(t('Pomoc', 'Help'))}">${panels}</div>
+                    ${lesson.mockTest ? '' : `<div class="ot-panels" role="group" aria-label="${esc(t('Pomoc', 'Help'))}">${panels}</div>`}
                     <div class="ot-body ot-body--${layout}">${wordBoxHtml(task)}${body}</div>
                 </div>
                 <div id="ot-task-check" class="ot-check-msg" hidden></div>
                 <div class="ot-actions">
                     ${taskIndex > 0 ? `<button type="button" class="btn btn-grey" id="ot-prev"><i class="fa-solid fa-arrow-left"></i> <span class="ot-long">${esc(t('Wstecz', 'Back'))}</span></button>` : ''}
-                    ${items.length ? `<button type="button" class="btn btn-outline" id="ot-check"><i class="fa-solid fa-check-double"></i> ${esc(L === 'en' ? 'Check' : 'Sprawdź')}</button>` : ''}
+                    ${items.length && !lesson.mockTest ? `<button type="button" class="btn btn-outline" id="ot-check"><i class="fa-solid fa-check-double"></i> ${esc(L === 'en' ? 'Check' : 'Sprawdź')}</button>` : ''}
                     <button type="button" class="btn btn-blue" id="ot-next">${taskIndex + 1 < tasks.length
                         ? `<span class="ot-long">${esc(L === 'en' ? 'Next task' : 'Następne zadanie')}</span><span class="ot-short">${esc(L === 'en' ? 'Next' : 'Dalej')}</span>`
-                        : esc(L === 'en' ? 'Finish' : 'Zakończ')} <i class="fa-solid fa-arrow-right"></i></button>
+                        : esc(lesson.mockTest ? t('Oddaj sprawdzian', 'Hand in') : (L === 'en' ? 'Finish' : 'Zakończ'))} <i class="fa-solid fa-arrow-right"></i></button>
                     ${lesson.coachNote && taskIndex === 0 ? `<span class="ot-coach"><i class="fa-solid fa-heart"></i> ${esc(lesson.coachNote)}</span>` : ''}
                 </div>
             </div>`;
@@ -1096,6 +1340,9 @@
         ]);
         profile = pRes.profile;
         if (pRes.profileId) profileId = pRes.profileId;
+        testPrep = null;
+        tpResult = null;
+        if (profile) await tpCall('status').catch(() => { testPrep = null; });
         lessons = lRes.lessons || [];
         today = lRes.today || null;
         capMessage = '';
@@ -1207,6 +1454,7 @@
         else if (view === 'feedback') html = renderFeedback();
         else if (view === 'done') html = renderDone();
         else if (view === 'vocabend') html = renderVocabEnd();
+        else if (view === 'tpdone') html = renderTpDone();
         // The initial setup screen has its own profile picker, so the dropdown bar is not repeated there.
         el.innerHTML = html && profiles.length && view !== 'lesson' && view !== 'onboard' && view !== 'pick' && view !== 'edit' ? profileBarHtml() + html : html;
         bind();
@@ -1479,13 +1727,17 @@
                 const voiceSel = document.getElementById('ot-voice');
                 if (voiceSel) { try { localStorage.setItem(VOICE_KEY(profileId), voiceSel.value); } catch (_) { /* private mode */ } }
                 await loadProfiles().catch(() => {});
+                await applyTestPrepSettings();
                 // Primary "Kontynuuj zestaw" / "Zacznij": resume the in-progress set (unchanged) or build a new one.
                 if (wasEdit && mode === 'go') {
                     if (lesson) { editReturn = editReturn === 'feedback' ? 'feedback' : 'lesson'; leaveEdit(); paint(); setStatus(t('Profil zapisany — kontynuujesz zestaw. Zmiany obowiązują od następnego zestawu.', 'Profile saved — continuing your set. Changes apply from the next set.'), 'success'); return; }
-                    view = 'dash'; paint(); startLesson(); return;
+                    view = 'dash'; paint();
+                    if (testPrep) { startTestPrepSet(); return; }
+                    startLesson(); return;
                 }
                 if (wasEdit) leaveEdit(); else view = 'dash';
                 paint();
+                if (tpSetupError) { setStatus(esc(tpSetupError), 'error'); return; }
                 setStatus(wasEdit && lesson ? t('Profil zapisany. Zmiany obowiązują od następnego zestawu.', 'Profile saved. Changes apply from the next set.') : t('Profil zapisany.', 'Profile saved.'), 'success');
             } catch (err) {
                 setStatus(esc(err.message || t('Nie udało się zapisać.', 'Could not save.')), 'error');
@@ -1511,7 +1763,7 @@
             if (note) note.hidden = !profile || ev.target.value === profile.cefr;
         });
 
-        document.getElementById('ot-start')?.addEventListener('click', startLesson);
+        document.getElementById('ot-start')?.addEventListener('click', () => (testPrep ? startTestPrepSet() : startLesson()));
 
         document.getElementById('ot-check')?.addEventListener('click', () => {
             const task = lesson.tasks[taskIndex];
@@ -1663,6 +1915,9 @@
             if (taskIndex + 1 < (lesson.tasks || []).length) {
                 taskIndex += 1;
                 paint();
+            } else if (lesson.testPrep) {
+                finishTestPrepSet();
+                return;
             } else {
                 view = 'feedback';
                 paint();
@@ -1675,6 +1930,7 @@
         document.getElementById('ot-keep-going')?.addEventListener('click', keepGoing);
         document.getElementById('ot-to-dash')?.addEventListener('click', () => { view = 'dash'; paint(); });
         bindVocabEnd(el);
+        bindTestPrep(el);
     }
 
     async function keepGoing() {

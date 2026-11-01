@@ -8,8 +8,8 @@
  *   { sig, total, cursor, covered: [idx…], reviseCursor, nextMode: 'new'|'revise', free: bool }
  */
 export const OWN_TIME_VOCAB_MIN = 10;
-export const OWN_TIME_VOCAB_MAX_ITEMS = 300;
-export const OWN_TIME_VOCAB_TEXT_MAX = 8000;
+export const OWN_TIME_VOCAB_MAX_ITEMS = 500;
+export const OWN_TIME_VOCAB_TEXT_MAX = 30000; // room for a whole textbook chapter (test-prep plan)
 
 /** Split a pasted list into items (one per line; a single line may be comma / semicolon separated). */
 export function parseVocabList(text) {

@@ -21,7 +21,7 @@ const allowlist = fs.readFileSync(new URL('./static-allowlist.js', import.meta.u
 test('parseVocabList: lines, bullets, commas, duplicates', () => {
     assert.deepEqual(parseVocabList('- cat\n2) dog\n\nCat\n'), ['cat', 'dog']);
     assert.deepEqual(parseVocabList('a, b; c'), ['a', 'b', 'c']);
-    assert.ok(parseVocabList(words(500)).length <= 300);
+    assert.ok(parseVocabList(words(600)).length <= 500); // raised from 300 for whole textbook chapters (test-prep plan)
 });
 
 test('short list (<10) and free mode do not activate list mode', () => {

@@ -3098,6 +3098,65 @@
         #screen-own-time .ot-vocabend-opts .btn { flex: 1 1 13rem; }
         #screen-own-time .ot-vocabend-new { display: grid; gap: 0.5rem; }
         #screen-own-time .ot-vocabend-new[hidden] { display: none; }
+        /* "Sprawdzian za X dni" (test-prep plan) */
+        #screen-own-time .ot-lesson--tp .ot-qs--exam > .ot-q { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+        @media (min-width: 760px) { #screen-own-time .ot-lesson--tp .ot-fmt--mc_sentences > .ot-q, #screen-own-time .ot-lesson--tp .ot-fmt--mc_translation > .ot-q { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem; } #screen-own-time .ot-lesson--tp .ot-fmt--mc_sentences .ot-q-line, #screen-own-time .ot-lesson--tp .ot-fmt--mc_translation .ot-q-line { min-width: 11rem; flex: 0 0 auto; margin: 0; } }
+        #screen-own-time .ot-tp-setup { border: 1px solid #dfe6f3; border-radius: 14px; padding: 0.75rem 0.9rem; margin: 0.8rem 0; display: grid; gap: 0.6rem; background: #fbfcff; }
+        #screen-own-time .ot-tp-setup.is-on { border-color: #b9cdf5; background: #f4f8ff; }
+        #screen-own-time .ot-tp-toggle { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 400; }
+        #screen-own-time .ot-tp-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        #screen-own-time .ot-tp-switch { flex: none; width: 42px; height: 24px; border-radius: 999px; background: #c9d1de; position: relative; transition: background .15s; }
+        #screen-own-time .ot-tp-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
+        #screen-own-time .ot-tp-toggle input:checked + .ot-tp-switch { background: #2f6fde; }
+        #screen-own-time .ot-tp-toggle input:checked + .ot-tp-switch::after { transform: translateX(18px); }
+        #screen-own-time .ot-tp-toggle input:focus-visible + .ot-tp-switch { outline: 3px solid #9cc0ff; outline-offset: 2px; }
+        #screen-own-time .ot-tp-toggle small { display: block; color: #5b6578; font-size: 0.8rem; }
+        #screen-own-time .ot-tp-fields { display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem; }
+        #screen-own-time .ot-tp-fields[hidden] { display: none; }
+        #screen-own-time .ot-tp-fields label { display: grid; gap: 0.2rem; font-weight: 700; font-size: 0.85rem; }
+        #screen-own-time .ot-tp-fields input[type="number"] { width: 6rem; }
+        #screen-own-time .ot-tp-or { color: #5b6578; font-size: 0.85rem; padding-bottom: 0.55rem; }
+        #screen-own-time .ot-tp-card { border: 1px solid #cddcf7; border-radius: 14px; padding: 0.75rem 0.9rem; background: #fff; display: grid; gap: 0.55rem; margin: 0.6rem 0; }
+        #screen-own-time .ot-tp-card-head { display: flex; gap: 0.6rem; align-items: center; color: #1d3f86; }
+        #screen-own-time .ot-tp-card-head > i { font-size: 1.3rem; }
+        #screen-own-time .ot-tp-when { display: inline-block; margin-left: 0.3rem; padding: 0.05rem 0.5rem; border-radius: 999px; background: #e7efff; font-weight: 800; font-size: 0.75rem; }
+        #screen-own-time .ot-tp-days { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+        #screen-own-time .ot-tp-days li { display: flex; gap: 0.55rem; align-items: flex-start; font-size: 0.9rem; }
+        #screen-own-time .ot-tp-days li.is-current { font-weight: 600; }
+        #screen-own-time .ot-tp-days li.is-past { color: #6b7385; }
+        #screen-own-time .ot-tp-dot { flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: grid; place-items: center; background: #eef1f6; font-weight: 800; font-size: 0.75rem; }
+        #screen-own-time li.is-current .ot-tp-dot { background: #2f6fde; color: #fff; }
+        #screen-own-time li.is-past .ot-tp-dot { background: #d8f2e1; color: #1d7a43; }
+        #screen-own-time .ot-tp-dprog { display: block; font-weight: 400; color: #5b6578; font-size: 0.78rem; }
+        #screen-own-time .ot-tp-ready { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.6rem; font-size: 0.88rem; }
+        #screen-own-time .ot-tp-ready.is-compact { margin: 0.2rem 0 0.4rem; font-size: 0.8rem; }
+        #screen-own-time .ot-tp-ready-label { font-weight: 800; color: #1d3f86; white-space: nowrap; }
+        #screen-own-time .ot-tp-bar { flex: 1 1 120px; min-width: 90px; height: 10px; border-radius: 999px; background: #e6ebf3; overflow: hidden; display: block; }
+        #screen-own-time .ot-tp-bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #39b26b, #2f9e5c); }
+        #screen-own-time .ot-tp-bar.is-weak > span { background: linear-gradient(90deg, #f0a03a, #e07a1f); }
+        #screen-own-time .ot-tp-pct { font-weight: 800; color: #2f9e5c; }
+        #screen-own-time .ot-tp-bag, #screen-own-time .ot-tp-chip, #screen-own-time .ot-tp-review span, #screen-own-time .ot-tp-part { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.05rem 0.5rem; border-radius: 999px; font-weight: 800; font-size: 0.72rem; white-space: nowrap; }
+        #screen-own-time .ot-tp-bag, #screen-own-time .ot-tp-review .is-bag { background: #fff0e6; border: 1px solid #f5c39c; color: #a24a0b; }
+        #screen-own-time .ot-tp-chip { background: #e7efff; border: 1px solid #b9cdf5; color: #1d3f86; }
+        #screen-own-time .ot-tp-review { display: inline-flex; gap: 0.3rem; flex-wrap: wrap; }
+        #screen-own-time .ot-tp-review span { background: #eaf7ef; border: 1px solid #bfe5cd; color: #1d7a43; }
+        #screen-own-time .ot-tp-part { background: #1d3f86; color: #fff; }
+        #screen-own-time .ot-tp-mockres { display: grid; gap: 0.5rem; margin: 0.4rem 0 0.6rem; }
+        #screen-own-time .ot-tp-score { display: flex; align-items: baseline; gap: 0.7rem; }
+        #screen-own-time .ot-tp-big { font-size: 2.2rem; font-weight: 900; color: #1d3f86; }
+        #screen-own-time .ot-tp-sub { margin: 0.2rem 0 0; font-size: 0.95rem; }
+        #screen-own-time .ot-tp-weak { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+        #screen-own-time .ot-tp-weak li { display: grid; grid-template-columns: minmax(8rem, 14rem) 1fr auto; gap: 0.6rem; align-items: center; font-size: 0.88rem; }
+        #screen-own-time .ot-tp-wscore { font-weight: 800; }
+        #screen-own-time .ot-tp-wrong { border: 1px solid #f1d4c0; border-radius: 12px; padding: 0.4rem 0.7rem; background: #fffaf6; font-size: 0.88rem; }
+        #screen-own-time .ot-tp-wrong summary { cursor: pointer; font-weight: 700; }
+        #screen-own-time .ot-tp-wrong ul { margin: 0.4rem 0 0; padding-left: 1.1rem; columns: 2 16rem; }
+        #screen-own-time .ot-tp-wrong s { color: #b3261e; }
+        #screen-own-time .ot-tp-ended { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.7rem 0.9rem; border-radius: 12px; background: #f3f7ee; border: 1px solid #cfe3bd; }
+        #screen-own-time .ot-tp-ended > i { color: #3b7d1e; font-size: 1.3rem; margin-top: 0.15rem; }
+        #screen-own-time .ot-tp-ended p { margin: 0.2rem 0 0; }
+        #screen-own-time .ot-tp-done .ot-actions { flex-wrap: wrap; }
+        @media (max-width: 520px) { #screen-own-time .ot-tp-weak li { grid-template-columns: 1fr auto; } #screen-own-time .ot-tp-weak .ot-tp-bar { grid-column: 1 / -1; grid-row: 2; } #screen-own-time .ot-tp-big { font-size: 1.8rem; } #screen-own-time .ot-tp-done .ot-actions .btn { flex-basis: 100%; } }
         @media (max-width: 520px) { #screen-own-time .ot-vocabend { padding: 0.75rem; } #screen-own-time .ot-vocabend-opts .btn { flex-basis: 100%; padding: 0.55rem 0.8rem; } }
         /* Entry step: dedicated "Kto ćwiczy?" screen; settings page "Zmień profil" link */
         #screen-own-time .ot-pickscreen { max-width: 46rem; margin: 0 auto; padding: 1.1rem; }

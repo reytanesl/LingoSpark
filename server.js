@@ -1,3 +1,4 @@
+import { testPrepAction, resolveToday, parseSentenceReply } from './own-time-testprep.js';
 import dotenv from 'dotenv';
 import express from 'express';
 import fs from 'fs';
@@ -75,6 +76,8 @@ import {
     deleteOwnTimeProfile,
     activateOwnTimeProfile,
     setOwnTimeVocabFree,
+    getOwnTimeTestPrep,
+    setOwnTimeTestPrep,
     getOwnTimeProgress,
     saveOwnTimeProgress,
     resolveOwnTimeProfileId,
@@ -1164,6 +1167,36 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         } catch (err) {
             console.error('own-time vocab:', err);
             res.status(500).json({ error: 'Failed to update the vocabulary list state.' });
+        }
+    });
+
+    // "Sprawdzian za X dni" (test-prep plan): status / setup / off / next-day / set / result. Logic: own-time-testprep.js.
+    app.post('/api/own-time/test-prep', requireWritingAccess, async (req, res) => {
+        try {
+            const action = String(req.body?.action || 'status');
+            const cur = await getOwnTimeTestPrep(req.user.id, req.body?.profileId ?? null);
+            if (!cur) return res.status(404).json({ error: 'Profile not found.' });
+            const today = resolveToday(req.body?.today);
+            const out = testPrepAction({ action, body: req.body || {}, profile: cur.profile, state: cur.state, today });
+            if (out.error) return res.status(out.status || 400).json({ error: out.error });
+            if (out.save) await setOwnTimeTestPrep(req.user.id, cur.profileId, out.state);
+            if (!out.finish) return res.json(out.json);
+            // A set / mock test: gap sentences from the AI (one short call); templates in mock mode or on failure.
+            const apiKey = process.env.CURSOR_API_KEY;
+            let sentences = null;
+            if (apiKey && out.sentenceIdx.length) {
+                try {
+                    sentences = parseSentenceReply(await runVisionJsonPrompt({ apiKey, prompt: out.sentencePrompt, label: 'own-time-testprep-sentences' }), out.sentenceIdx);
+                } catch (e) {
+                    console.warn('Own-time test-prep sentences failed (templates used):', e.message);
+                }
+            } else if (!apiKey && !(process.env.OWN_TIME_MOCK === '1' && process.env.NODE_ENV !== 'production')) {
+                return res.status(503).json({ error: 'Server not configured: CURSOR_API_KEY is missing.' });
+            }
+            res.json({ ...out.finish(sentences), ...(apiKey ? {} : { mock: true }) });
+        } catch (err) {
+            console.error('own-time test-prep:', err);
+            res.status(500).json({ error: 'Test-prep plan failed.' });
         }
     });
 

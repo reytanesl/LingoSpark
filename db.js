@@ -3,6 +3,7 @@ import './wordset-import-core.js';
 import pg from 'pg';
 import crypto from 'crypto';
 import { advanceVocabState, sanitizeVocabState, OWN_TIME_VOCAB_TEXT_MAX } from './own-time-vocab.js';
+import { sanitizeTestPrepState } from './own-time-testprep.js';
 import { OWN_TIME_PROFILE_LIMIT, OWN_TIME_DEFAULT_PROFILE_NAME, sanitizeOwnTimeProfileName, sanitizeOwnTimeAvatar, sanitizeOwnTimeProgress, ownTimeProgressSummary } from './own-time-profiles.js';
 
 const { Pool } = pg;
@@ -295,6 +296,8 @@ export async function initDb() {
     await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS avatar TEXT NOT NULL DEFAULT ''`);
     // Progress through an imported vocabulary list (indexes only): see own-time-vocab.js.
     await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS vocab_state JSONB`);
+    // "Sprawdzian za X dni": test-prep plan state (own-time-testprep.js), per profile.
+    await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS test_prep JSONB`);
     await migrateOwnTimeProfiles(db);
 }
 
@@ -1832,6 +1835,7 @@ function rowToOwnTimeProfile(row) {
         voice: String(row.voice || ''),
         avatar: sanitizeOwnTimeAvatar(row.avatar),
         vocabState: sanitizeVocabState(row.vocab_state),
+        testPrep: sanitizeTestPrepState(row.test_prep),
         updatedAt: row.updated_at || null,
         canOfferEnglish: ownTimeCanOfferEnglish(row.age, row.cefr),
     };
@@ -2002,7 +2006,8 @@ export async function upsertOwnTimeProfile(userId, body, profileId = null) {
         `UPDATE own_time_student_profiles SET
             configured = TRUE, age = $3, class_label = $4, cefr = $5, interests = $6::jsonb, task_prefs = $7::jsonb,
             purpose = $8, intensity = $9, instr_lang = $10, topic = $11,
-            vocab_state = CASE WHEN vocab IS DISTINCT FROM $12 THEN NULL ELSE vocab_state END, vocab = $12, voice = COALESCE($13, voice),
+            vocab_state = CASE WHEN vocab IS DISTINCT FROM $12 THEN NULL ELSE vocab_state END,
+            test_prep = CASE WHEN vocab IS DISTINCT FROM $12 THEN NULL ELSE test_prep END, vocab = $12, voice = COALESCE($13, voice),
             name = COALESCE($14, name), avatar = COALESCE($15, avatar), updated_at = NOW()
          WHERE user_id = $1 AND id = $2
          RETURNING *`,
@@ -2097,6 +2102,27 @@ export async function setOwnTimeVocabFree(userId, profileId, free) {
     if (!st) return rowToOwnTimeProfile((await db.query(`SELECT * FROM own_time_student_profiles WHERE id = $1`, [pid])).rows[0]);
     st.free = !!free;
     const u = await db.query(`UPDATE own_time_student_profiles SET vocab_state = $3::jsonb, updated_at = NOW() WHERE user_id = $1 AND id = $2 RETURNING *`, [userId, pid, JSON.stringify(st)]);
+    return rowToOwnTimeProfile(u.rows[0]);
+}
+
+/** "Sprawdzian za X dni": read the active (or given) profile with its raw test-prep state. */
+export async function getOwnTimeTestPrep(userId, profileId) {
+    const db = getPool();
+    const pid = await resolveOwnTimeProfileId(userId, profileId);
+    if (!pid) return null;
+    const r = await db.query(`SELECT * FROM own_time_student_profiles WHERE user_id = $1 AND id = $2`, [userId, pid]);
+    const row = r.rows[0];
+    return row ? { profileId: pid, profile: rowToOwnTimeProfile(row), state: sanitizeTestPrepState(row.test_prep) } : null;
+}
+
+/** Store (or clear with null) the test-prep state of a profile. */
+export async function setOwnTimeTestPrep(userId, profileId, state) {
+    const db = getPool();
+    const pid = await resolveOwnTimeProfileId(userId, profileId);
+    if (!pid) return null;
+    const clean = state ? sanitizeTestPrepState(state) : null;
+    const u = await db.query(`UPDATE own_time_student_profiles SET test_prep = $3::jsonb, updated_at = NOW() WHERE user_id = $1 AND id = $2 RETURNING *`,
+        [userId, pid, clean ? JSON.stringify(clean) : null]);
     return rowToOwnTimeProfile(u.rows[0]);
 }
 
