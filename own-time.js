@@ -17,6 +17,17 @@
         'technologia', 'moda', 'gotowanie', 'nauka', 'książki', 'przyjaciele',
     ];
 
+    // Tests & Exams entry hint (tests-exams.js): { focus, cefr } or { testPrep: true }; only pre-fills the settings form.
+    let teHint = {};
+    function readTeHint() {
+        try {
+            const raw = sessionStorage.getItem('ls_te_focus');
+            sessionStorage.removeItem('ls_te_focus');
+            const h = raw ? JSON.parse(raw) : {};
+            teHint = h && typeof h === 'object' ? h : {};
+        } catch { teHint = {}; }
+        return teHint;
+    }
     let profile = null;
     let lessons = [];
     let lesson = null;
@@ -279,7 +290,8 @@
         const L = (p.instrLang === 'en' && canOfferEnglish(p)) ? 'en' : 'pl';
         const offerEn = canOfferEnglish({ age: p.age ?? 14, cefr: p.cefr || 'A2' });
         const interestSet = new Set((p.interests || []).map((x) => String(x).toLowerCase()));
-        const prefSet = new Set(p.taskPrefs || ['writing', 'vocab']);
+        const prefSet = new Set(teHint.focus ? [teHint.focus] : (p.taskPrefs || ['writing', 'vocab']));
+        const cefrDefault = teHint.cefr || p.cefr || 'A2';
 
         const chips = INTEREST_CHIPS.map((c) => {
             const checked = interestSet.has(c) ? ' checked' : '';
@@ -317,7 +329,7 @@
                     <label>${esc(L === 'en' ? 'Level (CEFR)' : 'Poziom (CEFR)')}
                         <select id="ot-cefr" class="pe-input">
                             ${['A0', 'A1', 'A2', 'B1', 'B2', 'C1'].map((c) =>
-                                `<option value="${c}"${(p.cefr || 'A2') === c ? ' selected' : ''}>${c}</option>`).join('')}
+                                `<option value="${c}"${cefrDefault === c ? ' selected' : ''}>${c}</option>`).join('')}
                         </select>
                         ${editMode ? `<span class="ot-level-note" id="ot-level-note" hidden>${esc(t('Nowy poziom obowiązuje od następnego zestawu — trwający zestaw i postępy zostają.', 'The new level applies from the next set — your current set and progress stay.'))}</span>` : ''}
                     </label>
@@ -810,7 +822,7 @@
     }
     /** Settings: "Przygotowanie do sprawdzianu" toggle with a date picker or "za ile dni" (1–14). */
     function testPrepSetupHtml() {
-        const on = !!(testPrep && testPrep.status !== 'off');
+        const on = !!(testPrep && testPrep.status !== 'off') || !!teHint.testPrep;
         const days = testPrep?.daysLeft > 0 ? testPrep.daysLeft : 3;
         return `<fieldset class="ot-tp-setup${on ? ' is-on' : ''}" id="ot-tp-setup">
             <label class="ot-tp-toggle"><input type="checkbox" id="ot-tp-on"${on ? ' checked' : ''}> <span class="ot-tp-switch" aria-hidden="true"></span>
@@ -2064,6 +2076,7 @@
     }
 
     async function initOwnTime() {
+        readTeHint();
         view = 'loading';
         capMessage = '';
         setStatus('');
@@ -2078,6 +2091,7 @@
             // Every entry (tile, deep link, reload) starts at "Kto ćwiczy?"; the restored set stays in memory for "Kontynuuj zestaw".
             if (profiles.length) view = 'pick';
             paint();
+            if (profiles.length && (teHint.testPrep || teHint.focus)) setStatus(esc(t('Wybierz profil, a potem otwórz Ustawienia — wybrane opcje są już zaznaczone.', 'Pick a profile, then open Settings — your choice is already pre-selected.')), 'success');
             if (resumed && view !== 'pick') setStatus(esc(t(`Wznowiono lekcję: ${view === 'feedback' ? 'podsumowanie' : `zadanie ${taskIndex + 1} z ${lesson.tasks.length}`}.`, `Lesson resumed: ${view === 'feedback' ? 'wrap-up' : `task ${taskIndex + 1} of ${lesson.tasks.length}`}.`)), 'success');
         } catch (err) {
             toggleLoading(false);

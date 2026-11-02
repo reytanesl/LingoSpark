@@ -23,6 +23,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" defer></script>
     <script src="demo-sets.js"></script>
     <script src="matura-mistakes.js"></script>
+    <link rel="stylesheet" href="tests-exams.css">
+    <script src="tests-exams.js"></script>
     <script src="frank-paragraphs.js"></script>
     <script src="frank-options.js"></script>
     <script src="wordset-import-core.js"></script>
@@ -4257,8 +4259,8 @@
                 </a>
                 <a href="#/writing" class="hub-square writing">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-pen-nib"></i></span>
-                    <span class="hub-title">Writing Suite</span>
-                    <span class="hub-sub">Primary English practice and Essay tools</span>
+                    <span class="hub-title">Tests &amp; Exams</span>
+                    <span class="hub-sub">E8, Matura, school tests, writing &amp; word games</span>
                 </a>
                 <a href="#/worksheets" class="hub-square worksheets">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></span>
@@ -7147,6 +7149,7 @@
                         if (lastRole === 'teacher') LiveGame.openHost({ fresh: true });
                         else LiveGame.openJoin();
                     } else {
+                        window.__teSub = root === 'writing' ? arg : '';
                         openHomeSection(root);
                     }
                 } else if (root === 'auction') {
@@ -8292,6 +8295,7 @@
             if (section) section.classList.add('active');
             if (sectionId === 'mysets') refreshMySetsView();
             if (sectionId === 'progress') loadProgressDashboard();
+            if (sectionId === 'writing' && window.TestsExams) { window.TestsExams.show(window.__teSub || ''); window.__teSub = ''; }
             if (sectionId === 'worksheets') {
                 refreshAuth().then(syncWorksheetMakerAccess);
             }

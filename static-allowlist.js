@@ -49,6 +49,7 @@ export const PUBLIC_SCRIPTS = new Set([
     'pe-topic-challenge.js',
     'penalty-match-core.js',
     'test-countdown.js',
+    'tests-exams.js',
     'vocab-auction-bank.js',
     'vocab-auction-chips.js',
     'word-cannon-client.js',
