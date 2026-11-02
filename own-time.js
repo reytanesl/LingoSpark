@@ -31,6 +31,9 @@
     let profile = null;
     let lessons = [];
     let lesson = null;
+    let printWithKey = false;
+    /** Word-box order as last shown on screen (print keeps the same order). */
+    const shownBanks = new WeakMap();
     let taskIndex = 0;
     let answers = {};
     let startedAt = 0;
@@ -798,6 +801,7 @@
         const extra = Number(task.boxExtra) || 0;
         // Reshuffle every time the box is shown, so the order never follows the gaps.
         for (let i = words.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [words[i], words[j]] = [words[j], words[i]]; }
+        shownBanks.set(task, words.slice());
         return `<div class="ot-wordbox" role="note" aria-label="${esc(t('Słowa do wykorzystania', 'Words to use'))}"><span class="ot-wordbox-label">${esc(t('Użyj słów', 'Use these words'))}</span>${words.map((w) => `<span class="ot-wordbox-word">${esc(w)}</span>`).join('')}${extra > 0 ? `<span class="ot-wordbox-extra">${esc(t(`+${extra} ${extra === 1 ? 'zbędny' : (extra < 5 ? 'zbędne' : 'zbędnych')}`, `+${extra} extra`))}</span>` : ''}</div>`;
     }
 
@@ -1114,6 +1118,7 @@
                     </div>
                     ${profiles.length ? profileBarHtml(true) : ''}
                     <button type="button" class="ot-reset-set" id="ot-reset-set" title="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}" aria-label="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}"><i class="fa-solid fa-rotate-left"></i><span class="ot-reset-label">${esc(t('Od nowa', 'Restart'))}</span></button>
+                    <span class="ot-print-wrap"><button type="button" class="ot-print-btn" id="ot-print" title="${esc(t('Drukuj cały zestaw zadań', 'Print the whole task set'))}"><i class="fa-solid fa-print" aria-hidden="true"></i><span class="ot-print-label">${esc(t('Drukuj', 'Print'))}</span></button><label class="ot-print-key" title="${esc(t('Dodaj klucz odpowiedzi na ostatniej stronie', 'Add the answer key on the last page'))}"><input type="checkbox" id="ot-print-key"${printWithKey ? ' checked' : ''}> ${esc(t('z kluczem', 'with key'))}</label></span>
                     <div class="ot-time" aria-live="polite">${esc(t(`Zadanie ${taskIndex + 1} z ${tasks.length}`, `Task ${taskIndex + 1} of ${tasks.length}`))}</div>
                 </div>
                 ${lesson.testPrep && testPrep ? readinessHtml(testPrep, true) : ''}
@@ -1906,6 +1911,11 @@
 
         // "Od nowa": reset ONLY the current set to its start (answers, checks, hints, tiles) — same tasks, no
         // new generation, no Keep going quota. Two taps (second within 4 s) so it can't happen by accident.
+        document.getElementById('ot-print-key')?.addEventListener('change', (ev) => { printWithKey = ev.target.checked; });
+        document.getElementById('ot-print')?.addEventListener('click', () => {
+            if (!window.OwnTimePrint || !lesson) return;
+            window.OwnTimePrint.print(lesson, { lang: lang(), withKey: printWithKey, formatName: (f) => (f !== 'simple' ? UOE_FORMAT_NAMES[f] : ''), shownBank: (tk) => shownBanks.get(tk) });
+        });
         document.getElementById('ot-reset-set')?.addEventListener('click', (ev) => {
             const btn = ev.currentTarget;
             if (!btn.classList.contains('is-confirm')) {
