@@ -140,3 +140,47 @@ test('The Bridge soundtrack: mp3 is a valid ~2 MB-or-less loop with a LAME/Xing 
     assert.ok(/Xing|Info/.test(headBytes), 'missing Xing/Info (LAME) header');
 });
 
+
+/* ---- simple student phone (Karol: "straightforward and fully intuitive") ---- */
+function loadClient(lang = 'en') {
+    const store = { ls_lang: lang };
+    const sandbox = { URLSearchParams, location: { search: '' }, localStorage: { getItem: (k) => store[k] ?? null }, document: { documentElement: { lang: 'en' } } };
+    sandbox.globalThis = sandbox; sandbox.window = sandbox;
+    vm.createContext(sandbox);
+    vm.runInContext(read('tide-bridge-client.js'), sandbox);
+    return sandbox.TideBridgeUI;
+}
+
+test('student phone: one goal line, one instruction, one water bar — no match clock, room code, span or tide jargon', () => {
+    const client = read('tide-bridge-client.js');
+    const phone = client.slice(client.indexOf('function ensurePhoneDom'), client.indexOf('function syncPlayerBanner'));
+    for (const id of ['tb-p-rounds', 'tb-p-pips', 'tb-p-title', 'tb-p-tide']) assert.match(phone, new RegExp(`id="${id}"`));
+    for (const gone of ['tb-p-clock', 'tb-p-room', 'tb-p-spanl', 'tb-p-tidep', 'tb-phone-foot', 'SPAN', 'MATCH']) assert.doesNotMatch(phone, new RegExp(gone));
+    const ui = loadClient('en');
+    const words = ['doAnswer', 'doBonus', 'stoneLaid', 'waitSpan', 'waitBridge', 'waitFail', 'correct', 'wrong'].map((k) => ui.text(k)).join(' | ');
+    assert.doesNotMatch(words, /span|chasm|shore|obstacle|tide|round/i, words);
+    assert.equal(ui.text('doAnswer'), 'Answer to build the bridge!');
+});
+
+test('student feedback says right/wrong and what happened to the bridge (EN + PL)', () => {
+    const en = loadClient('en');
+    assert.deepEqual({ ...en.resultTexts({ correct: true, gotCorrect: 2, neededCorrect: 3 }) }, { tone: 'ok', title: 'Correct!', sub: 'Your class has 2 of 3 answers for the next stone' });
+    assert.equal(en.resultTexts({ correct: true, cleared: true }).sub, 'A new stone is on the bridge!');
+    assert.equal(en.resultTexts({ correct: true, cleared: true, roundCleared: true }).sub, 'Bridge finished!');
+    const w = en.resultTexts({ correct: false, correctTerm: 'prevent', choices: ['a'] });
+    assert.equal(w.tone, 'wrong');
+    assert.match(w.sub, /“prevent”.*Choose it/);
+    assert.match(en.resultTexts({ correct: false, correctTerm: 'seal', challengeable: true }).sub, /Type it/);
+    const pl = loadClient('pl');
+    assert.equal(pl.text('doAnswer'), 'Odpowiadaj, aby budować most!');
+    assert.equal(pl.resultTexts({ correct: true, gotCorrect: 1, neededCorrect: 2 }).title, 'Dobrze!');
+    assert.match(pl.waitingText('cleared'), /Most gotowy/);
+    for (const k of ['doAnswer', 'doBonus', 'correct', 'wrong', 'waitSpan', 'ask', 'water', 'nextStone']) assert.notEqual(pl.text(k), en.text(k), k);
+});
+
+test('live client uses the simple student wording for waits and teacher notes', () => {
+    const live = read('live-game-client.js');
+    assert.match(live, /TideBridgeUI\.waitingText\(kind\)/);
+    assert.match(live, /waitingText\('correct'\)/);
+    assert.match(live, /showNote\('sent'\)/);
+});

@@ -26,6 +26,55 @@
     let musicWanted = false;
     let gestureArmed = false;
 
+    /* ---------------------------------------------------------------- student text (EN default, PL) */
+    const TXT = {
+        en: {
+            bridge: 'BRIDGE', nextStone: 'NEXT STONE', water: 'WATER',
+            doAnswer: 'Answer to build the bridge!', doAnswerSub: 'Every correct answer adds to the next stone',
+            doBonus: 'Bonus question — answer it!', doBonusSub: 'Not a word from the list — just answer',
+            stoneLaid: 'Stone laid!', nextQ: 'Next question coming…',
+            bridgeBuilt: 'Bridge {n} built!', nextBridge: 'Next bridge coming…', farCliff: 'You built every bridge!',
+            waterWon: 'The water won this time', waterWonSub: 'Wait for your teacher',
+            over: 'Game over', overSub: 'Look at the big screen',
+            correct: 'Correct!', correctStone: 'Your class has {got} of {need} answers for the next stone',
+            correctLaid: 'A new stone is on the bridge!', correctBridge: 'Bridge finished!',
+            wrong: 'Not quite', wrongAnswer: 'The answer is “{a}”. Choose it to help the bridge.', wrongTyped: 'The answer is “{a}”. Type it to help the bridge.', wrongNoAns: 'Try again — nothing is lost.',
+            ask: 'Ask teacher', waitClass: 'Correct! Wait — your classmates are building…',
+            waitSpan: 'Stone laid! Next question coming…', waitBridge: 'Bridge built! Next bridge coming…', waitVictory: 'You built every bridge!', waitFail: 'The water won this time…',
+            bonusLabel: 'BONUS QUESTION', questionLabel: 'QUESTION', wellDone: 'WELL DONE', waterLabel: 'WATER WON',
+            sent: 'Sent to your teacher — keep going!', accepted: 'Teacher accepted your answer — it counts!', rejected: 'Teacher said not this time — try again!',
+        },
+        pl: {
+            bridge: 'MOST', nextStone: 'NASTĘPNY KAMIEŃ', water: 'WODA',
+            doAnswer: 'Odpowiadaj, aby budować most!', doAnswerSub: 'Każda dobra odpowiedź dokłada część kamienia',
+            doBonus: 'Pytanie bonusowe — odpowiedz!', doBonusSub: 'To nie słówko z listy — po prostu odpowiedz',
+            stoneLaid: 'Kamień położony!', nextQ: 'Za chwilę kolejne pytanie…',
+            bridgeBuilt: 'Most {n} gotowy!', nextBridge: 'Za chwilę kolejny most…', farCliff: 'Zbudowaliście wszystkie mosty!',
+            waterWon: 'Tym razem wygrała woda', waterWonSub: 'Poczekaj na nauczyciela',
+            over: 'Koniec gry', overSub: 'Spójrz na duży ekran',
+            correct: 'Dobrze!', correctStone: 'Klasa ma {got} z {need} odpowiedzi do następnego kamienia',
+            correctLaid: 'Nowy kamień na moście!', correctBridge: 'Most gotowy!',
+            wrong: 'Nie tym razem', wrongAnswer: 'Poprawna odpowiedź to „{a}”. Wybierz ją, aby pomóc budować most.', wrongTyped: 'Poprawna odpowiedź to „{a}”. Wpisz ją, aby pomóc budować most.', wrongNoAns: 'Spróbuj jeszcze raz — nic nie tracisz.',
+            ask: 'Zapytaj nauczyciela', waitClass: 'Dobrze! Poczekaj — klasa buduje dalej…',
+            waitSpan: 'Kamień położony! Za chwilę kolejne pytanie…', waitBridge: 'Most gotowy! Za chwilę kolejny…', waitVictory: 'Zbudowaliście wszystkie mosty!', waitFail: 'Tym razem wygrała woda…',
+            bonusLabel: 'PYTANIE BONUSOWE', questionLabel: 'PYTANIE', wellDone: 'BRAWO', waterLabel: 'WYGRAŁA WODA',
+            sent: 'Wysłano do nauczyciela — graj dalej!', accepted: 'Nauczyciel uznał odpowiedź — liczy się!', rejected: 'Nauczyciel nie uznał — spróbuj dalej!',
+        },
+    };
+    function uiLang() {
+        try {
+            const q = new URLSearchParams(global.location?.search || '').get('lang');
+            if (q) return q.toLowerCase().startsWith('pl') ? 'pl' : 'en';
+            const stored = global.localStorage?.getItem('ls_lang');
+            if (stored) return stored.toLowerCase().startsWith('pl') ? 'pl' : 'en';
+            return String(global.document?.documentElement?.lang || 'en').toLowerCase().startsWith('pl') ? 'pl' : 'en';
+        } catch (e) { return 'en'; }
+    }
+    function T(key, vars) {
+        const d = TXT[uiLang()] || TXT.en;
+        return String(d[key] ?? TXT.en[key] ?? key).replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? String(vars[k]) : m));
+    }
+
     const last = { state: null, recvAt: 0, gameMinutes: 5 };
     const seen = { host: null, phone: null, moment: null };
     let hostBurstTimer = null;
@@ -592,6 +641,7 @@
         return document.querySelector('#screen-live-play .live-play-surface') || $('screen-live-play');
     }
 
+    /** Student phone: one goal line (bridge n/6 + next stone), one plain instruction, the bridge, one water bar. */
     function ensurePhoneDom() {
         let el = $('tb-phone');
         if (el) return el;
@@ -600,30 +650,21 @@
         if (!host || !S) return null;
         el = document.createElement('div');
         el.id = 'tb-phone';
-        el.className = 'tb-phone tb-hud';
+        el.className = 'tb-phone tb-hud tb-phone--simple';
         el.innerHTML = `
-            <div class="ptop">${LOGO}<div class="proom"><small>Room</small><b id="tb-p-room">----</b></div><div class="prounds"><i>${ICON_BRIDGE}</i><div><small>ROUND</small><b id="tb-p-rounds">1/6</b></div></div></div>
-            <div class="phase" id="tb-p-phase"><i id="tb-p-ico">${ICON_STONE}</i><div><b id="tb-p-title">Lay the next stone!</b><small id="tb-p-sub"></small></div></div>
+            <div class="ptop">
+                <div class="prounds" title=""><i>${ICON_BRIDGE}</i><div><small id="tb-p-bridgel">${esc(T('bridge'))}</small><b id="tb-p-rounds">1/6</b></div></div>
+                <div class="pnext"><small id="tb-p-nextl">${esc(T('nextStone'))}</small><div class="pips" id="tb-p-pips"></div><b id="tb-p-count">0<em>/3</em></b></div>
+            </div>
+            <div class="phase" id="tb-p-phase" role="status" aria-live="polite"><i id="tb-p-ico">${ICON_STONE}</i><div><b id="tb-p-title">${esc(T('doAnswer'))}</b><small id="tb-p-sub"></small></div><span class="pfb-act" id="tb-p-act"></span></div>
             <div class="pscene" aria-hidden="true">
                 <div class="tb-scene tb-scene--bridge" id="tb-p-scene">${S.bridgeSvg('tbp', { n: 2, theme: 'footbridge', vb: '292 268 780 440' })}</div>
                 <div class="tb-scene tb-scene--beach">${S.beachSvg('tbpb', { vb: '250 290 880 478' })}</div>
-                <div class="pstrip">
-                    <div class="pspan"><small id="tb-p-spanl">SPAN 1/2</small><div class="seg" id="tb-p-seg"></div></div>
-                    <div class="ptide"><small>TIDE</small><div class="tbar"><i id="tb-p-tide"></i></div><b id="tb-p-tidep">0%</b></div>
-                </div>
-                <div class="mini">
-                    <div class="clock"><small id="tb-p-clock-l">MATCH</small><b id="tb-p-clock">5:00</b></div>
-                    <div class="progress"><div class="pips" id="tb-p-pips"></div><b id="tb-p-count">0<em>/3</em></b></div>
-                </div>
+                <div class="pwater"><small id="tb-p-waterl">${esc(T('water'))}</small><div class="tbar"><i id="tb-p-tide"></i></div></div>
             </div>`;
         const body = host.querySelector('.live-play-body');
         if (body) host.insertBefore(el, body);
         else host.prepend(el);
-        const foot = document.createElement('div');
-        foot.id = 'tb-phone-foot';
-        foot.className = 'tb-pfoot';
-        foot.textContent = 'Your answer helps the whole class — no teams!';
-        host.appendChild(foot);
         return el;
     }
 
@@ -632,15 +673,40 @@
         if (!el) return;
         if (!state) {
             el.hidden = true;
-            $('tb-phone-foot')?.setAttribute('hidden', '');
             document.body.classList.remove('tb-phone-breaker', 'tb-phone-between', 'tb-phone-failed');
             return;
         }
         remember(state);
         el.hidden = false;
-        $('tb-phone-foot')?.removeAttribute('hidden');
         startTicker();
         applyPhone(true);
+    }
+
+    /** Plain student wording for the current moment: what to do now (title) + one short hint (sub). */
+    function phoneTexts(v) {
+        if (v.failedMoment) return { title: T('waterWon'), sub: T('waterWonSub'), icon: ICON_WAVE };
+        if (v.moment) return v.transition?.kind === 'victory'
+            ? { title: T('farCliff'), sub: '', icon: ICON_BRIDGE }
+            : { title: T('bridgeBuilt', { n: v.round }), sub: T('nextBridge'), icon: ICON_BRIDGE };
+        if (v.finished) return { title: T('over'), sub: T('overSub'), icon: ICON_WAVE };
+        if (v.breaker) return { title: T('doBonus'), sub: T('doBonusSub'), icon: ICON_SHELL };
+        if (v.between) return { title: T('stoneLaid'), sub: T('nextQ'), icon: ICON_STONE };
+        return { title: T('doAnswer'), sub: T('doAnswerSub'), icon: ICON_STONE };
+    }
+
+    let phoneFeedbackUntil = 0;
+    let answeredKey = null;   // this student already answered the current stone correctly
+    const stoneKey = (v) => `${v.round}|${v.spansDone}|${v.phase}`;
+    function paintPhonePhase(v) {
+        if (Date.now() < phoneFeedbackUntil) return;
+        const ph = phoneTexts(v);
+        const box = $('tb-p-phase');
+        if (box) box.classList.remove('is-ok', 'is-wrong');
+        $('tb-p-title').textContent = ph.title;
+        $('tb-p-sub').textContent = ph.sub;
+        $('tb-p-ico').innerHTML = ph.icon;
+        const act = $('tb-p-act');
+        if (act) act.innerHTML = '';
     }
 
     function applyPhone(stateChanged) {
@@ -663,28 +729,38 @@
         if (changed && stateChanged) seen.phone = v.spans;
         const inc = !changed && seen.phone != null && v.spans > seen.phone;
         if (stateChanged) seen.phone = v.spans;
-        $('tb-p-clock').textContent = formatClock(v.remaining);
         const pct = Math.round(v.ratio * 100);
         $('tb-p-tide').style.width = `${pct}%`;
-        $('tb-p-tidep').textContent = `${pct}%`;
         el.classList.toggle('tide-high', v.ratio >= 0.75);
         const nextFill = v.breaker || v.finished || v.between || v.moment ? null : v.got / v.need;
         S.updateBridge(svg, { n: v.n, built: v.built, nextFill, ratio: v.ratio, wave: v.wave, justLaid: inc && v.built > 0, sparkle: inc });
+        if (!stateChanged && Date.now() >= phoneFeedbackUntil && phoneFeedbackUntil) { phoneFeedbackUntil = 0; paintPhonePhase(v); }
         if (!stateChanged) return;
-        const ph = phaseTexts(v);
-        $('tb-p-title').textContent = ph.title;
-        $('tb-p-sub').textContent = ph.sub;
-        $('tb-p-ico').innerHTML = ph.icon;
-        $('tb-p-rounds').textContent = `${v.round}/${ROUNDS_TOTAL}`;
-        $('tb-p-spanl').textContent = `SPAN ${v.moment && !v.failedMoment ? v.n : v.spanNo}/${v.n}`;
-        $('tb-p-seg').innerHTML = segHtml(v.n, v.built, v.breaker || v.moment || v.finished ? -1 : v.spansDone ?? v.built);
-        $('tb-p-room').textContent = String($('lsp-room-code')?.textContent || hostCode()).trim() || '----';
+        paintPhonePhase(v);
+        $('tb-p-rounds').textContent = `${Math.min(ROUNDS_TOTAL, v.round)}/${ROUNDS_TOTAL}`;
+        $('live-play-definition')?.setAttribute('data-tb-label', v.failedMoment ? T('waterLabel') : v.breaker && answeredKey !== stoneKey(v) ? T('bonusLabel') : (v.between || v.moment || answeredKey === stoneKey(v)) ? T('wellDone') : T('questionLabel'));
         const got = v.between || (v.moment && !v.failedMoment) ? v.need : v.got;
         $('tb-p-pips').innerHTML = pipsHtml(got, v.need);
         $('tb-p-count').innerHTML = countHtml(got, v.need);
-        $('tb-p-clock-l').textContent = 'MATCH';
-        const foot = $('tb-phone-foot');
-        if (foot) foot.textContent = v.breaker ? 'Your answer counts for the whole class' : v.failedMoment ? 'The tide took the bridge…' : 'Your answer helps the whole class — no teams!';
+    }
+
+    /** Student feedback in the instruction banner itself (green / red), then back to the instruction. */
+    function phoneFeedback(tone, title, sub, ms, actBtn) {
+        const box = $('tb-p-phase');
+        const phone = $('tb-phone');
+        if (!box || !phone || phone.hidden) return null;
+        phoneFeedbackUntil = Date.now() + ms;
+        box.classList.remove('is-ok', 'is-wrong');
+        void box.offsetWidth;
+        box.classList.add(tone === 'wrong' ? 'is-wrong' : 'is-ok');
+        $('tb-p-ico').textContent = tone === 'wrong' ? '✗' : '✓';
+        $('tb-p-title').textContent = title;
+        $('tb-p-sub').textContent = sub || '';
+        const act = $('tb-p-act');
+        if (act) { act.innerHTML = ''; if (actBtn) act.appendChild(actBtn); }
+        clearTimeout(resultTimer);
+        resultTimer = setTimeout(() => { phoneFeedbackUntil = 0; const v = liveView(); if (v) paintPhonePhase(v); }, ms);
+        return box;
     }
 
     /* ---------------------------------------------------------------- shared ticker */
@@ -710,10 +786,15 @@
         const id = (data?.tier?.id || 'bronze');
         const done = Math.max(0, Number(data?.roundsCompleted ?? last.state?.roundsCompleted) || 0);
         const failed = Number(data?.failedRound ?? last.state?.failedRound) || 0;
-        const T = {
-            gold: { name: 'GOLD', line: 'Reached the Far Cliff', sub: `Full mastery — the class built ${done} of 6 bridges!` },
-            silver: { name: 'SILVER', line: 'Mid-Channel Explorers', sub: failed ? `The tide took the bridge in round ${failed}. So close — try again!` : 'Time ran out mid-channel. So close — try again!' },
-            bronze: { name: 'BRONZE', line: 'Swept Back to Shore', sub: failed ? `The tide took the bridge in round ${failed} — build faster next time!` : 'The clock won this time — build faster next round!' },
+        const pl = uiLang() === 'pl';
+        const T = pl ? {
+            gold: { name: 'ZŁOTO', line: 'Reached the Far Cliff', sub: `Zbudowaliście ${done} z 6 mostów!` },
+            silver: { name: 'SREBRO', line: 'Mid-Channel Explorers', sub: failed ? `Woda wygrała przy moście ${failed}. Tak blisko — spróbujcie znowu!` : 'Skończył się czas. Tak blisko — spróbujcie znowu!' },
+            bronze: { name: 'BRĄZ', line: 'Swept Back to Shore', sub: failed ? `Woda wygrała przy moście ${failed} — następnym razem szybciej!` : 'Skończył się czas — następnym razem szybciej!' },
+        } : {
+            gold: { name: 'GOLD', line: 'Reached the Far Cliff', sub: `You built ${done} of 6 bridges!` },
+            silver: { name: 'SILVER', line: 'Mid-Channel Explorers', sub: failed ? `The water won at bridge ${failed}. So close — try again!` : 'Time ran out. So close — try again!' },
+            bronze: { name: 'BRONZE', line: 'Swept Back to Shore', sub: failed ? `The water won at bridge ${failed} — build faster next time!` : 'Time ran out — build faster next time!' },
         };
         return { id: T[id] ? id : 'bronze', ...(T[id] || T.bronze) };
     }
@@ -737,7 +818,7 @@
                 <div class="rstrip" aria-label="Rounds">${stripHtml(st.roundResults || Array.from({ length: ROUNDS_TOTAL }, (_, i) => (i < done ? 'done' : i + 1 === failed ? 'failed' : 'pending')), 0)}</div></div>
             <div class="stats">
                 <div><b>${done}/${ROUNDS_TOTAL}</b><small>bridges completed</small></div>
-                <div><b>${spans}</b><small>spans laid</small></div>
+                <div><b>${spans}</b><small>stones laid</small></div>
                 <div><b>${correct}</b><small>correct answers</small></div>
                 <div><b>${players.length}</b><small>players</small></div>
             </div>
@@ -776,42 +857,59 @@
 
     /** Small floating card; never takes focus and never blocks the answer inputs. */
     function showNote(text, tone, extraHtml, onClick) {
+        const key = { sent: 'sent', accepted: 'accepted', rejected: 'rejected' }[text];
+        const msg = key ? T(key) : text;
+        if (phoneFeedback(tone, msg, '', 2600)) return $('tb-p-phase');
         document.getElementById('tb-result')?.remove();
         clearTimeout(resultTimer);
         const el = document.createElement('div');
         el.id = 'tb-result';
         el.className = `tb-result${tone === 'wrong' ? ' is-wrong' : ''}`;
         el.setAttribute('role', 'status');
-        el.innerHTML = `<i>${tone === 'wrong' ? '✗' : '✓'}</i><span>${esc(text)}${extraHtml || ''}</span>`;
+        el.innerHTML = `<i>${tone === 'wrong' ? '✗' : '✓'}</i><span>${esc(msg)}${extraHtml || ''}</span>`;
         document.body.appendChild(el);
         resultTimer = setTimeout(() => el.remove(), 2200);
         return el;
     }
 
-    function showResult(result, opts) {
-        if (!result) return null;
+    /** What the student sees after answering: right/wrong + what happened to the bridge, in plain words. */
+    function resultTexts(result) {
         const need = Number(result.neededCorrect) || Number(last.state?.neededCorrect) || 0;
         const got = Number(result.gotCorrect) || 0;
-        const what = result.wasPhase === 'breaker' || result.phase === 'breaker' || last.state?.phase === 'breaker' ? 'the obstacle' : 'this span';
         if (result.correct) {
-            const sub = result.cleared ? (result.roundCleared ? 'Bridge cleared!' : 'Span cleared!') : need ? `${got}/${need} correct for ${what}` : '';
-            return showNote('Correct!', 'ok', sub ? `<small>${esc(sub)}</small>` : '');
+            const sub = result.roundCleared ? T('correctBridge') : result.cleared ? T('correctLaid') : need ? T('correctStone', { got, need }) : '';
+            return { tone: 'ok', title: T('correct'), sub };
         }
-        const ans = result.correctTerm ? `Answer: ${result.correctTerm} — try again!` : 'Try again — no penalty!';
-        const canAsk = typeof opts?.onChallenge === 'function';
-        const el = showNote('Not quite', 'wrong', `<small>${esc(ans)}</small>`);
-        if (canAsk) {
-            el.classList.add('has-btn');
-            const b = document.createElement('button');
-            b.type = 'button';
-            b.className = 'tb-result-btn';
-            b.textContent = 'Ask teacher';
-            b.addEventListener('click', () => { el.remove(); opts.onChallenge(); });
-            el.appendChild(b);
-            clearTimeout(resultTimer);
-            resultTimer = setTimeout(() => el.remove(), 4500);
+        const typed = !result.choices && (result.inputMode === 'typed' || result.challengeable || result.wasPhase === 'breaker' || last.state?.phase === 'breaker');
+        const sub = result.correctTerm ? T(typed ? 'wrongTyped' : 'wrongAnswer', { a: result.correctTerm }) : T('wrongNoAns');
+        return { tone: 'wrong', title: T('wrong'), sub };
+    }
+
+    function showResult(result, opts) {
+        if (!result) return null;
+        const r = resultTexts(result);
+        let btn = null;
+        if (!result.correct && typeof opts?.onChallenge === 'function') {
+            btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'tb-result-btn';
+            btn.textContent = T('ask');
+            btn.addEventListener('click', () => { btn.remove(); opts.onChallenge(); });
         }
+        if (result.correct) {
+            const v = liveView();
+            if (v) { answeredKey = stoneKey(v); $('live-play-definition')?.setAttribute('data-tb-label', T('wellDone')); }
+        }
+        const inBanner = phoneFeedback(r.tone, r.title, r.sub, r.tone === 'wrong' ? 4500 : 2600, btn);
+        if (inBanner) return inBanner;
+        const el = showNote(r.title, r.tone, r.sub ? `<small>${esc(r.sub)}</small>` : '');
+        if (btn) { el.classList.add('has-btn'); el.appendChild(btn); clearTimeout(resultTimer); resultTimer = setTimeout(() => el.remove(), 4500); }
         return el;
+    }
+
+    /** Plain waiting line for the answer area (between stones / bridges). */
+    function waitingText(kind) {
+        return T({ victory: 'waitVictory', cleared: 'waitBridge', failed: 'waitFail', correct: 'waitClass' }[kind] || 'waitSpan');
     }
 
     function removeWinBackdrop(screen) {
@@ -841,5 +939,8 @@
         musicState,
         showResult,
         showNote,
+        waitingText,
+        text: T,
+        resultTexts,
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1870,13 +1870,14 @@
             document.body.classList.add('live-tide-player');
             TideBridgeUI.syncPlayerBanner(state);
             if (state.phase === 'between') {
-                showPlayerWaiting('Next span…');
+                showPlayerWaiting(TideBridgeUI.waitingText ? TideBridgeUI.waitingText('span') : 'Next span…');
             }
         });
 
         s.on('live:tide-between', (data) => {
             const kind = data?.kind;
-            showPlayerWaiting(kind === 'victory' ? 'Bridge cleared — you reached the far cliff!'
+            showPlayerWaiting(window.TideBridgeUI?.waitingText ? TideBridgeUI.waitingText(kind)
+                : kind === 'victory' ? 'Bridge cleared — you reached the far cliff!'
                 : kind === 'cleared' ? 'Bridge cleared! Crossing to the next chasm…'
                 : kind === 'failed' ? 'The tide took the bridge…'
                 : 'Nice! Get ready for the next span…');
@@ -1948,7 +1949,7 @@
                 spawnPlayerFeedbackBubble(Boolean(result.correct), false);
                 if (result.correct) {
                     setAnswerInputsEnabled(false);
-                    if (!result.cleared) showPlayerWaiting(`Correct! Waiting for your classmates… ${result.gotCorrect ?? ''}/${result.neededCorrect ?? ''}`.replace(' /', ''));
+                    if (!result.cleared) showPlayerWaiting(window.TideBridgeUI?.waitingText ? TideBridgeUI.waitingText('correct') : 'Correct! Waiting for your classmates…');
                 } else {
                     setAnswerInputsEnabled(true);
                     if (result.nextQuestion && typeof result.nextQuestion === 'object') showPlayerQuestion(result.nextQuestion);
@@ -2014,7 +2015,7 @@
             }
             if (data?.tide || isTideBridgeFormat(playerState?.gameFormat)) {
                 playerChallengePending = false;
-                window.TideBridgeUI?.showNote('Sent to your teacher — keep going!');
+                window.TideBridgeUI?.showNote('sent');
                 return;
             }
             showChallengeWaiting();
@@ -2024,7 +2025,7 @@
             if (result?.tide || result?.gameFormat === 'tide-bridge') {
                 hideChallengeActions();
                 answerPending = false;
-                window.TideBridgeUI?.showNote(result.accepted || result.challengeAccepted ? 'Teacher accepted your answer — it counts!' : 'Teacher said not this time — try again!', result.accepted || result.challengeAccepted ? 'ok' : 'wrong');
+                window.TideBridgeUI?.showNote(result.accepted || result.challengeAccepted ? 'accepted' : 'rejected', result.accepted || result.challengeAccepted ? 'ok' : 'wrong');
                 if (!(result.accepted || result.challengeAccepted)) setAnswerInputsEnabled(true);
                 return;
             }
