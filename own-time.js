@@ -209,7 +209,7 @@
             : `<button type="button" class="ot-ppick ot-ppick--add" data-ppick-new${full ? ' disabled' : ''} title="${esc(full ? t(`Limit: ${profileLimit} profili`, `Limit: ${profileLimit} profiles`) : '')}"><i class="fa-solid fa-plus" aria-hidden="true"></i> <span>${esc(full ? t(`Limit ${profileLimit} profili`, `${profileLimit} profiles max`) : t('Nowy profil', 'New profile'))}</span></button>`;
         return `<div class="ot-ppicker" role="group" aria-label="${esc(t('Wybierz profil', 'Choose a profile'))}">
             <div class="ot-ppicker-head"><strong>${esc(t('Kto ćwiczy?', 'Who is practising?'))}</strong><span>${esc(t(`Wybierz profil albo utwórz nowy (${profiles.length} z ${profileLimit}).`, `Pick a profile or create a new one (${profiles.length} of ${profileLimit}).`))}</span></div>
-            <div class="ot-ppicker-grid">${cards}${add}</div>
+            <div class="ot-ppicker-grid${profiles.length > 6 ? ' ot-ppicker-grid--many' : ''}">${cards}${add}</div>
         </div>`;
     }
     /** Entry step: a dedicated one-screen "Kto ćwiczy?" (always shown on entry, even with one profile). */

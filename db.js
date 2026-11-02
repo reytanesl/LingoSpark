@@ -1870,7 +1870,7 @@ export async function resolveOwnTimeProfileId(userId, profileId) {
     return row ? Number(row.id) : null;
 }
 
-export async function listOwnTimeProfiles(userId) {
+export async function listOwnTimeProfiles(userId, { limit = OWN_TIME_PROFILE_LIMIT } = {}) {
     const db = getPool();
     await activeOwnTimeRow(userId);
     const r = await db.query(`SELECT * FROM own_time_student_profiles WHERE user_id = $1 ORDER BY id`, [userId]);
@@ -1882,12 +1882,12 @@ export async function listOwnTimeProfiles(userId) {
             progress: ownTimeProgressSummary(row.progress),
         })),
         activeId: Number((r.rows.find((x) => x.is_active) || {}).id) || null,
-        limit: OWN_TIME_PROFILE_LIMIT,
+        limit,
     };
 }
 
 /** Create a named profile (becomes active; settings filled in next). Returns { ok, profile } or { ok:false, code }. */
-export async function createOwnTimeProfile(userId, body = {}) {
+export async function createOwnTimeProfile(userId, body = {}, { limit = OWN_TIME_PROFILE_LIMIT } = {}) {
     const db = getPool();
     const name = sanitizeOwnTimeProfileName(body.name);
     if (!name) return { ok: false, code: 'name_required' };
@@ -1896,7 +1896,7 @@ export async function createOwnTimeProfile(userId, body = {}) {
         await client.query('BEGIN');
         await client.query(`SELECT pg_advisory_xact_lock(hashtext('own_time_profiles'), $1)`, [userId]);
         const c = await client.query(`SELECT COUNT(*)::int AS n FROM own_time_student_profiles WHERE user_id = $1`, [userId]);
-        if (c.rows[0].n >= OWN_TIME_PROFILE_LIMIT) { await client.query('ROLLBACK'); return { ok: false, code: 'limit' }; }
+        if (c.rows[0].n >= limit) { await client.query('ROLLBACK'); return { ok: false, code: 'limit' }; }
         await client.query(`UPDATE own_time_student_profiles SET is_active = FALSE WHERE user_id = $1`, [userId]);
         const r = await client.query(
             `INSERT INTO own_time_student_profiles (user_id, name, is_active, configured) VALUES ($1, $2, TRUE, FALSE) RETURNING *`,

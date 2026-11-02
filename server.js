@@ -103,6 +103,7 @@ import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
 import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, buildCueRepairPrompt, applyCueRepair, publicOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
 import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY, OWN_TIME_MOCK_B1_REPLY, OWN_TIME_MOCK_B2_REPLY, OWN_TIME_MOCK_C1_REPLY } from './own-time-fixtures.js';
+import { ownTimeProfileLimit } from './own-time-profiles.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
 import { createWordSetImportHandlers, mountWordSetImportRoutes } from './wordset-import-ai.js';
 import { staticAllowlist } from './static-allowlist.js';
@@ -995,10 +996,11 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
 }
 
     // ---- In your own time (personalized practice coach) ----
+    const otLimit = (req) => ({ limit: ownTimeProfileLimit({ isAdmin: isAdminEmail(req.user?.email) }) });
     // Several named student profiles: list / create / rename / delete / switch, and per-profile in-progress lesson.
     app.get('/api/own-time/profiles', requireWritingAccess, async (req, res) => {
         try {
-            res.json(await listOwnTimeProfiles(req.user.id));
+            res.json(await listOwnTimeProfiles(req.user.id, otLimit(req)));
         } catch (err) {
             console.error('own-time profiles list:', err);
             res.status(500).json({ error: 'Failed to load profiles.' });
@@ -1007,11 +1009,11 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
 
     app.post('/api/own-time/profiles', requireWritingAccess, async (req, res) => {
         try {
-            const r = await createOwnTimeProfile(req.user.id, req.body || {});
+            const r = await createOwnTimeProfile(req.user.id, req.body || {}, otLimit(req));
             if (!r.ok) {
                 return res.status(r.code === 'limit' ? 409 : 400).json({ error: r.code === 'limit' ? 'Profile limit reached.' : 'A profile name is required.', code: r.code });
             }
-            res.json({ profile: r.profile, ...(await listOwnTimeProfiles(req.user.id)) });
+            res.json({ profile: r.profile, ...(await listOwnTimeProfiles(req.user.id, otLimit(req))) });
         } catch (err) {
             console.error('own-time profile create:', err);
             res.status(500).json({ error: 'Failed to create profile.' });
@@ -1022,7 +1024,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         try {
             const r = await renameOwnTimeProfile(req.user.id, req.params.id, req.body?.name);
             if (!r.ok) return res.status(r.code === 'not_found' ? 404 : 400).json({ error: r.code === 'not_found' ? 'Profile not found.' : 'A profile name is required.', code: r.code });
-            res.json(await listOwnTimeProfiles(req.user.id));
+            res.json(await listOwnTimeProfiles(req.user.id, otLimit(req)));
         } catch (err) {
             console.error('own-time profile rename:', err);
             res.status(500).json({ error: 'Failed to rename profile.' });
@@ -1033,7 +1035,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         try {
             const r = await deleteOwnTimeProfile(req.user.id, req.params.id);
             if (!r.ok) return res.status(404).json({ error: 'Profile not found.', code: r.code });
-            res.json(await listOwnTimeProfiles(req.user.id));
+            res.json(await listOwnTimeProfiles(req.user.id, otLimit(req)));
         } catch (err) {
             console.error('own-time profile delete:', err);
             res.status(500).json({ error: 'Failed to delete profile.' });
@@ -1044,7 +1046,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         try {
             const r = await activateOwnTimeProfile(req.user.id, req.params.id);
             if (!r.ok) return res.status(404).json({ error: 'Profile not found.', code: r.code });
-            res.json(await listOwnTimeProfiles(req.user.id));
+            res.json(await listOwnTimeProfiles(req.user.id, otLimit(req)));
         } catch (err) {
             console.error('own-time profile activate:', err);
             res.status(500).json({ error: 'Failed to switch profile.' });

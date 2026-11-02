@@ -4,6 +4,11 @@
  */
 
 export const OWN_TIME_PROFILE_LIMIT = 5;
+/** Admin accounts (ADMIN_EMAIL) may keep more profiles, e.g. one per student in a class. */
+export const OWN_TIME_ADMIN_PROFILE_LIMIT = 15;
+export function ownTimeProfileLimit({ isAdmin = false } = {}) {
+    return isAdmin ? OWN_TIME_ADMIN_PROFILE_LIMIT : OWN_TIME_PROFILE_LIMIT;
+}
 export const OWN_TIME_DEFAULT_PROFILE_NAME = 'Mój profil';
 /** Max serialized size of a saved in-progress lesson (lesson JSON + answers). */
 export const OWN_TIME_PROGRESS_MAX_BYTES = 200000;

@@ -3171,6 +3171,14 @@
         #screen-own-time .ot-pickscreen .ot-ppicker-head strong { font-size: 1.25rem; font-family: var(--font-primary); }
         #screen-own-time .ot-pickscreen .ot-ppicker-grid { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 0.6rem; }
         #screen-own-time .ot-pickscreen .ot-ppick { min-height: 3.6rem; }
+        /* Many profiles (admin: up to 15): wider, denser grid so all fit on one screen */
+        #screen-own-time .ot-pickscreen:has(.ot-ppicker-grid--many) { max-width: 64rem; }
+        #screen-own-time .ot-pickscreen .ot-ppicker-grid.ot-ppicker-grid--many { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.45rem; }
+        #screen-own-time .ot-pickscreen .ot-ppicker-grid.ot-ppicker-grid--many .ot-ppick { min-height: 2.9rem; padding-top: 0.35rem; padding-bottom: 0.35rem; }
+        #screen-own-time .ot-ppicker-grid--many > *, #screen-own-time .ot-ppicker-grid--many .ot-pinfo { min-width: 0; }
+        #screen-own-time .ot-ppicker-grid--many .ot-pinfo strong, #screen-own-time .ot-ppicker-grid--many .ot-pinfo span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        @media (max-width: 900px) { #screen-own-time .ot-pickscreen .ot-ppicker-grid.ot-ppicker-grid--many { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 520px) { #screen-own-time .ot-pickscreen .ot-ppicker-grid.ot-ppicker-grid--many { grid-template-columns: 1fr 1fr; gap: 0.35rem; } #screen-own-time .ot-pickscreen .ot-ppicker-grid.ot-ppicker-grid--many .ot-ppick { font-size: 0.85rem; min-height: 2.6rem; } }
         #screen-own-time .ot-change-profile { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0 0 0.4rem; padding: 0; font-size: 0.82rem; font-weight: 700; color: var(--ot-navy-2); background: none; border: 0; cursor: pointer; }
         #screen-own-time .ot-actions--sticky { position: sticky; bottom: 2.1rem; flex-wrap: nowrap; z-index: 3; margin: 0.75rem -0.5rem -0.5rem; padding: 0.6rem 0.5rem; background: linear-gradient(180deg, rgba(255,255,255,0.85), #fff 35%); border-top: 1px solid var(--ot-bank); }
         #screen-own-time .ot-change-profile:hover { color: #9a5b00; text-decoration: underline; }
