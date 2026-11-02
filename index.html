@@ -4249,8 +4249,8 @@
             <div id="home-hub" class="home-hub active">
                 <a href="#/vocab" class="hub-square">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
-                    <span class="hub-title">Vocab Review</span>
-                    <span class="hub-sub">Flashcards, Bomb, Grid &amp; Auction — free forever</span>
+                    <span class="hub-title">Vocab practice</span>
+                    <span class="hub-sub">Flashcards, word games &amp; Live Spark — free forever</span>
                 </a>
                 <a href="#/team" class="hub-square team">
                     <span class="hub-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
@@ -7149,8 +7149,16 @@
                         if (lastRole === 'teacher') LiveGame.openHost({ fresh: true });
                         else LiveGame.openJoin();
                     } else {
-                        window.__teSub = root === 'writing' ? arg : '';
-                        openHomeSection(root);
+                        const moved = root === 'writing' && window.TestsExams?.MOVED?.[arg];
+                        if (moved) {
+                            // Free games moved from Tests & Exams to Vocab practice.
+                            history.replaceState(null, '', moved);
+                            window.__teSub = moved.split('/')[2] || '';
+                            openHomeSection('vocab');
+                        } else {
+                            window.__teSub = (root === 'writing' || root === 'vocab') ? arg : '';
+                            openHomeSection(root);
+                        }
                     }
                 } else if (root === 'auction') {
                     goToAuction();
@@ -8299,6 +8307,7 @@
             if (sectionId === 'mysets') refreshMySetsView();
             if (sectionId === 'progress') loadProgressDashboard();
             if (sectionId === 'writing' && window.TestsExams) { window.TestsExams.show(window.__teSub || ''); window.__teSub = ''; }
+            if (sectionId === 'vocab' && window.TestsExams) { window.TestsExams.showVocab(window.__teSub || ''); window.__teSub = ''; }
             if (sectionId === 'worksheets') {
                 refreshAuth().then(syncWorksheetMakerAccess);
             }

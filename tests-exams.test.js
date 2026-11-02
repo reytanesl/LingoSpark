@@ -11,8 +11,25 @@ const J = (f) => (...a) => JSON.parse(JSON.stringify(f(...a)));
 const TE = { ...R, skillAction: J(R.skillAction), homeAction: J(R.homeAction), HOME: JSON.parse(JSON.stringify(R.HOME)), PICKERS: JSON.parse(JSON.stringify(R.PICKERS)), EXAMS: JSON.parse(JSON.stringify(R.EXAMS)) };
 const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 
-test('home order: Primary first, then exams, school test, own pace, workshop, word games', () => {
-    assert.deepEqual(TE.HOME.map((h) => h[0]), ['primary', 'e8', 'podst', 'rozsz', 'dwuj', 'school-test', 'own', 'workshop', 'games']);
+test('Tests & Exams home: only premium exam/test items', () => {
+    assert.deepEqual(TE.HOME.map((h) => h[0]), ['e8', 'podst', 'rozsz', 'dwuj', 'school-test', 'own', 'workshop']);
+    for (const [id] of TE.HOME) assert.equal(R.homeGated(id), true, id);
+    assert.equal(R.homeGated('ai'), true);
+    assert.deepEqual(Object.keys(TE.PICKERS).sort(), ['ai', 'workshop']);
+});
+
+test('Vocab practice home + moved routes', () => {
+    const VP = JSON.parse(JSON.stringify(R.VP_HOME));
+    assert.deepEqual(VP.map((h) => h[0]), ['learn', 'games', 'countdown', 'primary', 'class', 'sets']);
+    assert.deepEqual(JSON.parse(JSON.stringify(R.MOVED)), { primary: '#/vocab/primary', games: '#/vocab/games' });
+    assert.deepEqual(J(R.vpHomeAction)('countdown'), { kind: 'hash', hash: '#/setup/test-countdown' });
+    assert.deepEqual(J(R.vpHomeAction)('sets'), { kind: 'fn', fn: 'openWordSets' });
+    for (const id of ['learn', 'games', 'primary', 'class']) assert.deepEqual(J(R.vpHomeAction)(id), { kind: 'sub', sub: id });
+    for (const id of ['learn', 'games', 'class', 'primary']) assert.equal(R.vpHomeGated(id), false, id);
+    // every vocab-section activity is reachable from the new home
+    const hashes = new Set(Object.values(JSON.parse(JSON.stringify(R.VP_PICKERS))).flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => x[4].hash || x[4].url || x[4].game))));
+    hashes.add('#/setup/test-countdown');
+    for (const h of ['#/setup/flashcard', '#/setup/memory-flip', '#/setup/word-repair', '#/setup/speed-match', '#/setup/bomb', '#/setup/grid', '#/auction', '#/penalty-match', '#/setup/test-countdown', '#/live/host', '#/live/join', 'vocab-scenes.html', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review', 'pe-detail', 'pe-link']) assert.ok(hashes.has(h), h);
 });
 
 test('exam level presets', () => {
@@ -35,23 +52,25 @@ test('skill routing into existing activities with level preset', () => {
 });
 
 test('home tiles route to pickers, own time and school test', () => {
-    for (const id of ['primary', 'e8', 'workshop', 'games']) assert.deepEqual(TE.homeAction(id), { kind: 'sub', sub: id });
+    for (const id of ['e8', 'workshop']) assert.deepEqual(TE.homeAction(id), { kind: 'sub', sub: id });
     assert.deepEqual(TE.homeAction('school-test'), { kind: 'own', testPrep: true });
     assert.deepEqual(TE.homeAction('own'), { kind: 'hash', hash: '#/setup/own-time' });
 });
 
 test('pickers only point at existing setups', () => {
-    const games = Object.values(TE.PICKERS).flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => x[4])));
+    const games = [...Object.values(TE.PICKERS), ...Object.values(JSON.parse(JSON.stringify(R.VP_PICKERS)))].flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => x[4])));
     for (const a of games) {
         if (a.kind === 'hash' && a.hash.startsWith('#/setup/')) assert.ok(html.includes(`href="${a.hash}"`), a.hash);
         if (a.kind === 'pe') assert.match(a.game, /^pe-/);
     }
-    assert.deepEqual(TE.PICKERS.primary.groups.flatMap((g) => g[1].map((x) => x[2][1])), ['Dictation', 'Colour Blocks', 'Vocab Scenes', 'Topic Challenge', 'Review Chatbot', 'Detail Detective', 'Link Master']);
+    assert.deepEqual(JSON.parse(JSON.stringify(R.VP_PICKERS)).primary.groups.flatMap((g) => g[1].map((x) => x[2][1])), ['Dictation', 'Colour Blocks', 'Vocab Scenes', 'Topic Challenge', 'Review Chatbot', 'Detail Detective', 'Link Master']);
 });
 
 test('index wires the suite and keeps old writing content', () => {
     assert.match(html, /<script src="tests-exams\.js"><\/script>/);
     assert.match(html, /window\.TestsExams\.show\(/);
+    assert.match(html, /window\.TestsExams\.showVocab\(/);
+    assert.match(html, /Vocab practice<\/span>/);
     assert.match(html, /Tests &amp; Exams/);
     assert.match(html, /id="own-time-tile"/);
     assert.ok(isPublicStaticPath('/tests-exams.js'));
@@ -73,12 +92,11 @@ test('gating: every exam skill that opens an activity is gated, except soon/resu
 });
 
 test('gating: free status kept for free PE games, Vocab Scenes and word games', () => {
-    const byName = Object.fromEntries(Object.values(TE.PICKERS).flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => [x[2][1], R.isGated(x[4])]))));
-    for (const free of ['Dictation', 'Colour Blocks', 'Vocab Scenes', 'Penalty Match', 'Test Countdown', 'Vocab Review', 'Live Spark']) assert.equal(byName[free], false, free);
+    const byName = Object.fromEntries([...Object.values(TE.PICKERS), ...Object.values(JSON.parse(JSON.stringify(R.VP_PICKERS)))].flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => [x[2][1], R.isGated(x[4])]))));
+    for (const free of ['Dictation', 'Colour Blocks', 'Vocab Scenes', 'Penalty Match', 'Flashcards', 'Memory Flip', 'Word Repair', 'Speed Match', 'Bomb Defusal', 'Grid Territory', 'Vocab Auction', 'Host Live Spark', 'Join with a code']) assert.equal(byName[free], false, free);
     for (const paid of ['Topic Challenge', 'Review Chatbot', 'Detail Detective', 'Link Master', 'Vocab Upgrade', 'Bloat Slasher', 'Tight Write', 'Transitions', "Devil's Advocate", 'Frankenstein', 'Mission: Chat', 'Odyssey']) assert.equal(byName[paid], true, paid);
     assert.equal(R.isGated({ kind: 'own', testPrep: true }), true);
     for (const id of ['e8', 'podst', 'rozsz', 'dwuj', 'school-test', 'own', 'workshop', 'ai']) assert.equal(R.homeGated(id), true, id);
-    for (const id of ['primary', 'games']) assert.equal(R.homeGated(id), false, id);
 });
 
 test('gating: module lists match index.html WRITING_GAMES / FREE_PE_GAMES', () => {
