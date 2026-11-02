@@ -954,7 +954,7 @@
             return `<li><span class="ot-tp-wname">${esc(w.pl || w.name)}</span><span class="ot-tp-bar is-weak"><span style="width:${pct}%"></span></span><span class="ot-tp-wscore">${w.ok}/${w.total}</span></li>`;
         }).join('');
         return `<div class="ot-tp-mockres">
-            <div class="ot-tp-score"><span class="ot-tp-big">${m ? m.score : r.ok}/${m ? m.total : r.total}</span><span>${m ? `${m.pct}% · ${esc(t(`ocena ${m.grade}`, `grade ${m.grade}`))}` : ''}</span></div>
+            <div class="ot-tp-score"><span class="ot-tp-big">${m ? m.score : r.ok}/${m ? m.total : r.total}</span><span>${m ? `${m.pct}%` : ''}</span></div>
             ${weak ? `<h4 class="ot-tp-sub">${esc(t('Najsłabsze działy', 'Weakest categories'))}</h4><ul class="ot-tp-weak">${weak}</ul>` : `<p class="ot-lead">${esc(t('Wszystkie działy bez błędów — świetnie!', 'No mistakes in any category — great!'))}</p>`}
         </div>`;
     }

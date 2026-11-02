@@ -101,7 +101,7 @@ test('test date: date or "za ile dni", 1–14 days', () => {
 const fresh = (days = 3) => { const { items, sections } = parsed(); return { items, sections, st: freshTestPrepState({ items, sections, days, today, testDate: '2026-11-04' }) }; };
 const answerAll = (lesson, okFn) => lesson.tasks.flatMap((t) => t.items.map((it) => ({ ix: it.ix, kind: t.tp.kind, ok: okFn(it.ix, t.tp.kind) })));
 
-test('sets: new items of the day, recognition → production, MC shuffled, ≤8 items per task', () => {
+test('sets: new items of the day, recognition → production, MC shuffled, ≤6 items per task', () => {
     const { items, st } = fresh();
     const sp = nextSetPlan(st, today);
     assert.equal(sp.kind, 'learn');
@@ -110,7 +110,7 @@ test('sets: new items of the day, recognition → production, MC shuffled, ≤8 
     const L = buildTestPrepLesson(st, items, sp, { cefr: 'B2' });
     const kinds = L.tasks.map((t) => t.tp.kind);
     assert.ok(kinds.indexOf('match') < kinds.indexOf('trans'), 'recognition first');
-    assert.ok(L.tasks.every((t) => t.items.length <= 8 && t.items.length >= 1));
+    assert.ok(L.tasks.every((t) => t.items.length <= 6 && t.items.length >= 1));
     for (const ix of sp.newIdx) {
         const seen = L.tasks.filter((t) => t.items.some((it) => it.ix === ix)).map((t) => t.tp.kind);
         assert.ok(seen.some((k) => k === 'match' || k === 'mc') && seen.some((k) => k === 'trans' || k === 'gap'), `item ${ix}: ${seen}`);
@@ -136,6 +136,11 @@ test('level-dependent gap cues: word box A0–A2, box + distractors B1, Polish f
     const sp = nextSetPlan(st, today);
     const a2 = buildTestPrepLesson(st, items, sp, { cefr: 'A2' }).tasks.find((t) => t.tp.kind === 'gap');
     assert.deepEqual([...a2.wordBank].sort(), a2.items.map((x) => x.answer).sort());
+    for (const cefr of ['A2', 'B1', 'B2']) {
+        const L = buildTestPrepLesson(st, items, sp, { cefr });
+        for (const ix of sp.newIdx) assert.ok(L.tasks.some((t) => ['trans', 'gap', 'wf'].includes(t.tp.kind) && t.items.some((it) => it.ix === ix)), `${cefr} item ${ix} has a production task`);
+        assert.ok(L.tasks.every((t) => t.items.length <= (t.tp.kind === 'match' ? 4 : t.tp.kind === 'mc' ? 5 : 6)), cefr);
+    }
     const b1 = buildTestPrepLesson(st, items, sp, { cefr: 'B1' }).tasks.find((t) => t.tp.kind === 'gap');
     assert.equal(b1.wordBank.length, b1.items.length + 2);
 });
@@ -199,7 +204,7 @@ test('mock test: whole list, every section, mixed types, no hints, scored with t
     const ix = m.tasks.flatMap((t) => t.items.map((it) => it.ix));
     for (const s of sections) assert.ok(ix.some((i) => i >= s.from && i < s.to), s.name);
     assert.ok(new Set(m.tasks.map((t) => t.tp.kind)).size >= 4);
-    assert.ok(m.tasks.every((t) => !t.steps.length && !t.hint && t.items.length <= 8));
+    assert.ok(m.tasks.every((t) => !t.steps.length && !t.hint && t.items.length <= 6));
     const res = ix.map((i) => ({ ix: i, ok: items[i].sec !== 2 }));
     const sum = mockSummary(items, sections, res);
     assert.equal(sum.total, ix.length);
@@ -245,4 +250,48 @@ test('a skipped day is caught up first (calendar moved on, day-1 items not lost)
     const st2 = applyTestPrepResults(st, L.testPrep, []);
     assert.equal(st2.cursor[0], sp.newIdx.length);
     assert.equal(st2.cursor[1], 0);
+});
+
+test('wrapped entries: a line continuing in BOTH column pairs, article-ended cells, sentence-like blocks', () => {
+    const txt = ` Advertising · Reklama
+labelling                 etykietowanie,                 make informed        podejmować świadome
+                          oznakowanie                    decisions            decyzje
+leaflet                   ulotka                         slogan               hasło reklamowe
+ Bank · Bank
+bank account              konto bankowe                  open / close an      otworzyć / zamknąć
+                                                         account              konto
+pay money into an         wpłacić pieniądze na           savings account      konto oszczędnościowe
+account                   konto
+loan                      pożyczka, kredyt               ATM / cash machine   bankomat
+ Complaint letter · List z reklamacją
+I am writing to           piszę, aby złożyć              Dear Sir or Madam,     Szanowni Państwo, … Z
+complain about …          reklamację w sprawie …         … Yours faithfully,    poważaniem
+I purchased … on …        kupiłem / kupiłam …            It stopped working     przestał działać po
+                          dnia …                         after a week.          tygodniu
+I find this               uważam to za całkowicie        I would be grateful    byłbym wdzięczny /
+completely                niedopuszczalne                if you could …         byłabym wdzięczna,
+unacceptable.                                                                   gdyby …
+`;
+    const { items } = parseTestPrepList(txt);
+    const pairs = items.map((x) => `${x.en} = ${x.pl}`);
+    for (const want of [
+        'labelling = etykietowanie, oznakowanie', 'make informed decisions = podejmować świadome decyzje',
+        'open / close an account = otworzyć / zamknąć konto', 'pay money into an account = wpłacić pieniądze na konto',
+        'savings account = konto oszczędnościowe', 'ATM / cash machine = bankomat',
+        'I am writing to complain about … = piszę, aby złożyć reklamację w sprawie …', 'I purchased … on … = kupiłem / kupiłam … dnia …',
+        'It stopped working after a week. = przestał działać po tygodniu', 'I find this completely unacceptable. = uważam to za całkowicie niedopuszczalne',
+        'I would be grateful if you could … = byłbym wdzięczny / byłabym wdzięczna, gdyby …',
+    ]) assert.ok(pairs.includes(want), `${want}\n${pairs.join('\n')}`);
+    assert.ok(!items.some((x) => ['decisions', 'account', 'complain about …', 'after a week.'].includes(x.en)));
+    assert.equal(items.length, 16);
+});
+
+test('mock result: score and percentage only (no school-grade conversion)', () => {
+    const { items, sections, st } = fresh();
+    const m = buildMockTest(st, items, sections, { cefr: 'B2' });
+    const sum = mockSummary(items, sections, m.tasks.flatMap((t) => t.items.map((it, k) => ({ ix: it.ix, ok: k % 3 > 0 }))));
+    assert.equal(sum.grade, undefined);
+    assert.ok(sum.pct >= 0 && sum.pct <= 100);
+    const client = fs.readFileSync(new URL('./own-time.js', import.meta.url), 'utf8');
+    assert.ok(!/ocena|m\.grade/.test(client));
 });

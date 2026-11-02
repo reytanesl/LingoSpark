@@ -149,15 +149,41 @@ export function parseTestPrepList(text) {
         let rows = Array(pairs).fill(null); // open row per pair
         const order = []; // completed rows in reading order: left column first, then right (per block)
         const perPair = Array.from({ length: pairs }, () => []);
+        // Sentence-like block (e.g. "Complaint letter": most entries start with a capital letter)?
+        const firsts = b.lines.flatMap((l) => segments(l).filter((sg) => colOf(sg.at) % 2 === 0).map((sg) => sg.text));
+        const sentenceMode = firsts.length >= 4 && firsts.filter((x) => /^\p{Lu}/u.test(x)).length >= firsts.length * 0.4;
         for (const l of b.lines) {
             const cells = [];
             for (const s of segments(l)) { const c = colOf(s.at); cells[c] = joinCell(cells[c] || '', s.text); }
+            // Table rows wrap together: if any column pair on this line is clearly a continuation (a cell missing,
+            // or the previous cell ended with "/" or ","), the whole line continues the open rows — also a pair
+            // with both cells filled ("make informed / decisions", "podejmować świadome / decyzje").
+            const cellsOf = (p) => [cells[p * 2] || '', cells[p * 2 + 1] || ''];
+            // Per pair: 'cont' (surely continues), 'new' (surely a new entry), 'maybe'.
+            const UP = /^\p{Lu}/u;
+            const LOW = /^[\p{Ll}…]/u;
+            const done = (x) => /[.!?…]$/.test(String(x || '').trim());
+            const stateOf = (p) => {
+                const [en, pl] = cellsOf(p);
+                const prev = rows[p];
+                if (!prev || (!en && !pl)) return 'new';
+                if (!en || !pl) return 'wrap';
+                // sentence-like entries ("I am writing to / complain about …"): capital = new, small letter = wrapped
+                if (sentenceMode && UP.test(prev.en) && UP.test(en)) return 'new';
+                if (sentenceMode && UP.test(prev.en) && LOW.test(en) && !done(prev.en)) return 'cont';
+                if (/\b(a|an|the)$/i.test(prev.en.trim())) return 'cont'; // "pay money into an / account"
+                if (contEnd(prev.en) || contEnd(prev.pl)) return 'cont';
+                return 'maybe';
+            };
+            const states = Array.from({ length: pairs }, (_, p) => stateOf(p));
+            // only a cell missing in one pair (a clear wrap) carries the other pairs of that line along
+            const lineCont = states.includes('wrap');
+            const isCont = (p) => states[p] === 'wrap' || states[p] === 'cont' || (lineCont && states[p] === 'maybe');
             for (let p = 0; p < pairs; p += 1) {
-                const en = cells[p * 2] || '';
-                const pl = cells[p * 2 + 1] || '';
+                const [en, pl] = cellsOf(p);
                 if (!en && !pl) continue;
                 const prev = rows[p];
-                if (prev && (!en || !pl || contEnd(prev.en))) { prev.en = joinCell(prev.en, en); prev.pl = joinCell(prev.pl, pl); continue; }
+                if (prev && isCont(p)) { prev.en = joinCell(prev.en, en); prev.pl = joinCell(prev.pl, pl); continue; }
                 rows[p] = { en, pl };
                 perPair[p].push(rows[p]);
             }
@@ -493,7 +519,7 @@ function makeTask(kind, idx, items, ctx) {
 
 /**
  * Recipes per stage (recognition → production). Pools: n1/n2 = halves of the new items, r1/r2/r3 = thirds of the
- * review + mistake-bag items, all = everything (for the review-only sets). Each task ≤ 8 items (one screen).
+ * review + mistake-bag items, all = everything (for the review-only sets). Each task ≤ MAX_PER_TASK items (one screen).
  */
 const RECIPES = {
     0: [['match', 'n1', 'r1'], ['match', 'n2', 'r2'], ['mc', 'n1', 'r3'], ['mc', 'n2'], ['trans', 'n1'], ['gap', 'n2']],
@@ -501,7 +527,15 @@ const RECIPES = {
     2: [['mc', 'n1', 'n2'], ['trans', 'n1', 'r1'], ['gap', 'n2', 'r2'], ['wf'], ['trans', 'n2', 'r3'], ['gap', 'n1']],
     3: [['mc', 'r1'], ['trans', 'r2'], ['gap', 'r3'], ['wf'], ['trans', 'r1'], ['gap', 'r2'], ['trans', 'r3']],
 };
-const MAX_PER_TASK = 8;
+const MAX_PER_TASK = 6; // one screen also on a phone (375×812)
+const MAX_PER_MC_TASK = 5; // A–D options take more room
+// matching shows long Polish options; a word box (A0–B1) takes the room of ~2 sentences
+const capFor = (kind, cefr = 'B2') => {
+    if (kind === 'match') return MAX_PER_MC_TASK - 1;
+    if (kind === 'mc') return MAX_PER_MC_TASK;
+    if (kind === 'gap' && gapCueMode(cefr) !== 'pl') return MAX_PER_TASK - 2;
+    return MAX_PER_TASK;
+};
 const uniqByIx = (arr) => arr.filter((w, i, a) => a.findIndex((x) => x.ix === w.ix) === i);
 
 /**
@@ -526,8 +560,16 @@ export function buildTestPrepLesson(st, items, setPlan, { cefr = 'B1', sentences
     const tasks = [];
     for (const [kind, ...poolNames] of recipe) {
         if (kind === 'wf') { if (wf.length >= 2) tasks.push(makeTask('wf', wf, items, { cefr: c, r, prevPos, sentences })); continue; }
-        const idx = [...new Set(poolNames.flatMap((n) => pools[n] || []))].slice(0, MAX_PER_TASK);
+        const idx = [...new Set(poolNames.flatMap((n) => pools[n] || []))].slice(0, capFor(kind, c));
         if (idx.length >= 2 || (idx.length && all.length < 4)) tasks.push(makeTask(kind, idx, items, { cefr: c, r, prevPos, sentences }));
+    }
+    // Every new item needs a production task: items cut by a task cap go into a translation task with room.
+    const prodSeen = new Set(tasks.filter((t) => ['trans', 'gap', 'wf'].includes(t.tp.kind)).flatMap((t) => t.items.map((it) => it.ix)));
+    const missing = learn.filter((ix) => !prodSeen.has(ix));
+    if (missing.length) {
+        const room = tasks.find((t) => t.tp.kind === 'trans' && t.items.length + missing.length <= MAX_PER_TASK);
+        const extra = makeTask('trans', missing, items, { cefr: c, r, prevPos, sentences });
+        if (room) room.items.push(...extra.items); else tasks.push(extra);
     }
     tasks.forEach((t, i) => { t.n = i + 1; });
     const day = setPlan.day;
@@ -577,9 +619,12 @@ export function buildMockTest(st, items, sections, { cefr = 'B1', sentences = nu
     ];
     const tasks = [];
     for (const [kind, idx, letter] of parts) {
-        // each task fits one screen: at most 8 items
-        for (let k = 0; k < idx.length; k += MAX_PER_TASK) {
-            const tsk = makeTask(kind, idx.slice(k, k + MAX_PER_TASK), items, { cefr: c, r, prevPos, sentences });
+        // each task fits one screen: at most MAX_PER_TASK items
+        // even chunks (7 → 4 + 3, not 6 + 1), each fits one screen
+        const chunks = Math.ceil(idx.length / capFor(kind, c));
+        const size = Math.ceil(idx.length / Math.max(1, chunks));
+        for (let k = 0; k < idx.length; k += size) {
+            const tsk = makeTask(kind, idx.slice(k, k + size), items, { cefr: c, r, prevPos, sentences });
             tsk.mockSection = letter;
             tasks.push(tsk);
         }
@@ -610,11 +655,7 @@ export function mockSummary(items, sections, results) {
     const total = results.filter((r) => items[r.ix]).length;
     const cats = [...per.values()];
     const weak = cats.filter((x) => x.ok < x.total).sort((a, b) => (a.ok / a.total - b.ok / b.total) || (b.total - a.total)).slice(0, 3);
-    return { score: ok, total, pct: total ? Math.round((ok / total) * 100) : 0, categories: cats, weak, grade: gradeFor(total ? ok / total : 0) };
-}
-/** Polish school grade scale (typical: 30/50/70/85/95 %). */
-export function gradeFor(p) {
-    if (p >= 0.95) return 6; if (p >= 0.85) return 5; if (p >= 0.7) return 4; if (p >= 0.5) return 3; if (p >= 0.3) return 2; return 1;
+    return { score: ok, total, pct: total ? Math.round((ok / total) * 100) : 0, categories: cats, weak };
 }
 
 /* ---------------------------------------------------------------- results → state */
