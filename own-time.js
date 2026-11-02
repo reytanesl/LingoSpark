@@ -795,7 +795,10 @@
     function wordBoxHtml(task) {
         const words = Array.isArray(task.wordBank) ? task.wordBank.filter(Boolean) : [];
         if (!words.length) return '';
-        return `<div class="ot-wordbox" role="note" aria-label="${esc(t('Słowa do wykorzystania', 'Words to use'))}"><span class="ot-wordbox-label">${esc(t('Użyj słów', 'Use these words'))}</span>${words.map((w) => `<span class="ot-wordbox-word">${esc(w)}</span>`).join('')}</div>`;
+        const extra = Number(task.boxExtra) || 0;
+        // Reshuffle every time the box is shown, so the order never follows the gaps.
+        for (let i = words.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [words[i], words[j]] = [words[j], words[i]]; }
+        return `<div class="ot-wordbox" role="note" aria-label="${esc(t('Słowa do wykorzystania', 'Words to use'))}"><span class="ot-wordbox-label">${esc(t('Użyj słów', 'Use these words'))}</span>${words.map((w) => `<span class="ot-wordbox-word">${esc(w)}</span>`).join('')}${extra > 0 ? `<span class="ot-wordbox-extra">${esc(t(`+${extra} ${extra === 1 ? 'zbędny' : (extra < 5 ? 'zbędne' : 'zbędnych')}`, `+${extra} extra`))}</span>` : ''}</div>`;
     }
 
     /* ---------- "Sprawdzian za X dni" (test-prep plan; server logic in own-time-testprep.js) ---------- */

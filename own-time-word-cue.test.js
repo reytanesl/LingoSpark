@@ -109,9 +109,9 @@ test('cue tier rises with level; difficulty shifts it one step; young learners g
 const boxTask = () => ({ type: 'vocab_drill', instruction: 'Uzupełnij.', wordBank: ['am', 'is', 'are', 'was', 'were', 'be', 'been'], items: [
     { q: 'I ___ ok.', answer: 'am' }, { q: 'He ___ ok.', answer: 'is' }, { q: 'We ___ ok.', answer: 'are' }] });
 
-test('distractors in the box are capped per tier: 0 / 2 / 4 / 4', () => {
-    assert.deepEqual([0, 1, 2, 3].map((tier) => applyWordCues(boxTask(), { tier }).wordBank.length), [3, 5, 7, 7]);
-    assert.deepEqual([...applyWordCues(boxTask(), { tier: 0 }).wordBank].sort(), ['am', 'are', 'is']);
+test('distractors in the box are capped per tier: 2 / 3 / 4 / 5', () => {
+    assert.deepEqual([0, 1, 2, 3].map((tier) => applyWordCues(boxTask(), { tier }).wordBank.length), [5, 6, 7, 7]);
+    assert.deepEqual([...applyWordCues(boxTask(), { tier: 0 }).wordBank].sort(), ['am', 'are', 'is', 'was', 'were']);
 });
 
 test('open cloze: box at A2/B1, no box/cues from B2; lexical sets exam-style (no cue) at C1 only', () => {
@@ -131,7 +131,7 @@ test('normaliser uses lesson level + profile difficulty; prompt has the tier rul
     assert.ok(c1.tasks.filter((t) => ['open_cloze', 'lexical_set'].includes(t.format)).every((t) => !t.wordBank));
     const c1easy = normalizeOwnTimeLesson(OWN_TIME_MOCK_C1_REPLY, { cefr: 'C1', instrLang: 'pl', intensity: 'light' });
     assert.ok(c1easy.tasks.find((t) => t.format === 'lexical_set').wordBank);
-    assert.match(cueRuleText(0), /EXACTLY the answer words/);
+    assert.match(cueRuleText(0), /every answer word \+ 1–2 distractors/);
     assert.match(cueRuleText(3), /NO box and NO cues/);
     const p = buildOwnTimeLessonPrompt(validateOwnTimeGenerateRequest({ profile: { age: 17, cefr: 'C1', taskPrefs: ['uoe'], instrLang: 'pl', intensity: 'standard' }, topic: 'x' }).value);
     assert.match(p, /LEVEL CUES \(C1 exam format\)/);

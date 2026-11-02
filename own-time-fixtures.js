@@ -147,7 +147,7 @@ export const OWN_TIME_MOCK_EXTRA_REPLY = {
             example: 'You pay for a film with a ___. → ticket',
             usefulLanguage: ['shop assistant', 'till', 'receipt', 'price'],
             hint: 'Każde słowo z ramki pasuje tylko do jednej luki.',
-            wordBank: ['receipt', 'shop assistant', 'till', 'price'],
+            wordBank: ['receipt', 'shop assistant', 'till', 'price', 'wallet'],
             items: [
                 { q: 'The ___ helped me find a bigger size.', answer: 'shop assistant', alts: ['assistant'] },
                 { q: 'Keep the ___ if you want to return it.', answer: 'receipt' },
@@ -258,6 +258,7 @@ export const OWN_TIME_MOCK_LOW_REPLY = {
             instruction: 'Wpisz am, is albo are.',
             steps: ['Przeczytaj tekst.', 'Wpisz am / is / are.', 'Kliknij „Sprawdź”.'],
             example: 'I ___ happy. → am',
+            wordBank: ['am', 'is', 'are', 'be'],
             usefulLanguage: ['I am', 'he / she / it is', 'we / you / they are'],
             hint: 'I → am, on/ona → is, my/wy/oni → are.',
             prompt: 'Hi! I {{1}} Ola. My brother {{2}} a waiter. We {{3}} at the beach café every summer. The customers {{4}} very nice!',
