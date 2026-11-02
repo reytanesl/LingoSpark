@@ -88,22 +88,15 @@
                 ['bomb', '#1B2A4A', ['Bomb Defusal', 'Bomb Defusal'], ['Rozbrój bombę słówkami', 'Defuse the bomb with words'], { kind: 'hash', hash: '#/setup/bomb' }],
                 ['table-cells', '#2f6fde', ['Grid Territory', 'Grid Territory'], ['Zdobywaj pola planszy', 'Win squares on the grid'], { kind: 'hash', hash: '#/setup/grid' }],
                 ['gavel', '#e07a1f', ['Vocab Auction', 'Vocab Auction'], ['Licytuj poprawne zdania', 'Bid on correct sentences'], { kind: 'hash', hash: '#/auction' }]]]] },
-        class: { icon: 'users', color: '#C8102E', title: ['Gra z klasą', 'Play with your class'], crumbs: [['Za darmo', 'Free'], ['Live Spark', 'Live Spark']], groups: [
-            [null, [
-                ['chalkboard-user', '#C8102E', ['Poprowadź Live Spark', 'Host Live Spark'], ['Nauczyciel: utwórz grę dla klasy', 'Teacher: start a game for the class'], { kind: 'hash', hash: '#/live/host' }],
-                ['right-to-bracket', '#2f6fde', ['Dołącz kodem', 'Join with a code'], ['Uczeń: wpisz 4-literowy kod', 'Student: enter the 4-letter code'], { kind: 'hash', hash: '#/live/join' }]]]] },
     };
     const VP_HOME = [
         ['learn', 'clone', '#2f6fde', ['Ucz się słówek', 'Learn words'], ['Fiszki, Memory Flip, Word Repair, sceny', 'Flashcards, Memory Flip, Word Repair, scenes'], ''],
         ['games', 'gamepad', '#0e8a8a', ['Szybkie gry', 'Quick games'], ['Speed Match, Penalty Match, Bomb, Grid, Auction', 'Speed Match, Penalty Match, Bomb, Grid, Auction'], ''],
-        ['countdown', 'hourglass-half', '#e07a1f', ['Test Countdown', 'Test Countdown'], ['Plan nauki słówek do dnia testu', 'A daily word plan up to your test'], ''],
         ['primary', 'children', '#f2a900', ['Szkoła podstawowa', 'Primary school'], ['Dyktando, klocki, sceny i więcej', 'Dictation, blocks, scenes and more'], 'A1–A2'],
-        ['class', 'users', '#C8102E', ['Gra z klasą', 'Play with your class'], ['Live Spark: poprowadź lub dołącz', 'Live Spark: host or join'], ''],
         ['sets', 'folder-open', '#1B2A4A', ['Moje zestawy słówek', 'My word sets'], ['Utwórz, wczytaj, udostępnij', 'Create, load, share'], ''],
     ];
     function vpHomeAction(id) {
         if (VP_PICKERS[id]) return { kind: 'sub', sub: id };
-        if (id === 'countdown') return { kind: 'hash', hash: '#/setup/test-countdown' };
         if (id === 'sets') return { kind: 'fn', fn: 'openWordSets' };
         if (id === 'te') return { kind: 'hash', hash: '#/writing' };
         return null;
@@ -177,7 +170,7 @@
     function vpHomeHtml() {
         return top('', 'spell-check', '#2f6fde', L(VP_NAME))
             + `<p class="te-lead">${esc(L(['Ucz się i graj słówkami — za darmo.', 'Learn and play with words — free.']))}</p>`
-            + `<div class="te-grid">${VP_HOME.map(([id, ic, c, n, s, tag]) => card(id, ic, c, n, s, tag, '', vpHomeGated(id))).join('')}</div>`
+            + `<div class="te-grid te-grid--2">${VP_HOME.map(([id, ic, c, n, s, tag]) => card(id, ic, c, n, s, tag, '', vpHomeGated(id))).join('')}</div>`
             + `<p class="te-cross"><button type="button" data-te="te"><i class="fa-solid fa-graduation-cap"></i> ${esc(L(['Przygotowanie do egzaminów → Testy i egzaminy', 'Exam preparation → Tests & Exams']))}</button></p>`;
     }
     function examHtml(exam) {

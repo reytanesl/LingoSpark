@@ -20,16 +20,14 @@ test('Tests & Exams home: only premium exam/test items', () => {
 
 test('Vocab practice home + moved routes', () => {
     const VP = JSON.parse(JSON.stringify(R.VP_HOME));
-    assert.deepEqual(VP.map((h) => h[0]), ['learn', 'games', 'countdown', 'primary', 'class', 'sets']);
+    assert.deepEqual(VP.map((h) => h[0]), ['learn', 'games', 'primary', 'sets']);
     assert.deepEqual(JSON.parse(JSON.stringify(R.MOVED)), { primary: '#/vocab/primary', games: '#/vocab/games' });
-    assert.deepEqual(J(R.vpHomeAction)('countdown'), { kind: 'hash', hash: '#/setup/test-countdown' });
     assert.deepEqual(J(R.vpHomeAction)('sets'), { kind: 'fn', fn: 'openWordSets' });
-    for (const id of ['learn', 'games', 'primary', 'class']) assert.deepEqual(J(R.vpHomeAction)(id), { kind: 'sub', sub: id });
-    for (const id of ['learn', 'games', 'class', 'primary']) assert.equal(R.vpHomeGated(id), false, id);
+    for (const id of ['learn', 'games', 'primary']) assert.deepEqual(J(R.vpHomeAction)(id), { kind: 'sub', sub: id });
+    for (const id of ['learn', 'games', 'primary']) assert.equal(R.vpHomeGated(id), false, id);
     // every vocab-section activity is reachable from the new home
     const hashes = new Set(Object.values(JSON.parse(JSON.stringify(R.VP_PICKERS))).flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => x[4].hash || x[4].url || x[4].game))));
-    hashes.add('#/setup/test-countdown');
-    for (const h of ['#/setup/flashcard', '#/setup/memory-flip', '#/setup/word-repair', '#/setup/speed-match', '#/setup/bomb', '#/setup/grid', '#/auction', '#/penalty-match', '#/setup/test-countdown', '#/live/host', '#/live/join', 'vocab-scenes.html', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review', 'pe-detail', 'pe-link']) assert.ok(hashes.has(h), h);
+    for (const h of ['#/setup/flashcard', '#/setup/memory-flip', '#/setup/word-repair', '#/setup/speed-match', '#/setup/bomb', '#/setup/grid', '#/auction', '#/penalty-match', 'vocab-scenes.html', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review', 'pe-detail', 'pe-link']) assert.ok(hashes.has(h), h);
 });
 
 test('exam level presets', () => {
@@ -93,7 +91,7 @@ test('gating: every exam skill that opens an activity is gated, except soon/resu
 
 test('gating: free status kept for free PE games, Vocab Scenes and word games', () => {
     const byName = Object.fromEntries([...Object.values(TE.PICKERS), ...Object.values(JSON.parse(JSON.stringify(R.VP_PICKERS)))].flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => [x[2][1], R.isGated(x[4])]))));
-    for (const free of ['Dictation', 'Colour Blocks', 'Vocab Scenes', 'Penalty Match', 'Flashcards', 'Memory Flip', 'Word Repair', 'Speed Match', 'Bomb Defusal', 'Grid Territory', 'Vocab Auction', 'Host Live Spark', 'Join with a code']) assert.equal(byName[free], false, free);
+    for (const free of ['Dictation', 'Colour Blocks', 'Vocab Scenes', 'Penalty Match', 'Flashcards', 'Memory Flip', 'Word Repair', 'Speed Match', 'Bomb Defusal', 'Grid Territory', 'Vocab Auction']) assert.equal(byName[free], false, free);
     for (const paid of ['Topic Challenge', 'Review Chatbot', 'Detail Detective', 'Link Master', 'Vocab Upgrade', 'Bloat Slasher', 'Tight Write', 'Transitions', "Devil's Advocate", 'Frankenstein', 'Mission: Chat', 'Odyssey']) assert.equal(byName[paid], true, paid);
     assert.equal(R.isGated({ kind: 'own', testPrep: true }), true);
     for (const id of ['e8', 'podst', 'rozsz', 'dwuj', 'school-test', 'own', 'workshop', 'ai']) assert.equal(R.homeGated(id), true, id);
@@ -114,4 +112,12 @@ test('gating: server APIs used by Tests & Exams activities require writing acces
         ['post', '/api/matura/reviews'], ['put', '/api/matura/reviews/:id'],
         ['get', '/api/own-time/profiles'], ['get', '/api/own-time/lessons'], ['post', '/api/own-time/lessons'], ['post', '/api/own-time/generate'], ['post', '/api/own-time/test-prep'], ['post', '/api/own-time/vocab'], ['post', '/api/own-time/check-open'], ['put', '/api/own-time/progress']];
     for (const [m, r] of gated) assert.equal(gateOf(m, r), 'requireWritingAccess', `${m} ${r}`);
+});
+
+test('Test Countdown is removed from the site; old links redirect to Vocab practice', () => {
+    assert.doesNotMatch(html, /test-countdown\.js|screen-test-countdown|TestCountdown|id="test-countdown-settings"|href="#\/setup\/test-countdown"/);
+    assert.match(html, /arg === 'test-countdown'\) \{\n[^\n]*\n\s*history\.replaceState\(null, '', '#\/vocab'\)/);
+    assert.equal(isPublicStaticPath('/test-countdown.js'), false);
+    const all = JSON.stringify([R.VP_HOME, R.VP_PICKERS, R.HOME, R.PICKERS]);
+    assert.doesNotMatch(all, /test-countdown|Test Countdown|live\/host|live\/join/);
 });

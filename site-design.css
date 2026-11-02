@@ -284,7 +284,7 @@ header .hub-live-quiz-text { font-size: 0.95rem; letter-spacing: 0.02em; text-sh
     background: linear-gradient(180deg, #e94a61 0%, #b80e2a 100%); color: #fff;
 }
 
-/* Flashcard / Test Countdown answer row: let the three buttons wrap on narrow phones */
+/* Flashcard answer row: let the three buttons wrap on narrow phones */
 @media (max-width: 600px) {
     .flashcard-controls { flex-wrap: wrap; gap: 10px; }
 }
