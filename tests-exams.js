@@ -90,7 +90,29 @@
         return null;
     }
 
-    const api = { EXAMS, SKILLS, PICKERS, HOME, skillAction, homeAction };
+    // Mirrors index.html: Writing Suite games need a plan / teacher approval except these.
+    const WRITING_SETUPS = new Set(['frank', 'trans', 'devil', 'bloat', 'tight', 'vocab', 'odyssey', 'mission', 'matura', 'adv-gaps', 'own-time', 'pe-boring', 'pe-detail', 'pe-link', 'pe-exam', 'pe-e8-gaps', 'pe-dictation', 'pe-colour', 'pe-topic', 'pe-review']);
+    const FREE_SETUPS = new Set(['pe-dictation', 'pe-colour']);
+    /** True when the action opens a plan-gated (Writing Suite) activity. */
+    function isGated(a) {
+        if (!a) return false;
+        if (a.kind === 'own' || a.kind === 'adv') return true;
+        if (a.kind === 'pe') return !FREE_SETUPS.has(a.game);
+        if (a.kind === 'hash') {
+            const m = /^#\/setup\/([\w-]+)$/.exec(a.hash);
+            return !!(m && WRITING_SETUPS.has(m[1]) && !FREE_SETUPS.has(m[1]));
+        }
+        return false;
+    }
+    /** Home tile shows a lock when every activity behind it is gated. */
+    function homeGated(id) {
+        if (id === 'school-test' || id === 'own') return true;
+        if (EXAMS[id]) return SKILLS.every(([sk]) => { const a = skillAction(id, sk); return a.kind === 'soon' || isGated(a); });
+        if (PICKERS[id]) return PICKERS[id].groups.every((g) => g[1].every((x) => isGated(x[4])));
+        return false;
+    }
+
+    const api = { EXAMS, SKILLS, PICKERS, HOME, skillAction, homeAction, isGated, homeGated, WRITING_SETUPS, FREE_SETUPS };
     if (typeof module !== 'undefined' && module.exports) { module.exports = api; return; }
 
     // ---------------- browser ----------------
@@ -101,8 +123,10 @@
     function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
     const SOON = ['wkrótce', 'soon'];
 
-    function card(id, icon, color, name, sub, tag, extra = '') {
-        return `<button type="button" class="te-card${extra}" data-te="${esc(id)}"><span class="te-ic" style="background:${color}"><i class="fa-solid fa-${icon}"></i></span><span class="te-txt"><b>${esc(L(name))}${tag ? ` <span class="te-tag">${esc(tag)}</span>` : ''}</b><small>${esc(L(sub))}</small></span></button>`;
+    function hasAccess() { const a = root.authState; return !!(a && a.hasAccess); }
+    function lockHtml(gated) { return gated && !hasAccess() ? `<span class="te-lock" title="${esc(L(['Wymaga planu Premium lub zgody nauczyciela', 'Needs a Premium plan or teacher approval']))}"><i class="fa-solid fa-lock"></i> Premium</span>` : ''; }
+    function card(id, icon, color, name, sub, tag, extra = '', gated = false) {
+        return `<button type="button" class="te-card${extra}" data-te="${esc(id)}"${gated && !hasAccess() ? ' data-te-locked="1"' : ''}><span class="te-ic" style="background:${color}"><i class="fa-solid fa-${icon}"></i></span><span class="te-txt"><b>${esc(L(name))}${tag ? ` <span class="te-tag">${esc(tag)}</span>` : ''}${lockHtml(gated)}</b><small>${esc(L(sub))}</small></span></button>`;
     }
     function top(back, icon, color, title) {
         return `<div class="te-top"><button type="button" class="te-back" data-te-back="${esc(back)}" aria-label="${esc(L(['Wróć', 'Back']))}">←<span class="te-back-l"> ${esc(back ? L(['Testy i egzaminy', 'Tests & Exams']) : L(['Wróć', 'Back']))}</span></button><h2><span class="te-ic te-ic--sm" style="background:${color}"><i class="fa-solid fa-${icon}"></i></span>${esc(title)}</h2>
@@ -113,14 +137,15 @@
     function homeHtml() {
         return top('', 'graduation-cap', '#C8102E', L(['Testy i egzaminy', 'Tests & Exams']))
             + `<p class="te-lead">${esc(L(['Do czego się przygotowujesz?', 'What are you preparing for?']))}</p>`
-            + `<div class="te-grid">${HOME.map(([id, ic, c, n, s, tag]) => card(id, ic, c, n, s, tag)).join('')}</div>`
-            + `<button type="button" class="te-ai" data-te="ai"><span class="te-bot"><i class="fa-solid fa-robot"></i><i class="fa-solid fa-star te-spark"></i></span><span class="te-bubble">${esc(L(['Porozmawiaj z AI', 'Talk with AI']))}</span></button>`;
+            + `<div class="te-grid">${HOME.map(([id, ic, c, n, s, tag]) => card(id, ic, c, n, s, tag, '', homeGated(id))).join('')}</div>`
+            + `<button type="button" class="te-ai" data-te="ai"><span class="te-bot"><i class="fa-solid fa-robot"></i><i class="fa-solid fa-star te-spark"></i></span><span class="te-bubble">${esc(L(['Porozmawiaj z AI', 'Talk with AI']))}${lockHtml(homeGated('ai'))}</span></button>`;
     }
     function examHtml(exam) {
         const e = EXAMS[exam];
         const tiles = SKILLS.map(([sk, ic, c, n, s]) => {
-            const soon = skillAction(exam, sk).kind === 'soon';
-            return card(`skill:${exam}:${sk}`, ic, c, n, soon ? SOON : s, soon ? L(SOON) : '', soon ? ' is-soon' : '');
+            const a = skillAction(exam, sk);
+            const soon = a.kind === 'soon';
+            return card(`skill:${exam}:${sk}`, ic, c, n, soon ? SOON : s, soon ? L(SOON) : '', soon ? ' is-soon' : '', isGated(a));
         }).join('');
         return top('home', e.icon, e.color, L(e.name)) + crumbs([e.level, L(['Co ćwiczysz?', 'What do you want to practise?'])])
             + `<div class="te-grid">${tiles}</div><p class="te-sec">${esc(L(['Pełny egzamin', 'Full exam']))}</p>`
@@ -129,7 +154,7 @@
     function pickerHtml(id) {
         const p = PICKERS[id];
         let i = 0;
-        const groups = p.groups.map(([g, games]) => (g ? `<p class="te-sec">${esc(L(g))}</p>` : '') + `<div class="te-grid">${games.map((x) => card(`game:${id}:${i++}`, x[0], x[1], x[2], x[3], '')).join('')}</div>`).join('');
+        const groups = p.groups.map(([g, games]) => (g ? `<p class="te-sec">${esc(L(g))}</p>` : '') + `<div class="te-grid">${games.map((x) => card(`game:${id}:${i++}`, x[0], x[1], x[2], x[3], '', '', isGated(x[4]))).join('')}</div>`).join('');
         return top('home', p.icon, p.color, L(p.title)) + crumbs(p.crumbs.map(L)) + groups + (p.note ? `<p class="te-lead" style="margin-top:12px">${esc(L(p.note))}</p>` : '');
     }
 
@@ -147,7 +172,12 @@
         el.setAttribute('lang', lang());
         el.innerHTML = EXAMS[current] ? examHtml(current) : PICKERS[current] ? pickerHtml(current) : homeHtml();
     }
-    function show(sub) { current = (EXAMS[sub] || PICKERS[sub]) ? sub : ''; render(); }
+    function show(sub) {
+        current = (EXAMS[sub] || PICKERS[sub]) ? sub : '';
+        render();
+        // Re-render once the plan state is known so lock badges are right.
+        if (typeof root.refreshAuth === 'function') Promise.resolve(root.refreshAuth()).then(render, () => {});
+    }
     function go(sub) { location.hash = sub ? `#/writing/${sub}` : '#/writing'; }
 
     async function run(a) {

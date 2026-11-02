@@ -864,7 +864,7 @@ async function start() {
         }
     });
 
-    app.post('/api/matura/reviews', requireLogin, async (req, res) => {
+    app.post('/api/matura/reviews', requireWritingAccess, async (req, res) => {
         try {
             const { taskText, essayText, totalScore, maxScore, review } = req.body || {};
             if (!review || typeof review !== 'object') {
@@ -888,7 +888,7 @@ async function start() {
         }
     });
 
-    app.put('/api/matura/reviews/:id', requireLogin, async (req, res) => {
+    app.put('/api/matura/reviews/:id', requireWritingAccess, async (req, res) => {
         try {
             const { taskText, essayText, totalScore, maxScore, review } = req.body || {};
             if (!review || typeof review !== 'object') {

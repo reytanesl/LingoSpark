@@ -7168,6 +7168,9 @@
                     if (PE_GAMES.has(arg)) await goToPeGame(arg);
                     else if (WRITING_GAMES.has(arg)) await goToWritingSetup(arg);
                     else goToSetup(arg);
+                } else if (root === 'game' && arg && WRITING_GAMES.has(arg) && !FREE_PE_GAMES.has(arg) && !(await refreshAuth().then(() => authState.hasAccess, () => false))) {
+                    // Direct #/game/<writing game> links go through the same paywall as #/setup.
+                    await goToWritingSetup(arg);
                 } else if (root === 'game' && arg) {
                     if (arg === 'auction') goToAuction();
                     else if (arg === 'penalty-match') goToPenaltyMatch();

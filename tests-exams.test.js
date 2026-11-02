@@ -57,3 +57,43 @@ test('index wires the suite and keeps old writing content', () => {
     assert.ok(isPublicStaticPath('/tests-exams.js'));
     assert.ok(isPublicStaticPath('/tests-exams.css'));
 });
+
+const server = readFileSync(new URL('./server.js', import.meta.url), 'utf8');
+const gateOf = (method, route) => {
+    const m = new RegExp(`app\\.${method}\\('${route.replace(/[/:]/g, (c) => '\\' + c)}',\\s*(\\w+)`).exec(server);
+    return m && m[1];
+};
+
+test('gating: every exam skill that opens an activity is gated, except soon/results', () => {
+    for (const ex of Object.keys(R.EXAMS)) for (const [sk] of R.SKILLS.concat([['mock'], ['results']])) {
+        const a = TE.skillAction(ex, sk);
+        if (a.kind === 'soon' || sk === 'results') assert.equal(R.isGated(a), false, `${ex}:${sk}`);
+        else assert.equal(R.isGated(a), true, `${ex}:${sk}`);
+    }
+});
+
+test('gating: free status kept for free PE games, Vocab Scenes and word games', () => {
+    const byName = Object.fromEntries(Object.values(TE.PICKERS).flatMap((p) => p.groups.flatMap((g) => g[1].map((x) => [x[2][1], R.isGated(x[4])]))));
+    for (const free of ['Dictation', 'Colour Blocks', 'Vocab Scenes', 'Penalty Match', 'Test Countdown', 'Vocab Review', 'Live Spark']) assert.equal(byName[free], false, free);
+    for (const paid of ['Topic Challenge', 'Review Chatbot', 'Detail Detective', 'Link Master', 'Vocab Upgrade', 'Bloat Slasher', 'Tight Write', 'Transitions', "Devil's Advocate", 'Frankenstein', 'Mission: Chat', 'Odyssey']) assert.equal(byName[paid], true, paid);
+    assert.equal(R.isGated({ kind: 'own', testPrep: true }), true);
+    for (const id of ['e8', 'podst', 'rozsz', 'dwuj', 'school-test', 'own', 'workshop', 'ai']) assert.equal(R.homeGated(id), true, id);
+    for (const id of ['primary', 'games']) assert.equal(R.homeGated(id), false, id);
+});
+
+test('gating: module lists match index.html WRITING_GAMES / FREE_PE_GAMES', () => {
+    const list = (name) => JSON.parse(new RegExp(`const ${name} = new Set\\((\\[[^\\]]*\\])\\)`).exec(html)[1].replace(/'/g, '"'));
+    assert.deepEqual([...R.WRITING_SETUPS].sort(), list('WRITING_GAMES').sort());
+    assert.deepEqual([...R.FREE_SETUPS].sort(), list('FREE_PE_GAMES').sort());
+});
+
+test('gating: client routes #/game/<writing game> through the paywall', () => {
+    assert.match(html, /root === 'game' && arg && WRITING_GAMES\.has\(arg\) && !FREE_PE_GAMES\.has\(arg\)[^\n]*\n[^\n]*\n\s*await goToWritingSetup\(arg\);/);
+});
+
+test('gating: server APIs used by Tests & Exams activities require writing access', () => {
+    const gated = [['post', '/api/generate'], ['post', '/api/odyssey'], ['post', '/api/frank/generate'], ['post', '/api/assess-pe-exam'], ['post', '/api/assess-writing'],
+        ['post', '/api/matura/reviews'], ['put', '/api/matura/reviews/:id'],
+        ['get', '/api/own-time/profiles'], ['get', '/api/own-time/lessons'], ['post', '/api/own-time/lessons'], ['post', '/api/own-time/generate'], ['post', '/api/own-time/test-prep'], ['post', '/api/own-time/vocab'], ['post', '/api/own-time/check-open'], ['put', '/api/own-time/progress']];
+    for (const [m, r] of gated) assert.equal(gateOf(m, r), 'requireWritingAccess', `${m} ${r}`);
+});
