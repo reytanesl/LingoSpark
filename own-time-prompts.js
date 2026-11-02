@@ -270,6 +270,34 @@ function difficultyGuide(intensity) {
     return 'standard: solid practice in the middle of the CEFR band.';
 }
 
+/** Minimum open-cloze tasks per lesson at the higher levels (also with "Wyzwanie" / "Łatwiej"). */
+export const OPEN_CLOZE_MIN = { B2: 1, C1: 2 };
+function openClozeRule(cefr) {
+    const min = OPEN_CLOZE_MIN[cefr] || 0;
+    if (min >= 2) return `Use 2–3 uoe tasks. At least ${min} of them MUST be "open_cloze" (each with its own text); the other may use another format.`;
+    if (min === 1) return 'Use 2 uoe tasks with DIFFERENT formats; one of them MUST be "open_cloze".';
+    return 'Use 1–2 uoe tasks with DIFFERENT formats; at least one closed (options) and one open format over the lesson when there are two.';
+}
+
+/**
+ * Enforce the open-cloze minimum: missing open clozes are made from mc_text tasks whose answers are
+ * single words (options removed, same text and keys). Returns { tasks, openClozeShort } — the number still missing.
+ */
+export function ensureOpenCloze(tasks, cefr) {
+    const min = OPEN_CLOZE_MIN[String(cefr || '').toUpperCase()] || 0;
+    let have = tasks.filter((t) => t.type === 'uoe' && t.format === 'open_cloze').length;
+    if (have >= min || !tasks.some((t) => t.type === 'uoe')) return { tasks, openClozeShort: 0 };
+    const out = tasks.map((t) => {
+        if (have >= min || t.type !== 'uoe' || t.format !== 'mc_text') return t;
+        if (!/\{\{\s*\d+\s*\}\}/.test(String(t.prompt || '')) || !t.items.length) return t;
+        if (!t.items.every((it) => /^[\p{L}']+$/u.test(String(it.answer || '').trim()))) return t;
+        have += 1;
+        return { ...t, format: 'open_cloze', instruction: uoeInstruction('open_cloze', cefr),
+            items: t.items.map(({ options, ...it }) => ({ ...it, q: '' })), convertedFrom: 'mc_text' };
+    });
+    return { tasks: out, openClozeShort: Math.max(0, min - have) };
+}
+
 function uoeRuleText(cefr, nameLang) {
     const lv = UOE_LEVELS[cefr];
     if (!lv) return `CEFR ${cefr} has no exam mapping: use "format": "simple" — EITHER a short text in "prompt" with {{1}}, {{2}}… gaps (item "q" = cue word or "") OR sentences where each item "q" has ONE "___" exactly where the answer goes (e.g. "She ___ (be) my friend.").`;
@@ -286,7 +314,7 @@ function uoeRuleText(cefr, nameLang) {
         transformation: '"transformation": 3–4 items; "lead" = the original sentence; "key" = ONE given word (shown in capitals, must be used unchanged); "q" = the second sentence with ONE "___" (max 5 words incl. the key word); "answer" + "alts".',
         lexical_set: '"lexical_set": 3 items; "q" = THREE sentences separated by "\n", each with ONE "___"; ONE word (same form) fits all three — collocations/phrasal meanings; "answer" + "alts".',
     };
-    return `Use of English must follow the Polish CKE exam (${lv.name}, "znajomość środków językowych") for ${cefr}. Set "format" on every "uoe" task to ONE of: ${lv.formats.join(', ')}. Use 1–2 uoe tasks with DIFFERENT formats; at least one closed (options) and one open format over the lesson when there are two. Keep the exam style but use the session topic/vocabulary. Write "instruction" in Polish in CKE style (the app shows the official wording). Formats:
+    return `Use of English must follow the Polish CKE exam (${lv.name}, "znajomość środków językowych") for ${cefr}. Set "format" on every "uoe" task to ONE of: ${lv.formats.join(', ')}. ${openClozeRule(cefr)} Keep the exam style but use the session topic/vocabulary. Write "instruction" in Polish in CKE style (the app shows the official wording). Formats:
 ${lv.formats.map((f) => `    - ${spec[f]}`).join('\n')}`;
 }
 
@@ -347,7 +375,8 @@ HARD RULES:
 9. USE OF ENGLISH ("uoe"): ${uoeRuleText(v.cefr)} Never put a gap only at the end as a separate question; text gaps are {{1}}, {{2}}… in order, one per item.
 10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.
 10b. ACCEPTED ANSWERS (every typed/open item): besides "answer", give "acceptedAnswers": an array with ALL other fully correct variants, like a CKE answer key — synonyms that fit the context and the rules (e.g. "despite" / "in spite of"), contracted and full forms ("don't" / "do not"), British/American spelling. Respect the format's word limits and key/given words in every variant. [] if there is truly only one answer.
-10c. CHANGE OF FORM (Use of English gaps with a given word or expression — verb/word in brackets, "brackets", "word_formation", "correct form" gaps): the answer must ALWAYS require changing the given word (inflection, tense, plural, comparative, auxiliary + verb, negation, derivation with a prefix/suffix…). NEVER write a gap whose answer is the given word unchanged (e.g. "(play)" → "play" is forbidden; "(play)" → "played" / "is playing" is right). Exception: "transformation" keeps its KEY word unchanged on purpose.
+10c. CHANGE OF FORM (Use of English gaps with a given word or expression — verb/word in brackets, "brackets", "word_formation", "correct form" gaps): the answer must ALWAYS require changing the given word (inflection, tense, plural, comparative, auxiliary + verb, negation, derivation with a prefix/suffix…). NEVER write a gap whose answer is the given word unchanged (e.g. "(play)" → "play" is forbidden; "(play)" → "played" / "is playing" is right). Exception: "transformation" keeps its KEY word unchanged on purpose. WORD FORMATION: the answer must NEVER equal the given word (ignoring capitals) — "(HAPPY)" → "happy" is forbidden; "(HAPPY)" → "unhappily" is right.
+10d. NO REPEATED CUES: within one task every word in brackets / root cue must be different — never give two gaps the same base word (e.g. two gaps both "(go)" or both "(CREATE)").
 10a. WORD CUE (mandatory for EVERY gap-fill: vocab_drill gap sentences, verb-form / "correct form" tasks, "simple", "brackets", "word_formation", "open_cloze", "lexical_set" and any word-bank task): the student must always get a cue. EITHER give a task-level "wordBank": [EVERY answer word (repeat a word if it fills two gaps) + the distractors set by LEVEL CUES — plausible words of the same part of speech / word family that fit NO gap and are not an accepted answer] shown as a box above the items, OR give every item a bracket cue in "cue" (verb-form tasks: the BASE verb, e.g. "go" for "went"; word formation: the stem in CAPITALS). A cue must never be the answer itself unless the student has to change its form — give the base form, never the inflected answer. Do NOT add a box or cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options.
     ${cueRuleText(cueTier(v))} (Challenge rises gradually with the level and the chosen difficulty.)
 10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
@@ -624,12 +653,17 @@ export function isUnchangedGap(it) {
 /**
  * Safety net: in Use of English gap tasks every item with a given word must need a changed form.
  * Unchanged items are removed (text gaps are filled in and the remaining {{n}} renumbered); if that would
- * leave fewer than 2 items the task is left as it is.
+ * leave no items the task is dropped by the normaliser (never shown with an unchanged cue).
  */
 export function enforceFormChange(task) {
     if (!task || task.type !== 'uoe' || task.format === 'transformation' || !Array.isArray(task.items)) return task;
     const bad = task.items.map((it, i) => (isUnchangedGap(it) ? i : -1)).filter((i) => i >= 0);
-    if (!bad.length || task.items.length - bad.length < 2) return task;
+    if (!bad.length) return task;
+    return dropItems(task, bad, { formChangeDropped: bad.length });
+}
+
+/** Remove items (by index) from a task; text gaps are filled with their answers and the {{n}} renumbered. */
+export function dropItems(task, bad, extra = {}) {
     const textGaps = /\{\{\s*\d+\s*\}\}/.test(String(task.prompt || ''));
     let prompt = task.prompt;
     if (textGaps) {
@@ -638,13 +672,33 @@ export function enforceFormChange(task) {
         let n = 0;
         prompt = prompt.replace(/\{\{\s*\d+\s*\}\}/g, () => `{{${++n}}}`);
     }
-    return { ...task, prompt, items: task.items.filter((_, i) => !bad.includes(i)), formChangeDropped: bad.length };
+    return { ...task, prompt, items: task.items.filter((_, i) => !bad.includes(i)), ...extra };
+}
+
+/** The bracket cue of an item (item.cue or "___ (cue)" in the sentence), normalised for comparison. */
+const itemCueKey = (it) => { const m = String(it?.q || '').match(BRACKET_AFTER_GAP); return lowKey(String(it?.cue || (m ? m[2] : '')).replace(/[\/,+]/g, ' ')); };
+/** Within a task every bracket cue must be different: later gaps repeating a cue word are dropped. */
+export function enforceUniqueCues(task) {
+    if (!task || !Array.isArray(task.items) || task.format === 'transformation') return task;
+    const seen = new Set();
+    const bad = [];
+    task.items.forEach((it, i) => { const k = itemCueKey(it); if (!k) return; if (seen.has(k)) bad.push(i); else seen.add(k); });
+    return bad.length ? dropItems(task, bad, { duplicateCuesDropped: bad.length }) : task;
 }
 
 /* ---------- Instruction ↔ word box consistency ---------- */
-const NUM_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, jeden: 1, jedno: 1, jeden: 1, dwa: 2, dwie: 2, trzy: 3, cztery: 4, 'pięć': 5 };
+const NUM_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, jeden: 1, jedno: 1, dwa: 2, dwie: 2, trzy: 3, cztery: 4, 'pięć': 5, 'sześć': 6, siedem: 7, osiem: 8, 'dziewięć': 9, 'dziesięć': 10 };
+const NUM_RE = '(\\d+|one|two|three|four|five|six|seven|eight|nine|ten|jeden|jedno|dwa|dwie|trzy|cztery|pięć|sześć|siedem|osiem|dziewięć|dziesięć)';
+const numOf = (w) => Number(w) || NUM_WORDS[String(w).toLowerCase()] || null;
+// Total-count phrasings: "There are 6 words in the box", "the box has six words", "Use 4 of the 6 words", "W ramce jest 6 wyrazów", "z sześciu"…
+const TOTAL_RES = [
+    new RegExp(`${NUM_RE}\\s+(?:words?|wyraz\\p{L}*|słów|słowa|słowo)\\s+(?:(?:are\\s+|jest\\s+|są\\s+)?(?:in|w)\\s+(?:the\\s+)?(?:box|ramce))`, 'iu'),
+    new RegExp(`(?:box|ramce|ramka)\\s+(?:has|contains|includes|ma|zawiera|jest|są)\\s+${NUM_RE}\\s+(?:words?|wyraz\\p{L}*|słów|słowa)`, 'iu'),
+    new RegExp(`(?:of|spośród|z)\\s+(?:the\\s+|tych\\s+|podanych\\s+)?${NUM_RE}\\s+(?:words?|wyraz\\p{L}*|słów)`, 'iu'),
+];
+const sentences = (s) => String(s || '').match(/[^.!?]+[.!?]?\s*/g) || [];
 // Sentences that state how many extra words the box has ("There are two extra words." / "Dwa wyrazy są zbędne." / "W ramce są 2 dodatkowe słowa.").
-const EXTRA_SENTENCE = /[^.!?]*(\b(extra|additional|spare)\s+words?\b|\bwords?\b[^.!?]*\b(not needed|do(?:es)? not fit|you (?:do not|don't) need)|zbędn|dodatkow\w*\s+(?:wyraz|słow)|nie pasuj\w*\s+do\s+żadnej)[^.!?]*[.!?]?\s*/giu;
+const EXTRA_SENTENCE = /[^.!?]*(\b(extra|additional|spare)\s+words?\b|\bwords?\b[^.!?]*\b(not needed|do(?:es)? not fit|you (?:do not|don't) need)|\bwords?\s+(?:are|is)\s+(?:extra|spare)|\bsą\s+dodatkow|you (?:do not|don't) need \w+ of the words|zbędn|dodatkow\w*\s+(?:wyraz|słow)|nie pasuj\w*\s+do\s+żadnej)[^.!?]*[.!?]?\s*/giu;
 // Phrases that point at a box ("from the box", "z ramki", "podanymi w ramce").
 const BOX_REF = /\s*(?:from|in)\s+the\s+(?:word\s+)?box\b|\s*(?:z\s+ramki|podanymi\s+w\s+ramce|w\s+ramce)\b/giu;
 const BRACKET_REF = /\b(?:in\s+brackets|from\s+the\s+brackets|z\s+nawias\w*|w\s+nawias\w*)\b/iu;
@@ -653,10 +707,13 @@ const BRACKET_REF = /\b(?:in\s+brackets|from\s+the\s+brackets|z\s+nawias\w*|w\s+
 export function instructionCueRefs(text) {
     const s = String(text || '');
     const box = new RegExp(BOX_REF.source, 'iu').test(s) || /\bbox\b|ramk/iu.test(s);
-    const m = s.match(/\b(\d+|one|two|three|four|five|jeden|jedno|dwa|dwie|trzy|cztery|pięć)\s+(?:extra|additional|spare|dodatkow\w*|zbędn\w*)/iu)
-        || s.match(/(\d+|one|two|three|four|five|jeden|jedno|dwa|dwie|trzy|cztery|pięć)\s+(?:wyraz\w*|słow\w*)\s+(?:jest|są)?\s*zbędn/iu);
-    const extra = m ? (Number(m[1]) || NUM_WORDS[m[1].toLowerCase()] || null) : (new RegExp(EXTRA_SENTENCE.source, 'iu').test(s) ? -1 : null);
-    return { box, extra, brackets: BRACKET_REF.test(s) };
+    const m = s.match(new RegExp(`${NUM_RE}\\s+words?\\s+(?:are|is)\\s+(?:extra|spare|not needed)`, 'iu'))
+        || s.match(new RegExp(`${NUM_RE}\\s+(?:extra|additional|spare|dodatkow\\p{L}*|zbędn\\p{L}*)`, 'iu'))
+        || s.match(new RegExp(`${NUM_RE}\\s+(?:wyraz\\p{L}*|słow\\p{L}*|słów)\\s+(?:jest\\s+|są\\s+)?(?:zbędn|niepotrzebn|dodatkow)`, 'iu'));
+    const extra = m ? numOf(m[1]) : (new RegExp(EXTRA_SENTENCE.source, 'iu').test(s) ? -1 : null);
+    let total = null;
+    for (const re of TOTAL_RES) { const t = s.match(re); if (t) { total = numOf(t[1]); break; } }
+    return { box, extra, total, brackets: BRACKET_REF.test(s) };
 }
 
 /** The extra-word sentence for a box with n distractors, in the instruction language. */
@@ -683,8 +740,22 @@ export function alignInstructionWithBox(task, lang) {
             instr = L === 'en' ? 'Complete the gaps with the words from the box.' : 'Uzupełnij luki wyrazami z ramki.';
         }
         if (!instructionCueRefs(instr).box) instr = `${instr.replace(/[.!?]?\s*$/, '.')} ${L === 'en' ? 'Use the words from the box.' : 'Użyj wyrazów z ramki.'}`.trim();
+        // Stated totals ("6 words in the box", "4 of the 6 words") are rewritten to the real counts.
+        const total = task.wordBank.length;
+        const used = total - (task.boxExtra || 0);
+        instr = instr.replace(new RegExp(`\\b(?:use|wykorzystaj|użyj|wpisz)\\s+${NUM_RE}(?=\\s+(?:of|z|spośród)\\s)`, 'giu'), (m0, n) => m0.replace(n, String(used)));
+        const plNoun = (n) => (n === 1 ? 'wyraz' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'wyrazy' : 'wyrazów'));
+        TOTAL_RES.forEach((re, k) => {
+            instr = instr.replace(new RegExp(re.source, 'giu'), (m0, n) => {
+                let r = m0.replace(n, String(total));
+                if (k < 2) r = r.replace(/\b(\d+)\s+(?:wyraz\p{L}*|słów|słowa|słowo)/iu, (x, d) => `${d} ${plNoun(Number(d))}`);
+                return r;
+            });
+        });
+        instr = instr.replace(/\b(jest|są)\s+(\d+)\s+(wyraz\p{L}*)/giu, (x, v, d, w) => `${plNoun(Number(d)) === 'wyrazy' ? 'są' : 'jest'} ${d} ${w}`);
         instr = `${instr.replace(/[.!?]?\s*$/, '.')} ${extraWordsSentence(task.boxExtra || 0, L)}`;
     } else {
+        instr = sentences(instr).filter((x) => !TOTAL_RES.some((re) => re.test(x))).join('').trim() || instr;
         const cued = (task.items || []).some((it) => it.cue);
         if (instructionCueRefs(instr).box && cued && !instructionCueRefs(instr).brackets) {
             instr = L === 'en' ? 'Complete the gaps with the correct form of the words in brackets.' : 'Uzupełnij luki wyrazami z nawiasów w odpowiedniej formie.';
@@ -848,8 +919,10 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                 ? t.modelAnswers.map((a) => String(a || '').slice(0, 500)).filter(Boolean).slice(0, 8)
                 : [],
         };
-    }).map((t) => (t.type === 'uoe' ? { ...t, items: shuffleChoices(t.items, t.prompt || t.instruction) } : t)).map(enforceFormChange).map((t) => applyWordCues(t, { tier: cueTier({ cefr: lessonCefr, age: fallback.age, intensity: fallback.intensity }) })).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
+    }).map((t) => (t.type === 'uoe' ? { ...t, items: shuffleChoices(t.items, t.prompt || t.instruction) } : t)).map(enforceFormChange).map(enforceUniqueCues).map((t) => applyWordCues(t, { tier: cueTier({ cefr: lessonCefr, age: fallback.age, intensity: fallback.intensity }) })).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
     if (tasks.length && tasks.length < OWN_TIME_TASKS_MIN) tasks = splitToMinimum(tasks);
+    const oc = ensureOpenCloze(tasks, lessonCefr);
+    tasks = oc.tasks;
 
     return {
         title: String(raw.title || 'Practice').slice(0, 120),
@@ -858,6 +931,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
         focus: String(raw.focus || '').slice(0, 80),
         goal: String(raw.goal || '').slice(0, 200),
         coachNote: String(raw.coachNote || '').slice(0, 400),
+        ...(oc.openClozeShort ? { openClozeShort: oc.openClozeShort } : {}),
         taskCountOk: tasks.length >= OWN_TIME_TASKS_MIN && tasks.length <= OWN_TIME_TASKS_MAX,
         tasks: tasks.length ? tasks : [{
             n: 1,
