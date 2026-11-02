@@ -121,3 +121,23 @@ test('Test Countdown is removed from the site; old links redirect to Vocab pract
     const all = JSON.stringify([R.VP_HOME, R.VP_PICKERS, R.HOME, R.PICKERS]);
     assert.doesNotMatch(all, /test-countdown|Test Countdown|live\/host|live\/join/);
 });
+
+test('setup screen: vocab-only settings block closes before the other games\' settings (own-time regression)', () => {
+    // 4ea4e30 removed one </div> too many with the Test Countdown form, so every later
+    // setup panel (own-time, mission, PE, writing games) sat inside the hidden vocab block.
+    const start = html.indexOf('id="vocab-setup-section"');
+    assert.ok(start > 0);
+    const from = html.lastIndexOf('<div', start);
+    const re = /<div\b|<\/div>/g;
+    re.lastIndex = from;
+    let depth = 0; let end = -1; let m;
+    while ((m = re.exec(html))) { depth += m[0] === '</div>' ? -1 : 1; if (depth === 0) { end = m.index; break; } }
+    assert.ok(end > start, 'vocab-setup-section must close');
+    for (const id of ['own-time-setup-note', 'mission-settings', 'writing-setup-note', 'frank-setup-note']) {
+        const at = html.indexOf(`id="${id}"`);
+        assert.ok(at > end, `${id} must not be inside #vocab-setup-section`);
+    }
+    // whole setup screen is balanced
+    const s0 = html.indexOf('<div id="screen-setup"'); const s1 = html.indexOf('<!-- ', html.indexOf('</div>', s0));
+    assert.ok(s0 > 0 && s1 > s0);
+});
