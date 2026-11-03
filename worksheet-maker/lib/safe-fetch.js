@@ -14,26 +14,58 @@ export class BlockedUrlError extends Error {
 }
 
 function v4Blocked(ip) {
-  const [a, b] = ip.split('.').map(Number);
+  const [a, b, c] = ip.split('.').map(Number);
   return a === 0 || a === 10 || a === 127 || a >= 224
-    || (a === 100 && b >= 64 && b <= 127)
-    || (a === 169 && b === 254)
+    || (a === 100 && b >= 64 && b <= 127) // CGNAT
+    || (a === 169 && b === 254) // link-local / metadata
     || (a === 172 && b >= 16 && b <= 31)
     || (a === 192 && b === 168)
-    || (a === 192 && b === 0);
+    || (a === 192 && b === 0 && (c === 0 || c === 2)) // 192.0.0.0/24 IETF, 192.0.2.0/24 TEST-NET-1
+    || (a === 198 && b === 51 && c === 100) || (a === 203 && b === 0 && c === 113); // TEST-NET-2/3
 }
 
-export function isBlockedIp(ip) {
-  const s = String(ip || '').toLowerCase().replace(/^\[|\]$/g, '');
-  if (net.isIPv4(s)) return v4Blocked(s);
-  if (!net.isIPv6(s)) return true;
-  const mapped = s.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped) return v4Blocked(mapped[1]);
-  if (/^::ffff:[0-9a-f]{1,4}:[0-9a-f]{1,4}$/.test(s)) {
-    const [hi, lo] = s.split(':').slice(-2).map((h) => parseInt(h, 16));
-    return v4Blocked(`${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`);
+/** Expand an IPv6 string (may end in dotted IPv4) to 8 16-bit numbers, or null. */
+function v6Words(s) {
+  let str = s.split('%')[0];
+  const dotted = str.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
+  if (dotted) {
+    if (!net.isIPv4(dotted[2])) return null;
+    const o = dotted[2].split('.').map(Number);
+    str = `${dotted[1]}${((o[0] << 8) | o[1]).toString(16)}:${((o[2] << 8) | o[3]).toString(16)}`;
   }
-  return s === '::' || s === '::1' || /^f[cd]/.test(s) || /^fe[89ab]/.test(s) || /^ff/.test(s) || /^64:ff9b:/.test(s) || /^2001:db8:/.test(s);
+  const halves = str.split('::');
+  if (halves.length > 2) return null;
+  const head = halves[0] ? halves[0].split(':') : [];
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(':') : [];
+  const fill = halves.length === 2 ? 8 - head.length - tail.length : 0;
+  if (fill < 0 || (halves.length === 1 && head.length !== 8)) return null;
+  const words = [...head, ...Array(fill).fill('0'), ...tail].map((h) => parseInt(h, 16));
+  return words.length === 8 && words.every((w) => w >= 0 && w <= 0xffff) ? words : null;
+}
+const v4From = (hi, lo) => `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
+
+export function isBlockedIp(ip) {
+  const s = String(ip || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+  if (net.isIPv4(s)) return v4Blocked(s);
+  if (!net.isIPv6(s.split('%')[0])) return true;
+  const w = v6Words(s);
+  if (!w) return true;
+  const zero = (n) => w.slice(0, n).every((x) => x === 0);
+  if (zero(8)) return true; // ::
+  if (zero(7) && w[7] === 1) return true; // ::1
+  if (zero(5) && w[5] === 0xffff) return v4Blocked(v4From(w[6], w[7])); // IPv4-mapped ::ffff:a.b.c.d
+  if (zero(6)) return v4Blocked(v4From(w[6], w[7])); // IPv4-compatible (deprecated) ::a.b.c.d
+  if (w[0] === 0x64 && w[1] === 0xff9b && w.slice(2, 6).every((x) => x === 0)) return v4Blocked(v4From(w[6], w[7])); // NAT64 64:ff9b::/96
+  if (w[0] === 0x64 && w[1] === 0xff9b && w[2] === 1) return true; // 64:ff9b:1::/48 local-use NAT64
+  if (w[0] === 0x2002) return v4Blocked(v4From(w[1], w[2])); // 6to4
+  if (w[0] === 0x2001 && w[1] === 0) return true; // Teredo (embedded addr obfuscated)
+  if (w[0] === 0x2001 && w[1] === 0xdb8) return true; // documentation
+  if ((w[0] & 0xfe00) === 0xfc00) return true; // fc00::/7 ULA
+  if ((w[0] & 0xffc0) === 0xfe80) return true; // link-local
+  if ((w[0] & 0xffc0) === 0xfec0) return true; // site-local (deprecated)
+  if ((w[0] & 0xff00) === 0xff00) return true; // multicast
+  if (w[0] === 0x100 && zero(4)) return true; // 100::/64 discard
+  return false;
 }
 
 export async function assertPublicUrl(raw, { lookup = dns.lookup } = {}) {
@@ -43,10 +75,11 @@ export async function assertPublicUrl(raw, { lookup = dns.lookup } = {}) {
   if (u.username || u.password) throw new BlockedUrlError('Links with a user name or password are not allowed.');
   const host = u.hostname.replace(/^\[|\]$/g, '').replace(/\.$/, '').toLowerCase();
   if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) {
+    console.warn(`[safe-fetch] blocked local host name host=${host}`);
     throw new BlockedUrlError('That link points to a private address.');
   }
   if (net.isIP(host)) {
-    if (isBlockedIp(host)) throw new BlockedUrlError('That link points to a private address.');
+    if (isBlockedIp(host)) { console.warn(`[safe-fetch] blocked literal ip host=${host}`); throw new BlockedUrlError('That link points to a private address.'); }
     return u;
   }
   let addrs = [];
@@ -55,7 +88,12 @@ export async function assertPublicUrl(raw, { lookup = dns.lookup } = {}) {
   } catch {
     return u; // unresolvable: the request itself will fail; nothing private can be reached
   }
-  if (addrs.some((a) => isBlockedIp(a.address))) throw new BlockedUrlError('That link points to a private address.');
+  const list = (Array.isArray(addrs) ? addrs : [addrs]).map((a) => (typeof a === 'string' ? a : a?.address)).filter(Boolean);
+  const bad = list.filter((a) => isBlockedIp(a));
+  if (bad.length) {
+    console.warn(`[safe-fetch] blocked host=${host} resolved=${JSON.stringify(list)} blocked=${JSON.stringify(bad)}`);
+    throw new BlockedUrlError('That link points to a private address.');
+  }
   return u;
 }
 

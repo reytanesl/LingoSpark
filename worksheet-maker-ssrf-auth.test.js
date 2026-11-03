@@ -89,3 +89,30 @@ test('client shows a clear localized "Please sign in" message on 401', () => {
   assert.match(html, /if \(res && res\.status === 401\) return new Error\(ui\('errSignIn'\)\);/);
   assert.ok((html.match(/throw apiError\(/g) || []).length >= 6);
 });
+
+test('safe-fetch: video hosts resolving to public v4/v6/NAT64 addresses are allowed', async () => {
+  const { assertPublicUrl: apu } = await import('./worksheet-maker/lib/safe-fetch.js');
+  const cases = [
+    ['https://www.youtube.com/watch?v=WJhCa12UTsg', ['142.250.186.46', '2a00:1450:401b:80e::200e']],
+    ['https://youtu.be/WJhCa12UTsg', ['64:ff9b::8efa:bb2e']],
+    ['https://www.youtube.com/shorts/WJhCa12UTsg', ['64:ff9b::142.250.186.46']],
+    ['https://i.ytimg.com/vi/WJhCa12UTsg/hqdefault.jpg', ['::ffff:142.250.186.46', '2a00:1450:4001:82b::2016']],
+    ['https://cdn.example.com/a.mp3', ['192.0.1.5']],
+  ];
+  for (const [url, ips] of cases) {
+    const u = await apu(url, { lookup: async () => ips.map((address) => ({ address, family: address.includes(':') ? 6 : 4 })) });
+    assert.ok(u instanceof URL, url);
+  }
+});
+
+test('safe-fetch: private / loopback / metadata / ULA / NAT64-metadata are blocked', async () => {
+  const { assertPublicUrl: apu, isBlockedIp: ib } = await import('./worksheet-maker/lib/safe-fetch.js');
+  for (const ip of ['127.0.0.1', '10.1.2.3', '169.254.169.254', '::1', 'fd00::1', '64:ff9b::a9fe:a9fe', '64:ff9b::127.0.0.1', '::ffff:10.0.0.1', '::ffff:a9fe:a9fe', '192.0.0.8', '192.0.2.1', '100.64.0.1', 'fe80::1', 'ff02::1', '::']) {
+    assert.equal(ib(ip), true, ip);
+    const warn = console.warn; console.warn = () => {};
+    try {
+      await assert.rejects(apu('https://evil.example/', { lookup: async () => [{ address: ip, family: ip.includes(':') ? 6 : 4 }] }), /private address/, ip);
+    } finally { console.warn = warn; }
+  }
+  for (const ip of ['142.250.186.46', '2a00:1450:401b:80e::200e', '64:ff9b::8efa:bb2e', '192.0.1.5']) assert.equal(ib(ip), false, ip);
+});
