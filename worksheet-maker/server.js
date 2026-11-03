@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadProjectEnv } from './lib/load-env.js';
+import { isWorksheetPublicPath } from './static-allowlist.js';
 import { loadSource } from './lib/fetch-source.js';
 import { buildLessonPrompt, normalizeTasks, syncLessonIncludedTasks, normalizeVocabList } from './lib/lesson-prompt.js';
 import { buildPolishPrimaryPrompt, syncPolishIncludedTasks } from './lib/polish-primary-prompt.js';
@@ -55,7 +56,14 @@ export function createWorksheetMakerRouter(options = {}) {
   const router = express.Router();
   router.use(express.json({ limit: '16mb' }));
   registerWorksheetMakerRoutes(router, options);
-  router.use(express.static(__dirname, { index: ['index.html'] }));
+  // Only browser files (page, assets/, browser lib modules) are public; everything else 404s.
+  const serveStatic = express.static(__dirname, { index: ['index.html'], dotfiles: 'deny' });
+  router.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    if (req.path.startsWith('/api/')) return next();
+    if (!isWorksheetPublicPath(req.path)) return res.status(404).type('text/plain').send('Not found');
+    return serveStatic(req, res, next);
+  });
   return router;
 }
 
