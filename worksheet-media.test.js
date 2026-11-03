@@ -110,8 +110,9 @@ test('media finder UI strings exist in EN, DE and PL; EN default fallback', () =
   const keys = Object.keys(STRINGS.en).filter((k) => k.startsWith('media'));
   assert.ok(keys.length >= 25);
   for (const lang of ['de', 'pl']) for (const k of keys) assert.ok(STRINGS[lang][k], `${lang}.${k}`);
-  assert.equal(t('pl', 'mediaFindBtn'), 'Znajdź wideo lub audio do tego artykułu');
-  assert.equal(t('xx', 'mediaFindBtn'), 'Find a video or audio for this article');
+  assert.equal(t('pl', 'mediaFindBtn'), 'Znajdź wideo lub audio');
+  assert.equal(t('xx', 'mediaFindBtn'), 'Find a video or audio');
+  assert.match(t('en', 'mediaNeedText'), /search words|topic/i);
 });
 
 test('worksheet page wires the finder, the plan box with chips, and sends the pick to generation', () => {
@@ -122,6 +123,10 @@ test('worksheet page wires the finder, the plan box with chips, and sends the pi
   assert.match(html, /body\.mediaPlan = /);
   assert.match(html, /api\/media-search/);
   assert.match(html, /class="media-sheet/);
+  // Keyword search is available without an article (only suggestions-only hides the finder).
+  assert.match(html, /const on = !\$\('suggestionsOnly'\)\?\.checked/);
+  assert.match(html, /!query && !topic && !hasArticle\(\)/);
+  assert.match(html, /topic: topicText\(\)/);
   const server = fs.readFileSync(new URL('./worksheet-maker/server.js', import.meta.url), 'utf8');
   assert.match(server, /app\.post\('\/api\/media-search'/);
   assert.match(server, /requireSignedIn/);

@@ -2100,7 +2100,7 @@
             <textarea id="pasted" data-i18n-placeholder="pastedPlaceholder" placeholder="Paste article or reading text…"></textarea>
 
             <div id="mediaFinder" class="media-finder is-hidden">
-              <button type="button" id="mediaFindBtn" class="media-find-btn"><span class="mf-ico" aria-hidden="true">🎬</span><span><span data-i18n="mediaFindBtn">Find a video or audio for this article</span><small data-i18n="mediaFindHint">Real YouTube videos and podcast episodes that match the topic.</small></span></button>
+              <button type="button" id="mediaFindBtn" class="media-find-btn"><span class="mf-ico" aria-hidden="true">🎬</span><span><span data-i18n="mediaFindBtn">Find a video or audio</span><small data-i18n="mediaFindHint">Search YouTube and podcasts by keywords or topic — an article is optional.</small></span></button>
               <div id="mediaPanel" class="media-panel is-hidden">
                 <div class="media-search-row">
                   <input id="mediaQuery" type="search" aria-label="Search words" data-i18n-title="mediaQueryLabel" placeholder="">
@@ -4881,9 +4881,11 @@
       const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
       const articleText = () => ($('pasted')?.value || '').trim();
       const articleUrl = () => ($('url')?.value || '').trim();
+      const topicText = () => ($('topic')?.value || '').trim();
       const hasArticle = () => articleText().length >= 120 || /^https?:\/\//.test(articleUrl());
       function refreshVisibility() {
-        const on = !$('suggestionsOnly')?.checked && (hasArticle() || chosen);
+        // Keyword search is always available in Source (no article/link required).
+        const on = !$('suggestionsOnly')?.checked;
         $('mediaFinder').classList.toggle('is-hidden', !on);
       }
       function status(msg, isError = false, retry = false) {
@@ -4899,11 +4901,11 @@
         return data;
       }
       async function suggest() {
-        const key = `${articleUrl()}|${articleText().slice(0, 400)}`;
+        const key = `${articleUrl()}|${articleText().slice(0, 400)}|${topicText()}`;
         if (key === suggestedFor && $('mediaQuery').value) return;
         suggestedFor = key;
         try {
-          const data = await post({ suggestOnly: true, text: articleText(), url: articleUrl(), topic: $('topic').value.trim() });
+          const data = await post({ suggestOnly: true, text: articleText(), url: articleUrl(), topic: topicText() });
           if (data.query) $('mediaQuery').value = data.query;
         } catch { /* user can type */ }
       }
@@ -4957,11 +4959,12 @@
       }
       async function search() {
         const query = $('mediaQuery').value.trim();
-        if (!query && !hasArticle()) { status(ui('mediaNeedText'), true); return; }
+        const topic = topicText();
+        if (!query && !topic && !hasArticle()) { status(ui('mediaNeedText'), true); return; }
         status(ui('mediaSearching'));
         $('mediaSearchBtn').disabled = true;
         try {
-          const data = await post({ query, kind, text: articleText(), url: articleUrl() });
+          const data = await post({ query, kind, text: articleText(), url: articleUrl(), topic });
           if (!query && data.query) $('mediaQuery').value = data.query;
           lastResults = { video: data.video || [], audio: data.audio || [] };
           const n = render();
@@ -5018,7 +5021,7 @@
       });
       $('mediaChangeBtn').onclick = () => clear(true);
       $('mediaRemoveBtn').onclick = () => clear(false);
-      ['pasted', 'url'].forEach((id) => $(id)?.addEventListener('input', refreshVisibility));
+      ['pasted', 'url', 'topic'].forEach((id) => $(id)?.addEventListener('input', refreshVisibility));
       $('suggestionsOnly')?.addEventListener('change', refreshVisibility);
       refreshVisibility();
       return {
