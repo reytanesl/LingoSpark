@@ -347,7 +347,8 @@ export function companionMediaNote(media, plan = '', source = {}) {
     `- Instruction wording for media tasks starts with "${verb}…" and names the media; mention timestamps only if the teacher plan gives them.`,
     '- Put "sourceFocus": "video" on comprehension items about the media (also for audio) and "reading" on items about the article.',
     hasTranscript
-      ? '- Closed items about the media must be answerable from the transcript alone.'
+      ? `- The media went through the same pipeline as a pasted link: its transcript${isVideo ? '' : ' (audio — the [VIDEO — listening source] section holds the AUDIO transcript)'} is in the SOURCE TEXT. Build the media comprehension items FROM THAT TRANSCRIPT, exactly like for any listening source, and refer to it relevantly: use the [m:ss] time markers to point students to a minute range (e.g. "Listen from 1:00 to 2:30"), name speakers if the transcript labels them, quote short phrases accurately. Do not copy the [m:ss] markers into gap texts or answers.
+- Closed items about the media must be answerable from the transcript alone; reverse-test every key against the transcript (sourceFocus "video").`
       : `- HONESTY: you have not heard the ${isVideo ? 'video' : 'audio'}. Do NOT write gap-fills, true/false, MCQ keys or quotes about its content. Use honest open tasks instead: predict from the title, note-taking while ${isVideo ? 'watching' : 'listening'} (key words, 3 facts), compare with the article, discuss. Say in teacherNotes that no transcript was available, so media answers are open.`,
     '- Set mediaSection: { "title": short student-facing heading, "instruction": one or two student-facing sentences on what to do with the media, "placement": "before" | "after" | "between" (where it sits relative to the reading tasks) }.',
     '- Never invent other videos, links, speakers or quotes.',

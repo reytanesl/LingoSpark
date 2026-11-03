@@ -8,6 +8,8 @@
  * The fetch-dependent parts take an injectable `fetchImpl` so tests run on fixtures.
  */
 
+import { podcastTranscriptInfo } from './media-transcript.js';
+
 const STOP = new Set(`a about above after again against all also am an and any are aren't as at be because been before being below between both but by can could did do does doing down during each few for from further had has have having he her here hers herself him himself his how i if in into is it its itself just like many me more most much my myself new no nor not now of off on once one only or other our ours out over own said same say says she should so some such than that the their theirs them then there these they this those through to too two under until up us very was we were what when where which while who whom why will with would you your yours year years people time way also get got make made may might must one us told according percent per cent mr mrs ms dr however new news week weeks day days still even back first last many well around another really thing things lot lots use used using since every three four five six seven eight nine ten`.split(/\s+/));
 
 function words(text) {
@@ -145,6 +147,8 @@ export function parseItunesEpisodes(json) {
         thumbnail: r.artworkUrl160 || r.artworkUrl600 || r.artworkUrl60 || '',
         url: String(r.trackViewUrl),
         audioUrl: /^https:\/\//.test(String(r.episodeUrl || '')) ? String(r.episodeUrl) : '',
+        feedUrl: /^https?:\/\//.test(String(r.feedUrl || '')) ? String(r.feedUrl) : '',
+        guid: String(r.episodeGuid || ''),
         description: desc.slice(0, 1500),
         released: String(r.releaseDate || '').slice(0, 10),
         explicit: /explicit/i.test(String(r.trackExplicitness || r.collectionExplicitness || '')) && !/notExplicit|clean/i.test(String(r.trackExplicitness || '')),
@@ -188,7 +192,7 @@ export function eslQuery(query, kind) {
   return kind === 'audio' ? `${query} learning English` : `${query} English learners`;
 }
 
-export async function searchYoutube(query, { fetchImpl = fetch, limit = 6, esl = true } = {}) {
+export async function searchYoutube(query, { fetchImpl = fetch, limit = 6, esl = true, captionProbe = probeYoutubeCaptions } = {}) {
   const page = async (q) => {
     const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}&sp=EgIQAQ%253D%253D&hl=en&gl=GB`;
     const res = await withTimeout(fetchImpl, url, { headers: { 'User-Agent': UA, 'Accept-Language': 'en-GB,en;q=0.9', Cookie: 'CONSENT=YES+; SOCS=CAI' } });
@@ -213,10 +217,12 @@ export async function searchYoutube(query, { fetchImpl = fetch, limit = 6, esl =
       return { ...v, title: o.title || v.title, source: o.author_name || v.source, verified: true };
     } catch { return null; }
   }));
-  return checked.filter(Boolean).slice(0, limit);
+  const ok = checked.filter(Boolean).slice(0, limit + 2);
+  const probed = await Promise.all(ok.map(async (v) => ({ ...v, transcript: await captionProbe(v.id, { fetchImpl }) })));
+  return rankByTranscript(probed).slice(0, limit);
 }
 
-export async function searchPodcasts(query, { fetchImpl = fetch, limit = 6, esl = true } = {}) {
+export async function searchPodcasts(query, { fetchImpl = fetch, limit = 6, esl = true, transcriptInfo = podcastTranscriptInfo } = {}) {
   const one = async (q) => {
     const url = `https://itunes.apple.com/search?media=podcast&entity=podcastEpisode&explicit=No&limit=25&country=GB&term=${encodeURIComponent(q)}`;
     const res = await withTimeout(fetchImpl, url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
@@ -230,7 +236,39 @@ export async function searchPodcasts(query, { fetchImpl = fetch, limit = 6, esl 
   while (a.length || b.length) {
     for (const src of [a, a, b]) { const v = src.shift(); if (v && !seen.has(v.id)) { seen.add(v.id); merged.push(v); } }
   }
-  return rankForClass(merged, 'audio', query).slice(0, limit);
+  const top = rankForClass(merged, 'audio', query).slice(0, limit + 4);
+  const checked = await Promise.all(top.map(async (a) => {
+    const t = a.feedUrl ? await transcriptInfo({ feedUrl: a.feedUrl, guid: a.guid, title: a.title, audioUrl: a.audioUrl }, { fetchImpl }).catch(() => undefined) : null;
+    return { ...a, transcript: t === undefined ? 'unknown' : t ? 'yes' : 'no' };
+  }));
+  return rankByTranscript(checked).slice(0, limit);
+}
+
+/**
+ * Caption check for a YouTube result (ANDROID player client, same route the lesson pipeline uses).
+ * → 'yes' | 'no' | 'unknown' (YouTube asked for sign-in / network error).
+ */
+export async function probeYoutubeCaptions(videoId, { fetchImpl = fetch } = {}) {
+  try {
+    const res = await withTimeout(fetchImpl, 'https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip' },
+      body: JSON.stringify({ context: { client: { clientName: 'ANDROID', clientVersion: '20.10.38', androidSdkVersion: 30, osName: 'Android', osVersion: '11', hl: 'en' } }, videoId }),
+    }, 6000);
+    if (!res.ok) return 'unknown';
+    const data = await res.json();
+    const tracks = data?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+    if (tracks.length) return 'yes';
+    return data?.playabilityStatus?.status === 'OK' ? 'no' : 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+/** Transcript first, then unknown, then none (stable otherwise). */
+export function rankByTranscript(items) {
+  const w = { yes: 0, unknown: 1, no: 2 };
+  return items.map((x, i) => ({ x, i })).sort((a, b) => (w[a.x.transcript] ?? 1) - (w[b.x.transcript] ?? 1) || a.i - b.i).map(({ x }) => x);
 }
 
 /** Search both sources; each side fails independently with its own message. */

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+<channel><title>Ocean Talk</title>
+<item><title>Rivers carry plastic</title><guid isPermaLink="false">ep-42</guid>
+<enclosure url="https://cdn.example.com/ep42.mp3" type="audio/mpeg" length="1"/>
+<podcast:transcript url="https://cdn.example.com/ep42.html" type="text/html"/>
+<podcast:transcript url="https://cdn.example.com/ep42.srt" type="application/srt" language="en"/>
+</item>
+<item><title><![CDATA[No transcript & no luck]]></title><guid>ep-41</guid><enclosure url="https://cdn.example.com/ep41.mp3"/></item>
+</channel></rss>

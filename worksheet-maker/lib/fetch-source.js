@@ -1,3 +1,4 @@
+import { timedText, parseSrtVtt, resolveApplePodcastEpisode, fetchPodcastTranscript } from './media-transcript.js';
 import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
 
@@ -142,7 +143,35 @@ async function resolveGenericMedia(link, {
       /* ignore */
     }
   }
+  // Podcast episode (Apple Podcasts link): RSS feed <podcast:transcript>, same for pasted and picked links.
+  let fetched = null;
+  if (!pasted) {
+    try {
+      const ep = await resolveApplePodcastEpisode(link);
+      if (ep) {
+        meta = { title: ep.title || meta.title, description: ep.description || meta.description, imageUrl: ep.imageUrl || meta.imageUrl };
+        fetched = await fetchPodcastTranscript(ep);
+      }
+    } catch {
+      /* no transcript */
+    }
+  }
   const resolvedTitle = titleHint || meta.title || topicTitle || 'Audio / video source';
+  if (fetched?.transcript) {
+    return {
+      url: link,
+      title: resolvedTitle,
+      text: fetched.transcript,
+      transcriptFound: true,
+      captionsAuto: false,
+      videoWithoutCaptions: false,
+      transcriptionMode: true,
+      transcriptSource: 'podcast-rss',
+      imageUrl: meta.imageUrl || '',
+      youtubeId: '',
+      warning: '',
+    };
+  }
   const hasTranscript = Boolean(pasted);
   const fallback = youtubeFallbackText({
     title: resolvedTitle,
@@ -201,40 +230,41 @@ function decodeEntities(text) {
     .replace(/&nbsp;/g, ' ');
 }
 
+// Captions keep [m:ss] markers (about every minute) so tasks can point at minute ranges.
 function parseCaptionXml(xml) {
-  const chunks = [...xml.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/gi)].map((m) =>
-    decodeEntities(m[1].replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim()
-  );
-  return chunks.filter(Boolean).join(' ');
+  const cues = [];
+  for (const m of String(xml || '').matchAll(/<(text|p)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) {
+    const attrs = m[2];
+    const startS = attrs.match(/\bstart="([\d.]+)"/);
+    const tMs = attrs.match(/\bt="(\d+)"/);
+    const start = startS ? Number(startS[1]) : tMs ? Number(tMs[1]) / 1000 : NaN;
+    const text = decodeEntities(m[3].replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+    if (text) cues.push({ start, text });
+  }
+  if (!cues.length) return '';
+  return cues.some((c) => Number.isFinite(c.start)) ? timedText(cues) : cues.map((c) => c.text).join(' ');
 }
 
 function parseCaptionJson3(body) {
   try {
     const data = JSON.parse(body);
-    const chunks = [];
+    const cues = [];
     for (const ev of data.events || []) {
       if (!Array.isArray(ev.segs)) continue;
-      const line = ev.segs.map((s) => s.utf8 || '').join('');
-      if (line.trim() && !/^\[[^\]]+\]$/.test(line.trim())) chunks.push(line.trim());
+      const line = ev.segs.map((seg) => seg.utf8 || '').join('').replace(/\s+/g, ' ').trim();
+      if (line && !/^\[[^\]]+\]$/.test(line)) cues.push({ start: Number(ev.tStartMs) / 1000, text: line });
     }
-    return chunks.join(' ').replace(/\s+/g, ' ').trim();
+    return timedText(cues);
   } catch {
     return '';
   }
 }
 
 function parseCaptionVtt(body) {
-  return String(body || '')
-    .replace(/^WEBVTT[^\n]*\n+/i, '')
-    .replace(/\d{2}:\d{2}(?::\d{2})?[.,]\d{3}\s*-->\s*\d{2}:\d{2}(?::\d{2})?[.,]\d{3}[^\n]*/g, '')
-    .replace(/^\d+\s*$/gm, '')
-    .replace(/<\/?c[^>]*>/gi, '')
-    .replace(/\n+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return parseSrtVtt(String(body || '').replace(/<\/?c[^>]*>/gi, ''));
 }
 
-function parseCaptionPayload(body) {
+export function parseCaptionPayload(body) {
   const raw = String(body || '').trim();
   if (!raw) return '';
   if (raw.startsWith('{')) return parseCaptionJson3(raw);
@@ -484,6 +514,28 @@ async function listTimedTextTracks(videoId) {
  * even when captions or datacenter scrapes fail.
  * @returns {{ transcript: string|null, title: string, description: string, captionKind: string }}
  */
+/** Caption tracks from the ANDROID innertube client ([] when YouTube asks for sign-in / bot check). */
+export async function youtubeAndroidCaptionTracks(videoId, { fetchImpl = fetch } = {}) {
+  try {
+    const res = await fetchImpl('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip' },
+      body: JSON.stringify({
+        context: { client: { clientName: 'ANDROID', clientVersion: '20.10.38', androidSdkVersion: 30, osName: 'Android', osVersion: '11', hl: 'en' } },
+        videoId,
+        contentCheckOk: true,
+        racyCheckOk: true,
+      }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const tracks = data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    return Array.isArray(tracks) ? tracks.filter((t) => t?.baseUrl) : [];
+  } catch {
+    return [];
+  }
+}
+
 async function youtubeTranscript(videoId, { preferredLang = 'en' } = {}) {
   const lang = String(preferredLang || 'en').slice(0, 2).toLowerCase();
   let html = '';
@@ -538,6 +590,19 @@ async function youtubeTranscript(videoId, { preferredLang = 'en' } = {}) {
           transcript: text,
           captionKind: String(track.kind || '').toLowerCase() === 'asr' ? 'auto' : 'manual',
         };
+      }
+    }
+  }
+
+  // Watch-page caption URLs now often need a PoToken (empty body). The ANDROID player client
+  // still returns caption URLs that work without one for many videos.
+  const androidTracks = await youtubeAndroidCaptionTracks(videoId);
+  if (androidTracks.length) {
+    const ranked = [...androidTracks].sort((a, b) => captionTrackScore(b, lang) - captionTrackScore(a, lang));
+    for (const track of ranked.slice(0, 3)) {
+      const text = await fetchCaptionUrl(track.baseUrl, videoId);
+      if (text) {
+        return { ...empty, transcript: text, captionKind: String(track.kind || '').toLowerCase() === 'asr' ? 'auto' : 'manual' };
       }
     }
   }
@@ -714,8 +779,16 @@ async function resolveReadingText({
 }
 
 function mergeCombinedSource({ video, reading, maxChars }) {
-  const videoBlock = (video?.text || '').trim();
+  let videoBlock = (video?.text || '').trim();
   const readingBlock = (reading?.text || '').trim();
+  // Long transcripts must not push the article out of the clipped prompt text: the media keeps
+  // what is left after the article, but at least ~45% of the budget.
+  const videoBudget = Math.max(Math.floor(maxChars * 0.45), maxChars - readingBlock.length - 200);
+  let videoClipped = false;
+  if (videoBlock.length > videoBudget) {
+    videoBlock = clip(videoBlock, videoBudget).text;
+    videoClipped = true;
+  }
   const parts = [];
   if (videoBlock) {
     parts.push(`[VIDEO — listening source]\nTitle: ${video.title || 'Video'}\n${videoBlock}`);
@@ -726,6 +799,7 @@ function mergeCombinedSource({ video, reading, maxChars }) {
   const { text, clipped } = clip(parts.join('\n\n'), maxChars);
   const warnings = [video?.warning, reading?.warning].filter(Boolean);
   if (clipped) warnings.push('The combined sources were long, so a coherent opening stretch was kept for generation.');
+  if (videoClipped && !clipped) warnings.push('The video/audio transcript was long, so its opening part was used for the media tasks.');
   const title = [reading?.title, video?.title].filter(Boolean).join(' · ')
     || video?.title
     || reading?.title
@@ -840,10 +914,9 @@ export async function loadSource({
       video = ytVideo;
     }
   } else if (videoLink) {
-    const knownMeta = companionMedia ? { title: companionMedia.title, description: companionMedia.description, imageUrl: companionMedia.thumbnail } : null;
     if (articleLink || pdfOnly || (companionMedia && pastedOnly)) {
       // A media item picked for the pasted article is a companion, never a transcript of the paste.
-      video = await resolveGenericMedia(videoLink, { titleHint: companionMedia?.title || titleHint, topicTitle, pastedAsTranscript: '', knownMeta });
+      video = await resolveGenericMedia(videoLink, { titleHint, topicTitle, pastedAsTranscript: '' });
       reading = await resolveReadingText({
         articleLink,
         pasted: readingBody,

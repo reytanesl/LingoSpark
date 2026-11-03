@@ -2032,6 +2032,13 @@
     .print-pick-hint { font-size:12px; color:var(--sd-muted); margin:8px 0; }
     .print-pick .btn { width:100%; }
     @media print { .print-excluded { display: none !important; } }
+
+    .media-card .mc-tx { font:700 11px var(--font-primary); border-radius:999px; padding:2px 8px; align-self:flex-start; }
+    .media-card .mc-tx.is-yes { background:#e3f6e8; color:#1a7f37; }
+    .media-card .mc-tx.is-no { background:#fdecec; color:#9b1c1c; }
+    .media-card .mc-tx.is-unknown { background:#eef1f7; color:var(--sd-muted); }
+    .transcript-teacher { max-height: 18em; overflow:auto; white-space:pre-wrap; font-size:.85em; border:1px dashed #c9d3ea; border-radius:8px; padding:8px; background:#fbfcff; }
+    .pdf-print-root .transcript-teacher, .sheet .transcript-teacher { max-height:none; }
   </style>
 </head>
 <body class="student">
@@ -3082,6 +3089,15 @@
         : (lesson.skill === 'combined' || source.combinedSources
           ? tx('skillCombined')
           : (lesson.skill === 'listening' ? tx('skillListening') : tx('skillReading')));
+      // Combined lessons: the video/audio transcript the tasks were built from (teacher side, like a pasted link's source).
+      const mediaTranscript = (() => {
+        const raw = String(source.text || '');
+        const m = raw.match(/\[VIDEO — listening source\]\nTitle:[^\n]*\n([\s\S]*?)(?:\n\n\[READING TEXT\]|$)/);
+        return isCombinedEarly && source.transcriptFound && m ? m[1].trim() : '';
+      })();
+      const mediaTranscriptHtml = mediaTranscript
+        ? `<p><strong>${tx('transcriptTeacherOnly')}</strong></p><div class="transcript-teacher">${escapeHtml(mediaTranscript.slice(0, 12000))}${mediaTranscript.length > 12000 ? '…' : ''}</div>`
+        : '';
       $('sheet').innerHTML = `
         <div class="sheet-header">
           <div class="sheet-header-text">
@@ -3101,6 +3117,7 @@
           ${lingoTeacherBlock}
           <p><strong>${tx('sourceTeacherOnly')}</strong></p>
           ${sourceHtml}
+          ${mediaTranscriptHtml}
         </div>
       `;
 
@@ -4872,6 +4889,8 @@
         const body = el('div', 'mc-body');
         body.append(el('div', 'mc-title', item.title));
         body.append(el('div', 'mc-src', `${item.kind === 'audio' ? '🎧' : '▶'} ${item.source || ''}`));
+        const tx = item.transcript === 'yes' ? 'Yes' : item.transcript === 'no' ? 'No' : 'Unknown';
+        body.append(el('div', `mc-tx is-${tx.toLowerCase()}`, ui(`mediaTx${tx}`)));
         const act = el('div', 'mc-actions');
         const canPreview = item.kind === 'video' ? Boolean(item.youtubeId) : Boolean(item.audioUrl);
         if (canPreview) {
@@ -4938,7 +4957,7 @@
         const img = $('mediaChosenThumb'); img.src = item.thumbnail || ''; img.hidden = !item.thumbnail;
         $('mediaChosenTitle').textContent = item.title;
         $('mediaChosenSrc').textContent = [item.kind === 'audio' ? `🎧 ${ui('mediaKindAudio')}` : `▶ ${ui('mediaKindVideo')}`, item.source, item.duration].filter(Boolean).join(' · ');
-        $('mediaChosenNote').textContent = item.kind === 'audio' ? ui('mediaNoTranscript') : '';
+        $('mediaChosenNote').textContent = item.transcript === 'yes' ? ui('mediaChosenTx') : item.transcript === 'no' ? ui('mediaNoTranscript') : ui('mediaTxUnknown');
         $('mediaPlan').focus();
       }
       function clear(reopen) {
@@ -4980,8 +4999,8 @@
         selection() {
           if (!chosen) return null;
           if ($('videoUrl').value.trim() !== chosen.url) return null;
-          const { kind: k, title, source, url, youtubeId, durationSec, duration, thumbnail, audioUrl, description } = chosen;
-          return { kind: k, title, source, url, youtubeId, durationSec, duration, thumbnail, audioUrl, description };
+          const { kind: k, title, source, url, youtubeId, durationSec, duration, thumbnail, audioUrl, description, transcript } = chosen;
+          return { kind: k, title, source, url, youtubeId, durationSec, duration, thumbnail, audioUrl, description, transcript };
         },
         refresh: refreshVisibility,
         _choose: choose,
