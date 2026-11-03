@@ -42,6 +42,12 @@
             ask: 'Ask teacher', waitClass: 'Correct! Wait — your classmates are building…',
             waitSpan: 'Stone laid! Next question coming…', waitBridge: 'Bridge built! Next bridge coming…', waitVictory: 'You built every bridge!', waitFail: 'The water won this time…',
             bonusLabel: 'BONUS QUESTION', questionLabel: 'QUESTION', wellDone: 'WELL DONE', waterLabel: 'WATER WON',
+            doExtra: 'Keep going — hold the water back!', doExtraSub: 'Your answer counted. Extra answers slow the water down',
+            extraOk: 'Correct! The water goes down a little', extraMax: 'Correct! Keep going',
+            ilBreak: 'BREAK', ilStone: 'Stone laid!', ilNextQ: 'Next question in {s}…', ilNextBonus: 'Next: bonus question in {s}…',
+            ilBridge: 'Bridge {n} built!', ilNextBridge: 'Next bridge in {s}…', ilFinish: 'FINISH', ilAll: 'All 6 bridges built!', ilWater: 'WATER WON', ilWaterT: 'The water took bridge {n}', ilEnd: 'Results in {s}…',
+            tut1: 'Read the question and tap (or type) the answer.', tut2: 'Correct answers from the whole class build stones.', tut3: 'Finish the bridge before the water rises!', tut4: 'Bonus question? It is not from the word list — just answer it.',
+            tutNext: 'Next', tutBack: 'Back', tutSkip: 'Skip', tutGo: 'Got it — let’s build!', tutTitle: 'How to play',
             sent: 'Sent to your teacher — keep going!', accepted: 'Teacher accepted your answer — it counts!', rejected: 'Teacher said not this time — try again!',
         },
         pl: {
@@ -58,6 +64,12 @@
             ask: 'Zapytaj nauczyciela', waitClass: 'Dobrze! Poczekaj — klasa buduje dalej…',
             waitSpan: 'Kamień położony! Za chwilę kolejne pytanie…', waitBridge: 'Most gotowy! Za chwilę kolejny…', waitVictory: 'Zbudowaliście wszystkie mosty!', waitFail: 'Tym razem wygrała woda…',
             bonusLabel: 'PYTANIE BONUSOWE', questionLabel: 'PYTANIE', wellDone: 'BRAWO', waterLabel: 'WYGRAŁA WODA',
+            doExtra: 'Graj dalej — powstrzymaj wodę!', doExtraSub: 'Twoja odpowiedź już się liczy. Kolejne spowalniają wodę',
+            extraOk: 'Dobrze! Woda trochę opada', extraMax: 'Dobrze! Graj dalej',
+            ilBreak: 'PRZERWA', ilStone: 'Kamień położony!', ilNextQ: 'Kolejne pytanie za {s}…', ilNextBonus: 'Za {s}… pytanie bonusowe',
+            ilBridge: 'Most {n} gotowy!', ilNextBridge: 'Kolejny most za {s}…', ilFinish: 'META', ilAll: 'Wszystkie 6 mostów gotowe!', ilWater: 'WYGRAŁA WODA', ilWaterT: 'Woda zabrała most {n}', ilEnd: 'Wyniki za {s}…',
+            tut1: 'Przeczytaj pytanie i kliknij (albo wpisz) odpowiedź.', tut2: 'Dobre odpowiedzi całej klasy budują kamienie.', tut3: 'Skończcie most, zanim podniesie się woda!', tut4: 'Pytanie bonusowe? Nie jest z listy słówek — po prostu odpowiedz.',
+            tutNext: 'Dalej', tutBack: 'Wstecz', tutSkip: 'Pomiń', tutGo: 'Rozumiem — budujemy!', tutTitle: 'Jak grać',
             sent: 'Wysłano do nauczyciela — graj dalej!', accepted: 'Nauczyciel uznał odpowiedź — liczy się!', rejected: 'Nauczyciel nie uznał — spróbuj dalej!',
         },
     };
@@ -549,6 +561,7 @@
         $('tb-gauge').classList.toggle('is-paused', !v.st.tideRunning);
         const nextFill = v.breaker || v.finished || v.moment || v.between ? null : v.got / v.need;
         S.updateBridge(svg, { n: v.n, built: v.built, nextFill, ratio: v.ratio, wave: v.wave, justLaid: inc && v.built > 0, sparkle: inc });
+        renderInterlude(stage, 'tb-h-interlude', v);
 
         if (!stateChanged) return;
         const ph = phaseTexts(v);
@@ -673,11 +686,14 @@
         if (!el) return;
         if (!state) {
             el.hidden = true;
+            const il = $('tb-p-interlude'); if (il) il.hidden = true;
+            hideTutorial();
             document.body.classList.remove('tb-phone-breaker', 'tb-phone-between', 'tb-phone-failed');
             return;
         }
         remember(state);
         el.hidden = false;
+        if (!state.finished) showTutorial();
         startTicker();
         applyPhone(true);
     }
@@ -691,10 +707,12 @@
         if (v.finished) return { title: T('over'), sub: T('overSub'), icon: ICON_WAVE };
         if (v.breaker) return { title: T('doBonus'), sub: T('doBonusSub'), icon: ICON_SHELL };
         if (v.between) return { title: T('stoneLaid'), sub: T('nextQ'), icon: ICON_STONE };
+        if (extraMode && answeredKey === stoneKey(v)) return { title: T('doExtra'), sub: T('doExtraSub'), icon: ICON_WAVE };
         return { title: T('doAnswer'), sub: T('doAnswerSub'), icon: ICON_STONE };
     }
 
     let phoneFeedbackUntil = 0;
+    let extraMode = false;
     let answeredKey = null;   // this student already answered the current stone correctly
     const stoneKey = (v) => `${v.round}|${v.spansDone}|${v.phase}`;
     function paintPhonePhase(v) {
@@ -734,6 +752,7 @@
         el.classList.toggle('tide-high', v.ratio >= 0.75);
         const nextFill = v.breaker || v.finished || v.between || v.moment ? null : v.got / v.need;
         S.updateBridge(svg, { n: v.n, built: v.built, nextFill, ratio: v.ratio, wave: v.wave, justLaid: inc && v.built > 0, sparkle: inc });
+        renderInterlude(document.body, 'tb-p-interlude', v);
         if (!stateChanged && Date.now() >= phoneFeedbackUntil && phoneFeedbackUntil) { phoneFeedbackUntil = 0; paintPhonePhase(v); }
         if (!stateChanged) return;
         paintPhonePhase(v);
@@ -876,6 +895,7 @@
     function resultTexts(result) {
         const need = Number(result.neededCorrect) || Number(last.state?.neededCorrect) || 0;
         const got = Number(result.gotCorrect) || 0;
+        if (result.extra && result.correct) return { tone: 'ok', title: T('correct'), sub: result.pushedBackMs > 0 ? T('extraOk') : T('extraMax') };
         if (result.correct) {
             const sub = result.roundCleared ? T('correctBridge') : result.cleared ? T('correctLaid') : need ? T('correctStone', { got, need }) : '';
             return { tone: 'ok', title: T('correct'), sub };
@@ -906,6 +926,80 @@
         if (btn) { el.classList.add('has-btn'); el.appendChild(btn); clearTimeout(resultTimer); resultTimer = setTimeout(() => el.remove(), 4500); }
         return el;
     }
+
+    /** Interlude (break) between stones / bridges / at the end: what happened + a countdown to what comes next. */
+    function interludeInfo(v) {
+        if (!v || v.finished) return null;
+        const left = Math.max(0, (Number(v.st.phaseMsLeft) || 0) - (Date.now() - last.recvAt));
+        const s = Math.max(1, Math.ceil(left / 1000));
+        if (v.failedMoment) return { kind: 'failed', kick: T('ilWater'), title: T('ilWaterT', { n: v.round }), sub: T('ilEnd', { s }) };
+        if (v.moment && v.transition?.kind === 'victory') return { kind: 'victory', kick: T('ilFinish'), title: T('ilAll'), sub: T('ilEnd', { s }) };
+        if (v.moment) return { kind: 'bridge', kick: T('ilBreak'), title: T('ilBridge', { n: v.round }), sub: T('ilNextBridge', { s }) };
+        if (v.between) return { kind: 'stone', kick: T('ilBreak'), title: T('ilStone'), sub: v.st.betweenNext === 'breaker' ? T('ilNextBonus', { s }) : T('ilNextQ', { s }) };
+        return null;
+    }
+    function renderInterlude(parent, id, v) {
+        if (!parent) return;
+        const info = interludeInfo(v);
+        let el = document.getElementById(id);
+        if (!info) { if (el) el.hidden = true; return; }
+        if (!el) {
+            el = document.createElement('div');
+            el.id = id;
+            el.className = 'tb-interlude tb-hud';
+            el.setAttribute('role', 'status');
+            el.innerHTML = '<div class="il-card"><small class="il-kick"></small><b class="il-title"></b><span class="il-sub"></span></div>';
+            parent.appendChild(el);
+        }
+        el.hidden = false;
+        el.dataset.kind = info.kind;
+        el.querySelector('.il-kick').textContent = info.kick;
+        el.querySelector('.il-title').textContent = info.title;
+        el.querySelector('.il-sub').textContent = info.sub;
+    }
+
+    /** A new card arrived on the phone: extra cards (after this student's answer already counted) say so. */
+    function onQuestion(q) {
+        extraMode = Boolean(q && q.extra);
+        const v = liveView();
+        if (extraMode && v) answeredKey = stoneKey(v);
+        if (v) { $('live-play-definition')?.setAttribute('data-tb-label', T('questionLabel')); paintPhonePhase(v); }
+    }
+
+    /* ---- start-of-game tutorial (phone): 4 tiny steps, skippable, once per room; the game never waits for it ---- */
+    const TUT_ICONS = ['👆', '🧱', '🌊', '⭐'];
+    function tutorialSeenKey(code) { return `tb_tutorial_seen_${code || 'x'}`; }
+    function showTutorial(opts = {}) {
+        let stored = ''; try { stored = sessionStorage.getItem('ls_live_room_code') || ''; } catch (e) { /* ignore */ }
+        const code = String(opts.code || stored || $('lsp-room-code')?.textContent || '').trim();
+        try { if (!opts.force && sessionStorage.getItem(tutorialSeenKey(code))) return false; } catch (e) { /* ignore */ }
+        if ($('tb-tutorial')) return true;
+        let step = 0;
+        const el = document.createElement('div');
+        el.id = 'tb-tutorial';
+        el.className = 'tb-tutorial tb-hud';
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-modal', 'true');
+        const done = () => { try { sessionStorage.setItem(tutorialSeenKey(code), '1'); } catch (e) { /* ignore */ } el.remove(); };
+        const paint = () => {
+            const last4 = step === 3;
+            el.innerHTML = `<div class="tut-card"><small class="tut-kick">${esc(T('tutTitle'))} · ${step + 1}/4</small>
+                <div class="tut-pic" aria-hidden="true">${TUT_ICONS[step]}</div>
+                <p class="tut-text">${esc(T(`tut${step + 1}`))}</p>
+                <div class="tut-dots" aria-hidden="true">${[0, 1, 2, 3].map((i) => `<i class="${i === step ? 'on' : ''}"></i>`).join('')}</div>
+                <div class="tut-btns">${step > 0 ? `<button type="button" class="tut-back" id="tb-tut-back">${esc(T('tutBack'))}</button>` : `<button type="button" class="tut-back" id="tb-tut-skip">${esc(T('tutSkip'))}</button>`}
+                <button type="button" class="tut-next" id="tb-tut-next">${esc(last4 ? T('tutGo') : T('tutNext'))}</button></div></div>`;
+            el.querySelector('#tb-tut-next').addEventListener('click', () => { if (last4) done(); else { step += 1; paint(); } });
+            el.querySelector('#tb-tut-back')?.addEventListener('click', () => { step -= 1; paint(); });
+            el.querySelector('#tb-tut-skip')?.addEventListener('click', done);
+            el.querySelector('#tb-tut-next').focus?.();
+        };
+        paint();
+        el.__tbDone = done;
+        document.body.appendChild(el);
+        return true;
+    }
+    function hideTutorial() { $('tb-tutorial')?.__tbDone?.(); $('tb-tutorial')?.remove(); }
 
     /** Plain waiting line for the answer area (between stones / bridges). */
     function waitingText(kind) {
@@ -940,6 +1034,10 @@
         showResult,
         showNote,
         waitingText,
+        onQuestion,
+        showTutorial,
+        hideTutorial,
+        interludeInfo: (v) => interludeInfo(v || liveView()),
         text: T,
         resultTexts,
     };

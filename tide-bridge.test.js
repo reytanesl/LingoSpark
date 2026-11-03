@@ -6,7 +6,7 @@ import {
     TIDE_BETWEEN_MS, TIDE_TRANSITION_MS, TIDE_FAIL_MS, TIDE_SHRINK_FACTOR, SHORE_BREAKERS,
     spansForRound, roundHasShore, shoreAfterSpans, neededCorrectForRound, shoreNeededForRound, tideLimitMs, tideTier,
     roundConfig, createTideMatch, tickTide, submitTideAnswer, tideQuestionPayload, tidePublicView, tideWinners,
-    finishTideEarly, settleTideChallenge, typedProbability,
+    finishTideEarly, settleTideChallenge, typedProbability, tideRatioNow, TIDE_PUSHBACK_MS, TIDE_PUSHBACK_PER_STONE,
 } from './tide-bridge.js';
 import { simulate, DECK } from './tide-bridge-sim.mjs';
 
@@ -139,8 +139,14 @@ test('a span needs the target number of DIFFERENT players; wrong answers deduct 
     assert.equal(m.gotCorrect, 0);
     answerCorrect(m, 1, 2000);
     assert.equal(m.gotCorrect, 1);
-    // same player cannot count twice
-    assert.throws(() => submitTideAnswer(m, 'p0', m.assignments.p0.entry.term, null, 2100), /Already answered/);
+    // same player cannot count twice: they get an extra card at once; a correct extra holds the water back instead
+    const extraQ = tideQuestionPayload(m, 'p0');
+    assert.equal(extraQ.extra, true);
+    const extra = submitTideAnswer(m, 'p0', m.assignments.p0.entry.term, extraQ.questionId, 2100);
+    assert.equal(extra.result.extra, true);
+    assert.equal(extra.result.correct, true);
+    assert.equal(m.gotCorrect, 1, 'extra answers never count toward the stone');
+    assert.ok(extra.result.nextQuestion && extra.result.nextQuestion.questionId !== extraQ.questionId);
     const out = answerCorrect(m, 1, 3000);
     assert.equal(out.cleared, true);
     assert.equal(m.phase, 'between');
@@ -401,7 +407,42 @@ test('tideWinners ranks by correct answers and reports bridges + failed round', 
 });
 
 test('constants are plain named exports, transition beats are the documented lengths', () => {
-    assert.equal(TIDE_BETWEEN_MS, 2500);
-    assert.equal(TIDE_TRANSITION_MS, 3500);
+    assert.equal(TIDE_BETWEEN_MS, 1200);
+    assert.equal(TIDE_TRANSITION_MS, 3000);
     assert.equal(TIDE_FAIL_MS, 3000);
+});
+
+test('no waiting: a correct answer returns the next card; extra correct answers push the water back (capped per stone)', () => {
+    const m = mk({ players: 5 });
+    const q0 = tideQuestionPayload(m, 'p0');
+    const first = submitTideAnswer(m, 'p0', m.assignments.p0.entry.term, q0.questionId, 1000);
+    assert.equal(first.result.correct, true);
+    assert.equal(first.result.cleared, false);
+    assert.ok(first.result.nextQuestion, 'next card comes with the result');
+    assert.equal(first.result.nextQuestion.extra, true);
+    const at = 20_000;
+    const before = tideRatioNow(m, at) * m.tide.limitMs;
+    const pushes = [];
+    for (let k = 0; k < TIDE_PUSHBACK_PER_STONE + 2; k++) {
+        const q = tideQuestionPayload(m, 'p0');
+        pushes.push(submitTideAnswer(m, 'p0', m.assignments.p0.entry.term, q.questionId, at).result.pushedBackMs);
+    }
+    assert.deepEqual(pushes, [TIDE_PUSHBACK_MS, TIDE_PUSHBACK_MS, 0, 0]);
+    const after = tideRatioNow(m, at) * m.tide.limitMs;
+    assert.ok(Math.abs(before - after - TIDE_PUSHBACK_MS * TIDE_PUSHBACK_PER_STONE) < 2);
+    assert.equal(m.gotCorrect, 1);
+    // a wrong extra deducts nothing and shows the answer
+    const q = tideQuestionPayload(m, 'p0');
+    const w = submitTideAnswer(m, 'p0', 'nope-nope', q.questionId, at);
+    assert.equal(w.result.correct, false);
+    assert.ok(w.result.correctTerm);
+    // the water never goes below empty
+    const m2 = mk({ players: 3 });
+    submitTideAnswer(m2, 'p0', m2.assignments.p0.entry.term, null, 0);
+    submitTideAnswer(m2, 'p0', m2.assignments.p0.entry.term, null, 100);
+    assert.ok(tideRatioNow(m2, 100) >= 0);
+    // public view carries the phase countdown
+    answerCorrect(m, 1, at + 10);
+    assert.equal(m.phase, 'between');
+    assert.equal(tidePublicView(m, { now: at + 10 }).phaseMsLeft, TIDE_BETWEEN_MS);
 });

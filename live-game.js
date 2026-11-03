@@ -2388,7 +2388,7 @@ function runTideTick(io, room, onGameEnd) {
         if (match.phase === 'between' || match.phase === 'roundTransition') {
             // clear player question UIs during the pause / round transition beat
             for (const player of room.players.values()) {
-                if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: TIDE_BETWEEN_MS, kind: match.transition?.kind || 'span' });
+                if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: match.phaseEndsAt ? Math.max(0, match.phaseEndsAt - Date.now()) : TIDE_BETWEEN_MS, kind: match.phase === 'roundTransition' ? (match.transition?.kind || 'cleared') : 'span' });
             }
         }
     }
@@ -2406,7 +2406,7 @@ function afterTideChange(io, room, onGameEnd, { deliverQuestions = false } = {})
     emitTideState(io, room);
     if (room.tide.phase === 'between' || room.tide.phase === 'roundTransition') {
         for (const player of room.players.values()) {
-            if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: TIDE_BETWEEN_MS, kind: room.tide.transition?.kind || 'span' });
+            if (player.socketId) io.to(player.socketId).emit('live:tide-between', { ms: room.tide.phaseEndsAt ? Math.max(0, room.tide.phaseEndsAt - Date.now()) : TIDE_BETWEEN_MS, kind: room.tide.phase === 'roundTransition' ? (room.tide.transition?.kind || 'cleared') : 'span' });
         }
     }
     if (!room.tideTimer && room.phase === 'playing') {
@@ -2971,6 +2971,8 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                         player.answerLocked = true;
                     }
                     socket.emit('live:answer-result', tagChallengeResult(room, out.result));
+                    // No waiting: a correct answer comes with the next card straight away (extra cards hold the water back).
+                    if (out.result.nextQuestion) socket.emit('live:your-question', out.result.nextQuestion);
                     afterTideChange(io, room, onGameEnd, {
                         deliverQuestions: Boolean(out.cleared && room.tide.phase === 'vocab'),
                     });
@@ -3179,6 +3181,7 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     const player = room.players.get(challenge.entityId);
                     room.challenges.delete(challengeId);
                     if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    if (player?.socketId && result.nextQuestion) io.to(player.socketId).emit('live:your-question', result.nextQuestion);
                     io.to(room.hostSocketId).emit('live:challenge-resolved', {
                         id: challengeId,
                         accepted: accept,

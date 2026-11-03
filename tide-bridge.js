@@ -30,12 +30,19 @@ export { normalizeGameMinutes, CANNON_DEFAULT_MINUTES as TIDE_DEFAULT_MINUTES, C
 export const ROUND_COUNT = 6;
 
 /** Short pause + celebration after a span (or the shore challenge) is cleared. Round tide is PAUSED. */
-export const TIDE_BETWEEN_MS = 2_500;
+export const TIDE_BETWEEN_MS = 1_200;
 /** "Bridge cleared! Crossing to chasm N+1" (also the final victory beat). Round tide is PAUSED. */
-export const TIDE_TRANSITION_MS = 3_500;
+export const TIDE_TRANSITION_MS = 3_000;
 /** "The tide took the bridge!" moment before the match ends. */
 export const TIDE_FAIL_MS = 3_000;
 export const TIDE_DEFAULT_QUESTION_MS = 20_000;
+/**
+ * No waiting after a correct answer: a player who already counted for the current stone gets a fresh card at once.
+ * Each extra correct answer holds the water back by TIDE_PUSHBACK_MS (at most TIDE_PUSHBACK_PER_STONE per player per
+ * stone); it never counts toward the stone itself (stones still need DIFFERENT players).
+ */
+export const TIDE_PUSHBACK_MS = 1_500;
+export const TIDE_PUSHBACK_PER_STONE = 2;
 
 /** Round names / bridge themes (document table). `theme` is the visual id used by tide-bridge-scene.js. */
 export const ROUNDS = [
@@ -391,6 +398,7 @@ export function dealVocabRound(match, now = Date.now()) {
         const ps = match.players[pid];
         if (!ps) continue;
         ps.locked = false;
+        ps.pushbacks = 0;
         let termIndex;
         if (used.size < deckLen) {
             let guard = 0;
@@ -417,6 +425,20 @@ export function dealVocabRound(match, now = Date.now()) {
         }
         match.assignments[pid] = assignment;
     }
+}
+
+/** Deal one fresh vocab card to a player (avoids repeating their current term). */
+export function dealTideCard(match, pid) {
+    const deckLen = match.deck.length;
+    const prev = match.assignments[pid]?.termIndex;
+    let termIndex = Math.floor(match.rng() * deckLen);
+    if (deckLen > 1 && termIndex === prev) termIndex = (termIndex + 1 + Math.floor(match.rng() * (deckLen - 1))) % deckLen;
+    const entry = match.deck[termIndex];
+    const inputMode = pickInputMode(match.answerMode, match.rng, match.round);
+    const a = { termIndex, questionId: nextQuestionId(match), inputMode, entry: { term: entry.term, definition: entry.definition }, choices: null };
+    if (inputMode === 'choice') a.choices = buildChoices(entry.term, match.deck.map((d) => d.term), match.rng);
+    match.assignments[pid] = a;
+    return a;
 }
 
 /** Pick the next shore item for this round's level; avoids repeats, falls back to other levels, then recycles. */
@@ -607,7 +629,6 @@ export function tideQuestionPayload(match, playerId) {
         const a = match.assignments[playerId];
         if (!a) return null;
         const ps = match.players[playerId];
-        if (ps?.locked) return null;
         const payload = {
             tide: true,
             gameFormat: TIDE_FORMAT,
@@ -622,6 +643,7 @@ export function tideQuestionPayload(match, playerId) {
             neededCorrect: match.neededCorrect,
             endsAt: match.endsAt,
             termIndex: a.termIndex,
+            ...(ps?.locked ? { extra: true } : {}),
             ...roundExtras(match),
         };
         if (a.inputMode === 'choice' && a.choices) payload.choices = a.choices;
@@ -657,7 +679,8 @@ export function submitTideAnswer(match, playerId, rawText, questionId, now = Dat
     }
     const ps = match.players[playerId];
     if (!ps) throw new Error('Player not found.');
-    if (ps.locked) throw new Error('Already answered this round.');
+    if (ps.locked && match.phase !== 'vocab') throw new Error('Already answered this round.');
+    if (ps.locked) return submitExtraAnswer(match, playerId, rawText, questionId, now);
 
     const answerText = sanitizeAnswerText(rawText);
     if (!answerText) throw new Error('Type an answer first.');
@@ -697,6 +720,7 @@ export function submitTideAnswer(match, playerId, rawText, questionId, now = Dat
             ps.correctTotal += 1;
         }
         const wasPhase = match.phase;
+        if (wasPhase === 'vocab') { ps.pushbacks = 0; dealTideCard(match, playerId); }
         const got = match.gotCorrect;
         const need = match.neededCorrect;
         let cleared = false;
@@ -716,6 +740,7 @@ export function submitTideAnswer(match, playerId, rawText, questionId, now = Dat
                 cleared,
                 roundCleared,
                 won: false,
+                ...(!cleared && wasPhase === 'vocab' ? { nextQuestion: tideQuestionPayload(match, playerId) } : {}),
             },
             cleared,
         };
@@ -752,6 +777,41 @@ export function submitTideAnswer(match, playerId, rawText, questionId, now = Dat
     };
 }
 
+/** A player who already counted for this stone answers an extra card: correct = hold the water back a little. */
+function submitExtraAnswer(match, playerId, rawText, questionId, now) {
+    const ps = match.players[playerId];
+    const a = match.assignments[playerId] || dealTideCard(match, playerId);
+    if (questionId != null && String(questionId) !== String(a.questionId)) throw new Error('That question expired.');
+    const answerText = sanitizeAnswerText(rawText);
+    if (!answerText) throw new Error('Type an answer first.');
+    const correct = matchesTermAnswer(answerText, a.entry.term);
+    let pushedBackMs = 0;
+    if (correct) {
+        ps.correctTotal += 1;
+        if ((ps.pushbacks || 0) < TIDE_PUSHBACK_PER_STONE) {
+            const before = tideElapsed(match, now);
+            const running = match.tide.runningSince != null ? Math.max(0, now - match.tide.runningSince) : 0;
+            match.tide.elapsedMs = Math.max(0, before - TIDE_PUSHBACK_MS) - running;
+            pushedBackMs = Math.max(0, before - tideElapsed(match, now));
+            ps.pushbacks = (ps.pushbacks || 0) + 1;
+        }
+        dealTideCard(match, playerId);
+    }
+    return {
+        result: {
+            ...resultBase(match),
+            correct,
+            extra: true,
+            pushedBackMs,
+            reset: false,
+            challengeable: false,
+            gotCorrect: match.gotCorrect,
+            ...(correct ? { nextQuestion: tideQuestionPayload(match, playerId) } : { correctTerm: a.entry.term }),
+        },
+        cleared: false,
+    };
+}
+
 /** Host accepted a typed vocab challenge as correct. */
 export function settleTideChallenge(match, playerId, accepted, now = Date.now()) {
     const notCounted = (stale) => ({ cleared: false, result: { correct: false, accepted: false, stale: Boolean(stale), tide: true, gameFormat: TIDE_FORMAT } });
@@ -769,6 +829,8 @@ export function settleTideChallenge(match, playerId, accepted, now = Date.now())
         match.gotCorrect = match.correctPlayerIds.size;
         ps.correctTotal += 1;
     }
+    ps.pushbacks = 0;
+    dealTideCard(match, playerId);
     const got = match.gotCorrect;
     const need = match.neededCorrect;
     let cleared = false;
@@ -789,6 +851,7 @@ export function settleTideChallenge(match, playerId, accepted, now = Date.now())
             gotCorrect: cleared ? need : got,
             cleared,
             roundCleared,
+            ...(!cleared && match.phase === 'vocab' ? { nextQuestion: tideQuestionPayload(match, playerId) } : {}),
         },
     };
 }
@@ -814,6 +877,8 @@ export function tidePublicView(match, { now = Date.now() } = {}) {
         tide: true,
         phase: match.phase,
         phaseEndsAt: match.phaseEndsAt,
+        phaseMsLeft: match.phaseEndsAt ? Math.max(0, match.phaseEndsAt - now) : null,
+        betweenNext: match.phase === 'between' ? (match.betweenNext || 'vocab') : null,
         endsAt: match.endsAt,
         remainingMs,
         clockRatio,

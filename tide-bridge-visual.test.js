@@ -184,3 +184,25 @@ test('live client uses the simple student wording for waits and teacher notes', 
     assert.match(live, /waitingText\('correct'\)/);
     assert.match(live, /showNote\('sent'\)/);
 });
+
+test('tutorial (4 steps, skippable, EN + PL) and clearly marked interludes with a countdown', () => {
+    const en = loadClient('en'); const pl = loadClient('pl');
+    for (let i = 1; i <= 4; i++) { assert.ok(en.text(`tut${i}`).length < 80); assert.notEqual(pl.text(`tut${i}`), en.text(`tut${i}`)); }
+    assert.match(en.text('tut4'), /not from the word list/);
+    assert.equal(pl.text('tutSkip'), 'Pomiń');
+    const client = read('tide-bridge-client.js');
+    assert.match(client, /id="tb-tut-skip"/);
+    assert.match(client, /tb_tutorial_seen_/);
+    const v = (o) => ({ finished: false, st: { phaseMsLeft: 3000, ...o.st }, round: 2, transition: null, ...o });
+    const il = en.interludeInfo(v({ moment: true, transition: { kind: 'cleared' } }));
+    assert.equal(il.kick, 'BREAK'); assert.equal(il.title, 'Bridge 2 built!'); assert.match(il.sub, /^Next bridge in \d…$/);
+    assert.match(en.interludeInfo(v({ between: true, st: { phaseMsLeft: 1200, betweenNext: 'breaker' } })).sub, /bonus question/);
+    assert.equal(en.interludeInfo(v({ failedMoment: true, moment: true, transition: { kind: 'failed' } })).kick, 'WATER WON');
+    assert.equal(en.interludeInfo(v({})), null, 'no interlude during play');
+    assert.equal(pl.interludeInfo(v({ moment: true, transition: { kind: 'cleared' } })).kick, 'PRZERWA');
+    assert.match(en.resultTexts({ correct: true, extra: true, pushedBackMs: 1500 }).sub, /water goes down/);
+    const live = read('live-game-client.js');
+    assert.match(live, /TideBridgeUI\?\.onQuestion\?\.\(q\)/);
+    assert.match(live, /showTutorial\?\.\(/);
+    assert.match(live, /result\.correct && result\.nextQuestion/);
+});

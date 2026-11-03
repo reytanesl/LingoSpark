@@ -1833,6 +1833,8 @@
                 setLiveGameActive(false);
                 applyPlayerLobbySnapshot(data.snapshot);
                 showPlayerWaiting('Waiting for the host to start…', data.snapshot);
+                // The Bridge: the how-to-play steps appear while students wait in the lobby (skippable, once per room).
+                if (isTideBridgeFormat(playerState.gameFormat)) window.TideBridgeUI?.showTutorial?.({ code: data.code || data.snapshot?.code || sessionStorage.getItem('ls_live_room_code') });
             }
         });
 
@@ -1894,6 +1896,7 @@
             const cannonQ = q.gameFormat === 'word-cannon';
             if (cannonQ) hideChallengeActions();
             showPlayerQuestion(q);
+            if (q.tide || q.gameFormat === 'tide-bridge') window.TideBridgeUI?.onQuestion?.(q);
             // Word Cannon: own question stream — clear the last feedback card.
             if (cannonQ) window.WCB?.phoneQuestion(q);
         });
@@ -1947,7 +1950,9 @@
                 if (result.finished || result.tideFailed) return;
                 window.TideBridgeUI?.showResult(result, { onChallenge: result.challengeable && !result.challengesOff ? submitChallenge : null });
                 spawnPlayerFeedbackBubble(Boolean(result.correct), false);
-                if (result.correct) {
+                if (result.correct && result.nextQuestion) {
+                    // No waiting: the next card follows at once (live:your-question).
+                } else if (result.correct) {
                     setAnswerInputsEnabled(false);
                     if (!result.cleared) showPlayerWaiting(window.TideBridgeUI?.waitingText ? TideBridgeUI.waitingText('correct') : 'Correct! Waiting for your classmates…');
                 } else {
