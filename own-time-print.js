@@ -81,9 +81,25 @@
         return `<section class="otp-keypage"><h2>${esc(o.lang === 'pl' ? 'Klucz odpowiedzi' : 'Answer key')} — ${esc(lesson.title || '')}</h2><ol class="otp-key">${rows}</ol></section>`;
     }
 
-    /** Build the printable sheet: all tasks of the set, student version, optional answer key on its own page. */
+    /** Short label for the task picker: "Use of English · first instruction words". */
+    function taskLabel(task, lang) {
+        const L = lang === 'pl' ? 0 : 1;
+        const type = (TYPE[task?.type] || TYPE.writing)[L];
+        const ins = String(task?.instruction || '').trim();
+        return ins ? `${type} · ${ins.length > 60 ? `${ins.slice(0, 57).trimEnd()}…` : ins}` : type;
+    }
+
+    /** Keep only the chosen task indices (in set order); `select` absent = all tasks. */
+    function pick(lesson, select) {
+        if (!Array.isArray(select)) return lesson;
+        const want = new Set(select.map(Number));
+        return { ...lesson, tasks: (lesson?.tasks || []).filter((_, i) => want.has(i)) };
+    }
+
+    /** Build the printable sheet: all tasks of the set (or only `o.select` indices, renumbered 1..n), student version, optional answer key on its own page. */
     function build(lesson, o = {}) {
         const opts = { lang: o.lang === 'pl' ? 'pl' : 'en', ...o };
+        lesson = pick(lesson, o.select);
         const tasks = lesson?.tasks || [];
         const head = `<header class="otp-head"><h1>${esc(lesson?.title || '')}</h1><div class="otp-sub">${esc([lesson?.focus, lesson?.cefr].filter(Boolean).join(' · '))}</div><div class="otp-name">${esc(opts.lang === 'pl' ? 'Imię i nazwisko' : 'Name')}: <span class="otp-line" style="min-width:24ch"></span> ${esc(opts.lang === 'pl' ? 'Data' : 'Date')}: <span class="otp-line" style="min-width:12ch"></span></div></header>`;
         return `<div class="otp-sheet" lang="${opts.lang}">${head}${tasks.map((tk, i) => taskHtml(tk, i + 1, opts)).join('')}</div>${opts.withKey ? keyHtml(lesson, opts) : ''}`;
@@ -101,7 +117,7 @@
         if (!o.noDialog) global.print();
     }
 
-    const api = { build, print };
+    const api = { build, print, taskLabel };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     global.OwnTimePrint = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -32,6 +32,29 @@
     let lessons = [];
     let lesson = null;
     let printWithKey = false;
+    /** Task indices ticked for printing; reset to "all" whenever a new lesson object is shown. */
+    let printSel = null;
+    let printSelFor = null;
+    function printSelection() {
+        const n = lesson?.tasks?.length || 0;
+        if (printSelFor !== lesson || !printSel) { printSel = new Set(Array.from({ length: n }, (_, i) => i)); printSelFor = lesson; }
+        return printSel;
+    }
+    function printPanelHtml() {
+        const sel = printSelection();
+        const tasks = lesson?.tasks || [];
+        const label = (tk) => (window.OwnTimePrint?.taskLabel ? window.OwnTimePrint.taskLabel(tk, lang()) : '');
+        return `<div class="ot-print-panel" id="ot-print-panel" role="dialog" aria-label="${esc(t('Wybierz zadania do wydruku', 'Choose tasks to print'))}" hidden>
+            <div class="ot-pp-head"><b>${esc(t('Zadania do wydruku', 'Tasks to print'))}</b><span class="ot-pp-bulk"><button type="button" class="ot-pp-link" id="ot-pp-all">${esc(t('Zaznacz wszystkie', 'Select all'))}</button> · <button type="button" class="ot-pp-link" id="ot-pp-none">${esc(t('Odznacz wszystkie', 'Select none'))}</button></span></div>
+            <ul class="ot-pp-list">${tasks.map((tk, i) => `<li><label><input type="checkbox" class="ot-pp-task" data-pp="${i}"${sel.has(i) ? ' checked' : ''}> <span class="ot-pp-n">${i + 1}.</span> ${esc(label(tk))}</label></li>`).join('')}</ul>
+            <label class="ot-print-key" title="${esc(t('Dodaj klucz odpowiedzi na ostatniej stronie', 'Add the answer key on the last page'))}"><input type="checkbox" id="ot-print-key"${printWithKey ? ' checked' : ''}> ${esc(t('z kluczem odpowiedzi', 'with answer key'))}</label>
+            <p class="ot-pp-hint" id="ot-pp-hint"${sel.size ? ' hidden' : ''}>${esc(t('Zaznacz co najmniej jedno zadanie.', 'Tick at least one task.'))}</p>
+            <div class="ot-pp-actions"><button type="button" class="ot-pp-cancel" id="ot-pp-cancel">${esc(t('Anuluj', 'Cancel'))}</button><button type="button" class="ot-print-btn" id="ot-print-go"${sel.size ? '' : ' disabled'}><i class="fa-solid fa-print" aria-hidden="true"></i> <span id="ot-pp-go-label">${esc(printGoLabel(sel.size, tasks.length))}</span></button></div>
+        </div>`;
+    }
+    function printGoLabel(k, n) {
+        return k === n ? t('Drukuj', 'Print') : t(`Drukuj (${k} z ${n})`, `Print (${k} of ${n})`);
+    }
     /** Word-box order as last shown on screen (print keeps the same order). */
     const shownBanks = new WeakMap();
     let taskIndex = 0;
@@ -1118,7 +1141,7 @@
                     </div>
                     ${profiles.length ? profileBarHtml(true) : ''}
                     <button type="button" class="ot-reset-set" id="ot-reset-set" title="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}" aria-label="${esc(t('Zacznij ten zestaw od nowa', 'Restart this set'))}"><i class="fa-solid fa-rotate-left"></i><span class="ot-reset-label">${esc(t('Od nowa', 'Restart'))}</span></button>
-                    <span class="ot-print-wrap"><button type="button" class="ot-print-btn" id="ot-print" title="${esc(t('Drukuj cały zestaw zadań', 'Print the whole task set'))}"><i class="fa-solid fa-print" aria-hidden="true"></i><span class="ot-print-label">${esc(t('Drukuj', 'Print'))}</span></button><label class="ot-print-key" title="${esc(t('Dodaj klucz odpowiedzi na ostatniej stronie', 'Add the answer key on the last page'))}"><input type="checkbox" id="ot-print-key"${printWithKey ? ' checked' : ''}> ${esc(t('z kluczem', 'with key'))}</label></span>
+                    <span class="ot-print-wrap"><button type="button" class="ot-print-btn" id="ot-print" aria-haspopup="dialog" aria-expanded="false" aria-controls="ot-print-panel" title="${esc(t('Wybierz zadania do wydruku', 'Choose tasks to print'))}"><i class="fa-solid fa-print" aria-hidden="true"></i><span class="ot-print-label">${esc(t('Drukuj', 'Print'))}</span></button>${printPanelHtml()}</span>
                     <div class="ot-time" aria-live="polite">${esc(t(`Zadanie ${taskIndex + 1} z ${tasks.length}`, `Task ${taskIndex + 1} of ${tasks.length}`))}</div>
                 </div>
                 ${lesson.testPrep && testPrep ? readinessHtml(testPrep, true) : ''}
@@ -1912,10 +1935,45 @@
         // "Od nowa": reset ONLY the current set to its start (answers, checks, hints, tiles) — same tasks, no
         // new generation, no Keep going quota. Two taps (second within 4 s) so it can't happen by accident.
         document.getElementById('ot-print-key')?.addEventListener('change', (ev) => { printWithKey = ev.target.checked; });
-        document.getElementById('ot-print')?.addEventListener('click', () => {
-            if (!window.OwnTimePrint || !lesson) return;
-            window.OwnTimePrint.print(lesson, { lang: lang(), withKey: printWithKey, formatName: (f) => (f !== 'simple' ? UOE_FORMAT_NAMES[f] : ''), shownBank: (tk) => shownBanks.get(tk) });
-        });
+        {
+            const btn = document.getElementById('ot-print');
+            const pp = document.getElementById('ot-print-panel');
+            const refresh = () => {
+                const sel = printSelection();
+                pp.querySelectorAll('.ot-pp-task').forEach((cb) => { cb.checked = sel.has(Number(cb.dataset.pp)); });
+                const go = document.getElementById('ot-print-go');
+                go.disabled = sel.size === 0;
+                document.getElementById('ot-pp-hint').hidden = sel.size > 0;
+                document.getElementById('ot-pp-go-label').textContent = printGoLabel(sel.size, lesson?.tasks?.length || 0);
+            };
+            const onDoc = (ev) => { if (!pp.contains(ev.target) && !btn.contains(ev.target)) close(); };
+            const onKey = (ev) => { if (ev.key === 'Escape') { close(); btn.focus(); } };
+            function close() {
+                pp.hidden = true; btn.setAttribute('aria-expanded', 'false');
+                document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey);
+            }
+            function open() {
+                pp.hidden = false; btn.setAttribute('aria-expanded', 'true'); refresh();
+                document.addEventListener('mousedown', onDoc); document.addEventListener('keydown', onKey);
+                document.getElementById('ot-print-go')?.focus();
+            }
+            btn?.addEventListener('click', () => { if (pp.hidden) open(); else close(); });
+            pp?.addEventListener('change', (ev) => {
+                const cb = ev.target.closest('.ot-pp-task'); if (!cb) return;
+                const sel = printSelection(); const i = Number(cb.dataset.pp);
+                if (cb.checked) sel.add(i); else sel.delete(i);
+                refresh();
+            });
+            document.getElementById('ot-pp-all')?.addEventListener('click', () => { const sel = printSelection(); (lesson?.tasks || []).forEach((_, i) => sel.add(i)); refresh(); });
+            document.getElementById('ot-pp-none')?.addEventListener('click', () => { printSelection().clear(); refresh(); });
+            document.getElementById('ot-pp-cancel')?.addEventListener('click', () => { close(); btn.focus(); });
+            document.getElementById('ot-print-go')?.addEventListener('click', () => {
+                const sel = printSelection();
+                if (!window.OwnTimePrint || !lesson || !sel.size) return;
+                close();
+                window.OwnTimePrint.print(lesson, { lang: lang(), withKey: printWithKey, select: [...sel].sort((x, y) => x - y), formatName: (f) => (f !== 'simple' ? UOE_FORMAT_NAMES[f] : ''), shownBank: (tk) => shownBanks.get(tk) });
+            });
+        }
         document.getElementById('ot-reset-set')?.addEventListener('click', (ev) => {
             const btn = ev.currentTarget;
             if (!btn.classList.contains('is-confirm')) {

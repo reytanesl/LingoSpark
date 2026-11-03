@@ -63,3 +63,32 @@ test('print CSS: A4, condensed font, no breaks inside tasks, only the sheet prin
     assert.match(ot, /id="ot-print"/);
     assert.match(ot, /t\('Drukuj', 'Print'\)/);
 });
+
+test('select: only ticked tasks print, renumbered 1..n, key matches the same tasks', () => {
+    const L = lesson(F.OWN_TIME_MOCK_REPLY, 'A2');
+    assert.ok(L.tasks.length >= 4);
+    const keep = [0, 2, 3].filter((i) => i < L.tasks.length);
+    const html = P.build(L, { lang: 'en', withKey: true, select: keep });
+    assert.equal((html.match(/class="otp-task"/g) || []).length, keep.length);
+    const nums = [...html.matchAll(/class="otp-num">(\d+)</g)].map((m) => Number(m[1]));
+    assert.deepEqual(nums, keep.map((_, i) => i + 1));
+    const keyRows = html.slice(html.indexOf('otp-keypage')).match(/<li><b>\d+\.<\/b>/g) || [];
+    assert.equal(keyRows.length, keep.length);
+    const skipped = L.tasks[1];
+    if (skipped.instruction && !keep.some((i) => L.tasks[i].instruction === skipped.instruction)) {
+        assert.ok(!html.includes(skipped.instruction.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')));
+    }
+    assert.equal(P.build(L, { lang: 'en' }), P.build(L, { lang: 'en', select: undefined }), 'no select = whole set');
+});
+
+test('task picker: labels EN/PL, panel with select all/none, key toggle, disabled print + hint when none ticked', () => {
+    const L = lesson(F.OWN_TIME_MOCK_REPLY, 'A2');
+    assert.match(P.taskLabel(L.tasks[0], 'en'), /^[A-Z][\w ]+/);
+    assert.match(P.taskLabel({ type: 'reading' }, 'pl'), /^Czytanie$/);
+    assert.ok(P.taskLabel({ type: 'uoe', instruction: 'x'.repeat(100) }, 'en').endsWith('…'));
+    const ot = fs.readFileSync(new URL('./own-time.js', import.meta.url), 'utf8');
+    for (const s of ['id="ot-print-panel"', 'id="ot-pp-all"', 'id="ot-pp-none"', 'id="ot-print-go"', 'id="ot-pp-hint"', 'id="ot-print-key"', "'Select all'", "'Zaznacz wszystkie'", "'Tick at least one task.'", "'Zaznacz co najmniej jedno zadanie.'"]) assert.ok(ot.includes(s), s);
+    assert.match(ot, /go\.disabled = sel\.size === 0/);
+    assert.match(ot, /select: \[\.\.\.sel\]/);
+    assert.doesNotMatch(ot, /beforeprint/, 'Ctrl+P behaviour unchanged');
+});
