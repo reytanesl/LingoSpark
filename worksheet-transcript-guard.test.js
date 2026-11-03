@@ -69,3 +69,22 @@ test('worksheet render: transcript only in the teacher tab, never in print / PDF
   assert.match(html, /const sourceHtml = mediaOnly \? ''/);
   assert.equal(isWorksheetPublicPath('/lib/transcript-guard.js'), true);
 });
+
+test('teacher / answer-key print & PDF: transcript at the end on a new page; student print & PDF never', () => {
+  const html = fs.readFileSync(new URL('./worksheet-maker/index.html', import.meta.url), 'utf8');
+  // rendered after the teacher block (= after the answer key), last thing on the sheet
+  assert.match(html, /\$\{mediaTranscriptHtml\}\s*<\/div>\s*\$\{transcriptPrintHtml\}\s*`;/);
+  assert.match(html, /<div class="transcript-print" data-transcript-print><h3>\$\{tx\('transcriptTeacherOnly'\)\}<\/h3>/);
+  assert.match(html, /body\.teacher \.transcript-print \{ display:block !important; break-before:page; page-break-before:always; \}/);
+  assert.match(html, /body\.student \.transcript-print \{ display:none !important; \}/);
+  assert.match(html, /\.pdf-print-root\.student \.transcript-print \{ display:none !important; \}/);
+  // PDF: block always taken out of the main sheet; only re-added for the teacher key, after pdf.addPage()
+  assert.match(html, /const transcriptPage = host\.classList\.contains\('teacher'\) \? tpBlock : null;/);
+  assert.match(html, /if \(transcriptPage\) \{[\s\S]{0,1400}pdf\.addPage\(\);/);
+});
+
+test('UI strings: transcript heading in en / de / pl', async () => {
+  const { t } = await import('./worksheet-maker/lib/ui-strings.js');
+  assert.equal(t('en', 'transcriptTeacherOnly'), 'Transcript (teacher only)');
+  assert.equal(t('pl', 'transcriptTeacherOnly'), 'Transkrypcja (tylko dla nauczyciela)');
+});

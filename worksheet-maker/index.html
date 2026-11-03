@@ -2041,6 +2041,15 @@
     .transcript-teacher-wrap summary { cursor:pointer; margin:.4em 0; }
     @media print { [data-transcript], .transcript-teacher-wrap { display:none !important; } }
     .pdf-print-root [data-transcript], body.student [data-transcript] { display:none !important; }
+    .transcript-print { display:none; }
+    .transcript-print h3 { font-size:11pt; margin:0 0 4mm; color:var(--royal-blue, #1d2b64); }
+    .transcript-print .tp-body { white-space:pre-wrap; font-size:8.5pt; line-height:1.3; column-count:2; column-gap:6mm; }
+    @media print {
+      body.teacher .transcript-print { display:block !important; break-before:page; page-break-before:always; }
+      body.student .transcript-print { display:none !important; }
+    }
+    .pdf-print-root.student .transcript-print { display:none !important; }
+    .pdf-print-root .transcript-print.tp-page { display:block !important; }
   </style>
 </head>
 <body class="student">
@@ -3106,6 +3115,10 @@
       const mediaTranscriptHtml = mediaTranscript
         ? `<details class="transcript-teacher-wrap no-print" data-transcript><summary><strong>${tx('transcriptTeacherOnly')}</strong></summary><div class="transcript-teacher">${escapeHtml(mediaTranscript.slice(0, 12000))}${mediaTranscript.length > 12000 ? '…' : ''}</div></details>`
         : '';
+      // Teacher / answer-key print & PDF only: transcript at the very end, on a new page, compact. Never in student print/PDF.
+      const transcriptPrintHtml = mediaTranscript
+        ? `<div class="transcript-print" data-transcript-print><h3>${tx('transcriptTeacherOnly')}</h3><div class="tp-body">${escapeHtml(mediaTranscript.slice(0, 40000))}${mediaTranscript.length > 40000 ? '…' : ''}</div></div>`
+        : '';
       $('sheet').innerHTML = `
         <div class="sheet-header">
           <div class="sheet-header-text">
@@ -3126,6 +3139,7 @@
           ${sourceHtml ? `<p><strong>${tx('sourceTeacherOnly')}</strong></p>${sourceHtml}` : ''}
           ${mediaTranscriptHtml}
         </div>
+        ${transcriptPrintHtml}
       `;
 
       $('sheet').classList.add('show');
@@ -5440,6 +5454,10 @@
         });
       }
 
+      // The transcript page is rendered separately (teacher key only) so it starts on a fresh PDF page.
+      const tpBlock = clone.querySelector('[data-transcript-print]');
+      if (tpBlock) tpBlock.remove();
+      const transcriptPage = host.classList.contains('teacher') ? tpBlock : null;
       host.appendChild(clone);
       document.body.appendChild(host);
 
@@ -5487,6 +5505,28 @@
           pdf.addImage(dataUrl, 'JPEG', marginLeft, marginTop, imgW, sliceMm, undefined, 'FAST');
           y += sliceH;
           page += 1;
+        }
+        if (transcriptPage) {
+          clone.remove();
+          transcriptPage.classList.add('tp-page');
+          host.appendChild(transcriptPage);
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const tCanvas = await html2canvas(transcriptPage, {
+            backgroundColor: '#ffffff', scale: 2, useCORS: true, logging: false,
+            width: Math.ceil(contentWpx), windowWidth: Math.ceil(contentWpx),
+            onclone: (doc) => { const root = doc.querySelector('.pdf-print-root'); if (root) root.style.left = '0'; },
+          });
+          const tPageH = Math.max(1, Math.floor((usableH / ((tCanvas.height * imgW) / tCanvas.width)) * tCanvas.height));
+          for (let ty = 0; ty < tCanvas.height; ty += tPageH) {
+            const h = Math.min(tPageH, tCanvas.height - ty);
+            const pc = document.createElement('canvas');
+            pc.width = tCanvas.width; pc.height = h;
+            const c2 = pc.getContext('2d');
+            c2.fillStyle = '#ffffff'; c2.fillRect(0, 0, pc.width, h);
+            c2.drawImage(tCanvas, 0, ty, tCanvas.width, h, 0, 0, tCanvas.width, h);
+            pdf.addPage();
+            pdf.addImage(pc.toDataURL('image/jpeg', 0.93), 'JPEG', marginLeft, marginTop, imgW, (h * imgW) / tCanvas.width, undefined, 'FAST');
+          }
         }
         return pdf.output('blob');
       } finally {
