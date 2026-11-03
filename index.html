@@ -3475,7 +3475,7 @@
         .gaps-feedback-suggestion {
             color: #ea580c; font-weight: 700;
         }
-        /* Advanced Text Gaps + E8 Text Gaps: 'In your own time' look (shared --ot-* tokens; restyle only). */
+        /* Advanced Text Gaps + Basic Text Gaps: 'In your own time' look (shared --ot-* tokens; restyle only). */
         :is(#screen-adv-gaps, #screen-pe-e8-gaps) #adv-gaps-content, :is(#screen-adv-gaps, #screen-pe-e8-gaps) #pe-e8-gaps-content { font-family: var(--font-secondary); color: var(--ot-ink); }
         :is(#screen-adv-gaps, #screen-pe-e8-gaps) .pe-prompt-box { background: var(--ot-pale); border: 1px solid var(--ot-bank); border-radius: 12px; color: var(--ot-ink); font-size: 0.88rem; padding: 0.55rem 0.8rem; box-shadow: none; }
         :is(#screen-adv-gaps, #screen-pe-e8-gaps) .pe-prompt-box strong { color: var(--ot-navy); font-weight: 700; }
@@ -4256,7 +4256,7 @@
                 <div class="guide-item"><strong>Detail Detective</strong><p>Expand a short statement into a clearer, more detailed sentence with evidence.</p></div>
                 <div class="guide-item"><strong>Link Master</strong><p>Join two sentences with <em>because</em> or <em>so</em> — keep the logic correct.</p></div>
                 <div class="guide-item"><strong>Exam Simulator</strong><p>Write an exam-style email within the word limit, or upload a photo/PDF of a real exam task (and optionally your handwritten email), then get AI examiner feedback.</p></div>
-                <div class="guide-item"><strong>E8 Text Gaps</strong><p>CKE egzamin ósmoklasisty writing models (e-mail or blog, 50–120 words, 3 podpunkty): translate Polish cues in gaps, or restore missing sentences. Cursor AI checks your answers.</p></div>
+                <div class="guide-item"><strong>Basic Text Gaps</strong><p>Choose A1–A2 (CKE egzamin ósmoklasisty e-mail/blog, 50–120 words, 3 podpunkty) or B1 (Matura podstawowa, 100–150 words). Translate Polish cues in gaps, or restore missing sentences — Cursor AI checks your answers.</p></div>
                 <div class="guide-item"><strong>Dictation</strong><p>Choose Beginner, A1 or A2 level. Listen &amp; repeat aloud, or fill gaps — spelling must match exactly; capital letters do not matter.</p></div>
                 <div class="guide-item"><strong>Colour Blocks</strong><p>Build sentences with colour tiles (one word or phrase each: a / an, have to, don’t + have to). Creator mode also has to be (am / is / are), and / or, question words, and . or ?. Ages 10–12 add play/do/go collocations, daily routines, parts of the day, and telling the time. Fill the gaps: drag tiles into blanks. When you choose singular or plural, the plural form is shown and spoken. Persons: I, You, We, They, He, She. Things are grouped (food, furniture, school…). Line Up: drag pictured tiles onto numbered boxes. Switch EN | PL for help. Signed-in players collect each correct sentence in a Colour Blocks set.</p></div>
                 <div class="guide-item"><strong>Vocab Scenes</strong><p>Interactive classroom scenes — tap objects to see and hear words. Labels, Sound and Quiz toggles in the toolbar. Opens in a new tab — free to play.</p></div>
@@ -4554,7 +4554,7 @@
                         </button>
                         <div class="grid ws-game-cat-grid">
                             <div class="card"><div class="icon-container"><i class="fa-solid fa-envelope"></i></div><h2>Exam Simulator</h2><p>Get an AI or worksheet task, then type your email or upload a photo/PDF — same upload flow as Advanced English.</p><a href="#/setup/pe-exam" class="btn btn-outline">Play Now</a></div>
-                            <div class="card"><div class="icon-container"><i class="fa-solid fa-pen-to-square"></i></div><h2>E8 Text Gaps</h2><p>CKE E8 e-mail/blog models (50–120 words, 3 points): translate Polish cues or fill missing sentences — Cursor AI grades your answers.</p><a href="#/setup/pe-e8-gaps" class="btn btn-outline">Play Now</a></div>
+                            <div class="card"><div class="icon-container"><i class="fa-solid fa-pen-to-square"></i></div><h2>Basic Text Gaps</h2><p>A1–A2 E8 e-mail/blog (50–120 words) or B1 Matura podstawowa (100–150): translate cues or restore missing sentences — Cursor AI grades your answers.</p><a href="#/setup/pe-e8-gaps" class="btn btn-outline">Play Now</a></div>
                         </div>
                     </section>
                 </div>
@@ -4788,12 +4788,21 @@
             </div>
 
             <div id="e8-gaps-setup-note" class="form-group setup-note" style="display:none; background: rgba(1,33,105,0.06); border-color: rgba(1,33,105,0.18);">
-                <label style="color: var(--royal-blue);"><i class="fa-solid fa-pen-to-square"></i> E8 Text Gaps</label>
-                <p>Pick an activity type, then Launch. Optional topic for a themed e-mail or blog.</p>
+                <label style="color: var(--royal-blue);"><i class="fa-solid fa-pen-to-square"></i> Basic Text Gaps</label>
+                <p>Pick a level (A1–A2 = E8, B1 = Matura podstawowa) and activity type, then Launch. Optional topic for a themed text.</p>
             </div>
 
             <div class="form-group" id="pe-e8-gaps-settings" style="display: none;">
                 <div class="pe-setup-compact">
+                    <div class="pe-setup-field">
+                        <label><i class="fa-solid fa-signal"></i> Level</label>
+                        <div class="setup-choice-grid setup-choice-grid--3">
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="A1"><span class="setup-choice-title">A1</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="A2" checked><span class="setup-choice-title">A2</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="B1"><span class="setup-choice-title">B1</span></label>
+                        </div>
+                        <p class="pe-setup-hint">A1–A2 follow egzamin ósmoklasisty; B1 follows Matura podstawowa.</p>
+                    </div>
                     <div class="pe-setup-field">
                         <label><i class="fa-solid fa-sliders"></i> Activity type</label>
                         <div class="setup-choice-grid setup-choice-grid--2">
@@ -5751,7 +5760,7 @@
             <div class="game-setup-bar">
             <div class="game-setup-bar-row">
                 <button type="button" class="btn btn-grey" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
-                <div class="game-setup-bar-title">E8 Text Gaps <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" data-pe-level-badge>A2</span></div>
+                <div class="game-setup-bar-title">Basic Text Gaps <span class="live-badge">Cursor AI</span> <span class="pe-level-badge" id="basic-gaps-level-badge">A2</span></div>
                 <div class="game-setup-bar-right"><span class="pe-points">Points: <span id="pe-points-e8gaps">0</span></span><button type="button" class="game-setup-bar-toggle" aria-expanded="false" onclick="toggleGameSetupBar(this)">Setup <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i></button></div>
             </div>
             <div class="game-setup-panel">
@@ -5759,6 +5768,15 @@
                     <button class="btn btn-outline" onclick="initPeE8Gaps()" id="pe-e8-gaps-btn">New Text <i class="fa-solid fa-rotate"></i></button>
                     <button class="btn btn-outline" onclick="printPeE8GapsText()" id="pe-e8-gaps-print" disabled title="Print only the gapped text (no answers)"><i class="fa-solid fa-print"></i> Print gapped text</button>
                     <button class="btn btn-outline" onclick="copyPeE8GapsText()" id="pe-e8-gaps-copy" disabled title="Copy only the gapped text for Word"><i class="fa-solid fa-copy"></i> Copy gapped text</button>
+                </div>
+                <div class="pe-setup-field" style="margin-bottom:0.85rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-signal"></i> Level</label>
+                    <div class="setup-choice-grid setup-choice-grid--3" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="A1" onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions()"><span class="setup-choice-title">A1</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="A2" checked onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions()"><span class="setup-choice-title">A2</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="B1" onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions()"><span class="setup-choice-title">B1</span></label>
+                    </div>
+                    <p class="pe-setup-hint" style="margin:0.35rem 0 0;">A1–A2 = E8 · B1 = Matura podstawowa</p>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.85rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-sliders"></i> Activity type</label>
@@ -5793,7 +5811,7 @@
                 <div class="pe-prompt-box" id="pe-e8-gaps-meta" style="margin-bottom:0.75rem;">Choose New Text to start.</div>
                 <div class="gaps-exam-task" id="pe-e8-gaps-task" hidden>
                     <div class="gaps-exam-task-head">
-                        <p class="gaps-exam-task-label"><i class="fa-solid fa-clipboard-list"></i> Polecenie · egzamin ósmoklasisty</p>
+                        <p class="gaps-exam-task-label" id="pe-e8-gaps-task-label"><i class="fa-solid fa-clipboard-list"></i> Polecenie · egzamin ósmoklasisty</p>
                         <button type="button" class="btn btn-outline" id="pe-e8-gaps-task-lang-btn" style="padding:0.35rem 0.75rem;font-size:0.85rem;" hidden onclick="togglePeE8GapsTaskLang()">Show in English</button>
                     </div>
                     <div class="gaps-exam-task-body" id="pe-e8-gaps-task-body"></div>
@@ -8176,7 +8194,7 @@
                     html += '<div class="progress-grid">';
                     const gameNames = {
                         flashcards: 'Flashcards', test_countdown: 'Test Countdown', memory_flip: 'Memory Flip', word_repair: 'Word Repair', speed_match: 'Speed Match Sprint', bomb: 'Bomb Defusal', grid: 'Grid Territory', odyssey: 'Word Odyssey', mission: 'Mission Chat', auction: 'Vocab Auction', penalty_match: 'Penalty Match',
-                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_e8_gaps: 'E8 Text Gaps', adv_gaps: 'Advanced Text Gaps', own_time: 'In your own time', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
+                        pe_boring: 'Boring→Brilliant', pe_detail: 'Detail Detective', pe_link: 'Link Master', pe_exam: 'Exam Simulator', pe_e8_gaps: 'Basic Text Gaps', adv_gaps: 'Advanced Text Gaps', own_time: 'In your own time', pe_dictation: 'Dictation', pe_colour: 'Colour Blocks', pe_line: 'Line Up', pe_topic: 'Topic Challenge', pe_review: 'Review Chatbot',
                         frank: 'Frankenstein', trans: 'Transitions', devil: "Devil's Advocate", bloat: 'Bloat Slasher', tight: 'Tight Write', vocab_upgrade: 'Vocab Upgrade', matura: 'Matura Writing',
                         live_host: 'Live Spark (host)'
                     };
@@ -8212,7 +8230,7 @@
                 if (data.recentSessions && data.recentSessions.length > 0) {
                     html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;">Recent Activity</h3>';
                     html += '<div style="font-size:0.85rem;">';
-                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', penalty_match:'Penalty Match', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_e8_gaps:'E8 Text Gaps', adv_gaps:'Advanced Text Gaps', own_time:'In your own time', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
+                    const gameNames = { flashcards:'Flashcards', test_countdown:'Test Countdown', memory_flip:'Memory Flip', word_repair:'Word Repair', speed_match:'Speed Match', bomb:'Bomb', grid:'Grid', odyssey:'Odyssey', mission:'Mission', auction:'Auction', penalty_match:'Penalty Match', live_host:'Live Spark (host)', pe_boring:'Boring→Brilliant', pe_detail:'Detail Detective', pe_link:'Link Master', pe_exam:'Exam Sim', pe_e8_gaps:'Basic Text Gaps', adv_gaps:'Advanced Text Gaps', own_time:'In your own time', pe_dictation:'Dictation', pe_colour:'Colour Blocks', pe_line:'Line Up', pe_topic:'Topic Challenge', pe_review:'Review Chatbot', frank:'Frankenstein', trans:'Transitions', devil:"Devil's Advocate", bloat:'Bloat Slasher', tight:'Tight Write', vocab_upgrade:'Vocab Upgrade', matura:'Matura Writing' };
                     for (const s of data.recentSessions) {
                         const d = new Date(s.played_at);
                         html += `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;"><span>${gameNames[s.game_key]||s.game_key}</span><span style="color:var(--text-muted);">${s.score} pts · ${d.toLocaleDateString()}</span></div>`;
@@ -9100,7 +9118,7 @@
                 document.getElementById('setup-title').innerText = 'Dictation Setup';
             }
             if (gameType === 'pe-e8-gaps') {
-                document.getElementById('setup-title').innerText = 'E8 Text Gaps Setup';
+                document.getElementById('setup-title').innerText = 'Basic Text Gaps Setup';
             }
             if (gameType === 'adv-gaps') {
                 document.getElementById('setup-title').innerText = 'Advanced Text Gaps Setup';
@@ -9295,14 +9313,7 @@
             if(activeGame === 'pe-link') initPeLink();
             if(activeGame === 'pe-exam') initPeExam();
             if(activeGame === 'pe-e8-gaps') {
-                const setupMode = document.querySelector('input[name="e8-gaps-setup-mode"]:checked');
-                const playRadios = document.querySelectorAll('input[name="e8-gaps-play-mode"]');
-                if (setupMode && playRadios.length) {
-                    playRadios.forEach((r) => { r.checked = (r.value === setupMode.value); });
-                }
-                const setupTopic = document.getElementById('e8-gaps-setup-topic');
-                const playTopic = document.getElementById('e8-gaps-play-topic');
-                if (setupTopic && playTopic) playTopic.value = setupTopic.value || '';
+                copyBasicGapsSetupToPlay();
                 initPeE8Gaps();
             }
             if(activeGame === 'pe-dictation') initPeDictation();
@@ -13939,6 +13950,118 @@ Return ONLY JSON:
             }
         }
 
+        /** Basic Text Gaps levels: A1–A2 = E8, B1 = Matura podstawowa. */
+        const BASIC_GAPS_LEVELS = {
+            A1: {
+                label: 'A1',
+                track: 'e8',
+                examLabel: 'CKE egzamin ósmoklasisty',
+                examShort: 'E8 CKE',
+                schoolLevel: 'Polish school A1 (early lower-secondary / late primary): family, school, hobbies, food, weather — present simple, there is/are, can, like + -ing. Very short clear sentences.',
+                vocab: 'Keep language at gentle A1 school English: high-frequency words, short sentences, present simple and can. Avoid past narrative chains, conditionals, and rare words.',
+                rules: 'CKE E8 model ONLY: e-mail to a friend OR blog post (never formal letter or essay). Body 50–120 English words AFTER the given opening. Exactly 3 content points. Very simple informal register. Translation gaps: mostly single everyday words; at most one short 2-word phrase.',
+                wordMin: 50,
+                wordMax: 120,
+                softMin: 40,
+                softMax: 130,
+                excludeOpening: true,
+                bullets: 3,
+                gapsTranslate: 4,
+                gapsSentences: 2,
+                targetHint: 'typical E8 A1 answer ~70–90 body words',
+                lengthLabel: 'egzamin ósmoklasisty (A1)'
+            },
+            A2: {
+                label: 'A2',
+                track: 'e8',
+                examLabel: 'CKE egzamin ósmoklasisty',
+                examShort: 'E8 CKE',
+                schoolLevel: 'Polish school A2 (Klasa 6–8 / ósmoklasista): daily routine, school, hobbies, town, weather, family — past simple, going to, comparatives, there is/are.',
+                vocab: 'Keep language at gentle school A2: familiar school/home/town topics, past simple and going to when natural, common collocations. Prefer accessible wording; avoid rare or academic words.',
+                rules: 'CKE E8 model ONLY: e-mail to a friend OR blog post (never formal letter, note, announcement, or essay). Body 50–120 English words AFTER the given opening. Develop exactly 3 content points. Informal friendly register. Translation gaps mix single words AND short phrases (2–4 words / common collocations).',
+                wordMin: 50,
+                wordMax: 120,
+                softMin: 45,
+                softMax: 130,
+                excludeOpening: true,
+                bullets: 3,
+                gapsTranslate: 5,
+                gapsSentences: 3,
+                targetHint: 'typical E8 answer ~80–100 body words',
+                lengthLabel: 'egzamin ósmoklasisty'
+            },
+            B1: {
+                label: 'B1',
+                track: 'matura-pp',
+                examLabel: 'CKE Matura podstawowa',
+                examShort: 'Matura PP',
+                schoolLevel: 'Polish Matura podstawowa (B1): opinions, experiences, plans, polite requests — clear linked ideas, learner-friendly exam English (not academic C1).',
+                vocab: 'Solid B1 Matura podstawowa English: reasons, contrast, polite semi-formal tone when needed. Accessible exam vocabulary matching Informator expectations — not rare advanced jargon.',
+                rules: 'CKE Matura podstawowa writing model ONLY: e-mail OR blog post (never rozprawka, formal letter, or Matura rozszerzona 200–250 forms). Full finished English text 100–150 words (count greeting/title/sign-off). Develop exactly 4 content points from the polecenie. Register: friend/relative email or class blog. Translation gaps: single words AND short phrases (2–4 words), common collocations.',
+                wordMin: 100,
+                wordMax: 150,
+                softMin: 90,
+                softMax: 160,
+                excludeOpening: false,
+                bullets: 4,
+                gapsTranslate: 6,
+                gapsSentences: 3,
+                targetHint: 'typical Matura PP answer ~110–140 words',
+                lengthLabel: 'Matura podstawowa'
+            }
+        };
+
+        function getBasicGapsRadio(name, fallback) {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            return el ? el.value : fallback;
+        }
+
+        function setBasicGapsRadio(name, value) {
+            document.querySelectorAll(`input[name="${name}"]`).forEach((r) => {
+                r.checked = (r.value === value);
+            });
+        }
+
+        function getBasicGapsLevel() {
+            const v = getBasicGapsRadio('e8-gaps-play-level', getBasicGapsRadio('e8-gaps-setup-level', 'A2'));
+            return BASIC_GAPS_LEVELS[v] ? v : 'A2';
+        }
+
+        function getBasicGapsLevelGuide() {
+            if (peMode === 'custom') {
+                const base = BASIC_GAPS_LEVELS[getBasicGapsLevel()] || BASIC_GAPS_LEVELS.A2;
+                return {
+                    ...base,
+                    label: 'CUSTOM',
+                    vocab: 'Custom vocabulary mode. Keep the chosen exam form (E8 or Matura PP) but weave required glossary words into gaps or missing sentences naturally.',
+                    rules: base.track === 'matura-pp'
+                        ? 'Custom vocabulary mode. Keep a CKE Matura podstawowa e-mail or blog (100–150 words, 4 content points) but weave required glossary words into gaps naturally.'
+                        : 'Custom vocabulary mode. Keep a CKE E8 e-mail or blog (50–120 words after opening, 3 content points) but weave required glossary words into gaps naturally.'
+                };
+            }
+            return BASIC_GAPS_LEVELS[getBasicGapsLevel()] || BASIC_GAPS_LEVELS.A2;
+        }
+
+        function syncBasicGapsChrome() {
+            const badge = document.getElementById('basic-gaps-level-badge');
+            if (badge) badge.textContent = peMode === 'custom' ? 'CUSTOM' : getBasicGapsLevel();
+            const L = getBasicGapsLevelGuide();
+            const labelEl = document.getElementById('pe-e8-gaps-task-label');
+            if (labelEl) {
+                labelEl.innerHTML = `<i class="fa-solid fa-clipboard-list"></i> Polecenie · ${L.track === 'matura-pp' ? 'Matura podstawowa' : 'egzamin ósmoklasisty'}`;
+            }
+        }
+
+        function copyBasicGapsSetupToPlay() {
+            setBasicGapsRadio('e8-gaps-play-level', getBasicGapsRadio('e8-gaps-setup-level', 'A2'));
+            setBasicGapsRadio('e8-gaps-play-mode', getBasicGapsRadio('e8-gaps-setup-mode', 'translate'));
+            const setupTopic = document.getElementById('e8-gaps-setup-topic');
+            const playTopic = document.getElementById('e8-gaps-play-topic');
+            if (setupTopic && playTopic) playTopic.value = setupTopic.value || '';
+            syncBasicGapsChrome();
+            syncPeE8GapsInstructions();
+        }
+
         function getPeE8GapsMode() {
             const play = document.querySelector('input[name="e8-gaps-play-mode"]:checked');
             if (play) return play.value === 'sentences' ? 'sentences' : 'translate';
@@ -13954,15 +14077,34 @@ Return ONLY JSON:
 
         function syncPeE8GapsInstructions() {
             const mode = getPeE8GapsMode();
+            const L = getBasicGapsLevelGuide();
             const en = document.getElementById('pe-e8-gaps-instr-en');
             const pl = document.getElementById('pe-e8-gaps-instr-pl');
+            const isPp = L.track === 'matura-pp';
             if (mode === 'sentences') {
-                if (en) en.textContent = 'CKE egzamin ósmoklasisty model: e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then restore each missing sentence so the text stays cohesive. Submit for Cursor AI feedback.';
-                if (pl) pl.textContent = 'Model CKE egzaminu ósmoklasisty: e-mail albo wpis na blogu, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij brakujące zdania. Wyślij do oceny Cursor AI.';
-            } else {
-                if (en) en.textContent = 'CKE egzamin ósmoklasisty model: e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then fill each gap with the English translation of the Polish word or short phrase in brackets. Submit for Cursor AI feedback.';
-                if (pl) pl.textContent = 'Model CKE egzaminu ósmoklasisty: e-mail albo wpis na blogu, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.';
+                if (en) {
+                    en.textContent = isPp
+                        ? `CKE Matura podstawowa model: e-mail or blog, 100–150 words, Polish polecenie with exactly 4 content points. Read the task first, then restore each missing sentence so the text stays cohesive. Submit for Cursor AI feedback.`
+                        : `CKE egzamin ósmoklasisty model (${L.label}): e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then restore each missing sentence so the text stays cohesive. Submit for Cursor AI feedback.`;
+                }
+                if (pl) {
+                    pl.textContent = isPp
+                        ? `Model CKE matury podstawowej: e-mail albo blog, 100–150 wyrazów, polskie polecenie z dokładnie 4 podpunktami. Najpierw przeczytaj polecenie, potem uzupełnij brakujące zdania. Wyślij do oceny Cursor AI.`
+                        : `Model CKE egzaminu ósmoklasisty (${L.label}): e-mail albo blog, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij brakujące zdania. Wyślij do oceny Cursor AI.`;
+                }
+            } else if (en || pl) {
+                if (en) {
+                    en.textContent = isPp
+                        ? `CKE Matura podstawowa model: e-mail or blog, 100–150 words, Polish polecenie with exactly 4 content points. Read the task first, then fill each gap with the English translation of the Polish word or short phrase in brackets. Submit for Cursor AI feedback.`
+                        : `CKE egzamin ósmoklasisty model (${L.label}): e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then fill each gap with the English translation of the Polish word or short phrase in brackets. Submit for Cursor AI feedback.`;
+                }
+                if (pl) {
+                    pl.textContent = isPp
+                        ? `Model CKE matury podstawowej: e-mail albo blog, 100–150 wyrazów, polskie polecenie z dokładnie 4 podpunktami. Najpierw przeczytaj polecenie, potem uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`
+                        : `Model CKE egzaminu ósmoklasisty (${L.label}): e-mail albo blog, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`;
+                }
             }
+            syncBasicGapsChrome();
         }
 
         function collectPeE8GapsAnswers() {
@@ -13981,9 +14123,11 @@ Return ONLY JSON:
         }
 
         function peE8GapsTaskPaintOpts(task, preferLang) {
+            const L = getBasicGapsLevelGuide();
             const formLabel = /blog/i.test(String(task.form || task.genre || ''))
                 ? 'wpis na blogu'
                 : 'e-mail';
+            const wordRange = L.track === 'matura-pp' ? '100–150 wyrazów' : '50–120 wyrazów';
             return {
                 wrapId: 'pe-e8-gaps-task',
                 bodyId: 'pe-e8-gaps-task-body',
@@ -13992,9 +14136,9 @@ Return ONLY JSON:
                 taskPl: task.taskPl,
                 bullets: task.bullets,
                 preferLang: preferLang || task.taskLang || 'pl',
-                examLabel: 'CKE egzamin ósmoklasisty',
+                examLabel: L.examLabel,
                 form: formLabel,
-                wordRange: '50–120 wyrazów',
+                wordRange,
                 opening: task.opening || ''
             };
         }
@@ -14014,20 +14158,22 @@ Return ONLY JSON:
             const check = document.getElementById('pe-e8-gaps-check');
             if (!textEl || !answersEl) return;
 
-            const L = peLevelGuide();
+            const L = getBasicGapsLevelGuide();
             const kind = task.mode === 'sentences' ? 'Missing sentences' : 'Translate gaps';
             const genre = task.form || task.genre || 'e-mail / blog';
             const wc = Number(task.wordCount) || 0;
-            const wcOk = wc >= 50 && wc <= 120;
+            const wcOk = wc >= L.wordMin && wc <= L.wordMax;
+            const wcRange = `${L.wordMin}–${L.wordMax}`;
             const wcNote = wc
-                ? ` · <span style="color:${wcOk ? 'var(--success-green, #2b8a3e)' : 'var(--pillarbox-red)'}">${wc} words (CKE 50–120)</span>`
+                ? ` · <span style="color:${wcOk ? 'var(--success-green, #2b8a3e)' : 'var(--pillarbox-red)'}">${wc} words (CKE ${wcRange})</span>`
                 : '';
-            meta.innerHTML = `<strong>[${escapeHtml(kind)} · ${escapeHtml(L.label)} · E8 CKE]</strong> ${escapeHtml(genre)}`
+            meta.innerHTML = `<strong>[${escapeHtml(kind)} · ${escapeHtml(L.label)} · ${escapeHtml(L.examShort)}]</strong> ${escapeHtml(genre)}`
                 + (task.title ? ` — ${escapeHtml(task.title)}` : '')
                 + wcNote
                 + (peMode === 'custom' && Array.isArray(task.requiredWords) && task.requiredWords.length
                     ? `<br><small><strong>Required glossary words:</strong> ${task.requiredWords.map(escapeHtml).join(', ')}</small>`
                     : '');
+            syncBasicGapsChrome();
             paintGapsExamTask(peE8GapsTaskPaintOpts(task));
 
             const gaps = Array.isArray(task.gaps) ? task.gaps : [];
@@ -14051,6 +14197,7 @@ Return ONLY JSON:
             if (feedback) feedback.textContent = '';
             setGapsPrintEnabled(['pe-e8-gaps-print', 'pe-e8-gaps-print-inline', 'pe-e8-gaps-copy', 'pe-e8-gaps-copy-inline'], false);
             syncPeLevelBadges();
+            syncBasicGapsChrome();
             syncPeE8GapsInstructions();
             paintGapsExamTask({
                 wrapId: 'pe-e8-gaps-task', bodyId: 'pe-e8-gaps-task-body', langBtnId: 'pe-e8-gaps-task-lang-btn',
@@ -14058,7 +14205,8 @@ Return ONLY JSON:
             });
             const mode = getPeE8GapsMode();
             peToggleLoading('pe-e8-gaps', true);
-            const L = peLevelGuide();
+            const L = getBasicGapsLevelGuide();
+            const isPp = L.track === 'matura-pp';
             const R = peRandomnessBlock('e8gaps');
             const requiredCustomWords = peGetRequiredCustomWords(mode === 'sentences' ? 2 : 3);
             const customRule = peMode === 'custom'
@@ -14072,32 +14220,64 @@ Return ONLY JSON:
             const formPick = Math.random() < 0.5 ? 'email' : 'blog';
             const formPl = formPick === 'blog' ? 'wpis na blogu' : 'e-mail';
             const formEn = formPick === 'blog' ? 'blog post' : 'e-mail';
-            const lengthRule = `CKE LENGTH (HARD RULE — egzamin ósmoklasisty):
-  - After inserting all gap answers, the English BODY (NOT counting the given opening) MUST be 50–120 words. Aim ~80–100.
+            const nBullets = L.bullets;
+            const nGaps = mode === 'sentences' ? L.gapsSentences : L.gapsTranslate;
+            const gapCountHint = mode === 'sentences'
+                ? `Insert ${nGaps} missing sentences (gaps).`
+                : `Create ${nGaps} translation gaps.`;
+
+            const lengthRule = isPp
+                ? `CKE LENGTH (HARD RULE — Matura podstawowa):
+  - After inserting all gap answers, the COMPLETE English text (greeting/title/sign-off included) MUST be ${L.wordMin}–${L.wordMax} words. Aim ~120–135.
+  - Include "wordCount": <integer> = full finished text word count.
+  - Do NOT write Matura rozszerzona (200–250) or E8-only (50–120 body) lengths.`
+                : `CKE LENGTH (HARD RULE — egzamin ósmoklasisty):
+  - After inserting all gap answers, the English BODY (NOT counting the given opening) MUST be ${L.wordMin}–${L.wordMax} words. Aim ~80–100.
   - CKE rule: the printed beginning (opening) does not count toward the limit.
   - Include "wordCount": <integer> = body word count after the opening.
-  - Do NOT write a long Matura-style essay.`;
+  - Do NOT write a Matura-style essay (100–150 or 200–250).`;
 
-            const taskRule = `CKE EGZAMIN ÓSMOKLASISTY POLECENIE (required — authentic Informator style):
-  - form MUST be "${formPick}" (${formPl}) — ONLY CKE forms: e-mail OR wpis na blogu. NEVER formal letter, essay, note, announcement, or message-only.
-  - taskPl: Polish polecenie as on the CKE paper: short situation + instruction to write the ${formPl}; mention Użyj 50–120 wyrazów. Primary language for students.
-  - bullets: EXACTLY 3 Polish-style content podpunkty (write them in English in the JSON bullets array for bilingual UI, but they must match what taskPl requires). Typical verbs: thank / invite / describe / suggest / ask / explain why…
+            const taskRule = isPp
+                ? `CKE MATURA PODSTAWOWA POLECENIE (required — authentic Informator style):
+  - form MUST be "${formPick}" (${formPl}) — ONLY Matura PP forms: e-mail OR wpis na blogu. NEVER rozprawka, formal letter, article, or Matura rozszerzona forms.
+  - taskPl: Polish polecenie as on the CKE paper: short situation + instruction to write the ${formPl}; mention Użyj ${L.wordMin}–${L.wordMax} wyrazów. Primary language for students.
+  - bullets: EXACTLY ${nBullets} content podpunkty (write them in English in the JSON bullets array for bilingual UI, but they must match what taskPl requires). Typical verbs: thank / invite / describe / suggest / ask / explain why / recommend…
+  - opening: optional greeting line only (e.g. "Hi Alex," or a blog title/lead). May be empty string if the greeting is already inside parts[0].
+  - taskEn: faithful English translation of taskPl (situation + form + word count).
+  - The finished English text MUST develop all ${nBullets} points, stay within ${L.wordMin}–${L.wordMax} words (full text), and match Matura PP register (friend/relative email or blog — never Dear Sir or Madam / academic essay).`
+                : `CKE EGZAMIN ÓSMOKLASISTY POLECENIE (required — authentic Informator style):
+  - form MUST be "${formPick}" (${formPl}) — ONLY CKE E8 forms: e-mail OR wpis na blogu. NEVER formal letter, essay, note, announcement, or message-only.
+  - taskPl: Polish polecenie as on the CKE paper: short situation + instruction to write the ${formPl}; mention Użyj ${L.wordMin}–${L.wordMax} wyrazów. Primary language for students.
+  - bullets: EXACTLY ${nBullets} Polish-style content podpunkty (write them in English in the JSON bullets array for bilingual UI, but they must match what taskPl requires). Typical verbs: thank / invite / describe / suggest / ask / explain why…
   - opening: the given English beginning printed on the exam (e.g. "Hi Alex," or a blog starter sentence). The model text MUST start from this opening (include it in parts[0]).
   - taskEn: faithful English translation of taskPl (situation + form + word count).
-  - The finished English body MUST develop all 3 points, stay within 50–120 words (excluding opening), and match informal E8 register (friend email or class blog — never Dear Sir or Madam).`;
+  - The finished English body MUST develop all ${nBullets} points, stay within ${L.wordMin}–${L.wordMax} words (excluding opening), and match informal E8 register (friend email or class blog — never Dear Sir or Madam).`;
 
             const paraRule = `PARAGRAPHS (required — never one continuous block):
   - Divide the finished text into clear paragraphs separated by a blank line (\\n\\n inside the parts strings).
-  - E-mail: greeting on its own line, then ONE short paragraph per podpunkt (3 body paragraphs), then a short closing + name.
-  - Blog: opening line, then ONE short paragraph per podpunkt (3 body paragraphs), optional short closing line.
+  - E-mail: greeting on its own line, then ONE short paragraph per podpunkt (${nBullets} body paragraphs), then a short closing + name.
+  - Blog: opening/title line, then ONE short paragraph per podpunkt (${nBullets} body paragraphs), optional short closing line.
   - Put \\n\\n between paragraphs even when a gap sits near a boundary.`;
+
+            const examName = isPp ? 'CKE Matura podstawowa (Polish basic Matura writing)' : 'CKE egzamin ósmoklasisty (Polish grade-8 English exam)';
+            const phraseRule = L.label === 'A1' || (L.label === 'CUSTOM' && !isPp && getBasicGapsLevel() === 'A1')
+                ? `  - Prefer single everyday words; at most ONE short 2-word phrase among the gaps.`
+                : `  - Mix BOTH single words AND short phrases: at least 2 gaps must be short phrases (2–4 Polish words / common expressions), and at least 2 gaps single words.
+  - Good phrase examples: "napisać wiadomość", "iść piechotą", "w przyszłym tygodniu", "dobrze się bawić", "być zmęczonym".`;
+
+            const openingStruct = isPp
+                ? `  - parts[0] may start with a greeting or blog lead; opening field may hold that greeting or be "".`
+                : `  - parts[0] must begin with the given opening.`;
+
+            const sampleBullets = Array.from({ length: nBullets }, (_, i) => `"point ${i + 1}"`).join(',');
+            const sampleWordCount = isPp ? 120 : 85;
 
             let prompt;
             if (mode === 'sentences') {
-                prompt = `Create ONE English model text for CKE egzamin ósmoklasisty (Polish grade-8 English exam) at CEFR ${L.label} with MISSING SENTENCES.
+                prompt = `Create ONE English model text for ${examName} at CEFR ${L.label} with MISSING SENTENCES.
 SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
-E8 GAPS RULES: ${L.e8Gaps || ''}
+GAPS RULES: ${L.rules || ''}
 TEXT TYPE: ${formEn} (${formPl}) ONLY.
 ${lengthRule}
 ${topicRule}
@@ -14106,17 +14286,17 @@ ${paraRule}
 ${customRule}
 STRUCTURE: Provide "parts" as an array of text fragments that ALTERNATE with missing sentences.
   - parts.length must be gaps.length + 1 (text before first gap, between gaps, and after last gap).
-  - parts[0] must begin with the given opening.
-  - Insert 3 or 4 missing sentences (gaps).
+${openingStruct}
+  - ${gapCountHint}
   - Each gap needs a clear cohesive role (reason, result, extra detail, polite closing line, etc.).
   - The student will write ONE full English sentence per gap.
 Return ONLY JSON:
-{"mode":"sentences","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","wordCount":85,"taskPl":"Polskie polecenie CKE E8…","taskEn":"English translation…","bullets":["point 1","point 2","point 3"],"parts":["Hi Alex,\\n\\nThanks for your email. ","\\n\\nNext paragraph…","\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
+{"mode":"sentences","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","wordCount":${sampleWordCount},"taskPl":"Polskie polecenie…","taskEn":"English translation…","bullets":[${sampleBullets}],"parts":["Hi Alex,\\n\\nThanks for your email. ","\\n\\nNext paragraph…","\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"answer":"Model English sentence.","alts":["optional other good sentence"],"role":"why this sentence fits"},{"n":2,"answer":"...","alts":[],"role":"..."}]}`;
             } else {
-                prompt = `Create ONE English model text for CKE egzamin ósmoklasisty (Polish grade-8 English exam) at CEFR ${L.label} with TRANSLATION GAPS.
+                prompt = `Create ONE English model text for ${examName} at CEFR ${L.label} with TRANSLATION GAPS.
 SCHOOL CONTEXT: ${L.schoolLevel || ''}
 LEVEL RULES: ${L.vocab}
-E8 GAPS RULES: ${L.e8Gaps || ''}
+GAPS RULES: ${L.rules || ''}
 TEXT TYPE: ${formEn} (${formPl}) ONLY.
 ${lengthRule}
 ${topicRule}
@@ -14125,26 +14305,25 @@ ${paraRule}
 ${customRule}
 STRUCTURE: Provide "parts" as text fragments alternating with gaps.
   - parts.length must be gaps.length + 1.
-  - parts[0] must begin with the given opening.
-  - Create 5 or 6 gaps.
+${openingStruct}
+  - ${gapCountHint}
   - Each gap: Polish cue (pl) that the student translates into English in the blank.
-  - Mix BOTH single words AND short phrases: at least 2 gaps must be short phrases (2–4 Polish words / common expressions), and at least 2 gaps single words.
-  - Good phrase examples: "napisać wiadomość", "iść piechotą", "w przyszłym tygodniu", "dobrze się bawić", "być zmęczonym".
+${phraseRule}
   - Polish cues = natural school Polish words OR short phrases — NEVER full sentences.
   - answer = best English translation for that gap in context (a word OR a short English phrase matching the Polish cue); alts = other acceptable English forms.
   - Gaps must fit grammatically in the English sentence (articles, prepositions, verb forms, word order as needed in the answer).
 Return ONLY JSON:
-{"mode":"translate","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","wordCount":85,"taskPl":"Polskie polecenie CKE E8…","taskEn":"English translation…","bullets":["point 1","point 2","point 3"],"parts":["Hi Alex,\\n\\nYesterday I went to the "," with my class.\\n\\nWe want to "," soon.\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]},{"n":3,"pl":"w przyszłym tygodniu","answer":"next week","alts":["in the next week"]}]}`;
+{"mode":"translate","genre":"${formPick}","form":"${formPick}","title":"short topic label","opening":"Hi Alex,","wordCount":${sampleWordCount},"taskPl":"Polskie polecenie…","taskEn":"English translation…","bullets":[${sampleBullets}],"parts":["Hi Alex,\\n\\nYesterday I went to the "," with my class.\\n\\nWe want to "," soon.\\n\\nWrite soon!\\nXYZ"],"gaps":[{"n":1,"pl":"kino","answer":"cinema","alts":["the cinema"]},{"n":2,"pl":"napisać wiadomość","answer":"write a message","alts":["send a message"]},{"n":3,"pl":"w przyszłym tygodniu","answer":"next week","alts":["in the next week"]}]}`;
             }
 
             const data = await fetchGapsTextWithCkeLength(prompt, {
-                wordMin: 50,
-                wordMax: 120,
-                softMin: 45,
-                softMax: 130,
-                excludeOpening: true,
-                label: 'egzamin ósmoklasisty',
-                targetHint: 'typical E8 answer ~80–100 body words'
+                wordMin: L.wordMin,
+                wordMax: L.wordMax,
+                softMin: L.softMin,
+                softMax: L.softMax,
+                excludeOpening: L.excludeOpening,
+                label: L.lengthLabel,
+                targetHint: L.targetHint
             });
             peToggleLoading('pe-e8-gaps', false);
             if (!data || data.__error || !Array.isArray(data.parts) || !Array.isArray(data.gaps) || !data.gaps.length) {
@@ -14158,14 +14337,16 @@ Return ONLY JSON:
                 setGapsPrintEnabled(['pe-e8-gaps-print', 'pe-e8-gaps-print-inline', 'pe-e8-gaps-copy', 'pe-e8-gaps-copy-inline'], false);
                 return;
             }
-            const examTask = normalizeGapsExamTask(data, { maxBullets: 3 });
+            const examTask = normalizeGapsExamTask(data, { maxBullets: nBullets });
             const resolvedForm = /blog/i.test(String(data.form || data.genre || formPick)) ? 'blog' : 'email';
             const wordCount = data.__wordCount || countGapsModelWords(data, {
-                excludeOpening: true,
+                excludeOpening: L.excludeOpening,
                 opening: examTask.opening || data.opening
             });
             peE8GapsTask = {
                 mode,
+                level: getBasicGapsLevel(),
+                track: L.track,
                 genre: resolvedForm,
                 form: resolvedForm,
                 title: data.title || '',
@@ -14175,6 +14356,8 @@ Return ONLY JSON:
                 opening: examTask.opening,
                 taskLang: 'pl',
                 wordCount,
+                wordMin: L.wordMin,
+                wordMax: L.wordMax,
                 parts: data.parts,
                 gaps: data.gaps.map((g, i) => ({
                     n: g.n != null ? Number(g.n) : (i + 1),
@@ -14205,7 +14388,13 @@ Return ONLY JSON:
                 feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cursor AI is checking your answers…';
             }
             if (checkBtn) checkBtn.disabled = true;
-            const L = peLevelGuide();
+            const L = getBasicGapsLevelGuide();
+            const track = peE8GapsTask.track || L.track;
+            const isPp = track === 'matura-pp';
+            const examName = isPp ? 'CKE Matura podstawowa' : 'CKE egzamin ósmoklasisty';
+            const wMin = peE8GapsTask.wordMin || L.wordMin;
+            const wMax = peE8GapsTask.wordMax || L.wordMax;
+            const nPts = (peE8GapsTask.bullets && peE8GapsTask.bullets.length) || L.bullets;
             const gapKey = peE8GapsTask.gaps.map((g) => ({
                 n: g.n,
                 pl: g.pl || undefined,
@@ -14215,19 +14404,19 @@ Return ONLY JSON:
             }));
             const examBrief = [
                 peE8GapsTask.taskPl || peE8GapsTask.taskEn || '',
-                (peE8GapsTask.bullets && peE8GapsTask.bullets.length) ? `Three podpunkty: ${peE8GapsTask.bullets.join(' | ')}` : '',
+                (peE8GapsTask.bullets && peE8GapsTask.bullets.length) ? `${nPts} podpunkty: ${peE8GapsTask.bullets.join(' | ')}` : '',
                 peE8GapsTask.opening ? `Given opening: ${peE8GapsTask.opening}` : ''
             ].filter(Boolean).join('\n');
-            const prompt = `CEFR ${L.label} check for CKE egzamin ósmoklasisty Text Gaps (${peE8GapsTask.mode}).
+            const prompt = `CEFR ${peE8GapsTask.level || L.label} check for ${examName} Basic Text Gaps (${peE8GapsTask.mode}).
 ${PE_TYPEIN_RULE}
-CKE form: ${peE8GapsTask.form || peE8GapsTask.genre} (e-mail or blog only). Title: ${peE8GapsTask.title || 'n/a'}. Target 50–120 words.
+CKE form: ${peE8GapsTask.form || peE8GapsTask.genre} (e-mail or blog only). Title: ${peE8GapsTask.title || 'n/a'}. Target ${wMin}–${wMax} words.
 Exam writing task / polecenie this text answers:
 ${examBrief || 'n/a'}
 Full text parts (in order, gaps between): ${JSON.stringify(peE8GapsTask.parts)}
 Gap key: ${JSON.stringify(gapKey)}
 Student answers: ${JSON.stringify(student)}
 ${peMode === 'custom' ? `CUSTOM: prefer answers that fit glossary words ${JSON.stringify(peE8GapsTask.requiredWords || [])} when relevant.` : ''}
-Mark each gap for correctness AND relevance/cohesion in E8 register (informal friend email or blog), considering the polecenie and all 3 content points.
+Mark each gap for correctness AND relevance/cohesion in ${isPp ? 'Matura podstawowa' : 'E8'} register (informal friend email or blog), considering the polecenie and all ${nPts} content points.
 - Translate mode: cues may be single words OR short phrases. Accept expected answer, listed alts, and other natural English translations (word or short phrase) of the Polish cue that fit grammar/context. Do not demand only one-word answers when the cue is a phrase.
 - Sentences mode: accept expected/alts and other coherent sentences that keep logic and cohesion (do not require word-for-word match).
 Be encouraging and specific. Prefer partial credit: valid=true if most gaps are good; points 0–50.

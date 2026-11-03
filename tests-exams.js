@@ -249,6 +249,12 @@
         if (a.kind === 'pe') {
             const lvl = a.level || 'A2';
             if (typeof root.selectPeLevel === 'function' && (a.level || typeof peCefrLevel === 'undefined' || !peCefrLevel)) root.selectPeLevel(lvl);
+            // Basic Text Gaps has its own A1–B1 picker (E8 vs Matura PP); sync when routed from an exam tile.
+            if (a.game === 'pe-e8-gaps' && (lvl === 'A1' || lvl === 'A2' || lvl === 'B1')) {
+                document.querySelectorAll('input[name="e8-gaps-setup-level"],input[name="e8-gaps-play-level"]').forEach((r) => {
+                    r.checked = r.value === lvl;
+                });
+            }
             if (typeof root.goToPeGame === 'function') { await root.goToPeGame(a.game); return; }
             location.hash = `#/setup/${a.game}`;
         }
