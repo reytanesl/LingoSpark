@@ -54,6 +54,9 @@ export function normalizeSlide(slide) {
     pro: asList(s.pro),
     con: asList(s.con),
     clozeText: s.clozeText || '',
+    msText: s.msText || '',
+    options: Array.isArray(s.options) ? s.options : [],
+    extra: s.extra || '',
     clozeItems: Array.isArray(s.clozeItems) ? s.clozeItems : [],
     wordBank: asList(s.wordBank),
     sentences: asList(s.sentences),
@@ -100,7 +103,7 @@ export function dropReadingChunks(deck) {
   };
 }
 
-const CLOSED_ROLES = new Set(['gapfill', 'cloze', 'wordbank', 'vocabbuild', 'mcq', 'tf', 'match', 'wordform', 'grammar', 'practice', 'guidedwriting']);
+const CLOSED_ROLES = new Set(['missing', 'gapfill', 'cloze', 'wordbank', 'vocabbuild', 'mcq', 'tf', 'match', 'wordform', 'grammar', 'practice', 'guidedwriting']);
 
 function gapCount(text) {
   const src = String(text || '');
@@ -115,6 +118,7 @@ export function answerItemCount(slide) {
   const role = slide.role || '';
   if (role === 'guidedwriting') return String(slide.sampleAnswer || '').trim() ? 1 : 0;
   if (role === 'mcq') return (slide.mcqs || []).length;
+  if (role === 'missing') return (slide.answers || []).length;
   if (role === 'tf') return (slide.statements || slide.bullets || []).length;
   if (role === 'cloze') {
     return Math.max(

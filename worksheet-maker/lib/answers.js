@@ -1,4 +1,5 @@
 import { correctDeckFromSource, correctLessonFromSource } from './verify-answers.js';
+import { normalizeMissingSentences } from './missing-sentences.js';
 import {
   exactAnswerBank,
   splitIntro,
@@ -122,6 +123,7 @@ export function answerKeyFromLesson(lesson) {
       return { blank: item.blank || i + 1, answer: r.answer, word: r.word };
     }),
     wordBank: (wb.answers || []).map((a, i) => ({ sentence: i + 1, answer: answerWord(a) })),
+    missingSentences: (lesson.missingSentences?.answers || []).map((a, i) => ({ gap: i + 1, answer: a })),
     match: (match.answers || []).map((a, i) => ({ item: i + 1, answer: answerWord(a) })),
     collocate: collocateItems.map((it, i) => ({
       item: i + 1,
@@ -579,6 +581,11 @@ export function prepareLessonAnswers(lesson, sourceText = '') {
   const cleaned = sanitizeLessonStudentText(lesson);
   const verified = correctLessonFromSource(cleaned, sourceText);
   const next = { ...verified, comprehension: { ...(verified.comprehension || {}) } };
+  if (lesson.missingSentences) {
+    // Validate + build the lettered box from the raw (unsanitised) task; drop it when it cannot be made valid.
+    const ms = normalizeMissingSentences(lesson.missingSentences, { cefr: lesson.cefr || lesson.level, language: lesson.language });
+    if (ms) next.missingSentences = ms; else delete next.missingSentences;
+  }
   const mc = next.comprehension.multipleChoice;
   if (mc?.length) {
     next.comprehension.multipleChoice = spreadChoiceItems(

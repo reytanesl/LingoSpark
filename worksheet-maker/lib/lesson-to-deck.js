@@ -363,6 +363,18 @@ export function lessonToDeck(lesson, source = {}, {
         answers: (wb.answers || []).map((a) => answerWord(a)),
       });
     },
+    missingSentences() {
+      const ms = lesson.missingSentences || {};
+      if (!ms.text || !(ms.options || []).length) return;
+      slides.push({
+        role: 'missing',
+        header: header(ms.instruction, t(lang, 'msFallback')),
+        msText: ms.text,
+        options: ms.options,
+        answers: ms.answers || [],
+        extra: ms.extra || '',
+      });
+    },
     grammar(onlyIndex = null) {
       const activities = lesson.grammarPractice || [];
       if (!activities.length) return;

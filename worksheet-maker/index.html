@@ -2001,6 +2001,21 @@
     .media-sheet .ms-meta { font-size:12px; color:var(--sd-muted); }
     .media-sheet .ms-url { font-size:12px; word-break:break-all; }
     @media (max-width: 560px) { .media-results { grid-template-columns: 1fr; max-height: none; } .media-sheet img { width:84px; height:48px; } }
+
+    /* Missing sentences (gapped text) */
+    .ms-text p { margin: 0 0 .5em; }
+    .ms-gap { display:inline-flex; align-items:baseline; gap:4px; white-space:nowrap; }
+    .ms-gap b { display:inline-grid; place-items:center; min-width:1.5em; height:1.5em; border-radius:50%; background:var(--sd-navy); color:#fff; font-size:.8em; }
+    .ms-gap .ms-line { display:inline-block; width:5.5em; border-bottom:1.5px solid #333; }
+    .ms-gap .ms-gap-key { margin-left:2px; }
+    body.teacher .ms-gap .ms-gap-key { display:inline; }
+    .ms-box { border:1.5px solid #c9d3ea; border-radius:10px; padding:8px 12px; margin:8px 0; break-inside:avoid; background:#fafbff; }
+    .ms-options { list-style:none; margin:0; padding:0; display:grid; gap:5px; }
+    .ms-options li b { display:inline-block; min-width:1.4em; color:var(--sd-navy); }
+    .sv-ms { grid-template-columns: 1.4fr 1fr; align-items:start; }
+    .sv-ms-list { list-style:none; margin:0; padding:0; font-size:.82em; display:grid; gap:.35em; }
+    .sv-ms-list li.is-used { opacity:.55; }
+    .sv-ms-gap { white-space:nowrap; font-weight:600; }
   </style>
 </head>
 <body class="student">
@@ -2178,6 +2193,7 @@
             <label><input type="checkbox" name="wsTask" value="discussion" checked> <span class="task-label">Discussion / critical thinking</span></label>
             <label><input type="checkbox" name="wsTask" value="cloze" checked> <span class="task-label">Use of English (cloze)</span></label>
             <label><input type="checkbox" name="wsTask" value="wordBank" checked> <span class="task-label">Use of English (word bank)</span></label>
+            <label><input type="checkbox" name="wsTask" value="missingSentences"> <span class="task-label">Missing sentences (one extra)</span></label>
             <label><input type="checkbox" name="wsTask" value="grammar"> <span class="task-label">Grammar practice</span></label>
             <label><input type="checkbox" name="wsTask" value="scenario" checked> <span class="task-label">Scenario</span></label>
             <label><input type="checkbox" name="wsTask" value="debate" checked> <span class="task-label">Debate</span></label>
@@ -2335,6 +2351,7 @@
       prepareDeckAnswers,
     } from './lib/answers.js';
     import { insertAnswerSlides } from './lib/normalize-deck.js';
+    import { missingSentenceParts } from './lib/missing-sentences.js';
     import { t, taskLabel, tfWords, normalizeLanguage } from './lib/ui-strings.js';
     import { worksheetTaskOrder, expandGroupedTaskIds, parseTaskId, reindexAfterRemove, groupArrayKey } from './lib/lesson-prompt.js';
     import { lessonToDeck } from './lib/lesson-to-deck.js';
@@ -2727,6 +2744,21 @@
         `<div class="open-item">${i + 1}. ${ed(`wordBankTask.sentences.${i}`, line)}${lines(1)}<div class="answer">${ed(`wordBankTask.answers.${i}`, answerWord((wb.answers || [])[i] || ''))}</div></div>`
       ).join('');
 
+      const msTask = lesson.missingSentences || {};
+      const msHtml = msTask.text && (msTask.options || []).length
+        ? (() => {
+          const textHtml = String(msTask.text).split(/\n{2,}/).map((para) => `<p>${missingSentenceParts(para).map((part) => part.gap
+            ? `<span class="ms-gap"><b>${part.gap}</b><span class="ms-line"></span><span class="answer ms-gap-key">${escapeHtml(msTask.answers?.[part.gap - 1] || '')}</span></span>`
+            : escapeHtml(part.text)).join('')}</p>`).join('');
+          const opts = msTask.options.map((o, i) => `<li><b>${String.fromCharCode(65 + i)}</b> ${ed(`missingSentences.options.${i}`, o)}</li>`).join('');
+          const key = (msTask.answers || []).map((a, i) => `${i + 1} ${escapeHtml(a)}`).join(' · ');
+          return `<p>${ed('missingSentences.instruction', msTask.instruction || tx('msFallback'))}</p>
+            <div class="source-text ms-text">${textHtml}</div>
+            <div class="ms-box" role="list" aria-label="${escapeHtml(tx('msBoxLabel'))}"><ol class="ms-options">${opts}</ol></div>
+            <div class="answer">${tx('answer')} ${key}${msTask.extra ? ` · ${escapeHtml(msTask.extra)} = ${escapeHtml(tx('msExtraLabel'))}` : ''}</div>`;
+        })()
+        : '';
+
       const scen = lesson.scenario || {};
       const deb = lesson.debate || {};
       const ref = lesson.reflection || {};
@@ -2805,6 +2837,7 @@
           }).join('');
           return `<p>${ed('whatIf.instruction', hyp.instruction || tx('whatIfFallback'))}</p>${hypItems}`;
         })()) : '',
+        missingSentences: () => msHtml ? taskBlock('missingSentences', msHtml) : '',
         cloze: () => (cloze.text || clozeOpts) ? taskBlock('cloze', `<p>${ed('cloze.instruction', cloze.instruction || tx('clozeFallback'))}</p>
           <div class="source-text">${ed('cloze.text', cloze.text || '', 'div')}</div>
           ${clozeOpts}`) : '',
@@ -3979,6 +4012,22 @@
           </div>
           <p style="margin-top:0.7rem"><strong>${escapeHtml(slide.task || '')}</strong></p>${hints(slide.hints)}`);
       }
+      if (slide.role === 'missing') {
+        const opts = slide.options || [];
+        const letterOf = (i) => String(slide.answers?.[i] || '');
+        const text = String(slide.msText || '').split(/\n{2,}/).map((para) => missingSentenceParts(para).map((part) => {
+          if (!part.gap) return escapeHtml(part.text);
+          const i = part.gap - 1;
+          return revealItem(i) ? `<span class="sv-ms-gap">(${part.gap}) ${mark(escapeHtml(letterOf(i)))}</span>` : `<span class="sv-ms-gap">(${part.gap}) ______</span>`;
+        }).join('')).join('<br>');
+        const used = new Set((slide.answers || []).filter((_, i) => revealItem(i)));
+        const list = opts.map((o, i) => {
+          const L = String.fromCharCode(65 + i);
+          const body = `<strong>${L}</strong> ${escapeHtml(o)}`;
+          return `<li class="${used.has(L) ? 'is-used' : ''}">${used.has(L) ? mark(body) : body}</li>`;
+        }).join('');
+        return shell(`<div class="sv-grid sv-ms"><p class="sv-cloze">${text}</p><ol class="sv-ms-list">${list}</ol></div>`);
+      }
       if (slide.role === 'cloze' || slide.role === 'gapfill') {
         const bank = (slide.wordBank || []).length
           ? `<div class="sv-bank sv-wordbox"><span class="sv-wordbox-label">${tx('wordBank')}</span>${slide.wordBank.map((w) => escapeHtml(w)).join('<span class="sv-wordbox-sep">·</span>')}</div>`
@@ -4224,6 +4273,7 @@
       const bank = (lastDeck.answerKey?.wordBank || []).map((item) =>
         `${item.sentence}. ${escapeHtml(item.answer)}`
       ).join(' · ');
+      const msKey = (lastDeck.answerKey?.missingSentences || []).map((item) => `${item.gap} ${escapeHtml(item.answer)}`).join(' · ');
       const grammar = (lastDeck.answerKey?.grammar || []).map((item) =>
         `${item.item}. ${escapeHtml(item.answer)}`
       ).join(' · ');
@@ -4239,6 +4289,7 @@
           <p class="label">${tx('teacherAnswerKey')}</p>
           <p>${tx('clozeKey')} ${cloze || '—'}</p>
           <p>${tx('wordBankKey')} ${bank || '—'}</p>
+          ${msKey ? `<p>${tx('msKey')} ${msKey}</p>` : ''}
           <p>${tx('grammarKey')} ${grammar || '—'}</p>
           <p>${tx('collocateKey')} ${collocates || '—'}</p>
         </div>

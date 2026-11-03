@@ -1,3 +1,4 @@
+import { missingSentenceGapCount } from './missing-sentences.js';
 import { taskLabel, normalizeLanguage } from './ui-strings.js';
 import { languageDirective } from './language-prompt.js';
 
@@ -25,6 +26,7 @@ export const LESSON_TASKS = [
   { id: 'discussion', label: 'Discussion / critical thinking' },
   { id: 'cloze', label: 'Use of English (cloze)' },
   { id: 'wordBank', label: 'Use of English (word bank)' },
+  { id: 'missingSentences', label: 'Missing sentences (one extra)' },
   { id: 'grammar', label: 'Grammar practice' },
   { id: 'scenario', label: 'Scenario' },
   { id: 'debate', label: 'Debate' },
@@ -48,7 +50,7 @@ export const GROUPED_TASK_BASES = new Set(['vocabBuild', 'grammar', PRACTICE_TAS
 export const WORKSHEET_SEQUENCE = [
   'intro', 'vocab', 'preReading', SOURCE_TASK,
   'gapFill', 'mcq', 'tf', 'open', 'vocabBuild', 'vocabMatch',
-  'wordFormation', 'whatIf', 'cloze', 'wordBank', 'grammar',
+  'wordFormation', 'whatIf', 'cloze', 'wordBank', 'missingSentences', 'grammar',
   'reflection', 'guidedWriting', 'scenario', 'debate', 'discussion',
 ];
 
@@ -150,6 +152,7 @@ export function syncLessonIncludedTasks(lesson) {
   if ((lesson.discussion || []).length) ids.push('discussion');
   if (lesson.cloze?.text || (lesson.cloze?.items || []).length) ids.push('cloze');
   if ((lesson.wordBankTask?.sentences || []).length || (lesson.wordBankTask?.wordBank || []).length) ids.push('wordBank');
+  if (lesson.missingSentences?.text && (lesson.missingSentences?.options || lesson.missingSentences?.gapSentences || []).length) ids.push('missingSentences');
   if ((lesson.grammarPractice || []).length) ids.push('grammar');
   if (lesson.scenario?.dilemma || lesson.scenario?.optionA) ids.push('scenario');
   if (lesson.debate?.thesis || (lesson.debate?.pro || []).length) ids.push('debate');
@@ -529,6 +532,8 @@ If cloze is selected: a Use of English cloze. One or two short paragraphs with (
 
 If wordBank is selected: a second Use of English task. A word bank (6–8 words, 1–2 distractors allowed) and 5–6 gapped sentences based on the source. Answers in wordBankTask.answers are the exact missing source words. Reverse-test: filling each sentence must restore wording that appears in the source. Scramble the word bank so it is not in answer order.
 
+If missingSentences is selected: a gapped-text task (matura / FCE style). Write a coherent text of 2–4 paragraphs based on the source (same topic and facts, CEFR-appropriate; it may paraphrase the source). Remove whole sentences from it and mark each gap in the text with [1], [2], [3]… in reading order. Number of gaps: ${missingSentenceGapCount(cefr)} at this level (A1–A2: 4, B1: 5, B2+: 6). The first gap must come AFTER at least one full sentence (never at the very start of the text); no two gaps directly next to each other. gapSentences[] lists the removed sentence for each gap in gap order (gapSentences[0] fills [1]). Each removed sentence must fit only its own gap — use clear links (pronouns, connectors, reference words, time order) so the key is unambiguous. extraSentence is exactly ONE distractor on the same topic, with similar vocabulary and length, that fits NO gap (it breaks the logic, reference or grammar of every gap). Do not letter or shuffle the sentences yourself — the app adds letters A, B, C… and shuffles. Instruction text is added by the app.
+
 If grammar is selected: exactly TWO practice activities on one grammar point, using the lesson topic. Grammar point: ${focus ? `"${focus}"` : '(choose one high-value point that appears in the source at this CEFR)'}. Put that point in grammarFocus. The two activities MUST be different kinds (not two gap-fills). Choose two from: gap (complete the correct form), choose (pick the correct option A/B/C), rewrite (rewrite the sentence with the target structure), error (correct the mistake). 5–6 items in the first; 4–5 in the second. Pitch to this CEFR. Tie examples to the source topic. No grammar-rule box or metalanguage heading on the student sheet — only a do-this instruction. Put the correct form in items[].answer.
 
 If scenario is selected: a realistic dilemma connected to the text, Option A vs Option B, and a pair/group task.
@@ -605,6 +610,11 @@ Return ONLY valid JSON (the first character of your reply must be { and the last
     "wordBank": ["word"],
     "sentences": ["The team showed great ____ under pressure."],
     "answers": ["word"]
+  },
+  "missingSentences": {
+    "text": "First paragraph sentence. Another sentence. [1] Next sentence…\n\nSecond paragraph… [2] …",
+    "gapSentences": ["sentence removed from gap 1", "sentence removed from gap 2"],
+    "extraSentence": "one extra sentence that fits no gap"
   },
   "grammarFocus": "present perfect vs past simple",
   "grammarPractice": [
