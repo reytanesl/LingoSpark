@@ -408,6 +408,8 @@ app.get('/api/config', (_req, res) => {
 });
 
 app.get('/api/saved-lessons', async (req, res) => {
+  // Logged out: the page's legacy-mirror check gets an empty list (no data, no console 401 on page load).
+  if (typeof options.isSignedIn === 'function' && !options.isSignedIn(req)) return res.json({ items: [], signedIn: false });
   if (!(await signedIn(req, res))) return;
   try {
     res.json({ items: await listSavedLessons() });

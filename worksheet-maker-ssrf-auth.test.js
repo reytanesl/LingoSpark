@@ -51,6 +51,7 @@ test('server-side fetchers use safeFetch; safe-fetch stays server-only', () => {
 test('logged out: every resource-using worksheet-maker endpoint returns 401; health/config stay open', async () => {
   const app = express();
   app.use(createWorksheetMakerRouter({
+    isSignedIn: () => false,
     requireSignedIn(_req, res) { res.status(401).json({ error: 'Sign in required to use Worksheet Maker.', code: 'login_required' }); return false; },
     async requireCreateAccess(_req, res) { res.status(401).json({ code: 'login_required' }); return false; },
   }));
@@ -64,7 +65,6 @@ test('logged out: every resource-using worksheet-maker endpoint returns 401; hea
       ['POST', '/api/fetch-image', { url: 'http://127.0.0.1/' }],
       ['POST', '/api/create-slides', { topic: 'x' }],
       ['POST', '/api/media-search', { query: 'x' }],
-      ['GET', '/api/saved-lessons'],
       ['GET', '/api/saved-lessons/abc'],
       ['POST', '/api/saved-lessons', { title: 'x', payload: {} }],
       ['DELETE', '/api/saved-lessons/abc'],
@@ -74,6 +74,9 @@ test('logged out: every resource-using worksheet-maker endpoint returns 401; hea
     for (const [m, p, b] of locked) assert.equal(await call(m, p, b), 401, `${m} ${p}`);
     assert.equal(await call('GET', '/api/health'), 200);
     assert.equal(await call('GET', '/api/config'), 200);
+    // page-load mirror check: empty list, no data, no 401 in the console
+    const list = await fetch(`${base}/api/saved-lessons`).then(async (r) => [r.status, await r.json()]);
+    assert.deepEqual(list, [200, { items: [], signedIn: false }]);
   } finally {
     server.close();
   }
