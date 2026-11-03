@@ -2270,6 +2270,8 @@
       loadGoogleDriveConfig,
       googleDriveConfigured,
       uploadBlobToDrive,
+      connectGoogleDrive,
+      preloadGoogleDrive,
     } from './lib/google-drive.js';
     import {
       POLISH_PRIMARY_CLASSES,
@@ -4231,6 +4233,7 @@
         const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
         const data = await res.json().catch(() => ({}));
         setDriveButtonsVisible(Boolean(data?.isAdmin));
+        if (data?.isAdmin) preloadGoogleDrive().catch(() => {});
       } catch {
         setDriveButtonsVisible(false);
       }
@@ -4917,8 +4920,28 @@
     async function ensureDriveReady() {
       await loadGoogleDriveConfig();
       if (!googleDriveConfigured()) {
-        throw new Error(ui('errDriveConfig'));
+        throw Object.assign(new Error(ui('errDriveConfig')), { code: 'config' });
       }
+      // Sign in BEFORE building the PDF: the popup needs the click's user activation.
+      await connectGoogleDrive();
+    }
+
+    const DRIVE_ERROR_KEYS = {
+      config: 'errDriveConfig',
+      popup_blocked: 'errDrivePopupBlocked',
+      cancelled: 'errDriveCancelled',
+      origin: 'errDriveOrigin',
+      script_blocked: 'errDriveScript',
+      not_connected: 'errDriveNotConnected',
+      forbidden: 'errDriveForbidden',
+      rate_limited: 'errDriveRateLimited',
+      network: 'errDriveNetwork',
+      auth_failed: 'errDriveAuth',
+    };
+    function driveErrorMessage(err) {
+      const key = DRIVE_ERROR_KEYS[err?.code];
+      if (key) return ui(key);
+      return err?.message || ui('errDriveUpload');
     }
 
     async function uploadPdfToDrive(blob, name) {
@@ -5136,7 +5159,7 @@
         const suffix = document.body.classList.contains('teacher') ? 'teacher-key' : 'worksheet';
         await uploadPdfToDrive(blob, `${exportBaseName()}-${suffix}.pdf`);
       } catch (err) {
-        setStatus(err.message || ui('errDriveUpload'), true);
+        setStatus(driveErrorMessage(err), true);
       } finally {
         btn.disabled = false;
       }
@@ -5153,7 +5176,7 @@
         const blob = await buildPresentationPdf(lastDeck);
         await uploadPdfToDrive(blob, `${exportBaseName()}-slides.pdf`);
       } catch (err) {
-        setStatus(err.message || ui('errDriveUpload'), true);
+        setStatus(driveErrorMessage(err), true);
       } finally {
         btn.disabled = false;
         if (lastDeck?.slides?.length) showSlide(resume);
