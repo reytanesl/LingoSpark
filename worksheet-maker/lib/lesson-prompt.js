@@ -319,6 +319,39 @@ True / false — incorrect sentences must not be obvious:
 - ANSWER PATTERN: mix true and false with no predictable sequence. Roughly half true / half false (±1). Do NOT use all true, all false, strict alternation (T/F/T/F…), or blocks (TTTTFFFF / FFFFTTTT). Order items so the key looks random.`;
 }
 
+/**
+ * Prompt block for a video/audio the teacher picked to go with the article ("Find a video or audio").
+ * Only facts from the transcript/description may be used; without a transcript tasks stay honest.
+ */
+export function companionMediaNote(media, plan = '', source = {}) {
+  if (!media || !media.url) return '';
+  const isVideo = media.kind !== 'audio';
+  const noun = isVideo ? 'video' : 'audio (podcast episode)';
+  const verb = isVideo ? 'Watch' : 'Listen';
+  const hasTranscript = Boolean(media.transcriptFound || source.transcriptFound);
+  const teacherPlan = String(plan || '').trim();
+  const lines = [
+    `COMPANION MEDIA PICKED BY THE TEACHER (${noun}) — integrate it seamlessly into ONE worksheet with the article:`,
+    `- Title: ${media.title || '(untitled)'}`,
+    `- From: ${media.source || (isVideo ? 'YouTube' : 'podcast')}`,
+    `- Link: ${media.url}`,
+    media.duration ? `- Length: ${media.duration}` : '',
+    hasTranscript
+      ? `- Transcript: available — it is the [VIDEO — listening source] part of the SOURCE TEXT${media.captionsAuto || source.captionsAuto ? ' (auto-generated captions, may contain errors)' : ''}.`
+      : `- Transcript: NOT available. All you know about the ${isVideo ? 'video' : 'episode'} is the title and this description: "${String(media.description || '').slice(0, 1200) || '(no description)'}"`,
+    `- TEACHER'S PLAN FOR THE MEDIA (follow it closely; it decides where and how the media appears): ${teacherPlan || '(none given — use a short pre-reading warm-up with the media, then link it to the article vocabulary and a discussion)'}`,
+    '- Make it feel like one lesson: refer to the media by its title, tie at least one task directly to it, and bridge media and article (shared vocabulary, compare/contrast, discussion).',
+    `- Instruction wording for media tasks starts with "${verb}…" and names the media; mention timestamps only if the teacher plan gives them.`,
+    '- Put "sourceFocus": "video" on comprehension items about the media (also for audio) and "reading" on items about the article.',
+    hasTranscript
+      ? '- Closed items about the media must be answerable from the transcript alone.'
+      : `- HONESTY: you have not heard the ${isVideo ? 'video' : 'audio'}. Do NOT write gap-fills, true/false, MCQ keys or quotes about its content. Use honest open tasks instead: predict from the title, note-taking while ${isVideo ? 'watching' : 'listening'} (key words, 3 facts), compare with the article, discuss. Say in teacherNotes that no transcript was available, so media answers are open.`,
+    '- Set mediaSection: { "title": short student-facing heading, "instruction": one or two student-facing sentences on what to do with the media, "placement": "before" | "after" | "between" (where it sits relative to the reading tasks) }.',
+    '- Never invent other videos, links, speakers or quotes.',
+  ];
+  return lines.filter(Boolean).join('\n');
+}
+
 export function buildLessonPrompt({
   source,
   cefr,
@@ -332,6 +365,8 @@ export function buildLessonPrompt({
   transcriptionMode = false,
   suggestionsOnly = false,
   vocabList = [],
+  companionMedia = null,
+  mediaPlan = '',
 }) {
   const selected = normalizeTasks(tasks);
   const levelNote = cefr && cefr !== 'auto'
@@ -399,6 +434,9 @@ ${source.captionsAuto ? '- Video captions are auto-generated (ASR): prefer clear
   } else if (transcriptionMode || source.transcriptionMode || source.transcriptFound) {
     transcriptionNote = `VIDEO TRANSCRIPTION MODE: The source is a video transcript${source.captionsAuto ? ' (YouTube auto-generated captions — may contain ASR errors; prefer clear gist/detail items and avoid tiny fragile gaps)' : ' (captions)'}. Prefer skill "listening". Keep spoken wording verbatim in sourceParagraphs / sourceText unless adapting was requested. Build comprehension from what was said (gap-fill from speech, true/false on spoken detail, open questions about the talk). Do not invent a second article. If the teacher included the source on the worksheet, students may see the transcript; otherwise showSourceToStudents must be false.`;
   }
+
+  const mediaNote = companionMediaNote(companionMedia, mediaPlan, source);
+  if (mediaNote) transcriptionNote = `${transcriptionNote}\n\n${mediaNote}`.trim();
 
   if (fromSuggestions) {
     adaptNote = includeSourceOnWorksheet

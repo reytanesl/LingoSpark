@@ -1945,6 +1945,62 @@
       break-inside: avoid;
     }
     .sheet.pl-sp .sheet-footer { display: none; }
+
+    /* Find a video or audio for the article */
+    .media-finder { margin: 6px 0 12px; }
+    .media-find-btn { display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; border-radius:14px; border:2px dashed var(--sd-chip-border); background:var(--sd-chip); color:var(--sd-navy); font:600 15px var(--font-primary); cursor:pointer; text-align:left; }
+    .media-find-btn:hover { border-color: var(--sd-red); }
+    .media-find-btn small { display:block; font:500 12px var(--font-body); color:var(--sd-muted); }
+    .media-find-btn .mf-ico { font-size:22px; }
+    .media-panel { border:1px solid var(--sd-line); border-radius:16px; padding:12px; background:#fff; margin-top:8px; }
+    .media-search-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .media-search-row input { flex:1 1 220px; min-width:0; margin:0; padding:10px 12px; border:1px solid var(--sd-chip-border); border-radius:12px; font:500 14px var(--font-body); }
+    .media-kind { display:inline-flex; border:1px solid var(--sd-chip-border); border-radius:999px; overflow:hidden; }
+    .media-kind button { border:0; background:#fff; padding:8px 12px; font:600 13px var(--font-primary); color:var(--sd-navy); cursor:pointer; }
+    .media-kind button.active { background:var(--sd-navy); color:#fff; }
+    .media-status { font-size:13px; color:var(--sd-muted); margin:8px 2px 0; min-height:18px; }
+    .media-status.is-error { color: var(--sd-red-deep); }
+    .media-status button { margin-left:6px; }
+    .media-results { display:grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap:10px; margin-top:8px; max-height: 360px; overflow:auto; padding:2px; }
+    .media-results h4 { grid-column: 1 / -1; margin:4px 0 0; font:700 13px var(--font-primary); color:var(--sd-navy); }
+    .media-card { display:flex; flex-direction:column; border:1px solid var(--sd-line); border-radius:12px; overflow:hidden; background:#fff; }
+    .media-card .mc-thumb { position:relative; aspect-ratio:16/9; background:#eef; }
+    .media-card.is-audio .mc-thumb { aspect-ratio:auto; height:96px; display:flex; gap:10px; align-items:center; padding:8px; background:var(--sd-cream); }
+    .media-card .mc-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .media-card.is-audio .mc-thumb img { width:80px; height:80px; border-radius:8px; flex:none; }
+    .media-card .mc-dur { position:absolute; right:6px; bottom:6px; background:rgba(0,0,0,.78); color:#fff; font:600 11px var(--font-primary); padding:1px 6px; border-radius:6px; }
+    .media-card.is-audio .mc-dur { position:static; background:var(--sd-navy); }
+    .media-card .mc-body { padding:8px 10px; flex:1; display:flex; flex-direction:column; gap:4px; }
+    .media-card .mc-title { font:600 13px/1.3 var(--font-primary); color:#1d1a2b; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .media-card .mc-src { font-size:12px; color:var(--sd-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .media-card .mc-actions { display:flex; gap:6px; margin-top:auto; padding-top:4px; align-items:center; }
+    .media-card .mc-actions a, .media-card .mc-actions button.mc-link { font-size:12px; color:var(--sd-navy); background:none; border:0; padding:4px 2px; cursor:pointer; text-decoration:underline; }
+    .media-card .mc-use { margin-left:auto; padding:6px 12px; font-size:13px; }
+    .media-card iframe, .media-card audio { width:100%; border:0; display:block; }
+    .media-card iframe { aspect-ratio:16/9; height:auto; }
+    .media-own { font-size:12px; color:var(--sd-muted); margin:8px 2px 0; }
+    .media-chosen { border:2px solid var(--sd-navy); border-radius:16px; padding:12px; background:#fff; margin-top:8px; }
+    .media-chosen-head { display:flex; gap:10px; align-items:center; }
+    .media-chosen-head img { width:96px; height:54px; object-fit:cover; border-radius:8px; flex:none; }
+    .media-chosen-head .mch-text { flex:1; min-width:0; }
+    .media-chosen-head .mch-kick { font:700 11px var(--font-primary); color:#1a7f37; text-transform:uppercase; letter-spacing:.04em; }
+    .media-chosen-head .mch-title { font:600 14px var(--font-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .media-chosen-head .mch-src { font-size:12px; color:var(--sd-muted); }
+    .media-chosen label { display:block; margin-top:10px; font-weight:700; color:var(--sd-navy); }
+    .media-chosen textarea { min-height:64px; margin-top:4px; }
+    .media-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+    .media-chips button { border:1px solid var(--sd-chip-border); background:var(--sd-chip); color:var(--sd-navy); border-radius:999px; padding:6px 11px; font:600 12px var(--font-primary); cursor:pointer; }
+    .media-chips button:hover, .media-chips button.active { background:var(--sd-navy); color:#fff; border-color:var(--sd-navy); }
+    .media-note { font-size:12px; color:var(--sd-muted); margin-top:6px; }
+    /* worksheet: companion media section */
+    .media-sheet { display:flex; gap:12px; align-items:center; border:1.5px solid #c9d3ea; border-radius:12px; padding:10px 12px; margin:10px 0; background:#f6f8fd; break-inside:avoid; }
+    .media-sheet img { width:120px; height:68px; object-fit:cover; border-radius:8px; flex:none; }
+    .media-sheet.is-audio img { width:68px; }
+    .media-sheet .ms-kick { font:700 11px var(--font-primary); color:var(--sd-navy); text-transform:uppercase; letter-spacing:.05em; }
+    .media-sheet .ms-title { font-weight:700; }
+    .media-sheet .ms-meta { font-size:12px; color:var(--sd-muted); }
+    .media-sheet .ms-url { font-size:12px; word-break:break-all; }
+    @media (max-width: 560px) { .media-results { grid-template-columns: 1fr; max-height: none; } .media-sheet img { width:84px; height:48px; } }
   </style>
 </head>
 <body class="student">
@@ -1993,6 +2049,39 @@
 
             <label for="pasted" data-i18n="pastedLabel">Paste text (optional)</label>
             <textarea id="pasted" data-i18n-placeholder="pastedPlaceholder" placeholder="Paste article or reading text…"></textarea>
+
+            <div id="mediaFinder" class="media-finder is-hidden">
+              <button type="button" id="mediaFindBtn" class="media-find-btn"><span class="mf-ico" aria-hidden="true">🎬</span><span><span data-i18n="mediaFindBtn">Find a video or audio for this article</span><small data-i18n="mediaFindHint">Real YouTube videos and podcast episodes that match the topic.</small></span></button>
+              <div id="mediaPanel" class="media-panel is-hidden">
+                <div class="media-search-row">
+                  <input id="mediaQuery" type="search" aria-label="Search words" data-i18n-title="mediaQueryLabel" placeholder="">
+                  <div class="media-kind" role="group">
+                    <button type="button" data-kind="video" data-i18n="mediaKindVideo">Video</button><button type="button" data-kind="audio" data-i18n="mediaKindAudio">Audio</button><button type="button" data-kind="both" class="active" data-i18n="mediaKindBoth">Both</button>
+                  </div>
+                  <button type="button" id="mediaSearchBtn" class="btn btn-primary" data-i18n="mediaSearch">Search</button>
+                </div>
+                <p id="mediaStatus" class="media-status" aria-live="polite"></p>
+                <div id="mediaResults" class="media-results"></div>
+                <p class="media-own" data-i18n="mediaOwnLink">Have your own link? Paste it in “Video / audio link” above.</p>
+              </div>
+              <div id="mediaChosen" class="media-chosen is-hidden">
+                <div class="media-chosen-head">
+                  <img id="mediaChosenThumb" alt="">
+                  <div class="mch-text"><div class="mch-kick" data-i18n="mediaChosen">Added to the worksheet</div><div class="mch-title" id="mediaChosenTitle"></div><div class="mch-src" id="mediaChosenSrc"></div></div>
+                  <button type="button" id="mediaChangeBtn" class="btn btn-outline" data-i18n="mediaChange">Change</button>
+                  <button type="button" id="mediaRemoveBtn" class="btn btn-outline" data-i18n="mediaRemove">Remove</button>
+                </div>
+                <label for="mediaPlan" data-i18n="mediaPlanLabel">How should it fit into the worksheet?</label>
+                <textarea id="mediaPlan" rows="2" data-i18n-placeholder="mediaPlanPlaceholder"></textarea>
+                <div class="media-chips" id="mediaChips">
+                  <button type="button" data-chip="Warmup" data-i18n="mediaChipWarmup">Warm-up before reading</button>
+                  <button type="button" data-chip="Compare" data-i18n="mediaChipCompare">Compare with the article</button>
+                  <button type="button" data-chip="Vocab" data-i18n="mediaChipVocab">Link to article vocabulary</button>
+                  <button type="button" data-chip="First3" data-i18n="mediaChipFirst3">Questions on minutes 0–3</button>
+                </div>
+                <p class="media-note" id="mediaChosenNote"></p>
+              </div>
+            </div>
 
             <label for="pdf" data-i18n="pdfLabel">PDF (optional)</label>
             <input id="pdf" type="file" accept="application/pdf,.pdf">
@@ -2612,11 +2701,18 @@
           lesson.youtubeId = lesson.youtubeId || yid;
         }
       }
-      const listenBox = showListen
+      const cm = lesson.companionMedia;
+      const ms = lesson.mediaSection || {};
+      const mediaCard = cm && cm.url
+        ? `<div class="media-sheet is-${cm.kind === 'audio' ? 'audio' : 'video'}">${cm.thumbnail ? `<img src="${escapeHtml(cm.thumbnail)}" alt="" referrerpolicy="no-referrer">` : ''}<div><div class="ms-kick">${cm.kind === 'audio' ? '🎧' : '▶'} ${ed('mediaSection.title', ms.title || tx('mediaSectionDefault'))}</div><div class="ms-title">${escapeHtml(cm.title || '')}</div><div class="ms-meta">${escapeHtml([cm.source, cm.duration].filter(Boolean).join(' · '))}</div>${ms.instruction ? `<div>${ed('mediaSection.instruction', ms.instruction)}</div>` : ''}<div class="ms-url">${escapeHtml(cm.url)} <a class="no-print" href="${escapeHtml(cm.url)}" target="_blank" rel="noopener noreferrer">↗</a></div></div></div>`
+        : '';
+      const listenBox = mediaCard && showListen
+        ? mediaCard
+        : showListen
         ? `<div class="listen-box">${ed('sourceInstruction', isCombined ? tx('listenFallback') : sourceLine)}${mediaUrl ? `<br>${tx('sourceLabel')} <span class="sheet-edit source-media-link" data-edit="sourceUrl" contenteditable="true" spellcheck="false">${escapeHtml(mediaUrl)}</span> <a class="source-media-open no-print" href="${escapeHtml(mediaUrl)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(mediaUrl)}">↗</a>` : ''}</div>`
         : '';
       const sourceBlock = isCombined
-        ? `${listenBox}${showText ? sourceHtml : ''}`
+        ? (mediaCard && /after/i.test(ms.placement || '') ? `${showText ? sourceHtml : ''}${listenBox}` : `${listenBox}${showText ? sourceHtml : ''}`)
         : (showText ? sourceHtml : listenBox);
 
       const cloze = lesson.cloze || {};
@@ -4611,6 +4707,167 @@
     checkHealth();
     refreshSavedList();
 
+
+    // ---- Find a video or audio for the article (key-free search on the server) ----
+    const MediaFinder = (() => {
+      let kind = 'both';
+      let chosen = null;
+      let lastResults = { video: [], audio: [] };
+      let suggestedFor = '';
+      const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+      const articleText = () => ($('pasted')?.value || '').trim();
+      const articleUrl = () => ($('url')?.value || '').trim();
+      const hasArticle = () => articleText().length >= 120 || /^https?:\/\//.test(articleUrl());
+      function refreshVisibility() {
+        const on = !$('suggestionsOnly')?.checked && (hasArticle() || chosen);
+        $('mediaFinder').classList.toggle('is-hidden', !on);
+      }
+      function status(msg, isError = false, retry = false) {
+        const p = $('mediaStatus');
+        p.textContent = msg || '';
+        p.classList.toggle('is-error', isError);
+        if (retry) { const b = el('button', 'btn btn-outline', ui('mediaRetry')); b.type = 'button'; b.onclick = search; p.append(b); }
+      }
+      async function post(body) {
+        const res = await fetch('api/media-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ui('mediaError'));
+        return data;
+      }
+      async function suggest() {
+        const key = `${articleUrl()}|${articleText().slice(0, 400)}`;
+        if (key === suggestedFor && $('mediaQuery').value) return;
+        suggestedFor = key;
+        try {
+          const data = await post({ suggestOnly: true, text: articleText(), url: articleUrl(), topic: $('topic').value.trim() });
+          if (data.query) $('mediaQuery').value = data.query;
+        } catch { /* user can type */ }
+      }
+      function card(item) {
+        const c = el('div', `media-card is-${item.kind}`);
+        const th = el('div', 'mc-thumb');
+        if (item.thumbnail) { const img = el('img'); img.src = item.thumbnail; img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer'; th.append(img); }
+        if (item.duration) th.append(el('span', 'mc-dur', item.duration));
+        c.append(th);
+        const body = el('div', 'mc-body');
+        body.append(el('div', 'mc-title', item.title));
+        body.append(el('div', 'mc-src', `${item.kind === 'audio' ? '🎧' : '▶'} ${item.source || ''}`));
+        const act = el('div', 'mc-actions');
+        const canPreview = item.kind === 'video' ? Boolean(item.youtubeId) : Boolean(item.audioUrl);
+        if (canPreview) {
+          const pv = el('button', 'mc-link', ui('mediaPreview')); pv.type = 'button';
+          pv.onclick = () => {
+            if (c.querySelector('iframe,audio')) return;
+            if (item.kind === 'video') {
+              const f = el('iframe'); f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.youtubeId)}?autoplay=1&rel=0`; f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true; f.title = item.title;
+              th.replaceWith(f);
+            } else {
+              const a = el('audio'); a.controls = true; a.preload = 'none'; a.src = item.audioUrl; th.after(a); a.play().catch(() => {});
+            }
+          };
+          act.append(pv);
+        }
+        const open = el('a', '', `${ui('mediaOpen')} ↗`); open.href = item.url; open.target = '_blank'; open.rel = 'noopener noreferrer';
+        act.append(open);
+        const use = el('button', 'btn btn-primary mc-use', ui('mediaUse')); use.type = 'button';
+        use.onclick = () => choose(item);
+        act.append(use);
+        body.append(act);
+        c.append(body);
+        return c;
+      }
+      function render() {
+        const box = $('mediaResults');
+        box.replaceChildren();
+        const groups = [['video', ui('mediaKindVideo')], ['audio', ui('mediaKindAudio')]].filter(([k]) => kind === 'both' || kind === k);
+        let n = 0;
+        for (const [k, label] of groups) {
+          const list = lastResults[k] || [];
+          if (!list.length) continue;
+          if (groups.length > 1) box.append(el('h4', '', label));
+          list.forEach((it) => { box.append(card(it)); n++; });
+        }
+        return n;
+      }
+      async function search() {
+        const query = $('mediaQuery').value.trim();
+        if (!query && !hasArticle()) { status(ui('mediaNeedText'), true); return; }
+        status(ui('mediaSearching'));
+        $('mediaSearchBtn').disabled = true;
+        try {
+          const data = await post({ query, kind, text: articleText(), url: articleUrl() });
+          if (!query && data.query) $('mediaQuery').value = data.query;
+          lastResults = { video: data.video || [], audio: data.audio || [] };
+          const n = render();
+          const errs = Object.values(data.errors || {});
+          if (!n) status(errs.length ? ui('mediaError') : ui('mediaNoResults'), true, true);
+          else status(errs.length ? ui('mediaError') : '', Boolean(errs.length), Boolean(errs.length));
+        } catch (err) {
+          lastResults = { video: [], audio: [] }; render();
+          status(err.message || ui('mediaError'), true, true);
+        } finally {
+          $('mediaSearchBtn').disabled = false;
+        }
+      }
+      function choose(item) {
+        chosen = item;
+        $('videoUrl').value = item.url;
+        $('mediaPanel').classList.add('is-hidden');
+        $('mediaFindBtn').classList.add('is-hidden');
+        $('mediaChosen').classList.remove('is-hidden');
+        const img = $('mediaChosenThumb'); img.src = item.thumbnail || ''; img.hidden = !item.thumbnail;
+        $('mediaChosenTitle').textContent = item.title;
+        $('mediaChosenSrc').textContent = [item.kind === 'audio' ? `🎧 ${ui('mediaKindAudio')}` : `▶ ${ui('mediaKindVideo')}`, item.source, item.duration].filter(Boolean).join(' · ');
+        $('mediaChosenNote').textContent = item.kind === 'audio' ? ui('mediaNoTranscript') : '';
+        $('mediaPlan').focus();
+      }
+      function clear(reopen) {
+        if (chosen && $('videoUrl').value.trim() === chosen.url) $('videoUrl').value = '';
+        chosen = null;
+        $('mediaChosen').classList.add('is-hidden');
+        $('mediaFindBtn').classList.remove('is-hidden');
+        if (reopen) { $('mediaPanel').classList.remove('is-hidden'); render(); }
+        refreshVisibility();
+      }
+      $('mediaFindBtn').onclick = async () => {
+        const panel = $('mediaPanel');
+        const opening = panel.classList.contains('is-hidden');
+        panel.classList.toggle('is-hidden', !opening);
+        if (opening) { await suggest(); if (!lastResults.video.length && !lastResults.audio.length) search(); }
+      };
+      $('mediaSearchBtn').onclick = search;
+      $('mediaQuery').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); search(); } });
+      document.querySelectorAll('.media-kind button').forEach((b) => {
+        b.onclick = () => {
+          kind = b.dataset.kind;
+          document.querySelectorAll('.media-kind button').forEach((x) => x.classList.toggle('active', x === b));
+          search();
+        };
+      });
+      document.querySelectorAll('#mediaChips button').forEach((b) => {
+        b.onclick = () => {
+          $('mediaPlan').value = ui(`mediaChip${b.dataset.chip}Text`);
+          document.querySelectorAll('#mediaChips button').forEach((x) => x.classList.toggle('active', x === b));
+        };
+      });
+      $('mediaChangeBtn').onclick = () => clear(true);
+      $('mediaRemoveBtn').onclick = () => clear(false);
+      ['pasted', 'url'].forEach((id) => $(id)?.addEventListener('input', refreshVisibility));
+      $('suggestionsOnly')?.addEventListener('change', refreshVisibility);
+      refreshVisibility();
+      return {
+        // The pick only counts while the video/audio field still holds its link.
+        selection() {
+          if (!chosen) return null;
+          if ($('videoUrl').value.trim() !== chosen.url) return null;
+          const { kind: k, title, source, url, youtubeId, durationSec, duration, thumbnail, audioUrl, description } = chosen;
+          return { kind: k, title, source, url, youtubeId, durationSec, duration, thumbnail, audioUrl, description };
+        },
+        refresh: refreshVisibility,
+        _choose: choose,
+      };
+    })();
+
     $('createBtn').onclick = async () => {
       const tasks = selectedTasks();
       const pdf = $('pdf').files[0];
@@ -4636,6 +4893,13 @@
         includeSourceOnWorksheet: $('includeTextWorksheet').checked,
         includeTopicImage: $('includeTopicImage').checked,
       };
+      const media = suggestionsOnly ? null : MediaFinder.selection();
+      if (media) {
+        body.companionMedia = media;
+        body.mediaPlan = $('mediaPlan').value.trim();
+        body.videoUrl = media.url;
+        body.transcriptionMode = true;
+      }
       const hasSource = Boolean(body.url || body.videoUrl || body.pastedText || body.topic || pdf);
       const hasSuggestions = Boolean(
         body.grammarPoint || body.vocabList || body.topic || body.extraInstructions

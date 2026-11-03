@@ -121,11 +121,14 @@ async function resolveGenericMedia(link, {
   titleHint = '',
   topicTitle = '',
   pastedAsTranscript = '',
+  knownMeta = null,
 } = {}) {
   const pasted = (pastedAsTranscript || '').trim();
   const isDirectFile = /\.(mp3|m4a|wav|ogg|mp4|webm|mov|m4v)(\?|$)/i.test(link);
   let meta = { title: '', description: '', imageUrl: '' };
-  if (!isDirectFile) {
+  if (knownMeta && (knownMeta.title || knownMeta.description)) {
+    meta = { title: knownMeta.title || '', description: knownMeta.description || '', imageUrl: knownMeta.imageUrl || '' };
+  } else if (!isDirectFile) {
     try {
       meta = await fetchMediaPageMeta(link);
     } catch {
@@ -758,6 +761,7 @@ export async function loadSource({
   allowTopicOnly = false,
   transcriptionMode = false,
   preferredLang = 'en',
+  companionMedia = null,
 } = {}) {
   const pastedOnly = String(pastedText || '').trim();
   const pdfOnly = String(pdfText || '').trim();
@@ -817,7 +821,7 @@ export async function loadSource({
       wantTranscript: true,
     });
 
-    if (articleLink || pdfOnly || (pastedOnly && ytVideo.transcriptFound)) {
+    if (articleLink || pdfOnly || (pastedOnly && (ytVideo.transcriptFound || companionMedia))) {
       video = ytVideo;
       reading = await resolveReadingText({
         articleLink,
@@ -836,8 +840,10 @@ export async function loadSource({
       video = ytVideo;
     }
   } else if (videoLink) {
-    if (articleLink || pdfOnly) {
-      video = await resolveGenericMedia(videoLink, { titleHint, topicTitle, pastedAsTranscript: '' });
+    const knownMeta = companionMedia ? { title: companionMedia.title, description: companionMedia.description, imageUrl: companionMedia.thumbnail } : null;
+    if (articleLink || pdfOnly || (companionMedia && pastedOnly)) {
+      // A media item picked for the pasted article is a companion, never a transcript of the paste.
+      video = await resolveGenericMedia(videoLink, { titleHint: companionMedia?.title || titleHint, topicTitle, pastedAsTranscript: '', knownMeta });
       reading = await resolveReadingText({
         articleLink,
         pasted: readingBody,

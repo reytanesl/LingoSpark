@@ -1636,6 +1636,12 @@ app.get('/api/health', (_req, res) => {
     // Worksheet Maker (Lesson Creator) — own page + /worksheet-maker/api/*
     // Creating a worksheet costs one prepaid credit (5 zł / $2 per BMC Extra link use).
     app.use('/worksheet-maker', createWorksheetMakerRouter({
+        // Media search for the worksheet ("Find a video or audio") is free but needs a signed-in user.
+        requireSignedIn(req, res) {
+            if (req.isAuthenticated?.() && req.user) return true;
+            res.status(401).json({ error: 'Sign in required to use Worksheet Maker.', code: 'login_required' });
+            return false;
+        },
         async requireCreateAccess(req, res) {
             if (!req.isAuthenticated?.() || !req.user) {
                 res.status(401).json({

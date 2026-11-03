@@ -18,6 +18,7 @@ import { overlayLessonAnswers, prepareLessonAnswers, prepareDeckAnswers } from '
 import { normalizeLanguage } from './lib/ui-strings.js';
 import { findTopicImages, imageFromUrl } from './lib/topic-image.js';
 import { lessonToDeck } from './lib/lesson-to-deck.js';
+import { searchMedia, topicKeywords, sanitizeCompanionMedia } from './lib/media-search.js';
 import {
   listSavedLessons,
   getSavedLesson,
@@ -59,7 +60,7 @@ export function createWorksheetMakerRouter(options = {}) {
 }
 
 function registerWorksheetMakerRoutes(app, options = {}) {
-  const { requireCreateAccess } = options;
+  const { requireCreateAccess, requireSignedIn } = options;
 
 async function buildLessonPayload(body, key, update = () => {}) {
   if (body?.mode === 'polishPrimary') {
@@ -67,6 +68,10 @@ async function buildLessonPayload(body, key, update = () => {}) {
   }
 
   update({ stage: 'source' });
+  // Companion media picked with "Find a video or audio": it becomes the video slot of a combined lesson.
+  const companion = sanitizeCompanionMedia(body?.companionMedia);
+  const mediaPlan = String(body?.mediaPlan || '').replace(/\s+/g, ' ').trim().slice(0, 800);
+  if (companion) body = { ...body, videoUrl: companion.url, companionMedia: companion };
   const source = await sourceFromRequest(body, { allowTopicOnly: true });
   if (!source.text && !source.topicOnly && !source.suggestionsOnly && !(source.media && source.youtubeId)) {
     const err = new Error(
@@ -95,6 +100,12 @@ async function buildLessonPayload(body, key, update = () => {}) {
     transcriptionMode: Boolean(body?.transcriptionMode || source?.transcriptionMode),
     suggestionsOnly: Boolean(body?.suggestionsOnly || source?.suggestionsOnly),
     vocabList,
+    companionMedia: companion ? {
+      ...companion,
+      transcriptFound: Boolean(source.transcriptFound),
+      captionsAuto: Boolean(source.captionsAuto),
+    } : null,
+    mediaPlan,
   };
   const lesson = prepareLessonAnswers(
     await generateJson(buildLessonPrompt(shared), { apiKey: key, cwd: __dirname }),
@@ -112,6 +123,10 @@ async function buildLessonPayload(body, key, update = () => {}) {
   if (shared.grammarPoint && !lesson.grammarFocus) lesson.grammarFocus = shared.grammarPoint;
   if (!includeSourceOnWorksheet) lesson.showSourceToStudents = false;
   if (source.youtubeId) lesson.youtubeId = source.youtubeId;
+  if (shared.companionMedia) {
+    const { description, ...shown } = shared.companionMedia;
+    lesson.companionMedia = { ...shown, plan: mediaPlan };
+  }
   if (source.url) lesson.sourceUrl = source.url;
   if (source.skillHint === 'combined' || source.combinedSources) {
     lesson.skill = 'combined';
@@ -346,6 +361,7 @@ async function sourceFromRequest(body, { allowTopicOnly = false } = {}) {
     allowTopicOnly,
     transcriptionMode: Boolean(body?.transcriptionMode || body?.videoUrl),
     preferredLang: normalizeLanguage(body?.language || 'en'),
+    companionMedia: body?.companionMedia || null,
   });
   if (vocabList.length) source.vocabList = vocabList;
   if (grammarPoint) source.grammarPoint = grammarPoint;
@@ -408,6 +424,31 @@ app.delete('/api/saved-lessons/:id', async (req, res) => {
     res.json(await deleteSavedLesson(req.params.id));
   } catch (error) {
     res.status(404).json({ error: error.message || 'Saved worksheet not found.' });
+  }
+});
+
+app.post('/api/media-search', async (req, res) => {
+  try {
+    // Searching is free (no credit): only a signed-in check when the host app provides one.
+    if (typeof requireSignedIn === 'function' && !(await requireSignedIn(req, res))) return;
+    const body = req.body || {};
+    let text = String(body.text || '').slice(0, 20000);
+    let title = String(body.title || '');
+    const link = String(body.url || '').trim();
+    if (!text.trim() && /^https?:\/\//.test(link) && !String(body.query || '').trim()) {
+      try {
+        const src = await loadSource({ url: link });
+        text = String(src.text || '').slice(0, 20000);
+        title = title || src.title || '';
+      } catch { /* fall back to the topic box */ }
+    }
+    const suggested = topicKeywords({ text, title, topic: body.topic });
+    if (body.suggestOnly) return res.json({ query: suggested.query, keywords: suggested.keywords });
+    const kind = ['video', 'audio', 'both'].includes(body.kind) ? body.kind : 'both';
+    const out = await searchMedia({ query: String(body.query || '').trim() || suggested.query, kind });
+    res.json({ ...out, suggested: suggested.query });
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'Media search failed.' });
   }
 });
 
