@@ -1,3 +1,4 @@
+import { mediaTranscriptOf, stripLongTranscriptChunks } from './lib/transcript-guard.js';
 import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
@@ -140,6 +141,11 @@ async function buildLessonPayload(body, key, update = () => {}) {
     lesson.skill = 'combined';
   } else if (source.skillHint === 'listening') {
     lesson.skill = 'listening';
+  }
+  {
+    // Students never get long transcript chunks in their tasks (short quotes are fine).
+    const transcript = mediaTranscriptOf(lesson, source);
+    if (transcript) stripLongTranscriptChunks(lesson, transcript);
   }
 
   update({ stage: 'image' });

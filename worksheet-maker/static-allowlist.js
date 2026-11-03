@@ -24,6 +24,7 @@ export const PUBLIC_LIB_MODULES = new Set([
   'lib/print-select.js',
   'lib/sheet-edit.js',
   'lib/slide-themes.js',
+  'lib/transcript-guard.js',
   'lib/ui-strings.js',
   'lib/verify-answers.js',
   'lib/video-embed.js',

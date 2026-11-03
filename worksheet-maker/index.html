@@ -2038,7 +2038,9 @@
     .media-card .mc-tx.is-no { background:#fdecec; color:#9b1c1c; }
     .media-card .mc-tx.is-unknown { background:#eef1f7; color:var(--sd-muted); }
     .transcript-teacher { max-height: 18em; overflow:auto; white-space:pre-wrap; font-size:.85em; border:1px dashed #c9d3ea; border-radius:8px; padding:8px; background:#fbfcff; }
-    .pdf-print-root .transcript-teacher, .sheet .transcript-teacher { max-height:none; }
+    .transcript-teacher-wrap summary { cursor:pointer; margin:.4em 0; }
+    @media print { [data-transcript], .transcript-teacher-wrap { display:none !important; } }
+    .pdf-print-root [data-transcript], body.student [data-transcript] { display:none !important; }
   </style>
 </head>
 <body class="student">
@@ -2389,6 +2391,7 @@
     import { t, taskLabel, tfWords, normalizeLanguage } from './lib/ui-strings.js';
     import { worksheetTaskOrder, expandGroupedTaskIds, parseTaskId, reindexAfterRemove, groupArrayKey } from './lib/lesson-prompt.js';
     import { lessonToDeck } from './lib/lesson-to-deck.js';
+    import { mediaTranscriptOf, studentSourceParagraphs, isMediaOnlyLesson } from './lib/transcript-guard.js';
     import {
       splitIntro,
       stripSummaryCue,
@@ -2740,7 +2743,15 @@
         || (isCombined
           ? tx('combinedSourceFallback')
           : (lesson.skill === 'listening' ? tx('listenFallback') : tx('sourceReadFallback')));
-      const sourceHtml = paragraphsHtml(lesson.sourceText, lesson.sourceParagraphs, 'sourceParagraphs');
+      // Never show a video/audio transcript as student "source text" (teacher-only assistance, see transcript-guard.js).
+      const mediaOnly = isMediaOnlyLesson(lesson, source);
+      const allSourceParas = Array.isArray(lesson.sourceParagraphs) && lesson.sourceParagraphs.length
+        ? lesson.sourceParagraphs
+        : String(lesson.sourceText || '').trim().split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+      const safeParas = new Set(studentSourceParagraphs(lesson, source));
+      const sourceHtml = mediaOnly ? '' : (Array.isArray(lesson.sourceParagraphs) && lesson.sourceParagraphs.length
+        ? `<div class="source-text">${lesson.sourceParagraphs.map((p, i) => (safeParas.has(String(p).trim()) ? ed(`sourceParagraphs.${i}`, p, 'p') : '')).join('')}</div>`
+        : paragraphsHtml(allSourceParas.filter((p) => safeParas.has(p)).join('\n\n'), null, ''));
       const mediaUrl = resolveMediaUrl(source, lesson)
         || resolveMediaUrl({ url: source.videoUrl || '' }, lesson);
       if (mediaUrl) {
@@ -3090,13 +3101,10 @@
           ? tx('skillCombined')
           : (lesson.skill === 'listening' ? tx('skillListening') : tx('skillReading')));
       // Combined lessons: the video/audio transcript the tasks were built from (teacher side, like a pasted link's source).
-      const mediaTranscript = (() => {
-        const raw = String(source.text || '');
-        const m = raw.match(/\[VIDEO — listening source\]\nTitle:[^\n]*\n([\s\S]*?)(?:\n\n\[READING TEXT\]|$)/);
-        return isCombinedEarly && source.transcriptFound && m ? m[1].trim() : '';
-      })();
+      // Media transcript: teacher / answer-key tab only, collapsible, never printed (no-print → removed from print, PDF and Drive PDF).
+      const mediaTranscript = mediaTranscriptOf(lesson, source);
       const mediaTranscriptHtml = mediaTranscript
-        ? `<p><strong>${tx('transcriptTeacherOnly')}</strong></p><div class="transcript-teacher">${escapeHtml(mediaTranscript.slice(0, 12000))}${mediaTranscript.length > 12000 ? '…' : ''}</div>`
+        ? `<details class="transcript-teacher-wrap no-print" data-transcript><summary><strong>${tx('transcriptTeacherOnly')}</strong></summary><div class="transcript-teacher">${escapeHtml(mediaTranscript.slice(0, 12000))}${mediaTranscript.length > 12000 ? '…' : ''}</div></details>`
         : '';
       $('sheet').innerHTML = `
         <div class="sheet-header">
@@ -3115,8 +3123,7 @@
           ${(lesson.themes || []).length ? `<p>${tx('themes')} ${escapeHtml((lesson.themes || []).join(', '))}</p>` : ''}
           ${source.warning ? `<p>${escapeHtml(source.warning)}</p>` : ''}
           ${lingoTeacherBlock}
-          <p><strong>${tx('sourceTeacherOnly')}</strong></p>
-          ${sourceHtml}
+          ${sourceHtml ? `<p><strong>${tx('sourceTeacherOnly')}</strong></p>${sourceHtml}` : ''}
           ${mediaTranscriptHtml}
         </div>
       `;
@@ -5397,7 +5404,7 @@
       clone.id = '';
       clone.classList.add('show');
       clone.style.cssText = 'display:block;width:100%;background:transparent;';
-      clone.querySelectorAll('.task-reorder, .topic-image-picker, .no-print').forEach((el) => el.remove());
+      clone.querySelectorAll('.task-reorder, .topic-image-picker, .no-print, [data-transcript]').forEach((el) => el.remove());
       applyPrintSelection(clone, printExcluded, { remove: true });
 
       const cloneBody = clone.querySelector('.sheet-body');

@@ -1,3 +1,4 @@
+import { studentSourceParagraphs } from './transcript-guard.js';
 import { worksheetTaskOrder, expandGroupedTaskIds, parseTaskId } from './lesson-prompt.js';
 import { t, taskLabel, normalizeLanguage } from './ui-strings.js';
 import { resolveChoice, answerWord, answerKeyFromLesson, collocateColumns } from './answers.js';
@@ -192,7 +193,8 @@ export function lessonToDeck(lesson, source = {}, {
     },
     source() {
       if (!includeSourceOnSlides) return;
-      for (const leftText of chunkParagraphs(paragraphsOf(lesson))) {
+      // Slides are shown to students: never the media transcript (studentSourceParagraphs drops it).
+      for (const leftText of chunkParagraphs(studentSourceParagraphs(lesson, source))) {
         slides.push({
           role: 'chunk',
           header: stripSummaryCue(lesson.sourceInstruction) || t(lang, 'sourceReadFallback'),
