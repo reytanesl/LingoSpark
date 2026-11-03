@@ -68,7 +68,13 @@ export const SPANS_BY_MINUTES = {
 /** Base round-tide budget per span in seconds, R1..R6 (shrinks every round). */
 export const TIDE_PER_SPAN_SECONDS = [54, 44, 37, 31, 26, 22];
 /** Extra tide seconds for the Shore Challenge, R1..R6 (only added when the round has one). */
+/**
+ * Historical: extra tide seconds that used to cover the shore challenge while the water kept rising during it.
+ * The bonus question is now OUTSIDE the tide (water frozen), so this allowance is no longer added to the limit.
+ */
 export const TIDE_SHORE_ALLOWANCE_SECONDS = [0, 24, 22, 20, 20, 18];
+/** The bonus (shore) question has its own short timer; the water is frozen meanwhile. Timeout = no bonus, no penalty. */
+export const TIDE_BONUS_MS = 20_000;
 /** Each round's tide limit is at most this fraction of the previous round's, so the gauge ALWAYS fills faster. */
 export const TIDE_SHRINK_FACTOR = 0.94;
 
@@ -210,7 +216,7 @@ export function tideLimitMs(gameMinutes, round) {
     let limit = 0;
     for (let i = 1; i <= r; i++) {
         const spans = spansForRound(gameMinutes, i);
-        const derived = spans * TIDE_PER_SPAN_SECONDS[i - 1] + (roundHasShore(i, spans) ? TIDE_SHORE_ALLOWANCE_SECONDS[i - 1] : 0);
+        const derived = spans * TIDE_PER_SPAN_SECONDS[i - 1];
         limit = Math.min(derived, Math.floor(prev * TIDE_SHRINK_FACTOR));
         prev = limit;
     }
@@ -463,12 +469,13 @@ function pickShoreItem(match) {
 
 export function startBreaker(match, now = Date.now()) {
     match.phase = 'breaker';
-    match.phaseEndsAt = null;
+    // Bonus question: separate from the tide — the water is frozen, the bonus has its own timer.
+    pauseTide(match, now);
+    match.phaseEndsAt = now + TIDE_BONUS_MS;
     match.gotCorrect = 0;
     match.correctPlayerIds = new Set();
     match.neededCorrect = shoreNeededForRound(match.round, playerCount(match));
     match.assignments = {};
-    resumeTide(match, now);
 
     for (const pid of match.playerOrder) {
         if (match.players[pid]) match.players[pid].locked = false;
@@ -487,6 +494,7 @@ export function startBreaker(match, now = Date.now()) {
 /** Short pause + celebration (round tide PAUSED). `nextPhase` is what follows: 'breaker' | 'vocab'. */
 export function beginBetween(match, nextPhase, now = Date.now()) {
     pauseTide(match, now);
+    match.betweenFrom = match.phase === 'breaker' ? 'bonus' : 'stone';
     match.phase = 'between';
     match.betweenNext = nextPhase;
     match.phaseEndsAt = now + TIDE_BETWEEN_MS;
@@ -543,7 +551,7 @@ export function finishTideMatch(match, now = Date.now(), reason = 'clock') {
 
 /** True when the active round's tide has reached 100% before its bridge is complete (vocab / breaker only). */
 function tideFailed(match, now) {
-    if (match.phase !== 'vocab' && match.phase !== 'breaker') return false;
+    if (match.phase !== 'vocab') return false; // never during the bonus question (water frozen)
     return tideElapsed(match, now) >= match.tide.limitMs;
 }
 
@@ -567,6 +575,14 @@ export function tickTide(match, now = Date.now()) {
     if (tideFailed(match, now)) {
         failRound(match, now);
         return { changed: true, finished: false, dealt: [], tideFailed: true };
+    }
+
+    // Bonus timer ran out: no bonus, no penalty — straight back to building (water still untouched).
+    if (match.phase === 'breaker' && match.phaseEndsAt != null && now >= match.phaseEndsAt) {
+        match.shoreDone = true;
+        match.bonusMissed = (match.bonusMissed || 0) + 1;
+        beginBetween(match, 'vocab', now);
+        return { changed: true, finished: false, dealt: [], bonusTimeout: true };
     }
 
     if ((match.phase === 'between' || match.phase === 'roundTransition') && match.phaseEndsAt != null && now >= match.phaseEndsAt) {
@@ -670,7 +686,7 @@ export function submitTideAnswer(match, playerId, rawText, questionId, now = Dat
         finishTideMatch(match, now, 'clock');
         return { result: { correct: false, finished: true, tide: true, gameFormat: TIDE_FORMAT }, cleared: false };
     }
-    if (tideFailed(match, now)) {
+    if (match.phase === 'vocab' && tideFailed(match, now)) {
         failRound(match, now);
         return { result: { correct: false, tideFailed: true, tide: true, gameFormat: TIDE_FORMAT }, cleared: false };
     }
@@ -721,6 +737,7 @@ export function submitTideAnswer(match, playerId, rawText, questionId, now = Dat
         }
         const wasPhase = match.phase;
         if (wasPhase === 'vocab') { ps.pushbacks = 0; dealTideCard(match, playerId); }
+        if (wasPhase === 'breaker') ps.bonusTotal = (ps.bonusTotal || 0) + 1;
         const got = match.gotCorrect;
         const need = match.neededCorrect;
         let cleared = false;
@@ -879,6 +896,9 @@ export function tidePublicView(match, { now = Date.now() } = {}) {
         phaseEndsAt: match.phaseEndsAt,
         phaseMsLeft: match.phaseEndsAt ? Math.max(0, match.phaseEndsAt - now) : null,
         betweenNext: match.phase === 'between' ? (match.betweenNext || 'vocab') : null,
+        waterPaused: match.phase === 'breaker',
+        betweenFrom: match.phase === 'between' ? (match.betweenFrom || 'stone') : null,
+        bonusMsLeft: match.phase === 'breaker' && match.phaseEndsAt ? Math.max(0, match.phaseEndsAt - now) : null,
         endsAt: match.endsAt,
         remainingMs,
         clockRatio,
@@ -926,6 +946,7 @@ export function tidePublicView(match, { now = Date.now() } = {}) {
                 correctTotal: p?.correctTotal || 0,
                 locked: Boolean(p?.locked),
                 contributed: match.correctPlayerIds.has(id),
+                bonusTotal: p?.bonusTotal || 0,
             };
         }),
     };

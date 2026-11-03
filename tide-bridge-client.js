@@ -31,7 +31,7 @@
         en: {
             bridge: 'BRIDGE', nextStone: 'NEXT STONE', water: 'WATER',
             doAnswer: 'Answer to build the bridge!', doAnswerSub: 'Every correct answer adds to the next stone',
-            doBonus: 'Bonus question — answer it!', doBonusSub: 'Not a word from the list — just answer',
+            doBonus: 'Bonus question — answer it!', doBonusSub: 'Not from the word list · the water is paused',
             stoneLaid: 'Stone laid!', nextQ: 'Next question coming…',
             bridgeBuilt: 'Bridge {n} built!', nextBridge: 'Next bridge coming…', farCliff: 'You built every bridge!',
             waterWon: 'The water won this time', waterWonSub: 'Wait for your teacher',
@@ -46,14 +46,22 @@
             extraOk: 'Correct! The water goes down a little', extraMax: 'Correct! Keep going',
             ilBreak: 'BREAK', ilStone: 'Stone laid!', ilNextQ: 'Next question in {s}…', ilNextBonus: 'Next: bonus question in {s}…',
             ilBridge: 'Bridge {n} built!', ilNextBridge: 'Next bridge in {s}…', ilFinish: 'FINISH', ilAll: 'All 6 bridges built!', ilWater: 'WATER WON', ilWaterT: 'The water took bridge {n}', ilEnd: 'Results in {s}…',
-            tut1: 'Read the question and tap (or type) the answer.', tut2: 'Correct answers from the whole class build stones.', tut3: 'Finish the bridge before the water rises!', tut4: 'Bonus question? It is not from the word list — just answer it.',
+            tut1: 'Read the question and tap (or type) the answer.', tut2: 'Correct answers from the whole class build stones.', tut3: 'Finish the bridge before the water rises!', tut4: 'Bonus question? Not from the word list — and the water stops while you answer.',
             tutNext: 'Next', tutBack: 'Back', tutSkip: 'Skip', tutGo: 'Got it — let’s build!', tutTitle: 'How to play',
+            hRoundFailed: 'The water won', hRoundFailedSub: 'The water took bridge {n}', hBridgeBuilt: 'Bridge {n} built!', hNextBridge: 'Next: bridge {m}', hAll: 'All 6 bridges built!',
+            hOver: 'Game over', hOverSub: 'Results', hBonus: 'Bonus question!', hBonusSub: 'The water is paused', hStone: 'Stone laid!', hStoneSub: 'Next question coming', hBuild: 'Answer to build the bridge!', hBuildSub: 'Bridge {n} · stone {k} of {t}',
+            hTagWord: 'EVERYONE ANSWERS THEIR OWN WORD', hTextWord: 'Answer your own word — {need} correct answers lay the next stone!', hTagBonus: 'BONUS QUESTION · WATER PAUSED', hTextBonus: 'Bonus question — the water is paused!',
+            hTagFailed: 'THE WATER WON', hTextFailed: 'The water rose before the bridge was finished.', hTagBuilt: 'BRIDGE BUILT', hTextBuilt: 'Bridge {n} built! Next bridge coming…', hTextAll: 'Every bridge built — well done, class!',
+            hTagBreak: 'BREAK', hTextBreak: 'Stone laid! Next question coming…', hTextBonusDone: 'Bonus done! Back to building…', hTagEnd: 'THE BRIDGE', hTextEndWater: 'The water won this time!', hTextEndTime: 'Time! How far did you get?',
+            capOverWater: 'The water won this time — great effort, class!', capOver: 'Great teamwork, class!', capFailed: 'The water took bridge {n}…', capAll: 'Every bridge built!', capBuilt: 'Bridge {n} built — next: bridge {m}', capBonus: 'Bonus question! The water is paused — type fast.', capBreak: 'Nice work — next question coming…', capBuild: 'Everyone answers their own word — {need} correct lay the next stone!',
+            gaugeWater: 'WATER', gaugePaused: 'WATER PAUSED', clockMatch: 'GAME CLOCK', clockTime: 'GAME TIME', progStone: 'correct for this stone', progBonus: 'correct bonus answers', helped: 'Helped {a}/{b}',
+            waterPaused: 'WATER PAUSED', bonusLeft: '{s} s', ilBonusDone: 'Bonus done!', bWater: 'THE WATER WON!', bAll: 'ALL BRIDGES BUILT!', bBuilt: 'BRIDGE BUILT!', bStone: 'STONE LAID!', bStoneSub: '+1 stone — the bridge grows',
             sent: 'Sent to your teacher — keep going!', accepted: 'Teacher accepted your answer — it counts!', rejected: 'Teacher said not this time — try again!',
         },
         pl: {
             bridge: 'MOST', nextStone: 'NASTĘPNY KAMIEŃ', water: 'WODA',
             doAnswer: 'Odpowiadaj, aby budować most!', doAnswerSub: 'Każda dobra odpowiedź dokłada część kamienia',
-            doBonus: 'Pytanie bonusowe — odpowiedz!', doBonusSub: 'To nie słówko z listy — po prostu odpowiedz',
+            doBonus: 'Pytanie bonusowe — odpowiedz!', doBonusSub: 'Nie z listy słówek · woda stoi',
             stoneLaid: 'Kamień położony!', nextQ: 'Za chwilę kolejne pytanie…',
             bridgeBuilt: 'Most {n} gotowy!', nextBridge: 'Za chwilę kolejny most…', farCliff: 'Zbudowaliście wszystkie mosty!',
             waterWon: 'Tym razem wygrała woda', waterWonSub: 'Poczekaj na nauczyciela',
@@ -68,8 +76,16 @@
             extraOk: 'Dobrze! Woda trochę opada', extraMax: 'Dobrze! Graj dalej',
             ilBreak: 'PRZERWA', ilStone: 'Kamień położony!', ilNextQ: 'Kolejne pytanie za {s}…', ilNextBonus: 'Za {s}… pytanie bonusowe',
             ilBridge: 'Most {n} gotowy!', ilNextBridge: 'Kolejny most za {s}…', ilFinish: 'META', ilAll: 'Wszystkie 6 mostów gotowe!', ilWater: 'WYGRAŁA WODA', ilWaterT: 'Woda zabrała most {n}', ilEnd: 'Wyniki za {s}…',
-            tut1: 'Przeczytaj pytanie i kliknij (albo wpisz) odpowiedź.', tut2: 'Dobre odpowiedzi całej klasy budują kamienie.', tut3: 'Skończcie most, zanim podniesie się woda!', tut4: 'Pytanie bonusowe? Nie jest z listy słówek — po prostu odpowiedz.',
+            tut1: 'Przeczytaj pytanie i kliknij (albo wpisz) odpowiedź.', tut2: 'Dobre odpowiedzi całej klasy budują kamienie.', tut3: 'Skończcie most, zanim podniesie się woda!', tut4: 'Pytanie bonusowe? Nie jest z listy słówek — a woda wtedy stoi.',
             tutNext: 'Dalej', tutBack: 'Wstecz', tutSkip: 'Pomiń', tutGo: 'Rozumiem — budujemy!', tutTitle: 'Jak grać',
+            hRoundFailed: 'Wygrała woda', hRoundFailedSub: 'Woda zabrała most {n}', hBridgeBuilt: 'Most {n} gotowy!', hNextBridge: 'Następny: most {m}', hAll: 'Wszystkie 6 mostów gotowe!',
+            hOver: 'Koniec gry', hOverSub: 'Wyniki', hBonus: 'Pytanie bonusowe!', hBonusSub: 'Woda stoi', hStone: 'Kamień położony!', hStoneSub: 'Za chwilę kolejne pytanie', hBuild: 'Odpowiadajcie, aby budować most!', hBuildSub: 'Most {n} · kamień {k} z {t}',
+            hTagWord: 'KAŻDY ODPOWIADA NA SWOJE SŁÓWKO', hTextWord: 'Odpowiedz na swoje słówko — {need} dobre odpowiedzi kładą kolejny kamień!', hTagBonus: 'PYTANIE BONUSOWE · WODA STOI', hTextBonus: 'Pytanie bonusowe — woda stoi!',
+            hTagFailed: 'WYGRAŁA WODA', hTextFailed: 'Woda podniosła się, zanim most był gotowy.', hTagBuilt: 'MOST GOTOWY', hTextBuilt: 'Most {n} gotowy! Za chwilę kolejny…', hTextAll: 'Wszystkie mosty gotowe — brawo, klaso!',
+            hTagBreak: 'PRZERWA', hTextBreak: 'Kamień położony! Za chwilę kolejne pytanie…', hTextBonusDone: 'Bonus zakończony! Budujemy dalej…', hTagEnd: 'MOST', hTextEndWater: 'Tym razem wygrała woda!', hTextEndTime: 'Koniec czasu! Jak daleko doszliście?',
+            capOverWater: 'Tym razem wygrała woda — świetna praca, klaso!', capOver: 'Świetna praca zespołowa!', capFailed: 'Woda zabrała most {n}…', capAll: 'Wszystkie mosty gotowe!', capBuilt: 'Most {n} gotowy — następny: most {m}', capBonus: 'Pytanie bonusowe! Woda stoi — piszcie szybko.', capBreak: 'Dobra robota — za chwilę kolejne pytanie…', capBuild: 'Każdy odpowiada na swoje słówko — {need} dobre odpowiedzi kładą kamień!',
+            gaugeWater: 'WODA', gaugePaused: 'WODA STOI', clockMatch: 'CZAS GRY', clockTime: 'CZAS GRY', progStone: 'dobrych do tego kamienia', progBonus: 'dobrych odpowiedzi bonusowych', helped: 'Pomogło {a}/{b}',
+            waterPaused: 'WODA STOI', bonusLeft: '{s} s', ilBonusDone: 'Bonus zakończony!', bWater: 'WYGRAŁA WODA!', bAll: 'WSZYSTKIE MOSTY!', bBuilt: 'MOST GOTOWY!', bStone: 'KAMIEŃ POŁOŻONY!', bStoneSub: '+1 kamień — most rośnie',
             sent: 'Wysłano do nauczyciela — graj dalej!', accepted: 'Nauczyciel uznał odpowiedź — liczy się!', rejected: 'Nauczyciel nie uznał — spróbuj dalej!',
         },
     };
@@ -166,12 +182,13 @@
     }
 
     function phaseTexts(v) {
-        if (v.failedMoment) return { title: 'Round failed!', sub: 'The tide took the bridge', icon: ICON_WAVE };
-        if (v.moment) return { title: 'Bridge cleared!', sub: v.transition?.kind === 'victory' ? 'The far cliff!' : `Crossing to chasm ${Math.min(ROUNDS_TOTAL, v.round + 1)}`, icon: ICON_BRIDGE };
-        if (v.finished) return { title: v.st.endReason === 'tide' ? 'Tide took the bridge' : 'Match over', sub: 'Final scoring', icon: ICON_WAVE };
-        if (v.breaker) return { title: 'Mid-Bridge Obstacle!', sub: 'Shore challenge · bonus', icon: ICON_SHELL };
-        if (v.between) return { title: 'Stone laid!', sub: 'Get ready', icon: ICON_STONE };
-        return { title: 'Lay the next stone!', sub: `${v.roundName} · span ${v.spanNo} of ${v.n}`, icon: ICON_STONE };
+        const m = Math.min(ROUNDS_TOTAL, v.round + 1);
+        if (v.failedMoment) return { title: T('hRoundFailed'), sub: T('hRoundFailedSub', { n: v.round }), icon: ICON_WAVE };
+        if (v.moment) return { title: v.transition?.kind === 'victory' ? T('hAll') : T('hBridgeBuilt', { n: v.round }), sub: v.transition?.kind === 'victory' ? '' : T('hNextBridge', { m }), icon: ICON_BRIDGE };
+        if (v.finished) return { title: T('hOver'), sub: T('hOverSub'), icon: ICON_WAVE };
+        if (v.breaker) return { title: T('hBonus'), sub: T('hBonusSub'), icon: ICON_SHELL };
+        if (v.between) return { title: T('hStone'), sub: T('hStoneSub'), icon: ICON_STONE };
+        return { title: T('hBuild'), sub: T('hBuildSub', { n: v.round, k: v.spanNo, t: v.n }), icon: ICON_STONE };
     }
 
     function pipsHtml(got, need) {
@@ -245,12 +262,12 @@
                 ${LOGO}
                 <div class="rounds"><i>${ICON_BRIDGE}</i><div><small id="tb-round-kick">ROUND 1 · GENTLE START</small><b id="tb-round-name">Wooden Footbridge</b></div></div>
                 <div class="phase" id="tb-phase"><i id="tb-phase-ico">${ICON_STONE}</i><div><b id="tb-host-phase">Lay the next stone!</b><small id="tb-phase-sub"></small></div></div>
-                <div class="clock"><small id="tb-clock-label">MATCH CLOCK</small><b id="tb-host-clock">5:00</b><div class="clockbar"><i id="tb-clockbar" style="width:100%"></i></div></div>
+                <div class="clock"><small id="tb-clock-label">GAME CLOCK</small><b id="tb-host-clock">5:00</b><div class="clockbar"><i id="tb-clockbar" style="width:100%"></i></div></div>
                 <div class="center">
                     <div class="prompt" id="tb-prompt"><span class="tag" id="tb-tag">EVERYONE'S OWN WORD</span><p id="tb-host-msg"></p></div>
                     <div class="progress" id="tb-progress"><div class="pips" id="tb-pips"></div><b id="tb-host-clear">0<em>/3</em></b><small id="tb-prog-sub">correct for this stone</small></div>
                 </div>
-                <div class="gauge" id="tb-gauge"><span>ROUND TIDE</span><div class="track"><i id="tb-gfill"></i><u id="tb-gmark"></u><em id="tb-tide-left">0:00</em></div></div>
+                <div class="gauge" id="tb-gauge"><span id="tb-gauge-l">WATER</span><div class="track"><i id="tb-gfill"></i><u id="tb-gmark"></u><em id="tb-tide-left">0:00</em></div></div>
                 <div class="answers" id="tb-answers"><b id="tb-ans-text">Helped 0/0</b><div class="av" id="tb-av"></div></div>
                 <div class="burst" id="tb-burst" hidden><b id="tb-burst-title">SPAN CLEARED!</b><small id="tb-burst-sub">+1 stone — the bridge grows</small></div>
                 <div class="bar">
@@ -518,12 +535,12 @@
     }
 
     function hostCaption(v) {
-        if (v.finished) return v.st.endReason === 'tide' ? 'The tide won this round — great effort, class!' : 'Great teamwork, class!';
-        if (v.failedMoment) return `Round ${v.round} is lost to the tide…`;
-        if (v.moment) return v.transition?.kind === 'victory' ? 'The far cliff — every bridge built!' : `Bridge ${v.round} built — crossing to chasm ${Math.min(ROUNDS_TOTAL, v.round + 1)}`;
-        if (v.breaker) return 'Mid-bridge obstacle! Type fast — every correct answer counts.';
-        if (v.between) return 'Nice work — get ready…';
-        return `Everyone answers their own word — ${v.need} correct lay the next stone!`;
+        if (v.finished) return v.st.endReason === 'tide' ? T('capOverWater') : T('capOver');
+        if (v.failedMoment) return T('capFailed', { n: v.round });
+        if (v.moment) return v.transition?.kind === 'victory' ? T('capAll') : T('capBuilt', { n: v.round, m: Math.min(ROUNDS_TOTAL, v.round + 1) });
+        if (v.breaker) return T('capBonus');
+        if (v.between) return T('capBreak');
+        return T('capBuild', { need: v.need });
     }
 
     function applyHost(stateChanged) {
@@ -559,6 +576,8 @@
         $('tb-tide-left').textContent = v.finished && !v.st.tideLimitMs ? '' : formatClock(v.tideLeft);
         $('tb-gauge').classList.toggle('is-high', v.ratio >= 0.75);
         $('tb-gauge').classList.toggle('is-paused', !v.st.tideRunning);
+        $('tb-gauge').classList.toggle('is-bonus', v.breaker);
+        $('tb-gauge-l').textContent = v.breaker ? T('gaugePaused') : T('gaugeWater');
         const nextFill = v.breaker || v.finished || v.moment || v.between ? null : v.got / v.need;
         S.updateBridge(svg, { n: v.n, built: v.built, nextFill, ratio: v.ratio, wave: v.wave, justLaid: inc && v.built > 0, sparkle: inc });
         renderInterlude(stage, 'tb-h-interlude', v);
@@ -570,28 +589,28 @@
         $('tb-phase-ico').innerHTML = ph.icon;
         $('tb-round-kick').textContent = `ROUND ${v.round} · ${String(v.roundName).toUpperCase()}`;
         $('tb-round-name').textContent = v.bridgeName;
-        $('tb-clock-label').textContent = v.finished ? 'MATCH TIME' : 'MATCH CLOCK';
+        $('tb-clock-label').textContent = v.finished ? T('clockTime') : T('clockMatch');
 
         const st = v.st;
         const prompt = $('tb-prompt');
         const msg = $('tb-host-msg');
-        let tag = "EVERYONE'S OWN WORD";
-        let text = 'Answer your own word — help the class clear the span!';
+        let tag = T('hTagWord');
+        let text = T('hTextWord', { need: v.need });
         if (v.breaker) {
-            tag = 'MID-BRIDGE OBSTACLE · TYPE IT!';
-            text = st.breakerPrompt || 'Everyone — mid-bridge obstacle!';
+            tag = T('hTagBonus');
+            text = st.breakerPrompt || T('hTextBonus');
         } else if (v.failedMoment) {
-            tag = 'ROUND FAILED';
-            text = 'The tide rose over the bridge before it was finished.';
+            tag = T('hTagFailed');
+            text = T('hTextFailed');
         } else if (v.moment) {
-            tag = 'BRIDGE CLEARED';
-            text = v.transition?.kind === 'victory' ? 'Every chasm crossed — you reached the far cliff!' : `Nice work — crossing to chasm ${Math.min(ROUNDS_TOTAL, v.round + 1)}…`;
+            tag = T('hTagBuilt');
+            text = v.transition?.kind === 'victory' ? T('hTextAll') : T('hTextBuilt', { n: v.round });
         } else if (v.between) {
-            tag = 'WELL DONE';
-            text = 'Nice work — get ready…';
+            tag = T('hTagBreak');
+            text = st.betweenFrom === 'bonus' ? T('hTextBonusDone') : T('hTextBreak');
         } else if (v.finished) {
-            tag = 'THE BRIDGE';
-            text = st.endReason === 'tide' ? 'The tide took the bridge!' : 'Time! How far did you get?';
+            tag = T('hTagEnd');
+            text = st.endReason === 'tide' ? T('hTextEndWater') : T('hTextEndTime');
         }
         prompt.classList.toggle('breaker', v.breaker);
         prompt.classList.toggle('failed', v.failedMoment);
@@ -604,12 +623,12 @@
         $('tb-host-clear').innerHTML = countHtml(got, v.need);
         $('tb-progress').classList.toggle('done', got >= v.need);
         $('tb-progress').hidden = v.failedMoment;
-        $('tb-prog-sub').textContent = v.breaker ? 'beach treasures found' : 'correct for this stone';
+        $('tb-prog-sub').textContent = v.breaker ? T('progBonus') : T('progStone');
 
         const players = st.players || [];
         const helped = players.filter((p) => p.contributed).length;
         $('tb-answers').hidden = !players.length || v.finished || v.moment;
-        $('tb-ans-text').textContent = `Helped ${helped}/${players.length}`;
+        $('tb-ans-text').textContent = T('helped', { a: helped, b: players.length });
         $('tb-av').innerHTML = avatarsHtml(players);
 
         $('tb-room').textContent = hostCode();
@@ -632,10 +651,10 @@
         if (!burst) return;
         const failed = kind === 'failed';
         const bridge = kind === 'bridge';
-        $('tb-burst-title').textContent = failed ? 'THE TIDE TOOK THE BRIDGE!' : bridge ? (v.transition?.kind === 'victory' ? 'THE FAR CLIFF!' : 'BRIDGE CLEARED!') : 'SPAN CLEARED!';
-        $('tb-burst-sub').textContent = failed ? `Round ${v.round} failed — final scoring…`
-            : bridge ? (v.transition?.kind === 'victory' ? 'All six bridges built!' : `Crossing to chasm ${Math.min(ROUNDS_TOTAL, v.round + 1)}`)
-                : '+1 stone — the bridge grows';
+        $('tb-burst-title').textContent = failed ? T('bWater') : bridge ? (v.transition?.kind === 'victory' ? T('bAll') : T('bBuilt')) : T('bStone');
+        $('tb-burst-sub').textContent = failed ? T('hRoundFailedSub', { n: v.round })
+            : bridge ? (v.transition?.kind === 'victory' ? T('hAll') : T('hNextBridge', { m: Math.min(ROUNDS_TOTAL, v.round + 1) }))
+                : T('bStoneSub');
         const ms = failed ? 2900 : bridge ? 3400 : 2800;
         burst.classList.toggle('is-failed', failed);
         burst.classList.toggle('is-bridge', bridge);
@@ -749,7 +768,13 @@
         if (stateChanged) seen.phone = v.spans;
         const pct = Math.round(v.ratio * 100);
         $('tb-p-tide').style.width = `${pct}%`;
-        el.classList.toggle('tide-high', v.ratio >= 0.75);
+        el.classList.toggle('tide-high', v.ratio >= 0.75 && !v.breaker);
+        el.classList.toggle('water-paused', v.breaker);
+        const wl = $('tb-p-waterl');
+        if (wl) {
+            const left = v.breaker ? Math.max(0, (Number(v.st.bonusMsLeft) || 0) - (Date.now() - last.recvAt)) : 0;
+            wl.textContent = v.breaker ? `${T('waterPaused')}${left ? ` · ${T('bonusLeft', { s: Math.ceil(left / 1000) })}` : ''}` : T('water');
+        }
         const nextFill = v.breaker || v.finished || v.between || v.moment ? null : v.got / v.need;
         S.updateBridge(svg, { n: v.n, built: v.built, nextFill, ratio: v.ratio, wave: v.wave, justLaid: inc && v.built > 0, sparkle: inc });
         renderInterlude(document.body, 'tb-p-interlude', v);
@@ -845,7 +870,7 @@
         </div>`;
     }
 
-    /** Scenic backdrop behind the end card (the last chasm the class reached, bridge as far as they got). */
+    /** Scenic backdrop behind the end card (the last gap the class reached, bridge as far as they got). */
     function mountWinBackdrop(screen, data) {
         const S = SCENE();
         if (!screen || !S) return;
@@ -935,7 +960,7 @@
         if (v.failedMoment) return { kind: 'failed', kick: T('ilWater'), title: T('ilWaterT', { n: v.round }), sub: T('ilEnd', { s }) };
         if (v.moment && v.transition?.kind === 'victory') return { kind: 'victory', kick: T('ilFinish'), title: T('ilAll'), sub: T('ilEnd', { s }) };
         if (v.moment) return { kind: 'bridge', kick: T('ilBreak'), title: T('ilBridge', { n: v.round }), sub: T('ilNextBridge', { s }) };
-        if (v.between) return { kind: 'stone', kick: T('ilBreak'), title: T('ilStone'), sub: v.st.betweenNext === 'breaker' ? T('ilNextBonus', { s }) : T('ilNextQ', { s }) };
+        if (v.between) return { kind: 'stone', kick: T('ilBreak'), title: v.st.betweenFrom === 'bonus' ? T('ilBonusDone') : T('ilStone'), sub: v.st.betweenNext === 'breaker' ? T('ilNextBonus', { s }) : T('ilNextQ', { s }) };
         return null;
     }
     function renderInterlude(parent, id, v) {

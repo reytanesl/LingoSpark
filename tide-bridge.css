@@ -450,3 +450,10 @@ body:not(.live-tide-player) #tb-phone, body:not(.live-tide-player) #tb-phone-foo
 .tb-tutorial .tut-btns button { flex: 1; min-height: 56px; border-radius: 18px; font: 800 19px var(--tb-body); cursor: pointer; }
 .tb-tutorial .tut-back { background: #fff; color: #5b2bd6; border: 3px solid #d7c8f3; flex: 0 0 34% !important; }
 .tb-tutorial .tut-next { background: linear-gradient(#ffe27a,#ffc53a); color: #3b2400; border: 3px solid #fff3c2; box-shadow: 0 5px 0 #b8741a; }
+
+/* bonus question: the water is paused (outside the tide) */
+.tb-phone--simple.water-paused .pwater { opacity: .75; border-style: dashed; }
+.tb-phone--simple.water-paused .pwater .tbar i { background: repeating-linear-gradient(45deg,#9fb8c8 0 8px,#c9dbe6 8px 16px); }
+.tb-phone--simple.water-paused .pwater small { color: #fff; }
+.tb-stage .gauge.is-bonus { opacity: .7; }
+.tb-stage .gauge.is-bonus .track i { background: repeating-linear-gradient(45deg,#9fb8c8 0 8px,#c9dbe6 8px 16px) !important; }

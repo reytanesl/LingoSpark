@@ -6,7 +6,7 @@ import {
     TIDE_BETWEEN_MS, TIDE_TRANSITION_MS, TIDE_FAIL_MS, TIDE_SHRINK_FACTOR, SHORE_BREAKERS,
     spansForRound, roundHasShore, shoreAfterSpans, neededCorrectForRound, shoreNeededForRound, tideLimitMs, tideTier,
     roundConfig, createTideMatch, tickTide, submitTideAnswer, tideQuestionPayload, tidePublicView, tideWinners,
-    finishTideEarly, settleTideChallenge, typedProbability, tideRatioNow, TIDE_PUSHBACK_MS, TIDE_PUSHBACK_PER_STONE,
+    finishTideEarly, settleTideChallenge, typedProbability, tideRatioNow, TIDE_BONUS_MS, startBreaker, startRound, TIDE_PUSHBACK_MS, TIDE_PUSHBACK_PER_STONE,
 } from './tide-bridge.js';
 import { simulate, DECK } from './tide-bridge-sim.mjs';
 
@@ -199,7 +199,7 @@ test('round tide timer: starts with the round, rises through the shore challenge
     assert.equal(m.tide.limitMs, tideLimitMs(10, 2));
 });
 
-test('shore challenge runs mid-bridge after the middle span and rises with the tide, then the bridge continues', () => {
+test('shore challenge (bonus) runs mid-bridge after the middle span with the water FROZEN, then the bridge continues', () => {
     const m = mk({ players: 6, gameMinutes: 10 });
     let now = 0;
     const step = () => { now += TIDE_BETWEEN_MS; tickTide(m, now); };
@@ -214,7 +214,8 @@ test('shore challenge runs mid-bridge after the middle span and rises with the t
     assert.equal(m.neededCorrect, shoreNeededForRound(2, 6));
     assert.equal(m.breaker.level, 'easy');
     const pubShore = tidePublicView(m, { now });
-    assert.equal(pubShore.tideRunning, true);
+    assert.equal(pubShore.tideRunning, false);
+    assert.equal(pubShore.waterPaused, true);
     const spansBefore = m.spansLaid;
     answerCorrect(m, 9, now += 100); // clear the shore challenge: not counted as a span / bridge
     assert.equal(m.spansLaid, spansBefore);
@@ -445,4 +446,61 @@ test('no waiting: a correct answer returns the next card; extra correct answers 
     answerCorrect(m, 1, at + 10);
     assert.equal(m.phase, 'between');
     assert.equal(tidePublicView(m, { now: at + 10 }).phaseMsLeft, TIDE_BETWEEN_MS);
+});
+
+/** Reach R2's bonus question (6 players, 10 min). */
+function toBonus() {
+    const m = mk({ players: 6, gameMinutes: 10 });
+    let now = 0;
+    const step = () => { now += TIDE_BETWEEN_MS; tickTide(m, now); };
+    for (let i = 0; i < 2; i++) { answerCorrect(m, 9, now += 100); if (m.phase === 'between') step(); }
+    now += TIDE_TRANSITION_MS; tickTide(m, now);
+    for (let i = 0; i < 2; i++) { answerCorrect(m, 9, now += 100); if (m.phase === 'between') step(); }
+    assert.equal(m.phase, 'breaker');
+    return { m, now };
+}
+
+test('bonus question is outside the tide: water frozen, no water-won during it, own timer, outcome never moves the water', () => {
+    const { m, now } = toBonus();
+    const w0 = tideRatioNow(m, now);
+    // frozen: a long time passes inside the bonus window, water does not move and the round cannot fail
+    assert.equal(tideRatioNow(m, now + TIDE_BONUS_MS - 1), w0);
+    assert.equal(tickTide(m, now + TIDE_BONUS_MS - 1).changed, false);
+    assert.equal(m.phase, 'breaker');
+    // wrong + correct bonus answers do not change the water
+    const pid = m.playerOrder[0];
+    submitTideAnswer(m, pid, 'definitely wrong', m.breaker.questionId, now + 500);
+    assert.equal(tideRatioNow(m, now + 600), w0);
+    submitTideAnswer(m, pid, m.breaker.answer, m.breaker.questionId, now + 700);
+    assert.equal(tideRatioNow(m, now + 800), w0);
+    assert.equal(m.players[pid].bonusTotal, 1, 'bonus reward = points for the player');
+    assert.throws(() => submitTideAnswer(m, pid, m.breaker.answer, m.breaker.questionId, now + 900), /Already answered/, 'no extra push-back cards during the bonus');
+    // own timer: timeout skips the bonus without penalty, water still untouched
+    const out = tickTide(m, now + TIDE_BONUS_MS);
+    assert.equal(out.bonusTimeout, true);
+    assert.equal(m.phase, 'between');
+    assert.equal(tideRatioNow(m, now + TIDE_BONUS_MS + 50), w0);
+    assert.equal(m.roundResults[1], 'pending');
+    // the water resumes only when building resumes
+    tickTide(m, now + TIDE_BONUS_MS + TIDE_BETWEEN_MS);
+    assert.equal(m.phase, 'vocab');
+    assert.ok(tideRatioNow(m, now + TIDE_BONUS_MS + TIDE_BETWEEN_MS + 5000) > w0);
+});
+
+test('bonus started with the water nearly full can never end in water won', () => {
+    const { m, now } = toBonus();
+    m.tide.elapsedMs = m.tide.limitMs - 1;
+    assert.equal(tickTide(m, now + 10_000).tideFailed, undefined);
+    assert.equal(m.phase, 'breaker');
+    const pid = m.playerOrder[1];
+    const r = submitTideAnswer(m, pid, m.breaker.answer, m.breaker.questionId, now + 11_000);
+    assert.equal(r.result.correct, true);
+    assert.equal(m.failedRound, null);
+});
+
+test('tide limits no longer include the old shore allowance (water is frozen during the bonus)', () => {
+    for (const mins of [3, 5, 8, 10]) {
+        const spans = spansForRound(mins, 1);
+        assert.equal(tideLimitMs(mins, 1), spans * TIDE_PER_SPAN_SECONDS[0] * 1000);
+    }
 });

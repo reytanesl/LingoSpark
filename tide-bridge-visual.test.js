@@ -69,13 +69,13 @@ test('scene generator draws six themed bridges, scaled to the span count, with u
 
 test('the six-round client is wired to the new state: labelled clock + round tide, round strip, new end copy', () => {
     const client = read('tide-bridge-client.js');
-    assert.match(client, /MATCH CLOCK/);
-    assert.match(client, /ROUND TIDE/);
-    assert.match(client, /Mid-Bridge Obstacle!/);
+    assert.match(client, /GAME CLOCK/);
+    assert.match(client, /id="tb-gauge-l"/);
+    assert.match(client, /Bonus question!/);
     assert.match(client, /id="tb-bar-round"/);
     assert.match(client, /id="tb-bar-span"/);
     assert.match(client, /id="tb-strip"/);
-    assert.match(client, /The tide took the bridge!/i);
+    assert.match(client, /THE WATER WON!/);
     assert.match(client, /bridges completed/);
     assert.match(client, /Swept Back to Shore/);
     assert.match(client, /Mid-Channel Explorers/);
@@ -188,7 +188,7 @@ test('live client uses the simple student wording for waits and teacher notes', 
 test('tutorial (4 steps, skippable, EN + PL) and clearly marked interludes with a countdown', () => {
     const en = loadClient('en'); const pl = loadClient('pl');
     for (let i = 1; i <= 4; i++) { assert.ok(en.text(`tut${i}`).length < 80); assert.notEqual(pl.text(`tut${i}`), en.text(`tut${i}`)); }
-    assert.match(en.text('tut4'), /not from the word list/);
+    assert.match(en.text('tut4'), /not from the word list/i);
     assert.equal(pl.text('tutSkip'), 'Pomiń');
     const client = read('tide-bridge-client.js');
     assert.match(client, /id="tb-tut-skip"/);
@@ -205,4 +205,19 @@ test('tutorial (4 steps, skippable, EN + PL) and clearly marked interludes with 
     assert.match(live, /TideBridgeUI\?\.onQuestion\?\.\(q\)/);
     assert.match(live, /showTutorial\?\.\(/);
     assert.match(live, /result\.correct && result\.nextQuestion/);
+});
+
+test('bonus question shows the water as paused; host board uses the plain wording (EN + PL)', () => {
+    const en = loadClient('en'); const pl = loadClient('pl');
+    assert.equal(en.text('waterPaused'), 'WATER PAUSED');
+    assert.equal(pl.text('waterPaused'), 'WODA STOI');
+    assert.match(en.text('tut4'), /water stops/);
+    assert.match(pl.text('tut4'), /woda wtedy stoi/);
+    assert.equal(en.text('hTagBonus'), 'BONUS QUESTION · WATER PAUSED');
+    assert.equal(en.text('hBridgeBuilt', { n: 2 }), 'Bridge 2 built!');
+    assert.equal(pl.text('hNextBridge', { m: 3 }), 'Następny: most 3');
+    const client = read('tide-bridge-client.js');
+    assert.doesNotMatch(client.slice(0, client.indexOf('function mountWinBackdrop')), /chasm|Mid-Bridge Obstacle|ROUND TIDE|MATCH CLOCK/);
+    assert.match(client, /classList\.toggle\('water-paused', v\.breaker\)/);
+    assert.equal(en.interludeInfo({ finished: false, between: true, round: 2, st: { phaseMsLeft: 1200, betweenFrom: 'bonus' } }).title, 'Bonus done!');
 });
