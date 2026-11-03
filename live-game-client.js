@@ -5304,7 +5304,7 @@
         });
         window.StampRushUI?.init({
             hostEnd,
-            fullscreen: (el) => toggleLiveFullscreen(el || document.documentElement).catch(() => {
+            fullscreen: (el) => toggleLiveFullscreen(el || $('live-host-stamp') || document.documentElement).catch(() => {
                 showLiveError('Fullscreen is not available in this browser.');
             }),
             roomCode: () => hostState?.code || $('live-host-code')?.textContent || '',

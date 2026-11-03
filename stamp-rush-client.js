@@ -64,7 +64,10 @@
                     <small id="sr-host-sub">Shared stamp tray · first to stamp 12 postcards wins</small>
                 </div>
                 <div class="sr-top-actions">
-                    <button type="button" id="sr-full" class="sr-btn" title="Fullscreen">Fullscreen</button>
+                    <button type="button" id="sr-full" class="sr-btn sr-btn--full" title="Fullscreen" aria-pressed="false">
+                        <span class="sr-full-ico" aria-hidden="true">⛶</span>
+                        <span class="sr-full-label">Fullscreen</span>
+                    </button>
                     <button type="button" id="sr-end" class="sr-btn sr-btn--warn">End</button>
                     <button type="button" id="sr-lobby" class="sr-btn">Lobby</button>
                 </div>
@@ -88,9 +91,38 @@
             </footer>`;
         root.querySelector('#sr-lobby')?.addEventListener('click', () => setHostMode(false));
         root.querySelector('#sr-end')?.addEventListener('click', () => ctx.hostEnd?.());
-        root.querySelector('#sr-full')?.addEventListener('click', () => ctx.fullscreen?.(root));
+        root.querySelector('#sr-full')?.addEventListener('click', () => {
+            ctx.fullscreen?.(root);
+            setTimeout(syncFullscreenButtons, 120);
+        });
         root.dataset.ready = '1';
         return root;
+    }
+
+    function isFullscreen() {
+        return Boolean(
+            document.fullscreenElement
+            || document.webkitFullscreenElement
+            || document.msFullscreenElement
+        );
+    }
+
+    function syncFullscreenButtons() {
+        const on = isFullscreen();
+        const hostBtn = $('sr-full');
+        if (hostBtn) {
+            hostBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            const label = hostBtn.querySelector('.sr-full-label');
+            if (label) label.textContent = on ? 'Exit full' : 'Fullscreen';
+            hostBtn.title = on ? 'Exit fullscreen' : 'Fullscreen';
+        }
+        const phoneBtn = $('srp-full');
+        if (phoneBtn) {
+            phoneBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            phoneBtn.title = on ? 'Exit fullscreen' : 'Fullscreen';
+            phoneBtn.textContent = on ? '⛶' : '⛶';
+            phoneBtn.classList.toggle('is-on', on);
+        }
     }
 
     function setPreparing(on, message) {
@@ -122,13 +154,18 @@
         if (panel && panel.parentElement !== root) root.appendChild(panel);
     }
 
-    function renderTray(box) {
+    function renderTray(terms, { vanish = null } = {}) {
         const el = $('sr-tray');
         if (!el) return;
-        const terms = Array.isArray(box) ? box : [];
-        el.innerHTML = terms.map((t, i) =>
-            `<span class="sr-stamp" style="--i:${i}"><i></i><b>${esc(t)}</b></span>`
-        ).join('');
+        const list = Array.isArray(terms) ? terms : [];
+        const vanishKey = vanish ? String(vanish).toLowerCase() : null;
+        el.innerHTML = list.map((t, i) => {
+            const going = vanishKey && String(t).toLowerCase() === vanishKey;
+            return `<span class="sr-stamp${going ? ' is-vanishing' : ''}" style="--i:${i}" data-term="${esc(t)}"><i></i><b>${esc(t)}</b></span>`;
+        }).join('');
+        if (!list.length) {
+            el.innerHTML = '<span class="sr-tray-empty">All stamps collected</span>';
+        }
     }
 
     function renderPiles(players) {
@@ -157,12 +194,25 @@
 
     function renderHost(state) {
         if (!state) return;
+        const prevRemaining = new Set((last.state?.remaining || last.state?.box || []).map((t) => String(t).toLowerCase()));
         last.state = state;
         ensureHostDom();
         setHostMode(true);
         setPreparing(false);
-        renderTray(state.box);
+        const trayTerms = Array.isArray(state.remaining) ? state.remaining : (state.box || []);
+        // Animate out any stamp that just left the remaining tray.
+        const vanished = [...prevRemaining].find((t) => !trayTerms.some((x) => String(x).toLowerCase() === t)) || null;
+        renderTray(trayTerms, { vanish: null });
+        if (vanished) {
+            // Brief ghost stamp for the vanish animation, then re-render clean.
+            const ghost = document.createElement('span');
+            ghost.className = 'sr-stamp is-vanishing';
+            ghost.innerHTML = `<i></i><b>${esc(vanished)}</b>`;
+            $('sr-tray')?.appendChild(ghost);
+            setTimeout(() => renderTray(trayTerms), 420);
+        }
         renderPiles(state.players);
+        syncFullscreenButtons();
         const cap = $('sr-caption');
         const sub = $('sr-host-sub');
         if (state.finished) {
@@ -197,6 +247,7 @@
                 <span class="srp-brand">Stamp Rush</span>
                 <span id="srp-progress" class="srp-progress">0 / 12</span>
                 <span id="srp-points" class="srp-points">0 pts</span>
+                <button type="button" id="srp-full" class="srp-full" title="Fullscreen">⛶</button>
             </div>
             <article id="srp-card" class="srp-card" style="background-image:url('${ASSETS.postcard}')">
                 <div class="srp-card-ink">
@@ -222,6 +273,10 @@
             if (!text || !phoneQ) return;
             ctx.emit?.('live:submit-answer', { text, questionId: phoneQ.questionId });
             if (input) input.value = '';
+        });
+        root.querySelector('#srp-full')?.addEventListener('click', () => {
+            ctx.fullscreen?.(root);
+            setTimeout(syncFullscreenButtons, 120);
         });
         root.dataset.ready = '1';
         return root;
@@ -287,9 +342,11 @@
         if (tray) {
             tray.hidden = typed;
             if (!typed) {
-                const stamps = Array.isArray(q.choices) && q.choices.length
-                    ? q.choices
-                    : (Array.isArray(q.box) ? q.box : []);
+                const stamps = Array.isArray(q.remaining) && q.remaining.length
+                    ? q.remaining
+                    : (Array.isArray(q.choices) && q.choices.length
+                        ? q.choices
+                        : (Array.isArray(q.box) ? q.box : []));
                 tray.innerHTML = stamps.map((t) =>
                     `<button type="button" class="srp-stamp-btn" data-term="${esc(t)}"><i></i><span>${esc(t)}</span></button>`
                 ).join('');
@@ -301,6 +358,7 @@
                 });
             }
         }
+        syncFullscreenButtons();
         if (typed) {
             const input = $('srp-input');
             const label = $('srp-form-label');
@@ -330,6 +388,16 @@
             note.textContent = result.finished
                 ? 'All 12 postcards stamped!'
                 : `Stamped! +${result.gain || 0}${result.mult > 1 ? ` (×${result.mult})` : ''}`;
+            // Vanish the used stamp from the phone tray before the next card arrives.
+            const used = result.usedTerm;
+            if (used) {
+                document.querySelectorAll('#srp-tray .srp-stamp-btn').forEach((btn) => {
+                    if (String(btn.dataset.term || '').toLowerCase() === String(used).toLowerCase()) {
+                        btn.classList.add('is-vanishing');
+                        setTimeout(() => btn.remove(), 380);
+                    }
+                });
+            }
         } else if (result.challengeable && onChallenge) {
             note.className = 'srp-note is-wrong';
             note.innerHTML = `${esc(result.message || 'Wrong form')} <button type="button" class="srp-ask">Ask teacher</button>`;
@@ -400,6 +468,9 @@
             Object.assign(ctx, opts);
             ensureHostDom();
             ensurePhoneDom();
+            document.addEventListener('fullscreenchange', syncFullscreenButtons);
+            document.addEventListener('webkitfullscreenchange', syncFullscreenButtons);
+            syncFullscreenButtons();
         },
         setHostMode,
         setPreparing,

@@ -141,6 +141,31 @@ function qid(rng) {
     return `sr-${Math.floor(rng() * 1e9).toString(36)}`;
 }
 
+function usedSet(player) {
+    return new Set((player?.usedTerms || []).map((t) => String(t).toLowerCase()));
+}
+
+/** Stamps still available for this player (base terms not yet stamped correctly). */
+export function remainingStampsFor(match, playerId) {
+    const p = match?.players?.[playerId];
+    if (!p || !match?.box) return [];
+    const used = usedSet(p);
+    return match.box.map((b) => b.term).filter((t) => !used.has(t.toLowerCase()));
+}
+
+/** Host tray: stamps still needed by at least one unfinished player. */
+export function remainingStampsHost(match) {
+    if (!match?.box) return [];
+    const active = (match.playerOrder || [])
+        .map((id) => match.players[id])
+        .filter((p) => p && !p.finished);
+    if (!active.length) return [];
+    return match.box.map((b) => b.term).filter((term) => {
+        const key = term.toLowerCase();
+        return active.some((p) => !usedSet(p).has(key));
+    });
+}
+
 function advancePlayerQuestion(match, playerId, now) {
     const p = match.players[playerId];
     if (!p || p.finished) return null;
@@ -153,6 +178,11 @@ function advancePlayerQuestion(match, playerId, now) {
     }
     const inputMode = pickInputMode(match.answerMode, match.rng);
     const card = inputMode === 'typed' ? next.realise : next.recognise;
+    const remaining = remainingStampsFor(match, playerId);
+    // Ensure the current term is still offered (should already be in remaining).
+    const choices = inputMode === 'choice'
+        ? (remaining.includes(next.term) ? remaining : [next.term, ...remaining])
+        : null;
     p.current = {
         questionId: qid(match.rng),
         round: next.round,
@@ -168,7 +198,7 @@ function advancePlayerQuestion(match, playerId, now) {
         answer: card.answer,
         formation: Boolean(card.formation),
         inputMode,
-        choices: inputMode === 'choice' ? match.box.map((b) => b.term) : null,
+        choices,
         dealtAt: now,
     };
     p.locked = false;
@@ -213,6 +243,7 @@ export function createStampMatch(opts) {
             locked: false,
             lastGain: 0,
             lastMult: 1,
+            usedTerms: [],
             queue: dealPlayerQueue(box, clozePack, rng, idx),
             current: null,
         };
@@ -256,6 +287,8 @@ export function stampQuestionPayload(match, playerId) {
         answerMode: c.inputMode === 'typed' ? 'realise' : 'recognise',
         choices: c.choices || null,
         box: match.box.map((b) => b.term),
+        remaining: remainingStampsFor(match, playerId),
+        used: [...(p.usedTerms || [])],
         points: p.points,
         stamps: p.stamps,
         streak: p.streak,
@@ -356,6 +389,8 @@ export function submitStampAnswer(match, playerId, answer, questionId, now = Dat
     p.stamps += 1;
     p.lastGain = scored.points;
     p.lastMult = scored.mult;
+    if (!Array.isArray(p.usedTerms)) p.usedTerms = [];
+    if (!usedSet(p).has(String(c.term).toLowerCase())) p.usedTerms.push(c.term);
     p.roundIndex += 1;
     p.locked = true;
 
@@ -386,6 +421,8 @@ export function submitStampAnswer(match, playerId, answer, questionId, now = Dat
             streak: p.streak,
             gain: scored.points,
             mult: scored.mult,
+            usedTerm: c.term,
+            remaining: remainingStampsFor(match, playerId),
             finished: finishedNow,
         },
         nextQuestion: !finishedNow && !match.finished,
@@ -461,6 +498,7 @@ export function stampPublicView(match, { now = Date.now() } = {}) {
         finished: Boolean(match.finished),
         startedAt: match.startedAt,
         box: match.box.map((b) => b.term),
+        remaining: remainingStampsHost(match),
         roundsTotal: STAMP_ROUNDS,
         players: (match.playerOrder || []).map((id) => {
             const p = match.players[id];
@@ -473,6 +511,8 @@ export function stampPublicView(match, { now = Date.now() } = {}) {
                 finished: p.finished,
                 lastGain: p.lastGain,
                 lastMult: p.lastMult,
+                used: [...(p.usedTerms || [])],
+                remaining: remainingStampsFor(match, id),
                 round: Math.min(STAMP_ROUNDS, p.roundIndex + (p.finished ? 0 : 1)),
             };
         }),

@@ -95,6 +95,23 @@ test('AI cloze pack parses variants and fills gaps with fallbacks', () => {
     assert.match(fb.sentence, /___/);
 });
 
+test('correct stamps disappear from the remaining tray', () => {
+    const m = createStampMatch({
+        players: [{ id: 'a', nickname: 'Ada' }],
+        deck: DECK,
+        answerMode: 'recognise',
+        seed: 5,
+    });
+    const first = m.players.a.current;
+    assert.equal(first.choices.length, 12);
+    submitStampAnswer(m, 'a', first.term, first.questionId, Date.now());
+    assert.ok(m.players.a.usedTerms.includes(first.term));
+    const next = stampQuestionPayload(m, 'a');
+    assert.equal(next.remaining.length, 11);
+    assert.ok(!next.remaining.map((t) => t.toLowerCase()).includes(first.term.toLowerCase()));
+    assert.equal(next.choices.length, 11);
+});
+
 test('solo player finishing all 12 ends the match', () => {
     const m = createStampMatch({
         players: [{ id: 'a', nickname: 'Solo' }],
