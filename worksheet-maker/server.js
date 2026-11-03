@@ -70,6 +70,9 @@ export function createWorksheetMakerRouter(options = {}) {
 
 function registerWorksheetMakerRoutes(app, options = {}) {
   const { requireCreateAccess, requireSignedIn } = options;
+  // Anything that fetches outside URLs, stores data or uses server resources needs a signed-in user
+  // (when the host app provides the check; the standalone dev server has none).
+  const signedIn = async (req, res) => (typeof requireSignedIn === 'function' ? Boolean(await requireSignedIn(req, res)) : true);
 
 async function buildLessonPayload(body, key, update = () => {}) {
   if (body?.mode === 'polishPrimary') {
@@ -404,7 +407,8 @@ app.get('/api/config', (_req, res) => {
   });
 });
 
-app.get('/api/saved-lessons', async (_req, res) => {
+app.get('/api/saved-lessons', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   try {
     res.json({ items: await listSavedLessons() });
   } catch (error) {
@@ -413,6 +417,7 @@ app.get('/api/saved-lessons', async (_req, res) => {
 });
 
 app.get('/api/saved-lessons/:id', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   try {
     res.json(await getSavedLesson(req.params.id));
   } catch (error) {
@@ -421,6 +426,7 @@ app.get('/api/saved-lessons/:id', async (req, res) => {
 });
 
 app.post('/api/saved-lessons', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   try {
     const meta = await saveLesson({
       id: req.body?.id,
@@ -434,6 +440,7 @@ app.post('/api/saved-lessons', async (req, res) => {
 });
 
 app.delete('/api/saved-lessons/:id', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   try {
     res.json(await deleteSavedLesson(req.params.id));
   } catch (error) {
@@ -467,6 +474,7 @@ app.post('/api/media-search', async (req, res) => {
 });
 
 app.post('/api/source', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   try {
     const source = await sourceFromRequest(req.body, { allowTopicOnly: false });
     res.json(source);
@@ -476,6 +484,7 @@ app.post('/api/source', async (req, res) => {
 });
 
 app.post('/api/topic-images', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   try {
     const query = String(req.body?.query || req.body?.imageSearch || req.body?.topic || '').trim();
     if (!query) {
@@ -499,6 +508,7 @@ app.post('/api/topic-images', async (req, res) => {
 });
 
 app.post('/api/fetch-image', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   try {
     const url = String(req.body?.url || '').trim();
     if (!url) return res.status(400).json({ error: 'Paste an image link.' });
@@ -517,7 +527,8 @@ app.post('/api/fetch-image', async (req, res) => {
   }
 });
 
-app.get('/api/jobs/:id', (req, res) => {
+app.get('/api/jobs/:id', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   const job = getJobStatus(req.params.id);
   if (!job) {
     return res.status(404).json({ error: 'Job not found. It may have expired — try creating the worksheet again.' });
@@ -525,7 +536,8 @@ app.get('/api/jobs/:id', (req, res) => {
   res.json(job);
 });
 
-app.get('/api/jobs/:id/result', (req, res) => {
+app.get('/api/jobs/:id/result', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   const job = getJobResult(req.params.id);
   if (!job) {
     return res.status(404).json({ error: 'Job not found. It may have expired — try creating the worksheet again.' });
@@ -573,6 +585,7 @@ app.post('/api/create-lesson', async (req, res) => {
 });
 
 app.post('/api/create-slides', async (req, res) => {
+  if (!(await signedIn(req, res))) return;
   const incomingLesson = req.body?.lesson;
   let source = req.body?.source && (req.body.source.text || req.body.source.title || req.body.source.topicOnly)
     ? req.body.source

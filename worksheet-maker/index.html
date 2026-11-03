@@ -2451,6 +2451,11 @@
     let contentLang = uiLang;
     let lastPayload = null;
 
+    // 401 from any worksheet-maker API → clear localized "Please sign in" message.
+    function apiError(res, data, fallback) {
+      if (res && res.status === 401) return new Error(ui('errSignIn'));
+      return new Error((data && data.error) || fallback);
+    }
     function ui(key) {
       return t(uiLang, key);
     }
@@ -3220,7 +3225,7 @@
           }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Could not find photos.');
+        if (!res.ok) throw apiError(res, data, 'Could not find photos.');
         const images = Array.isArray(data.images) ? data.images : [];
         if (!images.length) {
           setStatus(ui('topicImageSearchHint'), true);
@@ -3275,7 +3280,7 @@
           body: JSON.stringify({ url: link, language: contentLang, alt: lastPayload.lesson.title || '' }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || ui('topicImageUrlAdd'));
+        if (!res.ok) throw apiError(res, data, ui('topicImageUrlAdd'));
         if (!data.image?.dataUrl) throw new Error(data.error || ui('topicImageUrlAdd'));
         const choices = [
           data.image,
@@ -4818,12 +4823,12 @@
       while (Date.now() - started < maxMs) {
         await sleep(2000);
         const { res, data: job } = await fetchJson(`api/jobs/${encodeURIComponent(jobId)}`, {}, { retries: 4 });
-        if (!res.ok) throw new Error(job.error || ui('errJobLost'));
+        if (!res.ok) throw apiError(res, job, ui('errJobLost'));
         if (typeof onProgress === 'function') onProgress(job);
         if (job.status === 'error') throw new Error(job.error || ui('errCreate'));
         if (job.status === 'done') {
           const resultRes = await fetchJson(`api/jobs/${encodeURIComponent(jobId)}/result`, {}, { retries: 5 });
-          if (!resultRes.res.ok) throw new Error(resultRes.data.error || ui('errCreate'));
+          if (!resultRes.res.ok) throw apiError(resultRes.res, resultRes.data, ui('errCreate'));
           return resultRes.data;
         }
       }
@@ -4837,7 +4842,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       }, { retries: 5 });
-      if (res.status === 401 || res.status === 402) {
+      if (res.status === 401) throw apiError(res, data, ui('errSignIn'));
+      if (res.status === 402) {
         throw new Error(data.error || 'Sign in and buy a Worksheet Maker use (5 zł / $2) first.');
       }
       if (!res.ok) throw new Error(data.error || ui('errCreate'));
@@ -4889,7 +4895,7 @@
       async function post(body) {
         const res = await fetch('api/media-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || ui('mediaError'));
+        if (!res.ok) throw apiError(res, data, ui('mediaError'));
         return data;
       }
       async function suggest() {

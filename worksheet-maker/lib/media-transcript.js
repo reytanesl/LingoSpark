@@ -1,3 +1,4 @@
+import { safeFetch as fetch } from './safe-fetch.js';
 /**
  * Transcripts for audio/video links that YouTube captions do not cover (server-only).
  *

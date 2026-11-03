@@ -1,3 +1,4 @@
+import { safeFetch as fetch } from './safe-fetch.js';
 const UA = 'LessonCreator/1.0 (classroom ESL/DaF worksheets; educational use)';
 const MAX_BYTES = 2_200_000;
 

@@ -1,3 +1,4 @@
+import { safeFetch as fetch } from './safe-fetch.js';
 import { timedText, parseSrtVtt, resolveApplePodcastEpisode, fetchPodcastTranscript } from './media-transcript.js';
 import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
