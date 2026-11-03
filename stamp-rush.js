@@ -1,16 +1,21 @@
 /**
  * Stamp Rush — Live Spark race: shared 12-stamp vocab tray, 12 personal cloze rounds,
- * speed-scaled points, host postcard piles.
+ * speed-scaled points, host postcard piles. Cloze text comes from AI (stamp-rush-prompts.js)
+ * with local fallbacks; realise mode is word-formation (changed form).
  */
 
 import { matchesTermAnswer, sanitizeAnswerText } from './vocab-quiz-utils.js';
+import {
+    fallbackRecognise,
+    fallbackRealise,
+    stampClozePackFromReply,
+} from './stamp-rush-prompts.js';
 
 export const STAMP_FORMAT = 'stamp-rush';
 export const STAMP_BOX_SIZE = 12;
 export const STAMP_ROUNDS = 12;
 export const STAMP_BASE_POINTS = 100;
 export const STAMP_STREAK_BONUS = 10;
-/** Speed tiers: answer within these ms → multiplier on base points. */
 export const STAMP_SPEED_TIERS = [
     { withinMs: 3_000, mult: 1.5 },
     { withinMs: 6_000, mult: 1.25 },
@@ -37,7 +42,7 @@ function shuffle(arr, rng) {
     return a;
 }
 
-function normalizeDeck(deck) {
+export function normalizeStampDeck(deck) {
     const out = [];
     const seen = new Set();
     for (const raw of deck || []) {
@@ -52,34 +57,21 @@ function normalizeDeck(deck) {
     return out;
 }
 
+/** Pick the shared 12-stamp box (deterministic for a seed). */
+export function pickStampBox(deck, seed = Math.floor(Math.random() * 1e9)) {
+    const rng = mulberry32(Number(seed) || 1);
+    const normalized = normalizeStampDeck(deck);
+    if (normalized.length < STAMP_BOX_SIZE) {
+        throw new Error(`Stamp Rush needs at least ${STAMP_BOX_SIZE} terms.`);
+    }
+    return { box: shuffle(normalized, rng).slice(0, STAMP_BOX_SIZE), seed: Number(seed) || 1, rng };
+}
+
 function pickInputMode(answerMode, rng) {
     const mode = String(answerMode || 'recognise');
     if (mode === 'realise') return 'typed';
     if (mode === 'recognise') return 'choice';
     return rng() < 0.5 ? 'typed' : 'choice';
-}
-
-/** Postcard cloze frames — blank is always the target term; hint is the definition. */
-const CLOZE_FRAMES = [
-    (hint) => ({ lead: 'Dear friend,', body: `I wanted to tell you about _____.`, hint }),
-    (hint) => ({ lead: 'Quick note!', body: `Don't forget about _____ today.`, hint }),
-    (hint) => ({ lead: 'Class postcard', body: `Today we practised _____.`, hint }),
-    (hint) => ({ lead: 'Hello!', body: `Can you explain _____ to me?`, hint }),
-    (hint) => ({ lead: 'Hi there,', body: `I'm still learning _____.`, hint }),
-    (hint) => ({ lead: 'Memo', body: `Please stamp _____ on this card.`, hint }),
-    (hint) => ({ lead: 'Travel note', body: `We talked about _____ on the way.`, hint }),
-    (hint) => ({ lead: 'Reminder', body: `Use _____ in your next sentence.`, hint }),
-];
-
-function buildCloze(entry, frameIndex) {
-    const frame = CLOZE_FRAMES[frameIndex % CLOZE_FRAMES.length](entry.definition);
-    return {
-        lead: frame.lead,
-        body: frame.body,
-        hint: frame.hint,
-        prompt: `${frame.lead}\n\n${frame.body}`,
-        answer: entry.term,
-    };
 }
 
 function speedMult(elapsedMs) {
@@ -97,19 +89,50 @@ function scoreCorrect(elapsedMs, streak) {
     return { points: base + streakBonus, mult, base, streakBonus };
 }
 
-function dealPlayerQueue(box, rng) {
-    // Unique order of the 12 stamps + rotating cloze frames per round.
+function clozeFor(entry, clozePack, variantIndex, typed) {
+    const list = clozePack?.[entry.term.toLowerCase()] || [];
+    const variant = list[variantIndex % Math.max(1, list.length)] || null;
+    if (typed) {
+        const r = variant?.realise || fallbackRealise(entry.term, entry.definition, variantIndex);
+        return {
+            lead: r.lead || 'Word formation',
+            body: r.body || r.sentence,
+            hint: r.hint || entry.definition,
+            prompt: r.prompt || r.sentence,
+            sentence: r.sentence || r.body,
+            cue: r.cue || entry.term.toUpperCase(),
+            answer: r.answer,
+            formation: true,
+        };
+    }
+    const r = variant?.recognise || fallbackRecognise(entry.term, entry.definition, variantIndex);
+    return {
+        lead: r.lead || 'Postcard',
+        body: r.body || r.sentence,
+        hint: r.hint || entry.definition,
+        prompt: r.prompt || r.sentence,
+        sentence: r.sentence || r.body,
+        cue: null,
+        answer: entry.term,
+        formation: false,
+    };
+}
+
+function dealPlayerQueue(box, clozePack, rng, variantIndex) {
     const order = shuffle(box.map((_, i) => i), rng);
-    const frameOffset = Math.floor(rng() * CLOZE_FRAMES.length);
     return order.map((boxIndex, round) => {
         const entry = box[boxIndex];
-        const cloze = buildCloze(entry, frameOffset + round);
+        // Mode is chosen when dealt; store both flavours so randomise can pick per card.
+        const rec = clozeFor(entry, clozePack, variantIndex, false);
+        const real = clozeFor(entry, clozePack, variantIndex, true);
         return {
             round: round + 1,
             boxIndex,
             term: entry.term,
             definition: entry.definition,
-            ...cloze,
+            variantIndex,
+            recognise: rec,
+            realise: real,
         };
     });
 }
@@ -129,18 +152,21 @@ function advancePlayerQuestion(match, playerId, now) {
         return null;
     }
     const inputMode = pickInputMode(match.answerMode, match.rng);
-    // Recognise = tap any of the shared 12 stamps (full tray). Realise = type.
+    const card = inputMode === 'typed' ? next.realise : next.recognise;
     p.current = {
         questionId: qid(match.rng),
         round: next.round,
         boxIndex: next.boxIndex,
         term: next.term,
         definition: next.definition,
-        lead: next.lead,
-        body: next.body,
-        hint: next.hint,
-        prompt: next.prompt,
-        answer: next.answer,
+        lead: card.lead,
+        body: card.body,
+        hint: card.hint,
+        prompt: card.prompt,
+        sentence: card.sentence,
+        cue: card.cue || null,
+        answer: card.answer,
+        formation: Boolean(card.formation),
         inputMode,
         choices: inputMode === 'choice' ? match.box.map((b) => b.term) : null,
         dealtAt: now,
@@ -150,24 +176,30 @@ function advancePlayerQuestion(match, playerId, now) {
 }
 
 /**
- * @param {{ players: {id:string,nickname:string}[], deck: any[], answerMode?: string, seed?: number }} opts
+ * @param {{ players: {id:string,nickname:string}[], deck?: any[], box?: any[], clozePack?: object, answerMode?: string, seed?: number }} opts
  */
 export function createStampMatch(opts) {
     const playersIn = Array.isArray(opts.players) ? opts.players : [];
     if (playersIn.length < STAMP_MIN_PLAYERS) {
         throw new Error('Stamp Rush needs at least 1 player.');
     }
-    const deck = normalizeDeck(opts.deck);
-    if (deck.length < STAMP_BOX_SIZE) {
-        throw new Error(`Stamp Rush needs at least ${STAMP_BOX_SIZE} terms.`);
-    }
+    let box = Array.isArray(opts.box) && opts.box.length >= STAMP_BOX_SIZE
+        ? opts.box.slice(0, STAMP_BOX_SIZE)
+        : null;
     const seed = Number.isFinite(opts.seed) ? Number(opts.seed) : Math.floor(Math.random() * 1e9);
     const rng = mulberry32(seed);
-    const box = shuffle(deck, rng).slice(0, STAMP_BOX_SIZE);
+    if (!box) {
+        const picked = pickStampBox(opts.deck, seed);
+        box = picked.box;
+    }
+    let clozePack = opts.clozePack;
+    if (!clozePack || typeof clozePack !== 'object') {
+        clozePack = stampClozePackFromReply(null, box, Math.max(2, playersIn.length));
+    }
     const now = Date.now();
     const players = {};
     const playerOrder = [];
-    for (const raw of playersIn) {
+    playersIn.forEach((raw, idx) => {
         const id = String(raw.id);
         playerOrder.push(id);
         players[id] = {
@@ -181,16 +213,16 @@ export function createStampMatch(opts) {
             locked: false,
             lastGain: 0,
             lastMult: 1,
-            queue: dealPlayerQueue(box, rng),
+            queue: dealPlayerQueue(box, clozePack, rng, idx),
             current: null,
         };
-    }
+    });
     const match = {
         format: STAMP_FORMAT,
         seed,
         rng,
         box,
-        deck,
+        clozePack,
         answerMode: opts.answerMode || 'recognise',
         startedAt: now,
         finished: false,
@@ -216,6 +248,9 @@ export function stampQuestionPayload(match, playerId) {
         body: c.body,
         hint: c.hint,
         prompt: c.prompt,
+        sentence: c.sentence || c.body,
+        cue: c.cue,
+        formation: Boolean(c.formation),
         definition: c.definition,
         inputMode: c.inputMode,
         answerMode: c.inputMode === 'typed' ? 'realise' : 'recognise',
@@ -225,6 +260,10 @@ export function stampQuestionPayload(match, playerId) {
         stamps: p.stamps,
         streak: p.streak,
     };
+}
+
+function expectedAnswer(current) {
+    return current?.formation ? current.answer : current?.term;
 }
 
 export function submitStampAnswer(match, playerId, answer, questionId, now = Date.now()) {
@@ -253,13 +292,42 @@ export function submitStampAnswer(match, playerId, answer, questionId, now = Dat
     }
 
     const text = sanitizeAnswerText(answer);
-    const correct = matchesTermAnswer(text, c.term);
+    const expected = expectedAnswer(c);
+    // Word formation: typing the unchanged cue/base term never counts.
+    if (c.formation && text && (
+        text.toLowerCase() === String(c.term || '').toLowerCase()
+        || text.toLowerCase() === String(c.cue || '').toLowerCase()
+    )) {
+        p.streak = 0;
+        p.lastGain = 0;
+        return {
+            ok: true,
+            result: {
+                correct: false,
+                stamp: true,
+                gameFormat: STAMP_FORMAT,
+                questionId: c.questionId,
+                answer: expected,
+                cue: c.cue,
+                formation: true,
+                message: 'Change the form — do not type the word as given!',
+                points: p.points,
+                stamps: p.stamps,
+                streak: 0,
+                challengeable: true,
+                pendingChallenge: { entry: { term: expected, definition: c.definition }, answerText: text },
+            },
+            nextQuestion: false,
+        };
+    }
+
+    const correct = matchesTermAnswer(text, expected);
     const elapsed = Math.max(0, now - (c.dealtAt || now));
 
     if (!correct) {
         p.streak = 0;
         p.lastGain = 0;
-        p.locked = false; // can retry same card? Plan: wrong = no gain. Allow retry same round.
+        p.locked = false;
         const challengeable = c.inputMode === 'typed';
         return {
             ok: true,
@@ -268,13 +336,15 @@ export function submitStampAnswer(match, playerId, answer, questionId, now = Dat
                 stamp: true,
                 gameFormat: STAMP_FORMAT,
                 questionId: c.questionId,
-                answer: c.term,
-                message: 'Wrong stamp — try again!',
+                answer: expected,
+                cue: c.cue,
+                formation: Boolean(c.formation),
+                message: c.formation ? 'Wrong form — try again!' : 'Wrong stamp — try again!',
                 points: p.points,
                 stamps: p.stamps,
                 streak: 0,
                 challengeable,
-                pendingChallenge: challengeable ? { entry: { term: c.term, definition: c.definition }, answerText: text } : null,
+                pendingChallenge: challengeable ? { entry: { term: expected, definition: c.definition }, answerText: text } : null,
             },
             nextQuestion: false,
         };
@@ -309,7 +379,7 @@ export function submitStampAnswer(match, playerId, answer, questionId, now = Dat
             stamp: true,
             gameFormat: STAMP_FORMAT,
             questionId: c.questionId,
-            answer: c.term,
+            answer: expected,
             message: finishedNow ? 'All 12 postcards stamped!' : 'Stamped!',
             points: p.points,
             stamps: p.stamps,
@@ -337,8 +407,8 @@ export function settleStampChallenge(match, playerId, accept, now = Date.now()) 
             cleared: false,
         };
     }
-    // Treat as correct with elapsed from deal.
-    const out = submitStampAnswer(match, playerId, p.current.term, p.current.questionId, now);
+    const expected = expectedAnswer(p.current);
+    const out = submitStampAnswer(match, playerId, expected, p.current.questionId, now);
     return { result: out.result, cleared: Boolean(out.cleared), matchFinished: out.matchFinished };
 }
 

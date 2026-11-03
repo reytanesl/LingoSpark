@@ -1701,6 +1701,17 @@ app.get('/api/health', (_req, res) => {
     });
 
     initLiveGame(io, {
+        async generateStampClozes({ box, variantCount, level }) {
+            const { buildStampClozePrompt, stampClozePackFromReply } = await import('./stamp-rush-prompts.js');
+            const apiKey = process.env.CURSOR_API_KEY;
+            if (!apiKey) return stampClozePackFromReply(null, box, variantCount);
+            const reply = await runVisionJsonPrompt({
+                apiKey,
+                prompt: buildStampClozePrompt({ box, variantCount, level }),
+                label: 'stamp-rush-cloze',
+            });
+            return stampClozePackFromReply(reply, box, variantCount);
+        },
         onGameEnd(room) {
             if (!room.hostUserId) return;
             // Lucky Lanterns / Word Cannon players have no race `score`, which made this NaN and

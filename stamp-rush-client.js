@@ -1,12 +1,17 @@
 /**
  * Stamp Rush — host board (postcard piles) + phone chrome for Live Spark.
- * Mechanics live in stamp-rush.js / live-game.js; this file only draws `live:stamp-state`
- * and routes answers through the shared Live Spark sockets.
+ * Mechanics live in stamp-rush.js / live-game.js; this file draws `live:stamp-state`
+ * with photoreal assets under assets/stamp-rush/.
  */
 (function (global) {
     'use strict';
 
     const ROUNDS = 12;
+    const ASSETS = {
+        bg: 'assets/stamp-rush/host-bg.jpg',
+        tray: 'assets/stamp-rush/tray.jpg',
+        postcard: 'assets/stamp-rush/postcard.jpg',
+    };
     const ctx = { hostEnd: null, fullscreen: null, roomCode: null, emit: null };
     const last = { state: null };
     let phoneQ = null;
@@ -25,26 +30,17 @@
         return AV_COLORS[h % AV_COLORS.length];
     }
 
-    function pileSvg(stamps, max = ROUNDS) {
+    function pileHtml(stamps, max = ROUNDS) {
         const n = Math.max(0, Math.min(max, Number(stamps) || 0));
         const cards = [];
         for (let i = 0; i < n; i++) {
-            const dx = (i % 3) * 3;
-            const dy = -i * 4;
-            const rot = ((i * 7) % 11) - 5;
-            cards.push(`<g class="sr-card" transform="translate(${dx},${dy}) rotate(${rot} 40 28)">
-                <rect x="8" y="6" width="64" height="44" rx="4" fill="#f4e9d8" stroke="#8b5e34" stroke-width="1.5"/>
-                <rect x="14" y="12" width="28" height="18" rx="2" fill="#e8d5b7"/>
-                <circle cx="58" cy="18" r="9" fill="#c45c26" opacity=".85"/>
-                <path d="M52 18 h12 M58 12 v12" stroke="#f4e9d8" stroke-width="1.5"/>
-            </g>`);
+            const dx = (i % 4) * 5;
+            const dy = -i * 5;
+            const rot = ((i * 9) % 13) - 6;
+            cards.push(`<div class="sr-card-photo" style="--dx:${dx}px;--dy:${dy}px;--rot:${rot}deg;--z:${i}"></div>`);
         }
-        if (!n) {
-            cards.push(`<g class="sr-card sr-card--empty" opacity=".35">
-                <rect x="8" y="20" width="64" height="44" rx="4" fill="none" stroke="#8b5e34" stroke-width="1.5" stroke-dasharray="4 3"/>
-            </g>`);
-        }
-        return `<svg class="sr-pile-svg" viewBox="0 -48 80 100" aria-hidden="true">${cards.join('')}</svg>`;
+        if (!n) cards.push('<div class="sr-card-photo sr-card-photo--empty"></div>');
+        return `<div class="sr-pile-stack">${cards.join('')}</div>`;
     }
 
     function ensureHostDom() {
@@ -59,7 +55,8 @@
         root.className = 'sr-host';
         root.hidden = true;
         root.innerHTML = `
-            <div class="sr-sky" aria-hidden="true"></div>
+            <div class="sr-photo-bg" style="background-image:url('${ASSETS.bg}')" aria-hidden="true"></div>
+            <div class="sr-photo-veil" aria-hidden="true"></div>
             <header class="sr-top">
                 <div class="sr-brand">Lingo<span>Spark</span></div>
                 <div class="sr-title">
@@ -67,16 +64,25 @@
                     <small id="sr-host-sub">Shared stamp tray · first to stamp 12 postcards wins</small>
                 </div>
                 <div class="sr-top-actions">
-                    <button type="button" id="sr-full" class="sr-btn" title="Fullscreen">${esc('⛶')}</button>
+                    <button type="button" id="sr-full" class="sr-btn" title="Fullscreen">Fullscreen</button>
                     <button type="button" id="sr-end" class="sr-btn sr-btn--warn">End</button>
                     <button type="button" id="sr-lobby" class="sr-btn">Lobby</button>
                 </div>
             </header>
             <section class="sr-tray-wrap">
-                <div class="sr-tray-label">Shared stamp tray</div>
-                <div id="sr-tray" class="sr-tray"></div>
+                <div class="sr-tray-photo" style="background-image:url('${ASSETS.tray}')" aria-hidden="true"></div>
+                <div class="sr-tray-overlay">
+                    <div class="sr-tray-label">Shared stamp tray</div>
+                    <div id="sr-tray" class="sr-tray"></div>
+                </div>
             </section>
             <section id="sr-piles" class="sr-piles" aria-live="polite"></section>
+            <div id="sr-preparing" class="sr-preparing" hidden>
+                <div class="sr-preparing-card">
+                    <b>Writing postcards…</b>
+                    <p>AI is crafting unique sentences for this tray.</p>
+                </div>
+            </div>
             <footer class="sr-foot">
                 <p id="sr-caption">Players stamp their own postcards — speed earns bonus points.</p>
             </footer>`;
@@ -87,20 +93,31 @@
         return root;
     }
 
+    function setPreparing(on, message) {
+        ensureHostDom();
+        setHostMode(true);
+        const el = $('sr-preparing');
+        if (!el) return;
+        el.hidden = !on;
+        if (on && message) {
+            const p = el.querySelector('p');
+            if (p) p.textContent = message;
+        }
+    }
+
     function setHostMode(on) {
         const root = ensureHostDom();
         root.hidden = !on;
         document.body.classList.toggle('live-host-stamp', Boolean(on));
-        if (!on) return;
-        const race = $('live-host-race');
-        const lanterns = $('live-host-lanterns');
-        const cannon = $('live-host-cannon');
-        const tide = $('live-host-tide');
-        if (race) race.hidden = true;
-        if (lanterns) lanterns.hidden = true;
-        if (cannon) cannon.hidden = true;
-        if (tide) tide.hidden = true;
-        // Keep challenge panel inside host stage for fullscreen.
+        if (!on) {
+            const prep = $('sr-preparing');
+            if (prep) prep.hidden = true;
+            return;
+        }
+        ['live-host-race', 'live-host-lanterns', 'live-host-cannon', 'live-host-tide'].forEach((id) => {
+            const el = $(id);
+            if (el) el.hidden = true;
+        });
         const panel = $('live-host-challenge-panel');
         if (panel && panel.parentElement !== root) root.appendChild(panel);
     }
@@ -127,7 +144,7 @@
             const color = colorFor(p.id);
             return `<article class="sr-desk ${done ? 'is-done' : ''} ${gain ? 'is-gain' : ''}" style="--ink:${color}" data-id="${esc(p.id)}">
                 <div class="sr-desk-rank">#${idx + 1}</div>
-                <div class="sr-desk-pile">${pileSvg(stamps)}</div>
+                <div class="sr-desk-pile">${pileHtml(stamps)}</div>
                 <div class="sr-desk-meta">
                     <strong>${esc(p.nickname)}</strong>
                     <span>${stamps}/${ROUNDS} stamps · <b>${Number(p.points) || 0}</b> pts</span>
@@ -143,6 +160,7 @@
         last.state = state;
         ensureHostDom();
         setHostMode(true);
+        setPreparing(false);
         renderTray(state.box);
         renderPiles(state.players);
         const cap = $('sr-caption');
@@ -157,7 +175,7 @@
                     ? `${lead.nickname} leads with ${lead.points} pts · ${lead.stamps}/${ROUNDS} stamps`
                     : 'Stamp your postcards — faster answers score more!';
             }
-            if (sub) sub.textContent = 'Shared stamp tray · first to stamp 12 postcards wins';
+            if (sub) sub.textContent = 'Shared stamp tray · AI cloze postcards · speed bonus';
         }
     }
 
@@ -180,16 +198,21 @@
                 <span id="srp-progress" class="srp-progress">0 / 12</span>
                 <span id="srp-points" class="srp-points">0 pts</span>
             </div>
-            <article id="srp-card" class="srp-card">
-                <div class="srp-stamp-corner" aria-hidden="true"></div>
-                <p id="srp-lead" class="srp-lead"></p>
-                <p id="srp-body" class="srp-body"></p>
-                <p id="srp-hint" class="srp-hint"></p>
+            <article id="srp-card" class="srp-card" style="background-image:url('${ASSETS.postcard}')">
+                <div class="srp-card-ink">
+                    <p id="srp-lead" class="srp-lead"></p>
+                    <p id="srp-body" class="srp-body"></p>
+                    <p id="srp-cue" class="srp-cue" hidden></p>
+                    <p id="srp-hint" class="srp-hint"></p>
+                </div>
             </article>
             <div id="srp-tray" class="srp-tray" hidden></div>
             <form id="srp-form" class="srp-form" hidden>
-                <input id="srp-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the stamp…" maxlength="120">
-                <button type="submit" class="srp-send">Stamp</button>
+                <label id="srp-form-label" class="srp-form-label" for="srp-input">Change the form</label>
+                <div class="srp-form-row">
+                    <input id="srp-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the changed form…" maxlength="120">
+                    <button type="submit" class="srp-send">Stamp</button>
+                </div>
             </form>
             <div id="srp-note" class="srp-note" hidden></div>`;
         root.querySelector('#srp-form')?.addEventListener('submit', (e) => {
@@ -209,12 +232,10 @@
         root.hidden = !on;
         document.body.classList.toggle('live-stamp-player', Boolean(on));
         if (on) {
-            const hero = $('live-play-hero');
-            const lantern = $('live-play-lantern');
-            const cannon = $('live-play-cannon');
-            if (hero) hero.hidden = true;
-            if (lantern) lantern.hidden = true;
-            if (cannon) cannon.hidden = true;
+            ['live-play-hero', 'live-play-lantern', 'live-play-cannon'].forEach((id) => {
+                const el = $(id);
+                if (el) el.hidden = true;
+            });
         }
     }
 
@@ -234,19 +255,34 @@
         const lead = $('srp-lead');
         const body = $('srp-body');
         const hint = $('srp-hint');
+        const cue = $('srp-cue');
         const prog = $('srp-progress');
         const pts = $('srp-points');
         const tray = $('srp-tray');
         const form = $('srp-form');
         const note = $('srp-note');
-        if (lead) lead.textContent = q.lead || 'Postcard';
-        if (body) body.textContent = q.body || q.prompt || '_____';
-        if (hint) hint.textContent = q.hint ? `Hint: ${q.hint}` : '';
+        const sentence = q.sentence || q.body || q.prompt || '___';
+        if (lead) lead.textContent = q.formation ? 'Word formation' : (q.lead || 'Postcard');
+        if (body) body.textContent = sentence;
+        if (hint) {
+            hint.textContent = q.formation
+                ? 'Change the form of the cue word to fill the gap.'
+                : (q.hint ? `Hint: ${q.hint}` : '');
+        }
+        if (cue) {
+            if (q.formation && q.cue) {
+                cue.hidden = false;
+                cue.innerHTML = `Cue: <b>(${esc(String(q.cue).toUpperCase())})</b>`;
+            } else {
+                cue.hidden = true;
+                cue.textContent = '';
+            }
+        }
         if (prog) prog.textContent = `${q.round || 0} / ${q.roundsTotal || ROUNDS}`;
         if (pts) pts.textContent = `${q.points || 0} pts`;
         if (note) { note.hidden = true; note.textContent = ''; }
 
-        const typed = q.inputMode === 'typed' || q.answerMode === 'realise';
+        const typed = q.inputMode === 'typed' || q.answerMode === 'realise' || q.formation;
         if (form) form.hidden = !typed;
         if (tray) {
             tray.hidden = typed;
@@ -267,7 +303,15 @@
         }
         if (typed) {
             const input = $('srp-input');
-            if (input) { input.value = ''; input.focus(); }
+            const label = $('srp-form-label');
+            if (label) label.textContent = q.cue
+                ? `Type a changed form of ${(q.cue || '').toUpperCase()}`
+                : 'Type the changed form';
+            if (input) {
+                input.placeholder = q.cue ? `Not “${String(q.cue).toLowerCase()}” — change it` : 'Type the changed form…';
+                input.value = '';
+                input.focus();
+            }
         }
     }
 
@@ -288,7 +332,7 @@
                 : `Stamped! +${result.gain || 0}${result.mult > 1 ? ` (×${result.mult})` : ''}`;
         } else if (result.challengeable && onChallenge) {
             note.className = 'srp-note is-wrong';
-            note.innerHTML = `${esc(result.message || 'Wrong stamp')} <button type="button" class="srp-ask">Ask teacher</button>`;
+            note.innerHTML = `${esc(result.message || 'Wrong form')} <button type="button" class="srp-ask">Ask teacher</button>`;
             note.querySelector('.srp-ask')?.addEventListener('click', () => onChallenge());
         } else {
             note.className = 'srp-note is-wrong';
@@ -315,7 +359,6 @@
     function syncPlayerBanner(state) {
         if (!state) return;
         last.state = state;
-        // Host board drives piles; phones only need personal progress via questions/results.
     }
 
     function winnerHtml(data) {
@@ -325,7 +368,7 @@
             `<li><span>#${i + 1}</span><b>${esc(r.nickname)}</b><em>${Number(r.points) || 0} pts · ${Number(r.stamps) || 0}/12</em></li>`
         ).join('');
         return `<div class="sr-win">
-            <div class="sr-win-mark" aria-hidden="true">✉</div>
+            <div class="sr-win-mark" aria-hidden="true"></div>
             <h2>${esc(top?.nickname || data?.winnerNickname || 'Stamp Rush')}</h2>
             <p>Post office champion</p>
             <ol class="sr-win-list">${rows}</ol>
@@ -336,10 +379,19 @@
         if (!screen) return;
         screen.classList.add('live-winner-screen--stamp');
         document.body.classList.add('sr-winner');
+        let bg = screen.querySelector('.sr-win-bg');
+        if (!bg) {
+            bg = document.createElement('div');
+            bg.className = 'sr-win-bg';
+            bg.setAttribute('aria-hidden', 'true');
+            screen.prepend(bg);
+        }
+        bg.style.backgroundImage = `url('${ASSETS.bg}')`;
     }
 
     function removeWinBackdrop(screen) {
         screen?.classList.remove('live-winner-screen--stamp');
+        screen?.querySelector('.sr-win-bg')?.remove();
         document.body.classList.remove('sr-winner');
     }
 
@@ -350,6 +402,7 @@
             ensurePhoneDom();
         },
         setHostMode,
+        setPreparing,
         ensureHostDom,
         renderHost,
         onQuestion,

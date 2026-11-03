@@ -4,11 +4,18 @@ import {
     STAMP_BOX_SIZE,
     STAMP_ROUNDS,
     createStampMatch,
+    pickStampBox,
     stampQuestionPayload,
     stampPublicView,
     stampWinners,
     submitStampAnswer,
 } from './stamp-rush.js';
+import {
+    buildStampClozePrompt,
+    fallbackRealise,
+    parseStampClozeReply,
+    stampClozePackFromReply,
+} from './stamp-rush-prompts.js';
 
 const DECK = Array.from({ length: 16 }, (_, i) => ({
     term: `term${i}`,
@@ -36,9 +43,10 @@ test('Stamp Rush builds a shared 12-stamp box and unique player queues', () => {
     assert.equal(q.box.length, 12);
     assert.equal(q.inputMode, 'choice');
     assert.equal(q.choices.length, 12);
+    assert.match(q.body || q.sentence, /___/);
 });
 
-test('correct stamps award speed points and advance the personal pile', () => {
+test('realise mode requires a changed form, not the base term', () => {
     const m = createStampMatch({
         players: [{ id: 'a', nickname: 'Ada' }],
         deck: DECK,
@@ -46,14 +54,45 @@ test('correct stamps award speed points and advance the personal pile', () => {
         seed: 3,
     });
     const q = m.players.a.current;
-    const now = q.dealtAt + 1_000;
-    const out = submitStampAnswer(m, 'a', q.term, q.questionId, now);
-    assert.equal(out.result.correct, true);
-    assert.equal(out.result.stamps, 1);
-    assert.ok(out.result.gain >= 100);
-    assert.equal(out.nextQuestion, true);
-    assert.ok(m.players.a.current);
-    assert.notEqual(m.players.a.current.questionId, q.questionId);
+    assert.equal(q.inputMode, 'typed');
+    assert.equal(q.formation, true);
+    assert.ok(q.cue);
+    assert.notEqual(String(q.answer).toLowerCase(), String(q.term).toLowerCase());
+
+    const rejectBase = submitStampAnswer(m, 'a', q.term, q.questionId, Date.now());
+    assert.equal(rejectBase.result.correct, false);
+    assert.match(rejectBase.result.message, /change the form/i);
+
+    const ok = submitStampAnswer(m, 'a', q.answer, q.questionId, Date.now() + 500);
+    assert.equal(ok.result.correct, true);
+    assert.equal(ok.result.stamps, 1);
+});
+
+test('AI cloze pack parses variants and fills gaps with fallbacks', () => {
+    const { box } = pickStampBox(DECK, 9);
+    const prompt = buildStampClozePrompt({ box, variantCount: 2, level: 'intermediate' });
+    assert.match(prompt, /Return ONLY valid JSON/);
+    assert.ok(prompt.includes(box[0].term));
+
+    const reply = {
+        cards: [{
+            term: box[0].term,
+            variants: [{
+                recognise: { sentence: `We discussed ___ carefully today.`, answer: box[0].term },
+                realise: { sentence: `Her ___ surprised everyone.`, cue: box[0].term.toUpperCase(), answer: `${box[0].term}ness` },
+            }],
+        }],
+    };
+    const pack = stampClozePackFromReply(reply, box, 2);
+    assert.equal(Object.keys(pack).length, 12);
+    assert.ok(pack[box[0].term.toLowerCase()].length >= 1);
+    assert.match(pack[box[0].term.toLowerCase()][0].recognise.sentence, /___/);
+    const parsed = parseStampClozeReply(reply, box);
+    assert.ok(parsed.get(box[0].term.toLowerCase()).length >= 1);
+
+    const fb = fallbackRealise('happy', 'feeling good', 0);
+    assert.notEqual(fb.answer.toLowerCase(), 'happy');
+    assert.match(fb.sentence, /___/);
 });
 
 test('solo player finishing all 12 ends the match', () => {
@@ -66,7 +105,7 @@ test('solo player finishing all 12 ends the match', () => {
     for (let i = 0; i < STAMP_ROUNDS; i++) {
         const c = m.players.a.current;
         assert.ok(c, `missing question at ${i}`);
-        submitStampAnswer(m, 'a', c.term, c.questionId, c.dealtAt + 4_000);
+        submitStampAnswer(m, 'a', c.answer || c.term, c.questionId, c.dealtAt + 4_000);
     }
     assert.equal(m.players.a.finished, true);
     assert.equal(m.finished, true);

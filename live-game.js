@@ -69,6 +69,7 @@ import {
     STAMP_MIN_PLAYERS,
     createStampMatch,
     finishStampEarly,
+    pickStampBox,
     renameStampPlayer,
     settleStampChallenge,
     stampPublicView,
@@ -76,6 +77,7 @@ import {
     stampWinners,
     submitStampAnswer,
 } from './stamp-rush.js';
+import { stampClozePackFromReply } from './stamp-rush-prompts.js';
 
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
@@ -2060,7 +2062,7 @@ function handleQuestionTimeouts(io, room, now = Date.now()) {
     }
 }
 
-function startGame(room) {
+async function startGame(room, { generateStampClozes } = {}) {
     if (room.phase === 'playing') throw new Error('Game is already in progress.');
     if (room.phase === 'finished') {
         resetRoomToLobby(room);
@@ -2158,10 +2160,31 @@ function startGame(room) {
     }
     if (isStampRush(room)) {
         room.challenges = new Map();
+        const seed = room.stampSeed ?? (process.env.LIVE_STAMP_SEED ? Number(process.env.LIVE_STAMP_SEED) : Math.floor(Math.random() * 1e9));
+        const { box } = pickStampBox(room.masterDeck, seed);
+        const players = Array.from(room.players.values()).map((p) => ({ id: p.id, nickname: p.nickname }));
+        const variantCount = Math.max(2, players.length);
+        let clozePack = null;
+        if (typeof generateStampClozes === 'function') {
+            try {
+                clozePack = await generateStampClozes({
+                    box,
+                    variantCount,
+                    level: room.level || 'intermediate',
+                });
+            } catch (err) {
+                console.warn('Stamp Rush AI cloze failed; using fallbacks:', err.message);
+            }
+        }
+        if (!clozePack) {
+            clozePack = stampClozePackFromReply(null, box, variantCount);
+        }
         room.stamp = createStampMatch({
-            players: Array.from(room.players.values()).map((p) => ({ id: p.id, nickname: p.nickname })),
-            deck: room.masterDeck,
+            players,
+            box,
+            clozePack,
             answerMode: room.answerMode,
+            seed,
         });
         for (const player of room.players.values()) {
             player.pendingChallenge = null;
@@ -2735,7 +2758,7 @@ export function broadcastLobbyUpdate(code) {
     }
 }
 
-export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
+export function initLiveGame(io, { onGameEnd: onGameEndHook, generateStampClozes } = {}) {
     // Every finish path calls onGameEnd: build the authoritative report first, then let the server save it.
     const onGameEnd = (room) => {
         if (room && room.reportStats && !room.reportStats.reported) {
@@ -3011,7 +3034,10 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                 return;
             }
             try {
-                startGame(room);
+                if (isStampRush(room)) {
+                    io.to(room.hostSocketId).emit('live:stamp-preparing', { message: 'Writing unique postcard sentences…' });
+                }
+                await startGame(room, { generateStampClozes });
                 initReportStats(room);
                 const progress = progressSnapshot(room);
                 io.to(`room:${room.code}`).emit('live:game-started', {

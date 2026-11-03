@@ -1524,7 +1524,7 @@
     function bindHostSocket() {
         const s = ensureSocket();
         bindSocketReconnect('host');
-        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:lantern-state', 'live:cannon-state', 'live:tide-state', 'live:stamp-state', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:lantern-state', 'live:cannon-state', 'live:tide-state', 'live:stamp-state', 'live:stamp-preparing', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
@@ -1714,6 +1714,12 @@
             hostState.phase = 'playing';
             TideBridgeUI.setHostMode(true);
             TideBridgeUI.renderHost(state);
+        });
+
+        s.on('live:stamp-preparing', (data) => {
+            if (!hostState || !window.StampRushUI) return;
+            hostState.gameFormat = 'stamp-rush';
+            StampRushUI.setPreparing(true, data?.message || 'Writing unique postcard sentences…');
         });
 
         s.on('live:stamp-state', (state) => {
