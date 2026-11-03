@@ -13281,12 +13281,15 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             });
         }
 
-        /** Gap placeholder as shown on screen (never includes English answers). */
+        /** Gap placeholder as shown on screen / print / copy (never includes English answers). */
         function gapsBlankPlain(gap, mode, index) {
             const g = gap || {};
             if (mode === 'sentences') {
                 const n = g.n != null ? g.n : (index + 1);
-                return `(${n})`;
+                // Same mechanics as translate gaps: a visible write-in line + cue in brackets.
+                // Fixed width so answer length is not leaked.
+                const line = '_'.repeat(28);
+                return `${line} (${n})`;
             }
             const pl = String(g.pl || '').trim();
             const width = Math.min(24, Math.max(8, pl.length + 4 || 10));
@@ -13362,12 +13365,29 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
                     node.replaceWith(document.createTextNode('\n'));
                 });
                 // Replace fillable gaps with printable blanks (never student answers).
+                // Prefer task.gaps so missing-sentences blanks match translate (write-in line + cue),
+                // even if the on-screen data-blank was rendered with an older format.
+                const taskGaps = Array.isArray(task?.gaps) ? task.gaps : [];
+                const taskMode = task?.mode === 'sentences' ? 'sentences' : 'translate';
                 clone.querySelectorAll('.e8-gaps-blank').forEach((node) => {
-                    const blank = node.getAttribute('data-blank') || '________';
+                    const n = Number(node.getAttribute('data-gap-n'));
+                    const idx = Number.isFinite(n) && n > 0
+                        ? taskGaps.findIndex((g, i) => Number(g?.n != null ? g.n : i + 1) === n)
+                        : -1;
+                    const blank = idx >= 0
+                        ? gapsBlankPlain(taskGaps[idx], taskMode, idx)
+                        : (node.getAttribute('data-blank') || '________');
                     node.replaceWith(document.createTextNode(blank));
                 });
                 clone.querySelectorAll('.e8-gaps-blank-plain, .e8-gaps-marker').forEach((node) => {
-                    node.replaceWith(document.createTextNode(node.textContent || '________'));
+                    const n = Number(node.getAttribute('data-gap-n'));
+                    const idx = Number.isFinite(n) && n > 0
+                        ? taskGaps.findIndex((g, i) => Number(g?.n != null ? g.n : i + 1) === n)
+                        : -1;
+                    const blank = idx >= 0
+                        ? gapsBlankPlain(taskGaps[idx], taskMode, idx)
+                        : (node.textContent || '________');
+                    node.replaceWith(document.createTextNode(blank));
                 });
                 clone.querySelectorAll('input, textarea, button').forEach((node) => node.remove());
                 const fromDom = (clone.textContent || '')
