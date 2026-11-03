@@ -64,11 +64,23 @@ import {
     tideQuestionPayload,
     tideWinners,
 } from './tide-bridge.js';
+import {
+    STAMP_FORMAT,
+    STAMP_MIN_PLAYERS,
+    createStampMatch,
+    finishStampEarly,
+    renameStampPlayer,
+    settleStampChallenge,
+    stampPublicView,
+    stampQuestionPayload,
+    stampWinners,
+    submitStampAnswer,
+} from './stamp-rush.js';
 
 export const LIVE_TERMS_TO_WIN = 12;
 export const LIVE_MIN_PLAYERS = 2;
 export const LIVE_ANSWER_MODES = ['recognise', 'realise', 'randomise'];
-export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay', 'lucky-lanterns', 'word-cannon', 'tide-bridge'];
+export const LIVE_GAME_FORMATS = ['race', 'captain-crew', 'hot-spark-relay', 'lucky-lanterns', 'word-cannon', 'tide-bridge', 'stamp-rush'];
 export const LIVE_TEAM_ASSIGNMENT = ['random', 'pick'];
 export const LIVE_TEAM_MIN = 2;
 export const LIVE_TEAM_MAX = 4;
@@ -284,6 +296,10 @@ function isTideBridge(room) {
     return room?.gameFormat === 'tide-bridge' || room?.gameFormat === TIDE_FORMAT;
 }
 
+function isStampRush(room) {
+    return room?.gameFormat === 'stamp-rush' || room?.gameFormat === STAMP_FORMAT;
+}
+
 /** Formats whose lobby has teams (join / pick / random). */
 function usesTeamLobby(room) {
     return isTeamFormat(room) || isWordCannon(room);
@@ -298,6 +314,7 @@ function raceEntities(room) {
 }
 
 function minPlayersForRoom(room) {
+    if (isStampRush(room)) return STAMP_MIN_PLAYERS;
     if (isWordCannon(room)) return LIVE_CANNON_MIN_PLAYERS;
     if (isTeamFormat(room)) return LIVE_CAPTAIN_CREW_MIN_PLAYERS;
     return LIVE_MIN_PLAYERS;
@@ -829,6 +846,12 @@ function playerQuestionPayloadInner(player, room) {
         if (!q) return null;
         return q;
     }
+    if (isStampRush(room)) {
+        const match = room.stamp;
+        const q = stampQuestionPayload(match, player.id);
+        if (!q) return null;
+        return q;
+    }
     if (isLuckyLanterns(room)) {
         const match = room.lantern;
         if (!match || match.phase !== 'question') return null;
@@ -1249,6 +1272,18 @@ function emitPlayerSession(socket, room, player) {
         if (q) socket.emit('live:your-question', q);
         return;
     }
+    if (isStampRush(room) && room.stamp && (room.phase === 'finished' || room.phase === 'playing')) {
+        renameStampPlayer(room.stamp, player.id, player.nickname);
+        socket.emit('live:player-joined', payload);
+        socket.emit('live:stamp-state', stampPublicView(room.stamp, { now: Date.now() }));
+        if (room.phase === 'finished') {
+            socket.emit('live:game-finished', gameFinishedPayload(room));
+            return;
+        }
+        const q = playerQuestionPayload(player, room);
+        if (q) socket.emit('live:your-question', q);
+        return;
+    }
     if (room.phase === 'finished' && isLuckyLanterns(room) && room.lantern) {
         socket.emit('live:player-joined', payload);
         socket.emit('live:game-finished', gameFinishedPayload(room));
@@ -1434,6 +1469,28 @@ function gameFinishedPayload(room) {
             })),
         };
     }
+    if (isStampRush(room) && room.stamp) {
+        const w = stampWinners(room.stamp);
+        return {
+            winnerId: w.winnerId,
+            winnerNickname: w.winnerNickname,
+            stamp: true,
+            ranking: w.ranking,
+            termsToWin: 12,
+            gameFormat: 'stamp-rush',
+            players: w.ranking.map((row) => ({
+                id: row.id,
+                nickname: row.nickname,
+                progress: row.points,
+                score: row.points,
+                stamps: row.stamps,
+                points: row.points,
+                finished: row.finished,
+                rank: row.rank,
+                termsToWin: 12,
+            })),
+        };
+    }
     return {
         winnerId: room.winnerId,
         winnerNickname: room.winnerNickname,
@@ -1513,6 +1570,7 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         lastReport: null,
         cannon: null,
         cannonTimer: null,
+        stamp: null,
     };
     if (isWordCannon(room) && room.teamAssignment === 'pick') ensureCannonTeams(room);
     rooms.set(code, room);
@@ -1621,6 +1679,7 @@ export function resetRoomToLobby(room) {
     room.cannon = null;
     clearTideTimer(room);
     room.tide = null;
+    room.stamp = null;
     room.phase = 'lobby';
     room.winnerId = null;
     room.winnerNickname = null;
@@ -1983,7 +2042,7 @@ function assertCurrentQuestion(room, entity, questionId) {
 }
 
 function handleQuestionTimeouts(io, room, now = Date.now()) {
-    if (room.phase !== 'playing' || isLuckyLanterns(room) || isWordCannon(room) || isTideBridge(room) || !questionSecondsForRoom(room)) return;
+    if (room.phase !== 'playing' || isLuckyLanterns(room) || isWordCannon(room) || isTideBridge(room) || isStampRush(room) || !questionSecondsForRoom(room)) return;
     const isTeam = isTeamFormat(room);
     const entities = isTeam ? Array.from(room.teams.values()) : Array.from(room.players.values());
     for (const entity of entities) {
@@ -2097,6 +2156,26 @@ function startGame(room) {
         touchRoom(room);
         return true;
     }
+    if (isStampRush(room)) {
+        room.challenges = new Map();
+        room.stamp = createStampMatch({
+            players: Array.from(room.players.values()).map((p) => ({ id: p.id, nickname: p.nickname })),
+            deck: room.masterDeck,
+            answerMode: room.answerMode,
+        });
+        for (const player of room.players.values()) {
+            player.pendingChallenge = null;
+            player.answerLocked = false;
+            player.finished = false;
+            player.termIndex = 0;
+        }
+        room.phase = 'playing';
+        room.startedAt = Date.now();
+        room.winnerId = null;
+        room.winnerNickname = null;
+        touchRoom(room);
+        return true;
+    }
     if (isTeamFormat(room)) {
         if (room.teamAssignment === 'random' || !teamsCoverPlayers(room)) {
             if (room.teamAssignment === 'random') {
@@ -2171,6 +2250,12 @@ function endGame(room) {
         room.winnerNickname = w.winnerNickname;
     }
     clearTideTimer(room);
+    if (isStampRush(room) && room.stamp) {
+        finishStampEarly(room.stamp);
+        const w = stampWinners(room.stamp);
+        room.winnerId = w.winnerId;
+        room.winnerNickname = w.winnerNickname;
+    }
     if (isLuckyLanterns(room) && room.lantern) {
         finishLanternEarly(room.lantern);
         const winners = lanternWinners(room.lantern);
@@ -2425,6 +2510,52 @@ function afterTideChange(io, room, onGameEnd, { deliverQuestions = false } = {})
     touchRoom(room);
 }
 
+function emitStampState(io, room) {
+    if (!io || !room?.stamp) return;
+    const view = stampPublicView(room.stamp, { now: Date.now() });
+    if (room.hostSocketId) io.to(room.hostSocketId).emit('live:stamp-state', view);
+    for (const player of room.players.values()) {
+        if (!player.socketId) continue;
+        io.to(player.socketId).emit('live:stamp-state', view);
+    }
+}
+
+function sendStampQuestion(io, room, playerId) {
+    const player = room.players.get(playerId);
+    if (!player?.socketId) return;
+    const q = playerQuestionPayload(player, room);
+    if (q) io.to(player.socketId).emit('live:your-question', q);
+}
+
+function finishStampRoom(io, room, onGameEnd) {
+    if (room.phase !== 'finished') {
+        room.phase = 'finished';
+        room.finishedAt = Date.now();
+    }
+    if (room.stamp && !room.stamp.finished) finishStampEarly(room.stamp);
+    const w = stampWinners(room.stamp);
+    room.winnerId = w.winnerId;
+    room.winnerNickname = w.winnerNickname;
+    const finished = gameFinishedPayload(room);
+    io.to(`room:${room.code}`).emit('live:game-finished', finished);
+    emitStampState(io, room);
+    if (onGameEnd) onGameEnd(room);
+}
+
+function afterStampChange(io, room, onGameEnd, { deliverQuestions = false, playerId = null } = {}) {
+    if (!room?.stamp) return;
+    if (room.stamp.finished) {
+        finishStampRoom(io, room, onGameEnd);
+        return;
+    }
+    if (deliverQuestions) {
+        if (playerId) sendStampQuestion(io, room, playerId);
+        else for (const player of room.players.values()) sendStampQuestion(io, room, player.id);
+    }
+    emitStampState(io, room);
+    touchRoom(room);
+}
+
 function cannonViewFor(room, opts) {
     return cannonPublicView(room.cannon, { ...opts, connected: lanternConnectedMap(room), now: Date.now() });
 }
@@ -2669,6 +2800,9 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
             if (isTideBridge(room) && room.tide && room.phase === 'playing') {
                 socket.emit('live:tide-state', tidePublicView(room.tide, { now: Date.now() }));
             }
+            if (isStampRush(room) && room.stamp && room.phase === 'playing') {
+                socket.emit('live:stamp-state', stampPublicView(room.stamp, { now: Date.now() }));
+            }
         });
 
         socket.on('live:player-join', ({ code, playerId, playerToken }) => {
@@ -2693,6 +2827,9 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
             }
             if (isTideBridge(room) && room.tide && room.phase === 'playing') {
                 emitTideState(io, room);
+            }
+            if (isStampRush(room) && room.stamp && room.phase === 'playing') {
+                emitStampState(io, room);
             }
         });
 
@@ -2733,9 +2870,15 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                 if (q) socket.emit('live:your-question', q);
                 return;
             }
+            if (isStampRush(room) && room.stamp) {
+                socket.emit('live:stamp-state', stampPublicView(room.stamp, { now: Date.now() }));
+                const q = playerQuestionPayload(player, room);
+                if (q) socket.emit('live:your-question', q);
+                return;
+            }
             const team = getPlayerTeam(room, player);
             const entity = isCaptainCrew(room) && team ? team : player;
-            if (entity?.pendingChallenge && !isTideBridge(room)) return;
+            if (entity?.pendingChallenge && !isTideBridge(room) && !isStampRush(room)) return;
             const q = playerQuestionPayload(player, room);
             if (q) socket.emit('live:your-question', q);
         });
@@ -2894,6 +3037,10 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     afterTideChange(io, room, onGameEnd, { deliverQuestions: true });
                     return;
                 }
+                if (isStampRush(room)) {
+                    afterStampChange(io, room, onGameEnd, { deliverQuestions: true });
+                    return;
+                }
                 await deliverQuestionsToAllPlayers(io, room);
             } catch (err) {
                 socket.emit('live:error', { error: err.message });
@@ -2980,6 +3127,25 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                         // breaker just started after between — wait for tick; emit state now
                         emitTideState(io, room);
                     }
+                    return;
+                }
+                if (isStampRush(room)) {
+                    if (!room.stamp) throw new Error('Stamp Rush has not started.');
+                    if (player?.pendingChallenge && !player.pendingChallenge.challenged) clearPendingChallenge(player);
+                    const out = submitStampAnswer(
+                        room.stamp, socket.data.playerId, text ?? answer, questionId ?? null, Date.now(),
+                    );
+                    noteAnswer(room, socket.data.playerId, out.result);
+                    if (out.result?.pendingChallenge && player) {
+                        setPendingChallenge(player, out.result.pendingChallenge.entry, out.result.pendingChallenge.answerText);
+                        player.questionId = out.result.questionId;
+                        player.answerLocked = true;
+                    }
+                    socket.emit('live:answer-result', tagChallengeResult(room, out.result));
+                    afterStampChange(io, room, onGameEnd, {
+                        deliverQuestions: Boolean(out.nextQuestion),
+                        playerId: socket.data.playerId,
+                    });
                     return;
                 }
                 if (isCaptainCrew(room)) {
@@ -3231,6 +3397,29 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
                     afterTideChange(io, room, onGameEnd, { deliverQuestions: Boolean(cleared && room.tide.phase === 'vocab') });
                     return;
                 }
+                if (isStampRush(room)) {
+                    if (!room.stamp) throw new Error('Stamp Rush has not started.');
+                    const challenge = room.challenges.get(challengeId);
+                    if (!challenge || challenge.status !== 'pending') {
+                        throw new Error('Challenge not found or already resolved.');
+                    }
+                    const { result, cleared } = settleStampChallenge(room.stamp, challenge.entityId, accept, Date.now());
+                    const player = room.players.get(challenge.entityId);
+                    if (player) clearPendingChallenge(player);
+                    room.challenges.delete(challengeId);
+                    if (player?.socketId) io.to(player.socketId).emit('live:challenge-resolved', result);
+                    io.to(room.hostSocketId).emit('live:challenge-resolved', {
+                        id: challengeId,
+                        accepted: accept,
+                        entityId: challenge.entityId,
+                    });
+                    noteAccepted();
+                    afterStampChange(io, room, onGameEnd, {
+                        deliverQuestions: Boolean(cleared),
+                        playerId: challenge.entityId,
+                    });
+                    return;
+                }
                 resolveChallenge(io, room, challengeId, accept, onGameEnd);
                 noteAccepted();
             } catch (err) {
@@ -3346,6 +3535,7 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook } = {}) {
             }
             endGame(room);
             if (isWordCannon(room) && room.cannon) emitCannonState(io, room);
+            if (isStampRush(room) && room.stamp) emitStampState(io, room);
             io.to(`room:${room.code}`).emit('live:game-finished', gameFinishedPayload(room));
             if (onGameEnd) onGameEnd(room);
         });

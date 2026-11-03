@@ -21,6 +21,8 @@ export const GAME_LABELS = {
     'hot-spark-relay': 'Hot Spark Relay',
     'lucky-lanterns': 'Lucky Lanterns',
     'word-cannon': 'Word Cannon Battle',
+    'tide-bridge': 'The Bridge',
+    'stamp-rush': 'Stamp Rush',
 };
 export const REPORT_TIME_ZONE = 'Europe/Warsaw';
 const TOP_MISSES = 10;
