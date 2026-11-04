@@ -43,6 +43,120 @@
         return `<div class="sr-pile-stack">${cards.join('')}</div>`;
     }
 
+    /* -------------------- audio --------------------
+     * Calm looped theme on the HOST board only (like The Bridge); mute persists in localStorage.
+     * Rubber-stamp thunk: host when a desk gains a stamp, phone on a correct answer.
+     * Sources/licences: audio/CREDITS.md. */
+    const MUSIC_SRC = '/audio/stamp-rush-theme.mp3';
+    const SFX_SRC = '/audio/stamp-rush-stamp.mp3';
+    const MUSIC_VOLUME = 0.3;
+    const SFX_VOLUME = 0.7;
+    const MUTE_KEY = 'ls_stamp_rush_muted';
+    const snd = { ctx: null, gain: null, buffer: null, loading: null, source: null, el: null, wanted: false, sfxAt: 0, sfxBuf: null, sfxLoading: null };
+
+    function isMuted() { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; } }
+    function audioCtx() {
+        const Ctx = global.AudioContext || global.webkitAudioContext;
+        if (!Ctx) return null;
+        if (!snd.ctx) snd.ctx = new Ctx();
+        if (snd.ctx.state === 'suspended') snd.ctx.resume().catch(() => {});
+        return snd.ctx;
+    }
+    function decode(ac, data) {
+        return new Promise((resolve, reject) => {
+            const p = ac.decodeAudioData(data, resolve, reject);
+            if (p && p.catch) p.catch(reject);
+        });
+    }
+    function loadMusic() {
+        if (snd.buffer) return Promise.resolve(snd.buffer);
+        if (snd.loading) return snd.loading;
+        const ac = audioCtx();
+        if (!ac) return Promise.reject(new Error('no webaudio'));
+        snd.loading = fetch(MUSIC_SRC).then((r) => { if (!r.ok) throw new Error('theme ' + r.status); return r.arrayBuffer(); })
+            .then((d) => decode(ac, d)).then((buf) => { snd.buffer = buf; return buf; })
+            .catch((err) => { snd.loading = null; throw err; });
+        return snd.loading;
+    }
+    function playBuffer() {
+        if (!snd.buffer || !snd.wanted || isMuted() || snd.source) return;
+        const ac = audioCtx();
+        snd.gain = snd.gain || ac.createGain();
+        snd.gain.gain.value = MUSIC_VOLUME;
+        snd.gain.connect(ac.destination);
+        const src = ac.createBufferSource();
+        src.buffer = snd.buffer;
+        src.loop = true;   // sample-accurate loop (no <audio> gap)
+        src.connect(snd.gain);
+        src.start(0);
+        snd.source = src;
+        if (ac.state !== 'running') {
+            // Autoplay: resume on the next click/key on the board.
+            const kick = () => { ac.resume().catch(() => {}); };
+            document.addEventListener('pointerdown', kick, { once: true });
+            document.addEventListener('keydown', kick, { once: true });
+        }
+    }
+    function playElement() {
+        if (!snd.el) { snd.el = new Audio(MUSIC_SRC); snd.el.loop = true; }
+        snd.el.volume = MUSIC_VOLUME;
+        snd.el.play().catch(() => {});
+    }
+    function startMusic() {
+        snd.wanted = true;
+        if (isMuted()) return;
+        loadMusic().then(playBuffer).catch(() => { if (snd.wanted && !isMuted()) playElement(); });
+    }
+    function stopMusic() {
+        snd.wanted = false;
+        if (snd.source) {
+            try { snd.source.stop(); } catch (e) { /* ignore */ }
+            try { snd.source.disconnect(); } catch (e) { /* ignore */ }
+            snd.source = null;
+        }
+        if (snd.el) { snd.el.pause(); try { snd.el.currentTime = 0; } catch (e) { /* ignore */ } }
+    }
+    function syncMuteButton() {
+        const btn = $('sr-mute');
+        if (!btn) return;
+        const m = isMuted();
+        btn.setAttribute('aria-pressed', m ? 'true' : 'false');
+        btn.textContent = m ? '♪ Off' : '♪ Music';
+        btn.classList.toggle('is-muted', m);
+    }
+    function setMuted(m) {
+        try { localStorage.setItem(MUTE_KEY, m ? '1' : '0'); } catch (e) { /* ignore */ }
+        if (m) {
+            const keep = snd.wanted;
+            stopMusic();
+            snd.wanted = keep;
+        } else if (snd.wanted) startMusic();
+        syncMuteButton();
+    }
+    function playStampSfx({ host = false } = {}) {
+        if (host && isMuted()) return;
+        const now = Date.now();
+        if (now - snd.sfxAt < 140) return;   // many desks at once -> one thunk
+        snd.sfxAt = now;
+        const ac = audioCtx();
+        const fire = () => {
+            const src = ac.createBufferSource();
+            const g = ac.createGain();
+            g.gain.value = SFX_VOLUME;
+            src.buffer = snd.sfxBuf;
+            src.connect(g); g.connect(ac.destination);
+            src.start(0);
+        };
+        if (ac && snd.sfxBuf) { fire(); return; }
+        if (ac) {
+            snd.sfxLoading = snd.sfxLoading || fetch(SFX_SRC).then((r) => r.arrayBuffer()).then((d) => decode(ac, d))
+                .then((b) => { snd.sfxBuf = b; return b; }).catch(() => { snd.sfxLoading = null; return null; });
+            snd.sfxLoading.then((b) => { if (b) fire(); });
+            return;
+        }
+        try { const a = new Audio(SFX_SRC); a.volume = SFX_VOLUME; a.play().catch(() => {}); } catch (e) { /* ignore */ }
+    }
+
     function ensureHostDom() {
         let root = $('live-host-stamp');
         if (!root) {
@@ -57,7 +171,7 @@
         root.innerHTML = `
             <div class="sr-photo-bg" style="background-image:url('${ASSETS.bg}')" aria-hidden="true"></div>
             <div class="sr-photo-veil" aria-hidden="true"></div>
-            <header class="sr-top">
+            <div class="sr-top">
                 <div class="sr-brand">Lingo<span>Spark</span></div>
                 <div class="sr-title">
                     <b>Stamp Rush</b>
@@ -68,10 +182,11 @@
                         <span class="sr-full-ico" aria-hidden="true">⛶</span>
                         <span class="sr-full-label">Fullscreen</span>
                     </button>
+                    <button type="button" id="sr-mute" class="sr-btn sr-btn--mute" title="Music on/off" aria-pressed="false">♪ Music</button>
                     <button type="button" id="sr-end" class="sr-btn sr-btn--warn">End</button>
                     <button type="button" id="sr-lobby" class="sr-btn">Lobby</button>
                 </div>
-            </header>
+            </div>
             <section class="sr-tray-wrap">
                 <div class="sr-tray-photo" style="background-image:url('${ASSETS.tray}')" aria-hidden="true"></div>
                 <div class="sr-tray-overlay">
@@ -91,6 +206,8 @@
             </footer>`;
         root.querySelector('#sr-lobby')?.addEventListener('click', () => setHostMode(false));
         root.querySelector('#sr-end')?.addEventListener('click', () => ctx.hostEnd?.());
+        root.querySelector('#sr-mute')?.addEventListener('click', () => setMuted(!isMuted()));
+        syncMuteButton();
         root.querySelector('#sr-full')?.addEventListener('click', () => {
             ctx.fullscreen?.(root);
             setTimeout(syncFullscreenButtons, 120);
@@ -142,6 +259,7 @@
         root.hidden = !on;
         document.body.classList.toggle('live-host-stamp', Boolean(on));
         if (!on) {
+            stopMusic();
             const prep = $('sr-preparing');
             if (prep) prep.hidden = true;
             return;
@@ -194,6 +312,10 @@
 
     function renderHost(state) {
         if (!state) return;
+        if (!state.finished && last.state && Array.isArray(state.players)) {
+            const before = new Map((last.state.players || []).map((p) => [p.id, Number(p.stamps) || 0]));
+            if (state.players.some((p) => (Number(p.stamps) || 0) > (before.get(p.id) ?? Infinity))) playStampSfx({ host: true });
+        }
         const prevRemaining = new Set((last.state?.remaining || last.state?.box || []).map((t) => String(t).toLowerCase()));
         last.state = state;
         ensureHostDom();
@@ -319,20 +441,10 @@
         const sentence = q.sentence || q.body || q.prompt || '___';
         if (lead) lead.textContent = q.formation ? 'Word formation' : (q.lead || 'Postcard');
         if (body) body.textContent = sentence;
-        if (hint) {
-            hint.textContent = q.formation
-                ? 'Change the form of the cue word to fill the gap.'
-                : (q.hint ? `Hint: ${q.hint}` : '');
-        }
-        if (cue) {
-            if (q.formation && q.cue) {
-                cue.hidden = false;
-                cue.innerHTML = `Cue: <b>(${esc(String(q.cue).toUpperCase())})</b>`;
-            } else {
-                cue.hidden = true;
-                cue.textContent = '';
-            }
-        }
+        // Owner decision: no hint line and no cue on the card. Word-formation cards show the
+        // player's word list (base forms) as a read-only reference instead; they type the right form.
+        if (hint) { hint.hidden = true; hint.textContent = ''; }
+        if (cue) { cue.hidden = true; cue.textContent = ''; }
         if (prog) prog.textContent = `${q.round || 0} / ${q.roundsTotal || ROUNDS}`;
         if (pts) pts.textContent = `${q.points || 0} pts`;
         if (note) { note.hidden = true; note.textContent = ''; }
@@ -340,16 +452,20 @@
         const typed = q.inputMode === 'typed' || q.answerMode === 'realise' || q.formation;
         if (form) form.hidden = !typed;
         if (tray) {
-            tray.hidden = typed;
-            if (!typed) {
+            tray.hidden = false;
+            tray.classList.toggle('is-reference', Boolean(typed));
+            {
                 const stamps = Array.isArray(q.remaining) && q.remaining.length
                     ? q.remaining
                     : (Array.isArray(q.choices) && q.choices.length
                         ? q.choices
                         : (Array.isArray(q.box) ? q.box : []));
-                tray.innerHTML = stamps.map((t) =>
-                    `<button type="button" class="srp-stamp-btn" data-term="${esc(t)}"><i></i><span>${esc(t)}</span></button>`
-                ).join('');
+                // Typed cards: same list, but plain non-clickable words (reference only).
+                tray.innerHTML = typed
+                    ? stamps.map((t) => `<span class="srp-ref-word">${esc(t)}</span>`).join('')
+                    : stamps.map((t) =>
+                        `<button type="button" class="srp-stamp-btn" data-term="${esc(t)}"><i></i><span>${esc(t)}</span></button>`
+                    ).join('');
                 tray.querySelectorAll('.srp-stamp-btn').forEach((btn) => {
                     btn.addEventListener('click', () => {
                         if (!phoneQ) return;
@@ -362,11 +478,9 @@
         if (typed) {
             const input = $('srp-input');
             const label = $('srp-form-label');
-            if (label) label.textContent = q.cue
-                ? `Type a changed form of ${(q.cue || '').toUpperCase()}`
-                : 'Type the changed form';
+            if (label) label.textContent = 'Pick a word above · type it in the right form';
             if (input) {
-                input.placeholder = q.cue ? `Not “${String(q.cue).toLowerCase()}” — change it` : 'Type the changed form…';
+                input.placeholder = 'Type the changed form…';
                 input.value = '';
                 input.focus();
             }
@@ -384,6 +498,7 @@
         if (!note) return;
         note.hidden = false;
         if (result.correct) {
+            playStampSfx();
             note.className = 'srp-note is-ok';
             note.textContent = result.finished
                 ? 'All 12 postcards stamped!'
@@ -476,6 +591,8 @@
         setPreparing,
         ensureHostDom,
         renderHost,
+        startMusic,
+        stopMusic,
         onQuestion,
         showResult,
         showNote,

@@ -526,6 +526,14 @@
             if (role === 'host') window.TideBridgeUI?.startMusic?.();
             return;
         }
+        if (isStampRushFormat(format)) {
+            // Stamp Rush: its own calm looped theme on the HOST board only (players stay quiet, like The Bridge).
+            LiveAudio.stopLobby();
+            LiveAudio.stopGame();
+            LiveAudio.stopFanfare();
+            if (role === 'host') window.StampRushUI?.startMusic?.();
+            return;
+        }
         LiveAudio.startGame();
     }
 
@@ -638,6 +646,7 @@
             this.stopGame();
             this.stopFanfare();
             window.TideBridgeUI?.stopMusic?.();
+            window.StampRushUI?.stopMusic?.();
         },
 
         /** Short WebAudio cues for Lucky Lanterns (synthesised; no audio files). */
