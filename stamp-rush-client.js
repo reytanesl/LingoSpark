@@ -8,7 +8,7 @@
 
     const ROUNDS = 12;
     const ASSETS = {
-        bg: 'assets/stamp-rush/host-bg.jpg',
+        bg: 'assets/stamp-rush/host-bg.svg',
         tray: 'assets/stamp-rush/tray.jpg',
         postcard: 'assets/stamp-rush/postcard.jpg',
     };

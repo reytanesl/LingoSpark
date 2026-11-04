@@ -389,3 +389,8 @@ html body.live-stamp-player #screen-live-play #live-play-timer { display: none !
 .live-winner-screen--stamp .live-winner-content { background: transparent !important; box-shadow: none !important; border: 0 !important; }
 /* host desks: stamps/points on one line, +points tag on its own line (no wrap into the pile/text) */
 .sr-desk-meta span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* illustrated post-office backdrop (assets/stamp-rush/host-bg.svg), in the flat style of the other Live Spark scenes */
+.sr-photo-bg { transform: none; filter: none; }
+.sr-photo-veil { background: linear-gradient(180deg, rgba(26,15,28,.45) 0%, rgba(26,15,28,.08) 22%, rgba(26,15,28,0) 55%, rgba(20,12,8,.45) 100%); }
+.sr-phone { background: linear-gradient(180deg, rgba(26,15,28,.25), rgba(26,15,28,.05) 40%, rgba(20,12,8,.25)), url('assets/stamp-rush/host-bg.svg') center 30% / cover; }
+.live-winner-screen--stamp .sr-win-bg { filter: brightness(.55); }
