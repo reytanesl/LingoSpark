@@ -52,35 +52,87 @@ function sameWord(a, b) {
     return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 }
 
-/** Heuristic realise fallback when AI is missing or invalid. */
+/* ---------- fallback word formation (no AI): real English forms + sentences that fit them ---------- */
+const ADJ_Y = new Set(['happy', 'easy', 'busy', 'angry', 'funny', 'lucky', 'heavy', 'tidy', 'lazy', 'noisy', 'sunny', 'rainy', 'windy', 'cloudy', 'dirty', 'hungry', 'healthy', 'friendly', 'pretty', 'ugly', 'tiny', 'crazy', 'sleepy', 'thirsty', 'ready', 'empty', 'shy', 'messy', 'silly', 'lonely', 'tasty', 'wealthy', 'sticky', 'scary']);
+const ADJ_LY = new Set(['quick', 'slow', 'quiet', 'loud', 'kind', 'polite', 'rude', 'brave', 'calm', 'clear', 'strong', 'weak', 'bright', 'soft', 'safe', 'warm', 'cold', 'sad', 'glad', 'proud', 'honest', 'patient', 'quiet', 'polite', 'serious', 'simple', 'gentle', 'nervous', 'rapid', 'sudden', 'usual', 'final', 'real', 'quick', 'careful', 'careless', 'beautiful', 'dangerous', 'famous', 'polite', 'perfect', 'certain', 'recent', 'correct', 'exact', 'main', 'fair', 'free', 'open', 'secret', 'silent', 'smooth', 'sweet', 'tight', 'violent', 'wise', 'eager', 'equal', 'formal', 'normal', 'natural', 'physical', 'basic', 'tragic', 'dramatic']);
+const VERBS = new Set(['decide', 'prepare', 'arrive', 'depart', 'explain', 'describe', 'improve', 'choose', 'travel', 'visit', 'open', 'close', 'remember', 'forget', 'begin', 'finish', 'listen', 'answer', 'help', 'learn', 'teach', 'read', 'write', 'speak', 'talk', 'walk', 'run', 'swim', 'play', 'study', 'try', 'cry', 'carry', 'worry', 'hurry', 'stop', 'plan', 'shop', 'sit', 'get', 'cook', 'clean', 'wash', 'watch', 'catch', 'fix', 'mix', 'pass', 'relax', 'prevent', 'pretend', 'present', 'protect', 'collect', 'invent', 'discover', 'explore', 'imagine', 'practise', 'practice', 'organise', 'organize', 'complain', 'agree', 'argue', 'apologise', 'apologize', 'borrow', 'lend', 'deliver', 'post', 'send', 'receive', 'check', 'count', 'jump', 'climb', 'dance', 'sing', 'build', 'grow', 'paint', 'draw', 'fly', 'drive', 'ride', 'save', 'spend', 'pay', 'order', 'book', 'pack', 'enjoy', 'hate', 'like', 'love', 'need', 'want', 'wait', 'work', 'move', 'change', 'compare', 'create', 'develop', 'discuss', 'include', 'increase', 'reduce', 'repeat', 'return', 'solve', 'support', 'suggest']);
+const UNCOUNTABLE = new Set(['luggage', 'baggage', 'information', 'advice', 'homework', 'furniture', 'news', 'equipment', 'knowledge', 'money', 'music', 'traffic', 'weather', 'rice', 'bread', 'water', 'milk', 'research', 'evidence', 'progress', 'software', 'jewellery', 'jewelry', 'accommodation', 'rubbish', 'garbage', 'grammar', 'vocabulary', 'health', 'happiness', 'fun']);
+const DOUBLE_FINAL = new Set(['begin', 'forget', 'prefer', 'refer', 'occur', 'admit', 'permit', 'regret', 'upset', 'control', 'travel', 'commit', 'submit', 'equip']);
+const F_PLURAL_KEEP = new Set(['roof', 'chief', 'belief', 'proof', 'chef', 'cliff', 'giraffe', 'safe', 'cafe', 'café']);
+const IRREGULAR_PLURAL = { child: 'children', person: 'people', man: 'men', woman: 'women', foot: 'feet', tooth: 'teeth', mouse: 'mice', goose: 'geese' };
+
+const isVowel = (c) => /[aeiou]/.test(c);
+const consonantY = (w) => /[^aeiou]y$/.test(w);
+
+export function pluralOf(word) {
+    const w = String(word).toLowerCase();
+    if (IRREGULAR_PLURAL[w]) return IRREGULAR_PLURAL[w];
+    if (consonantY(w)) return `${w.slice(0, -1)}ies`;
+    if (/(s|x|z|ch|sh)$/.test(w)) return `${w}es`;
+    if (!F_PLURAL_KEEP.has(w) && /[^f]fe$/.test(w)) return `${w.slice(0, -2)}ves`;
+    if (!F_PLURAL_KEEP.has(w) && /[^f]f$/.test(w)) return `${w.slice(0, -1)}ves`;
+    if (/[^aeiou]o$/.test(w) && ['potato', 'tomato', 'hero', 'echo'].includes(w)) return `${w}es`;
+    return `${w}s`;
+}
+
+export function ingOf(verb) {
+    const w = String(verb).toLowerCase();
+    if (/ie$/.test(w)) return `${w.slice(0, -2)}ying`;
+    if (/[^aeiouy]e$/.test(w) && !/(ee|ye|oe)$/.test(w)) return `${w.slice(0, -1)}ing`;
+    const groups = (w.match(/[aeiou]+/g) || []).length;
+    const cvc = w.length >= 3 && !isVowel(w.at(-1)) && !/[wxy]$/.test(w) && isVowel(w.at(-2)) && !isVowel(w.at(-3));
+    if (cvc && (groups === 1 || DOUBLE_FINAL.has(w))) return `${w}${w.at(-1)}ing`;
+    return `${w}ing`;
+}
+
+export function adverbOf(adj) {
+    const w = String(adj).toLowerCase();
+    if (w === 'true') return 'truly';
+    if (w === 'full') return 'fully';
+    if (consonantY(w)) return `${w.slice(0, -1)}ily`;
+    if (/[^aeiou]le$/.test(w)) return `${w.slice(0, -1)}y`;
+    if (/ic$/.test(w)) return `${w}ally`;
+    if (/ll$/.test(w)) return `${w}y`;
+    return `${w}ly`;
+}
+
+/** Guess the word class of a base term from the word itself and its definition. */
+export function guessWordClass(term, definition = '') {
+    const w = String(term).toLowerCase().trim();
+    const d = String(definition || '').toLowerCase().trim();
+    if (ADJ_Y.has(w)) return 'adj-y';
+    if (/^to\s/.test(d) || VERBS.has(w) || /(ate|ise|ize|ify)$/.test(w)) return 'verb';
+    if (ADJ_LY.has(w) || /(ful|ous|ive|able|ible|less|al|ic|ent|ant)$/.test(w) || /^(very\s|feeling\s|describes?\s)/.test(d)) return 'adj';
+    return 'noun';
+}
+
+/** Heuristic realise fallback when AI is missing or invalid: a real changed form + a sentence that fits that form. */
 export function fallbackRealise(term, definition, n = 0) {
     const t = String(term || '').trim();
     const lower = t.toLowerCase();
-    let answer = lower;
-    let sentence = '';
-    if (/y$/i.test(t) && t.length > 3) {
-        answer = `${lower.slice(0, -1)}ies`;
-        sentence = [`Several ___ were mentioned in class.`, `We listed the ___ on the board.`, `The article discussed those ___.`][n % 3];
-    } else if (/e$/i.test(t) && t.length > 3) {
-        answer = `${lower}d`;
-        sentence = [`They ___ the idea carefully yesterday.`, `Someone had already ___ it.`, `We ___ the plan before lunch.`][n % 3];
-    } else if (/[aeiou][b-df-hj-np-tv-z]$/i.test(t) && t.length > 3) {
-        answer = `${lower}${lower.slice(-1)}ing`;
-        sentence = [`She is ___ about the topic now.`, `They kept ___ for hours.`, `___ can help you remember it.`][n % 3];
-    } else if (t.length > 3) {
-        answer = `${lower}ing`;
-        sentence = [`___ this word in a sentence helps.`, `They practised ___ it aloud.`, `___ was the next step.`][n % 3];
-        if (sameWord(answer, lower)) {
-            answer = `${lower}s`;
-            sentence = [`Many ___ appear in the text.`, `We compared two ___.`, `Those ___ matter in the exam.`][n % 3];
-        }
+    const words = lower.split(/\s+/);
+    const head = words.at(-1);
+    const prefix = words.slice(0, -1).join(' ');
+    const join = (w) => (prefix ? `${prefix} ${w}` : w);
+    const cls = words.length > 1 ? 'noun' : guessWordClass(lower, definition);
+    let answer;
+    let sentence;
+    if (cls === 'adj-y') {
+        answer = `${lower.slice(0, -1)}iness`;
+        sentence = [`Her ___ was obvious to everyone in the room.`, `We talked about the ___ of the people in the story.`, `You could see the ___ on his face.`][n % 3];
+    } else if (cls === 'adj') {
+        answer = adverbOf(lower);
+        sentence = [`She answered the question ___.`, `He closed the door very ___.`, `They finished the task ___.`][n % 3];
+    } else if (cls === 'verb') {
+        answer = ingOf(lower);
+        sentence = [`Right now the whole class is ___.`, `I am ___ at the moment, so please wait.`, `They were still ___ when the bell rang.`][n % 3];
+    } else if (UNCOUNTABLE.has(head)) {
+        // Uncountable nouns have no plural: use the real compound adjective "<noun>-free".
+        answer = join(`${head}-free`);
+        sentence = [`At last we had a ___ weekend.`, `The teacher promised us a ___ day.`, `It was a completely ___ trip.`][n % 3];
     } else {
-        answer = `${lower}s`;
-        sentence = `We wrote two ___ in our notebooks.`;
-    }
-    if (sameWord(answer, lower)) {
-        answer = `${lower}-related`;
-        sentence = `The teacher asked for a ___ example.`;
+        answer = join(pluralOf(head));
+        sentence = [`There were a lot of ___ in the picture.`, `We counted five ___ in the photo.`, `Two ___ were mentioned in the text.`][n % 3];
     }
     return {
         sentence: cleanSentence(sentence),
@@ -91,6 +143,22 @@ export function fallbackRealise(term, definition, n = 0) {
         hint: definition || '',
         prompt: cleanSentence(sentence),
     };
+}
+
+/** Is `answer` a genuine changed form of `term` (shares its stem, not identical)? */
+export function isFormOf(answer, term) {
+    const a = String(answer || '').trim().toLowerCase();
+    const b = String(term || '').trim().toLowerCase();
+    if (!a || !b || a === b) return false;
+    const bw = b.split(/\s+/);
+    const aw = a.split(/\s+/);
+    if (bw.length > 1) return aw.length === bw.length && aw.slice(0, -1).join(' ') === bw.slice(0, -1).join(' ') && isFormOf(aw.at(-1), bw.at(-1));
+    if (IRREGULAR_PLURAL[b] === a) return true;
+    if (/ie$/.test(b) && a.startsWith(`${b.slice(0, -2)}y`)) return true;
+    let p = 0;
+    while (p < a.length && p < b.length && a[p] === b[p]) p++;
+    const need = Math.max(2, Math.min(4, b.length - 2));
+    return p >= need;
 }
 
 export function fallbackRecognise(term, definition, n = 0) {
@@ -150,7 +218,7 @@ export function parseStampClozeReply(reply, box) {
             } else {
                 recognise.answer = entry.term;
             }
-            if (!oneGap(realise.sentence) || !realise.answer || sameWord(realise.answer, entry.term)) {
+            if (!oneGap(realise.sentence) || !realise.answer || !isFormOf(realise.answer, entry.term)) {
                 realise = fallbackRealise(entry.term, entry.definition, i);
             } else {
                 realise.cue = entry.term.toUpperCase();
