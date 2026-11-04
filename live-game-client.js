@@ -1091,7 +1091,8 @@
         const panel = mountHostChallengePanel();
         if (!panel) return;
         const challenges = Array.from(hostPendingChallenges.values());
-        const deck = (document.body.classList.contains('live-host-cannon') || document.body.classList.contains('live-host-lanterns')) && window.ChallengeDeck;
+        const deck = ((document.body.classList.contains('live-host-cannon') || document.body.classList.contains('live-host-lanterns')) && window.ChallengeDeck)
+            || (document.body.classList.contains('live-host-stamp') && window.ChallengeDeck);
         if (deck) {
             // Word Cannon / Lucky Lanterns: stacked deck — oldest on top and untouched while newer ones queue underneath.
             clearTimeout(hostDeckHideTimer);
@@ -2369,11 +2370,11 @@
         }
         syncQuestionTimeUI(format, snap && 'questionSeconds' in snap ? snap.questionSeconds : hostState?.questionSeconds);
         if (snap && 'challengesEnabled' in snap && hostState) hostState.challengesEnabled = snap.challengesEnabled !== false;
-        syncChallengesToggleUI(hostState?.challengesEnabled !== false);
+        syncChallengesToggleUI(hostState?.challengesEnabled !== false, format);
     }
 
     /** Host switch: may players challenge typed answers marked wrong in this game? */
-    function syncChallengesToggleUI(on) {
+    function syncChallengesToggleUI(on, format = hostState?.gameFormat) {
         const box = $('live-lobby-challenges');
         if (box && document.activeElement !== box) box.checked = Boolean(on);
         const isOn = box ? box.checked : Boolean(on);
@@ -2382,7 +2383,9 @@
         const hint = $('live-lobby-challenges-hint');
         if (hint) {
             hint.textContent = isOn
-                ? 'Players can challenge a typed answer marked wrong; you accept or reject it.'
+                ? (isStampRushFormat(format)
+                    ? 'Players can challenge a typed word-formation answer marked wrong (Realise / Randomise); you accept or reject it.'
+                    : 'Players can challenge a typed answer marked wrong; you accept or reject it.')
                 : 'Off: no Challenge button — wrong answers just continue, and no challenge cards appear for you.';
         }
     }
@@ -2463,7 +2466,7 @@
         hostState.gameMinutes = gameMinutes;
         const challenges = $('live-lobby-challenges') ? $('live-lobby-challenges').checked : hostState.challengesEnabled !== false;
         hostState.challengesEnabled = challenges;
-        syncChallengesToggleUI(challenges);
+        syncChallengesToggleUI(challenges, gameFormat);
         const settingsSeq = ++lobbySettingsSeq;
         ensureSocket().emit('live:set-settings', { gameFormat, teamAssignment, answerMode, lanternRounds, questionSeconds, gameMinutes, challenges, settingsSeq });
     }
