@@ -490,7 +490,7 @@ function validateTeamsForStart(room) {
 
 function canStartRoom(room) {
     if (room.phase !== 'lobby') return false;
-    if (!usesTeamLobby(room)) return room.players.size >= LIVE_MIN_PLAYERS;
+    if (!usesTeamLobby(room)) return room.players.size >= minPlayersForRoom(room);
     if (validateTeamsForStart(room).ok) return true;
     if (room.teamAssignment === 'pick') return false;
     return room.players.size >= minPlayersForRoom(room);
