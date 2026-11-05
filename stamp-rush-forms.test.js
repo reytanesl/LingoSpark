@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createStampMatch, stampQuestionPayload, submitStampAnswer } from './stamp-rush.js';
-import { fallbackRealise, isFormOf, isStrongClozeSentence, fallbackRecognise, stampClozePackFromReply, collectPackFrames, buildStampClozePrompt, CURATED_CLOZE } from './stamp-rush-prompts.js';
+import { fallbackRealise, isFormOf, isStrongClozeSentence, fallbackRecognise, stampClozePackFromReply, collectPackFrames, buildStampClozePrompt, CURATED_CLOZE, generateStampClozePack, mergeAiStampReply, listStampClozeGaps } from './stamp-rush-prompts.js';
 import { createRoom, destroyRoom, joinRoom, publicRoomSnapshot } from './live-game.js';
 
 const WORDS = ['market', 'happy', 'school', 'arrive', 'prepare', 'stop', 'visit', 'begin', 'careful', 'simple', 'luggage', 'box', 'city', 'knife', 'child', 'alarm clock', 'tie', 'decide'];
@@ -110,4 +110,107 @@ test('a full fallback pack never reuses the same sentence frame', () => {
         assert.doesNotMatch(f, /preparing carefully before the next step/);
     }
     assert.ok(Object.keys(CURATED_CLOZE).length >= 20);
+});
+
+test('generateStampClozePack keeps AI cards and retries only gaps', async () => {
+    const box = [
+        { term: 'passport', definition: 'an official travel document' },
+        { term: 'happy', definition: 'feeling pleasure' },
+    ];
+    let calls = 0;
+    const runPrompt = async (prompt) => {
+        calls += 1;
+        if (calls === 1) {
+            // First pass: only passport is valid; happy realise answer is junk.
+            return {
+                cards: [
+                    {
+                        term: 'passport',
+                        variants: [{
+                            recognise: { sentence: 'Show your ___ at the control desk before boarding the plane today.', answer: 'passport' },
+                            realise: { sentence: 'Two ___ were checked carefully by the officer at the desk.', cue: 'PASSPORT', answer: 'passports' },
+                        }],
+                    },
+                    {
+                        term: 'happy',
+                        variants: [{
+                            recognise: { sentence: 'She looked really ___ after hearing the good news yesterday.', answer: 'happy' },
+                            realise: { sentence: 'The ___ was over before anyone could speak aloud.', cue: 'HAPPY', answer: 'weekend' },
+                        }],
+                    },
+                ],
+            };
+        }
+        // Retry: only happy requested.
+        assert.match(prompt, /ONLY these terms still need cards|still need cards/i);
+        assert.match(prompt, /happy/i);
+        assert.doesNotMatch(prompt, /passport —/);
+        return {
+            cards: [{
+                term: 'happy',
+                variants: [{
+                    recognise: { sentence: 'The children felt ___ when the school trip was finally announced.', answer: 'happy' },
+                    realise: { sentence: 'You could see the ___ on her face when she opened the letter.', cue: 'HAPPY', answer: 'happiness' },
+                }],
+            }],
+        };
+    };
+    const pack = await generateStampClozePack({ box, variantCount: 1, runPrompt, maxAttempts: 3, timeoutMs: 5000 });
+    assert.equal(calls, 2);
+    assert.equal(pack.passport[0].realise.answer, 'passports');
+    assert.equal(pack.passport[0].recognise.source, 'ai');
+    assert.equal(pack.happy[0].realise.answer, 'happiness');
+    assert.equal(pack.happy[0].recognise.source, 'ai');
+});
+
+test('generateStampClozePack warns and falls back only when AI is unavailable', async () => {
+    const box = [
+        { term: 'passport', definition: 'an official travel document' },
+        { term: 'school', definition: 'a place where children learn' },
+    ];
+    const warnings = [];
+    const pack = await generateStampClozePack({
+        box,
+        variantCount: 1,
+        runPrompt: null,
+        warn: (msg) => warnings.push(String(msg)),
+    });
+    assert.ok(warnings.some((w) => /AI unavailable/i.test(w)));
+    assert.ok(pack.passport[0].recognise.sentence.includes('___'));
+    assert.equal(pack.passport[0].recognise.source, 'fallback');
+
+    const warnings2 = [];
+    let calls = 0;
+    const pack2 = await generateStampClozePack({
+        box,
+        variantCount: 1,
+        maxAttempts: 2,
+        timeoutMs: 1000,
+        warn: (msg) => warnings2.push(String(msg)),
+        runPrompt: async () => {
+            calls += 1;
+            throw new Error('boom');
+        },
+    });
+    assert.equal(calls, 2);
+    assert.ok(warnings2.some((w) => /incomplete after/i.test(w)));
+    assert.ok(pack2.school[0].realise.answer);
+});
+
+test('mergeAiStampReply rejects weak cards without inserting fallbacks', () => {
+    const box = [{ term: 'happy', definition: 'feeling pleasure' }];
+    const pack = { happy: [] };
+    const used = new Set();
+    const added = mergeAiStampReply(pack, {
+        cards: [{
+            term: 'happy',
+            variants: [{
+                recognise: { sentence: 'The gap is ___.', answer: 'happy' },
+                realise: { sentence: 'She felt ___ today.', cue: 'HAPPY', answer: 'happiness' },
+            }],
+        }],
+    }, box, used);
+    assert.equal(added, 0);
+    assert.equal(pack.happy.length, 0);
+    assert.equal(listStampClozeGaps(pack, box, 1).length, 1);
 });

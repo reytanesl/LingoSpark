@@ -1,6 +1,8 @@
 /**
  * Stamp Rush AI cloze prompts — meaningful unique sentences + word-formation realise cards.
- * Pure helpers; server.js runs the model via runVisionJsonPrompt.
+ * Pure helpers; server.js runs the model via runVisionJsonPrompt (CURSOR_API_KEY).
+ * Prefer AI for every card: generateStampClozePack retries rejected/missing slots and
+ * only fills curated fallbacks when the AI is completely unavailable or still incomplete.
  */
 
 export function buildStampClozePrompt({ box, variantCount = 2, level = 'intermediate', topic = '' } = {}) {
@@ -874,4 +876,259 @@ export function collectPackFrames(pack) {
         }
     }
     return frames;
+}
+
+
+/* ---------- AI-first pack building (retries; fallback only as last resort) ---------- */
+
+function decorateRecognise(entry, recognise, source = 'ai') {
+    return {
+        sentence: recognise.sentence,
+        answer: entry.term,
+        lead: 'Postcard',
+        body: recognise.sentence,
+        hint: entry.definition,
+        prompt: recognise.sentence,
+        source,
+    };
+}
+
+function decorateRealise(entry, realise, source = 'ai') {
+    return {
+        sentence: realise.sentence,
+        cue: String(entry.term).toUpperCase(),
+        answer: realise.answer,
+        lead: 'Word formation',
+        body: realise.sentence,
+        hint: entry.definition,
+        prompt: realise.sentence,
+        source,
+    };
+}
+
+function emptyStampPack(box) {
+    const pack = {};
+    for (const entry of box || []) {
+        pack[String(entry.term).toLowerCase()] = [];
+    }
+    return pack;
+}
+
+function cloneStampPack(pack) {
+    const out = {};
+    for (const [k, list] of Object.entries(pack || {})) {
+        out[k] = (list || []).map((v) => ({
+            recognise: { ...(v.recognise || {}) },
+            realise: { ...(v.realise || {}) },
+        }));
+    }
+    return out;
+}
+
+function framesFromPack(pack, used) {
+    for (const f of collectPackFrames(pack)) used.add(f);
+    return used;
+}
+
+/**
+ * Try to accept one AI variant (recognise + realise). Returns null if either side is weak.
+ */
+export function acceptAiStampVariant(entry, raw, usedFrames = new Set()) {
+    const recRaw = raw?.recognise || {};
+    const realRaw = raw?.realise || {};
+    const recognise = {
+        sentence: cleanSentence(recRaw.sentence),
+        answer: cleanAnswer(recRaw.answer || entry.term),
+    };
+    const realise = {
+        sentence: cleanSentence(realRaw.sentence),
+        cue: cleanAnswer(realRaw.cue || entry.term).toUpperCase(),
+        answer: cleanAnswer(realRaw.answer),
+    };
+    if (!oneGap(recognise.sentence)
+        || !sameWord(recognise.answer, entry.term)
+        || !isStrongClozeSentence(recognise.sentence, { term: entry.term, answer: entry.term, formation: false })) {
+        return null;
+    }
+    if (!oneGap(realise.sentence)
+        || !realise.answer
+        || !isFormOf(realise.answer, entry.term)
+        || !isStrongClozeSentence(realise.sentence, { term: entry.term, answer: realise.answer, formation: true })) {
+        return null;
+    }
+    const rk = frameKey(recognise.sentence);
+    const zk = frameKey(realise.sentence);
+    if (usedFrames.has(rk) || usedFrames.has(zk) || rk === zk) return null;
+    usedFrames.add(rk);
+    usedFrames.add(zk);
+    return {
+        recognise: decorateRecognise(entry, recognise, 'ai'),
+        realise: decorateRealise(entry, realise, 'ai'),
+    };
+}
+
+/** Merge accepted AI cards into pack (AI only — never inserts curated fallbacks). */
+export function mergeAiStampReply(pack, reply, box, usedFrames = new Set()) {
+    const byTerm = new Map((box || []).map((e) => [String(e.term).toLowerCase(), e]));
+    let added = 0;
+    const cards = Array.isArray(reply?.cards) ? reply.cards : [];
+    for (const card of cards) {
+        const termKey = String(card?.term || '').trim().toLowerCase();
+        const entry = byTerm.get(termKey);
+        if (!entry) continue;
+        if (!pack[termKey]) pack[termKey] = [];
+        const variants = Array.isArray(card.variants) ? card.variants : [];
+        for (const raw of variants) {
+            const accepted = acceptAiStampVariant(entry, raw, usedFrames);
+            if (!accepted) continue;
+            pack[termKey].push(accepted);
+            added += 1;
+        }
+    }
+    return added;
+}
+
+/** Terms still short of variantCount AI/accepted cards. */
+export function listStampClozeGaps(pack, box, variantCount = 2) {
+    const needN = Math.max(1, Number(variantCount) || 2);
+    const gaps = [];
+    for (const entry of box || []) {
+        const key = String(entry.term).toLowerCase();
+        const have = (pack?.[key] || []).length;
+        const need = Math.max(0, needN - have);
+        if (need > 0) {
+            gaps.push({ term: entry.term, definition: entry.definition, need, have });
+        }
+    }
+    return gaps;
+}
+
+/** Retry prompt: only the rejected/missing terms, exact counts. */
+export function buildStampClozeRetryPrompt({ gaps, level = 'intermediate', topic = '' } = {}) {
+    const rows = (gaps || []).map((g, i) => `${i + 1}. ${g.term} — ${g.definition} → write exactly ${g.need} new unique variant(s)`).join('\n');
+    const levelHint = level === 'beginner' || level === 'easy'
+        ? 'A2–B1 school English'
+        : level === 'advanced'
+            ? 'B2–C1 school English'
+            : 'B1–B2 school English';
+    const topicLine = String(topic || '').trim()
+        ? `Lesson topic / theme: ${String(topic).trim()}.`
+        : 'Lesson topic: infer from the definitions.';
+    return `You are repairing Stamp Rush cloze cards (${levelHint}). Previous AI output was incomplete or failed validation.
+
+${topicLine}
+
+ONLY these terms still need cards (do not invent others):
+${rows || '(none)'}
+
+For EACH listed term write exactly the requested number of NEW unique variants.
+Each variant needs:
+1) recognise — one natural sentence (10–20 words) with exactly one "___" for the BASE TERM. Answer = base term.
+2) realise — a DIFFERENT sentence (10–20 words) with exactly one "___" for a CHANGED FORM of the base term. Cue = BASE TERM CAPS. Answer = changed form only (not equal to the base).
+
+Rules: exactly one "___"; no meta talk about stamps/gaps/vocabulary; topic-relevant; unambiguous word-formation; unique sentences.
+
+Return ONLY valid JSON:
+{"cards":[{"term":"<exact term>","variants":[{"recognise":{"sentence":"... ___ ...","answer":"<base>"},"realise":{"sentence":"... ___ ...","cue":"<BASE>","answer":"<form>"}}]}]}`;
+}
+
+/** Last-resort curated fill for remaining gaps. */
+export function fillStampClozeFallbacks(pack, box, variantCount = 2, usedFrames = new Set()) {
+    const needN = Math.max(1, Number(variantCount) || 2);
+    framesFromPack(pack, usedFrames);
+    for (const entry of box || []) {
+        const key = String(entry.term).toLowerCase();
+        if (!pack[key]) pack[key] = [];
+        let list = pack[key];
+        while (list.length < needN) {
+            const n = list.length;
+            const recognise = pickFallbackCard(entry.term, entry.definition, 'recognise', { used: usedFrames, preferIndex: n })
+                || fallbackRecognise(entry.term, entry.definition, n);
+            const realise = pickFallbackCard(entry.term, entry.definition, 'realise', { used: usedFrames, preferIndex: n })
+                || fallbackRealise(entry.term, entry.definition, n);
+            if (!recognise?.sentence || !realise?.sentence || realise.unusable) break;
+            usedFrames.add(frameKey(recognise.sentence));
+            usedFrames.add(frameKey(realise.sentence));
+            list.push({
+                recognise: decorateRecognise(entry, recognise, 'fallback'),
+                realise: decorateRealise(entry, realise, 'fallback'),
+            });
+        }
+        pack[key] = list.slice(0, needN);
+    }
+    return pack;
+}
+
+function withTimeout(promise, timeoutMs, label) {
+    const ms = Math.max(5_000, Number(timeoutMs) || 60_000);
+    return new Promise((resolve, reject) => {
+        const t = setTimeout(() => reject(new Error(`${label || 'Stamp Rush AI'} timed out after ${ms}ms`)), ms);
+        Promise.resolve(promise).then(
+            (v) => { clearTimeout(t); resolve(v); },
+            (e) => { clearTimeout(t); reject(e); },
+        );
+    });
+}
+
+/**
+ * AI-first cloze pack: runPrompt(prompt, label) → JSON reply.
+ * Retries only rejected/missing cards (up to maxAttempts). Curated fallback only if still incomplete
+ * or runPrompt is missing — always console.warns in that case.
+ */
+export async function generateStampClozePack({
+    box,
+    variantCount = 2,
+    level = 'intermediate',
+    topic = '',
+    runPrompt = null,
+    maxAttempts = 3,
+    timeoutMs = 60_000,
+    existingPack = null,
+    warn = console.warn.bind(console),
+} = {}) {
+    const needN = Math.max(1, Number(variantCount) || 2);
+    const pack = existingPack ? cloneStampPack(existingPack) : emptyStampPack(box);
+    for (const entry of box || []) {
+        const key = String(entry.term).toLowerCase();
+        if (!pack[key]) pack[key] = [];
+    }
+    const used = framesFromPack(pack, new Set());
+    const attempts = Math.max(1, Math.min(5, Number(maxAttempts) || 3));
+
+    if (typeof runPrompt !== 'function') {
+        warn('Stamp Rush: AI unavailable (no runner) — using curated fallback sentences.');
+        fillStampClozeFallbacks(pack, box, needN, used);
+        return pack;
+    }
+
+    let gaps = listStampClozeGaps(pack, box, needN);
+    for (let attempt = 0; attempt < attempts && gaps.length; attempt++) {
+        const fullFirst = attempt === 0 && gaps.length === (box || []).length && gaps.every((g) => g.have === 0);
+        const prompt = fullFirst
+            ? buildStampClozePrompt({ box, variantCount: needN, level, topic })
+            : buildStampClozeRetryPrompt({ gaps, level, topic });
+        const label = fullFirst ? 'stamp-rush-cloze' : `stamp-rush-cloze-retry-${attempt}`;
+        try {
+            const reply = await withTimeout(runPrompt(prompt, label), timeoutMs, label);
+            const added = mergeAiStampReply(pack, reply, box, used);
+            if (!added) {
+                warn(`Stamp Rush: AI attempt ${attempt + 1}/${attempts} returned no usable cards.`);
+            }
+        } catch (err) {
+            warn(`Stamp Rush: AI attempt ${attempt + 1}/${attempts} failed: ${err?.message || err}`);
+        }
+        gaps = listStampClozeGaps(pack, box, needN);
+    }
+
+    if (gaps.length) {
+        const terms = gaps.map((g) => g.term).join(', ');
+        warn(`Stamp Rush: AI incomplete after ${attempts} attempt(s) — filling curated fallbacks for: ${terms}`);
+        fillStampClozeFallbacks(pack, box, needN, used);
+    }
+
+    for (const entry of box || []) {
+        const key = String(entry.term).toLowerCase();
+        pack[key] = (pack[key] || []).slice(0, needN);
+    }
+    return pack;
 }
