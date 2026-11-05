@@ -55,20 +55,95 @@
     }
 
     function clearStoredHostRoom() {
-        sessionStorage.removeItem('ls_live_host_code');
-        sessionStorage.removeItem('ls_live_host_token');
+        try {
+            sessionStorage.removeItem('ls_live_host_code');
+            sessionStorage.removeItem('ls_live_host_token');
+            // Drop any leftover Live Spark host prefs so the next open is a clean default.
+            ['ls_live_host_format', 'ls_live_host_answer', 'ls_live_host_team', 'ls_live_last_format'].forEach((k) => {
+                sessionStorage.removeItem(k);
+                localStorage.removeItem(k);
+            });
+        } catch { /* ignore */ }
         hostState = null;
         stopHostLobbyPoll();
         LiveAudio.stopLobby();
     }
 
+    /** Lobby / setup controls back to stock defaults (no format auto-selected beyond Solo race). */
+    function resetLiveHostDefaults() {
+        document.querySelectorAll('input[name="live-lobby-format"]').forEach((el) => {
+            el.checked = el.value === 'race';
+        });
+        document.querySelectorAll('input[name="live-lobby-team"]').forEach((el) => {
+            el.checked = el.value === 'random';
+        });
+        document.querySelectorAll('input[name="live-lobby-answer"]').forEach((el) => {
+            el.checked = el.value === 'randomise';
+        });
+        document.querySelectorAll('input[name="live-source"]').forEach((el) => {
+            el.checked = el.value === 'builtin';
+        });
+        const level = $('live-host-level');
+        if (level) level.value = 'intermediate';
+        const rounds = $('live-lobby-rounds');
+        if (rounds) rounds.value = '10';
+        const qTime = $('live-lobby-question-time');
+        if (qTime) qTime.value = '';
+        const challenges = $('live-lobby-challenges');
+        if (challenges) challenges.checked = true;
+        ['live-lobby-game-minutes', 'live-lobby-tide-minutes'].forEach((id) => {
+            const el = $(id);
+            if (el) el.value = '5';
+        });
+        const glossary = $('live-host-glossary');
+        if (glossary) glossary.value = '';
+        hostSelectedWordSetId = '';
+        try { toggleLiveSourcePanels(); } catch { /* ignore early */ }
+        try { syncChallengesToggleUI(true, 'race'); } catch { /* ignore */ }
+        try { syncQuestionTimeUI('race', null); } catch { /* ignore */ }
+    }
+
+    function resetHostGameOverlays() {
+        setHostRaceMode(false);
+        try { setHostLanternMode(false); } catch { /* ignore */ }
+        try { setHostCannonMode(false); } catch { /* ignore */ }
+        try { window.TideBridgeUI?.setHostMode?.(false); } catch { /* ignore */ }
+        try { window.StampRushUI?.setHostMode?.(false); } catch { /* ignore */ }
+        try { window.WCB?.resetHost?.(); } catch { /* ignore */ }
+        document.body.classList.remove('live-host-stamp', 'live-host-lanterns', 'live-host-cannon', 'live-host-tide');
+        hostRaceColors = new Map();
+        hideLiveWinnerScreen();
+        const ranking = $('live-ranking-screen');
+        if (ranking) ranking.hidden = true;
+        const roomPanel = $('live-host-room-panel');
+        if (roomPanel) roomPanel.hidden = true;
+        const stamp = $('live-host-stamp');
+        if (stamp) stamp.hidden = true;
+    }
+
     function resetHostToSetup(message) {
         clearStoredHostRoom();
-        setHostRaceMode(false);
-        hostRaceColors = new Map();
-        $('live-host-room-panel').hidden = true;
+        resetHostGameOverlays();
+        resetLiveHostDefaults();
         updateHostAuthUI();
         if (message) showLiveError(message);
+    }
+
+    /**
+     * Host quit / leave Live Spark: destroy the room, clear storage, restore defaults.
+     * Safe to call repeatedly (e.g. goHome + hash change).
+     */
+    async function leaveHostSession() {
+        const hadRoom = Boolean(hostState?.code || sessionStorage.getItem('ls_live_host_code'));
+        if (hadRoom) {
+            try { await closePreviousHostRoom(); } catch { /* ignore */ }
+        } else {
+            clearStoredHostRoom();
+        }
+        resetHostGameOverlays();
+        resetLiveHostDefaults();
+        updateHostAuthUI();
+        LiveAudio.stopAll();
     }
 
     function handleHostSocketError(msg) {
@@ -1728,6 +1803,9 @@
 
         s.on('live:stamp-preparing', (data) => {
             if (!hostState || !window.StampRushUI) return;
+            // Lobby AI pre-gen must stay silent — switching host mode here looked like auto-start.
+            // Start-game emits without phase (or phase:'starting'); only skip explicit lobby pre-gen.
+            if (data?.phase === 'lobby') return;
             hostState.gameFormat = 'stamp-rush';
             StampRushUI.setPreparing(true, data?.message || 'Writing unique postcard sentences…');
         });
@@ -3320,12 +3398,16 @@
             return;
         }
 
-        // Reload / deep link on #/live/host: go straight back into the open room.
-        // A fresh open (header button, teacher tab) shows the setup page with a Resume link instead
-        // of closing the room — Create room still replaces it.
+        // Reload / deep link on #/live/host (not fresh): rejoin within the disconnect grace.
+        // Fresh open (hub / "Host Live Spark"): destroy any prior room and show defaults.
         if (!fresh && await resumeHostRoomAsync()) {
             showHostRoomScreen();
             return;
+        }
+        if (fresh) {
+            await leaveHostSession();
+        } else {
+            resetLiveHostDefaults();
         }
         openTeacherEntry();
         await prepareHostSetup();
@@ -5359,5 +5441,5 @@
         toggleLiveSourcePanels();
     });
 
-    window.LiveGame = { openHost, openHostWithGlossary, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged, prepareHostSetup, resumeHost };
+    window.LiveGame = { openHost, openHostWithGlossary, openJoin, openPlay, createHostRoom, joinRoom, onAuthChanged, prepareHostSetup, resumeHost, leaveHostSession, resetLiveHostDefaults };
 })();

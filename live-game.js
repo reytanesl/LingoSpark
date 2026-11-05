@@ -123,6 +123,12 @@ const BRITISH_TEAM_NAMES = [
 ];
 const MAX_PLAYERS = 40;
 const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
+/** Host tab reload grace: if the host socket does not return, destroy the room. */
+export function hostDisconnectGraceMs() {
+    return Math.max(500, Number(process.env.LIVE_HOST_DISCONNECT_GRACE_MS) || 12_000);
+}
+/** @deprecated use hostDisconnectGraceMs() — kept for tests that read the default. */
+export const HOST_DISCONNECT_GRACE_MS = 12_000;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const JOIN_RATE_WINDOW_MS = 60_000;
 const JOIN_RATE_MAX = 30;
@@ -1576,6 +1582,7 @@ export function createRoom(hostUserId, { deck, level, answerMode, gameFormat, te
         stampSeed: null,
         stampPrep: null,
         stampPrepGen: 0,
+        hostDisconnectTimer: null,
     };
     if (isWordCannon(room) && room.teamAssignment === 'pick') ensureCannonTeams(room);
     rooms.set(code, room);
@@ -1786,6 +1793,10 @@ export function destroyRoom(code, hostToken) {
     const room = getRoom(code);
     if (!room) return null;
     if (hostToken && room.hostToken !== hostToken) return null;
+    if (room.hostDisconnectTimer) {
+        clearTimeout(room.hostDisconnectTimer);
+        room.hostDisconnectTimer = null;
+    }
     rooms.delete(room.code);
     return room;
 }
@@ -2115,12 +2126,8 @@ function scheduleStampClozePrep(room, generateStampClozes) {
         promise: null,
         startedAt: Date.now(),
     };
-    if (room.hostSocketId && liveIo) {
-        liveIo.to(room.hostSocketId).emit('live:stamp-preparing', {
-            message: 'Writing unique postcard sentences…',
-            phase: 'lobby',
-        });
-    }
+    // Do NOT emit live:stamp-preparing here — that switches the host board into
+    // Stamp Rush mode and looks like the game started. Pre-gen stays silent in lobby.
     const promise = (async () => {
         try {
             const pack = await generateStampClozes({
@@ -2873,7 +2880,44 @@ export function broadcastLobbyUpdate(code) {
     }
 }
 
+function clearHostDisconnectTimer(room) {
+    if (!room?.hostDisconnectTimer) return;
+    clearTimeout(room.hostDisconnectTimer);
+    room.hostDisconnectTimer = null;
+}
+
+/** After the host socket drops, wait briefly for a reload; then destroy the room for everyone. */
+function scheduleHostDisconnectDestroy(io, room, onGameEnd) {
+    if (!room) return;
+    clearHostDisconnectTimer(room);
+    room.hostDisconnectTimer = setTimeout(() => {
+        room.hostDisconnectTimer = null;
+        // Host never came back — tear the room down so the next Live Spark open is a clean default.
+        if (room.hostSocketId) return; // rejoined
+        const code = room.code;
+        const hostToken = room.hostToken;
+        for (const player of room.players.values()) {
+            if (!player.socketId) continue;
+            io.to(player.socketId).emit('live:player-removed', {
+                message: 'The host left Live Spark. This room has closed.',
+            });
+            const playerSocket = io.sockets.sockets.get(player.socketId);
+            if (playerSocket) {
+                playerSocket.leave(`room:${code}`);
+                playerSocket.data.liveRole = null;
+                playerSocket.data.playerId = null;
+            }
+        }
+        if (room.phase === 'playing' && onGameEnd) {
+            try { onGameEnd(room); } catch (_) { /* ignore */ }
+        }
+        destroyRoom(code, hostToken);
+    }, hostDisconnectGraceMs());
+    if (typeof room.hostDisconnectTimer.unref === 'function') room.hostDisconnectTimer.unref();
+}
+
 export function initLiveGame(io, { onGameEnd: onGameEndHook, generateStampClozes } = {}) {
+
     // Every finish path calls onGameEnd: build the authoritative report first, then let the server save it.
     const onGameEnd = (room) => {
         if (room && room.reportStats && !room.reportStats.reported) {
@@ -2916,6 +2960,7 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook, generateStampClozes
                 socket.emit('live:error', { error: 'Invalid host credentials.' });
                 return;
             }
+            clearHostDisconnectTimer(room);
             room.hostSocketId = socket.id;
             room._io = io;
             socket.join(`room:${room.code}`);
@@ -3165,7 +3210,7 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook, generateStampClozes
             }
             try {
                 if (isStampRush(room)) {
-                    io.to(room.hostSocketId).emit('live:stamp-preparing', { message: 'Writing unique postcard sentences…' });
+                    io.to(room.hostSocketId).emit('live:stamp-preparing', { message: 'Writing unique postcard sentences…', phase: 'starting' });
                 }
                 await startGame(room, { generateStampClozes });
                 initReportStats(room);
@@ -3725,6 +3770,8 @@ export function initLiveGame(io, { onGameEnd: onGameEndHook, generateStampClozes
             if (!room) return;
             if (socket.data.liveRole === 'host' && room.hostSocketId === socket.id) {
                 room.hostSocketId = null;
+                // Short grace for reloads; closing the tab / leaving without return destroys the room.
+                scheduleHostDisconnectDestroy(io, room, onGameEnd);
             }
             if (socket.data.liveRole === 'player') {
                 const player = room.players.get(socket.data.playerId);

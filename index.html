@@ -6939,6 +6939,7 @@
                 }
             }
             if (document.body.classList.contains('pm-active')) stopPenaltyMatchFrame();
+            try { window.LiveGame?.leaveHostSession?.(); } catch (e) { /* ignore */ }
             showScreen('home');
             closeHomeSection();
             return false;
@@ -7093,6 +7094,7 @@
                 if (root !== 'penalty-match' && !(root === 'game' && arg === 'penalty-match') && document.body.classList.contains('pm-active')) stopPenaltyMatchFrame();
 
                 if (root === 'home') {
+                    try { window.LiveGame?.leaveHostSession?.(); } catch (e) { /* ignore */ }
                     showScreen('home');
                     closeHomeSection();
                 } else if (root === 'reset-password') {
