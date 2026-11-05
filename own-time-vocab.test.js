@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {
     parseVocabList, vocabSig, planVocab, advanceVocabState, publicVocabPlan, freshVocabState,
     vocabBatchSize, OWN_TIME_VOCAB_MIN, sanitizeVocabState,
+    wordSetItemsToVocabText, sanitizeWordSetKey, OWN_TIME_BUILTIN_DECKS,
 } from './own-time-vocab.js';
 import {
     buildOwnTimeLessonPrompt, validateOwnTimeGenerateRequest, normalizeOwnTimeLesson,
@@ -166,4 +167,57 @@ test('server/db wiring: vocab endpoint, state column, reset on new list, own-tim
     assert.match(dbSrc, /vocab_state JSONB/);
     assert.match(dbSrc, /vocab_state = CASE WHEN vocab IS DISTINCT FROM/);
     assert.ok(!allowlist.includes('own-time-vocab'));
+});
+
+test('wordSetItemsToVocabText formats term = definition lines and dedupes', () => {
+    const text = wordSetItemsToVocabText([
+        { term: 'apple', definition: 'a fruit' },
+        { term: 'Apple', def: 'dup' },
+        { term: 'run' },
+        { term: '' },
+        null,
+    ]);
+    assert.equal(text, 'apple = a fruit\nrun');
+});
+
+test('sanitizeWordSetKey accepts saved ids and builtin keys only', () => {
+    assert.equal(sanitizeWordSetKey(''), '');
+    assert.equal(sanitizeWordSetKey('42'), '42');
+    assert.equal(sanitizeWordSetKey('builtin:intermediate'), 'builtin:intermediate');
+    assert.equal(sanitizeWordSetKey('builtin:nope'), '');
+    assert.equal(sanitizeWordSetKey('../etc'), '');
+    assert.equal(sanitizeWordSetKey(' 99 '), '99');
+});
+
+test('built-in decks cover Vocab-practice / Live levels', () => {
+    assert.deepEqual(OWN_TIME_BUILTIN_DECKS.map((d) => d.level), ['beginner', 'easy', 'intermediate', 'advanced']);
+});
+
+test('own-time UI offers a word-set selector and keeps the word box removed', () => {
+    assert.match(clientSrc, /ot-wordset|ot-session-wordset/);
+    assert.match(clientSrc, /wordSetKey/);
+    assert.match(clientSrc, /Bez zestawu \(jak dotychczas\)|No word set \(current behaviour\)/);
+    assert.match(serverSrc, /resolveOwnTimeWordSet/);
+    assert.match(serverSrc, /wordSetItemsToVocabText/);
+    assert.doesNotMatch(clientSrc, /class="ot-wordbox"|id="ot-wordbox"/);
+    assert.match(clientSrc, /Word boxes \("Use these words"\) were removed/);
+    assert.match(dbSrc, /word_set_key/);
+});
+
+test('generate request accepts wordSetKey and prompts never mention a word box', () => {
+    const ok = validateOwnTimeGenerateRequest({
+        profile: { age: 14, cefr: 'A2', taskPrefs: ['vocab'], wordSetKey: 'builtin:beginner' },
+        wordSetKey: 'builtin:beginner',
+    });
+    assert.equal(ok.ok, true);
+    assert.equal(ok.value.wordSetKey, 'builtin:beginner');
+    const prompt = buildOwnTimeLessonPrompt({
+        ...ok.value,
+        vocab: 'apple = a fruit\nhouse = a building',
+        vocabPlan: planVocab({ vocabText: words(12), cefr: 'A2' }),
+    });
+    assert.match(prompt, /VOCABULARY LIST MODE/);
+    assert.match(prompt, /word1/);
+    // Prompt still forbids a word box (negative instruction) — that is intentional.
+    assert.match(prompt, /NEVER use a word box/i);
 });

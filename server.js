@@ -110,7 +110,7 @@ import { staticAllowlist } from './static-allowlist.js';
 import { createWorksheetMakerRouter } from './worksheet-maker/server.js';
 import { cleanHandwrittenTranscript, stripStruckText, countEssayWords, HANDWRITING_STRIKE_RULES } from './handwriting-clean.js';
 import './matura-mistakes.js';
-import { planVocab, publicVocabPlan } from './own-time-vocab.js';
+import { planVocab, publicVocabPlan, wordSetItemsToVocabText, sanitizeWordSetKey, OWN_TIME_BUILTIN_DECKS } from './own-time-vocab.js';
 import './answer-check.js';
 const AnswerCheck = globalThis.AnswerCheck;
 const { sanitizeMistakes: sanitizeMaturaMistakes, PROMPT_TYPES: MATURA_MISTAKE_TYPES } = globalThis.MaturaMistakes;
@@ -1202,9 +1202,51 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
         }
     });
 
+
+    /** Resolve a saved / built-in word set into vocab text for In your own time. */
+    async function resolveOwnTimeWordSet(userId, key) {
+        const k = sanitizeWordSetKey(key);
+        if (!k) return null;
+        if (k.startsWith('builtin:')) {
+            const level = k.slice('builtin:'.length);
+            const meta = OWN_TIME_BUILTIN_DECKS.find((d) => d.key === k);
+            const items = loadBuiltinDeck(level);
+            const vocabText = wordSetItemsToVocabText(items);
+            if (!vocabText) return null;
+            return { key: k, name: meta?.en || level, count: items.length, vocabText, source: 'builtin' };
+        }
+        const ws = await getWordSet(Number(k), userId);
+        if (!ws) {
+            const err = new Error('Word set not found.');
+            err.status = 404;
+            throw err;
+        }
+        const vocabText = wordSetItemsToVocabText(ws.items || []);
+        if (!vocabText) {
+            const err = new Error('That word set has no usable terms.');
+            err.status = 400;
+            throw err;
+        }
+        return { key: k, name: String(ws.name || 'Word set'), count: (ws.items || []).length, vocabText, source: 'saved' };
+    }
+
     app.post('/api/own-time/generate', requireWritingAccess, async (req, res) => {
         const checked = validateOwnTimeGenerateRequest(req.body);
         if (!checked.ok) return res.status(400).json({ error: checked.error });
+        // Optional word-set selection: replace free-text vocab with that set's terms (target vocabulary).
+        let wordSetMeta = null;
+        if (checked.value.wordSetKey) {
+            try {
+                wordSetMeta = await resolveOwnTimeWordSet(req.user.id, checked.value.wordSetKey);
+            } catch (err) {
+                const status = err.status || 500;
+                return res.status(status).json({ error: err.message || 'Could not load that word set.' });
+            }
+            if (wordSetMeta) {
+                checked.value.vocab = wordSetMeta.vocabText;
+                checked.value.wordSet = wordSetMeta;
+            }
+        }
         // Imported list (10+ items): every set is built from the next batch (new) or from covered items (revise).
         const vplan = planVocab({ vocabText: checked.value.vocab, state: checked.value.vocabState, cefr: checked.value.cefr });
         if (vplan.active && vplan.exhausted) return res.json({ exhausted: true, vocabPlan: publicVocabPlan(vplan) });
@@ -1254,6 +1296,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
                 lesson.vocabPlan = lessonVocabPlan;
                 lesson.title = `${lessonVocabPlan.mode === 'revise' ? 'Powtórka' : 'Nowe słowa'} z listy (${lessonVocabPlan.from}–${lessonVocabPlan.to}): ${lessonVocabPlan.words.slice(0, 3).join(', ')}…`.slice(0, 120);
             }
+            if (wordSetMeta) lesson.wordSet = { key: wordSetMeta.key, name: wordSetMeta.name, count: wordSetMeta.count, source: wordSetMeta.source };
             return res.json({ lesson, mock: true, ...extraInfo });
         }
         try {
@@ -1278,6 +1321,7 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             lesson = publicOwnTimeLesson(lesson);
             if (reservation) lesson.extra = true;
             if (lessonVocabPlan) lesson.vocabPlan = lessonVocabPlan;
+            if (wordSetMeta) lesson.wordSet = { key: wordSetMeta.key, name: wordSetMeta.name, count: wordSetMeta.count, source: wordSetMeta.source };
             res.json({ lesson, ...extraInfo });
         } catch (error) {
             if (reservation) await releaseOwnTimeExtra(reservation.id).catch(() => {});

@@ -2,7 +2,7 @@
  * Server-owned prompts for "In your own time" practice lessons.
  */
 
-import { OWN_TIME_VOCAB_TEXT_MAX, vocabPromptBlock } from './own-time-vocab.js';
+import { OWN_TIME_VOCAB_TEXT_MAX, vocabPromptBlock, sanitizeWordSetKey } from './own-time-vocab.js';
 
 const CEFR_OK = new Set(['A0', 'A1', 'A2', 'B1', 'B2', 'C1']);
 const INTENSITY_OK = new Set(['light', 'standard', 'stretch']);
@@ -65,6 +65,8 @@ export function validateOwnTimeGenerateRequest(body = {}) {
 
     const topic = String(body.topic != null ? body.topic : profile.topic || '').trim().slice(0, 200);
     const vocab = String(body.vocab != null ? body.vocab : profile.vocab || '').trim().slice(0, OWN_TIME_VOCAB_TEXT_MAX);
+    // Optional teacher-saved / built-in word set (server resolves to vocab text before planVocab).
+    const wordSetKey = sanitizeWordSetKey(body.wordSetKey != null ? body.wordSetKey : profile.wordSetKey);
     const recentFeedback = cleanRecentFeedback(body.recentFeedback);
     const ps = body.prevSet && typeof body.prevSet === 'object' ? body.prevSet : null;
     const prevSet = ps ? { title: String(ps.title || '').trim().slice(0, 120), weak: (Array.isArray(ps.weak) ? ps.weak : []).map((x) => String(x ?? '').replace(/\s+/g, ' ').trim().slice(0, 160)).filter(Boolean).slice(0, 8) } : null;
@@ -94,6 +96,7 @@ export function validateOwnTimeGenerateRequest(body = {}) {
             instrLang,
             topic,
             vocab,
+            wordSetKey,
             vocabState,
             prevSet,
             recentFeedback,

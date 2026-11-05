@@ -2,7 +2,7 @@ import './matura-mistakes.js';
 import './wordset-import-core.js';
 import pg from 'pg';
 import crypto from 'crypto';
-import { advanceVocabState, sanitizeVocabState, OWN_TIME_VOCAB_TEXT_MAX } from './own-time-vocab.js';
+import { advanceVocabState, sanitizeVocabState, sanitizeWordSetKey, OWN_TIME_VOCAB_TEXT_MAX } from './own-time-vocab.js';
 import { sanitizeTestPrepState } from './own-time-testprep.js';
 import { OWN_TIME_PROFILE_LIMIT, OWN_TIME_DEFAULT_PROFILE_NAME, sanitizeOwnTimeProfileName, sanitizeOwnTimeAvatar, sanitizeOwnTimeProgress, ownTimeProgressSummary } from './own-time-profiles.js';
 
@@ -298,6 +298,8 @@ export async function initDb() {
     await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS vocab_state JSONB`);
     // "Sprawdzian za X dni": test-prep plan state (own-time-testprep.js), per profile.
     await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS test_prep JSONB`);
+    // Optional word-set key for In your own time: '' | numeric id | 'builtin:level'.
+    await db.query(`ALTER TABLE own_time_student_profiles ADD COLUMN IF NOT EXISTS word_set_key TEXT NOT NULL DEFAULT ''`);
     await migrateOwnTimeProfiles(db);
 }
 
@@ -1831,6 +1833,7 @@ function rowToOwnTimeProfile(row) {
         instrLang: row.instr_lang === 'en' ? 'en' : 'pl',
         topic: String(row.topic || ''),
         vocab: String(row.vocab || ''),
+        wordSetKey: sanitizeWordSetKey(row.word_set_key),
         voice: String(row.voice || ''),
         avatar: sanitizeOwnTimeAvatar(row.avatar),
         vocabState: sanitizeVocabState(row.vocab_state),
@@ -1977,6 +1980,7 @@ export function sanitizeOwnTimeProfileInput(body = {}) {
         instrLang,
         topic: String(body.topic || '').trim().slice(0, 200),
         vocab: String(body.vocab || '').trim().slice(0, OWN_TIME_VOCAB_TEXT_MAX),
+        wordSetKey: sanitizeWordSetKey(body.wordSetKey != null ? body.wordSetKey : body.word_set_key),
         // Read-aloud voice name (speechSynthesis); null = not sent → keep the saved one.
         voice: body.voice === undefined || body.voice === null ? null : sanitizeOwnTimeVoice(body.voice),
         // Full-profile edit: name / avatar are optional (null = keep the saved value).
@@ -2007,13 +2011,13 @@ export async function upsertOwnTimeProfile(userId, body, profileId = null) {
             purpose = $8, intensity = $9, instr_lang = $10, topic = $11,
             vocab_state = CASE WHEN vocab IS DISTINCT FROM $12 THEN NULL ELSE vocab_state END,
             test_prep = CASE WHEN vocab IS DISTINCT FROM $12 THEN NULL ELSE test_prep END, vocab = $12, voice = COALESCE($13, voice),
-            name = COALESCE($14, name), avatar = COALESCE($15, avatar), updated_at = NOW()
+            name = COALESCE($14, name), avatar = COALESCE($15, avatar), word_set_key = $16, updated_at = NOW()
          WHERE user_id = $1 AND id = $2
          RETURNING *`,
         [
             userId, id, p.age, p.classLabel, p.cefr,
             JSON.stringify(p.interests), JSON.stringify(p.taskPrefs),
-            p.purpose, p.intensity, p.instrLang, p.topic, p.vocab, p.voice, p.name, p.avatar,
+            p.purpose, p.intensity, p.instrLang, p.topic, p.vocab, p.voice, p.name, p.avatar, p.wordSetKey,
         ]
     );
     return rowToOwnTimeProfile(r.rows[0]);

@@ -134,3 +134,37 @@ Items:
 ${words}
 `;
 }
+
+/** Built-in Vocab-practice / Live decks offered beside teacher-saved sets. */
+export const OWN_TIME_BUILTIN_DECKS = [
+    { key: 'builtin:beginner', level: 'beginner', pl: 'Wbudowany: Beginner', en: 'Built-in: Beginner' },
+    { key: 'builtin:easy', level: 'easy', pl: 'Wbudowany: Easy', en: 'Built-in: Easy' },
+    { key: 'builtin:intermediate', level: 'intermediate', pl: 'Wbudowany: Intermediate', en: 'Built-in: Intermediate' },
+    { key: 'builtin:advanced', level: 'advanced', pl: 'Wbudowany: Advanced', en: 'Built-in: Advanced' },
+];
+
+/** Sanitize a word-set key: '' | '123' | 'builtin:level'. */
+export function sanitizeWordSetKey(raw) {
+    const s = String(raw ?? '').trim().slice(0, 40);
+    if (!s) return '';
+    if (/^builtin:(beginner|easy|intermediate|advanced)$/.test(s)) return s;
+    if (/^\d{1,12}$/.test(s)) return s;
+    return '';
+}
+
+/** Turn word-set / deck items into the pasted-list format planVocab already understands. */
+export function wordSetItemsToVocabText(items) {
+    const lines = [];
+    const seen = new Set();
+    for (const it of Array.isArray(items) ? items : []) {
+        const term = String(it?.term || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+        if (!term) continue;
+        const k = term.toLowerCase();
+        if (seen.has(k)) continue;
+        seen.add(k);
+        const def = String(it?.definition || it?.def || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+        lines.push(def ? `${term} = ${def}` : term);
+        if (lines.length >= OWN_TIME_VOCAB_MAX_ITEMS) break;
+    }
+    return lines.join('\n');
+}

@@ -73,6 +73,16 @@
     // "Sprawdzian za X dni": public plan summary from /api/own-time/test-prep (null = no plan), last set result.
     let testPrep = null;
     let tpResult = null;
+    // Teacher-saved word sets (+ built-in decks) for the setup selector.
+    let wordSetsCache = [];
+    let wordSetsLoaded = false;
+
+    const BUILTIN_WORDSETS = [
+        { key: 'builtin:beginner', pl: 'Wbudowany: Beginner', en: 'Built-in: Beginner' },
+        { key: 'builtin:easy', pl: 'Wbudowany: Easy', en: 'Built-in: Easy' },
+        { key: 'builtin:intermediate', pl: 'Wbudowany: Intermediate', en: 'Built-in: Intermediate' },
+        { key: 'builtin:advanced', pl: 'Wbudowany: Advanced', en: 'Built-in: Advanced' },
+    ];
 
     function esc(s) {
         return String(s ?? '')
@@ -277,6 +287,116 @@
         });
     }
 
+    async function ensureWordSets() {
+        if (wordSetsLoaded) return wordSetsCache;
+        try {
+            const res = await fetch('/api/word-sets', { credentials: 'same-origin' });
+            if (res.ok) {
+                const data = await res.json();
+                wordSetsCache = Array.isArray(data.sets) ? data.sets : [];
+            } else wordSetsCache = [];
+        } catch { wordSetsCache = []; }
+        wordSetsLoaded = true;
+        return wordSetsCache;
+    }
+
+    function wordSetOptionsHtml(selected) {
+        const sel = String(selected || '');
+        const none = t('Bez zestawu (jak dotychczas)', 'No word set (current behaviour)');
+        let html = `<option value=""${sel ? '' : ' selected'}>${esc(none)}</option>`;
+        if (wordSetsCache.length) {
+            html += `<optgroup label="${esc(t('Twoje zestawy', 'Your saved sets'))}">`;
+            for (const s of wordSetsCache) {
+                const id = String(s.id);
+                const label = `${s.name || ('#' + id)}${s.item_count != null ? ` (${s.item_count})` : ''}`;
+                html += `<option value="${esc(id)}"${sel === id ? ' selected' : ''}>${esc(label)}</option>`;
+            }
+            html += '</optgroup>';
+        }
+        html += `<optgroup label="${esc(t('Wbudowane (ćwiczenia / Live)', 'Built-in (Vocab practice / Live)'))}">`;
+        for (const b of BUILTIN_WORDSETS) {
+            const label = t(b.pl, b.en);
+            html += `<option value="${esc(b.key)}"${sel === b.key ? ' selected' : ''}>${esc(label)}</option>`;
+        }
+        html += '</optgroup>';
+        return html;
+    }
+
+    function wordSetSelectBlock(selected, { id = 'ot-wordset', session = false } = {}) {
+        const L = lang();
+        const title = session
+            ? (L === 'en' ? 'Word set this time' : 'Zestaw słów tym razem')
+            : (L === 'en' ? 'Word set (optional)' : 'Zestaw słów (opcjonalnie)');
+        const hint = L === 'en'
+            ? 'Tasks will practise words from the chosen set. Leave empty for free topics (or paste a custom list below).'
+            : 'Zadania będą ćwiczyć słowa z wybranego zestawu. Zostaw puste dla wolnych tematów (lub wklej własną listę poniżej).';
+        return `<label class="ot-block-label" for="${esc(id)}">${esc(title)}
+            <select id="${esc(id)}" class="pe-input ot-wordset-select">${wordSetOptionsHtml(selected)}</select>
+        </label>
+        <p class="ot-wordset-hint" id="${esc(id)}-hint">${esc(hint)}</p>`;
+    }
+
+    function readWordSetKey(...ids) {
+        for (const id of ids) {
+            const el = document.getElementById(id);
+            if (el) return String(el.value || '').trim();
+        }
+        return String(profile?.wordSetKey || '').trim();
+    }
+
+    async function applyWordSetToVocab(selectId, vocabId) {
+        const key = String(document.getElementById(selectId)?.value || '').trim();
+        const ta = document.getElementById(vocabId);
+        const hint = document.getElementById(`${selectId}-hint`);
+        const pasteWrap = ta?.closest('.ot-vocab-paste');
+        if (!key) {
+            if (hint) hint.textContent = t(
+                'Zadania będą ćwiczyć słowa z wybranego zestawu. Zostaw puste dla wolnych tematów (lub wklej własną listę poniżej).',
+                'Tasks will practise words from the chosen set. Leave empty for free topics (or paste a custom list below).'
+            );
+            if (ta) ta.disabled = false;
+            if (pasteWrap) pasteWrap.hidden = false;
+            return;
+        }
+        if (ta) { ta.disabled = true; ta.value = ''; }
+        if (pasteWrap) pasteWrap.hidden = true;
+        try {
+            let lines = [];
+            let name = key;
+            if (key.startsWith('builtin:')) {
+                // Built-ins are resolved on the server at generate time; show a short note only.
+                const b = BUILTIN_WORDSETS.find((x) => x.key === key);
+                name = b ? t(b.pl, b.en) : key;
+                if (hint) hint.textContent = t(
+                    `Wybrano: ${name}. Słowa zestawu zostaną wczytane przy starcie lekcji.`,
+                    `Selected: ${name}. Words load when the lesson starts.`
+                );
+                if (ta) ta.value = '';
+                return;
+            }
+            const res = await fetch(`/api/word-sets/${encodeURIComponent(key)}`, { credentials: 'same-origin' });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.set) {
+                if (hint) hint.textContent = data.error || t('Nie udało się wczytać zestawu.', 'Could not load that word set.');
+                return;
+            }
+            name = data.set.name || name;
+            lines = (data.set.items || []).map((i) => {
+                const term = String(i.term || '').trim();
+                const def = String(i.definition || i.def || '').trim();
+                if (!term) return '';
+                return def ? `${term} = ${def}` : term;
+            }).filter(Boolean);
+            if (ta) ta.value = lines.join('\n');
+            if (hint) hint.textContent = t(
+                `Zestaw „${name}”: ${lines.length} haseł — zadania będą na tych słowach.`,
+                `Set “${name}”: ${lines.length} items — tasks will use these words.`
+            );
+        } catch {
+            if (hint) hint.textContent = t('Nie udało się wczytać zestawu.', 'Could not load that word set.');
+        }
+    }
+
     function readForm() {
         const age = Number(document.getElementById('ot-age')?.value);
         const cefr = document.getElementById('ot-cefr')?.value || 'A2';
@@ -299,6 +419,7 @@
             instrLang,
             topic: String(document.getElementById('ot-topic')?.value || '').trim(),
             vocab: String(document.getElementById('ot-vocab')?.value || '').trim(),
+            wordSetKey: readWordSetKey('ot-wordset'),
             ...(document.getElementById('ot-voice') ? { voice: document.getElementById('ot-voice').value } : {}),
             ...(document.getElementById('ot-pname') ? { name: String(document.getElementById('ot-pname').value || '').trim() } : {}),
             ...(document.querySelector('input[name="ot-avatar"]') ? { avatar: document.querySelector('input[name="ot-avatar"]:checked')?.value || '' } : {}),
@@ -376,8 +497,9 @@
                 <label class="ot-block-label">${esc(L === 'en' ? 'Topic for next time (optional)' : 'Temat na następny raz (opcjonalnie)')}
                     <input type="text" id="ot-topic" class="pe-input" value="${esc(p.topic || '')}">
                 </label>
-                <label class="ot-block-label">${esc(L === 'en' ? 'Vocabulary to practise (optional)' : 'Słownictwo do ćwiczenia (opcjonalnie)')}
-                    <textarea id="ot-vocab" class="pe-input" rows="3" placeholder="${esc(L === 'en' ? 'One word or phrase per line' : 'Jedno słowo lub zwrot w linii')}">${esc(p.vocab || '')}</textarea>
+                ${wordSetSelectBlock(p.wordSetKey || '', { id: 'ot-wordset' })}
+                <label class="ot-block-label ot-vocab-paste"${p.wordSetKey ? ' hidden' : ''}>${esc(L === 'en' ? 'Or paste a custom word list (optional)' : 'Albo wklej własną listę słów (opcjonalnie)')}
+                    <textarea id="ot-vocab" class="pe-input" rows="3" placeholder="${esc(L === 'en' ? 'One word or phrase per line' : 'Jedno słowo lub zwrot w linii')}"${p.wordSetKey ? ' disabled' : ''}>${esc(p.wordSetKey ? '' : (p.vocab || ''))}</textarea>
                 </label>
                 ${testPrepSetupHtml()}
                 <div class="ot-instr-lang" id="ot-instr-lang-wrap" style="${offerEn || canOfferEnglish(p) ? '' : 'display:none'}">
@@ -438,6 +560,7 @@
                     <li><strong>${esc(L === 'en' ? 'Likes' : 'Lubisz')}:</strong> ${esc((p.taskPrefs || []).join(', ') || '—')}</li>
                     <li><strong>${esc(L === 'en' ? 'Interests' : 'Zainteresowania')}:</strong> ${esc((p.interests || []).join(', ') || '—')}</li>
                     ${p.topic ? `<li><strong>${esc(L === 'en' ? 'Topic' : 'Temat')}:</strong> ${esc(p.topic)}</li>` : ''}
+                    ${wordSetSummaryLine(p)}
                     ${testPrep ? '' : vocabListLine(p)}
                 </ul>
                 ${testPrep ? planCardHtml(testPrep) : ''}
@@ -447,10 +570,11 @@
                     <label>${esc(L === 'en' ? 'Topic this time (optional)' : 'Temat tym razem (opcjonalnie)')}
                         <input type="text" id="ot-session-topic" class="pe-input" value="${esc(p.topic || '')}">
                     </label>
-                    <label>${esc(L === 'en' ? 'Vocabulary this time (optional)' : 'Słownictwo tym razem (opcjonalnie)')}
-                        <textarea id="ot-session-vocab" class="pe-input" rows="2">${esc(p.vocab || '')}</textarea>
-                    </label>
                 </div>
+                ${wordSetSelectBlock(p.wordSetKey || '', { id: 'ot-session-wordset', session: true })}
+                <label class="ot-block-label ot-vocab-paste"${p.wordSetKey ? ' hidden' : ''}>${esc(L === 'en' ? 'Or paste vocabulary this time (optional)' : 'Albo wklej słownictwo tym razem (opcjonalnie)')}
+                    <textarea id="ot-session-vocab" class="pe-input" rows="2"${p.wordSetKey ? ' disabled' : ''}>${esc(p.wordSetKey ? '' : (p.vocab || ''))}</textarea>
+                </label>
                 <div class="ot-actions">
                     <button type="button" class="btn btn-blue" id="ot-start">${esc(L === 'en' ? 'Start practice (5–6 tasks)' : 'Zacznij ćwiczenia (5–6 zadań)')}</button>
                     <button type="button" class="btn btn-outline" id="ot-edit-profile">${esc(L === 'en' ? 'Edit profile' : 'Edytuj profil')}</button>
@@ -460,6 +584,19 @@
 
     /* ---------- Imported vocabulary list (10+ items): progress, end-of-material choice ---------- */
     let vocabEndOpts = null; // the start options to continue with after the student chooses what to do at the end of the list
+    function wordSetSummaryLine(p) {
+        const key = String(p.wordSetKey || '').trim();
+        if (!key) return '';
+        let label = key;
+        if (key.startsWith('builtin:')) {
+            const b = BUILTIN_WORDSETS.find((x) => x.key === key);
+            label = b ? t(b.pl, b.en) : key;
+        } else {
+            const s = wordSetsCache.find((x) => String(x.id) === key);
+            label = s ? (s.name || key) : t(`Zestaw #${key}`, `Set #${key}`);
+        }
+        return `<li><strong>${esc(t('Zestaw słów', 'Word set'))}:</strong> ${esc(label)}</li>`;
+    }
     function vocabListLine(p) {
         const s = p.vocabState;
         if (!s) return '';
@@ -1483,6 +1620,9 @@
         const el = root();
         if (!el) return;
         stopSpeaking(); // leaving / re-rendering a task always stops the read-aloud
+        if ((view === 'onboard' || view === 'edit' || view === 'dash') && !wordSetsLoaded) {
+            ensureWordSets().then(() => paint());
+        }
         let html = '';
         if (view === 'pick') html = renderPick();
         else if (view === 'onboard' || view === 'edit') html = renderOnboard(view === 'edit');
@@ -1800,6 +1940,8 @@
             if (note) note.hidden = !profile || ev.target.value === profile.cefr;
         });
 
+        document.getElementById('ot-wordset')?.addEventListener('change', () => applyWordSetToVocab('ot-wordset', 'ot-vocab'));
+        document.getElementById('ot-session-wordset')?.addEventListener('change', () => applyWordSetToVocab('ot-session-wordset', 'ot-session-vocab'));
         document.getElementById('ot-start')?.addEventListener('click', () => (testPrep ? startTestPrepSet() : startLesson()));
 
         document.getElementById('ot-check')?.addEventListener('click', () => {
@@ -2022,7 +2164,10 @@
             toggleLoading(true);
             setStatus(extra ? t('Układam dodatkowy zestaw…', 'Building an extra set…') : (L === 'en' ? 'Building your lesson…' : 'Układam lekcję…'), 'neutral');
             const topic = document.getElementById('ot-session-topic')?.value ?? profile.topic;
-            const vocab = document.getElementById('ot-session-vocab')?.value ?? profile.vocab;
+            const wordSetKey = readWordSetKey('ot-session-wordset', 'ot-wordset');
+            const vocab = wordSetKey ? '' : (document.getElementById('ot-session-vocab')?.value ?? profile.vocab);
+            // Keep the chosen set on the in-memory profile so the next dash paint shows it.
+            if (profile) profile.wordSetKey = wordSetKey;
             const recentFeedback = lessons.slice(0, 2).map((l) => l.feedback || {});
             const pl0 = lessons[0]?.lesson;
             const prevSet = pl0 ? { title: pl0.title || '', weak: pl0.weak || [] } : null;
@@ -2033,6 +2178,7 @@
                     profileId,
                     topic,
                     vocab,
+                    wordSetKey,
                     recentFeedback,
                     prevSet,
                     ...(extra ? { extra: true, extraContext: opts.extraContext || {} } : {}),
