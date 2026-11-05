@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createStampMatch, stampQuestionPayload, submitStampAnswer } from './stamp-rush.js';
-import { fallbackRealise, isFormOf, isStrongClozeSentence, fallbackRecognise, stampClozePackFromReply, buildStampClozePrompt } from './stamp-rush-prompts.js';
+import { fallbackRealise, isFormOf, isStrongClozeSentence, fallbackRecognise, stampClozePackFromReply, collectPackFrames, buildStampClozePrompt, CURATED_CLOZE } from './stamp-rush-prompts.js';
 import { createRoom, destroyRoom, joinRoom, publicRoomSnapshot } from './live-game.js';
 
 const WORDS = ['market', 'happy', 'school', 'arrive', 'prepare', 'stop', 'visit', 'begin', 'careful', 'simple', 'luggage', 'box', 'city', 'knife', 'child', 'alarm clock', 'tie', 'decide'];
@@ -78,18 +78,36 @@ test('AI prompt stresses topic, unambiguous word-formation context', () => {
     assert.match(prompt, /ONE natural form|unmistakable|prime importance/i);
 });
 
-test('fallback realise/recognise sentences are strong and topic-aware', () => {
+test('fallback realise/recognise sentences are strong and word-specific', () => {
     const travel = { term: 'passport', definition: 'an official document that lets you travel to another country' };
     const feel = { term: 'happy', definition: 'feeling or showing pleasure' };
-    for (let n = 0; n < 3; n++) {
-        const r = fallbackRealise(travel.term, travel.definition, n);
-        assert.ok(isStrongClozeSentence(r.sentence, { term: travel.term, answer: r.answer, formation: true }), r.sentence);
-        assert.match(r.sentence, /airport|journey|station|flight|bags|holiday|departure|train|travellers/i);
-        const f = fallbackRealise(feel.term, feel.definition, n);
-        assert.ok(isStrongClozeSentence(f.sentence, { term: feel.term, answer: f.answer, formation: true }), f.sentence);
-    }
+    const r = fallbackRealise(travel.term, travel.definition, 0);
+    assert.ok(isStrongClozeSentence(r.sentence, { term: travel.term, answer: r.answer, formation: true }), r.sentence);
+    assert.match(r.sentence, /control desk|embass|visa|boarding|jacket|plane/i);
+    assert.ok(isFormOf(r.answer, 'passport'));
+    const f = fallbackRealise(feel.term, feel.definition, 0);
+    assert.ok(isStrongClozeSentence(f.sentence, { term: feel.term, answer: f.answer, formation: true }), f.sentence);
+    assert.match(f.sentence, /face|letter|smile|news|happ/i);
     const rec = fallbackRecognise(travel.term, travel.definition, 0);
     assert.ok(isStrongClozeSentence(rec.sentence, { term: travel.term, answer: travel.term }));
-    assert.match(rec.sentence, /flight|journey|airport|travel/i);
     assert.equal(isStrongClozeSentence('The gap in this postcard is ___.', { term: 'arrive', answer: 'arrive' }), false);
+});
+
+test('a full fallback pack never reuses the same sentence frame', () => {
+    const box = [
+        ...['passport','border','journey','delay','ticket','arrive','depart','luggage','customs'],
+        ...['happy','sad','angry','afraid','excited','lonely','careful'],
+        ...['school','teacher','student','homework','exam','lesson','classroom'],
+    ].map((term) => ({ term, definition: `def ${term}` }));
+    const pack = stampClozePackFromReply(null, box, 2);
+    const frames = collectPackFrames(pack);
+    assert.ok(frames.length >= box.length * 2, 'at least one recognise+realise per term');
+    assert.equal(frames.length, new Set(frames).size, 'no duplicate frames');
+    // Spot-check: no banned generic frames.
+    for (const f of frames) {
+        assert.doesNotMatch(f, /several ___ waiting at the airport desk/);
+        assert.doesNotMatch(f, /guide reminded everyone that ___ is essential/);
+        assert.doesNotMatch(f, /preparing carefully before the next step/);
+    }
+    assert.ok(Object.keys(CURATED_CLOZE).length >= 20);
 });
