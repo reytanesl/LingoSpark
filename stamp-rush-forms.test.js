@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createStampMatch, stampQuestionPayload, submitStampAnswer } from './stamp-rush.js';
-import { fallbackRealise, isFormOf, stampClozePackFromReply } from './stamp-rush-prompts.js';
+import { fallbackRealise, isFormOf, isStrongClozeSentence, fallbackRecognise, stampClozePackFromReply, buildStampClozePrompt } from './stamp-rush-prompts.js';
 import { createRoom, destroyRoom, joinRoom, publicRoomSnapshot } from './live-game.js';
 
 const WORDS = ['market', 'happy', 'school', 'arrive', 'prepare', 'stop', 'visit', 'begin', 'careful', 'simple', 'luggage', 'box', 'city', 'knife', 'child', 'alarm clock', 'tie', 'decide'];
@@ -25,8 +25,8 @@ test('fallback word formation gives a real changed form of the base word in a on
 test('AI realise answers that are not a form of the base word are replaced by valid fallbacks', () => {
     const box = WORDS.slice(0, 12).map((term) => ({ term, definition: `def ${term}` }));
     const reply = { cards: [
-        { term: 'market', variants: [{ recognise: { sentence: 'We met at the ___.', answer: 'market' }, realise: { sentence: 'She works in ___.', cue: 'MARKET', answer: 'marketing' } }] },
-        { term: 'happy', variants: [{ recognise: { sentence: 'I am ___.', answer: 'happy' }, realise: { sentence: 'The ___ was over.', cue: 'HAPPY', answer: 'weekend' } }] },
+        { term: 'market', variants: [{ recognise: { sentence: 'We met at the ___ near our house yesterday afternoon.', answer: 'market' }, realise: { sentence: 'She works in ___ at a big company downtown.', cue: 'MARKET', answer: 'marketing' } }] },
+        { term: 'happy', variants: [{ recognise: { sentence: 'I felt ___ after reading the letter from my friend.', answer: 'happy' }, realise: { sentence: 'The ___ was over before anyone could speak.', cue: 'HAPPY', answer: 'weekend' } }] },
     ] };
     const pack = stampClozePackFromReply(reply, box, 1);
     assert.equal(pack.market[0].realise.answer, 'marketing', 'genuine AI form kept');
@@ -64,4 +64,32 @@ test('Stamp Rush can start with one player; other formats still need two', () =>
     joinRoom(race.code, 'Solo', '10.7.0.2');
     assert.equal(publicRoomSnapshot(race).canStart, false);
     destroyRoom(race.code, race.hostToken);
+});
+
+
+test('AI prompt stresses topic, unambiguous word-formation context', () => {
+    const prompt = buildStampClozePrompt({
+        box: [{ term: 'passport', definition: 'an official travel document' }],
+        variantCount: 2,
+        topic: 'Travel and holidays',
+    });
+    assert.match(prompt, /Lesson topic/);
+    assert.match(prompt, /Travel and holidays/);
+    assert.match(prompt, /ONE natural form|unmistakable|prime importance/i);
+});
+
+test('fallback realise/recognise sentences are strong and topic-aware', () => {
+    const travel = { term: 'passport', definition: 'an official document that lets you travel to another country' };
+    const feel = { term: 'happy', definition: 'feeling or showing pleasure' };
+    for (let n = 0; n < 3; n++) {
+        const r = fallbackRealise(travel.term, travel.definition, n);
+        assert.ok(isStrongClozeSentence(r.sentence, { term: travel.term, answer: r.answer, formation: true }), r.sentence);
+        assert.match(r.sentence, /airport|journey|station|flight|bags|holiday|departure|train|travellers/i);
+        const f = fallbackRealise(feel.term, feel.definition, n);
+        assert.ok(isStrongClozeSentence(f.sentence, { term: feel.term, answer: f.answer, formation: true }), f.sentence);
+    }
+    const rec = fallbackRecognise(travel.term, travel.definition, 0);
+    assert.ok(isStrongClozeSentence(rec.sentence, { term: travel.term, answer: travel.term }));
+    assert.match(rec.sentence, /flight|journey|airport|travel/i);
+    assert.equal(isStrongClozeSentence('The gap in this postcard is ___.', { term: 'arrive', answer: 'arrive' }), false);
 });

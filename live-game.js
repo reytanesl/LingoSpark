@@ -2171,6 +2171,7 @@ async function startGame(room, { generateStampClozes } = {}) {
                     box,
                     variantCount,
                     level: room.level || 'intermediate',
+                    topic: room.deckLabel || '',
                 });
             } catch (err) {
                 console.warn('Stamp Rush AI cloze failed; using fallbacks:', err.message);
