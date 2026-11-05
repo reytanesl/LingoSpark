@@ -46,11 +46,10 @@
     function taskHtml(task, n, o) {
         const L = o.lang === 'pl' ? 0 : 1;
         const items = task.items || [];
-        const bank = (o.shownBank && o.shownBank(task)) || task.wordBank || [];
         const head = `<div class="otp-task-head"><span class="otp-num">${n}</span><span class="otp-type">${esc((TYPE[task.type] || TYPE.writing)[L])}${task.format && o.formatName && o.formatName(task.format) ? ` · ${esc(o.formatName(task.format))}` : ''}</span></div>`;
         let body = '';
         if (task.instruction) body += `<p class="otp-instr">${esc(task.instruction)}</p>`;
-        if (bank.length) body += `<div class="otp-box">${bank.map((w) => `<span>${esc(w)}</span>`).join('')}</div>`;
+        // Word boxes removed from In your own time — never print a bank.
         TEXT_GAP.lastIndex = 0;
         const textGaps = task.prompt && /\{\{\s*\d+\s*\}\}/.test(task.prompt);
         if (textGaps) {

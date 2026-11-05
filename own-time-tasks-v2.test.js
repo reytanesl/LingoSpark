@@ -79,45 +79,45 @@ test('every sample lesson has unique cues per task (fixture B2 had a duplicate F
     assert.equal(b2.tasks.find((t) => t.format === 'word_formation').items.length, 4);
 });
 
-/* 4. box size = what the instruction says */
-const consistent = (t, label = '') => {
-    const r = instructionCueRefs(t.instruction);
-    const hasBox = Array.isArray(t.wordBank) && t.wordBank.length > 0;
-    assert.equal(r.box, hasBox, `box ref ${label}: ${t.instruction}`);
-    if (!hasBox) { assert.equal(r.total, null, label); assert.equal(r.extra, null, label); return; }
-    assert.equal(r.extra ?? 0, t.boxExtra || 0, `extras ${label}: ${t.instruction}`);
-    if (r.total != null) assert.equal(r.total, t.wordBank.length, `total ${label}: ${t.instruction}`);
-    const answers = t.items.length;
-    assert.equal(t.wordBank.length, answers + (t.boxExtra || 0), `box size ${label}`);
+/* 4. no word boxes — instructions never mention a box */
+const noBox = (task, label = '') => {
+    assert.equal(task.wordBank, undefined, label);
+    if (!task.instruction) return;
+    const r = instructionCueRefs(task.instruction);
+    assert.equal(r.box, false, `box ref ${label}: ${task.instruction}`);
+    assert.equal(r.extra, null, label);
+    assert.equal(r.total, null, label);
 };
 
-test('all sample lessons × difficulties: box size matches the instruction', () => {
-    for (const [cefr, intensity, L] of lessons()) for (const t of L.tasks) if (['vocab_drill', 'uoe'].includes(t.type)) consistent(t, `${cefr}/${intensity}/${t.format || t.type}`);
+test('all sample lessons × difficulties: never a word box or box instruction', () => {
+    for (const [cefr, intensity, L] of lessons()) for (const task of L.tasks) if (['vocab_drill', 'uoe'].includes(task.type)) noBox(task, `${cefr}/${intensity}/${task.format || task.type}`);
 });
 
 const three = [{ q: 'I ___ ok.', answer: 'am' }, { q: 'We ___ ok.', answer: 'are' }, { q: 'She ___ ok.', answer: 'is' }];
 const SYN = [
-    ['Use 4 of the 7 words in the box to complete the sentences.', ['am', 'are', 'is', 'be', 'was', 'been', 'being']],
-    ['Complete the sentences with words from the box. There are two extra words.', ['am', 'are', 'is', 'be', 'was', 'were']],
-    ['The box has eight words. Complete the gaps.', ['am', 'are', 'is', 'be']],
-    ['There are 5 words in the box. One word is not needed.', ['am', 'are', 'is']],
-    ['Complete the text with words from the box. You do not need two of the words.', ['am', 'are', 'is', 'be', 'was']],
-    ['Uzupełnij zdania wyrazami z ramki. Dwa wyrazy są zbędne.', ['am', 'are', 'is', 'be']],
-    ['Uzupełnij zdania. W ramce jest sześć wyrazów, trzy są dodatkowe.', ['am', 'are', 'is', 'be', 'was', 'were']],
-    ['Wykorzystaj 3 z 6 wyrazów z ramki.', ['am', 'are', 'is', 'be']],
-    ['Ramka zawiera 7 wyrazów. Wpisz w luki wyrazy z ramki.', ['am', 'are', 'is', 'was']],
-    ['Uzupełnij luki. W ramce podano dodatkowe wyrazy, które nie pasują do żadnej luki.', ['am', 'are', 'is']],
-    ['Uzupełnij zdania. W ramce jest pięć wyrazów.', null],
-    ['Complete the sentences.', ['am', 'are', 'is', 'be', 'was', 'were', 'been', 'being']],
+    'Use 4 of the 7 words in the box to complete the sentences.',
+    'Complete the sentences with words from the box. There are two extra words.',
+    'The box has eight words. Complete the gaps.',
+    'There are 5 words in the box. One word is not needed.',
+    'Complete the text with words from the box. You do not need two of the words.',
+    'Uzupełnij zdania wyrazami z ramki. Dwa wyrazy są zbędne.',
+    'Uzupełnij zdania. W ramce jest sześć wyrazów, trzy są dodatkowe.',
+    'Wykorzystaj 3 z 6 wyrazów z ramki.',
+    'Ramka zawiera 7 wyrazów. Wpisz w luki wyrazy z ramki.',
+    'Uzupełnij luki. W ramce podano dodatkowe wyrazy, które nie pasują do żadnej luki.',
+    'Uzupełnij zdania. W ramce jest pięć wyrazów.',
+    'Complete the sentences.',
 ];
-test('synthetic instruction phrasings (PL + EN, totals and extras) at every tier', () => {
-    for (const [instruction, wordBank] of SYN) for (const tier of [0, 1, 2, 3]) {
-        const t = applyWordCues({ type: 'vocab_drill', instruction, items: three, ...(wordBank ? { wordBank } : {}) }, { tier });
-        consistent(t, `t${tier} "${instruction}"`);
+test('legacy box instructions are sanitised away at every tier', () => {
+    for (const instruction of SYN) for (const tier of [0, 1, 2, 3]) {
+        const task = applyWordCues({ type: 'vocab_drill', instruction, items: three, wordBank: ['am', 'are', 'is', 'be'] }, { tier });
+        noBox(task, `t${tier} "${instruction}"`);
     }
 });
 
 test('no box → instruction mentions neither the box, its size nor extra words', () => {
-    const t = alignInstructionWithBox({ type: 'uoe', format: 'open_cloze', instruction: 'Complete the text. There are 6 words in the box. Two words are extra.', items: three });
-    assert.equal(t.instruction, 'Complete the text.');
+    const task = alignInstructionWithBox({ type: 'uoe', format: 'open_cloze', instruction: 'Complete the text. There are 6 words in the box. Two words are extra.', items: three });
+    assert.equal(instructionCueRefs(task.instruction).box, false);
+    assert.doesNotMatch(task.instruction, /box|extra|ramk|zbędn/i);
+    assert.match(task.instruction, /Complete/i);
 });

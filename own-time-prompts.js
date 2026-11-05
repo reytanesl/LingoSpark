@@ -377,7 +377,7 @@ HARD RULES:
 10b. ACCEPTED ANSWERS (every typed/open item): besides "answer", give "acceptedAnswers": an array with ALL other fully correct variants, like a CKE answer key — synonyms that fit the context and the rules (e.g. "despite" / "in spite of"), contracted and full forms ("don't" / "do not"), British/American spelling. Respect the format's word limits and key/given words in every variant. [] if there is truly only one answer.
 10c. CHANGE OF FORM (Use of English gaps with a given word or expression — verb/word in brackets, "brackets", "word_formation", "correct form" gaps): the answer must ALWAYS require changing the given word (inflection, tense, plural, comparative, auxiliary + verb, negation, derivation with a prefix/suffix…). NEVER write a gap whose answer is the given word unchanged (e.g. "(play)" → "play" is forbidden; "(play)" → "played" / "is playing" is right). Exception: "transformation" keeps its KEY word unchanged on purpose. WORD FORMATION: the answer must NEVER equal the given word (ignoring capitals) — "(HAPPY)" → "happy" is forbidden; "(HAPPY)" → "unhappily" is right.
 10d. NO REPEATED CUES: within one task every word in brackets / root cue must be different — never give two gaps the same base word (e.g. two gaps both "(go)" or both "(CREATE)").
-10a. WORD CUE (mandatory for EVERY gap-fill: vocab_drill gap sentences, verb-form / "correct form" tasks, "simple", "brackets", "word_formation", "open_cloze", "lexical_set" and any word-bank task): the student must always get a cue. EITHER give a task-level "wordBank": [EVERY answer word (repeat a word if it fills two gaps) + the distractors set by LEVEL CUES — plausible words of the same part of speech / word family that fit NO gap and are not an accepted answer] shown as a box above the items, OR give every item a bracket cue in "cue" (verb-form tasks: the BASE verb, e.g. "go" for "went"; word formation: the stem in CAPITALS). A cue must never be the answer itself unless the student has to change its form — give the base form, never the inflected answer. Do NOT add a box or cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options.
+10a. WORD CUE (gap-fill: vocab_drill gap sentences, verb-form / "correct form", "simple", "brackets", "word_formation", "open_cloze", "lexical_set"): NEVER use a word box, wordBank, "use these words", "words from the box", "extra words", or any list of answer words above the items — that UI does not exist. For form-change tasks give every item a bracket cue in "cue" (verb-form: BASE verb, e.g. "go" for "went"; word formation: stem in CAPITALS). A cue must never equal the answer itself unless the student must change its form. open_cloze at higher levels: no cues (exam style). Do NOT add a cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options. Instructions must NEVER mention a box, ramka, word bank, or extra/unused words.
     ${cueRuleText(cueTier(v))} (Challenge rises gradually with the level and the chosen difficulty.)
 10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
 11. STUDENT GUIDANCE (every task): the student works ALONE at home, so each task must be self-explanatory.
@@ -400,8 +400,7 @@ Return ONLY valid JSON (no markdown):
     {
       "n": 1,
       "type": "vocab_drill",
-      "wordBank": ["(gap-fill without per-item cues) the answer words, shuffled"],
-      "instruction": "what to do — in ${instrLangName}",
+      "instruction": "what to do — in ${instrLangName} (never mention a word box / ramka / extra words)",
       "format": "(uoe only) one of the allowed formats",
       "steps": ["krok 1", "krok 2"],
       "example": "worked example in English",
@@ -577,11 +576,11 @@ export function needsWordCue(task) {
 }
 
 /**
- * Every gap-fill task must give a word cue: a bracket cue on each gap OR a word box above the items.
+ * Gap-fill cues: bracket / root cue on each gap (preferred), or open cloze (no cue).
+ * There is NO word box ("Use these words") — never invent or keep a wordBank.
  * Bracket cues written into the sentence ("___ (go)") move into item.cue; a cue that simply equals
- * the answer is dropped (it would give the answer away). If some gaps have no cue, the task gets a
- * shuffled word box of the answers (plus any box words the AI sent). Verb-form / word-formation
- * tasks drop cue-less items when at least 2 cued items remain, else they fall back to a box too.
+ * the answer is dropped (it would give the answer away). Verb-form / word-formation tasks drop
+ * cue-less items when at least 2 cued items remain; otherwise they request a cue-repair call.
  */
 /**
  * How much help a gap-fill cue gives, rising gradually with the level (0 = most help … 3 = exam):
@@ -594,20 +593,20 @@ export function cueTier({ cefr, age, intensity } = {}) {
     if (intensity === 'stretch') tier += 1;
     return Math.max(0, Math.min(3, tier));
 }
-/** Distractors in a word box per tier: [min asked of the AI, max kept]. A0–A2: 1–2, B1: 2–3, B2: 3–4, C1 (non-cloze boxes): 3–5. */
-export const BOX_DISTRACTORS = [[1, 2], [2, 3], [3, 4], [3, 5]];
+/** @deprecated Word boxes removed from In your own time — kept empty so old tests/imports do not crash. */
+export const BOX_DISTRACTORS = [[0, 0], [0, 0], [0, 0], [0, 0]];
 /** Formats with no cue at all at this tier (exam-style): B2+ open cloze, C1 open cloze + lexical sets. */
 function cueFreeFormat(format, tier) {
     return (tier >= 2 && format === 'open_cloze') || (tier >= 3 && format === 'lexical_set');
 }
 
-/** Prompt text for the cue rule at this tier. */
+/** Prompt text for the cue rule at this tier (no word boxes — bracket cues or open cloze only). */
 export function cueRuleText(tier) {
     return [
-        'LEVEL CUES (most help): use a word box with every answer word + 1–2 distractors (extra words of the same part of speech / word family that fit NO gap), or a base-form bracket cue on every gap. open_cloze / lexical_set also get a box.',
-        'LEVEL CUES (B1): word box with the answers + 2–3 distractors (same part of speech, fit no gap), OR base-form bracket cues (verb forms: base verb).',
-        'LEVEL CUES (B2): prefer bracket / root cues (base verb, word-family root); a word box has the answers + 3–4 distractors (same part of speech / word family, fit no gap). open_cloze has NO box and no cues (exam format).',
-        'LEVEL CUES (C1 exam format): open_cloze and lexical_set have NO box and NO cues. Give cues only where the CKE exam has them (word_formation: root in CAPITALS; transformation: key word; brackets: words in brackets). Other vocabulary gaps: bracket root cues or a box with the answers + 3–5 distractors.',
+        'LEVEL CUES (most help): give a base-form bracket cue on EVERY gap (verb forms: base verb in brackets; vocab: base/root in brackets). Never use a word box / word bank / "use these words" list. open_cloze may use short bracket cues too.',
+        'LEVEL CUES (B1): prefer base-form bracket cues on every gap (verb forms: base verb). Never a word box. open_cloze: bracket cues OR open gaps with no list of words.',
+        'LEVEL CUES (B2): bracket / root cues (base verb, word-family root). open_cloze has NO cues (exam format). Never a word box / word bank / "extra words".',
+        'LEVEL CUES (C1 exam format): open_cloze and lexical_set have NO cues. Give cues only where the CKE exam has them (word_formation: root in CAPITALS; transformation: key word; brackets: words in brackets). Never a word box / "use these words" / distractors list.',
     ][tier] || '';
 }
 
@@ -730,41 +729,53 @@ export function extraWordsSentence(n, lang = 'pl') {
  * without a box, references to a box / extra words are removed (bracket-cue tasks keep their bracket wording).
  */
 export function alignInstructionWithBox(task, lang) {
-    if (!task || typeof task.instruction !== 'string' || !task.instruction) return task;
-    const L = lang || (/[ąćęłńóśźż]|uzupełnij|wpisz|przeczytaj/iu.test(task.instruction) ? 'pl' : 'en');
-    let instr = task.instruction.replace(EXTRA_SENTENCE, '').trim();
-    const hasBox = Array.isArray(task.wordBank) && task.wordBank.length > 0;
-    if (hasBox) {
-        // "Use the words in brackets" but no gap has a bracket cue → the box is the cue: say so.
-        if (instructionCueRefs(instr).brackets && !(task.items || []).some((it) => it.cue)) {
-            instr = L === 'en' ? 'Complete the gaps with the words from the box.' : 'Uzupełnij luki wyrazami z ramki.';
-        }
-        if (!instructionCueRefs(instr).box) instr = `${instr.replace(/[.!?]?\s*$/, '.')} ${L === 'en' ? 'Use the words from the box.' : 'Użyj wyrazów z ramki.'}`.trim();
-        // Stated totals ("6 words in the box", "4 of the 6 words") are rewritten to the real counts.
-        const total = task.wordBank.length;
-        const used = total - (task.boxExtra || 0);
-        instr = instr.replace(new RegExp(`\\b(?:use|wykorzystaj|użyj|wpisz)\\s+${NUM_RE}(?=\\s+(?:of|z|spośród)\\s)`, 'giu'), (m0, n) => m0.replace(n, String(used)));
-        const plNoun = (n) => (n === 1 ? 'wyraz' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'wyrazy' : 'wyrazów'));
-        TOTAL_RES.forEach((re, k) => {
-            instr = instr.replace(new RegExp(re.source, 'giu'), (m0, n) => {
-                let r = m0.replace(n, String(total));
-                if (k < 2) r = r.replace(/\b(\d+)\s+(?:wyraz\p{L}*|słów|słowa|słowo)/iu, (x, d) => `${d} ${plNoun(Number(d))}`);
-                return r;
-            });
-        });
-        instr = instr.replace(/\b(jest|są)\s+(\d+)\s+(wyraz\p{L}*)/giu, (x, v, d, w) => `${plNoun(Number(d)) === 'wyrazy' ? 'są' : 'jest'} ${d} ${w}`);
-        instr = `${instr.replace(/[.!?]?\s*$/, '.')} ${extraWordsSentence(task.boxExtra || 0, L)}`;
-    } else {
-        instr = sentences(instr).filter((x) => !TOTAL_RES.some((re) => re.test(x))).join('').trim() || instr;
-        const cued = (task.items || []).some((it) => it.cue);
-        if (instructionCueRefs(instr).box && cued && !instructionCueRefs(instr).brackets) {
-            instr = L === 'en' ? 'Complete the gaps with the correct form of the words in brackets.' : 'Uzupełnij luki wyrazami z nawiasów w odpowiedniej formie.';
-        }
-        instr = instr.replace(BOX_REF, '').replace(/\s+([.,!?])/g, '$1').replace(/\s{2,}/g, ' ').trim();
-        const { boxExtra, ...rest } = task;
-        return instr === task.instruction ? rest : { ...rest, instruction: instr };
+    if (!task || typeof task.instruction !== 'string' || !task.instruction) {
+        if (!task) return task;
+        const { wordBank, autoWordBank, boxExtra, ...rest } = task;
+        return rest;
     }
-    return instr === task.instruction ? task : { ...task, instruction: instr };
+    const L = lang || (/[ąćęłńóśźż]|uzupełnij|wpisz|przeczytaj/iu.test(task.instruction) ? 'pl' : 'en');
+    const fallback = L === 'en' ? 'Complete the gaps.' : 'Uzupełnij luki.';
+    const bracketInstr = L === 'en'
+        ? 'Complete the gaps with the correct form of the words in brackets.'
+        : 'Uzupełnij luki wyrazami z nawiasów w odpowiedniej formie.';
+    const origRefs = instructionCueRefs(task.instruction);
+    const hadBoxTalk = origRefs.box || origRefs.total != null || origRefs.extra != null
+        || new RegExp(EXTRA_SENTENCE.source, 'iu').test(task.instruction)
+        || new RegExp(BOX_REF.source, 'iu').test(task.instruction);
+    // Word boxes are gone: strip every box / bank / extra-word phrasing (legacy + AI slips).
+    let instr = task.instruction.replace(EXTRA_SENTENCE, '').trim();
+    instr = sentences(instr).filter((x) => !TOTAL_RES.some((re) => re.test(x))).join('').trim() || instr;
+    const cued = (task.items || []).some((it) => it.cue);
+    if (hadBoxTalk && origRefs.box && cued && !origRefs.brackets) {
+        instr = bracketInstr;
+    } else {
+        instr = instr
+            .replace(BOX_REF, '')
+            .replace(/\b(?:use|wykorzystaj|użyj|wpisz)\s+\d+\s+(?:of|z|spośród)\s+(?:the\s+|tych\s+|podanych\s+)?\d+\s+(?:words?|wyraz\p{L}*|słów)\b/giu, '')
+            .replace(/\b(?:use|wykorzystaj|użyj)\s+(?:the\s+|tych\s+|these\s+)?(?:words?|wyrazy?|słów|słowa)\b/giu, '')
+            .replace(/\b(Use the words|Użyj wyrazów|Użyj słów|Use these words|Użyj tych słów)\.?$/iu, '')
+            .replace(/\b(with|using)\s+(the\s+)?words\.?$/iu, '')
+            .replace(/\b(słowami|wyrazami)\.?$/iu, '')
+            .replace(/\s+([.,!?])/g, '$1')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+        const refs = instructionCueRefs(instr);
+        const looksLikeInstr = /^(Complete|Fill|Write|Read|Choose|Match|Translate|Przekształć|Uzupełnij|Wpisz|Przeczytaj|Wybierz|Dopasuj|Przetłumacz)\b/u.test(instr);
+        const remnant = hadBoxTalk && (
+            !instr
+            || instr.length < 10
+            || instr === '.'
+            || refs.box
+            || refs.total != null
+            || refs.extra != null
+            || !looksLikeInstr
+            || /\b(words?|wyrazy?|wyrazami|słów|słowa|słowami)\s*\.?$/iu.test(instr)
+        );
+        if (remnant) instr = cued ? bracketInstr : fallback;
+    }
+    const { wordBank, autoWordBank, boxExtra, ...rest } = task;
+    return { ...rest, instruction: instr };
 }
 
 export function applyWordCues(task, ctx = {}) {
@@ -774,21 +785,25 @@ export function applyWordCues(task, ctx = {}) {
 
 function applyWordCuesRaw(task, ctx = {}) {
     const tier = Number.isInteger(ctx.tier) ? ctx.tier : 0;
+    if (!task) return task;
+    // Always drop any word box (legacy stored lessons + AI slips).
+    const stripBank = (obj) => {
+        if (!obj) return obj;
+        const { wordBank, autoWordBank, boxExtra, ...rest } = obj;
+        return rest;
+    };
     if (task?.type === 'uoe' && cueFreeFormat(task.format, tier)) {
-        const { wordBank, autoWordBank, needsCueRepair, ...rest } = task;
+        const { needsCueRepair, ...rest } = stripBank(task);
         return rest;
     }
-    if (!needsWordCue(task)) {
-        if (task && task.wordBank) { const { wordBank, ...rest } = task; return rest; }
-        return task;
-    }
+    if (!needsWordCue(task)) return stripBank(task);
+
     const textGaps = /\{\{\s*\d+\s*\}\}/.test(String(task.prompt || ''));
     let items = task.items.map((it) => {
         const out = { ...it };
         const m = String(out.q || '').match(BRACKET_AFTER_GAP);
         if (m && !out.cue) { out.cue = m[2].trim(); out.q = out.q.replace(m[0], m[1]); }
         if (out.cue && lowKey(out.cue) === lowKey(out.answer) && task.format !== 'word_formation') {
-            // Same as the answer: allowed only when it is a base form to be changed — here it isn't, so drop it.
             delete out.cue;
         }
         return out;
@@ -800,18 +815,10 @@ function applyWordCuesRaw(task, ctx = {}) {
         const withCue = items.filter(cued);
         if (withCue.length >= 2 && withCue.length < items.length) items = withCue;
     }
-    const answers = items.filter(isGap).map((it) => clean(it.answer, 40)).filter(Boolean);
-    const rawGiven = (Array.isArray(task.wordBank) && !task.autoWordBank ? task.wordBank : []).map((w) => clean(w, 40)).filter(Boolean).slice(0, 16);
-    // Box validation: every answer present (with counts), distractors that fit a gap stripped, capped by level.
-    const maxDistractors = (BOX_DISTRACTORS[tier] || BOX_DISTRACTORS[0])[1];
-    const given = rawGiven;
-    const { wordBank: _wb, autoWordBank: _auto, needsCueRepair: _rep, ...base } = task;
-    if (items.every(cued) && !given.length) return { ...base, items };
-    const { bank, distractors } = validateWordBank(given, items.filter(isGap), maxDistractors);
-    const out = { ...base, items, wordBank: shuffleWordBank(bank, task.instruction || ''), boxExtra: distractors.length };
-    if (!given.length) out.autoWordBank = true;
-    // A box of inflected answers is a weak cue for "correct form" tasks: the server asks the AI for base-form cues.
-    if (verbForm && !given.length) out.needsCueRepair = true;
+    const { needsCueRepair: _rep, ...base } = stripBank(task);
+    const out = { ...base, items };
+    // Verb-form gaps still missing cues → ask the AI for base-form cues (no box fallback).
+    if (verbForm && items.some((it) => isGap(it) && !cued(it))) out.needsCueRepair = true;
     return out;
 }
 
@@ -831,7 +838,7 @@ ${JSON.stringify(list)}
 Return ONLY valid JSON: {"tasks": [{"task": 1, "cues": ["go", "play"]}]} — one cue per item, same order.`;
 }
 
-/** Merge AI cue repairs: tasks whose every item got a valid cue lose the fallback word box. */
+/** Merge AI cue repairs: attach base-form cues; never restore a word box. */
 export function applyCueRepair(lesson, reply) {
     const byTask = new Map((Array.isArray(reply?.tasks) ? reply.tasks : []).map((r) => [Number(r?.task) - 1, Array.isArray(r?.cues) ? r.cues : []]));
     const tasks = (lesson?.tasks || []).map((t, i) => {
@@ -845,14 +852,18 @@ export function applyCueRepair(lesson, reply) {
             const { wordBank, autoWordBank, needsCueRepair, ...rest } = t;
             return alignInstructionWithBox({ ...rest, items });
         }
-        return t;
+        const { wordBank, autoWordBank, ...rest } = t;
+        return alignInstructionWithBox({ ...rest, items, needsCueRepair: true });
     });
     return { ...lesson, tasks };
 }
 
 /** Drop server-internal flags before a lesson goes to the browser. */
 export function publicOwnTimeLesson(lesson) {
-    return { ...lesson, tasks: (lesson?.tasks || []).map(({ needsCueRepair, ...t }) => t) };
+    return {
+        ...lesson,
+        tasks: (lesson?.tasks || []).map(({ needsCueRepair, wordBank, autoWordBank, boxExtra, ...t }) => t),
+    };
 }
 
 export function normalizeOwnTimeLesson(parsed, fallback = {}) {
@@ -914,7 +925,6 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
             instruction: examInstr || String(t?.instruction || '').slice(0, 500),
             prompt: String(t?.prompt || t?.text || '').slice(0, 4000),
             items,
-            ...(Array.isArray(t?.wordBank) && t.wordBank.length ? { wordBank: t.wordBank, boxExtra: Number(t.boxExtra) || 0 } : {}),
             modelAnswers: Array.isArray(t?.modelAnswers)
                 ? t.modelAnswers.map((a) => String(a || '').slice(0, 500)).filter(Boolean).slice(0, 8)
                 : [],

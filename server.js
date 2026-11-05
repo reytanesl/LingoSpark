@@ -1266,13 +1266,13 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
                 lesson = normalizeOwnTimeLesson(await runVisionJsonPrompt({ apiKey, prompt: retry, label: `${label}-retry` }), checked.value);
                 if (!lesson.taskCountOk) throw new Error('The lesson generator returned too few tasks. Please try again.');
             }
-            // Verb-form gap tasks without base-form cues: one short repair call; the word box stays as fallback.
+            // Verb-form gap tasks without base-form cues: one short repair call (no word-box fallback).
             const cuePrompt = buildCueRepairPrompt(lesson);
             if (cuePrompt) {
                 try {
                     lesson = applyCueRepair(lesson, await runVisionJsonPrompt({ apiKey, prompt: cuePrompt, label: `${label}-cues` }));
                 } catch (e) {
-                    console.warn('Own-time cue repair failed (word box kept):', e.message);
+                    console.warn('Own-time cue repair failed (gaps stay without a word box):', e.message);
                 }
             }
             lesson = publicOwnTimeLesson(lesson);

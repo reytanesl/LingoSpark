@@ -122,27 +122,29 @@ test('sets: new items of the day, recognition → production, MC shuffled, ≤6 
         for (let i = 1; i < pos.length; i += 1) assert.notEqual(pos[i], pos[i - 1], 'key never in the same slot twice in a row');
         assert.ok(t.items.every((it) => it.options.length === 4), 'B2: 4 options');
     }
-    // B2 gap fill = CKE translation format with the Polish fragment in brackets (no word box)
+    // B2 gap fill = CKE translation format with the Polish fragment in brackets
     const gap = L.tasks.find((t) => t.tp.kind === 'gap');
     assert.equal(gap.format, 'translation');
     assert.ok(gap.items.every((it) => it.pl && /_{3,}/.test(it.q)));
 });
 
-test('level-dependent gap cues: word box A0–A2, box + distractors B1, Polish fragment B2+', () => {
-    assert.equal(gapCueMode('A2'), 'box');
-    assert.equal(gapCueMode('B1'), 'box+');
+test('level-dependent gap cues: open cloze A0–B1 (no word box), Polish fragment B2+', () => {
+    assert.equal(gapCueMode('A2'), 'open');
+    assert.equal(gapCueMode('B1'), 'open');
     assert.equal(gapCueMode('B2'), 'pl');
     const { items, st } = fresh();
     const sp = nextSetPlan(st, today);
     const a2 = buildTestPrepLesson(st, items, sp, { cefr: 'A2' }).tasks.find((t) => t.tp.kind === 'gap');
-    assert.deepEqual([...a2.wordBank].sort(), a2.items.map((x) => x.answer).sort());
+    assert.equal(a2.wordBank, undefined);
+    assert.doesNotMatch(a2.instruction, /ramk|box|zbędn/i);
     for (const cefr of ['A2', 'B1', 'B2']) {
         const L = buildTestPrepLesson(st, items, sp, { cefr });
         for (const ix of sp.newIdx) assert.ok(L.tasks.some((t) => ['trans', 'gap', 'wf'].includes(t.tp.kind) && t.items.some((it) => it.ix === ix)), `${cefr} item ${ix} has a production task`);
         assert.ok(L.tasks.every((t) => t.items.length <= (t.tp.kind === 'match' ? 4 : t.tp.kind === 'mc' ? 5 : 6)), cefr);
+        assert.ok(L.tasks.every((t) => !t.wordBank), `${cefr} has no wordBank`);
     }
     const b1 = buildTestPrepLesson(st, items, sp, { cefr: 'B1' }).tasks.find((t) => t.tp.kind === 'gap');
-    assert.equal(b1.wordBank.length, b1.items.length + 2);
+    assert.equal(b1.wordBank, undefined);
 });
 
 test('progression across days + spaced review of the previous day; next-day button', () => {

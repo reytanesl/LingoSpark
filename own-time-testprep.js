@@ -436,20 +436,18 @@ const STEPS = {
     match: ['Przeczytaj angielskie słowo.', 'Wybierz jego polskie znaczenie.', 'Kliknij „Sprawdź”.'],
     mc: ['Przeczytaj polskie słowo lub zwrot.', 'Wybierz właściwy angielski odpowiednik.', 'Kliknij „Sprawdź”.'],
     trans: ['Przeczytaj polskie słowo.', 'Wpisz je po angielsku — pisownia się liczy.', 'Kliknij „Sprawdź” i popraw błędy.'],
-    gap: ['Przeczytaj całe zdanie.', 'Wpisz brakujące słowo lub zwrot z listy.', 'Kliknij „Sprawdź”.'],
+    gap: ['Przeczytaj całe zdanie.', 'Wpisz brakujące słowo lub zwrot.', 'Kliknij „Sprawdź”.'],
     wf: ['Przeczytaj zdanie.', 'Przekształć wyraz z nawiasu — zawsze zmień jego formę.', 'Kliknij „Sprawdź”.'],
 };
 
 /**
- * Which word cue a gap fill gets, by level (Karol's rule, mirrors cueTier in own-time-prompts.js):
- * tier 0 (A0–A2) = word box with exactly the answers; tier 1 (B1) = word box + 2 distractors;
- * tier 2–3 (B2/C1) = Polish fragment in brackets (CKE "tłumaczenie fragmentów", matura rozszerzona format).
+ * Which cue a gap fill gets by level (no word boxes):
+ * A0–B1 = open cloze (type the missing word); B2/C1 = Polish fragment in brackets (CKE translation).
  */
 export function gapCueMode(cefr) {
     const c = String(cefr || 'B1').toUpperCase();
-    if (['A0', 'A1', 'A2'].includes(c)) return 'box';
-    if (c === 'B1') return 'box+';
-    return 'pl';
+    if (['B2', 'C1'].includes(c)) return 'pl';
+    return 'open';
 }
 const EXAM_BY_CEFR = { A2: 'E8', B1: 'MP', B2: 'MR', C1: 'MD' };
 
@@ -507,8 +505,7 @@ function makeTask(kind, idx, items, ctx) {
         if (mode === 'pl') {
             return { ...base, type: 'uoe', format: 'translation', exam, instruction: 'Przetłumacz na język angielski fragmenty podane w nawiasach, tak aby otrzymać logiczne i gramatycznie poprawne zdania. Wymagana jest pełna poprawność ortograficzna wpisywanych fragmentów.', items: its };
         }
-        const distract = mode === 'box+' ? shuffled(items.map((x, i) => i).filter((i) => !idx.includes(i) && items[idx[0]] && items[i].sec === items[idx[0]].sec), r).slice(0, 2).map((i) => answerVariants(items[i].en)[0]) : [];
-        return { ...base, type: 'vocab_drill', instruction: 'Uzupełnij zdania słowami z ramki.', items: its, wordBank: shuffled([...its.map((x) => x.answer), ...distract], r) };
+        return { ...base, type: 'vocab_drill', instruction: 'Uzupełnij zdania.', items: its };
     }
     if (kind === 'wf') {
         const its = idx.map((w, n) => tag({ q: (sentences && sentences[w.ix]) && /_{3,}/.test(sentences[w.ix]) ? sentences[w.ix] : ['The shop assistant gave us a clear ___ .', 'Everybody was talking about the ___ .', 'We were surprised by the ___ .'][n % 3], cue: w.root, answer: w.answer }, w.ix));
@@ -529,7 +526,7 @@ const RECIPES = {
 };
 const MAX_PER_TASK = 6; // one screen also on a phone (375×812)
 const MAX_PER_MC_TASK = 5; // A–D options take more room
-// matching shows long Polish options; a word box (A0–B1) takes the room of ~2 sentences
+// matching shows long Polish options; open cloze (A0–B1) stays compact on one phone screen
 const capFor = (kind, cefr = 'B2') => {
     if (kind === 'match') return MAX_PER_MC_TASK - 1;
     if (kind === 'mc') return MAX_PER_MC_TASK;

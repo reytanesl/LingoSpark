@@ -30,7 +30,7 @@ test('MC options are lettered in the shown order; word box words are printed (sh
     mc.items[0].options.forEach((o, k) => assert.ok(html.includes(`<b>${'ABCD'[k]}.</b> ${o}`)));
     const box = { type: 'vocab_drill', instruction: 'x', wordBank: ['a', 'b', 'c'], items: [{ q: 'I ___', answer: 'a' }] };
     const h2 = P.build({ title: 'T', tasks: [box] }, { shownBank: () => ['c', 'a', 'b'] });
-    assert.match(h2, /<div class="otp-box"><span>c<\/span><span>a<\/span><span>b<\/span><\/div>/);
+    assert.doesNotMatch(h2, /otp-box|Use these words|wordBank/i);
 });
 
 test('answer key only when asked, on its own page, with letters for MC', () => {
