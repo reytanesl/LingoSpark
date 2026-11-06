@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
     normalizeOwnTimeLesson, applyWordCues, needsWordCue, shuffleWordBank, isVerbFormTask,
-    buildCueRepairPrompt, cueTier, cueRuleText, applyCueRepair, publicOwnTimeLesson, buildOwnTimeLessonPrompt, validateOwnTimeGenerateRequest,
+    buildCueRepairPrompt, cueTier, cueRuleText, applyCueRepair, applyLocalCueRepair, guessBaseCue, publicOwnTimeLesson, buildOwnTimeLessonPrompt, validateOwnTimeGenerateRequest,
 } from './own-time-prompts.js';
 import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY, OWN_TIME_MOCK_B1_REPLY, OWN_TIME_MOCK_B2_REPLY, OWN_TIME_MOCK_C1_REPLY } from './own-time-fixtures.js';
 
@@ -115,4 +115,32 @@ test('normaliser strips banks; prompt has the no-box tier rule', () => {
     assert.match(cueRuleText(3), /Never a word box/i);
     const p = buildOwnTimeLessonPrompt(validateOwnTimeGenerateRequest({ profile: { age: 17, cefr: 'C1', taskPrefs: ['uoe'], instrLang: 'pl', intensity: 'standard' }, topic: 'x' }).value);
     assert.match(p, /LEVEL CUES \(C1 exam format\)/);
+});
+
+test('guessBaseCue recovers common verb bases without AI', () => {
+    assert.equal(guessBaseCue('went'), 'go');
+    assert.equal(guessBaseCue('are playing'), 'play');
+    assert.equal(guessBaseCue("doesn't like"), 'not / like');
+    assert.equal(guessBaseCue('written'), 'write');
+    assert.equal(guessBaseCue('happiness'), ''); // not a verb form we reverse
+});
+
+test('applyLocalCueRepair fills cues and skips AI cue-repair prompt', () => {
+    const lesson = {
+        tasks: [{
+            needsCueRepair: true,
+            type: 'uoe',
+            format: 'tense_form',
+            instruction: 'Complete with the correct verb form.',
+            items: [
+                { q: 'She ___ yesterday.', answer: 'went' },
+                { q: 'They ___ now.', answer: 'are playing' },
+            ],
+        }],
+    };
+    const fixed = applyLocalCueRepair(lesson);
+    assert.equal(fixed.tasks[0].items[0].cue, 'go');
+    assert.equal(fixed.tasks[0].items[1].cue, 'play');
+    assert.equal(fixed.tasks[0].needsCueRepair, undefined);
+    assert.equal(buildCueRepairPrompt(fixed), '');
 });

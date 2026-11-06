@@ -106,7 +106,7 @@ async function cleanup(...files) {
 /**
  * Generate JSON via a child process so native SDK crashes cannot kill the web server.
  */
-export async function generateJson(prompt, { apiKey, cwd, retries = 3 } = {}) {
+export async function generateJson(prompt, { apiKey, cwd, retries = 2 } = {}) {
   const attempts = Math.max(1, Number(retries) || 1);
   let lastError;
   for (let i = 0; i < attempts; i += 1) {

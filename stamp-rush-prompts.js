@@ -1060,7 +1060,7 @@ export function fillStampClozeFallbacks(pack, box, variantCount = 2, usedFrames 
 }
 
 function withTimeout(promise, timeoutMs, label) {
-    const ms = Math.max(5_000, Number(timeoutMs) || 60_000);
+    const ms = Math.max(5_000, Number(timeoutMs) || 35_000);
     return new Promise((resolve, reject) => {
         const t = setTimeout(() => reject(new Error(`${label || 'Stamp Rush AI'} timed out after ${ms}ms`)), ms);
         Promise.resolve(promise).then(
@@ -1070,10 +1070,20 @@ function withTimeout(promise, timeoutMs, label) {
     });
 }
 
+/** Split a list into chunks of at most `size` (for parallel AI calls). */
+export function chunkList(list, size) {
+    const n = Math.max(1, Number(size) || 1);
+    const out = [];
+    const arr = Array.isArray(list) ? list : [];
+    for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
+    return out;
+}
+
 /**
  * AI-first cloze pack: runPrompt(prompt, label) → JSON reply.
- * Retries only rejected/missing cards (up to maxAttempts). Curated fallback only if still incomplete
- * or runPrompt is missing — always console.warns in that case.
+ * First pass and gap retries run independent word-batches in parallel (Promise.all) so wall-clock
+ * time stays closer to one model call even for large boxes. Retries only rejected/missing cards
+ * (up to maxAttempts). Curated fallback only if still incomplete or runPrompt is missing.
  */
 export async function generateStampClozePack({
     box,
@@ -1081,8 +1091,9 @@ export async function generateStampClozePack({
     level = 'intermediate',
     topic = '',
     runPrompt = null,
-    maxAttempts = 3,
-    timeoutMs = 60_000,
+    maxAttempts = 2,
+    timeoutMs = 35_000,
+    parallelBatchSize = 4,
     existingPack = null,
     warn = console.warn.bind(console),
 } = {}) {
@@ -1093,7 +1104,8 @@ export async function generateStampClozePack({
         if (!pack[key]) pack[key] = [];
     }
     const used = framesFromPack(pack, new Set());
-    const attempts = Math.max(1, Math.min(5, Number(maxAttempts) || 3));
+    const attempts = Math.max(1, Math.min(5, Number(maxAttempts) || 2));
+    const batchSize = Math.max(1, Math.min(8, Number(parallelBatchSize) || 4));
 
     if (typeof runPrompt !== 'function') {
         warn('Stamp Rush: AI unavailable (no runner) — using curated fallback sentences.');
@@ -1101,21 +1113,51 @@ export async function generateStampClozePack({
         return pack;
     }
 
+    async function runOne(prompt, label) {
+        return withTimeout(runPrompt(prompt, label), timeoutMs, label);
+    }
+
+    /** Fire several prompts; merge replies in arrival order into pack (shared `used` frames). */
+    async function runParallel(jobs) {
+        if (!jobs.length) return 0;
+        const settled = await Promise.all(jobs.map(async (job) => {
+            try {
+                const reply = await runOne(job.prompt, job.label);
+                return { ok: true, reply, label: job.label };
+            } catch (err) {
+                warn(`Stamp Rush: ${job.label} failed: ${err?.message || err}`);
+                return { ok: false, reply: null, label: job.label };
+            }
+        }));
+        let added = 0;
+        for (const s of settled) {
+            if (!s.ok || !s.reply) continue;
+            added += mergeAiStampReply(pack, s.reply, box, used) || 0;
+        }
+        return added;
+    }
+
     let gaps = listStampClozeGaps(pack, box, needN);
     for (let attempt = 0; attempt < attempts && gaps.length; attempt++) {
         const fullFirst = attempt === 0 && gaps.length === (box || []).length && gaps.every((g) => g.have === 0);
-        const prompt = fullFirst
-            ? buildStampClozePrompt({ box, variantCount: needN, level, topic })
-            : buildStampClozeRetryPrompt({ gaps, level, topic });
-        const label = fullFirst ? 'stamp-rush-cloze' : `stamp-rush-cloze-retry-${attempt}`;
-        try {
-            const reply = await withTimeout(runPrompt(prompt, label), timeoutMs, label);
-            const added = mergeAiStampReply(pack, reply, box, used);
-            if (!added) {
-                warn(`Stamp Rush: AI attempt ${attempt + 1}/${attempts} returned no usable cards.`);
-            }
-        } catch (err) {
-            warn(`Stamp Rush: AI attempt ${attempt + 1}/${attempts} failed: ${err?.message || err}`);
+        let added = 0;
+        if (fullFirst) {
+            const termBatches = chunkList(box || [], batchSize);
+            const jobs = termBatches.map((batch, bi) => ({
+                prompt: buildStampClozePrompt({ box: batch, variantCount: needN, level, topic }),
+                label: termBatches.length === 1 ? 'stamp-rush-cloze' : `stamp-rush-cloze-b${bi}`,
+            }));
+            added = await runParallel(jobs);
+        } else {
+            const gapBatches = chunkList(gaps, batchSize);
+            const jobs = gapBatches.map((batch, bi) => ({
+                prompt: buildStampClozeRetryPrompt({ gaps: batch, level, topic }),
+                label: `stamp-rush-cloze-retry-${attempt}${gapBatches.length > 1 ? `-b${bi}` : ''}`,
+            }));
+            added = await runParallel(jobs);
+        }
+        if (!added) {
+            warn(`Stamp Rush: AI attempt ${attempt + 1}/${attempts} returned no usable cards.`);
         }
         gaps = listStampClozeGaps(pack, box, needN);
     }

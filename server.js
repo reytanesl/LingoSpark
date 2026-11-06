@@ -101,7 +101,7 @@ import {
 import { reportToCsv, reportToPdf, reportFileBase } from './game-report.js';
 import { loadBuiltinDeck } from './vocab-quiz-utils.js';
 import { validateOdysseyRequest, buildOdysseyPrompt, targetWordsFound } from './odyssey-prompts.js';
-import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, buildCueRepairPrompt, applyCueRepair, publicOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
+import { validateOwnTimeGenerateRequest, buildOwnTimeLessonPrompt, normalizeOwnTimeLesson, buildCueRepairPrompt, applyCueRepair, applyLocalCueRepair, publicOwnTimeLesson, OWN_TIME_EXTRA_DAILY_LIMIT } from './own-time-prompts.js';
 import { OWN_TIME_MOCK_REPLY, OWN_TIME_MOCK_EXTRA_REPLY, OWN_TIME_MOCK_LOW_REPLY, OWN_TIME_MOCK_B1_REPLY, OWN_TIME_MOCK_B2_REPLY, OWN_TIME_MOCK_C1_REPLY } from './own-time-fixtures.js';
 import { ownTimeProfileLimit } from './own-time-profiles.js';
 import { createFrankGenerateHandler } from './frank-ai.js';
@@ -1324,12 +1324,19 @@ async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'gener
             const label = `own-time-${checked.value.cefr}${reservation ? '-extra' : ''}`;
             let lesson = normalizeOwnTimeLesson(await runVisionJsonPrompt({ apiKey, prompt, label }), checked.value);
             if (!lesson.taskCountOk) {
-                // Every lesson / extra set must have 5–6 tasks: ask once more, then reject.
-                const retry = `${prompt}\n\nIMPORTANT: your previous reply had ${lesson.tasks.length} usable task(s). Return EXACTLY 5 or 6 valid tasks.`;
+                // Short repair — do NOT resend the full 12k+ prompt; ask only for the missing tasks.
+                const have = (lesson.tasks || []).length;
+                const need = Math.max(0, 5 - have);
+                const retry = `You previously returned only ${have} usable task(s) for a LingoSpark "In your own time" lesson (CEFR ${checked.value.cefr}, age ${checked.value.age ?? 'n/a'}).
+Return ONLY valid JSON for ${need + have >= 5 ? 'EXACTLY ' + Math.min(6, Math.max(5, have + need)) : '5 or 6'} tasks total that COMPLETE this lesson.
+Keep the same topic/level/rules. Prefer grammar/uoe/vocab_drill mix. No word box. Each typed gap that needs a form change must include item "cue" (base form).
+Existing tasks to keep (do not duplicate): ${JSON.stringify((lesson.tasks || []).map((tk) => ({ type: tk.type, format: tk.format, instruction: tk.instruction, itemCount: (tk.items || []).length })))}
+Return {"title":"...","cefr":"${checked.value.cefr}","instrLang":"${checked.value.instrLang || 'pl'}","focus":"...","goal":"...","coachNote":"...","tasks":[ /* ${Math.min(6, Math.max(5, have + need))} full tasks */ ]}`;
                 lesson = normalizeOwnTimeLesson(await runVisionJsonPrompt({ apiKey, prompt: retry, label: `${label}-retry` }), checked.value);
                 if (!lesson.taskCountOk) throw new Error('The lesson generator returned too few tasks. Please try again.');
             }
-            // Verb-form gap tasks without base-form cues: one short repair call (no word-box fallback).
+            // Prefer local base-form cues; AI repair only if still missing (saves a full round-trip most of the time).
+            lesson = applyLocalCueRepair(lesson);
             const cuePrompt = buildCueRepairPrompt(lesson);
             if (cuePrompt) {
                 try {
@@ -1781,8 +1788,8 @@ app.get('/api/health', (_req, res) => {
                 level,
                 topic,
                 existingPack,
-                maxAttempts: 3,
-                timeoutMs: 60_000,
+                maxAttempts: 2,
+                timeoutMs: 35_000,
                 runPrompt: (prompt, label) => runVisionJsonPrompt({ apiKey, prompt, label }),
             });
         },

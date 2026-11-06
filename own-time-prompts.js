@@ -370,18 +370,18 @@ export function uoeInstruction(format, cefr, opts = {}) {
 /** Prompt paragraph: concrete polecenie examples for this student. */
 export function instructionToneGuide({ age, cefr, instrLang } = {}) {
     const aud = instructionAudience({ age, cefr });
-    const lang = instrLang === 'en' ? 'en' : 'pl';
-    const ex = (type, format = null) => taskInstruction(type, { format, age: aud.age, cefr: aud.cefr, instrLang: lang });
+    // Keep examples SHORT — full CKE polecenia are applied later by adaptTaskInstruction; bloating the
+    // generation prompt with them only slows the model.
     if (aud.band === 'kid') {
-        return `INSTRUCTION TONE (band=kid, age≈${aud.age}, ${aud.cefr}): write EVERY task "instruction" as ONE short, concrete sentence a primary pupil understands. No exam jargon (avoid: "spójny i poprawny językowo", "maksymalnie trzy wyrazy", "fragmenty podane w nawiasach" as long clauses). One action per sentence. Examples: vocab_drill → "${ex('vocab_drill')}"; tense_form → "${ex('uoe', 'tense_form')}"; error_correction → "${ex('uoe', 'error_correction')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}"; unscramble → "${ex('unscramble')}".`;
+        return `INSTRUCTION TONE (band=kid, age≈${aud.age}, ${aud.cefr}): ONE short concrete sentence a primary pupil understands. No exam jargon. Examples: "Wpisz czasownik z nawiasu w poprawnym czasie."; "Kliknij błędny wyraz i wpisz poprawną formę."; "Przeczytaj tekst. Odpowiedz krótko."; "Ułóż słowo z liter."`;
     }
     if (aud.band === 'young') {
-        return `INSTRUCTION TONE (band=young, age≈${aud.age}, ${aud.cefr}): clear school Polish/English, still short (1–2 sentences). Light exam vocabulary is OK if explained by the action. Examples: brackets → "${ex('uoe', 'brackets')}"; open_cloze → "${ex('uoe', 'open_cloze')}"; writing → "${ex('writing')}".`;
+        return `INSTRUCTION TONE (band=young, age≈${aud.age}, ${aud.cefr}): clear school Polish/English, 1–2 short sentences. Light exam vocabulary OK. Examples: "Uzupełnij lukę formą z nawiasu."; "Przeczytaj tekst. Uzupełnij każdą lukę jednym wyrazem."`;
     }
     if (aud.band === 'adult') {
-        return `INSTRUCTION TONE (band=adult, age≈${aud.age}, ${aud.cefr}): precise, adult wording — concise but not simplified for children; no talking down. Prefer exact limits and form-change clarity. Examples: open_cloze → "${ex('uoe', 'open_cloze')}"; word_formation → "${ex('uoe', 'word_formation')}"; writing → "${ex('writing')}".`;
+        return `INSTRUCTION TONE (band=adult, age≈${aud.age}, ${aud.cefr}): precise adult wording, no talking down; state word limits clearly. Prefer CKE-accurate UoE instructions (short).`;
     }
-    return `INSTRUCTION TONE (band=exam, age≈${aud.age}, ${aud.cefr}): concise CKE / exam-style wording appropriate for E8 or matura age — clear, formal enough for the paper, not childish. For Use of English prefer the official exam instruction style. Examples: word_formation → "${ex('uoe', 'word_formation')}"; sentence_rewrite → "${ex('uoe', 'sentence_rewrite')}"; error_correction → "${ex('uoe', 'error_correction')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}".`;
+    return `INSTRUCTION TONE (band=exam, age≈${aud.age}, ${aud.cefr}): concise CKE / exam-style polecenia for E8 or matura age — formal enough for the paper, not childish. Prefer official UoE wording; keep each instruction to 1–2 sentences.`;
 }
 
 /**
@@ -1199,6 +1199,150 @@ function applyWordCuesRaw(task, ctx = {}) {
 export function isVerbFormTask(task) {
     if (task?.format === 'brackets' || task?.format === 'tense_form') return true;
     return /\b(correct|right) (verb )?form|verb form|tense|odpowiedniej formie|właściwej formie|poprawnej formie|form[ęie] czasownik|czas(ie|u) /i.test(String(task?.instruction || ''));
+}
+
+
+/** Common irregular past/participle → base (enough to skip an AI cue-repair round-trip). */
+const IRREGULAR_BASE = {
+    was: 'be', were: 'be', been: 'be', am: 'be', is: 'be', are: 'be',
+    went: 'go', gone: 'go', going: 'go',
+    had: 'have', has: 'have', having: 'have',
+    did: 'do', done: 'do', does: 'do', doing: 'do',
+    said: 'say', saying: 'say',
+    made: 'make', making: 'make',
+    took: 'take', taken: 'take', taking: 'take',
+    came: 'come', coming: 'come',
+    saw: 'see', seen: 'see', seeing: 'see',
+    got: 'get', gotten: 'get', getting: 'get',
+    gave: 'give', given: 'give', giving: 'give',
+    found: 'find', finding: 'find',
+    thought: 'think', thinking: 'think',
+    told: 'tell', telling: 'tell',
+    became: 'become', becoming: 'become',
+    showed: 'show', shown: 'show', showing: 'show',
+    left: 'leave', leaving: 'leave',
+    felt: 'feel', feeling: 'feel',
+    put: 'put', putting: 'put',
+    brought: 'bring', bringing: 'bring',
+    began: 'begin', begun: 'begin', beginning: 'begin',
+    kept: 'keep', keeping: 'keep',
+    held: 'hold', holding: 'hold',
+    wrote: 'write', written: 'write', writing: 'write',
+    stood: 'stand', standing: 'stand',
+    heard: 'hear', hearing: 'hear',
+    let: 'let', letting: 'let',
+    meant: 'mean', meaning: 'mean',
+    set: 'set', setting: 'set',
+    met: 'meet', meeting: 'meet',
+    ran: 'run', running: 'run',
+    paid: 'pay', paying: 'pay',
+    sat: 'sit', sitting: 'sit',
+    spoke: 'speak', spoken: 'speak', speaking: 'speak',
+    lay: 'lie', lain: 'lie', lying: 'lie',
+    led: 'lead', leading: 'lead',
+    read: 'read', reading: 'read',
+    grew: 'grow', grown: 'grow', growing: 'grow',
+    lost: 'lose', losing: 'lose',
+    fell: 'fall', fallen: 'fall', falling: 'fall',
+    sent: 'send', sending: 'send',
+    built: 'build', building: 'build',
+    understood: 'understand', understanding: 'understand',
+    drew: 'draw', drawn: 'draw', drawing: 'draw',
+    broke: 'break', broken: 'break', breaking: 'break',
+    spent: 'spend', spending: 'spend',
+    cut: 'cut', cutting: 'cut',
+    drove: 'drive', driven: 'drive', driving: 'drive',
+    bought: 'buy', buying: 'buy',
+    wore: 'wear', worn: 'wear', wearing: 'wear',
+    chose: 'choose', chosen: 'choose', choosing: 'choose',
+    ate: 'eat', eaten: 'eat', eating: 'eat',
+    taught: 'teach', teaching: 'teach',
+    caught: 'catch', catching: 'catch',
+    slept: 'sleep', sleeping: 'sleep',
+    sold: 'sell', selling: 'sell',
+};
+
+/**
+ * Guess a BASE-form bracket cue from an answer (e.g. "went" → "go", "are playing" → "play",
+ * "doesn't like" → "not / like"). Returns '' when unsure — caller may fall back to AI repair.
+ */
+export function guessBaseCue(answer) {
+    const raw = String(answer || '').trim();
+    if (!raw) return '';
+    let s = raw.toLowerCase().replace(/[\u2018\u2019\u02bc`´]/g, "'");
+    // Aux + verb → cue the main verb (with optional "not /")
+    const neg = /^(do|does|did|is|are|was|were|has|have|had|will|would|can|could|shall|should|may|might|must)\s+not\s+([\p{L}']+)$/u.exec(s)
+        || /^(don't|doesn't|didn't|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|won't|wouldn't|can't|couldn't|shouldn't)\s+([\p{L}']+)$/u.exec(s);
+    if (neg) {
+        const v = neg[2] || neg[neg.length - 1];
+        const base = guessBaseCue(v) || v;
+        return base && base !== raw.toLowerCase() ? `not / ${base}` : '';
+    }
+    const prog = /^(am|is|are|was|were|be|'s|'re|'m)\s+([\p{L}']+)$/u.exec(s);
+    if (prog) {
+        const v = prog[2];
+        const base = guessBaseCue(v) || v.replace(/ing$/i, '') || v;
+        return base && lowKey(base) !== lowKey(raw) ? base : '';
+    }
+    const perf = /^(has|have|had|'s|'ve)\s+([\p{L}']+)$/u.exec(s);
+    if (perf) {
+        const base = guessBaseCue(perf[2]) || perf[2];
+        return base && lowKey(base) !== lowKey(raw) ? base : '';
+    }
+    // Single token
+    const w = s.replace(/[^\p{L}']+/gu, '');
+    if (!w) return '';
+    if (IRREGULAR_BASE[w]) return IRREGULAR_BASE[w];
+    // Regular morphology
+    if (w.endsWith('ies') && w.length > 4) return `${w.slice(0, -3)}y`;
+    if (w.endsWith('ied') && w.length > 4) return `${w.slice(0, -3)}y`;
+    if (w.endsWith('ing') && w.length > 5) {
+        const stem = w.slice(0, -3);
+        if (/(.)\1$/.test(stem) && !/(ee|oo)$/.test(stem)) return stem.slice(0, -1); // running → run
+        if (stem.endsWith('y') || stem.length <= 2) return stem;
+        return stem.endsWith('e') ? stem : `${stem}`; // playing → play; making kept via irregular
+    }
+    if (w.endsWith('ed') && w.length > 4) {
+        const stem = w.slice(0, -2);
+        if (/(.)\1$/.test(stem)) return stem.slice(0, -1); // stopped → stop
+        if (stem.endsWith('i')) return `${stem.slice(0, -1)}y`;
+        return stem.endsWith('e') ? stem : stem; // liked → like if we had e; walked → walk
+    }
+    if (w.endsWith('es') && w.length > 4) {
+        if (w.endsWith('ches') || w.endsWith('shes') || w.endsWith('sses') || w.endsWith('xes') || w.endsWith('zes')) return w.slice(0, -2);
+        return w.slice(0, -1);
+    }
+    // 3rd-person -s only — skip noun/adjective suffixes so "happiness" does not become "happines".
+    if (w.endsWith('s') && w.length > 3 && !w.endsWith('ss') && !w.endsWith('us') && !w.endsWith('is')
+        && !/(ness|tion|sion|ment|ship|hood|ance|ence|ity|ism|ist|ful|less|ous|ive|able|ible|ing)$/.test(w)) {
+        return w.slice(0, -1);
+    }
+    return '';
+}
+
+/** Fill missing verb-form cues locally; clears needsCueRepair when every gap has a cue. */
+export function applyLocalCueRepair(lesson) {
+    if (!lesson?.tasks?.length) return lesson;
+    const tasks = lesson.tasks.map((t) => {
+        if (!t?.needsCueRepair) return t;
+        const items = (t.items || []).map((it) => {
+            if (it.cue) return it;
+            const cue = guessBaseCue(it.answer);
+            if (!cue || lowKey(cue) === lowKey(it.answer)) return it;
+            return { ...it, cue };
+        });
+        const still = items.some((it) => {
+            const textGaps = /\{\{\s*\d+\s*\}\}/.test(String(t.prompt || ''));
+            const isGap = textGaps || /_{3,}/.test(String(it.q || ''));
+            return isGap && !it.cue;
+        });
+        if (!still) {
+            const { needsCueRepair, wordBank, autoWordBank, ...rest } = t;
+            return { ...rest, items };
+        }
+        return { ...t, items, needsCueRepair: true };
+    });
+    return { ...lesson, tasks };
 }
 
 /** Prompt asking for base-form cues for the items of verb-form tasks that arrived without cues. */

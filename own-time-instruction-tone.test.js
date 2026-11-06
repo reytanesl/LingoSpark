@@ -87,7 +87,8 @@ test('AI prompt includes age+level instruction tone with concrete examples', () 
         purpose: '', intensity: 'standard', topic: '', vocab: '', recentFeedback: [],
     });
     assert.match(kid, /INSTRUCTION TONE \(band=kid/);
-    assert.match(kid, /Wpisz czasownik z nawiasu w poprawnym czasie|Uzupełnij każde zdanie poprawną formą czasownika z nawiasu/);
+    // Short kid examples stay in the prompt (full CKE polecenia are applied later by adaptTaskInstruction).
+    assert.match(kid, /Wpisz czasownik z nawiasu w poprawnym czasie|Kliknij błędny wyraz/);
     assert.match(kid, /Never reuse one generic instruction/);
 
     const adult = buildOwnTimeLessonPrompt({
@@ -95,7 +96,7 @@ test('AI prompt includes age+level instruction tone with concrete examples', () 
         purpose: '', intensity: 'standard', topic: '', vocab: '', recentFeedback: [],
     });
     assert.match(adult, /INSTRUCTION TONE \(band=adult/);
-    assert.match(adult, /dokładnie jednym wyrazem|utworzonym od formy/);
+    assert.match(adult, /precise adult wording|CKE-accurate UoE/);
 });
 
 test('English instructions also follow the band', () => {

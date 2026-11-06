@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createStampMatch, stampQuestionPayload, submitStampAnswer } from './stamp-rush.js';
-import { fallbackRealise, isFormOf, isStrongClozeSentence, fallbackRecognise, stampClozePackFromReply, collectPackFrames, buildStampClozePrompt, CURATED_CLOZE, generateStampClozePack, mergeAiStampReply, listStampClozeGaps } from './stamp-rush-prompts.js';
+import { fallbackRealise, isFormOf, isStrongClozeSentence, fallbackRecognise, stampClozePackFromReply, collectPackFrames, buildStampClozePrompt, CURATED_CLOZE, generateStampClozePack, mergeAiStampReply, listStampClozeGaps, chunkList } from './stamp-rush-prompts.js';
 import { createRoom, destroyRoom, joinRoom, publicRoomSnapshot } from './live-game.js';
 
 const WORDS = ['market', 'happy', 'school', 'arrive', 'prepare', 'stop', 'visit', 'begin', 'careful', 'simple', 'luggage', 'box', 'city', 'knife', 'child', 'alarm clock', 'tie', 'decide'];
@@ -213,4 +213,63 @@ test('mergeAiStampReply rejects weak cards without inserting fallbacks', () => {
     assert.equal(added, 0);
     assert.equal(pack.happy.length, 0);
     assert.equal(listStampClozeGaps(pack, box, 1).length, 1);
+});
+
+test('chunkList splits for parallel Stamp Rush batches', () => {
+    assert.deepEqual(chunkList([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]]);
+    assert.deepEqual(chunkList([], 3), []);
+});
+
+test('generateStampClozePack runs first-pass batches in parallel', async () => {
+    const box = [
+        { term: 'passport', definition: 'an official travel document' },
+        { term: 'luggage', definition: 'bags you take when travelling' },
+        { term: 'ticket', definition: 'a pass to travel' },
+        { term: 'happy', definition: 'feeling pleasure' },
+    ];
+    let uniq = 0;
+    const makeCard = (term) => {
+        const n = ++uniq;
+        const realiseAnswer = term === 'happy' ? 'happiness'
+            : term === 'luggage' ? 'luggage-free'
+            : `${term}s`;
+        return {
+            term,
+            variants: [{
+                recognise: {
+                    sentence: `Please show your ___ carefully at the desk before boarding the plane today (${n}).`,
+                    answer: term,
+                },
+                realise: {
+                    sentence: term === 'happy'
+                        ? `You could see the ___ on her face when she opened the letter today (${n}).`
+                        : term === 'luggage'
+                            ? `With only a small backpack she enjoyed a completely ___ weekend away (${n}).`
+                            : `Travellers kept their ___ ready while waiting in the long morning queue (${n}).`,
+                    cue: term.toUpperCase(),
+                    answer: realiseAnswer,
+                },
+            }],
+        };
+    };
+    let inflight = 0;
+    let maxInflight = 0;
+    const seenLabels = [];
+    const runPrompt = async (prompt, label) => {
+        inflight += 1;
+        maxInflight = Math.max(maxInflight, inflight);
+        seenLabels.push(label);
+        await new Promise((r) => setTimeout(r, 40));
+        inflight -= 1;
+        const terms = box.filter((b) => prompt.includes(`${b.term} —`)).map((b) => b.term);
+        return { cards: terms.map((term) => makeCard(term)) };
+    };
+    const pack = await generateStampClozePack({
+        box, variantCount: 1, runPrompt, maxAttempts: 2, timeoutMs: 5000, parallelBatchSize: 2,
+    });
+    assert.ok(maxInflight >= 2, `expected parallel calls, maxInflight=${maxInflight} labels=${seenLabels}`);
+    assert.ok(seenLabels.some((l) => /-b\d/.test(String(l))), `labels=${seenLabels}`);
+    assert.equal(pack.passport[0].recognise.source, 'ai');
+    assert.equal(pack.happy[0].realise.answer, 'happiness');
+    assert.equal(pack.ticket[0].recognise.source, 'ai');
 });

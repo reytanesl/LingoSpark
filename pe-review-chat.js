@@ -2115,7 +2115,7 @@ Gramatyka: ${grammarFocusText()}. Słówka: ${state.wordList.join(', ')}. Focus:
 Tury: ${state.turns}. Trafienia gramatyki: ${state.grammarHits}. Słówka: ${state.vocabTouched.join(', ') || 'brak'}.
 
 Transkrypt:
-${historyText(10)}
+${historyText(6)}
 
 Return ONLY JSON:
 {"summary":"2 krótkie poprawne zdania po polsku","strengths":["2–4 mocne strony po polsku"],"improvements":["2–4 wskazówki po polsku"]}`
@@ -2124,7 +2124,7 @@ Grammar: ${grammarFocusText()}. Vocab: ${state.wordList.join(', ')}. Focus: ${sa
 Turns: ${state.turns}. Grammar hits: ${state.grammarHits}. Vocab touched: ${state.vocabTouched.join(', ') || 'none'}.
 
 Transcript:
-${historyText(10)}
+${historyText(6)}
 
 Return ONLY JSON:
 {"summary":"2 short encouraging sentences","strengths":["2–4 tips"],"improvements":["2–4 next steps"]}`;
