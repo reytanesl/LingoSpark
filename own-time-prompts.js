@@ -3,6 +3,8 @@
  */
 
 import { OWN_TIME_VOCAB_TEXT_MAX, vocabPromptBlock, sanitizeWordSetKey } from './own-time-vocab.js';
+import './own-time-error-fix.js';
+const { enrichErrorItem } = globalThis.OwnTimeErrorFix;
 
 const CEFR_OK = new Set(['A0', 'A1', 'A2', 'B1', 'B2', 'C1']);
 const INTENSITY_OK = new Set(['light', 'standard', 'stretch']);
@@ -143,7 +145,7 @@ export const UOE_FORMATS = {
     transformation: { kind: 'open', needsKey: true, name: 'Transformacje (parafrazy)', instr: 'Uzupełnij każde zdanie, wykorzystując wyraz podany wielkimi literami, tak aby zachować znaczenie zdania wyjściowego. Nie zmieniaj formy podanego wyrazu. W każdą lukę możesz wpisać maksymalnie pięć wyrazów, wliczając w to wyraz już podany.' },
     lexical_set: { kind: 'open', name: 'Set leksykalny (kolokacje)', instr: 'Wpisz jeden wyraz, który poprawnie uzupełnia luki we wszystkich trzech zdaniach. Wyraz musi mieć tę samą formę w każdym zdaniu.' },
     tense_form: { kind: 'open', cue: true, grammar: true, name: 'Formy czasowników / czasy', instr: 'Uzupełnij zdania. Wpisz w każdą lukę podany w nawiasie czasownik w odpowiednim czasie i formie gramatycznej. W każdą lukę możesz wpisać maksymalnie trzy wyrazy.' },
-    error_correction: { kind: 'open', grammar: true, name: 'Korekta błędu gramatycznego', instr: 'W każdym zdaniu jest jeden błąd gramatyczny. Popraw go — wpisz poprawną formę (lub poprawione zdanie), tak aby całość była gramatycznie poprawna.' },
+    error_correction: { kind: 'open', grammar: true, name: 'Korekta błędu gramatycznego', instr: 'W każdym zdaniu jest jeden błąd gramatyczny. Kliknij wyraz lub wyrazy, w których jest błąd, a następnie wpisz poprawną formę tylko tego fragmentu.' },
     sentence_rewrite: { kind: 'open', needsLead: true, grammar: true, name: 'Przekształcanie zdań (gramatyka)', instr: 'Przekształć każde zdanie zgodnie z poleceniem (np. strona bierna, mowa zależna, okres warunkowy), zachowując znaczenie. W każdą lukę możesz wpisać maksymalnie sześć wyrazów.' },
     grammar_mc: { kind: 'mc', grammar: true, name: 'Gramatyka — wybór wielokrotny', instr: 'Wybierz właściwą odpowiedź spośród podanych, tak aby otrzymać gramatycznie poprawne zdanie.' },
 };
@@ -205,7 +207,7 @@ const UOE_INSTR_BY_BAND = {
         transformation: 'Dokończ zdanie. Użyj słowa NAPISANEGO WIELKIMI LITERAMI — nie zmieniaj jego formy.',
         lexical_set: 'To samo słowo musi pasować do luk we wszystkich trzech zdaniach.',
         tense_form: 'Wpisz czasownik z nawiasu w poprawnym czasie.',
-        error_correction: 'Znajdź błąd w zdaniu i wpisz poprawną formę.',
+        error_correction: 'Kliknij błędny wyraz (lub wyrazy) i wpisz poprawną formę.',
         sentence_rewrite: 'Przepisz zdanie tak, jak każe polecenie (np. strona bierna).',
         grammar_mc: 'Wybierz poprawną formę gramatyczną.',
         simple: 'Uzupełnij luki.',
@@ -223,7 +225,7 @@ const UOE_INSTR_BY_BAND = {
         transformation: 'Uzupełnij zdanie wyrazem NAPISANYM WIELKIMI LITERAMI (bez zmiany formy; max. 5 wyrazów).',
         lexical_set: 'Uzupełnij luki we wszystkich trzech zdaniach tym samym wyrazem (ta sama forma).',
         tense_form: 'Uzupełnij lukę czasownikiem z nawiasu w odpowiednim czasie i formie.',
-        error_correction: 'W każdym zdaniu jest jeden błąd gramatyczny — wpisz poprawną formę.',
+        error_correction: 'Kliknij wyraz(y) z błędem i wpisz poprawną formę tylko tego fragmentu.',
         sentence_rewrite: 'Przekształć zdanie zgodnie z poleceniem (np. strona bierna, mowa zależna).',
         grammar_mc: 'Wybierz poprawną odpowiedź gramatyczną.',
         simple: 'Uzupełnij luki w zdaniach.',
@@ -236,7 +238,7 @@ const UOE_INSTR_BY_BAND = {
         lexical_set: 'Uzupełnij luki we wszystkich trzech zdaniach tym samym wyrazem (bez zmiany formy).',
         translation: 'Przetłumacz na język angielski fragmenty w nawiasach, zachowując pełną poprawność gramatyczną i ortograficzną.',
         tense_form: 'Uzupełnij każdą lukę czasownikiem z nawiasu w wymaganym czasie i aspekcie (maksymalnie trzy wyrazy).',
-        error_correction: 'Wskaż i popraw jeden błąd gramatyczny w każdym zdaniu — wpisz poprawną formę lub poprawione zdanie.',
+        error_correction: 'Kliknij wyraz lub wyrazy z błędem gramatycznym, potem wpisz poprawną formę tylko zaznaczonego fragmentu.',
         sentence_rewrite: 'Przekształć każde zdanie zgodnie z poleceniem gramatycznym, zachowując znaczenie (maksymalnie sześć wyrazów w luce).',
         grammar_mc: 'Wybierz formę gramatycznie poprawną w danym kontekście.',
     },
@@ -399,7 +401,7 @@ export function adaptTaskInstruction(task, { age = null, cefr = 'A2', instrLang 
     if (task.type === 'uoe' && task.format) {
         return { ...task, instruction: wanted || cur };
     }
-    const looksLikeInstr = /^(Complete|Fill|Write|Read|Choose|Match|Translate|Find|Correct|Rewrite|Przekształć|Uzupełnij|Wpisz|Przeczytaj|Wybierz|Dopasuj|Przetłumacz|Napisz|Ułóż|Build|Arrange|Form|Odtwórz|Zmień|Dokończ|Znajdź|Popraw|Przepisz)\b/u.test(cur);
+    const looksLikeInstr = /^(Complete|Fill|Write|Read|Choose|Match|Translate|Find|Correct|Rewrite|Przekształć|Uzupełnij|Wpisz|Przeczytaj|Wybierz|Dopasuj|Przetłumacz|Napisz|Ułóż|Build|Arrange|Form|Odtwórz|Zmień|Dokończ|Znajdź|Popraw|Przepisz|Kliknij)\b/u.test(cur);
     if (!cur || cur.length < 8 || !looksLikeInstr) return { ...task, instruction: wanted };
     const examJargon = /spójny i poprawny językowo|maksymalnie (?:trzy|pięć) wyraz|znajomość środków|fragmenty podane w nawiasach, tak aby|Wymagana jest pełna poprawność/i.test(cur);
     const babyTalk = /^(Ułóż słowo z liter|Napisz kilka krótkich zdań|Uzupełnij luki\.|Fill in each gap)\.?$/i.test(cur);
@@ -623,7 +625,7 @@ function uoeRuleText(cefr, nameLang) {
         transformation: '"transformation": 3–4 items; "lead" = the original sentence; "key" = ONE given word (shown in capitals, must be used unchanged); "q" = the second sentence with ONE "___" (max 5 words incl. the key word); "answer" + "alts".',
         lexical_set: '"lexical_set": 3 items; "q" = THREE sentences separated by "\n", each with ONE "___"; ONE word (same form) fits all three — collocations/phrasal meanings; "answer" + "alts".',
         tense_form: '"tense_form": 3–5 sentences; "q" with ONE "___"; "cue" = BASE verb (e.g. "go", "not / like"); "answer" = the correct tense/aspect form (max 3 words); "alts" = contractions/full forms. Pure grammar — not vocabulary meaning.',
-        error_correction: '"error_correction": 3–5 items; "lead" = the FULL incorrect English sentence (exactly one grammar mistake); "q" = "" or a short stem with "___" for the fix; "answer" = the corrected word/phrase OR the full corrected sentence; "alts" = other valid corrections. Do NOT ask about spelling of rare words — target tense, agreement, articles, prepositions, word order, pronouns.',
+        error_correction: '"error_correction": 3–5 items; "lead" = the FULL incorrect English sentence (exactly one grammar mistake); "errorFrom" = the exact wrong word or contiguous words in lead (e.g. "would be", "to go", "Despite of"); "answer" = ONLY the replacement fragment for that span (e.g. "were", "going", "Despite") — never the whole sentence; "alts" = other valid replacement fragments. The UI lets the student click those words and type only the fix. Do NOT target rare-word spelling — target tense, agreement, articles, prepositions, word order, pronouns.',
         sentence_rewrite: '"sentence_rewrite": 3–4 items; "lead" = original sentence; "rule" = short grammar label in CAPITALS (PASSIVE / REPORTED SPEECH / FIRST CONDITIONAL / COMPARATIVE / HAVE SOMETHING DONE / SO-SUCH…); "q" = rewritten stem with ONE "___" (max 6 words) OR "" if the whole rewrite is the answer; "answer" + "alts". Keep meaning; change structure as the rule requires.',
         grammar_mc: `"grammar_mc": 3–5 sentences targeting articles / prepositions / quantifiers / relative pronouns / verb forms; item "q" with ONE "___"; "options": ${lv.options} short choices; "answer" = the correct option. Grammar focus only.`,
     };
@@ -812,6 +814,14 @@ export function buildUoeItem(format, it, cefr) {
         if (!/___/.test(out.q) || out.q === lead) out.q = /___/.test(q) && q !== lead ? q : '';
         const rule = clean(it?.rule || it?.focus || it?.transform || '', 40).toUpperCase();
         if (rule) out.rule = rule;
+    }
+    if (format === 'error_correction') {
+        const errorFrom = clean(it?.errorFrom || it?.wrong || it?.error, 80);
+        if (errorFrom) out.errorFrom = errorFrom;
+        // Prefer fragment answers: if the AI returned the full corrected sentence, keep it as corrected and try to recover a fragment.
+        const enriched = enrichErrorItem(out);
+        if (!enriched.errorFrom && !errorFrom) return null;
+        return enriched;
     }
     if (format === 'lexical_set' && (q.match(/___/g) || []).length < 2) return null;
     if (format === 'two_sentences' && (q.match(/___/g) || []).length < 2) return null;

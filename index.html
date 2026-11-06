@@ -38,6 +38,7 @@
     <script src="pe-topic-challenge-hotspots.js"></script>
     <script src="pe-topic-challenge.js"></script>
     <script src="pe-review-chat.js"></script>
+    <script src="own-time-error-fix.js"></script>
     <script src="answer-check.js"></script>
     <script src="own-time-print.js"></script>
     <script src="own-time.js"></script>
@@ -3041,6 +3042,33 @@
         #screen-own-time .ot-tf-key { display: inline-block; margin: 0.1rem 0; padding: 0 0.5rem; border-radius: 6px; background: var(--ot-navy); color: #fff; font-weight: 800; letter-spacing: 0.08em; font-size: 0.85rem; }
         .ot-err-lead { text-decoration: none; border-left: 3px solid var(--pillarbox-red); padding-left: 0.55rem; background: rgba(200,16,46,0.05); border-radius: 0 8px 8px 0; }
         .ot-err-lead::before { content: "✗ "; color: var(--pillarbox-red); font-weight: 800; }
+        .ot-err { margin: 0.15rem 0 0.35rem; }
+        .ot-err-sent {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 0.28rem 0.35rem;
+            line-height: 1.7; font-size: 1.05rem; padding: 0.55rem 0.65rem;
+            background: rgba(200, 16, 46, 0.04); border-radius: 10px;
+            border-left: 3px solid var(--pillarbox-red);
+        }
+        .ot-err-word {
+            appearance: none; border: 1.5px solid transparent; background: #fff;
+            color: var(--text-dark); font: inherit; font-weight: 650;
+            padding: 0.15rem 0.4rem; border-radius: 7px; cursor: pointer;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.04); touch-action: manipulation;
+        }
+        .ot-err-word:hover, .ot-err-word:focus-visible {
+            border-color: rgba(200, 16, 46, 0.45); outline: none;
+            background: rgba(200, 16, 46, 0.06);
+        }
+        .ot-err-word.is-on {
+            background: rgba(200, 16, 46, 0.16); border-color: var(--pillarbox-red);
+            color: var(--pillarbox-red); box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.12);
+        }
+        .ot-err-punct { color: var(--text-muted); padding: 0 0.05rem; }
+        .ot-err-hint { margin: 0.35rem 0 0.25rem; font-size: 0.86rem; color: var(--text-muted); }
+        .ot-err-fix-row { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; margin-top: 0.25rem; }
+        .ot-err-fix-row .ot-err-fix { flex: 1 1 12rem; max-width: 28rem; }
+        .ot-err-clear { flex: 0 0 auto; font-size: 0.82rem; padding: 0.35rem 0.7rem; }
+
 
         #screen-own-time .ot-fmt--lexical_set .ot-q-line, #screen-own-time .ot-fmt--two_sentences .ot-q-line { line-height: 1.85; }
         @media (max-width: 520px) {

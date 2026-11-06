@@ -102,7 +102,7 @@ test('normalizeOwnTimeLesson keeps grammar formats + age-aware polecenia', () =>
     assert.ok(kidTf && kidEc);
     assert.match(kidTf.instruction, /czasownik|czasie/i);
     assert.doesNotMatch(kidTf.instruction, /maksymalnie trzy wyrazy|spójny i poprawny/i);
-    assert.match(kidEc.instruction, /błąd|popraw/i);
+    assert.match(kidEc.instruction, /Kliknij|wyraz|błąd|popraw/i);
     assert.ok(kid.tasks.filter(isGrammarUoeTask).length >= 2);
     assert.doesNotMatch(kidTf.instruction, /ramka|word box|Use these words/i);
 
@@ -154,7 +154,7 @@ test('polecenia for grammar differ kid A1 vs E8 A2 vs matura B2', () => {
     const b2 = uoeInstruction('sentence_rewrite', 'B2', { age: 17 });
     assert.match(kid, /czasownik|czasie/i);
     assert.ok(kid.length < 90);
-    assert.match(e8, /błąd gramatyczny/i);
+    assert.match(e8, /Kliknij|błąd|wyraz/i);
     assert.match(b2, /Przekształć|strona bierna|mowa zależna/i);
     assert.notEqual(kid, e8);
     const audKid = instructionAudience({ age: 9, cefr: 'A1' });

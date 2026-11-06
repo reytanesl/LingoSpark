@@ -38,6 +38,14 @@
     /** Spelling always counts (as in CKE marking), so a 1-letter typo is "almost" — never full credit.
      *  Only for answers of 4+ letters (shorter words: one letter changes the word, e.g. in/on). */
     function gradeAnswer(item, value) {
+        // error_correction: value is JSON {s,e,t} (selected span + fragment) — delegated.
+        const EF = root.OwnTimeErrorFix;
+        if (EF && (item?.format === 'error_correction' || (item?.lead && (item.errorStart != null || String(value || '').trim().startsWith('{'))))) {
+            // Only treat as error-fix when the item looks like one (has lead + error metadata) or value is encoded.
+            if (item?.lead && (item.errorStart != null || item.errorFrom || String(value || '').trim().startsWith('{'))) {
+                return EF.gradeErrorCorrection(item, value);
+            }
+        }
         const v = normAnswer(value);
         if (!v) return { status: 'empty' };
         const keys = keyAnswers(item);
@@ -76,6 +84,12 @@
         if (format === 'translation') { const max = ['B2', 'C1'].includes(cefr) ? 5 : 4; if (words > max) return `Przekroczony limit: maksymalnie ${max} wyrazy.`; }
         if ((format === 'brackets' || format === 'tense_form') && words > 3) return 'Przekroczony limit: maksymalnie 3 wyrazy.';
         if (format === 'sentence_rewrite' && words > 6) return 'Przekroczony limit: maksymalnie 6 wyrazów.';
+        if (format === 'error_correction') {
+            const EF = root.OwnTimeErrorFix;
+            const fix = EF ? EF.parseStudentValue(raw).fix : raw;
+            const fw = String(fix || '').split(/\s+/).filter(Boolean).length;
+            if (fw > 5) return 'Przekroczony limit: maksymalnie 5 wyrazów w poprawce.';
+        }
         if (format === 'word_formation' && item?.cue) {
             const root2 = normAnswer(item.cue).replace(/[^a-z]/g, '').slice(0, 2), v = normAnswer(raw).replace(/^(un|in|im|ir|il|dis|mis|non|over|under|re)/, '');
             if (root2 && !normAnswer(raw).includes(root2) && !v.startsWith(root2)) return `Odpowiedź musi pochodzić od wyrazu ${String(item.cue).toUpperCase()}.`;
@@ -94,11 +108,13 @@ Reply with JSON only: {"results":[{"i":<n>,"correct":true|false,"explanation":"O
             i: it.i,
             sentence: it.q || '',
             original: it.lead || undefined,
+            errorFrom: it.errorFrom || undefined,
             keyWord: it.key || undefined,
             givenWord: it.cue || undefined,
             polish: it.pl || undefined,
             key: [it.answer, ...(it.accepted || [])],
             student: it.given,
+            note: format === 'error_correction' ? 'Student clicked wrong word(s) and typed ONLY the replacement fragment (or JSON {s,e,t}). Accept other valid fragments that fix the same mistake.' : undefined,
         }));
         return `You are a fair English examiner (CKE matura / E8 style) checking gap-fill and open answers. Task format: "${format}", level ${cefr || 'B1'}.
 ${prompt ? `FULL TEXT / CONTEXT (gaps may appear as {{n}} or ___):\n${String(prompt).slice(0, 1800)}\n` : ''}Each item has the author's intended key and the student's answer, which did NOT match that key string. Decide whether the student's answer is ALSO fully correct IN THIS CONTEXT:

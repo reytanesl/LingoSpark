@@ -28,6 +28,12 @@
     function itemHtml(task, it) {
         if (task.type === 'word_order') return `${it.q ? `<span class="otp-cue">${esc(it.q)}</span> ` : ''}<span class="otp-tiles">${(it.tiles || []).map(esc).join(' / ')}</span><br>${line(40)}`;
         if (task.type === 'unscramble') return `${esc(it.q || '')} <span class="otp-tiles">${(it.tiles || []).map(esc).join(' ')}</span> ${line(gapLen(it))}`;
+        if (task.format === 'error_correction' && (it.lead || it.q)) {
+            const sent = String(it.lead || it.q || '');
+            // Print: each word underlined (circle the mistake) + a short blank for the fragment only.
+            const words = sent.split(/(\s+)/).map((w) => (/\s/.test(w) ? esc(w) : (w ? `<u class="otp-err-w">${esc(w)}</u>` : ''))).join('');
+            return `<span class="otp-lead otp-err-sent">${words}</span><br><span class="otp-meta">${esc('→')}</span> ${line(Math.max(10, String(it.answer || '').length + 4))}`;
+        }
         const lead = it.lead ? `<span class="otp-lead">${esc(it.lead)}</span><br>${it.key ? `<b class="otp-key">${esc(it.key)}</b><br>` : ''}` : '';
         let q = esc(it.q || '');
         const extra = `${it.cue ? ` <span class="otp-cue">(${esc(it.cue)})</span>` : ''}${it.pl ? ` <span class="otp-cue">(${esc(it.pl)})</span>` : ''}`;
@@ -74,7 +80,8 @@
             return `<li><b>${i + 1}.</b> ${items.map((it, k) => {
                 const optIx = Array.isArray(it.options) ? it.options.indexOf(it.answer) : -1;
                 const alts = (it.alts || it.acceptedAnswers || []).filter(Boolean).slice(0, 2);
-                return `(${k + 1}) ${optIx >= 0 ? `${LETTERS[optIx]} ` : ''}${esc(it.answer)}${alts.length ? ` <span class="otp-alt">/ ${alts.map(esc).join(' / ')}</span>` : ''}`;
+                const err = it.errorFrom ? `<span class="otp-alt">${esc(it.errorFrom)} → </span>` : '';
+                return `(${k + 1}) ${err}${optIx >= 0 ? `${LETTERS[optIx]} ` : ''}${esc(it.answer)}${alts.length ? ` <span class="otp-alt">/ ${alts.map(esc).join(' / ')}</span>` : ''}`;
             }).join('; ')}</li>`;
         }).join('');
         return `<section class="otp-keypage"><h2>${esc(o.lang === 'pl' ? 'Klucz odpowiedzi' : 'Answer key')} — ${esc(lesson.title || '')}</h2><ol class="otp-key">${rows}</ol></section>`;

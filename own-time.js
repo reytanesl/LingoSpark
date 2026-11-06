@@ -697,7 +697,15 @@
         }
         // Reading comprehension is about meaning (key phrases, no article/preposition/case penalty); exam rules stay for UoE.
         const g = (kind === 'reading' ? AC.gradeReading(item, value) : AC.gradeAnswer(item, value)).status;
-        if (g !== 'ok' && g !== 'empty' && verdict && AC.normAnswer(verdict.value) === AC.normAnswer(value)) return verdict.correct ? 'alt' : 'wrong';
+        if (g !== 'ok' && g !== 'empty' && verdict) {
+            const EF = window.OwnTimeErrorFix;
+            const same = EF && item?.lead
+                ? (EF.normFrag(EF.parseStudentValue(verdict.value).fix) === EF.normFrag(EF.parseStudentValue(value).fix)
+                    && EF.parseStudentValue(verdict.value).start === EF.parseStudentValue(value).start
+                    && EF.parseStudentValue(verdict.value).end === EF.parseStudentValue(value).end)
+                : AC.normAnswer(verdict.value) === AC.normAnswer(value);
+            if (same) return verdict.correct ? 'alt' : 'wrong';
+        }
         return g;
     }
     function checkItem(item, value, verdict, kind) {
@@ -712,7 +720,7 @@
         try {
             const r = await api('/api/own-time/check-open', { method: 'POST', body: JSON.stringify({
                 format: task.type === 'reading' ? 'reading' : (task.format || 'simple'), cefr: lesson.cefr || profile?.cefr || '', prompt: task.prompt || '', appeal: !!appeal,
-                items: list.map(({ it, i, given }) => ({ i, q: it.q, lead: it.lead, key: it.key, cue: it.cue, pl: it.pl, answer: it.answer, accepted: [...(it.alts || []), ...(it.acceptedAnswers || [])], given })),
+                items: list.map(({ it, i, given }) => ({ i, q: it.q, lead: it.lead, errorFrom: it.errorFrom, errorStart: it.errorStart, errorEnd: it.errorEnd, key: it.key, cue: it.cue, pl: it.pl, answer: it.answer, accepted: [...(it.alts || []), ...(it.acceptedAnswers || [])], given })),
             }) });
             list.forEach(({ i, given }) => { const v = r.results?.[i] || { correct: false, explanation: '' }; a.verdicts[i] = { value: given, correct: !!v.correct, why: v.explanation || '' }; });
         } catch (e) {
@@ -962,6 +970,130 @@
             return lineHtml + gap;
         }).join('');
     }
+
+    /* ---------- Error correction: click words, type only the fixed fragment ---------- */
+    /** Interaction: first click sets the anchor word; further clicks set the other end of a
+     *  contiguous range (min…max of the two). Clicking the sole selected word again clears.
+     *  Non-contiguous clicks always expand/shrink to that contiguous span — never a scattered set. */
+    function errorTokens(it) {
+        const EF = window.OwnTimeErrorFix;
+        return EF ? EF.tokenizeSentence(it.lead || it.q || '') : String(it.lead || it.q || '').split(/\s+/).map((text, i) => ({ i, text, clickable: true }));
+    }
+    function parseErrSaved(raw) {
+        const EF = window.OwnTimeErrorFix;
+        if (EF) return EF.parseStudentValue(raw);
+        try { const o = JSON.parse(String(raw || '')); return { start: o.s, end: o.e, fix: o.t || '' }; } catch { return { start: null, end: null, fix: String(raw || '') }; }
+    }
+    function encodeErrSaved(sel) {
+        const EF = window.OwnTimeErrorFix;
+        return EF ? EF.encodeStudentValue(sel) : JSON.stringify({ s: sel.start, e: sel.end, t: sel.fix || '' });
+    }
+    function errorCorrectionHtml(it, i, saved) {
+        const tokens = errorTokens(it);
+        const parsed = parseErrSaved(savedVal(saved, i));
+        const hasSel = parsed.start != null && parsed.end != null;
+        const a = hasSel ? Math.min(parsed.start, parsed.end) : -1;
+        const b = hasSel ? Math.max(parsed.start, parsed.end) : -1;
+        const words = tokens.map((tok) => {
+            if (!tok.clickable) return `<span class="ot-err-punct">${esc(tok.text)}</span>`;
+            const on = hasSel && tok.i >= a && tok.i <= b;
+            return `<button type="button" class="ot-err-word${on ? ' is-on' : ''}" data-err-i="${i}" data-tok="${tok.i}" aria-pressed="${on ? 'true' : 'false'}">${esc(tok.text)}</button>`;
+        }).join(' ');
+        const ph = t('poprawna forma…', 'correct form…');
+        const clearLbl = t('Wyczyść zaznaczenie', 'Clear selection');
+        const hint = hasSel
+            ? t('Wpisz poprawną formę zaznaczonego fragmentu.', 'Type the correct form of the selected part.')
+            : t('Kliknij błędny wyraz lub wyrazy.', 'Tap the wrong word or words.');
+        return `<div class="ot-err" data-err-row="${i}">
+            <div class="ot-err-sent" role="group" aria-label="${esc(t('Zdanie — kliknij błędne wyrazy', 'Sentence — tap the wrong words'))}">${words}</div>
+            <p class="ot-err-hint" data-err-hint="${i}">${esc(hint)}</p>
+            <div class="ot-err-fix-row"${hasSel ? '' : ' hidden'}>
+                <input type="text" class="pe-input ot-err-fix" data-err-fix="${i}" autocomplete="off" spellcheck="false" placeholder="${esc(ph)}" value="${esc(parsed.fix || '')}" aria-label="${esc(ph)}">
+                <button type="button" class="btn btn-grey ot-err-clear" data-err-clear="${i}" title="${esc(clearLbl)}">${esc(t('Wyczyść', 'Clear'))}</button>
+            </div>
+            <input type="hidden" class="ot-item" data-i="${i}" data-err-item="1" value="${esc(hasSel || parsed.fix ? encodeErrSaved(parsed) : '')}">
+            <span class="ot-mark" data-mark="${i}" aria-live="polite"></span>
+        </div>`;
+    }
+    function syncErrHidden(row) {
+        if (!row) return;
+        const i = Number(row.dataset.errRow);
+        const on = [...row.querySelectorAll('.ot-err-word.is-on')].map((b) => Number(b.dataset.tok));
+        const fix = row.querySelector('.ot-err-fix')?.value || '';
+        const hidden = row.querySelector('.ot-item');
+        const fixRow = row.querySelector('.ot-err-fix-row');
+        const hint = row.querySelector('[data-err-hint]');
+        if (!on.length) {
+            if (hidden) hidden.value = '';
+            if (fixRow) fixRow.hidden = true;
+            if (hint) hint.textContent = t('Kliknij błędny wyraz lub wyrazy.', 'Tap the wrong word or words.');
+            row.querySelectorAll('.ot-err-word').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+            return;
+        }
+        const start = Math.min(...on);
+        const end = Math.max(...on);
+        // Force contiguous highlight from min to max (click model).
+        row.querySelectorAll('.ot-err-word').forEach((b) => {
+            const tok = Number(b.dataset.tok);
+            const sel = tok >= start && tok <= end;
+            b.classList.toggle('is-on', sel);
+            b.setAttribute('aria-pressed', sel ? 'true' : 'false');
+        });
+        if (hidden) hidden.value = encodeErrSaved({ start, end, fix });
+        if (fixRow) fixRow.hidden = false;
+        if (hint) hint.textContent = t('Wpisz poprawną formę zaznaczonego fragmentu.', 'Type the correct form of the selected part.');
+    }
+    function bindErrorCorrection(el) {
+        el.querySelectorAll('.ot-err').forEach((row) => {
+            // Anchor model stored on the row: data-err-anchor
+            row.addEventListener('click', (ev) => {
+                const clear = ev.target.closest('[data-err-clear]');
+                if (clear) {
+                    delete row.dataset.errAnchor;
+                    row.querySelectorAll('.ot-err-word').forEach((b) => b.classList.remove('is-on'));
+                    const inp = row.querySelector('.ot-err-fix');
+                    if (inp) inp.value = '';
+                    syncErrHidden(row);
+                    return;
+                }
+                const btn = ev.target.closest('.ot-err-word');
+                if (!btn || !row.contains(btn)) return;
+                ev.preventDefault();
+                const tok = Number(btn.dataset.tok);
+                const anchor = row.dataset.errAnchor != null && row.dataset.errAnchor !== ''
+                    ? Number(row.dataset.errAnchor) : null;
+                const selected = [...row.querySelectorAll('.ot-err-word.is-on')].map((b) => Number(b.dataset.tok));
+                if (anchor == null) {
+                    // Start a new selection — or clear if re-clicking the only selected word.
+                    if (selected.length === 1 && selected[0] === tok) {
+                        row.querySelectorAll('.ot-err-word').forEach((b) => b.classList.remove('is-on'));
+                        delete row.dataset.errAnchor;
+                        const inp = row.querySelector('.ot-err-fix');
+                        if (inp) inp.value = '';
+                        syncErrHidden(row);
+                        return;
+                    }
+                    row.dataset.errAnchor = String(tok);
+                    row.querySelectorAll('.ot-err-word').forEach((b) => b.classList.toggle('is-on', Number(b.dataset.tok) === tok));
+                } else {
+                    // Contiguous range from anchor to this click.
+                    const a = Math.min(anchor, tok);
+                    const b = Math.max(anchor, tok);
+                    row.querySelectorAll('.ot-err-word').forEach((w) => {
+                        const i = Number(w.dataset.tok);
+                        w.classList.toggle('is-on', i >= a && i <= b);
+                    });
+                    // Next click starts a fresh anchor unless they click the same single word to clear.
+                    if (a === b) row.dataset.errAnchor = String(tok);
+                    else delete row.dataset.errAnchor; // range done; next click starts new anchor
+                }
+                syncErrHidden(row);
+                row.querySelector('.ot-err-fix')?.focus({ preventScroll: true });
+            });
+            row.querySelector('.ot-err-fix')?.addEventListener('input', () => syncErrHidden(row));
+        });
+    }
+
     function uoeItemHtml(task, it, i, saved) {
         if (task.format === 'transformation' && it.lead) {
             return `<div class="ot-tf-lead">${esc(it.lead)} <span class="ot-tf-key">${esc(it.key || '')}</span></div><div class="ot-tf-line">${gapLines(it, i, saved, task)}</div>`;
@@ -974,11 +1106,7 @@
             return `<div class="ot-tf-lead">${esc(it.lead)}${rule}</div>${line}`;
         }
         if (task.format === 'error_correction' && (it.lead || it.q)) {
-            const wrong = it.lead || it.q;
-            const fixQ = it.lead && it.q && /___/.test(it.q)
-                ? `<div class="ot-tf-line">${gapLines(it, i, saved, task)}</div>`
-                : `<div class="ot-tf-line">${gapInput(it, i, saved)}</div>`;
-            return `<div class="ot-tf-lead ot-err-lead">${esc(wrong)}</div>${fixQ}`;
+            return errorCorrectionHtml(it, i, saved);
         }
         const lines = `<div class="ot-q-line">${gapLines(it, i, saved, task)}</div>`;
         return Array.isArray(it.options) ? `${lines}${optionsHtml(it, i, saved)}` : lines;
@@ -1888,8 +2016,8 @@
             b.setAttribute('aria-expanded', String(open));
             b.textContent = open ? t('mniej', 'less') : t('więcej', 'more');
         }));
-        el.querySelectorAll('.ot-opt').forEach((b) => b.addEventListener('click', () => pickOption(el, Number(b.dataset.opt), b.dataset.v)));
-        // Two-sentence / lexical-set items: the typed word also appears in the other gaps.
+                el.querySelectorAll('.ot-opt').forEach((b) => b.addEventListener('click', () => pickOption(el, Number(b.dataset.opt), b.dataset.v)));
+        bindErrorCorrection(el); // Two-sentence / lexical-set items: the typed word also appears in the other gaps.
         el.querySelectorAll('input.ot-item').forEach((inp) => inp.addEventListener('input', () => {
             el.querySelectorAll(`[data-mirror="${inp.dataset.i}"]`).forEach((m) => { m.textContent = inp.value || '\u00a0'; m.classList.toggle('is-filled', !!inp.value); });
         }));
