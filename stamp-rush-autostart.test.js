@@ -42,12 +42,7 @@ function sleep(ms) {
 test('selecting Stamp Rush stays in lobby and does not emit stamp-preparing / game-started', async () => {
     const httpServer = createServer();
     const io = new Server(httpServer);
-    initLiveGame(io, {
-        async generateStampClozes() {
-            await sleep(30);
-            return null; // force fallback path inside generate — still must not start the game
-        },
-    });
+    initLiveGame(io, {});
     await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
     const url = `http://127.0.0.1:${httpServer.address().port}`;
     const room = createRoom('host-as', { deck: DECK, gameFormat: 'race' });

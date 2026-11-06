@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Stamp Rush AI cloze prompts — meaningful unique sentences + word-formation realise cards.
  * Pure helpers; server.js runs the model via runVisionJsonPrompt (CURSOR_API_KEY).
  * Prefer AI for every card: generateStampClozePack retries rejected/missing slots and
@@ -1173,4 +1173,74 @@ export async function generateStampClozePack({
         pack[key] = (pack[key] || []).slice(0, needN);
     }
     return pack;
+}
+
+/**
+ * Prompt for an external agent: turn a word list into Stamp Rush lobby paste lines.
+ * Output matches parseStampQuestionList (2-col answer+question, or 3-col cue+answer+question).
+ */
+export function buildStampQuestionListAgentPrompt({
+    words = [],
+    level = 'intermediate',
+    count = 12,
+    preferFormation = true,
+} = {}) {
+    const list = (Array.isArray(words) ? words : String(words || '').split(/\r?\n/))
+        .map((w) => {
+            if (w && typeof w === 'object') {
+                const term = String(w.term || w.word || '').trim();
+                const def = String(w.definition || w.def || w.meaning || '').trim();
+                return def ? `${term} — ${def}` : term;
+            }
+            return String(w || '').trim();
+        })
+        .filter(Boolean);
+    const n = Math.max(12, Number(count) || 12);
+    const levelHint = level === 'beginner' || level === 'easy'
+        ? 'A2–B1 school English'
+        : level === 'advanced'
+            ? 'B2–C1 school English'
+            : 'B1–B2 school English';
+    const formationRule = preferFormation
+        ? `Prefer 3-column word-formation lines when the word has a natural teachable family (noun↔adjective, verb→noun, adverb, -tion/-ness/-ful/-less, etc.). Mix in some 2-column meaning lines so the set is not only formation.`
+        : `Use mostly 2-column meaning lines. Use 3-column formation only when the changed form is obvious and exam-like.`;
+
+    const wordBlock = list.length
+        ? list.map((w, i) => `${i + 1}. ${w}`).join('\n')
+        : '(Word list will be pasted below by the teacher.)';
+
+    return `You create a Stamp Rush question set for a classroom vocabulary race (${levelHint}).
+
+GOAL
+Produce exactly ${n} (or more) unique paste lines the teacher can drop into the Stamp Rush lobby box. One item per line. No JSON, no commentary, no numbering, no markdown fences — ONLY the paste lines.
+
+PASTE LAYOUT (strict)
+Separators: TAB preferred, or spaced " - " / " = " / " : ".
+• 2 columns → answer <sep> question
+  Example: happiness = A feeling of being glad or content.
+  Example: apple	A round fruit that grows on trees.
+• 3 columns → cue <sep> answer <sep> question
+  Example: HAPPY	happiness	Her ___ was obvious to everyone in the room.
+  Example: CREATE = creative = She gave a ___ answer to the problem.
+
+FIELD MEANINGS
+• cue (3-col only) = BASE word shown to students in CAPITALS for word formation. Must differ from answer (ignore case).
+• answer = the stamp / expected response (the word students select or type). Unique across the whole set (case-insensitive). One word preferred; short hyphenated forms OK.
+• question = what students see on the postcard. For cloze/formation use exactly one blank "___". For plain meaning items, a short definition or clear prompt is fine (___ optional).
+
+RULES
+1. At least ${n} lines; if you produce more than 12, the game will randomly keep 12 — still make every line high quality.
+2. Answers must be unique. Never repeat the same answer.
+3. ${formationRule}
+4. For 3-col lines: answer must be a CHANGED form of cue (not the same spelling ignoring case). Cue in CAPS. Sentence must force the changed form, not the base.
+5. Sentences: natural, grammatical, meaningful, ${levelHint}. About 8–18 words. No meta talk about stamps, postcards, vocabulary lists, or the game.
+6. Do not quote dictionary definitions word-for-word in cloze sentences; make context reveal the meaning.
+7. Prefer common teachable forms. If a word has no good family, use a clear 2-col meaning line instead of a forced fake formation.
+8. One line = one item. No multi-line items.
+
+WORD LIST
+${wordBlock}
+
+OUTPUT
+Return only the paste lines, nothing else.`;
 }

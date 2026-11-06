@@ -1772,27 +1772,6 @@ app.get('/api/health', (_req, res) => {
     });
 
     initLiveGame(io, {
-        async generateStampClozes({ box, variantCount, level, topic, existingPack = null }) {
-            // Same AI provider as worksheet maker / In your own time: CURSOR_API_KEY + runVisionJsonPrompt.
-            const { generateStampClozePack, stampClozePackFromReply } = await import('./stamp-rush-prompts.js');
-            const apiKey = process.env.CURSOR_API_KEY;
-            if (!apiKey) {
-                console.warn('Stamp Rush: CURSOR_API_KEY missing — using curated fallback sentences (AI unavailable).');
-                return existingPack && Object.keys(existingPack).length
-                    ? existingPack
-                    : stampClozePackFromReply(null, box, variantCount);
-            }
-            return generateStampClozePack({
-                box,
-                variantCount,
-                level,
-                topic,
-                existingPack,
-                maxAttempts: 2,
-                timeoutMs: 35_000,
-                runPrompt: (prompt, label) => runVisionJsonPrompt({ apiKey, prompt, label }),
-            });
-        },
         onGameEnd(room) {
             if (!room.hostUserId) return;
             // Lucky Lanterns / Word Cannon players have no race `score`, which made this NaN and

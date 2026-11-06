@@ -438,18 +438,36 @@
         const tray = $('srp-tray');
         const form = $('srp-form');
         const note = $('srp-note');
-        const sentence = q.sentence || q.body || q.prompt || '___';
-        if (lead) lead.textContent = q.formation ? 'Word formation' : (q.lead || 'Postcard');
+        const sentence = q.sentence || q.body || q.prompt || '';
+        const formation = Boolean(q.formation && q.cue);
+        if (lead) {
+            lead.textContent = q.lead
+                || (formation ? 'Word formation' : (q.inputMode === 'typed' ? 'Type the answer' : 'Postcard'));
+        }
         if (body) body.textContent = sentence;
-        // Owner decision: no hint line and no cue on the card. Word-formation cards show the
-        // player's word list (base forms) as a read-only reference instead; they type the right form.
-        if (hint) { hint.hidden = true; hint.textContent = ''; }
-        if (cue) { cue.hidden = true; cue.textContent = ''; }
+        if (hint) {
+            if (formation) {
+                hint.hidden = false;
+                hint.textContent = q.hint || 'Change the form of the cue word to fill the gap.';
+            } else {
+                hint.hidden = true;
+                hint.textContent = '';
+            }
+        }
+        if (cue) {
+            if (formation) {
+                cue.hidden = false;
+                cue.innerHTML = `Cue: <b>(${esc(String(q.cue).toUpperCase())})</b>`;
+            } else {
+                cue.hidden = true;
+                cue.textContent = '';
+            }
+        }
         if (prog) prog.textContent = `${q.round || 0} / ${q.roundsTotal || ROUNDS}`;
         if (pts) pts.textContent = `${q.points || 0} pts`;
         if (note) { note.hidden = true; note.textContent = ''; }
 
-        const typed = q.inputMode === 'typed' || q.answerMode === 'realise' || q.formation;
+        const typed = q.inputMode === 'typed' || q.answerMode === 'realise';
         if (form) form.hidden = !typed;
         if (tray) {
             tray.hidden = false;
@@ -478,9 +496,15 @@
         if (typed) {
             const input = $('srp-input');
             const label = $('srp-form-label');
-            if (label) label.textContent = 'Pick a word above · type it in the right form';
+            if (label) {
+                label.textContent = formation
+                    ? `Type a changed form of ${String(q.cue).toUpperCase()}`
+                    : 'Type the answer';
+            }
             if (input) {
-                input.placeholder = 'Type the changed form…';
+                input.placeholder = formation
+                    ? `Not “${String(q.cue).toLowerCase()}” — change it`
+                    : 'Type the answer…';
                 input.value = '';
                 input.focus();
             }

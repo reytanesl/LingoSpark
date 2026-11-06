@@ -128,7 +128,17 @@ html body #screen-live-host.live-room .live-option--wide .live-option-title::aft
 #screen-live-host.live-room .wc-length-row, #screen-live-host.live-room .ll-rounds-row, #screen-live-host.live-room .live-time-row {
     margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 10px;
 }
-#screen-live-host.live-room .wc-length-row[hidden], #screen-live-host.live-room .ll-rounds-row[hidden], #screen-live-host.live-room #live-host-lobby-team-row[hidden] { display: none; }
+#screen-live-host.live-room .wc-length-row[hidden], #screen-live-host.live-room .ll-rounds-row[hidden], #screen-live-host.live-room #live-host-lobby-team-row[hidden],
+#screen-live-host.live-room .live-stamp-questions-row[hidden] { display: none; }
+#screen-live-host.live-room .live-stamp-questions-row {
+    display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+}
+#screen-live-host.live-room .live-stamp-questions-row .lsr-label { display: block; margin: 0; }
+#screen-live-host.live-room #live-stamp-questions {
+    width: 100%; min-height: 110px; max-height: 28vh; resize: vertical;
+    border-radius: 12px; border: 2px solid var(--lse-line); background: #FBFBFE;
+    padding: 10px 12px; font: 500 13.5px/1.4 var(--lse-body); color: var(--lse-ink);
+}
 #screen-live-host.live-room #live-host-lobby-team-row { display: flex; flex-direction: column; gap: inherit; }
 #screen-live-host.live-room .wc-length-row label, #screen-live-host.live-room .ll-rounds-row label, #screen-live-host.live-room .live-time-row label {
     margin: 0; display: inline-flex; gap: 6px; align-items: center; font: 700 clamp(13.5px, 1.75vh, 16px)/1.1 var(--lse-head); color: var(--lse-navy);

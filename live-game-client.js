@@ -1570,6 +1570,12 @@
         } else if (count < minPlayers) {
             btn.textContent = `Start game (need ${minPlayers}+ players)`;
             if (status) status.textContent = `Waiting for players (${count} / ${minPlayers} minimum)…`;
+        } else if (stampGame && snapshot?.stampQuestionsReady === false && !finished) {
+            btn.textContent = 'Start game (need 12+ stamp questions)';
+            if (status) {
+                const n = snapshot?.stampQuestionCount ?? 0;
+                status.textContent = `Paste at least 12 answer/question lines (${n} ready).`;
+            }
         } else if (isPickTeams && !canStart && !finished) {
             btn.textContent = 'Start game (teams not ready)';
             if (status) {
@@ -1595,6 +1601,69 @@
         }
     }
 
+    let stampQuestionsTimer = null;
+    let stampQuestionsLocal = '';
+
+    function stampQuestionsStatusText(count, ready) {
+        const n = Number(count) || 0;
+        if (n <= 0) return '2-col: answer + question. 3-col: cue + answer + question (word formation). Separators: tab / - / = / :';
+        if (!ready) return `${n} unique answers — need ${12 - n} more before Start.`;
+        if (n === 12) return '12 answers ready — Start will use all of them.';
+        return `${n} unique answers ready — Start will pick 12 at random.`;
+    }
+
+    function syncStampQuestionsUI(snap) {
+        const ta = $('live-stamp-questions');
+        const status = $('live-stamp-questions-status');
+        const serverText = snap?.stampQuestionsText;
+        if (ta && document.activeElement !== ta) {
+            if (typeof serverText === 'string' && serverText !== stampQuestionsLocal) {
+                ta.value = serverText;
+                stampQuestionsLocal = serverText;
+            } else if (!ta.value && typeof serverText === 'string' && serverText) {
+                ta.value = serverText;
+                stampQuestionsLocal = serverText;
+            }
+        }
+        if (status) {
+            const count = snap?.stampQuestionCount;
+            const ready = snap?.stampQuestionsReady;
+            if (count != null) status.textContent = stampQuestionsStatusText(count, ready);
+        }
+        if (hostState && snap) {
+            if ('stampQuestionCount' in snap) hostState.stampQuestionCount = snap.stampQuestionCount;
+            if ('stampQuestionsReady' in snap) hostState.stampQuestionsReady = snap.stampQuestionsReady;
+        }
+    }
+
+    function emitStampQuestions() {
+        if (!hostState || (hostState.phase !== 'lobby' && hostState.phase !== 'finished')) return;
+        const ta = $('live-stamp-questions');
+        if (!ta) return;
+        stampQuestionsLocal = ta.value;
+        ensureSocket().emit('live:stamp-questions', { text: ta.value });
+    }
+
+    function scheduleStampQuestionsEmit() {
+        clearTimeout(stampQuestionsTimer);
+        stampQuestionsTimer = setTimeout(emitStampQuestions, 350);
+        const ta = $('live-stamp-questions');
+        const status = $('live-stamp-questions-status');
+        if (!ta || !status) return;
+        // Optimistic local count while the socket round-trip lands.
+        const lines = String(ta.value || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+        const seen = new Set();
+        let count = 0;
+        for (const line of lines) {
+            if (!/\t|=|:|\s-\s/.test(line)) continue;
+            const left = line.split(/\t+|\s*=\s*|\s*:\s*|\s+-\s+/)[0]?.trim().toLowerCase();
+            if (!left || seen.has(left)) continue;
+            seen.add(left);
+            count += 1;
+        }
+        status.textContent = stampQuestionsStatusText(count, count >= 12);
+    }
+
     function showChampionBanner(container, winnerNickname, isYou) {
         if (!container) return;
         const youMsg = isYou
@@ -1609,7 +1678,7 @@
     function bindHostSocket() {
         const s = ensureSocket();
         bindSocketReconnect('host');
-        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:lantern-state', 'live:cannon-state', 'live:tide-state', 'live:stamp-state', 'live:stamp-preparing', 'live:error'].forEach((ev) => s.off(ev));
+        ['live:host-joined', 'live:progress-update', 'live:room-state', 'live:game-started', 'live:game-finished', 'live:lobby-reset', 'live:host-answer', 'live:challenge-pending', 'live:challenge-resolved', 'live:settings-updated', 'live:lantern-state', 'live:cannon-state', 'live:tide-state', 'live:stamp-state', 'live:stamp-questions-updated', 'live:error'].forEach((ev) => s.off(ev));
 
         s.on('live:host-joined', (data) => {
             showLiveError('');
@@ -1801,13 +1870,18 @@
             TideBridgeUI.renderHost(state);
         });
 
-        s.on('live:stamp-preparing', (data) => {
-            if (!hostState || !window.StampRushUI) return;
-            // Lobby AI pre-gen must stay silent — switching host mode here looked like auto-start.
-            // Start-game emits without phase (or phase:'starting'); only skip explicit lobby pre-gen.
-            if (data?.phase === 'lobby') return;
-            hostState.gameFormat = 'stamp-rush';
-            StampRushUI.setPreparing(true, data?.message || 'Writing unique postcard sentences…');
+        s.on('live:stamp-questions-updated', (data) => {
+            if (!hostState) return;
+            hostState.stampQuestionCount = data?.count ?? 0;
+            hostState.stampQuestionsReady = Boolean(data?.ready);
+            const status = $('live-stamp-questions-status');
+            if (status) status.textContent = stampQuestionsStatusText(data?.count, data?.ready);
+            updateHostStartButton({
+                ...hostState,
+                playerCount: hostState.players?.length ?? hostState.playerCount,
+                stampQuestionCount: hostState.stampQuestionCount,
+                stampQuestionsReady: hostState.stampQuestionsReady,
+            });
         });
 
         s.on('live:stamp-state', (state) => {
@@ -2375,7 +2449,6 @@
         'hot-spark-relay': 'Hot Spark Relay',
         'lucky-lanterns': 'Lucky Lanterns',
         'word-cannon': 'Word Cannon Battle',
-        'tide-bridge': 'The Bridge',
         'stamp-rush': 'Stamp Rush',
     };
 
@@ -2429,6 +2502,9 @@
         if (tideRow) tideRow.hidden = !isTideBridgeFormat(format);
         const stampRow = $('live-host-lobby-stamp-row');
         if (stampRow) stampRow.hidden = !isStampRushFormat(format);
+        if (isStampRushFormat(format)) {
+            syncStampQuestionsUI(snap);
+        }
         const minutesSelect = $('live-lobby-game-minutes');
         const tideMinutesSelect = $('live-lobby-tide-minutes');
         const minutesEl = isTideBridgeFormat(format) ? tideMinutesSelect : minutesSelect;
@@ -5384,6 +5460,8 @@
         $('live-host-ws-filter-class')?.addEventListener('change', onHostWordSetFilterChange);
         $('live-host-create-btn')?.addEventListener('click', createHostRoom);
         // #live-join-btn / Enter on the join form are wired by live-entry.js (LiveEntry → LiveGame.joinRoom).
+        $('live-stamp-questions')?.addEventListener('input', scheduleStampQuestionsEmit);
+        $('live-stamp-questions')?.addEventListener('blur', emitStampQuestions);
         $('live-host-start')?.addEventListener('click', hostStartGame);
         $('live-host-play-again')?.addEventListener('click', hostPlayAgain);
         $('live-host-end')?.addEventListener('click', hostEnd);

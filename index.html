@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="lucky-lanterns.css">
     <link rel="stylesheet" href="word-cannon.css">
-    <link rel="stylesheet" href="tide-bridge.css">
     <link rel="stylesheet" href="stamp-rush.css">
     <link rel="stylesheet" href="challenge-deck.css">
     <link rel="stylesheet" href="live-entry.css">
@@ -48,8 +47,6 @@
     <script src="word-cannon-fx.js" defer></script>
     <script src="challenge-deck.js" defer></script>
     <script src="word-cannon-client.js" defer></script>
-    <script src="tide-bridge-scene.js" defer></script>
-    <script src="tide-bridge-client.js" defer></script>
     <script src="stamp-rush-client.js" defer></script>
     <script src="live-entry.js" defer></script>
     <script src="password-reset-client.js" defer></script>
@@ -4352,9 +4349,8 @@
                 <div class="guide-item"><strong>Share or export a word list</strong><p>In Word Sets, use <strong>Share</strong> to copy a student link, or <strong>Export</strong> to download a clean glossary (<code>Term = Definition</code>, one per line). Students open a share link without signing in — the glossary loads into Vocab Review. Use the unlink button to turn sharing off.</p></div>
 
                 <h3>Live Spark</h3>
-                <div class="guide-item"><strong>Live Spark</strong><p>Teachers sign in and host a live classroom race. Choose Solo Race, Captain &amp; Crew, Hot Spark Relay, Lucky Lanterns, Word Cannon, The Bridge, or Stamp Rush. At least 2 players join with a room code and nickname (4+ for team race modes; Stamp Rush allows 1+).</p></div>
-                <div class="guide-item"><strong>The Bridge</strong><p>Co-op vs the clock: cross 6 chasms, one bridge per round. Each round has its own rising tide, so build every span before the water reaches the top. Each player answers their own vocab card; when enough classmates are right, the span is laid. Mid-bridge shore challenges (not from your word list) break up longer bridges. Medals depend on bridges completed: 0–2 bronze, 3–4 silver, 5–6 gold. The match clock ends the game, and an unfinished round does not count.</p></div>
-                <div class="guide-item"><strong>Stamp Rush</strong><p>Post-office race: everyone shares the same 12-stamp vocab tray. AI writes unique meaningful cloze postcards for each player. Recognise = tap the matching stamp; Realise = type a changed form of the cue (word formation), not the base word. Faster stamps score bonus points. The host board shows postcard piles growing in real time.</p></div>
+                <div class="guide-item"><strong>Live Spark</strong><p>Teachers sign in and host a live classroom race. Choose Solo Race, Captain &amp; Crew, Hot Spark Relay, Lucky Lanterns, Word Cannon, or Stamp Rush. At least 2 players join with a room code and nickname (4+ for team race modes; Stamp Rush allows 1+).</p></div>
+                <div class="guide-item"><strong>Stamp Rush</strong><p>Post-office race: the host pastes 12+ lines in the lobby — <code>answer + question</code>, or <code>cue + answer + question</code> for word formation. Everyone shares the same 12-stamp tray; each player gets a unique order. Recognise = tap the stamp; Realise = type the answer (or a changed form of the cue). Faster stamps score bonus points.</p></div>
 
                 <h3>Team Challenge</h3>
                 <div class="guide-item"><strong>Board Game Challenge</strong><p>2–4 players on a shared board: choose a theme, roll the dice, answer tasks (customisable), survive bonus/trap squares, and hit Finish with an exact roll. Best on a classroom screen.</p></div>
@@ -6543,16 +6539,15 @@
                                     <span class="live-option-title">Word Cannon Battle</span>
                                 </label>
                                 <label class="live-option live-option--compact live-option--wide">
-                                    <input type="radio" name="live-lobby-format" value="tide-bridge">
-                                    <span class="live-option-title">The Bridge</span>
-                                </label>
-                                <label class="live-option live-option--compact live-option--wide">
                                     <input type="radio" name="live-lobby-format" value="stamp-rush">
                                     <span class="live-option-title">Stamp Rush</span>
                                 </label>
                             </div>
-                            <div id="live-host-lobby-stamp-row" class="wc-length-row" hidden>
-                                <p class="live-muted lsr-row-hint">Shared 12-stamp vocab tray. AI writes unique meaningful cloze postcards per player. Recognise = tap the stamp; Realise = type a changed form (word formation). Faster answers score more. Solo or class race (1+ players).</p>
+                            <div id="live-host-lobby-stamp-row" class="wc-length-row live-stamp-questions-row" hidden>
+                                <label class="lsr-label" for="live-stamp-questions"><i class="fa-solid fa-stamp" aria-hidden="true"></i> Stamp questions <small>2-col or cue · answer · question · min 12</small></label>
+                                <textarea id="live-stamp-questions" class="lse-input lse-textarea" rows="6" placeholder="apple&#9;A round fruit&#10;HAPPY&#9;happiness&#9;Her ___ was obvious to everyone.&#10;CREATE = creative = She gave a ___ answer.&#10;house = A building where people live"></textarea>
+                                <p id="live-stamp-questions-status" class="live-muted lsr-row-hint">2-col: answer + question. 3-col: cue + answer + question (word formation on Realise). Separators: tab / - / = / :</p>
+                                <p class="live-muted lsr-row-hint">Recognise = tap the stamp; Realise = type the answer (or a changed form when a cue is given). Faster stamps score more.</p>
                             </div>
                             <div id="live-host-lobby-cannon-row" class="wc-length-row" hidden>
                                 <label for="live-lobby-game-minutes"><i class="fa-solid fa-cloud-bolt"></i> Battle length</label>
@@ -6563,16 +6558,6 @@
                                     <option value="10">10 minutes</option>
                                 </select>
                                 <p class="live-muted lsr-row-hint">Red vs Blue race for points: +1 per correct answer, +1 per damage dealt, +20 for destroying a fort (it rebuilds!). Most points when the timer ends wins. Faster answers aim better; storm hits in the final minute.</p>
-                            </div>
-                            <div id="live-host-lobby-tide-row" class="wc-length-row" hidden>
-                                <label for="live-lobby-tide-minutes"><i class="fa-solid fa-water"></i> Tide length</label>
-                                <select id="live-lobby-tide-minutes" class="live-setup-select">
-                                    <option value="3">3 minutes</option>
-                                    <option value="5" selected>5 minutes</option>
-                                    <option value="8">8 minutes</option>
-                                    <option value="10">10 minutes</option>
-                                </select>
-                                <p class="live-muted lsr-row-hint">Whole class cooperates across 6 rounds: build each bridge before its tide rises. Each player gets their own vocab card; shore mini-challenges appear mid-bridge. Medal = bridges completed (5–6 gold, 3–4 silver, 0–2 bronze).</p>
                             </div>
                             <div id="live-host-lobby-lantern-row" class="ll-rounds-row" hidden>
                                 <label for="live-lobby-rounds">Rounds</label>
@@ -6867,7 +6852,7 @@
                             <ul class="lse-how">
                                 <li><i class="fa-solid fa-list-check"></i><span><b>Pick words</b> — a level, your word set or a pasted list.</span></li>
                                 <li><i class="fa-solid fa-qrcode"></i><span><b>Share the code</b> — students join on any phone, no accounts.</span></li>
-                                <li><i class="fa-solid fa-gamepad"></i><span><b>Choose a mode</b> — Race, Captain &amp; Crew, Lucky Lanterns, Word Cannon, The Bridge, Stamp Rush.</span></li>
+                                <li><i class="fa-solid fa-gamepad"></i><span><b>Choose a mode</b> — Race, Captain &amp; Crew, Lucky Lanterns, Word Cannon, Stamp Rush.</span></li>
                                 <li><i class="fa-solid fa-trophy"></i><span><b>Play</b> — you control rounds from the big screen.</span></li>
                             </ul>
                             <div class="lse-resume lse-resume--side" hidden><i class="fa-solid fa-rotate-left"></i><span>Room <b class="lse-resume-code">----</b> is still open</span><a href="#" class="lse-resume-link">Resume</a></div>

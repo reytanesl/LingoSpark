@@ -3,24 +3,44 @@ import test from 'node:test';
 import {
     STAMP_BOX_SIZE,
     STAMP_ROUNDS,
+    clozePackFromManualDeck,
     createStampMatch,
+    parseStampQuestionList,
     pickStampBox,
     stampQuestionPayload,
     stampPublicView,
     stampWinners,
     submitStampAnswer,
 } from './stamp-rush.js';
-import {
-    buildStampClozePrompt,
-    fallbackRealise,
-    parseStampClozeReply,
-    stampClozePackFromReply,
-} from './stamp-rush-prompts.js';
 
 const DECK = Array.from({ length: 16 }, (_, i) => ({
     term: `term${i}`,
-    definition: `definition ${i}`,
+    definition: `What is term${i}?`,
 }));
+
+test('parseStampQuestionList reads 2-col and 3-col lines', () => {
+    const text = [
+        'apple\tA round fruit',
+        'HAPPY\thappiness\tHer ___ was obvious.',
+        'CREATE = creative = She gave a ___ answer.',
+        'run - Move quickly on foot',
+        'apple : ignored duplicate answer',
+        'STRONG - strength - His ___ surprised us.',
+        'not-a-pair',
+    ].join('\n');
+    const parsed = parseStampQuestionList(text);
+    assert.equal(parsed.length, 5);
+    assert.equal(parsed[0].term, 'apple');
+    assert.equal(parsed[0].cue, null);
+    assert.equal(parsed[1].term, 'happiness');
+    assert.equal(parsed[1].cue, 'HAPPY');
+    assert.equal(parsed[1].definition, 'Her ___ was obvious.');
+    assert.equal(parsed[2].term, 'creative');
+    assert.equal(parsed[2].cue, 'CREATE');
+    assert.equal(parsed[3].cue, null);
+    assert.equal(parsed[4].term, 'strength');
+    assert.equal(parsed[4].cue, 'STRONG');
+});
 
 test('Stamp Rush builds a shared 12-stamp box and unique player queues', () => {
     const m = createStampMatch({
@@ -43,10 +63,11 @@ test('Stamp Rush builds a shared 12-stamp box and unique player queues', () => {
     assert.equal(q.box.length, 12);
     assert.equal(q.inputMode, 'choice');
     assert.equal(q.choices.length, 12);
-    assert.match(q.body || q.sentence, /___/);
+    assert.match(q.body || q.sentence, /What is term/);
+    assert.equal(q.formation, false);
 });
 
-test('realise mode requires a changed form, not the base term', () => {
+test('2-col realise mode accepts the exact stamp answer by typing', () => {
     const m = createStampMatch({
         players: [{ id: 'a', nickname: 'Ada' }],
         deck: DECK,
@@ -55,44 +76,56 @@ test('realise mode requires a changed form, not the base term', () => {
     });
     const q = m.players.a.current;
     assert.equal(q.inputMode, 'typed');
+    assert.equal(q.formation, false);
+    assert.equal(q.answer, q.term);
+
+    const wrong = submitStampAnswer(m, 'a', 'not-the-answer', q.questionId, Date.now());
+    assert.equal(wrong.result.correct, false);
+
+    const ok = submitStampAnswer(m, 'a', q.term, q.questionId, Date.now() + 500);
+    assert.equal(ok.result.correct, true);
+    assert.equal(ok.result.stamps, 1);
+});
+
+test('3-col realise is word formation: reject cue, accept changed form', () => {
+    const deck = Array.from({ length: 12 }, (_, i) => ({
+        cue: `BASE${i}`,
+        term: `form${i}`,
+        definition: `Sentence with ___ number ${i}.`,
+    }));
+    const m = createStampMatch({
+        players: [{ id: 'a', nickname: 'Ada' }],
+        deck,
+        answerMode: 'realise',
+        seed: 4,
+    });
+    const q = m.players.a.current;
+    assert.equal(q.inputMode, 'typed');
     assert.equal(q.formation, true);
     assert.ok(q.cue);
-    assert.notEqual(String(q.answer).toLowerCase(), String(q.term).toLowerCase());
+    assert.notEqual(String(q.answer).toLowerCase(), String(q.cue).toLowerCase());
 
-    const rejectBase = submitStampAnswer(m, 'a', q.term, q.questionId, Date.now());
-    assert.equal(rejectBase.result.correct, false);
-    assert.match(rejectBase.result.message, /change the form/i);
+    const rejectCue = submitStampAnswer(m, 'a', q.cue, q.questionId, Date.now());
+    assert.equal(rejectCue.result.correct, false);
+    assert.match(rejectCue.result.message, /change the form/i);
 
     const ok = submitStampAnswer(m, 'a', q.answer, q.questionId, Date.now() + 500);
     assert.equal(ok.result.correct, true);
     assert.equal(ok.result.stamps, 1);
 });
 
-test('AI cloze pack parses variants and fills gaps with fallbacks', () => {
-    const { box } = pickStampBox(DECK, 9);
-    const prompt = buildStampClozePrompt({ box, variantCount: 2, level: 'intermediate' });
-    assert.match(prompt, /Return ONLY valid JSON/);
-    assert.ok(prompt.includes(box[0].term));
-
-    const reply = {
-        cards: [{
-            term: box[0].term,
-            variants: [{
-                recognise: { sentence: `We discussed ___ carefully today.`, answer: box[0].term },
-                realise: { sentence: `Her ___ surprised everyone.`, cue: box[0].term.toUpperCase(), answer: `${box[0].term}ness` },
-            }],
-        }],
-    };
-    const pack = stampClozePackFromReply(reply, box, 2);
-    assert.equal(Object.keys(pack).length, 12);
-    assert.ok(pack[box[0].term.toLowerCase()].length >= 1);
-    assert.match(pack[box[0].term.toLowerCase()][0].recognise.sentence, /___/);
-    const parsed = parseStampClozeReply(reply, box);
-    assert.ok(parsed.get(box[0].term.toLowerCase()).length >= 1);
-
-    const fb = fallbackRealise('happy', 'feeling good', 0);
-    assert.notEqual(fb.answer.toLowerCase(), 'happy');
-    assert.match(fb.sentence, /___/);
+test('manual cloze pack uses cue for realise when present', () => {
+    const box = [
+        { term: 'happiness', definition: 'Her ___ was clear.', cue: 'HAPPY' },
+        ...Array.from({ length: 11 }, (_, i) => ({ term: `t${i}`, definition: `Q ${i}?`, cue: null })),
+    ];
+    const pack = clozePackFromManualDeck(box);
+    const card = pack.happiness[0];
+    assert.equal(card.recognise.formation, false);
+    assert.equal(card.recognise.cue, null);
+    assert.equal(card.realise.formation, true);
+    assert.equal(card.realise.cue, 'HAPPY');
+    assert.equal(card.realise.answer, 'happiness');
 });
 
 test('correct stamps disappear from the remaining tray', () => {

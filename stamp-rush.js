@@ -1,15 +1,13 @@
 /**
- * Stamp Rush — Live Spark race: shared 12-stamp vocab tray, 12 personal cloze rounds,
- * speed-scaled points, host postcard piles. Cloze text comes from AI (stamp-rush-prompts.js)
- * with local fallbacks; realise mode is word-formation (changed form).
+ * Stamp Rush — Live Spark race: shared 12-stamp tray from a host-pasted list,
+ * 12 personal rounds, speed-scaled points, host postcard piles.
+ * Layout (one per line):
+ *   2-col: answer <TAB| - | = | : > question
+ *   3-col: cue <sep> answer <sep> question  → Realise becomes word formation
+ * Recognise = tap stamp (answer); Realise = type answer (or changed form when cue given).
  */
 
 import { matchesTermAnswer, sanitizeAnswerText } from './vocab-quiz-utils.js';
-import {
-    fallbackRecognise,
-    fallbackRealise,
-    stampClozePackFromReply,
-} from './stamp-rush-prompts.js';
 
 export const STAMP_FORMAT = 'stamp-rush';
 export const STAMP_BOX_SIZE = 12;
@@ -52,7 +50,108 @@ export function normalizeStampDeck(deck) {
         const key = term.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
-        out.push({ term, definition });
+        const cueRaw = String(raw?.cue || '').trim();
+        const cue = cueRaw && cueRaw.toLowerCase() !== key ? cueRaw : null;
+        out.push({ term, definition, cue });
+    }
+    return out;
+}
+
+const STAMP_SEP = /\s*=\s*|\s*:\s*|\s+-\s+/g;
+
+/**
+ * Split one paste line into 2-col (answer, question) or 3-col (cue, answer, question).
+ * Separators: tab (preferred), or spaced " - " / " = " / " : ".
+ */
+export function splitStampLine(line) {
+    const text = String(line || '').trim();
+    if (!text) return null;
+    if (/\t/.test(text)) {
+        const parts = text.split(/\t+/).map((s) => s.trim()).filter(Boolean);
+        if (parts.length >= 3) {
+            return { cue: parts[0], term: parts[1], definition: parts.slice(2).join(' ') };
+        }
+        if (parts.length === 2) {
+            return { cue: null, term: parts[0], definition: parts[1] };
+        }
+        return null;
+    }
+    const idxs = [];
+    STAMP_SEP.lastIndex = 0;
+    let m;
+    while ((m = STAMP_SEP.exec(text))) {
+        idxs.push({ start: m.index, end: m.index + m[0].length });
+    }
+    if (idxs.length >= 2) {
+        const cue = text.slice(0, idxs[0].start).trim();
+        const term = text.slice(idxs[0].end, idxs[1].start).trim();
+        const definition = text.slice(idxs[1].end).trim();
+        if (cue && term && definition) return { cue, term, definition };
+    }
+    if (idxs.length >= 1) {
+        const term = text.slice(0, idxs[0].start).trim();
+        const definition = text.slice(idxs[0].end).trim();
+        if (term && definition) return { cue: null, term, definition };
+    }
+    return null;
+}
+
+/**
+ * Parse host paste. Unique by answer (term).
+ * Returns { term: answer, definition: question, cue: base|null }.
+ */
+export function parseStampQuestionList(text) {
+    const lines = String(text || '')
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+    const out = [];
+    const seen = new Set();
+    for (const line of lines) {
+        const pair = splitStampLine(line);
+        if (!pair?.term || !pair?.definition) continue;
+        const key = pair.term.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const cue = pair.cue && pair.cue.toLowerCase() !== key ? pair.cue : null;
+        out.push({ term: pair.term, definition: pair.definition, cue });
+    }
+    return out;
+}
+
+/** Build cloze pack: 3-col lines enable word-formation on Realise. */
+export function clozePackFromManualDeck(box) {
+    const out = {};
+    for (const entry of box || []) {
+        const sentence = String(entry.definition || '').trim() || `___`;
+        const cue = entry.cue || null;
+        const formation = Boolean(cue);
+        const recognise = {
+            sentence,
+            lead: 'Postcard',
+            body: sentence,
+            hint: '',
+            prompt: sentence,
+            answer: entry.term,
+            cue: null,
+            formation: false,
+        };
+        const realise = formation
+            ? {
+                sentence,
+                lead: 'Word formation',
+                body: sentence,
+                hint: 'Change the form of the cue word to fill the gap.',
+                prompt: sentence,
+                answer: entry.term,
+                cue,
+                formation: true,
+            }
+            : {
+                ...recognise,
+                lead: 'Type the answer',
+            };
+        out[entry.term.toLowerCase()] = [{ recognise, realise }];
     }
     return out;
 }
@@ -92,29 +191,29 @@ function scoreCorrect(elapsedMs, streak) {
 function clozeFor(entry, clozePack, variantIndex, typed) {
     const list = clozePack?.[entry.term.toLowerCase()] || [];
     const variant = list[variantIndex % Math.max(1, list.length)] || null;
-    if (typed) {
-        const r = variant?.realise || fallbackRealise(entry.term, entry.definition, variantIndex);
-        return {
-            lead: r.lead || 'Word formation',
-            body: r.body || r.sentence,
-            hint: r.hint || entry.definition,
-            prompt: r.prompt || r.sentence,
-            sentence: r.sentence || r.body,
-            cue: r.cue || entry.term.toUpperCase(),
-            answer: r.answer,
-            formation: true,
-        };
-    }
-    const r = variant?.recognise || fallbackRecognise(entry.term, entry.definition, variantIndex);
-    return {
-        lead: r.lead || 'Postcard',
-        body: r.body || r.sentence,
-        hint: r.hint || entry.definition,
-        prompt: r.prompt || r.sentence,
-        sentence: r.sentence || r.body,
-        cue: null,
+    const sentence = String(entry.definition || '').trim() || '___';
+    const cue = entry.cue || null;
+    const formation = typed && Boolean(cue);
+    const fallback = {
+        lead: typed ? (formation ? 'Word formation' : 'Type the answer') : 'Postcard',
+        body: sentence,
+        hint: formation ? 'Change the form of the cue word to fill the gap.' : '',
+        prompt: sentence,
+        sentence,
+        cue: formation ? cue : null,
         answer: entry.term,
-        formation: false,
+        formation,
+    };
+    const r = typed ? (variant?.realise || fallback) : (variant?.recognise || fallback);
+    return {
+        lead: r.lead || fallback.lead,
+        body: r.body || r.sentence || fallback.body,
+        hint: r.hint || '',
+        prompt: r.prompt || r.sentence || fallback.prompt,
+        sentence: r.sentence || r.body || fallback.sentence,
+        cue: typed ? (r.cue || fallback.cue) : null,
+        answer: r.answer || entry.term,
+        formation: typed ? Boolean(r.formation || fallback.formation) : false,
     };
 }
 
@@ -224,7 +323,7 @@ export function createStampMatch(opts) {
     }
     let clozePack = opts.clozePack;
     if (!clozePack || typeof clozePack !== 'object') {
-        clozePack = stampClozePackFromReply(null, box, Math.max(2, playersIn.length));
+        clozePack = clozePackFromManualDeck(box);
     }
     const now = Date.now();
     const players = {};
@@ -296,7 +395,7 @@ export function stampQuestionPayload(match, playerId) {
 }
 
 function expectedAnswer(current) {
-    return current?.formation ? current.answer : current?.term;
+    return current?.answer || current?.term;
 }
 
 export function submitStampAnswer(match, playerId, answer, questionId, now = Date.now()) {
@@ -326,11 +425,8 @@ export function submitStampAnswer(match, playerId, answer, questionId, now = Dat
 
     const text = sanitizeAnswerText(answer);
     const expected = expectedAnswer(c);
-    // Word formation: typing the unchanged cue/base term never counts.
-    if (c.formation && text && (
-        text.toLowerCase() === String(c.term || '').toLowerCase()
-        || text.toLowerCase() === String(c.cue || '').toLowerCase()
-    )) {
+    // Word formation: typing the unchanged cue never counts.
+    if (c.formation && text && c.cue && text.toLowerCase() === String(c.cue).toLowerCase()) {
         p.streak = 0;
         p.lastGain = 0;
         return {
@@ -370,9 +466,11 @@ export function submitStampAnswer(match, playerId, answer, questionId, now = Dat
                 gameFormat: STAMP_FORMAT,
                 questionId: c.questionId,
                 answer: expected,
-                cue: c.cue,
+                cue: c.cue || null,
                 formation: Boolean(c.formation),
-                message: c.formation ? 'Wrong form — try again!' : 'Wrong stamp — try again!',
+                message: c.formation
+                    ? 'Wrong form — try again!'
+                    : (c.inputMode === 'typed' ? 'Wrong answer — try again!' : 'Wrong stamp — try again!'),
                 points: p.points,
                 stamps: p.stamps,
                 streak: 0,

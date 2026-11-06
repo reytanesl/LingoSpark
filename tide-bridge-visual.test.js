@@ -7,12 +7,14 @@ import { PUBLIC_SCRIPTS, isPublicStaticPath } from './static-allowlist.js';
 
 const read = (f) => fs.readFileSync(new URL(`./${f}`, import.meta.url), 'utf8');
 
-test('index.html loads Fredoka, the Tide Bridge stylesheet and both Tide Bridge scripts', () => {
+test('index.html no longer offers The Bridge (removed from the public site)', () => {
     const html = read('index.html');
     assert.match(html, /fonts\.googleapis\.com\/css2\?[^"]*family=Fredoka:wght@500;600/);
-    assert.match(html, /href="tide-bridge\.css"/);
-    assert.match(html, /src="tide-bridge-scene\.js"/);
-    assert.match(html, /src="tide-bridge-client\.js"/);
+    assert.doesNotMatch(html, /href="tide-bridge\.css"/);
+    assert.doesNotMatch(html, /src="tide-bridge-scene\.js"/);
+    assert.doesNotMatch(html, /src="tide-bridge-client\.js"/);
+    assert.doesNotMatch(html, /name="live-lobby-format" value="tide-bridge"/);
+    assert.doesNotMatch(html, /live-host-lobby-tide-row/);
 });
 
 test('both Tide Bridge browser scripts are served by the static allowlist', () => {
