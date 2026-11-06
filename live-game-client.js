@@ -3107,6 +3107,24 @@
         }
     }
 
+    async function viewHostSelectedWordSet() {
+        const setId = String(hostSelectedWordSetId || $('live-host-wordset')?.value || '').trim();
+        const G = window.WordSetGlossary;
+        if (!G) return;
+        if (!setId) {
+            if (typeof showLiveError === 'function') showLiveError('Choose a word set first.'); else alert('Choose a word set first.');
+            return;
+        }
+        await G.viewSaved(setId);
+    }
+
+    async function viewHostBuiltinLevel() {
+        const level = String($('live-host-level')?.value || 'intermediate').trim();
+        const G = window.WordSetGlossary;
+        if (!G) return;
+        await G.viewBuiltin(level);
+    }
+
     async function onHostWordSetSelected() {
         const setId = String($('live-host-wordset')?.value || '').trim();
         hostSelectedWordSetId = setId;
@@ -5354,6 +5372,14 @@
         document.addEventListener('fullscreenchange', updateFullscreenButtons);
         document.addEventListener('webkitfullscreenchange', updateFullscreenButtons);
         $('live-host-wordset')?.addEventListener('change', onHostWordSetSelected);
+        $('live-host-wordset-view')?.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            viewHostSelectedWordSet();
+        });
+        $('live-host-level-view')?.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            viewHostBuiltinLevel();
+        });
         $('live-host-ws-filter-category')?.addEventListener('change', onHostWordSetFilterChange);
         $('live-host-ws-filter-class')?.addEventListener('change', onHostWordSetFilterChange);
         $('live-host-create-btn')?.addEventListener('click', createHostRoom);

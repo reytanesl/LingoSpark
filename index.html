@@ -3039,6 +3039,9 @@
         #screen-own-time .ot-cue--caps { text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; color: var(--ot-navy-2); font-size: 0.85em; }
         #screen-own-time .ot-tf-lead { color: var(--ot-ink); }
         #screen-own-time .ot-tf-key { display: inline-block; margin: 0.1rem 0; padding: 0 0.5rem; border-radius: 6px; background: var(--ot-navy); color: #fff; font-weight: 800; letter-spacing: 0.08em; font-size: 0.85rem; }
+        .ot-err-lead { text-decoration: none; border-left: 3px solid var(--pillarbox-red); padding-left: 0.55rem; background: rgba(200,16,46,0.05); border-radius: 0 8px 8px 0; }
+        .ot-err-lead::before { content: "✗ "; color: var(--pillarbox-red); font-weight: 800; }
+
         #screen-own-time .ot-fmt--lexical_set .ot-q-line, #screen-own-time .ot-fmt--two_sentences .ot-q-line { line-height: 1.85; }
         @media (max-width: 520px) {
             #screen-own-time .ot-qs--exam { padding-left: 1.15rem; gap: 0.4rem; }
@@ -3648,6 +3651,83 @@
         .ws-card-bar-fill { height: 100%; background: var(--success-green); border-radius: 3px; transition: width 0.3s; }
         .ws-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
         .ws-card-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+        .ws-card-title-btn {
+            appearance: none; background: none; border: 0; padding: 0; margin: 0;
+            font: inherit; font-family: var(--font-primary); color: var(--royal-blue);
+            font-size: 1.05rem; font-weight: 700; text-align: left; cursor: pointer;
+            text-decoration: underline; text-decoration-color: rgba(200, 16, 46, 0.35);
+            text-underline-offset: 3px;
+        }
+        .ws-card-title-btn:hover, .ws-card-title-btn:focus-visible {
+            color: var(--pillarbox-red); text-decoration-color: var(--pillarbox-red); outline: none;
+        }
+        .ws-glossary {
+            position: fixed; inset: 0; z-index: 9200; display: flex; align-items: flex-end;
+            justify-content: center; padding: 0;
+        }
+        .ws-glossary[hidden] { display: none !important; }
+        .ws-glossary-backdrop {
+            position: absolute; inset: 0; background: rgba(26, 11, 16, 0.45);
+        }
+        .ws-glossary-panel {
+            position: relative; z-index: 1; width: min(720px, 100%);
+            max-height: min(92vh, 860px); display: flex; flex-direction: column;
+            background: var(--bright-white); border-radius: 18px 18px 0 0;
+            box-shadow: 0 -8px 40px rgba(200, 16, 46, 0.18);
+            border-top: 4px solid var(--pillarbox-red); overflow: hidden;
+        }
+        @media (min-width: 720px) {
+            .ws-glossary { align-items: center; padding: 1.25rem; }
+            .ws-glossary-panel { border-radius: 16px; max-height: min(86vh, 820px); }
+        }
+        .ws-glossary-head {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 0.75rem; padding: 1rem 1.15rem 0.75rem;
+            background: rgba(200, 16, 46, 0.06);
+            border-bottom: 1px solid rgba(200, 16, 46, 0.12);
+        }
+        .ws-glossary-head h3 {
+            margin: 0; font-family: var(--font-primary); color: var(--pillarbox-red);
+            font-size: 1.2rem; font-weight: 800; line-height: 1.25;
+        }
+        .ws-glossary-sub { margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.86rem; }
+        .ws-glossary-body {
+            overflow: auto; -webkit-overflow-scrolling: touch; padding: 0.4rem 0.85rem 1.25rem;
+            flex: 1; background: linear-gradient(180deg, rgba(200,16,46,0.03), transparent 120px);
+        }
+        .ws-glossary-empty { text-align: center; color: var(--text-muted); padding: 2rem 1rem; }
+        .ws-glossary-row {
+            display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+            gap: 0.55rem 0.9rem; padding: 0.7rem 0.55rem;
+            border-bottom: 1px solid rgba(200, 16, 46, 0.1);
+        }
+        .ws-glossary-row:nth-child(even) { background: rgba(200, 16, 46, 0.035); }
+        .ws-glossary-term {
+            font-weight: 700; color: var(--text-dark); font-size: 0.98rem; word-break: break-word;
+        }
+        .ws-glossary-def {
+            color: var(--text-muted); font-size: 0.94rem; word-break: break-word;
+        }
+        @media (max-width: 520px) {
+            .ws-glossary-row { grid-template-columns: 1fr; gap: 0.2rem; }
+            .ws-glossary-def { padding-left: 0.1rem; }
+        }
+        .ot-wordset-row {
+            display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.45rem 0.6rem;
+            margin-bottom: 0.15rem;
+        }
+        .ot-wordset-row .ot-block-label { flex: 1 1 14rem; margin-bottom: 0; }
+        .ot-wordset-view { flex: 0 0 auto; white-space: nowrap; }
+        .lse-wordset-view-row { display: flex; gap: 0.45rem; align-items: stretch; margin-top: 0.35rem; }
+        .lse-wordset-view-row .lse-select-wrap { flex: 1; }
+        .lse-wordset-view-btn {
+            flex: 0 0 auto; align-self: stretch; padding: 0 0.85rem;
+            border: 1.5px solid rgba(200, 16, 46, 0.35); border-radius: 10px;
+            background: rgba(200, 16, 46, 0.06); color: var(--pillarbox-red);
+            font-weight: 700; cursor: pointer;
+        }
+        .lse-wordset-view-btn:hover { background: rgba(200, 16, 46, 0.12); }
+
         .ws-editor { max-width: 860px; margin: 0 auto 1.5rem; text-align: left; }
         .ws-editor-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.55rem; }
         .ws-editor-head h3 { margin: 0; font-family: var(--font-primary); color: var(--royal-blue); font-size: 1.35rem; font-weight: 800; }
@@ -4329,7 +4409,7 @@
             <div class="category-header">
                 <i class="fa-solid fa-book cat-icon"></i><h2>Word Sets</h2>
             </div>
-            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — tag them with a <strong>category</strong> and <strong>class</strong>, then use the filters below to show only the lists you need. Use <strong>Share</strong> to copy a student link (no login needed). Open <strong>Edit</strong> to rename a list or change words.</p>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: var(--text-muted);">Demo sets are free for everyone. Sign in to save your own lists — tag them with a <strong>category</strong> and <strong>class</strong>, then use the filters below to show only the lists you need. Click a set name or <strong>View</strong> to open it as a glossary list. Use <strong>Share</strong> to copy a student link (no login needed). Open <strong>Edit</strong> to rename a list or change words.</p>
             <div id="ws-editor" class="ws-editor" hidden></div>
             <div id="ws-import" class="ws-editor ws-import" hidden></div>
             <div id="mysets-browse">
@@ -4373,6 +4453,20 @@
             <div id="mysets-list" style="min-height: 60px;">
                 <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading...</p>
             </div>
+            </div>
+        </div>
+
+        <div id="ws-glossary-viewer" class="ws-glossary" hidden aria-hidden="true">
+            <div class="ws-glossary-backdrop" data-ws-gloss="close" tabindex="-1"></div>
+            <div class="ws-glossary-panel" role="dialog" aria-modal="true" aria-labelledby="ws-glossary-title">
+                <header class="ws-glossary-head">
+                    <div>
+                        <h3 id="ws-glossary-title">Glossary</h3>
+                        <p id="ws-glossary-sub" class="ws-glossary-sub"></p>
+                    </div>
+                    <button type="button" class="btn btn-grey" data-ws-gloss="close" aria-label="Close glossary"><i class="fa-solid fa-xmark"></i> Close</button>
+                </header>
+                <div id="ws-glossary-body" class="ws-glossary-body" tabindex="0"></div>
             </div>
         </div>
 
@@ -6585,14 +6679,17 @@
                             <div class="lse-step done" id="live-host-level-row">
                                 <div class="lse-num" aria-hidden="true">2</div>
                                 <label class="lse-label" for="live-host-level">Level</label>
-                                <div class="lse-ctl lse-select-wrap">
-                                    <select id="live-host-level" class="lse-input lse-select">
-                                        <option value="beginner">Beginner</option>
-                                        <option value="easy">Easy</option>
-                                        <option value="intermediate" selected>Intermediate</option>
-                                        <option value="advanced">Advanced</option>
-                                    </select>
-                                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                <div class="lse-wordset-view-row">
+                                    <div class="lse-ctl lse-select-wrap">
+                                        <select id="live-host-level" class="lse-input lse-select">
+                                            <option value="beginner">Beginner</option>
+                                            <option value="easy">Easy</option>
+                                            <option value="intermediate" selected>Intermediate</option>
+                                            <option value="advanced">Advanced</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                    </div>
+                                    <button type="button" id="live-host-level-view" class="lse-wordset-view-btn" title="View built-in deck glossary" aria-label="View built-in deck as glossary"><i class="fa-solid fa-book-open"></i></button>
                                 </div>
                             </div>
                             <div class="lse-step" id="live-host-wordset-row" hidden>
@@ -6616,9 +6713,12 @@
                                         </div>
                                     </label>
                                 </div>
-                                <div class="lse-ctl lse-select-wrap">
-                                    <select id="live-host-wordset" class="lse-input lse-select"></select>
-                                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                <div class="lse-wordset-view-row">
+                                    <div class="lse-ctl lse-select-wrap">
+                                        <select id="live-host-wordset" class="lse-input lse-select"></select>
+                                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                    </div>
+                                    <button type="button" id="live-host-wordset-view" class="lse-wordset-view-btn" title="View glossary" aria-label="View selected word set as glossary"><i class="fa-solid fa-book-open"></i></button>
                                 </div>
                                 <p id="live-host-wordset-hint" class="lse-hint" hidden></p>
                             </div>
@@ -7544,14 +7644,35 @@
             return getDemoSets().map(s => `
                 <div class="ws-card">
                     <div class="ws-card-header">
-                        <h3>${esc(s.name)} <span class="ws-demo-badge">Demo</span></h3>
+                        <h3><button type="button" class="ws-card-title-btn" onclick="viewDemoWordSet('${esc(s.id)}')" title="View glossary">${esc(s.name)}</button> <span class="ws-demo-badge">Demo</span></h3>
                         <span style="font-size:0.8rem;color:var(--text-muted);">${s.items.length} words</span>
                     </div>
                     <div class="ws-card-meta">${esc(s.description || 'Ready-made set for every player')}</div>
                     <div class="ws-card-actions">
+                        <button class="btn btn-outline" onclick="viewDemoWordSet('${esc(s.id)}')"><i class="fa-solid fa-book-open"></i> View</button>
                         <button class="btn btn-blue" onclick="applyDemoWordSet('${esc(s.id)}', { closeMenu: true })"><i class="fa-solid fa-play"></i> Load</button>
                         <button class="btn btn-outline" onclick="exportDemoWordSet('${esc(s.id)}')"><i class="fa-solid fa-download"></i> Export</button>
                         <button class="btn btn-outline" onclick="editDemoWordSet('${esc(s.id)}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBuiltinDeckCardsHtml() {
+            const decks = [
+                { id: 'beginner', name: 'Beginner', blurb: 'Built-in Vocab practice / Live deck' },
+                { id: 'easy', name: 'Easy', blurb: 'Built-in Vocab practice / Live deck' },
+                { id: 'intermediate', name: 'Intermediate', blurb: 'Built-in Vocab practice / Live deck' },
+                { id: 'advanced', name: 'Advanced', blurb: 'Built-in Vocab practice / Live deck' },
+            ];
+            return decks.map(s => `
+                <div class="ws-card">
+                    <div class="ws-card-header">
+                        <h3><button type="button" class="ws-card-title-btn" onclick="viewBuiltinDeck('${esc(s.id)}')" title="View glossary">${esc(s.name)}</button> <span class="ws-demo-badge">Built-in</span></h3>
+                    </div>
+                    <div class="ws-card-meta">${esc(s.blurb)}</div>
+                    <div class="ws-card-actions">
+                        <button class="btn btn-outline" onclick="viewBuiltinDeck('${esc(s.id)}')"><i class="fa-solid fa-book-open"></i> View</button>
                     </div>
                 </div>
             `).join('');
@@ -7651,6 +7772,8 @@
             if (!filtersActive) {
                 html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:0 0 0.6rem;font-size:1rem;">Demo sets</h3>';
                 html += renderDemoSetCardsHtml() || '<p style="color:var(--text-muted);">No demo sets available.</p>';
+                html += '<h3 style="font-family:var(--font-primary);color:var(--royal-blue);margin:1.2rem 0 0.6rem;font-size:1rem;">Built-in decks</h3>';
+                html += renderBuiltinDeckCardsHtml();
             }
 
             if (!isLoggedIn()) {
@@ -7682,11 +7805,12 @@
                 html += filtered.map((s) => {
                     const pct = s.item_count > 0 ? Math.round((s.mastered_count / s.item_count) * 100) : 0;
                     return `<div class="ws-card">
-                        <div class="ws-card-header"><h3>${esc(s.name)}${s.share_token ? ' <span class="ws-demo-badge">Shared</span>' : ''}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
+                        <div class="ws-card-header"><h3><button type="button" class="ws-card-title-btn" onclick="viewSavedWordSet(${s.id})" title="View glossary">${esc(s.name)}</button>${s.share_token ? ' <span class="ws-demo-badge">Shared</span>' : ''}</h3><span style="font-size:0.8rem;color:var(--text-muted);">${s.item_count} words</span></div>
                         ${wsBadgesHtml(s)}
                         <div class="ws-card-meta">${s.set_type === 'pe_terms' ? 'Primary English' : 'Vocab'} · ${pct}% mastered</div>
                         <div class="ws-card-bar"><div class="ws-card-bar-fill" style="width:${pct}%"></div></div>
                         <div class="ws-card-actions">
+                            <button class="btn btn-outline" onclick="viewSavedWordSet(${s.id})"><i class="fa-solid fa-book-open"></i> View</button>
                             <button class="btn btn-blue" onclick="loadWordSet(${s.id})"><i class="fa-solid fa-play"></i> Load</button>
                             <button class="btn btn-outline" onclick="exportWordSet(${s.id})"><i class="fa-solid fa-download"></i> Export</button>
                             <button class="btn btn-outline" onclick="shareWordSet(${s.id})"><i class="fa-solid fa-link"></i> ${s.share_token ? 'Copy link' : 'Share'}</button>
@@ -7720,6 +7844,129 @@
                 container.innerHTML = '<p style="color:var(--pillarbox-red);">Failed to load your saved sets.</p>';
             }
         }
+
+
+        let wsGlossaryPrevFocus = null;
+
+        function normalizeGlossaryItems(raw) {
+            const list = Array.isArray(raw) ? raw : [];
+            return list.map((row) => {
+                if (!row || typeof row !== 'object') return null;
+                const term = String(row.term || row.word || '').trim();
+                const definition = String(row.definition || row.def || row.meaning || '').trim();
+                if (!term && !definition) return null;
+                return { term, definition };
+            }).filter(Boolean);
+        }
+
+        function openWordSetGlossary({ title, subtitle, items } = {}) {
+            const root = document.getElementById('ws-glossary-viewer');
+            const body = document.getElementById('ws-glossary-body');
+            const titleEl = document.getElementById('ws-glossary-title');
+            const subEl = document.getElementById('ws-glossary-sub');
+            if (!root || !body || !titleEl) return;
+            const rows = normalizeGlossaryItems(items);
+            titleEl.textContent = title || 'Glossary';
+            if (subEl) {
+                const countLabel = rows.length === 1 ? '1 word' : `${rows.length} words`;
+                subEl.textContent = subtitle ? `${subtitle} · ${countLabel}` : countLabel;
+            }
+            if (!rows.length) {
+                body.innerHTML = '<p class="ws-glossary-empty">This set has no terms yet.</p>';
+            } else {
+                body.innerHTML = rows.map((row) => `
+                    <div class="ws-glossary-row">
+                        <div class="ws-glossary-term">${esc(row.term || '—')}</div>
+                        <div class="ws-glossary-def">${esc(row.definition || '—')}</div>
+                    </div>
+                `).join('');
+            }
+            wsGlossaryPrevFocus = document.activeElement;
+            root.hidden = false;
+            root.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            const closeBtn = root.querySelector('[data-ws-gloss="close"].btn');
+            (closeBtn || body).focus({ preventScroll: true });
+            body.scrollTop = 0;
+        }
+
+        function closeWordSetGlossary() {
+            const root = document.getElementById('ws-glossary-viewer');
+            if (!root || root.hidden) return;
+            root.hidden = true;
+            root.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            const prev = wsGlossaryPrevFocus;
+            wsGlossaryPrevFocus = null;
+            if (prev && typeof prev.focus === 'function') {
+                try { prev.focus({ preventScroll: true }); } catch { /* ignore */ }
+            }
+        }
+
+        function viewDemoWordSet(demoId) {
+            const set = getDemoSets().find((s) => s.id === demoId);
+            if (!set) return;
+            openWordSetGlossary({
+                title: set.name,
+                subtitle: 'Demo set',
+                items: set.items,
+            });
+        }
+
+        async function viewSavedWordSet(id) {
+            try {
+                const res = await fetch(`/api/word-sets/${id}`, { credentials: 'same-origin' });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.set) {
+                    alert(data.error || 'Could not open this word set.');
+                    return;
+                }
+                const set = data.set;
+                openWordSetGlossary({
+                    title: set.name || 'Word set',
+                    subtitle: 'Your saved set',
+                    items: set.items,
+                });
+            } catch {
+                alert('Could not open this word set.');
+            }
+        }
+
+        async function viewBuiltinDeck(level) {
+            try {
+                const res = await fetch(`/api/builtin-decks/${encodeURIComponent(level)}`, { credentials: 'same-origin' });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    alert(data.error || 'Could not open this built-in deck.');
+                    return;
+                }
+                openWordSetGlossary({
+                    title: data.name || level,
+                    subtitle: 'Built-in deck',
+                    items: data.items,
+                });
+            } catch {
+                alert('Could not open this built-in deck.');
+            }
+        }
+
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape') closeWordSetGlossary();
+        });
+        document.getElementById('ws-glossary-viewer')?.addEventListener('click', (ev) => {
+            if (ev.target?.closest?.('[data-ws-gloss="close"]')) {
+                ev.preventDefault();
+                closeWordSetGlossary();
+            }
+        });
+
+        window.WordSetGlossary = {
+            open: openWordSetGlossary,
+            close: closeWordSetGlossary,
+            viewSaved: viewSavedWordSet,
+            viewDemo: viewDemoWordSet,
+            viewBuiltin: viewBuiltinDeck,
+        };
 
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 

@@ -831,6 +831,26 @@ async function start() {
         });
     });
 
+    // Read-only glossary preview for built-in Vocab / Live decks (Beginner…Advanced).
+    app.get('/api/builtin-decks/:level', (req, res) => {
+        const allowed = new Set(['beginner', 'easy', 'intermediate', 'advanced']);
+        const level = String(req.params.level || '').toLowerCase();
+        if (!allowed.has(level)) {
+            return res.status(400).json({ error: 'Unknown built-in level.' });
+        }
+        const labels = {
+            beginner: 'Beginner',
+            easy: 'Easy',
+            intermediate: 'Intermediate',
+            advanced: 'Advanced',
+        };
+        const items = loadBuiltinDeck(level).map((row) => ({
+            term: row.term,
+            definition: row.definition,
+        }));
+        res.json({ level, name: labels[level], items });
+    });
+
     // ==========================================
     // MATURA ESSAY REVIEW HISTORY (text only — no images/PDFs)
     // ==========================================

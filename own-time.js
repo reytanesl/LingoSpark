@@ -8,6 +8,7 @@
         { id: 'writing', pl: 'Pisanie', en: 'Writing' },
         { id: 'drill', pl: 'Ćwiczenia / drill', en: 'Drills' },
         { id: 'uoe', pl: 'Use of English', en: 'Use of English' },
+        { id: 'grammar', pl: 'Gramatyka', en: 'Grammar' },
         { id: 'reading', pl: 'Czytanie + rozumienie', en: 'Reading + comprehension' },
         { id: 'vocab', pl: 'Słownictwo', en: 'Vocabulary' },
     ];
@@ -330,10 +331,29 @@
         const hint = L === 'en'
             ? 'Tasks will practise words from the chosen set. Leave empty for free topics (or paste a custom list below).'
             : 'Zadania będą ćwiczyć słowa z wybranego zestawu. Zostaw puste dla wolnych tematów (lub wklej własną listę poniżej).';
-        return `<label class="ot-block-label" for="${esc(id)}">${esc(title)}
-            <select id="${esc(id)}" class="pe-input ot-wordset-select">${wordSetOptionsHtml(selected)}</select>
-        </label>
+        const viewLabel = L === 'en' ? 'View' : 'Podgląd';
+        return `<div class="ot-wordset-row">
+            <label class="ot-block-label" for="${esc(id)}">${esc(title)}
+                <select id="${esc(id)}" class="pe-input ot-wordset-select">${wordSetOptionsHtml(selected)}</select>
+            </label>
+            <button type="button" class="btn btn-outline ot-wordset-view" data-ot-ws-view="${esc(id)}" title="${esc(viewLabel)}">${esc(viewLabel)}</button>
+        </div>
         <p class="ot-wordset-hint" id="${esc(id)}-hint">${esc(hint)}</p>`;
+    }
+
+    async function viewSelectedWordSet(selectId) {
+        const key = String(document.getElementById(selectId)?.value || '').trim();
+        const G = window.WordSetGlossary;
+        if (!G) return;
+        if (!key) {
+            alert(t('Najpierw wybierz zestaw słów.', 'Choose a word set first.'));
+            return;
+        }
+        if (key.startsWith('builtin:')) {
+            await G.viewBuiltin(key.slice('builtin:'.length));
+            return;
+        }
+        await G.viewSaved(key);
     }
 
     function readWordSetKey(...ids) {
@@ -911,6 +931,8 @@
         mc_text: 'Tekst z lukami — wybór', two_sentences: 'Jeden wyraz, dwa zdania', brackets: 'Wyrazy z nawiasu',
         translation: 'Tłumaczenie fragmentów', word_formation: 'Słowotwórstwo', open_cloze: 'Tekst z lukami',
         transformation: 'Transformacje', lexical_set: 'Set leksykalny',
+        tense_form: 'Czasy / formy czasownika', error_correction: 'Korekta błędu', sentence_rewrite: 'Przekształcanie zdań',
+        grammar_mc: 'Gramatyka — wybór',
     };
     const EXAM_SHORT = { E8: 'E8', MP: 'Matura PP', MR: 'Matura PR', MD: 'Matura DJ' };
     const EXAM_NAMES = { E8: 'Egzamin ósmoklasisty', MP: 'Matura — poziom podstawowy', MR: 'Matura — poziom rozszerzony', MD: 'Matura — poziom dwujęzyczny' };
@@ -943,6 +965,20 @@
     function uoeItemHtml(task, it, i, saved) {
         if (task.format === 'transformation' && it.lead) {
             return `<div class="ot-tf-lead">${esc(it.lead)} <span class="ot-tf-key">${esc(it.key || '')}</span></div><div class="ot-tf-line">${gapLines(it, i, saved, task)}</div>`;
+        }
+        if (task.format === 'sentence_rewrite' && it.lead) {
+            const rule = it.rule ? ` <span class="ot-tf-key">${esc(it.rule)}</span>` : '';
+            const line = (it.q && /___/.test(it.q))
+                ? `<div class="ot-tf-line">${gapLines(it, i, saved, task)}</div>`
+                : `<div class="ot-tf-line">${gapInput(it, i, saved)}</div>`;
+            return `<div class="ot-tf-lead">${esc(it.lead)}${rule}</div>${line}`;
+        }
+        if (task.format === 'error_correction' && (it.lead || it.q)) {
+            const wrong = it.lead || it.q;
+            const fixQ = it.lead && it.q && /___/.test(it.q)
+                ? `<div class="ot-tf-line">${gapLines(it, i, saved, task)}</div>`
+                : `<div class="ot-tf-line">${gapInput(it, i, saved)}</div>`;
+            return `<div class="ot-tf-lead ot-err-lead">${esc(wrong)}</div>${fixQ}`;
         }
         const lines = `<div class="ot-q-line">${gapLines(it, i, saved, task)}</div>`;
         return Array.isArray(it.options) ? `${lines}${optionsHtml(it, i, saved)}` : lines;
@@ -1338,6 +1374,7 @@
                 <div class="ot-chips" id="ot-fb-focus" role="group" aria-label="${esc(L === 'en' ? 'I want to practise' : 'Chcę ćwiczyć')}">
                     <label class="ot-chip"><input type="checkbox" name="ot-focus" value="drill"> ${esc(L === 'en' ? 'Drills' : 'Drill')}</label>
                     <label class="ot-chip"><input type="checkbox" name="ot-focus" value="uoe" checked> Use of English</label>
+                    <label class="ot-chip"><input type="checkbox" name="ot-focus" value="grammar"> ${esc(L === 'en' ? 'Grammar' : 'Gramatyka')}</label>
                     <label class="ot-chip"><input type="checkbox" name="ot-focus" value="reading"> ${esc(L === 'en' ? 'Reading' : 'Czytanie')}</label>
                     <label class="ot-chip"><input type="checkbox" name="ot-focus" value="writing"> ${esc(L === 'en' ? 'Writing' : 'Pisanie')}</label>
                     <label class="ot-chip"><input type="checkbox" name="ot-focus" value="vocab"> ${esc(L === 'en' ? 'Vocabulary' : 'Słownictwo')}</label>
@@ -1943,6 +1980,12 @@
         });
 
         document.getElementById('ot-wordset')?.addEventListener('change', () => applyWordSetToVocab('ot-wordset', 'ot-vocab'));
+        document.getElementById('screen-own-time')?.addEventListener('click', (ev) => {
+            const btn = ev.target.closest?.('[data-ot-ws-view]');
+            if (!btn) return;
+            ev.preventDefault();
+            viewSelectedWordSet(btn.getAttribute('data-ot-ws-view'));
+        });
         document.getElementById('ot-session-wordset')?.addEventListener('change', () => applyWordSetToVocab('ot-session-wordset', 'ot-session-vocab'));
         document.getElementById('ot-start')?.addEventListener('click', () => (testPrep ? startTestPrepSet() : startLesson()));
 

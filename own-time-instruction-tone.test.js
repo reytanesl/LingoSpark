@@ -87,7 +87,7 @@ test('AI prompt includes age+level instruction tone with concrete examples', () 
         purpose: '', intensity: 'standard', topic: '', vocab: '', recentFeedback: [],
     });
     assert.match(kid, /INSTRUCTION TONE \(band=kid/);
-    assert.match(kid, /Uzupełnij każde zdanie poprawną formą czasownika z nawiasu/);
+    assert.match(kid, /Wpisz czasownik z nawiasu w poprawnym czasie|Uzupełnij każde zdanie poprawną formą czasownika z nawiasu/);
     assert.match(kid, /Never reuse one generic instruction/);
 
     const adult = buildOwnTimeLessonPrompt({

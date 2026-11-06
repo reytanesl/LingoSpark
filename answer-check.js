@@ -74,7 +74,8 @@
             if (key && !(' ' + normAnswer(raw) + ' ').includes(' ' + key + ' ')) return `Brakuje wyrazu kluczowego „${String(item.key).toUpperCase()}” w niezmienionej formie.`;
         }
         if (format === 'translation') { const max = ['B2', 'C1'].includes(cefr) ? 5 : 4; if (words > max) return `Przekroczony limit: maksymalnie ${max} wyrazy.`; }
-        if (format === 'brackets' && words > 3) return 'Przekroczony limit: maksymalnie 3 wyrazy.';
+        if ((format === 'brackets' || format === 'tense_form') && words > 3) return 'Przekroczony limit: maksymalnie 3 wyrazy.';
+        if (format === 'sentence_rewrite' && words > 6) return 'Przekroczony limit: maksymalnie 6 wyrazów.';
         if (format === 'word_formation' && item?.cue) {
             const root2 = normAnswer(item.cue).replace(/[^a-z]/g, '').slice(0, 2), v = normAnswer(raw).replace(/^(un|in|im|ir|il|dis|mis|non|over|under|re)/, '');
             if (root2 && !normAnswer(raw).includes(root2) && !v.startsWith(root2)) return `Odpowiedź musi pochodzić od wyrazu ${String(item.cue).toUpperCase()}.`;

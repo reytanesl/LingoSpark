@@ -238,7 +238,8 @@ test('prompt maps CKE exam formats by level', () => {
     assert.match(p('B2'), /"word_formation"/);
     assert.match(p('C1'), /poziom dwujęzyczny/);
     assert.match(p('C1'), /lexical_set/);
-    assert.match(p('A1'), /"format": "simple"/);
+    assert.match(p('A1'), /tense_form|error_correction|"simple"/);
+    assert.match(p('A1'), /Elementary|Starter|CEFR A1/);
     assert.ok(!/Egzamin|Matura/.test(p('A1')));
 });
 
@@ -246,7 +247,9 @@ test('every level format exists and has a Polish CKE-style instruction', () => {
     for (const [lvl, lv] of Object.entries(UOE_LEVELS)) {
         for (const f of lv.formats) {
             assert.ok(UOE_FORMATS[f], `${lvl}:${f}`);
-            assert.match(uoeInstruction(f, lvl), /^(Wybierz|Przeczytaj|Uzupełnij|Przetłumacz|Wpisz|Przekształć)/);
+            const instr = uoeInstruction(f, lvl);
+            assert.ok(instr && instr.length > 8, `${lvl}:${f} empty`);
+            assert.match(instr, /^(Wybierz|Przeczytaj|Uzupełnij|Przetłumacz|Wpisz|Przekształć|Znajdź|Popraw|Przepisz|Dokończ|To samo|W każdym|Wskaż)/);
         }
     }
     assert.match(uoeInstruction('translation', 'B2'), /maksymalnie pięć wyrazów/);

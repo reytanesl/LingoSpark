@@ -6,7 +6,7 @@ import { OWN_TIME_VOCAB_TEXT_MAX, vocabPromptBlock, sanitizeWordSetKey } from '.
 
 const CEFR_OK = new Set(['A0', 'A1', 'A2', 'B1', 'B2', 'C1']);
 const INTENSITY_OK = new Set(['light', 'standard', 'stretch']);
-const TASK_OK = new Set(['writing', 'drill', 'uoe', 'reading', 'vocab']);
+const TASK_OK = new Set(['writing', 'drill', 'uoe', 'reading', 'vocab', 'grammar']);
 
 /** Max "Keep going" extra practice sets per student per day (Europe/Warsaw day). */
 export const OWN_TIME_EXTRA_DAILY_LIMIT = 3;
@@ -28,7 +28,7 @@ export function buildOwnTimeExtraContext(lesson, answers = {}) {
     return { previousTitle: lesson?.title || '', focus: lesson?.focus || '', avoid: avoid.slice(0, 40), weak: weak.slice(0, 12) };
 }
 
-const FOCUS_KEYS = ['drill', 'uoe', 'reading', 'writing', 'vocab'];
+const FOCUS_KEYS = ['drill', 'uoe', 'reading', 'writing', 'vocab', 'grammar'];
 /** Feedback passed to the prompt: known keys only ("Chcę ćwiczyć" may list several focuses). */
 export function cleanRecentFeedback(list) {
     return (Array.isArray(list) ? list : []).slice(0, 2).map((f) => {
@@ -142,14 +142,24 @@ export const UOE_FORMATS = {
     open_cloze: { kind: 'open', text: true, name: 'Tekst z lukami (open cloze)', instr: 'Przeczytaj tekst. Uzupełnij każdą lukę jednym wyrazem, tak aby otrzymać logiczny, spójny i poprawny gramatycznie tekst.' },
     transformation: { kind: 'open', needsKey: true, name: 'Transformacje (parafrazy)', instr: 'Uzupełnij każde zdanie, wykorzystując wyraz podany wielkimi literami, tak aby zachować znaczenie zdania wyjściowego. Nie zmieniaj formy podanego wyrazu. W każdą lukę możesz wpisać maksymalnie pięć wyrazów, wliczając w to wyraz już podany.' },
     lexical_set: { kind: 'open', name: 'Set leksykalny (kolokacje)', instr: 'Wpisz jeden wyraz, który poprawnie uzupełnia luki we wszystkich trzech zdaniach. Wyraz musi mieć tę samą formę w każdym zdaniu.' },
+    tense_form: { kind: 'open', cue: true, grammar: true, name: 'Formy czasowników / czasy', instr: 'Uzupełnij zdania. Wpisz w każdą lukę podany w nawiasie czasownik w odpowiednim czasie i formie gramatycznej. W każdą lukę możesz wpisać maksymalnie trzy wyrazy.' },
+    error_correction: { kind: 'open', grammar: true, name: 'Korekta błędu gramatycznego', instr: 'W każdym zdaniu jest jeden błąd gramatyczny. Popraw go — wpisz poprawną formę (lub poprawione zdanie), tak aby całość była gramatycznie poprawna.' },
+    sentence_rewrite: { kind: 'open', needsLead: true, grammar: true, name: 'Przekształcanie zdań (gramatyka)', instr: 'Przekształć każde zdanie zgodnie z poleceniem (np. strona bierna, mowa zależna, okres warunkowy), zachowując znaczenie. W każdą lukę możesz wpisać maksymalnie sześć wyrazów.' },
+    grammar_mc: { kind: 'mc', grammar: true, name: 'Gramatyka — wybór wielokrotny', instr: 'Wybierz właściwą odpowiedź spośród podanych, tak aby otrzymać gramatycznie poprawne zdanie.' },
 };
+
+/** Formats whose primary focus is grammar (not vocab/lexis). */
+export const GRAMMAR_UOE_FORMATS = ['tense_form', 'error_correction', 'sentence_rewrite', 'grammar_mc', 'brackets', 'transformation'];
+
 
 /** CKE exam mapping per CEFR level (A0/A1: no exam → simple gaps). */
 export const UOE_LEVELS = {
-    A2: { exam: 'E8', name: 'Egzamin ósmoklasisty', options: 3, open: 'brackets', formats: ['mc_sentences', 'mc_dialogue', 'mc_translation', 'mc_text', 'brackets', 'translation'] },
-    B1: { exam: 'MP', name: 'Matura — poziom podstawowy', options: 3, open: 'brackets', formats: ['mc_text', 'mc_sentences', 'two_sentences', 'mc_dialogue', 'brackets', 'translation'] },
-    B2: { exam: 'MR', name: 'Matura — poziom rozszerzony', options: 4, open: 'open_cloze', formats: ['word_formation', 'open_cloze', 'transformation', 'translation', 'mc_text'] },
-    C1: { exam: 'MD', name: 'Matura — poziom dwujęzyczny', options: 4, open: 'open_cloze', formats: ['open_cloze', 'word_formation', 'transformation', 'translation', 'lexical_set', 'mc_text'] },
+    A0: { exam: null, name: 'Starter', options: 3, open: 'simple', formats: ['tense_form', 'grammar_mc', 'error_correction', 'simple'] },
+    A1: { exam: null, name: 'Elementary', options: 3, open: 'simple', formats: ['tense_form', 'grammar_mc', 'error_correction', 'brackets', 'simple'] },
+    A2: { exam: 'E8', name: 'Egzamin ósmoklasisty', options: 3, open: 'brackets', formats: ['mc_sentences', 'mc_dialogue', 'mc_translation', 'mc_text', 'brackets', 'translation', 'tense_form', 'error_correction', 'grammar_mc', 'sentence_rewrite'] },
+    B1: { exam: 'MP', name: 'Matura — poziom podstawowy', options: 3, open: 'brackets', formats: ['mc_text', 'mc_sentences', 'two_sentences', 'mc_dialogue', 'brackets', 'translation', 'tense_form', 'error_correction', 'sentence_rewrite', 'grammar_mc'] },
+    B2: { exam: 'MR', name: 'Matura — poziom rozszerzony', options: 4, open: 'open_cloze', formats: ['word_formation', 'open_cloze', 'transformation', 'translation', 'mc_text', 'error_correction', 'sentence_rewrite', 'tense_form'] },
+    C1: { exam: 'MD', name: 'Matura — poziom dwujęzyczny', options: 4, open: 'open_cloze', formats: ['open_cloze', 'word_formation', 'transformation', 'translation', 'lexical_set', 'mc_text', 'error_correction', 'sentence_rewrite', 'tense_form'] },
 };
 
 /**
@@ -194,6 +204,10 @@ const UOE_INSTR_BY_BAND = {
         open_cloze: 'Przeczytaj tekst. Do każdej luki wpisz dokładnie jedno słowo.',
         transformation: 'Dokończ zdanie. Użyj słowa NAPISANEGO WIELKIMI LITERAMI — nie zmieniaj jego formy.',
         lexical_set: 'To samo słowo musi pasować do luk we wszystkich trzech zdaniach.',
+        tense_form: 'Wpisz czasownik z nawiasu w poprawnym czasie.',
+        error_correction: 'Znajdź błąd w zdaniu i wpisz poprawną formę.',
+        sentence_rewrite: 'Przepisz zdanie tak, jak każe polecenie (np. strona bierna).',
+        grammar_mc: 'Wybierz poprawną formę gramatyczną.',
         simple: 'Uzupełnij luki.',
     },
     young: {
@@ -208,6 +222,10 @@ const UOE_INSTR_BY_BAND = {
         open_cloze: 'Przeczytaj tekst. Uzupełnij każdą lukę jednym wyrazem.',
         transformation: 'Uzupełnij zdanie wyrazem NAPISANYM WIELKIMI LITERAMI (bez zmiany formy; max. 5 wyrazów).',
         lexical_set: 'Uzupełnij luki we wszystkich trzech zdaniach tym samym wyrazem (ta sama forma).',
+        tense_form: 'Uzupełnij lukę czasownikiem z nawiasu w odpowiednim czasie i formie.',
+        error_correction: 'W każdym zdaniu jest jeden błąd gramatyczny — wpisz poprawną formę.',
+        sentence_rewrite: 'Przekształć zdanie zgodnie z poleceniem (np. strona bierna, mowa zależna).',
+        grammar_mc: 'Wybierz poprawną odpowiedź gramatyczną.',
         simple: 'Uzupełnij luki w zdaniach.',
     },
     adult: {
@@ -217,6 +235,10 @@ const UOE_INSTR_BY_BAND = {
         transformation: 'Przekształć każde zdanie, używając podanego WIELKIMI LITERAMI wyrazu bez zmiany jego formy (maksymalnie pięć wyrazów w luce, wliczając wyraz podany).',
         lexical_set: 'Uzupełnij luki we wszystkich trzech zdaniach tym samym wyrazem (bez zmiany formy).',
         translation: 'Przetłumacz na język angielski fragmenty w nawiasach, zachowując pełną poprawność gramatyczną i ortograficzną.',
+        tense_form: 'Uzupełnij każdą lukę czasownikiem z nawiasu w wymaganym czasie i aspekcie (maksymalnie trzy wyrazy).',
+        error_correction: 'Wskaż i popraw jeden błąd gramatyczny w każdym zdaniu — wpisz poprawną formę lub poprawione zdanie.',
+        sentence_rewrite: 'Przekształć każde zdanie zgodnie z poleceniem gramatycznym, zachowując znaczenie (maksymalnie sześć wyrazów w luce).',
+        grammar_mc: 'Wybierz formę gramatycznie poprawną w danym kontekście.',
     },
 };
 
@@ -349,7 +371,7 @@ export function instructionToneGuide({ age, cefr, instrLang } = {}) {
     const lang = instrLang === 'en' ? 'en' : 'pl';
     const ex = (type, format = null) => taskInstruction(type, { format, age: aud.age, cefr: aud.cefr, instrLang: lang });
     if (aud.band === 'kid') {
-        return `INSTRUCTION TONE (band=kid, age≈${aud.age}, ${aud.cefr}): write EVERY task "instruction" as ONE short, concrete sentence a primary pupil understands. No exam jargon (avoid: "spójny i poprawny językowo", "maksymalnie trzy wyrazy", "fragmenty podane w nawiasach" as long clauses). One action per sentence. Examples: vocab_drill → "${ex('vocab_drill')}"; brackets → "${ex('uoe', 'brackets')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}"; unscramble → "${ex('unscramble')}".`;
+        return `INSTRUCTION TONE (band=kid, age≈${aud.age}, ${aud.cefr}): write EVERY task "instruction" as ONE short, concrete sentence a primary pupil understands. No exam jargon (avoid: "spójny i poprawny językowo", "maksymalnie trzy wyrazy", "fragmenty podane w nawiasach" as long clauses). One action per sentence. Examples: vocab_drill → "${ex('vocab_drill')}"; tense_form → "${ex('uoe', 'tense_form')}"; error_correction → "${ex('uoe', 'error_correction')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}"; unscramble → "${ex('unscramble')}".`;
     }
     if (aud.band === 'young') {
         return `INSTRUCTION TONE (band=young, age≈${aud.age}, ${aud.cefr}): clear school Polish/English, still short (1–2 sentences). Light exam vocabulary is OK if explained by the action. Examples: brackets → "${ex('uoe', 'brackets')}"; open_cloze → "${ex('uoe', 'open_cloze')}"; writing → "${ex('writing')}".`;
@@ -357,7 +379,7 @@ export function instructionToneGuide({ age, cefr, instrLang } = {}) {
     if (aud.band === 'adult') {
         return `INSTRUCTION TONE (band=adult, age≈${aud.age}, ${aud.cefr}): precise, adult wording — concise but not simplified for children; no talking down. Prefer exact limits and form-change clarity. Examples: open_cloze → "${ex('uoe', 'open_cloze')}"; word_formation → "${ex('uoe', 'word_formation')}"; writing → "${ex('writing')}".`;
     }
-    return `INSTRUCTION TONE (band=exam, age≈${aud.age}, ${aud.cefr}): concise CKE / exam-style wording appropriate for E8 or matura age — clear, formal enough for the paper, not childish. For Use of English prefer the official exam instruction style. Examples: word_formation → "${ex('uoe', 'word_formation')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}".`;
+    return `INSTRUCTION TONE (band=exam, age≈${aud.age}, ${aud.cefr}): concise CKE / exam-style wording appropriate for E8 or matura age — clear, formal enough for the paper, not childish. For Use of English prefer the official exam instruction style. Examples: word_formation → "${ex('uoe', 'word_formation')}"; sentence_rewrite → "${ex('uoe', 'sentence_rewrite')}"; error_correction → "${ex('uoe', 'error_correction')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}".`;
 }
 
 /**
@@ -377,7 +399,7 @@ export function adaptTaskInstruction(task, { age = null, cefr = 'A2', instrLang 
     if (task.type === 'uoe' && task.format) {
         return { ...task, instruction: wanted || cur };
     }
-    const looksLikeInstr = /^(Complete|Fill|Write|Read|Choose|Match|Translate|Przekształć|Uzupełnij|Wpisz|Przeczytaj|Wybierz|Dopasuj|Przetłumacz|Napisz|Ułóż|Build|Arrange|Form|Odtwórz|Zmień|Dokończ)\b/u.test(cur);
+    const looksLikeInstr = /^(Complete|Fill|Write|Read|Choose|Match|Translate|Find|Correct|Rewrite|Przekształć|Uzupełnij|Wpisz|Przeczytaj|Wybierz|Dopasuj|Przetłumacz|Napisz|Ułóż|Build|Arrange|Form|Odtwórz|Zmień|Dokończ|Znajdź|Popraw|Przepisz)\b/u.test(cur);
     if (!cur || cur.length < 8 || !looksLikeInstr) return { ...task, instruction: wanted };
     const examJargon = /spójny i poprawny językowo|maksymalnie (?:trzy|pięć) wyraz|znajomość środków|fragmenty podane w nawiasach, tak aby|Wymagana jest pełna poprawność/i.test(cur);
     const babyTalk = /^(Ułóż słowo z liter|Napisz kilka krótkich zdań|Uzupełnij luki\.|Fill in each gap)\.?$/i.test(cur);
@@ -529,9 +551,65 @@ export function ensureOpenCloze(tasks, cefr) {
     return { tasks: out, openClozeShort: Math.max(0, min - have) };
 }
 
+export function grammarFormatsFor(cefr) {
+    const lv = UOE_LEVELS[String(cefr || '').toUpperCase()];
+    const all = GRAMMAR_UOE_FORMATS;
+    if (!lv) return all.filter((f) => f === 'tense_form' || f === 'error_correction' || f === 'grammar_mc');
+    return all.filter((f) => lv.formats.includes(f));
+}
+
+export function isGrammarUoeTask(task) {
+    return task?.type === 'uoe' && GRAMMAR_UOE_FORMATS.includes(task.format);
+}
+
+/**
+ * When the student asked for grammar, make sure the lesson actually contains grammar-focused UOE tasks.
+ * Retags eligible open verb-form tasks; if still short, promotes a simple/brackets uoe into tense_form.
+ */
+export function ensureGrammarTasks(tasks, cefr, prefs = []) {
+    const want = (Array.isArray(prefs) ? prefs : []).map((p) => String(p || '').toLowerCase()).includes('grammar');
+    if (!want) return { tasks, grammarShort: 0 };
+    const allowed = new Set(grammarFormatsFor(cefr));
+    let list = (tasks || []).map((t) => {
+        if (t?.type !== 'uoe') return t;
+        if (GRAMMAR_UOE_FORMATS.includes(t.format) && allowed.has(t.format)) return t;
+        // Retag obvious verb-form "brackets/simple" as tense_form when allowed.
+        if (allowed.has('tense_form') && (t.format === 'brackets' || t.format === 'simple')
+            && (t.items || []).some((it) => it.cue) && isVerbFormTask(t)) {
+            return { ...t, format: 'tense_form', instruction: uoeInstruction('tense_form', cefr) };
+        }
+        return t;
+    });
+    let have = list.filter(isGrammarUoeTask).length;
+    const need = 2;
+    if (have >= need) return { tasks: list, grammarShort: 0 };
+    list = list.map((t) => {
+        if (have >= need || t?.type !== 'uoe') return t;
+        if (isGrammarUoeTask(t)) return t;
+        if (!allowed.has('tense_form')) return t;
+        if (!(t.items || []).length) return t;
+        if ((t.items || []).every((it) => it.cue || /___/.test(String(it.q || '')))) {
+            have += 1;
+            return {
+                ...t,
+                format: 'tense_form',
+                instruction: uoeInstruction('tense_form', cefr),
+                convertedToGrammar: true,
+                items: t.items.map((it) => ({ ...it, options: undefined })),
+            };
+        }
+        if (allowed.has('error_correction') && (t.items || []).some((it) => it.lead)) {
+            have += 1;
+            return { ...t, format: 'error_correction', instruction: uoeInstruction('error_correction', cefr), convertedToGrammar: true };
+        }
+        return t;
+    });
+    return { tasks: list, grammarShort: Math.max(0, need - have) };
+}
+
 function uoeRuleText(cefr, nameLang) {
     const lv = UOE_LEVELS[cefr];
-    if (!lv) return `CEFR ${cefr} has no exam mapping: use "format": "simple" — EITHER a short text in "prompt" with {{1}}, {{2}}… gaps (item "q" = cue word or "") OR sentences where each item "q" has ONE "___" exactly where the answer goes (e.g. "She ___ (be) my friend.").`;
+    if (!lv) return `CEFR ${cefr} has no exam mapping: use grammar-friendly open formats "tense_form" / "error_correction" / "grammar_mc" or "simple" — sentences with ONE "___" and a bracket cue for verb forms.`;
     const spec = {
         mc_sentences: `"mc_sentences": 3–5 single sentences (or a sentence + reply); item "q" with ONE "___"; "options": ${lv.options} short choices; "answer" = the correct option text.`,
         mc_dialogue: '"mc_dialogue": 3–4 two-line mini-dialogues ("A: …\nB: ___ …"); "q" with ONE "___"; "options"; "answer" = the option text.',
@@ -544,8 +622,15 @@ function uoeRuleText(cefr, nameLang) {
         open_cloze: '"open_cloze": a 70–120 word English text in "prompt" with {{1}}…{{n}} gaps (4–6); each item "q": "", "answer" = ONE word (grammar/collocation words), "alts".',
         transformation: '"transformation": 3–4 items; "lead" = the original sentence; "key" = ONE given word (shown in capitals, must be used unchanged); "q" = the second sentence with ONE "___" (max 5 words incl. the key word); "answer" + "alts".',
         lexical_set: '"lexical_set": 3 items; "q" = THREE sentences separated by "\n", each with ONE "___"; ONE word (same form) fits all three — collocations/phrasal meanings; "answer" + "alts".',
+        tense_form: '"tense_form": 3–5 sentences; "q" with ONE "___"; "cue" = BASE verb (e.g. "go", "not / like"); "answer" = the correct tense/aspect form (max 3 words); "alts" = contractions/full forms. Pure grammar — not vocabulary meaning.',
+        error_correction: '"error_correction": 3–5 items; "lead" = the FULL incorrect English sentence (exactly one grammar mistake); "q" = "" or a short stem with "___" for the fix; "answer" = the corrected word/phrase OR the full corrected sentence; "alts" = other valid corrections. Do NOT ask about spelling of rare words — target tense, agreement, articles, prepositions, word order, pronouns.',
+        sentence_rewrite: '"sentence_rewrite": 3–4 items; "lead" = original sentence; "rule" = short grammar label in CAPITALS (PASSIVE / REPORTED SPEECH / FIRST CONDITIONAL / COMPARATIVE / HAVE SOMETHING DONE / SO-SUCH…); "q" = rewritten stem with ONE "___" (max 6 words) OR "" if the whole rewrite is the answer; "answer" + "alts". Keep meaning; change structure as the rule requires.',
+        grammar_mc: `"grammar_mc": 3–5 sentences targeting articles / prepositions / quantifiers / relative pronouns / verb forms; item "q" with ONE "___"; "options": ${lv.options} short choices; "answer" = the correct option. Grammar focus only.`,
     };
-    return `Use of English must follow the Polish CKE exam (${lv.name}, "znajomość środków językowych") for ${cefr}. Set "format" on every "uoe" task to ONE of: ${lv.formats.join(', ')}. ${openClozeRule(cefr)} Keep the exam style but use the session topic/vocabulary. Write "instruction" in Polish in CKE style (the app shows the official wording). Formats:
+    const examBit = lv.exam
+        ? `must follow the Polish CKE exam (${lv.name}, "znajomość środków językowych") for ${cefr}`
+        : `should suit CEFR ${cefr} (${lv.name}) with clear grammar-focused items`;
+    return `Use of English ${examBit}. Set "format" on every "uoe" task to ONE of: ${lv.formats.join(', ')}. ${openClozeRule(cefr)} Keep the exam/school style but use the session topic/vocabulary. Grammar formats (tense_form, error_correction, sentence_rewrite, grammar_mc, brackets, transformation) practise STRUCTURE, not word meaning. Write "instruction" in Polish (the app shows the official/band wording). Formats:
 ${lv.formats.map((f) => `    - ${spec[f]}`).join('\n')}`;
 }
 
@@ -567,7 +652,7 @@ ${x.weak.length ? x.weak.map((w) => `  * ${w}`).join('\n') : '  * (none recorded
     const feedbackBlock = (v.recentFeedback.length
         ? `Recent student feedback (adapt level/focus):\n${JSON.stringify(v.recentFeedback)}`
         : 'No prior feedback yet — start gently at the stated level.')
-        + (lastFocus.length > 1 ? `\nThe student wants to practise ALL of: ${lastFocus.join(', ')} (drill → vocab_drill/unscramble, uoe → uoe/word_order, vocab → vocab_drill) — give EVERY one of these focuses at least one task in this set.` : '');
+        + (lastFocus.length > 1 ? `\nThe student wants to practise ALL of: ${lastFocus.join(', ')} (drill → vocab_drill/unscramble, uoe → uoe/word_order, vocab → vocab_drill, grammar → uoe grammar formats) — give EVERY one of these focuses at least one task in this set.` : '');
     const vocabBlock = v.vocabPlan?.active ? vocabPromptBlock(v.vocabPlan, { instrLangName, prevSet: v.prevSet }) : '';
 
     return `You are a friendly English practice coach for Polish school students (LingoSpark "In your own time").
@@ -591,8 +676,9 @@ HARD RULES:
 3. Every coach-facing string — task "instruction", "coachNote", lesson "title" — MUST be written in ${instrLangName} (${v.instrLang}).
 4. ${instructionToneGuide({ age: v.age, cefr: v.cefr, instrLang: v.instrLang })}
 4b. The "instruction" (polecenie) itself must match this student's age AND CEFR: vocabulary and sentence structure of the instruction change with the band (kid ≠ exam ≠ adult). Never reuse one generic instruction for every learner. Never mention a word box / ramka / word bank.
-5. Prefer the student's task types. Allowed types: vocab_drill, uoe, reading, writing, word_order, unscramble (map prefs: vocab/drill→vocab_drill or unscramble, uoe→uoe or word_order, reading→reading, writing→writing).
+5. Prefer the student's task types. Allowed types: vocab_drill, uoe, reading, writing, word_order, unscramble (map prefs: vocab/drill→vocab_drill or unscramble, uoe→uoe or word_order, reading→reading, writing→writing, grammar→uoe with a grammar format from GRAMMAR list below).
 5a. TASK MIX for the 5–6 tasks: at most ONE writing and at most ONE reading task; 1–2 "uoe" tasks; fill the rest with vocab_drill (and tile tasks for lower levels). Order from easier (vocabulary) to harder (writing last).
+5c. GRAMMAR: when "grammar" is among preferred task types (or the student asked for grammar), include at least TWO "uoe" tasks whose "format" is strictly grammar: tense_form, error_correction, sentence_rewrite, grammar_mc, brackets (verb form), or transformation (B2+). A word set / topic may supply vocabulary context, but each item must practise a grammar point (tense/aspect, voice, reported speech, conditionals, articles, prepositions, quantifiers, relative pronouns, agreement, word order of grammar — NOT vocab meaning gaps). Prefer productive type-in (tense_form / error_correction / sentence_rewrite / brackets / transformation) over grammar_mc except at A0–A1 where one short grammar_mc is fine. Never mention a word box.
 5b. LOWER LEVELS: ${lowLevel
         ? `this student is ${v.cefr}${v.age != null ? `, age ${v.age}` : ''} — include ONE–TWO tile tasks ("word_order" and/or "unscramble") within the 5–6 tasks (they count towards the 5–6).`
         : v.cefr === 'B1' ? 'B1: you MAY use one short "word_order" task (tricky word order: adverbs, questions) — optional.' : 'B2+: do NOT use word_order or unscramble.'}
@@ -666,8 +752,13 @@ export function resolveUoeFormat(task, cefr) {
     const pick = (...fs) => fs.find((f) => lv.formats.includes(f));
     if (has('options')) return pick(textGaps ? 'mc_text' : (has('pl') ? 'mc_translation' : 'mc_sentences'), 'mc_text', 'mc_sentences') || lv.open;
     if (has('key') && has('lead')) return pick('transformation') || lv.open;
+    if (has('lead') && !has('key')) {
+        const looksErr = items.some((it) => /error|mistake|błęd|incorrect|wrong/i.test(String(it?.rule || it?.focus || task?.instruction || '')));
+        return pick(looksErr ? 'error_correction' : 'sentence_rewrite', 'error_correction', 'sentence_rewrite', 'tense_form') || lv.open;
+    }
     if (has('pl')) return pick('translation') || lv.open;
     if (textGaps) return pick(has('cue') ? 'word_formation' : 'open_cloze', 'open_cloze', 'word_formation') || lv.open;
+    if (has('cue') && !has('options')) return pick('tense_form', 'brackets') || lv.open;
     return lv.open;
 }
 
@@ -714,6 +805,14 @@ export function buildUoeItem(format, it, cefr) {
         if (!key || !lead || !/___/.test(q)) return null;
         out.key = key; out.lead = lead;
     }
+    if (f.needsLead || format === 'error_correction' || format === 'sentence_rewrite') {
+        const lead = clean(it?.lead || it?.source || (!/___/.test(q) ? q : ''), 400);
+        if (!lead) return null;
+        out.lead = lead;
+        if (!/___/.test(out.q) || out.q === lead) out.q = /___/.test(q) && q !== lead ? q : '';
+        const rule = clean(it?.rule || it?.focus || it?.transform || '', 40).toUpperCase();
+        if (rule) out.rule = rule;
+    }
     if (format === 'lexical_set' && (q.match(/___/g) || []).length < 2) return null;
     if (format === 'two_sentences' && (q.match(/___/g) || []).length < 2) return null;
     return out;
@@ -738,8 +837,8 @@ function splitToMinimum(tasks) {
 }
 
 /* ---------- Word cues for gap-fill tasks ---------- */
-const CUE_EXEMPT_FORMATS = new Set(['mc_sentences', 'mc_dialogue', 'mc_translation', 'mc_text', 'two_sentences', 'translation', 'transformation']);
-const CUE_REQUIRED_FORMATS = new Set(['brackets', 'word_formation']);
+const CUE_EXEMPT_FORMATS = new Set(['mc_sentences', 'mc_dialogue', 'mc_translation', 'mc_text', 'two_sentences', 'translation', 'transformation', 'error_correction', 'sentence_rewrite', 'grammar_mc']);
+const CUE_REQUIRED_FORMATS = new Set(['brackets', 'word_formation', 'tense_form']);
 const BRACKET_AFTER_GAP = /(_{3,})\s*\(([^()]{1,40})\)/;
 const BRACKET_BEFORE_GAP = /\(([^()]{1,40})\)\s*(_{3,})/;
 /** Strip inline (cue) from the gap sentence so the UI shows the cue at most once (via item.cue). */
@@ -1088,7 +1187,7 @@ function applyWordCuesRaw(task, ctx = {}) {
 
 /** "Correct form" tasks (verb forms, tenses, word in brackets) — their cue should be the base form. */
 export function isVerbFormTask(task) {
-    if (task?.format === 'brackets') return true;
+    if (task?.format === 'brackets' || task?.format === 'tense_form') return true;
     return /\b(correct|right) (verb )?form|verb form|tense|odpowiedniej formie|właściwej formie|poprawnej formie|form[ęie] czasownik|czas(ie|u) /i.test(String(task?.instruction || ''));
 }
 
@@ -1191,7 +1290,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
             items = (Array.isArray(t?.items) ? t.items : []).map((it) => buildTileItem(type, it)).filter(Boolean).slice(0, type === 'word_order' ? 5 : 6);
         } else if (type === 'uoe') {
             format = resolveUoeFormat(t, lessonCefr);
-            const cap = { mc_text: 5, word_formation: 5, transformation: 4, lexical_set: 3, two_sentences: 4, mc_dialogue: 4 }[format] || 6;
+            const cap = { mc_text: 5, word_formation: 5, transformation: 4, sentence_rewrite: 4, error_correction: 5, lexical_set: 3, two_sentences: 4, mc_dialogue: 4, tense_form: 5, grammar_mc: 5 }[format] || 6;
             const raws = Array.isArray(t?.items) ? t.items : [];
             items = raws.map((it) => buildUoeItem(format, it, lessonCefr)).filter(Boolean).slice(0, cap);
             if (items.length < Math.min(2, raws.length) && UOE_LEVELS[lessonCefr]) {
@@ -1253,6 +1352,9 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
     if (tasks.length && tasks.length < OWN_TIME_TASKS_MIN) tasks = splitToMinimum(tasks);
     const oc = ensureOpenCloze(tasks, lessonCefr);
     tasks = oc.tasks;
+    const prefs = Array.isArray(fallback.taskPrefs) ? fallback.taskPrefs : [];
+    const gr = ensureGrammarTasks(tasks, lessonCefr, prefs);
+    tasks = gr.tasks;
 
     return {
         title: String(raw.title || 'Practice').slice(0, 120),
@@ -1262,6 +1364,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
         goal: String(raw.goal || '').slice(0, 200),
         coachNote: String(raw.coachNote || '').slice(0, 400),
         ...(oc.openClozeShort ? { openClozeShort: oc.openClozeShort } : {}),
+        ...(gr.grammarShort ? { grammarShort: gr.grammarShort } : {}),
         taskCountOk: tasks.length >= OWN_TIME_TASKS_MIN && tasks.length <= OWN_TIME_TASKS_MAX,
         tasks: tasks.length ? tasks : [{
             n: 1,
