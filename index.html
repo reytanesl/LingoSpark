@@ -38,6 +38,7 @@
     <script src="pe-topic-challenge-hotspots.js"></script>
     <script src="pe-topic-challenge.js"></script>
     <script src="pe-review-chat.js"></script>
+    <script src="text-gaps-counts.js"></script>
     <script src="own-time-error-fix.js"></script>
     <script src="answer-check.js"></script>
     <script src="own-time-print.js"></script>
@@ -4867,10 +4868,10 @@
                     <div class="pe-setup-field">
                         <label><i class="fa-solid fa-signal"></i> Level</label>
                         <div class="setup-choice-grid setup-choice-grid--4">
-                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="A2"><span class="setup-choice-title">A2</span></label>
-                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B1"><span class="setup-choice-title">B1</span></label>
-                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B2" checked><span class="setup-choice-title">B2</span></label>
-                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B2+"><span class="setup-choice-title">B2+</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="A2" onchange="syncAdvGapsCountDefaults('setup')"><span class="setup-choice-title">A2</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B1" onchange="syncAdvGapsCountDefaults('setup')"><span class="setup-choice-title">B1</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B2" checked onchange="syncAdvGapsCountDefaults('setup')"><span class="setup-choice-title">B2</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-level" value="B2+" onchange="syncAdvGapsCountDefaults('setup')"><span class="setup-choice-title">B2+</span></label>
                         </div>
                     </div>
                     <div class="pe-setup-field">
@@ -4898,15 +4899,41 @@
                         <label><i class="fa-solid fa-sliders"></i> Activity type</label>
                         <div class="setup-choice-grid setup-choice-grid--2">
                             <label class="setup-choice">
-                                <input type="radio" name="adv-gaps-setup-mode" value="translate" checked>
+                                <input type="radio" name="adv-gaps-setup-mode" value="translate" checked onchange="syncAdvGapsCountPickers('setup')">
                                 <span class="setup-choice-title">Translate gaps</span>
                             </label>
                             <label class="setup-choice">
-                                <input type="radio" name="adv-gaps-setup-mode" value="sentences">
+                                <input type="radio" name="adv-gaps-setup-mode" value="sentences" onchange="syncAdvGapsCountPickers('setup')">
                                 <span class="setup-choice-title">Missing sentences</span>
                             </label>
                         </div>
                     </div>
+                    <div class="pe-setup-field" id="adv-gaps-setup-translate-count-field">
+                        <label><i class="fa-solid fa-hashtag"></i> Number of gaps</label>
+                        <div class="setup-choice-grid setup-choice-grid--4">
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="3"><span class="setup-choice-title">3</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="4"><span class="setup-choice-title">4</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="5"><span class="setup-choice-title">5</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="6"><span class="setup-choice-title">6</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="7" checked><span class="setup-choice-title">7</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="8"><span class="setup-choice-title">8</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="9"><span class="setup-choice-title">9</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-translate-count" value="10"><span class="setup-choice-title">10</span></label>
+                        </div>
+                        <p class="pe-setup-hint">Word/phrase gaps in the text (3–10).</p>
+                    </div>
+                    <div class="pe-setup-field" id="adv-gaps-setup-sentences-count-field" style="display:none;">
+                        <label><i class="fa-solid fa-list-ol"></i> Missing sentences</label>
+                        <div class="setup-choice-grid setup-choice-grid--4">
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-sentences-count" value="2"><span class="setup-choice-title">2</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-sentences-count" value="3"><span class="setup-choice-title">3</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-sentences-count" value="4" checked><span class="setup-choice-title">4</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-sentences-count" value="5"><span class="setup-choice-title">5</span></label>
+                            <label class="setup-choice"><input type="radio" name="adv-gaps-setup-sentences-count" value="6"><span class="setup-choice-title">6</span></label>
+                        </div>
+                        <p class="pe-setup-hint">How many sentences to remove (2–6).</p>
+                    </div>
+
                     <div class="pe-setup-field">
                         <label for="adv-gaps-setup-topic"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
                         <input type="text" id="adv-gaps-setup-topic" placeholder="e.g. school uniforms, online learning, volunteering" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;" maxlength="120" autocomplete="off">
@@ -4925,9 +4952,9 @@
                     <div class="pe-setup-field">
                         <label><i class="fa-solid fa-signal"></i> Level</label>
                         <div class="setup-choice-grid setup-choice-grid--3">
-                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="A1"><span class="setup-choice-title">A1</span></label>
-                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="A2" checked><span class="setup-choice-title">A2</span></label>
-                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="B1"><span class="setup-choice-title">B1</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="A1" onchange="syncBasicGapsCountDefaults('setup')"><span class="setup-choice-title">A1</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="A2" checked onchange="syncBasicGapsCountDefaults('setup')"><span class="setup-choice-title">A2</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-level" value="B1" onchange="syncBasicGapsCountDefaults('setup')"><span class="setup-choice-title">B1</span></label>
                         </div>
                         <p class="pe-setup-hint">A1–A2 follow egzamin ósmoklasisty; B1 follows Matura podstawowa.</p>
                     </div>
@@ -4935,15 +4962,41 @@
                         <label><i class="fa-solid fa-sliders"></i> Activity type</label>
                         <div class="setup-choice-grid setup-choice-grid--2">
                             <label class="setup-choice">
-                                <input type="radio" name="e8-gaps-setup-mode" value="translate" checked>
+                                <input type="radio" name="e8-gaps-setup-mode" value="translate" checked onchange="syncBasicGapsCountPickers('setup')">
                                 <span class="setup-choice-title">Translate gaps</span>
                             </label>
                             <label class="setup-choice">
-                                <input type="radio" name="e8-gaps-setup-mode" value="sentences">
+                                <input type="radio" name="e8-gaps-setup-mode" value="sentences" onchange="syncBasicGapsCountPickers('setup')">
                                 <span class="setup-choice-title">Missing sentences</span>
                             </label>
                         </div>
                     </div>
+                    <div class="pe-setup-field" id="e8-gaps-setup-translate-count-field">
+                        <label><i class="fa-solid fa-hashtag"></i> Number of gaps</label>
+                        <div class="setup-choice-grid setup-choice-grid--4">
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="3"><span class="setup-choice-title">3</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="4"><span class="setup-choice-title">4</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="5" checked><span class="setup-choice-title">5</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="6"><span class="setup-choice-title">6</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="7"><span class="setup-choice-title">7</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="8"><span class="setup-choice-title">8</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="9"><span class="setup-choice-title">9</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-translate-count" value="10"><span class="setup-choice-title">10</span></label>
+                        </div>
+                        <p class="pe-setup-hint">Word/phrase gaps in the text (3–10).</p>
+                    </div>
+                    <div class="pe-setup-field" id="e8-gaps-setup-sentences-count-field" style="display:none;">
+                        <label><i class="fa-solid fa-list-ol"></i> Missing sentences</label>
+                        <div class="setup-choice-grid setup-choice-grid--4">
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-sentences-count" value="2"><span class="setup-choice-title">2</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-sentences-count" value="3" checked><span class="setup-choice-title">3</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-sentences-count" value="4"><span class="setup-choice-title">4</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-sentences-count" value="5"><span class="setup-choice-title">5</span></label>
+                            <label class="setup-choice"><input type="radio" name="e8-gaps-setup-sentences-count" value="6"><span class="setup-choice-title">6</span></label>
+                        </div>
+                        <p class="pe-setup-hint">How many sentences to remove (2–6).</p>
+                    </div>
+
                     <div class="pe-setup-field">
                         <label for="e8-gaps-setup-topic"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
                         <input type="text" id="e8-gaps-setup-topic" placeholder="e.g. school trip, favourite hobby, weekend plans" style="width:100%; padding:0.55rem 0.7rem; border:2px solid var(--border-light); border-radius:0.5rem; font-size:1rem; box-sizing:border-box;" maxlength="120" autocomplete="off">
@@ -5239,10 +5292,10 @@
                 <div class="pe-setup-field" style="margin-bottom:0.75rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-signal"></i> Level</label>
                     <div class="setup-choice-grid setup-choice-grid--4" style="margin-top:0.4rem;">
-                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="A2" onchange="syncAdvGapsChrome()"><span class="setup-choice-title">A2</span></label>
-                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B1" onchange="syncAdvGapsChrome()"><span class="setup-choice-title">B1</span></label>
-                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B2" checked onchange="syncAdvGapsChrome()"><span class="setup-choice-title">B2</span></label>
-                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B2+" onchange="syncAdvGapsChrome()"><span class="setup-choice-title">B2+</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="A2" onchange="syncAdvGapsChrome(); syncAdvGapsCountDefaults('play')"><span class="setup-choice-title">A2</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B1" onchange="syncAdvGapsChrome(); syncAdvGapsCountDefaults('play')"><span class="setup-choice-title">B1</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B2" checked onchange="syncAdvGapsChrome(); syncAdvGapsCountDefaults('play')"><span class="setup-choice-title">B2</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-level" value="B2+" onchange="syncAdvGapsChrome(); syncAdvGapsCountDefaults('play')"><span class="setup-choice-title">B2+</span></label>
                     </div>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.75rem;">
@@ -5270,14 +5323,39 @@
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-sliders"></i> Activity type</label>
                     <div class="setup-choice-grid setup-choice-grid--2" style="margin-top:0.45rem;">
                         <label class="setup-choice">
-                            <input type="radio" name="adv-gaps-play-mode" value="translate" checked onchange="syncAdvGapsInstructions()">
+                            <input type="radio" name="adv-gaps-play-mode" value="translate" checked onchange="syncAdvGapsInstructions(); syncAdvGapsCountPickers('play')">
                             <span class="setup-choice-title">Translate gaps</span>
                         </label>
                         <label class="setup-choice">
-                            <input type="radio" name="adv-gaps-play-mode" value="sentences" onchange="syncAdvGapsInstructions()">
+                            <input type="radio" name="adv-gaps-play-mode" value="sentences" onchange="syncAdvGapsInstructions(); syncAdvGapsCountPickers('play')">
                             <span class="setup-choice-title">Missing sentences</span>
                         </label>
                     </div>
+                </div>
+                <div class="pe-setup-field" id="adv-gaps-play-translate-count-field" style="margin-bottom:0.85rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-hashtag"></i> Number of gaps</label>
+                    <div class="setup-choice-grid setup-choice-grid--4" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="3" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">3</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="4" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">4</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="5" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">5</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="6" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">6</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="7" checked onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">7</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="8" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">8</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="9" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">9</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-translate-count" value="10" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">10</span></label>
+                    </div>
+                    <p class="pe-setup-hint" style="margin:0.35rem 0 0;">Word/phrase gaps in the text (3–10).</p>
+                </div>
+                <div class="pe-setup-field" id="adv-gaps-play-sentences-count-field" style="display:none;margin-bottom:0.85rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-list-ol"></i> Missing sentences</label>
+                    <div class="setup-choice-grid setup-choice-grid--4" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-sentences-count" value="2" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">2</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-sentences-count" value="3" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">3</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-sentences-count" value="4" checked onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">4</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-sentences-count" value="5" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">5</span></label>
+                        <label class="setup-choice"><input type="radio" name="adv-gaps-play-sentences-count" value="6" onchange="syncAdvGapsInstructions()"><span class="setup-choice-title">6</span></label>
+                    </div>
+                    <p class="pe-setup-hint" style="margin:0.35rem 0 0;">How many sentences to remove (2–6).</p>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.85rem;">
                     <label for="adv-gaps-play-topic" style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
@@ -5900,9 +5978,9 @@
                 <div class="pe-setup-field" style="margin-bottom:0.85rem;">
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-signal"></i> Level</label>
                     <div class="setup-choice-grid setup-choice-grid--3" style="margin-top:0.45rem;">
-                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="A1" onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions()"><span class="setup-choice-title">A1</span></label>
-                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="A2" checked onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions()"><span class="setup-choice-title">A2</span></label>
-                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="B1" onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions()"><span class="setup-choice-title">B1</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="A1" onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions(); syncBasicGapsCountDefaults('play')"><span class="setup-choice-title">A1</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="A2" checked onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions(); syncBasicGapsCountDefaults('play')"><span class="setup-choice-title">A2</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-level" value="B1" onchange="syncBasicGapsChrome(); syncPeE8GapsInstructions(); syncBasicGapsCountDefaults('play')"><span class="setup-choice-title">B1</span></label>
                     </div>
                     <p class="pe-setup-hint" style="margin:0.35rem 0 0;">A1–A2 = E8 · B1 = Matura podstawowa</p>
                 </div>
@@ -5910,14 +5988,39 @@
                     <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-sliders"></i> Activity type</label>
                     <div class="setup-choice-grid setup-choice-grid--2" style="margin-top:0.45rem;">
                         <label class="setup-choice">
-                            <input type="radio" name="e8-gaps-play-mode" value="translate" checked onchange="syncPeE8GapsInstructions()">
+                            <input type="radio" name="e8-gaps-play-mode" value="translate" checked onchange="syncPeE8GapsInstructions(); syncBasicGapsCountPickers('play')">
                             <span class="setup-choice-title">Translate gaps</span>
                         </label>
                         <label class="setup-choice">
-                            <input type="radio" name="e8-gaps-play-mode" value="sentences" onchange="syncPeE8GapsInstructions()">
+                            <input type="radio" name="e8-gaps-play-mode" value="sentences" onchange="syncPeE8GapsInstructions(); syncBasicGapsCountPickers('play')">
                             <span class="setup-choice-title">Missing sentences</span>
                         </label>
                     </div>
+                </div>
+                <div class="pe-setup-field" id="e8-gaps-play-translate-count-field" style="margin-bottom:0.85rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-hashtag"></i> Number of gaps</label>
+                    <div class="setup-choice-grid setup-choice-grid--4" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="3" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">3</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="4" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">4</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="5" checked onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">5</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="6" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">6</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="7" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">7</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="8" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">8</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="9" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">9</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-translate-count" value="10" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">10</span></label>
+                    </div>
+                    <p class="pe-setup-hint" style="margin:0.35rem 0 0;">Word/phrase gaps in the text (3–10).</p>
+                </div>
+                <div class="pe-setup-field" id="e8-gaps-play-sentences-count-field" style="display:none;margin-bottom:0.85rem;">
+                    <label style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-list-ol"></i> Missing sentences</label>
+                    <div class="setup-choice-grid setup-choice-grid--4" style="margin-top:0.45rem;">
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-sentences-count" value="2" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">2</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-sentences-count" value="3" checked onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">3</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-sentences-count" value="4" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">4</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-sentences-count" value="5" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">5</span></label>
+                        <label class="setup-choice"><input type="radio" name="e8-gaps-play-sentences-count" value="6" onchange="syncPeE8GapsInstructions()"><span class="setup-choice-title">6</span></label>
+                    </div>
+                    <p class="pe-setup-hint" style="margin:0.35rem 0 0;">How many sentences to remove (2–6).</p>
                 </div>
                 <div class="pe-setup-field" style="margin-bottom:0.85rem;">
                     <label for="e8-gaps-play-topic" style="font-weight:700;color:var(--royal-blue);"><i class="fa-solid fa-lightbulb"></i> Topic <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
@@ -13515,14 +13618,107 @@ Return ONLY JSON: {"valid":true/false,"points":30,"message":"Short friendly feed
             });
         }
 
+
+        const TextGapsCountsApi = () => (typeof TextGapsCounts !== 'undefined' ? TextGapsCounts : globalThis.TextGapsCounts);
+
+        function setGapsCountRadio(name, value) {
+            const str = String(value);
+            let matched = false;
+            document.querySelectorAll(`input[name="${name}"]`).forEach((r) => {
+                r.checked = (r.value === str);
+                if (r.checked) matched = true;
+            });
+            if (!matched) {
+                const first = document.querySelector(`input[name="${name}"]`);
+                if (first) first.checked = true;
+            }
+        }
+
+        function readGapsCountRadio(name, fallback) {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            const api = TextGapsCountsApi();
+            if (!el) return fallback;
+            const n = Number(el.value);
+            return Number.isFinite(n) ? n : fallback;
+        }
+
+        function syncGapsCountPickerVisibility(prefix, mode) {
+            const tr = document.getElementById(`${prefix}-translate-count-field`);
+            const se = document.getElementById(`${prefix}-sentences-count-field`);
+            if (tr) tr.style.display = mode === 'sentences' ? 'none' : '';
+            if (se) se.style.display = mode === 'sentences' ? '' : 'none';
+        }
+
+        function syncAdvGapsCountPickers(where) {
+            const prefix = where === 'setup' ? 'adv-gaps-setup' : 'adv-gaps-play';
+            const modeName = where === 'setup' ? 'adv-gaps-setup-mode' : 'adv-gaps-play-mode';
+            const mode = getAdvGapsRadio(modeName, 'translate') === 'sentences' ? 'sentences' : 'translate';
+            syncGapsCountPickerVisibility(prefix, mode);
+        }
+
+        function syncBasicGapsCountPickers(where) {
+            const prefix = where === 'setup' ? 'e8-gaps-setup' : 'e8-gaps-play';
+            const modeName = where === 'setup' ? 'e8-gaps-setup-mode' : 'e8-gaps-play-mode';
+            const mode = getBasicGapsRadio(modeName, 'translate') === 'sentences' ? 'sentences' : 'translate';
+            syncGapsCountPickerVisibility(prefix, mode);
+        }
+
+        function syncAdvGapsCountDefaults(where) {
+            const api = TextGapsCountsApi();
+            if (!api) return;
+            const prefix = where === 'setup' ? 'adv-gaps-setup' : 'adv-gaps-play';
+            const levelName = where === 'setup' ? 'adv-gaps-setup-level' : 'adv-gaps-play-level';
+            const level = getAdvGapsRadio(levelName, 'B2');
+            const L = ADV_GAPS_LEVELS[level] || ADV_GAPS_LEVELS.B2;
+            setGapsCountRadio(`${prefix}-translate-count`, api.clampTranslateGapCount(L.gapsTranslate, 7));
+            setGapsCountRadio(`${prefix}-sentences-count`, api.clampSentenceGapCount(L.gapsSentences, 4));
+            syncAdvGapsCountPickers(where);
+        }
+
+        function syncBasicGapsCountDefaults(where) {
+            const api = TextGapsCountsApi();
+            if (!api) return;
+            const prefix = where === 'setup' ? 'e8-gaps-setup' : 'e8-gaps-play';
+            const levelName = where === 'setup' ? 'e8-gaps-setup-level' : 'e8-gaps-play-level';
+            const level = getBasicGapsRadio(levelName, 'A2');
+            const L = BASIC_GAPS_LEVELS[level] || BASIC_GAPS_LEVELS.A2;
+            setGapsCountRadio(`${prefix}-translate-count`, api.clampTranslateGapCount(L.gapsTranslate, 5));
+            setGapsCountRadio(`${prefix}-sentences-count`, api.clampSentenceGapCount(L.gapsSentences, 3));
+            syncBasicGapsCountPickers(where);
+        }
+
+        function getAdvGapsChosenCount(mode) {
+            const api = TextGapsCountsApi();
+            const L = getAdvGapsLevelGuide();
+            const fallback = api ? api.defaultCountForMode(mode, L) : (mode === 'sentences' ? L.gapsSentences : L.gapsTranslate);
+            const name = mode === 'sentences' ? 'adv-gaps-play-sentences-count' : 'adv-gaps-play-translate-count';
+            const setupName = mode === 'sentences' ? 'adv-gaps-setup-sentences-count' : 'adv-gaps-setup-translate-count';
+            const chosen = readGapsCountRadio(name, readGapsCountRadio(setupName, fallback));
+            return api ? api.resolveGapsCount({ mode, chosen, levelGuide: L }) : chosen;
+        }
+
+        function getBasicGapsChosenCount(mode) {
+            const api = TextGapsCountsApi();
+            const L = getBasicGapsLevelGuide();
+            const fallback = api ? api.defaultCountForMode(mode, L) : (mode === 'sentences' ? L.gapsSentences : L.gapsTranslate);
+            const name = mode === 'sentences' ? 'e8-gaps-play-sentences-count' : 'e8-gaps-play-translate-count';
+            const setupName = mode === 'sentences' ? 'e8-gaps-setup-sentences-count' : 'e8-gaps-setup-translate-count';
+            const chosen = readGapsCountRadio(name, readGapsCountRadio(setupName, fallback));
+            return api ? api.resolveGapsCount({ mode, chosen, levelGuide: L }) : chosen;
+        }
+
+
         function copyAdvGapsSetupToPlay() {
             setAdvGapsRadio('adv-gaps-play-level', getAdvGapsRadio('adv-gaps-setup-level', 'B2'));
             setAdvGapsRadio('adv-gaps-play-genre', getAdvGapsRadio('adv-gaps-setup-genre', 'for-against'));
             setAdvGapsRadio('adv-gaps-play-mode', getAdvGapsRadio('adv-gaps-setup-mode', 'translate'));
+            setGapsCountRadio('adv-gaps-play-translate-count', readGapsCountRadio('adv-gaps-setup-translate-count', 7));
+            setGapsCountRadio('adv-gaps-play-sentences-count', readGapsCountRadio('adv-gaps-setup-sentences-count', 4));
             const setupTopic = document.getElementById('adv-gaps-setup-topic');
             const playTopic = document.getElementById('adv-gaps-play-topic');
             if (setupTopic && playTopic) playTopic.value = setupTopic.value || '';
             syncAdvGapsChrome();
+            syncAdvGapsCountPickers('play');
             syncAdvGapsInstructions();
         }
 
@@ -13941,12 +14137,13 @@ ${JSON.stringify({
             const genre = ADV_GAPS_GENRES[getAdvGapsGenre()]?.label || 'Matura rozszerzona text';
             const en = document.getElementById('adv-gaps-instr-en');
             const pl = document.getElementById('adv-gaps-instr-pl');
+            const n = getAdvGapsChosenCount(mode);
             if (mode === 'sentences') {
-                if (en) en.textContent = `CKE Matura rozszerzona model (${genre}, 200–250 words). Read the exam writing task first, then restore each missing sentence so the text keeps form, register, and cohesion. Submit for Cursor AI feedback.`;
-                if (pl) pl.textContent = `Model CKE matury rozszerzonej (${genre}, 200–250 wyrazów). Najpierw przeczytaj polecenie, potem uzupełnij brakujące zdania, zachowując formę, rejestr i spójność. Wyślij do oceny Cursor AI.`;
+                if (en) en.textContent = `CKE Matura rozszerzona model (${genre}, 200–250 words). Read the exam writing task first, then restore all ${n} missing sentences so the text keeps form, register, and cohesion. Submit for Cursor AI feedback.`;
+                if (pl) pl.textContent = `Model CKE matury rozszerzonej (${genre}, 200–250 wyrazów). Najpierw przeczytaj polecenie, potem uzupełnij wszystkie ${n} brakujące zdania, zachowując formę, rejestr i spójność. Wyślij do oceny Cursor AI.`;
             } else {
-                if (en) en.textContent = `CKE Matura rozszerzona model (${genre}, 200–250 words). Read the exam writing task first, then fill each gap with the English translation of the Polish cue in brackets. Submit for Cursor AI feedback.`;
-                if (pl) pl.textContent = `Model CKE matury rozszerzonej (${genre}, 200–250 wyrazów). Najpierw przeczytaj polecenie, potem uzupełnij każdą lukę angielskim tłumaczeniem polskiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`;
+                if (en) en.textContent = `CKE Matura rozszerzona model (${genre}, 200–250 words). Read the exam writing task first, then fill all ${n} gaps with the English translation of the Polish cue in brackets. Submit for Cursor AI feedback.`;
+                if (pl) pl.textContent = `Model CKE matury rozszerzonej (${genre}, 200–250 wyrazów). Najpierw przeczytaj polecenie, potem uzupełnij wszystkie ${n} luk angielskim tłumaczeniem polskiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`;
             }
             syncAdvGapsChrome();
         }
@@ -14041,7 +14238,7 @@ ${JSON.stringify({
             const L = getAdvGapsLevelGuide();
             peToggleLoading('adv-gaps', true);
             const R = peRandomnessBlock('exam');
-            const gapCount = mode === 'sentences' ? L.gapsSentences : L.gapsTranslate;
+            const gapCount = getAdvGapsChosenCount(mode);
             const userTopic = getAdvGapsTopic();
             const topicRule = userTopic
                 ? `TOPIC (required): Write specifically about "${userTopic}". Do not switch to a different theme.`
@@ -14131,6 +14328,10 @@ Return ONLY JSON:
             }
             const examTask = normalizeGapsExamTask(data, { maxBullets: 2 });
             const wordCount = data.__wordCount || countGapsModelWords(data, {});
+            const api = TextGapsCountsApi();
+            const trimmed = api
+                ? api.normalizeGapsToCount(data.parts, data.gaps, gapCount)
+                : { parts: data.parts, gaps: data.gaps };
             advGapsTask = {
                 mode,
                 level: L.label,
@@ -14144,8 +14345,9 @@ Return ONLY JSON:
                 opening: examTask.opening,
                 taskLang: 'pl',
                 wordCount,
-                parts: data.parts,
-                gaps: data.gaps.map((g, i) => ({
+                requestedGapCount: gapCount,
+                parts: trimmed.parts,
+                gaps: (trimmed.gaps || []).map((g, i) => ({
                     n: g.n != null ? Number(g.n) : (i + 1),
                     pl: g.pl || '',
                     answer: String(g.answer || '').trim(),
@@ -14345,10 +14547,13 @@ Return ONLY JSON:
         function copyBasicGapsSetupToPlay() {
             setBasicGapsRadio('e8-gaps-play-level', getBasicGapsRadio('e8-gaps-setup-level', 'A2'));
             setBasicGapsRadio('e8-gaps-play-mode', getBasicGapsRadio('e8-gaps-setup-mode', 'translate'));
+            setGapsCountRadio('e8-gaps-play-translate-count', readGapsCountRadio('e8-gaps-setup-translate-count', 5));
+            setGapsCountRadio('e8-gaps-play-sentences-count', readGapsCountRadio('e8-gaps-setup-sentences-count', 3));
             const setupTopic = document.getElementById('e8-gaps-setup-topic');
             const playTopic = document.getElementById('e8-gaps-play-topic');
             if (setupTopic && playTopic) playTopic.value = setupTopic.value || '';
             syncBasicGapsChrome();
+            syncBasicGapsCountPickers('play');
             syncPeE8GapsInstructions();
         }
 
@@ -14371,27 +14576,28 @@ Return ONLY JSON:
             const en = document.getElementById('pe-e8-gaps-instr-en');
             const pl = document.getElementById('pe-e8-gaps-instr-pl');
             const isPp = L.track === 'matura-pp';
+            const n = getBasicGapsChosenCount(mode);
             if (mode === 'sentences') {
                 if (en) {
                     en.textContent = isPp
-                        ? `CKE Matura podstawowa model: e-mail or blog, 100–150 words, Polish polecenie with exactly 4 content points. Read the task first, then restore each missing sentence so the text stays cohesive. Submit for Cursor AI feedback.`
-                        : `CKE egzamin ósmoklasisty model (${L.label}): e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then restore each missing sentence so the text stays cohesive. Submit for Cursor AI feedback.`;
+                        ? `CKE Matura podstawowa model: e-mail or blog, 100–150 words, Polish polecenie with exactly 4 content points. Read the task first, then restore all ${n} missing sentences so the text stays cohesive. Submit for Cursor AI feedback.`
+                        : `CKE egzamin ósmoklasisty model (${L.label}): e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then restore all ${n} missing sentences so the text stays cohesive. Submit for Cursor AI feedback.`;
                 }
                 if (pl) {
                     pl.textContent = isPp
-                        ? `Model CKE matury podstawowej: e-mail albo blog, 100–150 wyrazów, polskie polecenie z dokładnie 4 podpunktami. Najpierw przeczytaj polecenie, potem uzupełnij brakujące zdania. Wyślij do oceny Cursor AI.`
-                        : `Model CKE egzaminu ósmoklasisty (${L.label}): e-mail albo blog, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij brakujące zdania. Wyślij do oceny Cursor AI.`;
+                        ? `Model CKE matury podstawowej: e-mail albo blog, 100–150 wyrazów, polskie polecenie z dokładnie 4 podpunktami. Najpierw przeczytaj polecenie, potem uzupełnij wszystkie ${n} brakujące zdania. Wyślij do oceny Cursor AI.`
+                        : `Model CKE egzaminu ósmoklasisty (${L.label}): e-mail albo blog, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij wszystkie ${n} brakujące zdania. Wyślij do oceny Cursor AI.`;
                 }
             } else if (en || pl) {
                 if (en) {
                     en.textContent = isPp
-                        ? `CKE Matura podstawowa model: e-mail or blog, 100–150 words, Polish polecenie with exactly 4 content points. Read the task first, then fill each gap with the English translation of the Polish word or short phrase in brackets. Submit for Cursor AI feedback.`
-                        : `CKE egzamin ósmoklasisty model (${L.label}): e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then fill each gap with the English translation of the Polish word or short phrase in brackets. Submit for Cursor AI feedback.`;
+                        ? `CKE Matura podstawowa model: e-mail or blog, 100–150 words, Polish polecenie with exactly 4 content points. Read the task first, then fill all ${n} gaps with the English translation of the Polish word or short phrase in brackets. Submit for Cursor AI feedback.`
+                        : `CKE egzamin ósmoklasisty model (${L.label}): e-mail or blog, 50–120 words, Polish polecenie with exactly 3 points and a given opening. Read the task first, then fill all ${n} gaps with the English translation of the Polish word or short phrase in brackets. Submit for Cursor AI feedback.`;
                 }
                 if (pl) {
                     pl.textContent = isPp
-                        ? `Model CKE matury podstawowej: e-mail albo blog, 100–150 wyrazów, polskie polecenie z dokładnie 4 podpunktami. Najpierw przeczytaj polecenie, potem uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`
-                        : `Model CKE egzaminu ósmoklasisty (${L.label}): e-mail albo blog, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij każdą lukę angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`;
+                        ? `Model CKE matury podstawowej: e-mail albo blog, 100–150 wyrazów, polskie polecenie z dokładnie 4 podpunktami. Najpierw przeczytaj polecenie, potem uzupełnij wszystkie ${n} luk angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`
+                        : `Model CKE egzaminu ósmoklasisty (${L.label}): e-mail albo blog, 50–120 wyrazów, polskie polecenie z dokładnie 3 podpunktami i podanym początkiem. Najpierw przeczytaj polecenie, potem uzupełnij wszystkie ${n} luk angielskim tłumaczeniem polskiego słowa lub krótkiego zwrotu w nawiasie. Wyślij do oceny Cursor AI.`;
                 }
             }
             syncBasicGapsChrome();
@@ -14511,7 +14717,7 @@ Return ONLY JSON:
             const formPl = formPick === 'blog' ? 'wpis na blogu' : 'e-mail';
             const formEn = formPick === 'blog' ? 'blog post' : 'e-mail';
             const nBullets = L.bullets;
-            const nGaps = mode === 'sentences' ? L.gapsSentences : L.gapsTranslate;
+            const nGaps = getBasicGapsChosenCount(mode);
             const gapCountHint = mode === 'sentences'
                 ? `Insert ${nGaps} missing sentences (gaps).`
                 : `Create ${nGaps} translation gaps.`;
@@ -14550,7 +14756,7 @@ Return ONLY JSON:
   - Put \\n\\n between paragraphs even when a gap sits near a boundary.`;
 
             const examName = isPp ? 'CKE Matura podstawowa (Polish basic Matura writing)' : 'CKE egzamin ósmoklasisty (Polish grade-8 English exam)';
-            const phraseRule = L.label === 'A1' || (L.label === 'CUSTOM' && !isPp && getBasicGapsLevel() === 'A1')
+            const phraseRule = (L.label === 'A1' || (L.label === 'CUSTOM' && !isPp && getBasicGapsLevel() === 'A1') || nGaps <= 3)
                 ? `  - Prefer single everyday words; at most ONE short 2-word phrase among the gaps.`
                 : `  - Mix BOTH single words AND short phrases: at least 2 gaps must be short phrases (2–4 Polish words / common expressions), and at least 2 gaps single words.
   - Good phrase examples: "napisać wiadomość", "iść piechotą", "w przyszłym tygodniu", "dobrze się bawić", "być zmęczonym".`;
@@ -14633,6 +14839,10 @@ Return ONLY JSON:
                 excludeOpening: L.excludeOpening,
                 opening: examTask.opening || data.opening
             });
+            const api = TextGapsCountsApi();
+            const trimmed = api
+                ? api.normalizeGapsToCount(data.parts, data.gaps, nGaps)
+                : { parts: data.parts, gaps: data.gaps };
             peE8GapsTask = {
                 mode,
                 level: getBasicGapsLevel(),
@@ -14648,8 +14858,9 @@ Return ONLY JSON:
                 wordCount,
                 wordMin: L.wordMin,
                 wordMax: L.wordMax,
-                parts: data.parts,
-                gaps: data.gaps.map((g, i) => ({
+                requestedGapCount: nGaps,
+                parts: trimmed.parts,
+                gaps: (trimmed.gaps || []).map((g, i) => ({
                     n: g.n != null ? Number(g.n) : (i + 1),
                     pl: g.pl || '',
                     answer: String(g.answer || '').trim(),
