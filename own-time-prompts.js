@@ -152,11 +152,239 @@ export const UOE_LEVELS = {
     C1: { exam: 'MD', name: 'Matura — poziom dwujęzyczny', options: 4, open: 'open_cloze', formats: ['open_cloze', 'word_formation', 'transformation', 'translation', 'lexical_set', 'mc_text'] },
 };
 
-export function uoeInstruction(format, cefr) {
+/**
+ * Age + CEFR → instruction tone band.
+ * Missing age is inferred from level (and vice versa) so we never fall back to one generic polecenie.
+ *   kid   — primary / A0–A1 (or under 12)
+ *   young — lower secondary / A2 (about 12–14)
+ *   exam  — E8 / matura teens / B1–B2
+ *   adult — C1 or 19+
+ */
+export function instructionAudience({ age, cefr } = {}) {
+    let lv = String(cefr || '').toUpperCase();
+    if (!CEFR_OK.has(lv)) lv = '';
+    let a = Number(age);
+    if (!Number.isFinite(a) || a < 6 || a > 99) a = null;
+    if (a == null) {
+        a = ({ A0: 9, A1: 10, A2: 13, B1: 16, B2: 17, C1: 19 })[lv] || 14;
+    }
+    if (!lv) {
+        lv = a < 11 ? 'A1' : a < 14 ? 'A2' : a < 16 ? 'B1' : a < 19 ? 'B2' : 'C1';
+    }
+    // Age dominates tone; level fills gaps. E8-age A2 (14–15) gets exam-style polecenia.
+    let band = 'exam';
+    if (a >= 19 || lv === 'C1') band = 'adult';
+    else if (a < 12 || ['A0', 'A1'].includes(lv)) band = 'kid';
+    else if (a < 14) band = 'young';
+    else band = 'exam';
+    return { band, age: a, cefr: lv };
+}
+
+/** Kid-friendly / young / adult variants of CKE UOE instructions (Polish). Empty = keep official. */
+const UOE_INSTR_BY_BAND = {
+    kid: {
+        mc_sentences: 'Wybierz poprawną odpowiedź w każdym zdaniu.',
+        mc_dialogue: 'Przeczytaj dialogi. Wybierz poprawną odpowiedź.',
+        mc_translation: 'Wybierz poprawne tłumaczenie fragmentu w nawiasie.',
+        mc_text: 'Przeczytaj tekst. Wybierz poprawną odpowiedź do każdej luki.',
+        two_sentences: 'Wybierz jedno słowo, które pasuje do obu zdań.',
+        brackets: 'Uzupełnij każde zdanie poprawną formą czasownika z nawiasu.',
+        translation: 'Przetłumacz na angielski fragment w nawiasie.',
+        word_formation: 'Zmień wyraz z nawiasu tak, żeby pasował do luki (jeden wyraz).',
+        open_cloze: 'Przeczytaj tekst. Do każdej luki wpisz dokładnie jedno słowo.',
+        transformation: 'Dokończ zdanie. Użyj słowa NAPISANEGO WIELKIMI LITERAMI — nie zmieniaj jego formy.',
+        lexical_set: 'To samo słowo musi pasować do luk we wszystkich trzech zdaniach.',
+        simple: 'Uzupełnij luki.',
+    },
+    young: {
+        mc_sentences: 'Wybierz właściwą odpowiedź, żeby zdania były poprawne.',
+        mc_dialogue: 'Przeczytaj dialogi i wybierz właściwą odpowiedź.',
+        mc_translation: 'Wybierz poprawne tłumaczenie fragmentu podanego w nawiasie.',
+        mc_text: 'Przeczytaj tekst i wybierz właściwą odpowiedź do każdej luki.',
+        two_sentences: 'Wybierz wyraz, który poprawnie uzupełnia luki w obu zdaniach.',
+        brackets: 'Uzupełnij zdania poprawną formą wyrazów z nawiasów (max. 3 wyrazy w luce).',
+        translation: 'Przetłumacz na angielski fragmenty w nawiasach. Pilnuj pisowni.',
+        word_formation: 'Uzupełnij luki, zmieniając formę wyrazu z nawiasu (jeden wyraz).',
+        open_cloze: 'Przeczytaj tekst. Uzupełnij każdą lukę jednym wyrazem.',
+        transformation: 'Uzupełnij zdanie wyrazem NAPISANYM WIELKIMI LITERAMI (bez zmiany formy; max. 5 wyrazów).',
+        lexical_set: 'Uzupełnij luki we wszystkich trzech zdaniach tym samym wyrazem (ta sama forma).',
+        simple: 'Uzupełnij luki w zdaniach.',
+    },
+    adult: {
+        // Slightly more precise than stock CKE wording; empty entries fall back to official.
+        open_cloze: 'Przeczytaj tekst. Uzupełnij każdą lukę dokładnie jednym wyrazem, tak aby tekst był spójny i gramatycznie poprawny.',
+        word_formation: 'Przeczytaj tekst. Uzupełnij każdą lukę jednym wyrazem utworzonym od formy podanej w nawiasie, zachowując spójność i poprawność tekstu.',
+        transformation: 'Przekształć każde zdanie, używając podanego WIELKIMI LITERAMI wyrazu bez zmiany jego formy (maksymalnie pięć wyrazów w luce, wliczając wyraz podany).',
+        lexical_set: 'Uzupełnij luki we wszystkich trzech zdaniach tym samym wyrazem (bez zmiany formy).',
+        translation: 'Przetłumacz na język angielski fragmenty w nawiasach, zachowując pełną poprawność gramatyczną i ortograficzną.',
+    },
+};
+
+/** Non-UOE default polecenia by band (pl / en). */
+const TASK_INSTR = {
+    kid: {
+        pl: {
+            vocab_drill: 'Uzupełnij każde zdanie lub napisz brakujące słowo.',
+            reading: 'Przeczytaj tekst. Odpowiedz krótko na pytania.',
+            writing: 'Napisz kilka krótkich zdań.',
+            word_order: 'Ułóż słowa w dobrej kolejności.',
+            unscramble: 'Ułóż słowo z liter.',
+            uoe: 'Uzupełnij luki.',
+        },
+        en: {
+            vocab_drill: 'Fill in each gap or write the missing word.',
+            reading: 'Read the text. Answer the questions in short words.',
+            writing: 'Write a few short sentences.',
+            word_order: 'Put the words in the right order.',
+            unscramble: 'Build the word from the letters.',
+            uoe: 'Complete the gaps.',
+        },
+    },
+    young: {
+        pl: {
+            vocab_drill: 'Uzupełnij luki lub napisz brakujące słowa ze słownictwa lekcji.',
+            reading: 'Przeczytaj tekst i krótko odpowiedz na pytania po angielsku.',
+            writing: 'Napisz krótki tekst według polecenia.',
+            word_order: 'Ułóż wyrazy tak, aby powstało poprawne zdanie.',
+            unscramble: 'Ułóż angielskie słowo z podanych liter.',
+            uoe: 'Uzupełnij luki poprawnymi wyrazami.',
+        },
+        en: {
+            vocab_drill: 'Complete the gaps or write the missing lesson words.',
+            reading: 'Read the text and answer the questions briefly in English.',
+            writing: 'Write a short text as asked.',
+            word_order: 'Arrange the words into a correct sentence.',
+            unscramble: 'Build the English word from the letters.',
+            uoe: 'Complete the gaps with the correct words.',
+        },
+    },
+    exam: {
+        pl: {
+            vocab_drill: 'Uzupełnij luki lub podaj brakujące słowa, dbając o poprawną formę i pisownię.',
+            reading: 'Przeczytaj tekst. Odpowiedz na pytania krótko po angielsku.',
+            writing: 'Napisz tekst zgodnie z poleceniem, dbając o spójność i poprawność.',
+            word_order: 'Ułóż wyrazy w poprawnej kolejności, tak aby powstało logiczne zdanie.',
+            unscramble: 'Ułóż poprawne angielskie słowo z podanych liter.',
+            uoe: 'Uzupełnij luki, tak aby zdania były logiczne i gramatycznie poprawne.',
+        },
+        en: {
+            vocab_drill: 'Complete the gaps or supply the missing words, with correct form and spelling.',
+            reading: 'Read the text. Answer the questions briefly in English.',
+            writing: 'Write the text as required, keeping it clear and accurate.',
+            word_order: 'Put the words in the correct order to make a clear sentence.',
+            unscramble: 'Form the correct English word from the letters.',
+            uoe: 'Complete the gaps so the sentences are logical and grammatically correct.',
+        },
+    },
+    adult: {
+        pl: {
+            vocab_drill: 'Uzupełnij luki lub podaj precyzyjne odpowiedniki, zachowując poprawną formę i rejestr.',
+            reading: 'Przeczytaj tekst uważnie i odpowiedz zwięźle po angielsku na pytania.',
+            writing: 'Napisz tekst zgodny z poleceniem — jasny, spójny i poprawny językowo.',
+            word_order: 'Ułóż wyrazy w naturalnej, poprawnej kolejności angielskiej.',
+            unscramble: 'Odtwórz poprawne angielskie słowo z podanych liter.',
+            uoe: 'Uzupełnij luki precyzyjnie, zachowując logikę, spójność i poprawność gramatyczną.',
+        },
+        en: {
+            vocab_drill: 'Complete the gaps or give precise equivalents, with correct form and register.',
+            reading: 'Read the text carefully and answer the questions concisely in English.',
+            writing: 'Write a clear, coherent and accurate text as required.',
+            word_order: 'Arrange the words into natural, correct English order.',
+            unscramble: 'Reconstruct the correct English word from the letters.',
+            uoe: 'Complete the gaps precisely, keeping logic, cohesion and grammar.',
+        },
+    },
+};
+
+export function taskInstruction(type, { format = null, age = null, cefr = 'A2', instrLang = 'pl' } = {}) {
+    const { band } = instructionAudience({ age, cefr });
+    const lang = instrLang === 'en' ? 'en' : 'pl';
+    if (type === 'uoe' && format) return uoeInstruction(format, cefr, { age, band });
+    const pack = TASK_INSTR[band] || TASK_INSTR.exam;
+    const byLang = pack[lang] || pack.pl;
+    let text = byLang[type] || byLang.uoe;
+    if (type === 'writing') {
+        const w = writingTarget(cefr);
+        if (lang === 'pl') {
+            const zd = w.sentences[1] <= 4 ? 'zdania' : 'zdań';
+            text = band === 'kid'
+                ? `Napisz ${w.sentences[0]}–${w.sentences[1]} krótkie ${zd}.`
+                : band === 'adult'
+                    ? `Napisz ${w.sentences[0]}–${w.sentences[1]} ${zd} (ok. ${w.words[0]}–${w.words[1]} słów), zgodnie z poleceniem.`
+                    : `Napisz ${w.sentences[0]}–${w.sentences[1]} ${zd} zgodnie z poleceniem.`;
+        } else {
+            text = band === 'kid'
+                ? `Write ${w.sentences[0]}–${w.sentences[1]} short sentences.`
+                : `Write ${w.sentences[0]}–${w.sentences[1]} sentences as asked.`;
+        }
+    }
+    return text;
+}
+
+export function uoeInstruction(format, cefr, opts = {}) {
     const f = UOE_FORMATS[format];
-    if (!f || !f.instr) return '';
-    const limit = format === 'translation' && ['B2', 'C1'].includes(cefr) ? ' Uwaga: w każdą lukę możesz wpisać maksymalnie pięć wyrazów.' : '';
-    return f.instr + limit;
+    if (!f) return '';
+    const lv = String(cefr || '').toUpperCase();
+    const { band } = opts.band ? { band: opts.band } : instructionAudience({ age: opts.age, cefr: lv });
+    const needsFive = format === 'translation' && ['B2', 'C1'].includes(lv);
+    const limit = needsFive
+        ? (band === 'kid'
+            ? (opts.instrLang === 'en' ? ' Write at most five words.' : ' Wpisz najwyżej pięć słów.')
+            : ' Uwaga: w każdą lukę możesz wpisać maksymalnie pięć wyrazów.')
+        : '';
+    // Exam teens (B1/B2, typical E8/matura age): keep official CKE wording.
+    if (band === 'exam' && f.instr) return f.instr + limit;
+    const alt = (UOE_INSTR_BY_BAND[band] || {})[format];
+    if (alt) return alt + limit;
+    if (f.instr) return f.instr + limit;
+    if (format === 'simple') {
+        return (UOE_INSTR_BY_BAND[band] || UOE_INSTR_BY_BAND.young).simple || 'Uzupełnij luki.';
+    }
+    return '';
+}
+
+/** Prompt paragraph: concrete polecenie examples for this student. */
+export function instructionToneGuide({ age, cefr, instrLang } = {}) {
+    const aud = instructionAudience({ age, cefr });
+    const lang = instrLang === 'en' ? 'en' : 'pl';
+    const ex = (type, format = null) => taskInstruction(type, { format, age: aud.age, cefr: aud.cefr, instrLang: lang });
+    if (aud.band === 'kid') {
+        return `INSTRUCTION TONE (band=kid, age≈${aud.age}, ${aud.cefr}): write EVERY task "instruction" as ONE short, concrete sentence a primary pupil understands. No exam jargon (avoid: "spójny i poprawny językowo", "maksymalnie trzy wyrazy", "fragmenty podane w nawiasach" as long clauses). One action per sentence. Examples: vocab_drill → "${ex('vocab_drill')}"; brackets → "${ex('uoe', 'brackets')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}"; unscramble → "${ex('unscramble')}".`;
+    }
+    if (aud.band === 'young') {
+        return `INSTRUCTION TONE (band=young, age≈${aud.age}, ${aud.cefr}): clear school Polish/English, still short (1–2 sentences). Light exam vocabulary is OK if explained by the action. Examples: brackets → "${ex('uoe', 'brackets')}"; open_cloze → "${ex('uoe', 'open_cloze')}"; writing → "${ex('writing')}".`;
+    }
+    if (aud.band === 'adult') {
+        return `INSTRUCTION TONE (band=adult, age≈${aud.age}, ${aud.cefr}): precise, adult wording — concise but not simplified for children; no talking down. Prefer exact limits and form-change clarity. Examples: open_cloze → "${ex('uoe', 'open_cloze')}"; word_formation → "${ex('uoe', 'word_formation')}"; writing → "${ex('writing')}".`;
+    }
+    return `INSTRUCTION TONE (band=exam, age≈${aud.age}, ${aud.cefr}): concise CKE / exam-style wording appropriate for E8 or matura age — clear, formal enough for the paper, not childish. For Use of English prefer the official exam instruction style. Examples: word_formation → "${ex('uoe', 'word_formation')}"; reading → "${ex('reading')}"; writing → "${ex('writing')}".`;
+}
+
+/**
+ * Ensure a task's polecenie matches age+level. UOE formats always get the band-aware text;
+ * other types keep a good AI instruction unless empty, tiny, or clearly mismatched to the band.
+ */
+export function adaptTaskInstruction(task, { age = null, cefr = 'A2', instrLang = 'pl' } = {}) {
+    if (!task || typeof task !== 'object') return task;
+    const aud = instructionAudience({ age, cefr });
+    const lang = instrLang === 'en' ? 'en' : 'pl';
+    let cur = String(task.instruction || '').replace(/\s+/g, ' ').trim();
+    // Never keep word-box / ramka wording in the polecenie.
+    if (cur && (instructionCueRefs(cur).box || /\bramk|\bbox\b|Use these words|Użyj tych słów|zbędn/i.test(cur))) {
+        cur = '';
+    }
+    const wanted = taskInstruction(task.type, { format: task.format || null, age: aud.age, cefr: aud.cefr, instrLang: lang });
+    if (task.type === 'uoe' && task.format) {
+        return { ...task, instruction: wanted || cur };
+    }
+    const looksLikeInstr = /^(Complete|Fill|Write|Read|Choose|Match|Translate|Przekształć|Uzupełnij|Wpisz|Przeczytaj|Wybierz|Dopasuj|Przetłumacz|Napisz|Ułóż|Build|Arrange|Form|Odtwórz|Zmień|Dokończ)\b/u.test(cur);
+    if (!cur || cur.length < 8 || !looksLikeInstr) return { ...task, instruction: wanted };
+    const examJargon = /spójny i poprawny językowo|maksymalnie (?:trzy|pięć) wyraz|znajomość środków|fragmenty podane w nawiasach, tak aby|Wymagana jest pełna poprawność/i.test(cur);
+    const babyTalk = /^(Ułóż słowo z liter|Napisz kilka krótkich zdań|Uzupełnij luki\.|Fill in each gap)\.?$/i.test(cur);
+    if (aud.band === 'kid' && (examJargon || cur.length > 140)) return { ...task, instruction: wanted };
+    if (aud.band === 'adult' && babyTalk) return { ...task, instruction: wanted };
+    if ((aud.band === 'exam' || aud.band === 'young') && babyTalk) return { ...task, instruction: wanted };
+    return { ...task, instruction: cur };
 }
 
 export const OWN_TIME_TASK_TYPES = ['vocab_drill', 'uoe', 'reading', 'writing', 'word_order', 'unscramble'];
@@ -323,8 +551,9 @@ ${lv.formats.map((f) => `    - ${spec[f]}`).join('\n')}`;
 
 export function buildOwnTimeLessonPrompt(v) {
     const instrLangName = v.instrLang === 'en' ? 'English' : 'Polish';
-    const young = (v.age != null && v.age < 15) || ['A0', 'A1', 'A2'].includes(v.cefr);
-    const lowLevel = ['A0', 'A1', 'A2'].includes(v.cefr) || (v.age != null && v.age < 12 && v.cefr !== 'B2' && v.cefr !== 'C1');
+    const audience = instructionAudience({ age: v.age, cefr: v.cefr });
+    const young = audience.band === 'kid' || audience.band === 'young';
+    const lowLevel = ['A0', 'A1', 'A2'].includes(audience.cefr) || audience.age < 12;
     const x = v.extraContext;
     const extraBlock = v.extra && x ? `
 EXTRA PRACTICE ("Keep going" set ${x.setNumber} today): the student already finished today's lesson${x.previousTitle ? ` "${x.previousTitle}"` : ''} and wants more.
@@ -360,9 +589,8 @@ HARD RULES:
 1. The lesson has EXACTLY 5 or 6 tasks (never fewer than 5, never more than 6) — also for extra sets. No time limits or minutes anywhere.
 2. Practice MATERIAL (reading texts, gap sentences, writing prompts, vocab items) MUST be in English at CEFR ${v.cefr}, suitable for age ${v.age ?? 'teen'}.
 3. Every coach-facing string — task "instruction", "coachNote", lesson "title" — MUST be written in ${instrLangName} (${v.instrLang}).
-4. ${young
-        ? 'Keep instructions VERY short and concrete (e.g. Polish: "Uzupełnij lukę." / "Napisz 2–3 zdania."). No teacher jargon.'
-        : 'Keep instructions clear and concise; still avoid dense meta jargon.'}
+4. ${instructionToneGuide({ age: v.age, cefr: v.cefr, instrLang: v.instrLang })}
+4b. The "instruction" (polecenie) itself must match this student's age AND CEFR: vocabulary and sentence structure of the instruction change with the band (kid ≠ exam ≠ adult). Never reuse one generic instruction for every learner. Never mention a word box / ramka / word bank.
 5. Prefer the student's task types. Allowed types: vocab_drill, uoe, reading, writing, word_order, unscramble (map prefs: vocab/drill→vocab_drill or unscramble, uoe→uoe or word_order, reading→reading, writing→writing).
 5a. TASK MIX for the 5–6 tasks: at most ONE writing and at most ONE reading task; 1–2 "uoe" tasks; fill the rest with vocab_drill (and tile tasks for lower levels). Order from easier (vocabulary) to harder (writing last).
 5b. LOWER LEVELS: ${lowLevel
@@ -374,13 +602,14 @@ HARD RULES:
 7. For reading: short English text (60–120 words) + 2–3 comprehension questions with short answers (1–4 words, in English). A question may be a sentence to complete with ONE "___" gap.
 7a. READING CLARITY (especially A0–A2 and under-12): simple, direct, age-appropriate sentences. State facts and relations directly ("Nina is Leo's cousin.", "Leo lives in a small town near a lake.") — never convoluted kinship or relational phrasing (NOT "Nina is his aunt and uncle's child"), no ambiguity, no apparent contradictions, no trick questions. Give reading items "acceptedAnswers" with the short key phrase AND natural variants (e.g. "small town", "in a small town", "a small town near a lake").
 7b. SELF-CHECK before replying: for every reading question, the text contains exactly ONE clear, unambiguous answer, stated in plain words a ${v.cefr} learner understands; rewrite the text or the question if not.
+7c. READING QUESTIONS must be properly posed: real question form (Wh- / Yes-No / gap-to-complete) ending with "?" when not a gap; no vague stems ("Tell about…", "Something about…"); no questions the text cannot answer; no questions that contradict the text. If a draft question fails this, rewrite or replace it before you reply.
 8. For writing: one short prompt (2–6 sentences depending on level).
 9. USE OF ENGLISH ("uoe"): ${uoeRuleText(v.cefr)} Never put a gap only at the end as a separate question; text gaps are {{1}}, {{2}}… in order, one per item.
 10. For vocab_drill: translate / definition → word / gap sentences with the session vocabulary. Gap sentences use ONE "___" in "q"; definition/translation items put the cue in "q" with no gap. Keep each q under 90 characters so the task fits on one screen.
 10b. ACCEPTED ANSWERS (every typed/open item): besides "answer", give "acceptedAnswers": an array with ALL other fully correct variants, like a CKE answer key — synonyms that fit the context and the rules (e.g. "despite" / "in spite of"), contracted and full forms ("don't" / "do not"), British/American spelling. Respect the format's word limits and key/given words in every variant. [] if there is truly only one answer.
 10c. CHANGE OF FORM (Use of English gaps with a given word or expression — verb/word in brackets, "brackets", "word_formation", "correct form" gaps): the answer must ALWAYS require changing the given word (inflection, tense, plural, comparative, auxiliary + verb, negation, derivation with a prefix/suffix…). NEVER write a gap whose answer is the given word unchanged (e.g. "(play)" → "play" is forbidden; "(play)" → "played" / "is playing" is right). Exception: "transformation" keeps its KEY word unchanged on purpose. WORD FORMATION: the answer must NEVER equal the given word (ignoring capitals) — "(HAPPY)" → "happy" is forbidden; "(HAPPY)" → "unhappily" is right.
 10d. NO REPEATED CUES: within one task every word in brackets / root cue must be different — never give two gaps the same base word (e.g. two gaps both "(go)" or both "(CREATE)").
-10a. WORD CUE (gap-fill: vocab_drill gap sentences, verb-form / "correct form", "simple", "brackets", "word_formation", "open_cloze", "lexical_set"): NEVER use a word box, wordBank, "use these words", "words from the box", "extra words", or any list of answer words above the items — that UI does not exist. For form-change tasks give every item a bracket cue in "cue" (verb-form: BASE verb, e.g. "go" for "went"; word formation: stem in CAPITALS). A cue must never equal the answer itself unless the student must change its form. open_cloze at higher levels: no cues (exam style). Do NOT add a cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options. Instructions must NEVER mention a box, ramka, word bank, or extra/unused words.
+10a. WORD CUE (gap-fill: vocab_drill gap sentences, verb-form / "correct form", "simple", "brackets", "word_formation", "open_cloze", "lexical_set"): NEVER use a word box, wordBank, "use these words", "words from the box", "extra words", or any list of answer words above the items — that UI does not exist. Put the bracket cue ONLY in item "cue" — never also write "(word)" next to "___" in "q" (the app shows the cue once). For form-change tasks give every item a bracket cue in "cue" (verb-form: BASE verb, e.g. "go" for "went"; word formation: stem in CAPITALS). A cue must never equal the answer itself unless the student must change its form. open_cloze at higher levels: no cues (exam style). Do NOT add a cue to translation tasks (the Polish words in brackets are the cue) or to tasks with options. Instructions must NEVER mention a box, ramka, word bank, or extra/unused words.
     ${cueRuleText(cueTier(v))} (Challenge rises gradually with the level and the chosen difficulty.)
 10b. ONE-SCREEN RULE: each task must fit on one screen — at most 6 items, reading text ≤ 120 words, instructions one short sentence.
 11. STUDENT GUIDANCE (every task): the student works ALONE at home, so each task must be self-explanatory.
@@ -470,6 +699,9 @@ export function buildUoeItem(format, it, cefr) {
     const cue = clean(it?.cue, 60).replace(/^\(|\)$/g, '');
     if (cue) out.cue = cue;
     else if (f.text && q && !/___/.test(q) && q.length <= 30) { out.cue = q.replace(/^\(|\)$/g, ''); out.q = ''; }
+    // One bracket cue only: move ___ (go) / (go) ___ into cue and strip from q.
+    Object.assign(out, dedupeBracketCue(out));
+    delete out._bracketPairsNearGap;
     if (f.needsPl) {
         let pl = clean(it?.pl || it?.polish, 120).replace(/^\(|\)$/g, '');
         if (!pl) { const m = q.match(/\(([^()]{2,80})\)\s*___/); if (m) { pl = m[1]; out.q = q.replace(m[0], '___'); } }
@@ -509,6 +741,34 @@ function splitToMinimum(tasks) {
 const CUE_EXEMPT_FORMATS = new Set(['mc_sentences', 'mc_dialogue', 'mc_translation', 'mc_text', 'two_sentences', 'translation', 'transformation']);
 const CUE_REQUIRED_FORMATS = new Set(['brackets', 'word_formation']);
 const BRACKET_AFTER_GAP = /(_{3,})\s*\(([^()]{1,40})\)/;
+const BRACKET_BEFORE_GAP = /\(([^()]{1,40})\)\s*(_{3,})/;
+/** Strip inline (cue) from the gap sentence so the UI shows the cue at most once (via item.cue). */
+export function dedupeBracketCue(it) {
+    if (!it || typeof it !== 'object') return it;
+    const out = { ...it };
+    let q = String(out.q || '');
+    let cue = String(out.cue || '').replace(/^\(|\)$/g, '').trim();
+    const after = q.match(BRACKET_AFTER_GAP);
+    if (after) {
+        if (!cue) cue = after[2].trim();
+        q = q.replace(after[0], after[1]);
+    }
+    const before = q.match(BRACKET_BEFORE_GAP);
+    if (before) {
+        if (!cue) cue = before[1].trim();
+        q = q.replace(before[0], before[2]);
+    }
+    if (cue) {
+        const esc = cue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Remove every remaining copy of (cue) / （cue） so render won't double up.
+        q = q.replace(new RegExp('\\s*\\(\\s*' + esc + '\\s*\\)', 'gi'), '');
+        out.cue = cue;
+    }
+    out.q = q.replace(/\s{2,}/g, ' ').trim();
+    // Count remaining bracket pairs next to a gap — must be zero after dedupe.
+    out._bracketPairsNearGap = ((out.q.match(BRACKET_AFTER_GAP) ? 1 : 0) + (out.q.match(BRACKET_BEFORE_GAP) ? 1 : 0));
+    return out;
+}
 const lowKey = (s) => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}' ]/gu, '').replace(/\s+/g, ' ').trim();
 
 /**
@@ -741,7 +1001,7 @@ export function alignInstructionWithBox(task, lang) {
     const fallback = L === 'en' ? 'Complete the gaps.' : 'Uzupełnij luki.';
     const bracketInstr = L === 'en'
         ? 'Complete the gaps with the correct form of the words in brackets.'
-        : 'Uzupełnij luki wyrazami z nawiasów w odpowiedniej formie.';
+        : 'Uzupełnij każde zdanie poprawną formą wyrazu z nawiasu.';
     const origRefs = instructionCueRefs(task.instruction);
     const hadBoxTalk = origRefs.box || origRefs.total != null || origRefs.extra != null
         || new RegExp(EXTRA_SENTENCE.source, 'iu').test(task.instruction)
@@ -783,7 +1043,9 @@ export function alignInstructionWithBox(task, lang) {
 
 export function applyWordCues(task, ctx = {}) {
     const out = applyWordCuesRaw(task, ctx);
-    return ctx.alignInstruction === false ? out : alignInstructionWithBox(out, ctx.lang);
+    const aligned = ctx.alignInstruction === false ? out : alignInstructionWithBox(out, ctx.lang);
+    if (ctx.adaptInstruction === false) return aligned;
+    return adaptTaskInstruction(aligned, { age: ctx.age, cefr: ctx.cefr || 'A2', instrLang: ctx.lang || 'pl' });
 }
 
 function applyWordCuesRaw(task, ctx = {}) {
@@ -803,9 +1065,8 @@ function applyWordCuesRaw(task, ctx = {}) {
 
     const textGaps = /\{\{\s*\d+\s*\}\}/.test(String(task.prompt || ''));
     let items = task.items.map((it) => {
-        const out = { ...it };
-        const m = String(out.q || '').match(BRACKET_AFTER_GAP);
-        if (m && !out.cue) { out.cue = m[2].trim(); out.q = out.q.replace(m[0], m[1]); }
+        const out = dedupeBracketCue({ ...it });
+        delete out._bracketPairsNearGap;
         if (out.cue && lowKey(out.cue) === lowKey(out.answer) && task.format !== 'word_formation') {
             delete out.cue;
         }
@@ -869,6 +1130,52 @@ export function publicOwnTimeLesson(lesson) {
     };
 }
 
+
+/** Content words used to check a reading answer is grounded in the passage. */
+function readingContentWords(s) {
+    const stop = new Set('a an the in on at to of for by with from into near about is are was were be been am do does did has have had he she it they we you i his her its their our my your this that these those there and or but because so very who what where when why how which'.split(' '));
+    return String(s || '').toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, ' ').split(/\s+/).filter((w) => w && !stop.has(w));
+}
+
+/**
+ * Drop / rewrite poorly posed reading questions: must look like a question or gap,
+ * and the key answer's content words must appear in the passage (answerable from THAT text).
+ */
+export function sanitizeReadingItems(prompt, items) {
+    const text = String(prompt || '');
+    const textWords = new Set(readingContentWords(text));
+    const list = Array.isArray(items) ? items : [];
+    const out = [];
+    for (const it of list) {
+        if (!it) continue;
+        let q = String(it.q || it.question || '').replace(/\s+/g, ' ').trim();
+        const answer = String(it.answer || it.expected || '').replace(/\s+/g, ' ').trim();
+        if (!q || !answer) continue;
+        const looksAsked = /^(who|what|where|when|why|how|which|whose|is|are|was|were|do|does|did|can|could|will|would|have|has|had|name|find|complete|true|false)\b/i.test(q)
+            || /\?$/.test(q)
+            || /_{3,}/.test(q)
+            || /^(kto|co|gdzie|kiedy|dlaczego|jak|który|która|które|czy)\b/i.test(q);
+        if (!looksAsked) continue; // not a properly posed question — drop
+        const need = readingContentWords(answer);
+        const grounded = !need.length || need.every((w) => [...textWords].some((tw) => tw === w || (w.length >= 4 && (tw.startsWith(w.slice(0, 4)) || w.startsWith(tw.slice(0, 4))))));
+        if (!grounded) continue; // answer not in the text
+        // Question must not introduce content the passage never mentions (e.g. "moon", "car").
+        const qNeed = readingContentWords(q).filter((w) => w.length >= 4);
+        const qGrounded = qNeed.every((w) => [...textWords].some((tw) => tw === w || tw.startsWith(w.slice(0, 4)) || w.startsWith(tw.slice(0, 4)))
+            || /^(where|what|when|why|which|whose|does|did|have|has|had|name|find|favourite|favorite|often|usually)$/i.test(w));
+        if (qNeed.length && !qGrounded) continue;
+        // Reject questions that negate or contradict an explicit opposite in the stem vs text — light check: empty after trim already handled.
+        out.push({
+            ...it,
+            q: q.slice(0, 500),
+            answer: answer.slice(0, 300),
+            alts: acceptedList(it).map((a) => String(a || '').slice(0, 300)).filter(Boolean).slice(0, 6),
+        });
+        if (out.length >= 4) break;
+    }
+    return out;
+}
+
 export function normalizeOwnTimeLesson(parsed, fallback = {}) {
     const raw = parsed && typeof parsed === 'object' ? parsed : {};
     const tasksIn = Array.isArray(raw.tasks) ? raw.tasks : [];
@@ -892,6 +1199,14 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
                 format = UOE_LEVELS[lessonCefr].open;
                 items = raws.map((it) => buildUoeItem(format, it, lessonCefr)).filter(Boolean).slice(0, 6);
             }
+        } else if (type === 'reading') {
+            const rawItems = Array.isArray(t?.items) ? t.items.slice(0, 12) : [];
+            const promptText = String(t?.prompt || t?.text || '');
+            items = sanitizeReadingItems(promptText, rawItems.map((it) => ({
+                ...it,
+                q: normalizeGapMarker(it?.q || it?.question || '').slice(0, 500),
+                answer: String(it?.answer || it?.expected || '').slice(0, 300),
+            })));
         } else {
             items = Array.isArray(t?.items)
                 ? t.items.slice(0, 12).map((it) => ({
@@ -913,8 +1228,9 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
         const minS = Math.max(1, Math.min(10, Number(t?.target?.minSentences) || wt.sentences[0]));
         const maxS = Math.max(minS, Math.min(12, Number(t?.target?.maxSentences) || wt.sentences[1]));
         const steps = strList(t?.steps, 4, 160);
-        const examInstr = format ? uoeInstruction(format, cefr) : '';
-        return {
+        const age = fallback.age;
+        const rawInstr = String(t?.instruction || '').slice(0, 500);
+        const drafted = {
             n: Number(t?.n) || (i + 1),
             type,
             ...(format ? { format, exam: UOE_LEVELS[cefr]?.exam || null } : {}),
@@ -925,14 +1241,15 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
             usefulLanguage: strList(t?.usefulLanguage, 6, 80),
             hint: String(t?.hint || def.hint || '').slice(0, 200),
             target: type === 'writing' ? { minSentences: minS, maxSentences: maxS, minWords: wt.words[0], maxWords: wt.words[1] } : null,
-            instruction: examInstr || String(t?.instruction || '').slice(0, 500),
+            instruction: rawInstr,
             prompt: String(t?.prompt || t?.text || '').slice(0, 4000),
             items,
             modelAnswers: Array.isArray(t?.modelAnswers)
                 ? t.modelAnswers.map((a) => String(a || '').slice(0, 500)).filter(Boolean).slice(0, 8)
                 : [],
         };
-    }).map((t) => (t.type === 'uoe' ? { ...t, items: shuffleChoices(t.items, t.prompt || t.instruction) } : t)).map(enforceFormChange).map(enforceUniqueCues).map((t) => applyWordCues(t, { tier: cueTier({ cefr: lessonCefr, age: fallback.age, intensity: fallback.intensity }) })).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
+        return adaptTaskInstruction(drafted, { age, cefr, instrLang: lang });
+    }).map((t) => (t.type === 'uoe' ? { ...t, items: shuffleChoices(t.items, t.prompt || t.instruction) } : t)).map(enforceFormChange).map(enforceUniqueCues).map((t) => applyWordCues(t, { tier: cueTier({ cefr: lessonCefr, age: fallback.age, intensity: fallback.intensity }), lang: raw.instrLang === 'en' || fallback.instrLang === 'en' ? 'en' : 'pl', age: fallback.age, cefr: lessonCefr })).filter((t) => ((t.type === 'word_order' || t.type === 'unscramble' || t.type === 'uoe') ? t.items.length > 0 : (t.instruction || t.prompt || t.items.length)));
     if (tasks.length && tasks.length < OWN_TIME_TASKS_MIN) tasks = splitToMinimum(tasks);
     const oc = ensureOpenCloze(tasks, lessonCefr);
     tasks = oc.tasks;
@@ -953,7 +1270,7 @@ export function normalizeOwnTimeLesson(parsed, fallback = {}) {
             example: '',
             usefulLanguage: ['This week I…', 'First,', 'After that,', 'It was…because…'],
             target: (() => { const w = writingTarget(fallback.cefr); return { minSentences: w.sentences[0], maxSentences: w.sentences[1], minWords: w.words[0], maxWords: w.words[1] }; })(),
-            instruction: fallback.instrLang === 'en' ? 'Write 3–4 sentences about your day.' : 'Napisz 3–4 zdania o swoim dniu.',
+            instruction: taskInstruction('writing', { age: fallback.age, cefr: fallback.cefr || lessonCefr, instrLang: fallback.instrLang === 'en' ? 'en' : 'pl' }),
             prompt: 'Write a short paragraph about something you did this week.',
             items: [],
             modelAnswers: [],

@@ -89,9 +89,22 @@ ${prompt ? `Text:\n${String(prompt).slice(0, 1500)}\n` : ''}Items:
 ${rl.join('\n')}
 Reply with JSON only: {"results":[{"i":<n>,"correct":true|false,"explanation":"ONE short sentence in Polish (max 15 words), without giving away the key answer"}]}`;
         }
-        const lines = items.map((it) => JSON.stringify({ i: it.i, sentence: it.q || '', original: it.lead || undefined, keyWord: it.key || undefined, givenWord: it.cue || undefined, polish: it.pl || undefined, key: [it.answer, ...(it.accepted || [])], student: it.given }));
-        return `You are a strict but fair CKE (Polish matura / exam) examiner of English Use of English answers. Task format: "${format}", level ${cefr || 'B1'}.
-${prompt ? `Task text (gaps as {{n}}):\n${String(prompt).slice(0, 1500)}\n` : ''}Each item below has the official key and the student's answer, which did NOT match the key. Decide if the student's answer is ALSO fully correct: grammatically correct, same meaning, fits the context, correct spelling, AND obeys exam rules (word limits; key word used unchanged in transformations; derived from the given word in word formation; one word in open cloze). Over the word limit = wrong. If in doubt, mark it wrong.
+        const lines = items.map((it) => JSON.stringify({
+            i: it.i,
+            sentence: it.q || '',
+            original: it.lead || undefined,
+            keyWord: it.key || undefined,
+            givenWord: it.cue || undefined,
+            polish: it.pl || undefined,
+            key: [it.answer, ...(it.accepted || [])],
+            student: it.given,
+        }));
+        return `You are a fair English examiner (CKE matura / E8 style) checking gap-fill and open answers. Task format: "${format}", level ${cefr || 'B1'}.
+${prompt ? `FULL TEXT / CONTEXT (gaps may appear as {{n}} or ___):\n${String(prompt).slice(0, 1800)}\n` : ''}Each item has the author's intended key and the student's answer, which did NOT match that key string. Decide whether the student's answer is ALSO fully correct IN THIS CONTEXT:
+- It must fit the sentence / whole text grammatically and make sense there (not just be a synonym in the abstract).
+- Accept other answers that are valid in that context: synonyms, alternative grammar (e.g. "went" / "did go" when both fit), contracted vs full forms, British/American spelling, and other context-fitting words that keep the same meaning.
+- Still obey exam rules: word limits; key word unchanged in transformations; derived from the given word in word formation; one word in open cloze / word_formation / lexical_set. Over the word limit = wrong.
+- Spelling must be correct for full credit. If in doubt after reading the context, mark it wrong.
 Items:
 ${lines.join('\n')}
 Reply with JSON only: {"results":[{"i":<n>,"correct":true|false,"explanation":"ONE short sentence in Polish (max 18 words) explaining why, without giving away the key answer"}]}`;
@@ -105,16 +118,26 @@ Reply with JSON only: {"results":[{"i":<n>,"correct":true|false,"explanation":"O
         }
         return out;
     }
-    /** OWN_TIME_MOCK=1 stand-in for the AI: knows a few classic key-equivalents. */
-    const MOCK_EQUIV = [['despite', 'in spite of'], ['although', 'though', 'even though'], ['so as to', 'in order to'], ['big', 'large'], ['till', 'until'], ['shop assistant', 'sales assistant'], ['price', 'cost']];
+    /** OWN_TIME_MOCK=1 stand-in for the AI: classic key-equivalents + light context fit. */
+    const MOCK_EQUIV = [['despite', 'in spite of'], ['although', 'though', 'even though'], ['so as to', 'in order to'], ['big', 'large'], ['till', 'until'], ['shop assistant', 'sales assistant'], ['price', 'cost'], ['happy', 'glad'], ['start', 'begin'], ['finish', 'end']];
     function mockOpenCheck(items, format) {
         items = items.map((it) => ({ ...it, format: it.format || format }));
         const out = {};
         for (const it of items) {
             const g = normAnswer(it.given), keys = [it.answer, ...(it.accepted || [])].map(normAnswer);
             if (it.format === 'reading' && gradeReading({ answer: it.answer, alts: it.accepted }, it.given).status === 'ok') { out[it.i] = { correct: true, explanation: 'Odpowiedź podaje tę samą informację co tekst.' }; continue; }
+            if (keys.includes(g)) { out[it.i] = { correct: true, explanation: 'Odpowiedź zgadza się z kluczem.' }; continue; }
             const hit = MOCK_EQUIV.find((set) => set.includes(g) && keys.some((k) => set.includes(k)));
-            out[it.i] = hit ? { correct: true, explanation: `„${it.given}” znaczy tu to samo co „${it.answer}” i pasuje gramatycznie.` }
+            if (hit) { out[it.i] = { correct: true, explanation: `„${it.given}” znaczy tu to samo co „${it.answer}” i pasuje do kontekstu.` }; continue; }
+            // Context-aware mock: if the sentence has a gap and the given word also appears as a listed accepted/alt-style fit via shared content words with the key, accept.
+            const sent = normAnswer(it.q || '');
+            const keyCw = contentWords(it.answer || '');
+            const givenCw = contentWords(it.given || '');
+            const contextual = sent && keyCw.length && givenCw.length
+                && givenCw.every((w) => keyCw.some((k) => wordMatch(w, k) || k === w))
+                && !examRuleViolation(it.format || format, it, it.given, '');
+            out[it.i] = contextual
+                ? { correct: true, explanation: `„${it.given}” pasuje do kontekstu zdania tak samo jak klucz.` }
                 : { correct: false, explanation: `„${it.given}” nie pasuje tu znaczeniowo lub gramatycznie.` };
         }
         return out;

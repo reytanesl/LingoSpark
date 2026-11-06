@@ -246,7 +246,7 @@ test('every level format exists and has a Polish CKE-style instruction', () => {
     for (const [lvl, lv] of Object.entries(UOE_LEVELS)) {
         for (const f of lv.formats) {
             assert.ok(UOE_FORMATS[f], `${lvl}:${f}`);
-            assert.match(uoeInstruction(f, lvl), /^(Wybierz|Przeczytaj|Uzupełnij|Przetłumacz|Wpisz)/);
+            assert.match(uoeInstruction(f, lvl), /^(Wybierz|Przeczytaj|Uzupełnij|Przetłumacz|Wpisz|Przekształć)/);
         }
     }
     assert.match(uoeInstruction('translation', 'B2'), /maksymalnie pięć wyrazów/);

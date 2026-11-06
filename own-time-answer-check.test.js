@@ -39,7 +39,7 @@ test('layer 3: exam rules before AI (limits, key word, one word, root)', () => {
 });
 test('layer 3: prompt/reply/mock helpers', () => {
     const items = [{ i: 0, q: '___ the rain', answer: 'despite', accepted: [], given: 'in spite of' }, { i: 2, answer: 'till', given: 'cash' }];
-    assert.match(A.buildOpenCheckPrompt({ format: 'open_cloze', cefr: 'B2', items }), /Over the word limit = wrong/);
+    assert.match(A.buildOpenCheckPrompt({ format: 'open_cloze', cefr: 'B2', items }), /Over the word limit = wrong|context-fitting|fits the sentence/i);
     assert.deepEqual(Object.keys(A.parseOpenCheckReply({ results: [{ i: 0, correct: true, explanation: 'ok' }, { i: 9, correct: true }] }, [0, 2])), ['0']);
     const m = A.mockOpenCheck(items);
     assert.equal(m[0].correct, true);

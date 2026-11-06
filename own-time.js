@@ -692,7 +692,7 @@
         try {
             const r = await api('/api/own-time/check-open', { method: 'POST', body: JSON.stringify({
                 format: task.type === 'reading' ? 'reading' : (task.format || 'simple'), cefr: lesson.cefr || profile?.cefr || '', prompt: task.prompt || '', appeal: !!appeal,
-                items: list.map(({ it, i, given }) => ({ i, q: it.q, lead: it.lead, key: it.key, cue: it.cue, pl: it.pl, answer: it.answer, accepted: it.alts || [], given })),
+                items: list.map(({ it, i, given }) => ({ i, q: it.q, lead: it.lead, key: it.key, cue: it.cue, pl: it.pl, answer: it.answer, accepted: [...(it.alts || []), ...(it.acceptedAnswers || [])], given })),
             }) });
             list.forEach(({ i, given }) => { const v = r.results?.[i] || { correct: false, explanation: '' }; a.verdicts[i] = { value: given, correct: !!v.correct, why: v.explanation || '' }; });
         } catch (e) {
@@ -880,7 +880,8 @@
         if (m) {
             const before = q.slice(0, m.index);
             const after = q.slice(m.index + m[0].length);
-            const cue = it.cue ? ` <span class="ot-cue">(${esc(it.cue)})</span>` : '';
+            const cueAlready = it.cue && new RegExp('\\(' + String(it.cue).replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '\\)', 'i').test(before + after);
+            const cue = it.cue && !cueAlready ? ` <span class="ot-cue">(${esc(it.cue)})</span>` : '';
             return `${esc(before)}${gapInput(it, i, saved)}${cue}${esc(after)}`;
         }
         return `<span class="ot-q-text">${esc(q || t(`Punkt ${i + 1}`, `Item ${i + 1}`))}</span> ${gapInput(it, i, saved)}`;
@@ -930,7 +931,8 @@
         const parts = String(it.q || '').split(/_{3,}|\{\{\s*\d*\s*\}\}/);
         if (parts.length === 1) return `<span class="ot-q-text">${esc(it.q || '')}</span> ${mc ? slotHtml(it, i, saved) : gapInput(it, i, saved)}`;
         const pl = it.pl ? `<span class="ot-pl">(${esc(it.pl)})</span> ` : '';
-        const cue = it.cue ? ` <span class="ot-cue">(${esc(it.cue)})</span>` : '';
+        const cueAlready = it.cue && new RegExp('\\(' + String(it.cue).replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '\\)', 'i').test(String(it.q || ''));
+        const cue = it.cue && !cueAlready ? ` <span class="ot-cue">(${esc(it.cue)})</span>` : '';
         return parts.map((txt, k) => {
             const lineHtml = esc(txt).replace(/\n/g, '<br>');
             if (k === parts.length - 1) return lineHtml;
