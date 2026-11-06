@@ -21,7 +21,7 @@
         return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    const AV_COLORS = ['#c45c26', '#2a6f97', '#52796f', '#9b2226', '#bc6c25', '#3d405b', '#6a994e', '#e07a5f'];
+    const AV_COLORS = ['#c8102e', '#1d4e89', '#0f7a5a', '#d4a017', '#e85d04', '#5b2c6f', '#2a9d8f', '#e63946'];
 
     function colorFor(id) {
         let h = 0;

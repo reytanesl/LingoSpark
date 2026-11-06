@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs>
-<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b2a4f"/><stop offset=".55" stop-color="#7a4a52"/><stop offset="1" stop-color="#c47a4e"/></linearGradient>
-<linearGradient id="desk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5f34"/><stop offset="1" stop-color="#5a321b"/></linearGradient>
-<radialGradient id="lamp" cx=".5" cy=".18" r=".65"><stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></radialGradient>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f4a6b"/><stop offset=".4" stop-color="#8b3a4a"/><stop offset=".75" stop-color="#d4784a"/><stop offset="1" stop-color="#e8a05a"/></linearGradient>
+<linearGradient id="desk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8733a"/><stop offset="1" stop-color="#5a321b"/></linearGradient>
+<radialGradient id="lamp" cx=".5" cy=".18" r=".65"><stop offset="0" stop-color="#ffe6a8" stop-opacity=".72"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></radialGradient>
 <radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#1a0f1c" stop-opacity="0"/><stop offset="1" stop-color="#1a0f1c" stop-opacity=".6"/></radialGradient>
 <pattern id="air" width="36" height="12" patternUnits="userSpaceOnUse" patternTransform="skewX(-35)"><rect width="12" height="12" fill="#e63946"/><rect x="12" width="6" height="12" fill="#fff7e3"/><rect x="18" width="12" height="12" fill="#1d3a6e"/><rect x="30" width="6" height="12" fill="#fff7e3"/></pattern>
 </defs>
