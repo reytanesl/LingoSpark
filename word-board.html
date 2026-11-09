@@ -233,12 +233,38 @@
             font-weight: 800; cursor: pointer;
         }
         .blank-grid button:hover { border-color: var(--accent); }
+        .topbar-actions { display: flex; align-items: center; gap: 0.45rem; }
+        .btn-fs {
+            min-width: 44px; height: 40px; padding: 0 0.85rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+        }
+        .btn-fs .fs-label { font-size: 0.9rem; }
+        @media (max-width: 640px) {
+            .btn-fs .fs-label { display: none; }
+        }
+        /* Classroom projector: use more of the viewport when fullscreen. */
+        :fullscreen,
+        :-webkit-full-screen { background: #e7dccb; }
+        :fullscreen .topbar,
+        :-webkit-full-screen .topbar { background: rgba(255, 250, 243, 0.92); }
+        :fullscreen .board,
+        :-webkit-full-screen .board { max-width: min(82vh, 100%); }
+        :fullscreen .game-shell,
+        :-webkit-full-screen .game-shell { max-width: 1320px; }
+        :fullscreen .side .word-list,
+        :-webkit-full-screen .side .word-list { max-height: 56vh; }
     </style>
 </head>
 <body>
     <header class="topbar">
         <a class="brand" href="index.html#/team">Lingo<span>Spark</span> · Word Board</a>
-        <button type="button" class="btn btn-ghost" id="btn-new" hidden>New game</button>
+        <div class="topbar-actions">
+            <button type="button" class="btn btn-ghost btn-fs" id="btn-fullscreen" title="Fullscreen" aria-pressed="false">
+                <span aria-hidden="true">⛶</span>
+                <span class="fs-label">Fullscreen</span>
+            </button>
+            <button type="button" class="btn btn-ghost" id="btn-new" hidden>New game</button>
+        </div>
     </header>
 
     <section id="screen-setup" class="screen active">
@@ -369,6 +395,45 @@
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach((el) => el.classList.toggle('active', el.id === id));
             $('btn-new').hidden = id !== 'screen-game';
+        }
+
+        function getFullscreenElement() {
+            return document.fullscreenElement
+                || document.webkitFullscreenElement
+                || document.msFullscreenElement
+                || null;
+        }
+
+        function requestFs(el) {
+            const node = el || document.documentElement;
+            const req = node.requestFullscreen
+                || node.webkitRequestFullscreen
+                || node.msRequestFullscreen;
+            if (!req) return Promise.reject(new Error('Fullscreen is not supported in this browser.'));
+            return Promise.resolve(req.call(node));
+        }
+
+        function exitFs() {
+            const exit = document.exitFullscreen
+                || document.webkitExitFullscreen
+                || document.msExitFullscreen;
+            if (!exit || !getFullscreenElement()) return Promise.resolve();
+            return Promise.resolve(exit.call(document));
+        }
+
+        function toggleFullscreen() {
+            if (getFullscreenElement()) return exitFs();
+            return requestFs(document.documentElement);
+        }
+
+        function syncFullscreenButton() {
+            const on = Boolean(getFullscreenElement());
+            const btn = $('btn-fullscreen');
+            if (!btn) return;
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            btn.title = on ? 'Exit fullscreen' : 'Fullscreen';
+            const label = btn.querySelector('.fs-label');
+            if (label) label.textContent = on ? 'Exit full' : 'Fullscreen';
         }
 
         function renderTeamNameInputs() {
@@ -647,6 +712,16 @@
         $('wb-teams').addEventListener('change', renderTeamNameInputs);
         $('wb-words').addEventListener('input', updateWordsHint);
         $('wb-start').addEventListener('click', startGame);
+        $('btn-fullscreen').addEventListener('click', () => {
+            toggleFullscreen().catch(() => {
+                setupStatus.className = 'status err';
+                setupStatus.textContent = 'Fullscreen is not available in this browser.';
+            });
+        });
+        document.addEventListener('fullscreenchange', syncFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', syncFullscreenButton);
+        document.addEventListener('MSFullscreenChange', syncFullscreenButton);
+        syncFullscreenButton();
         $('btn-new').addEventListener('click', () => {
             stopTimer();
             match = null;

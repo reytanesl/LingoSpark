@@ -3,12 +3,16 @@ import test from 'node:test';
 import {
     BOARD_SIZE,
     CENTER,
+    RACK_SIZE,
     applyPlacement,
     buildBagFromWords,
     createMatch,
     evaluatePlacement,
     parseWordList,
     playMove,
+    rackCanFormAny,
+    rackCanSpell,
+    refillRack,
 } from './word-board-engine.js';
 
 test('parseWordList accepts lines and commas, unique A–Z words', () => {
@@ -75,4 +79,35 @@ test('reject words not on the teacher list', () => {
     ], ['CAT', 'DOG', 'BIRD', 'FISH', 'LION']);
     assert.equal(res.ok, false);
     assert.match(res.error, /not on your word list/i);
+});
+
+test('rackCanSpell treats blanks as wildcards', () => {
+    assert.equal(rackCanSpell(['C', 'A', 'T'], 'CAT'), true);
+    assert.equal(rackCanSpell(['C', '_', 'T'], 'CAT'), true);
+    assert.equal(rackCanSpell(['C', 'A'], 'CAT'), false);
+});
+
+test('opening racks can always form at least one list word', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+        const match = createMatch({
+            words: ['CAT', 'DOG', 'BIRD', 'FISH', 'LION', 'BEAR', 'FROG'],
+            teamNames: ['Red', 'Blue', 'Green'],
+            seed,
+        });
+        for (const team of match.teams) {
+            assert.equal(team.rack.length, RACK_SIZE, `seed ${seed} rack size`);
+            assert.ok(
+                rackCanFormAny(team.rack, match.words),
+                `seed ${seed} team ${team.name} rack ${team.rack.join('')} forms nothing`,
+            );
+        }
+    }
+});
+
+test('refillRack repairs a dead kept hand when the bag still has a word', () => {
+    const words = ['CAT', 'DOG', 'BIRD', 'FISH', 'LION'];
+    const bag = ['C', 'A', 'T', 'D', 'O', 'G', 'B', 'I', 'R'];
+    const rack = refillRack(['Q', 'X', 'Z'], bag, words, { found: new Set() });
+    assert.equal(rack.length, RACK_SIZE);
+    assert.ok(rackCanFormAny(rack, words), `dead hand became ${rack.join('')}`);
 });

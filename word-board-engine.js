@@ -121,11 +121,135 @@ export function drawTiles(bag, n) {
     return drawn;
 }
 
-export function refillRack(rack, bag) {
-    const next = rack.filter((t) => t != null);
-    const need = RACK_SIZE - next.length;
-    if (need > 0) next.push(...drawTiles(bag, need));
-    return next;
+function countRackLetters(tiles) {
+    const m = Object.create(null);
+    let blanks = 0;
+    for (const t of tiles || []) {
+        const ch = String(t || '').toUpperCase();
+        if (!ch) continue;
+        if (ch === '_') blanks += 1;
+        else m[ch] = (m[ch] || 0) + 1;
+    }
+    return { m, blanks };
+}
+
+/** True if rack letters (blanks wild) can spell `word`. */
+export function rackCanSpell(rack, word) {
+    const w = normalizeWord(word);
+    if (!w) return false;
+    const { m, blanks } = countRackLetters(rack);
+    const have = { ...m };
+    let left = blanks;
+    for (const ch of w) {
+        if (have[ch] > 0) have[ch] -= 1;
+        else if (left > 0) left -= 1;
+        else return false;
+    }
+    return true;
+}
+
+/** True if rack can spell at least one word in the list. */
+export function rackCanFormAny(rack, words) {
+    for (const w of words || []) {
+        if (rackCanSpell(rack, w)) return true;
+    }
+    return false;
+}
+
+function takeLetterFromBag(bag, letter) {
+    const i = bag.lastIndexOf(letter);
+    if (i < 0) return false;
+    bag.splice(i, 1);
+    return true;
+}
+
+/** Can we assemble `word` using kept tiles + whatever is still in the bag? */
+function canAssembleFromKeptAndBag(kept, bag, word) {
+    return rackCanSpell([...(kept || []), ...(bag || [])], word);
+}
+
+function remainingCandidates(words, found) {
+    const foundSet = found instanceof Set ? found : new Set(found || []);
+    return (words || [])
+        .map((w) => normalizeWord(w))
+        .filter((w) => w && !foundSet.has(w) && w.length <= RACK_SIZE)
+        .sort((a, b) => a.length - b.length || a.localeCompare(b));
+}
+
+/**
+ * Draw/refill a rack so it can always spell at least one remaining list word
+ * (length ≤ 7), whenever the bag + kept tiles still allow it.
+ */
+export function refillRack(rack, bag, words = null, opts = {}) {
+    let kept = (rack || []).filter((t) => t != null);
+    let need = RACK_SIZE - kept.length;
+
+    const candidates = remainingCandidates(words, opts.found);
+    if (!candidates.length) {
+        if (need > 0) return kept.concat(drawTiles(bag, need));
+        return kept.slice(0, RACK_SIZE);
+    }
+
+    // Already full and already playable — leave it.
+    if (need <= 0 && rackCanFormAny(kept, candidates)) {
+        return kept.slice(0, RACK_SIZE);
+    }
+
+    // Prefer a word we can finish without discarding kept tiles.
+    let target = candidates.find((w) => canAssembleFromKeptAndBag(kept, bag, w)) || null;
+
+    // If kept tiles block every word (or the full rack is dead), recycle into the bag.
+    let base = kept;
+    if (!target) {
+        bag.push(...kept);
+        base = [];
+        need = RACK_SIZE;
+        target = candidates.find((w) => canAssembleFromKeptAndBag([], bag, w)) || null;
+        if (!target) {
+            // Bag too thin — best effort random draw from whatever is left.
+            return drawTiles(bag, RACK_SIZE);
+        }
+    } else if (need <= 0) {
+        // Playable enough via bag+kept math but rack is full — keep as-is.
+        return kept.slice(0, RACK_SIZE);
+    }
+
+    const drawn = [];
+    const have = countRackLetters(base).m;
+    const needCounts = Object.create(null);
+    for (const ch of target) needCounts[ch] = (needCounts[ch] || 0) + 1;
+    for (const ch of Object.keys(needCounts)) {
+        let still = needCounts[ch] - (have[ch] || 0);
+        while (still > 0 && drawn.length < need) {
+            if (takeLetterFromBag(bag, ch)) {
+                drawn.push(ch);
+                still -= 1;
+            } else {
+                // Use a blank if the exact letter ran out.
+                if (takeLetterFromBag(bag, '_')) {
+                    drawn.push('_');
+                    still -= 1;
+                } else break;
+            }
+        }
+    }
+    while (drawn.length < need && bag.length) drawn.push(bag.pop());
+
+    let out = base.concat(drawn);
+    if (out.length > RACK_SIZE) out = out.slice(0, RACK_SIZE);
+
+    if (rackCanSpell(out, target)) return out;
+
+    // Last resort: rebuild purely around the target word.
+    bag.push(...out);
+    const forced = [];
+    for (const ch of target) {
+        if (forced.length >= RACK_SIZE) break;
+        if (takeLetterFromBag(bag, ch)) forced.push(ch);
+        else if (takeLetterFromBag(bag, '_')) forced.push('_');
+    }
+    while (forced.length < RACK_SIZE && bag.length) forced.push(bag.pop());
+    return forced;
 }
 
 export function letterScore(ch) {
@@ -330,17 +454,25 @@ export function createMatch({
         throw new Error('Choose 2–4 teams.');
     }
     const bag = buildBagFromWords(list, seed);
+    const found = new Set();
     const teams = names.map((name, i) => ({
         id: `t${i}`,
         name,
         score: 0,
-        rack: refillRack([], bag),
+        rack: refillRack([], bag, list, { found }),
         wordsPlayed: [],
     }));
+    // Opening racks must each be able to open with a list word.
+    for (const team of teams) {
+        if (!rackCanFormAny(team.rack, list)) {
+            bag.push(...team.rack);
+            team.rack = refillRack([], bag, list, { found });
+        }
+    }
     return {
         words: list,
         wordSet: new Set(list),
-        found: new Set(),
+        found,
         board: emptyBoard(),
         bag,
         teams,
@@ -376,11 +508,11 @@ export function playMove(match, placements) {
 
     match.board = applyPlacement(match.board, result.placements);
     team.score += result.score;
-    team.rack = refillRack(rackCopy, match.bag);
     for (const w of result.words) {
         team.wordsPlayed.push(w);
         match.found.add(w);
     }
+    team.rack = refillRack(rackCopy, match.bag, match.words, { found: match.found });
     match.moves.push({
         teamId: team.id,
         words: result.words,
@@ -409,10 +541,9 @@ export function exchangeTiles(match, indices) {
     if (!idxs.length) return { ok: false, error: 'Select tiles to exchange.' };
     const returning = idxs.map((i) => team.rack[i]);
     const kept = team.rack.filter((_, i) => !idxs.includes(i));
-    const drawn = drawTiles(match.bag, returning.length);
     match.bag.push(...returning);
     match.bag = shuffle(match.bag, mulberry32(Date.now() + match.turn));
-    team.rack = refillRack(kept.concat(drawn), match.bag);
+    team.rack = refillRack(kept, match.bag, match.words, { found: match.found });
     match.turn += 1;
     match.moves.push({ teamId: team.id, exchange: returning.length, score: 0 });
     return { ok: true };
