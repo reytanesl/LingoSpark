@@ -14,6 +14,7 @@ export const PUBLIC_PAGES = new Set([
     'vocab-auction.html',
     'board-game-challenge.html',
     'esl-millionaire.html',
+    'word-board.html',
     'vocab-scenes.html',
 ]);
 
@@ -56,6 +57,7 @@ export const PUBLIC_SCRIPTS = new Set([
     'vocab-auction-chips.js',
     'word-cannon-client.js',
     'word-cannon-fx.js',
+    'word-board-engine.js',
 ]);
 
 /**

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Board · LingoSpark</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1c140c;
+            --muted: #6b5a48;
+            --paper: #f3ebe0;
+            --card: #fffaf3;
+            --line: #d4c4ae;
+            --wood: #8b5a2b;
+            --wood-deep: #5c3a18;
+            --accent: #c45c26;
+            --accent-deep: #9a3f14;
+            --tw: #c81e1e;
+            --dw: #e07a5f;
+            --tl: #2a6f6f;
+            --dl: #4a90a4;
+            --ok: #2f6b3a;
+            --bad: #a33b2a;
+            --shadow: 0 18px 40px rgba(28, 20, 12, 0.12);
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-ui: 'Source Sans 3', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: var(--font-ui);
+            background:
+                radial-gradient(ellipse 80% 50% at 10% 0%, rgba(196, 92, 38, 0.12), transparent 55%),
+                radial-gradient(ellipse 70% 45% at 90% 100%, rgba(42, 111, 111, 0.1), transparent 50%),
+                linear-gradient(165deg, #efe4d4 0%, var(--paper) 45%, #e7dccb 100%);
+            min-height: 100vh;
+        }
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 1rem; padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid rgba(139, 90, 43, 0.18);
+            background: rgba(255, 250, 243, 0.72);
+            backdrop-filter: blur(8px);
+            position: sticky; top: 0; z-index: 20;
+        }
+        .brand {
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 1.15rem; color: var(--wood-deep);
+            text-decoration: none;
+        }
+        .brand span { color: var(--accent); }
+        .screen { display: none; padding: 1.5rem 1rem 2.5rem; }
+        .screen.active { display: block; }
+
+        .setup-wrap {
+            max-width: 520px; margin: 1.5rem auto 0;
+            background: var(--card); border: 1px solid var(--line);
+            border-radius: 22px; box-shadow: var(--shadow); padding: 1.75rem 1.5rem 1.5rem;
+        }
+        .setup-wrap h1 {
+            margin: 0; font-family: var(--font-display); font-size: 2.35rem;
+            letter-spacing: -0.02em; color: var(--wood-deep); text-align: center;
+        }
+        .setup-wrap .sub {
+            margin: 0.35rem 0 1.4rem; text-align: center; color: var(--muted); font-size: 1.02rem;
+        }
+        label.field { display: block; margin: 0.9rem 0 0.35rem; font-weight: 700; font-size: 0.92rem; color: var(--wood-deep); }
+        label.field small { font-weight: 600; color: var(--muted); }
+        select, input[type="text"], textarea {
+            width: 100%; border: 2px solid var(--line); border-radius: 12px;
+            padding: 0.7rem 0.85rem; font: 600 1rem/1.35 var(--font-ui); color: var(--ink);
+            background: #fff; outline: none;
+        }
+        select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+        textarea { min-height: 140px; resize: vertical; font-weight: 500; }
+        .team-names { display: grid; gap: 0.5rem; }
+        .hint { margin: 0.4rem 0 0; font-size: 0.86rem; color: var(--muted); }
+        .status { margin-top: 0.75rem; font-weight: 700; min-height: 1.25rem; }
+        .status.err { color: var(--bad); }
+        .status.ok { color: var(--ok); }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+            border: 0; border-radius: 999px; cursor: pointer;
+            font: 700 1.05rem/1 var(--font-ui); padding: 0.95rem 1.25rem;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary {
+            width: 100%; margin-top: 1.15rem; color: #fff;
+            background: linear-gradient(180deg, #d96a32, var(--accent));
+            box-shadow: 0 6px 0 var(--accent-deep), 0 12px 22px rgba(196, 92, 38, 0.28);
+        }
+        .btn-primary:hover { filter: brightness(1.03); }
+        .btn-ghost {
+            background: #fff; color: var(--ink); border: 2px solid var(--line);
+            padding: 0.55rem 0.9rem; font-size: 0.92rem;
+        }
+        .btn-ghost:hover { border-color: var(--wood); }
+        .btn-danger { background: #fff; color: var(--bad); border: 2px solid #e4b4ab; padding: 0.55rem 0.9rem; font-size: 0.92rem; }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+        .game-shell {
+            max-width: 1180px; margin: 0 auto;
+            display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 1rem; align-items: start;
+        }
+        @media (max-width: 920px) {
+            .game-shell { grid-template-columns: 1fr; }
+        }
+        .scoreboard {
+            display: flex; flex-wrap: wrap; gap: 0.55rem; margin-bottom: 0.85rem;
+        }
+        .team-chip {
+            flex: 1 1 140px; background: var(--card); border: 2px solid var(--line);
+            border-radius: 14px; padding: 0.65rem 0.8rem; box-shadow: 0 3px 0 var(--line);
+        }
+        .team-chip.is-turn { border-color: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); background: #fff6ee; }
+        .team-chip .name { font-weight: 700; font-size: 0.95rem; }
+        .team-chip .pts { font-family: var(--font-display); font-size: 1.55rem; color: var(--wood-deep); }
+        .meta-row {
+            display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;
+            margin-bottom: 0.75rem; color: var(--muted); font-weight: 600; font-size: 0.92rem;
+        }
+        .timer-pill {
+            margin-left: auto; font-variant-numeric: tabular-nums;
+            background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 0.35rem 0.75rem;
+            color: var(--ink);
+        }
+        .timer-pill.warn { border-color: var(--accent); color: var(--accent-deep); }
+
+        .board-frame {
+            background: linear-gradient(160deg, #a06a38, var(--wood-deep));
+            border-radius: 18px; padding: 12px; box-shadow: var(--shadow);
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(15, minmax(0, 1fr));
+            gap: 2px; background: #6e4520; border-radius: 10px; overflow: hidden;
+            aspect-ratio: 1 / 1; width: 100%; max-width: min(72vh, 100%);
+            margin: 0 auto;
+        }
+        .cell {
+            position: relative; background: #dfc9a5; display: grid; place-items: center;
+            font-weight: 800; font-size: clamp(0.55rem, 1.5vw, 0.85rem);
+            color: rgba(28, 20, 12, 0.35); user-select: none; cursor: pointer;
+            min-height: 0;
+        }
+        .cell.TW { background: #e35a4a; color: rgba(255,255,255,0.75); }
+        .cell.DW { background: #ef9a7a; color: rgba(90, 30, 10, 0.55); }
+        .cell.TL { background: #3f8f8c; color: rgba(255,255,255,0.75); }
+        .cell.DL { background: #6eb0c0; color: rgba(15, 45, 55, 0.55); }
+        .cell.center::after {
+            content: '★'; position: absolute; font-size: 0.85em; opacity: 0.55;
+        }
+        .cell.has-tile { cursor: default; }
+        .cell.is-pending { outline: 2px solid #fff; outline-offset: -2px; z-index: 1; }
+        .tile {
+            width: 86%; height: 86%; border-radius: 4px;
+            background: linear-gradient(180deg, #f7ecd8, #e6d3b0);
+            border: 1px solid #c9b08a; box-shadow: 0 1px 0 #b89568;
+            display: grid; place-items: center; position: relative;
+            color: var(--ink); font-size: clamp(0.7rem, 2vw, 1.05rem); font-weight: 800;
+            line-height: 1;
+        }
+        .tile .val {
+            position: absolute; right: 10%; bottom: 6%; font-size: 0.45em; font-weight: 700; opacity: 0.7;
+        }
+        .tile.is-blank { color: var(--muted); }
+        .tile.pending { background: linear-gradient(180deg, #fff3d6, #f0d59a); border-color: var(--accent); }
+
+        .rack-bar {
+            margin-top: 0.9rem; background: var(--card); border: 1px solid var(--line);
+            border-radius: 16px; padding: 0.85rem; box-shadow: 0 4px 0 var(--line);
+        }
+        .rack-label { font-weight: 700; color: var(--wood-deep); margin-bottom: 0.5rem; }
+        .rack {
+            display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; min-height: 52px;
+        }
+        .rack-tile {
+            width: 48px; height: 52px; border-radius: 6px; cursor: pointer;
+            background: linear-gradient(180deg, #f7ecd8, #e0c89a);
+            border: 2px solid #c9b08a; box-shadow: 0 3px 0 #a88455;
+            font-weight: 800; font-size: 1.25rem; position: relative;
+            display: grid; place-items: center;
+        }
+        .rack-tile .val { position: absolute; right: 5px; bottom: 3px; font-size: 0.65rem; opacity: 0.7; }
+        .rack-tile.selected { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 7px 0 var(--accent-deep); }
+        .rack-tile.used { opacity: 0.3; pointer-events: none; }
+        .actions {
+            display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; margin-top: 0.75rem;
+        }
+        .play-msg {
+            margin-top: 0.65rem; text-align: center; font-weight: 700; min-height: 1.3rem;
+        }
+        .play-msg.err { color: var(--bad); }
+        .play-msg.ok { color: var(--ok); }
+
+        .side {
+            background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+            padding: 1rem; box-shadow: var(--shadow);
+        }
+        .side h2 { margin: 0 0 0.5rem; font-family: var(--font-display); font-size: 1.25rem; color: var(--wood-deep); }
+        .side p { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.9rem; }
+        .word-list {
+            max-height: 42vh; overflow: auto; display: flex; flex-wrap: wrap; gap: 0.35rem;
+        }
+        .word-chip {
+            font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 999px;
+            background: #f0e6d6; color: var(--ink); border: 1px solid var(--line);
+        }
+        .word-chip.found { background: #d9eedc; border-color: #9ccc9f; color: var(--ok); text-decoration: line-through; }
+        .side-actions { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.85rem; }
+
+        .overlay {
+            position: fixed; inset: 0; background: rgba(28, 20, 12, 0.45);
+            display: none; place-items: center; z-index: 40; padding: 1rem;
+        }
+        .overlay.open { display: grid; }
+        .modal {
+            background: var(--card); border-radius: 18px; padding: 1.5rem; max-width: 420px; width: 100%;
+            box-shadow: var(--shadow); text-align: center;
+        }
+        .modal h2 { font-family: var(--font-display); margin: 0 0 0.5rem; }
+        .blank-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.35rem; margin: 1rem 0;
+        }
+        .blank-grid button {
+            height: 40px; border-radius: 8px; border: 1px solid var(--line); background: #fff;
+            font-weight: 800; cursor: pointer;
+        }
+        .blank-grid button:hover { border-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="index.html#/team">Lingo<span>Spark</span> · Word Board</a>
+        <button type="button" class="btn btn-ghost" id="btn-new" hidden>New game</button>
+    </header>
+
+    <section id="screen-setup" class="screen active">
+        <div class="setup-wrap">
+            <h1>Word Board</h1>
+            <p class="sub">A classic word game for teams — with your vocabulary list.</p>
+
+            <label class="field" for="wb-words">Word list <small>one per line, or comma-separated · min 5</small></label>
+            <textarea id="wb-words" placeholder="apple&#10;banana&#10;cherry&#10;grape&#10;orange&#10;lemon"></textarea>
+            <p class="hint" id="wb-words-hint">Students may only form words from this list. Letters in the bag come from your words.</p>
+
+            <label class="field" for="wb-teams">Number of teams</label>
+            <select id="wb-teams">
+                <option value="2" selected>2 Teams</option>
+                <option value="3">3 Teams</option>
+                <option value="4">4 Teams</option>
+            </select>
+
+            <label class="field">Team names</label>
+            <div class="team-names" id="wb-team-names"></div>
+
+            <label class="field" for="wb-timer">Turn timer</label>
+            <select id="wb-timer">
+                <option value="0" selected>No Timer</option>
+                <option value="30">30 seconds</option>
+                <option value="60">60 seconds</option>
+                <option value="90">90 seconds</option>
+                <option value="120">2 minutes</option>
+            </select>
+
+            <button type="button" class="btn btn-primary" id="wb-start">Start Game</button>
+            <div class="status" id="wb-setup-status"></div>
+        </div>
+    </section>
+
+    <section id="screen-game" class="screen">
+        <div class="game-shell">
+            <div>
+                <div class="scoreboard" id="wb-scoreboard"></div>
+                <div class="meta-row">
+                    <span id="wb-turn-label">Turn</span>
+                    <span>·</span>
+                    <span id="wb-bag-label">Bag</span>
+                    <span class="timer-pill" id="wb-timer-pill" hidden>0:00</span>
+                </div>
+                <div class="board-frame">
+                    <div class="board" id="wb-board" aria-label="Word Board"></div>
+                </div>
+                <div class="rack-bar">
+                    <div class="rack-label" id="wb-rack-label">Your tiles</div>
+                    <div class="rack" id="wb-rack"></div>
+                    <div class="actions">
+                        <button type="button" class="btn btn-ghost" id="wb-shuffle">Shuffle</button>
+                        <button type="button" class="btn btn-ghost" id="wb-recall">Recall</button>
+                        <button type="button" class="btn btn-ghost" id="wb-exchange">Exchange</button>
+                        <button type="button" class="btn btn-ghost" id="wb-pass">Pass</button>
+                        <button type="button" class="btn btn-primary" id="wb-play" style="width:auto;margin:0;padding:0.7rem 1.2rem;">Play word</button>
+                    </div>
+                    <div class="play-msg" id="wb-play-msg"></div>
+                </div>
+            </div>
+            <aside class="side">
+                <h2>Word list</h2>
+                <p id="wb-found-label">0 / 0 found</p>
+                <div class="word-list" id="wb-word-list"></div>
+                <div class="side-actions">
+                    <button type="button" class="btn btn-ghost" id="wb-toggle-list">Hide words from class</button>
+                    <button type="button" class="btn btn-danger" id="wb-end">End game</button>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <div class="overlay" id="wb-blank-modal" role="dialog" aria-modal="true" aria-label="Choose blank letter">
+        <div class="modal">
+            <h2>Blank tile</h2>
+            <p>Which letter should this blank represent?</p>
+            <div class="blank-grid" id="wb-blank-grid"></div>
+            <button type="button" class="btn btn-ghost" id="wb-blank-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="wb-end-modal" role="dialog" aria-modal="true">
+        <div class="modal">
+            <h2 id="wb-end-title">Game over</h2>
+            <p id="wb-end-body"></p>
+            <button type="button" class="btn btn-primary" id="wb-end-ok" style="margin-top:1rem;">Back to setup</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import {
+            BOARD_SIZE,
+            CENTER,
+            PREMIUMS,
+            LETTER_VALUES,
+            parseWordList,
+            createMatch,
+            currentTeam,
+            evaluatePlacement,
+            playMove,
+            passTurn,
+            exchangeTiles,
+            finishMatch,
+            letterScore,
+        } from './word-board-engine.js';
+
+        const $ = (id) => document.getElementById(id);
+        const setupStatus = $('wb-setup-status');
+        const playMsg = $('wb-play-msg');
+
+        let match = null;
+        let selectedRack = null;
+        let pending = []; // {row,col,letter,blankAs,rackIndex}
+        let exchangeMode = false;
+        let exchangeSet = new Set();
+        let listHidden = false;
+        let timerId = null;
+        let turnDeadline = 0;
+        let blankResolve = null;
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = String(s ?? '');
+            return d.innerHTML;
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach((el) => el.classList.toggle('active', el.id === id));
+            $('btn-new').hidden = id !== 'screen-game';
+        }
+
+        function renderTeamNameInputs() {
+            const n = Number($('wb-teams').value) || 2;
+            const host = $('wb-team-names');
+            const prev = [...host.querySelectorAll('input')].map((i) => i.value);
+            host.innerHTML = '';
+            for (let i = 0; i < n; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Team ${i + 1}`;
+                input.value = prev[i] || `Team ${i + 1}`;
+                input.maxLength = 24;
+                host.appendChild(input);
+            }
+        }
+
+        function updateWordsHint() {
+            const list = parseWordList($('wb-words').value);
+            $('wb-words-hint').textContent = list.length
+                ? `${list.length} unique words ready · students may only play these.`
+                : 'Students may only form words from this list. Letters in the bag come from your words.';
+        }
+
+        function premiumLabel(p) {
+            if (!p) return '';
+            return p;
+        }
+
+        function renderBoard() {
+            const boardEl = $('wb-board');
+            boardEl.innerHTML = '';
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const cell = document.createElement('button');
+                    cell.type = 'button';
+                    cell.className = 'cell';
+                    const prem = PREMIUMS[r][c];
+                    if (prem) cell.classList.add(prem);
+                    if (r === CENTER && c === CENTER) cell.classList.add('center');
+                    const tile = match.board[r][c];
+                    const pend = pending.find((p) => p.row === r && p.col === c);
+                    if (tile || pend) {
+                        cell.classList.add('has-tile');
+                        if (pend) cell.classList.add('is-pending');
+                        const letter = pend ? (pend.letter === '_' ? (pend.blankAs || '?') : pend.letter) : tile.letter;
+                        const blank = pend ? pend.letter === '_' : tile.blank;
+                        const val = blank ? 0 : letterScore(letter);
+                        cell.innerHTML = `<span class="tile${pend ? ' pending' : ''}${blank ? ' is-blank' : ''}">${esc(letter)}<span class="val">${val}</span></span>`;
+                    } else {
+                        cell.textContent = premiumLabel(prem);
+                    }
+                    cell.addEventListener('click', () => onCellClick(r, c));
+                    boardEl.appendChild(cell);
+                }
+            }
+        }
+
+        function renderRack() {
+            const team = currentTeam(match);
+            $('wb-rack-label').textContent = `${team.name} — tiles`;
+            const rackEl = $('wb-rack');
+            rackEl.innerHTML = '';
+            const used = new Set(pending.map((p) => p.rackIndex));
+            team.rack.forEach((letter, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'rack-tile';
+                if (selectedRack === i) btn.classList.add('selected');
+                if (used.has(i)) btn.classList.add('used');
+                if (exchangeMode && exchangeSet.has(i)) btn.classList.add('selected');
+                const show = letter === '_' ? '★' : letter;
+                btn.innerHTML = `${esc(show)}<span class="val">${letterScore(letter)}</span>`;
+                btn.addEventListener('click', () => onRackClick(i));
+                rackEl.appendChild(btn);
+            });
+        }
+
+        function renderScoreboard() {
+            const host = $('wb-scoreboard');
+            const cur = currentTeam(match);
+            host.innerHTML = match.teams.map((t) => `
+                <div class="team-chip${t.id === cur.id ? ' is-turn' : ''}">
+                    <div class="name">${esc(t.name)}</div>
+                    <div class="pts">${t.score}</div>
+                </div>
+            `).join('');
+            $('wb-turn-label').textContent = `${cur.name}'s turn`;
+            $('wb-bag-label').textContent = `Bag ${match.bag.length}`;
+            $('wb-found-label').textContent = `${match.found.size} / ${match.words.length} found`;
+        }
+
+        function renderWordList() {
+            const host = $('wb-word-list');
+            if (listHidden) {
+                host.innerHTML = `<span class="word-chip">${match.found.size} found · list hidden</span>`;
+                return;
+            }
+            host.innerHTML = match.words.map((w) =>
+                `<span class="word-chip${match.found.has(w) ? ' found' : ''}">${esc(w)}</span>`
+            ).join('');
+        }
+
+        function renderAll() {
+            renderScoreboard();
+            renderBoard();
+            renderRack();
+            renderWordList();
+        }
+
+        function clearPending() {
+            pending = [];
+            selectedRack = null;
+            playMsg.textContent = '';
+            playMsg.className = 'play-msg';
+        }
+
+        function previewScore() {
+            if (!pending.length) {
+                playMsg.textContent = '';
+                return;
+            }
+            const res = evaluatePlacement(match.board, pending, match.wordSet);
+            if (res.ok) {
+                playMsg.className = 'play-msg ok';
+                playMsg.textContent = `${res.words.join(' · ')} · ${res.score} pts`;
+            } else {
+                playMsg.className = 'play-msg err';
+                playMsg.textContent = res.error;
+            }
+        }
+
+        async function chooseBlankLetter() {
+            return new Promise((resolve) => {
+                blankResolve = resolve;
+                const grid = $('wb-blank-grid');
+                grid.innerHTML = '';
+                for (let i = 0; i < 26; i++) {
+                    const ch = String.fromCharCode(65 + i);
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.textContent = ch;
+                    b.addEventListener('click', () => {
+                        $('wb-blank-modal').classList.remove('open');
+                        blankResolve?.(ch);
+                        blankResolve = null;
+                    });
+                    grid.appendChild(b);
+                }
+                $('wb-blank-modal').classList.add('open');
+            });
+        }
+
+        async function onCellClick(r, c) {
+            if (!match || match.finished) return;
+            if (match.board[r][c]) return;
+            const existing = pending.findIndex((p) => p.row === r && p.col === c);
+            if (existing >= 0) {
+                pending.splice(existing, 1);
+                renderAll();
+                previewScore();
+                return;
+            }
+            if (selectedRack == null) {
+                playMsg.className = 'play-msg err';
+                playMsg.textContent = 'Select a tile from your rack first.';
+                return;
+            }
+            const team = currentTeam(match);
+            const letter = team.rack[selectedRack];
+            if (pending.some((p) => p.rackIndex === selectedRack)) return;
+            let blankAs = null;
+            if (letter === '_') {
+                blankAs = await chooseBlankLetter();
+                if (!blankAs) return;
+            }
+            pending.push({ row: r, col: c, letter, blankAs, rackIndex: selectedRack });
+            selectedRack = null;
+            renderAll();
+            previewScore();
+        }
+
+        function onRackClick(i) {
+            if (exchangeMode) {
+                if (exchangeSet.has(i)) exchangeSet.delete(i);
+                else exchangeSet.add(i);
+                renderRack();
+                return;
+            }
+            if (pending.some((p) => p.rackIndex === i)) return;
+            selectedRack = selectedRack === i ? null : i;
+            renderRack();
+        }
+
+        function stopTimer() {
+            if (timerId) clearInterval(timerId);
+            timerId = null;
+            $('wb-timer-pill').hidden = true;
+        }
+
+        function startTurnTimer() {
+            stopTimer();
+            if (!match?.timerSec) return;
+            turnDeadline = Date.now() + match.timerSec * 1000;
+            const pill = $('wb-timer-pill');
+            pill.hidden = false;
+            const tick = () => {
+                const left = Math.max(0, turnDeadline - Date.now());
+                const s = Math.ceil(left / 1000);
+                const mm = Math.floor(s / 60);
+                const ss = String(s % 60).padStart(2, '0');
+                pill.textContent = `${mm}:${ss}`;
+                pill.classList.toggle('warn', s <= 10);
+                if (left <= 0) {
+                    stopTimer();
+                    passTurn(match);
+                    clearPending();
+                    exchangeMode = false;
+                    exchangeSet.clear();
+                    playMsg.className = 'play-msg err';
+                    playMsg.textContent = 'Time’s up — turn passed.';
+                    afterTurn();
+                }
+            };
+            tick();
+            timerId = setInterval(tick, 250);
+        }
+
+        function afterTurn() {
+            if (match.finished) {
+                showEnd();
+                return;
+            }
+            renderAll();
+            startTurnTimer();
+        }
+
+        function showEnd() {
+            stopTimer();
+            finishMatch(match);
+            const winner = match.teams.find((t) => t.id === match.winnerId);
+            $('wb-end-title').textContent = winner ? `${winner.name} wins!` : 'Game over';
+            $('wb-end-body').textContent = match.teams
+                .slice()
+                .sort((a, b) => b.score - a.score)
+                .map((t) => `${t.name}: ${t.score} pts`)
+                .join(' · ');
+            $('wb-end-modal').classList.add('open');
+            renderAll();
+        }
+
+        function startGame() {
+            setupStatus.textContent = '';
+            setupStatus.className = 'status';
+            try {
+                const names = [...$('wb-team-names').querySelectorAll('input')].map((i) => i.value.trim() || i.placeholder);
+                match = createMatch({
+                    words: $('wb-words').value,
+                    teamNames: names,
+                    timerSec: Number($('wb-timer').value) || 0,
+                });
+                clearPending();
+                exchangeMode = false;
+                exchangeSet.clear();
+                listHidden = false;
+                $('wb-toggle-list').textContent = 'Hide words from class';
+                showScreen('screen-game');
+                renderAll();
+                startTurnTimer();
+            } catch (err) {
+                setupStatus.className = 'status err';
+                setupStatus.textContent = err.message || String(err);
+            }
+        }
+
+        $('wb-teams').addEventListener('change', renderTeamNameInputs);
+        $('wb-words').addEventListener('input', updateWordsHint);
+        $('wb-start').addEventListener('click', startGame);
+        $('btn-new').addEventListener('click', () => {
+            stopTimer();
+            match = null;
+            $('wb-end-modal').classList.remove('open');
+            showScreen('screen-setup');
+        });
+        $('wb-blank-cancel').addEventListener('click', () => {
+            $('wb-blank-modal').classList.remove('open');
+            blankResolve?.(null);
+            blankResolve = null;
+        });
+        $('wb-recall').addEventListener('click', () => {
+            clearPending();
+            renderAll();
+        });
+        $('wb-shuffle').addEventListener('click', () => {
+            if (!match) return;
+            const team = currentTeam(match);
+            const used = new Set(pending.map((p) => p.rackIndex));
+            const free = team.rack.map((t, i) => ({ t, i })).filter((x) => !used.has(x.i));
+            for (let i = free.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [free[i], free[j]] = [free[j], free[i]];
+            }
+            const next = team.rack.slice();
+            free.forEach((x, k) => { next[x.i] = free[k].t; });
+            // remap pending rack indices is unnecessary if we only shuffle values in free slots carefully —
+            // simpler: shuffle unused tile values among unused indices
+            const vals = free.map((x) => team.rack[x.i]);
+            free.forEach((x, k) => { next[x.i] = vals[k]; });
+            team.rack = next;
+            renderRack();
+        });
+        $('wb-pass').addEventListener('click', () => {
+            if (!match) return;
+            passTurn(match);
+            clearPending();
+            exchangeMode = false;
+            exchangeSet.clear();
+            playMsg.className = 'play-msg';
+            playMsg.textContent = 'Turn passed.';
+            afterTurn();
+        });
+        $('wb-exchange').addEventListener('click', () => {
+            if (!match) return;
+            if (!exchangeMode) {
+                clearPending();
+                exchangeMode = true;
+                exchangeSet = new Set();
+                playMsg.className = 'play-msg';
+                playMsg.textContent = 'Select tiles to exchange, then press Exchange again.';
+                renderRack();
+                return;
+            }
+            const res = exchangeTiles(match, [...exchangeSet]);
+            exchangeMode = false;
+            exchangeSet.clear();
+            if (!res.ok) {
+                playMsg.className = 'play-msg err';
+                playMsg.textContent = res.error;
+                renderRack();
+                return;
+            }
+            playMsg.className = 'play-msg ok';
+            playMsg.textContent = 'Tiles exchanged.';
+            afterTurn();
+        });
+        $('wb-play').addEventListener('click', () => {
+            if (!match || !pending.length) {
+                playMsg.className = 'play-msg err';
+                playMsg.textContent = 'Place tiles on the board first.';
+                return;
+            }
+            const res = playMove(match, pending.map(({ row, col, letter, blankAs }) => ({ row, col, letter, blankAs })));
+            if (!res.ok) {
+                playMsg.className = 'play-msg err';
+                playMsg.textContent = res.error;
+                return;
+            }
+            clearPending();
+            playMsg.className = 'play-msg ok';
+            playMsg.textContent = `+${res.result.score} · ${res.result.words.join(', ')}`;
+            afterTurn();
+        });
+        $('wb-toggle-list').addEventListener('click', () => {
+            listHidden = !listHidden;
+            $('wb-toggle-list').textContent = listHidden ? 'Show word list' : 'Hide words from class';
+            renderWordList();
+        });
+        $('wb-end').addEventListener('click', () => showEnd());
+        $('wb-end-ok').addEventListener('click', () => {
+            $('wb-end-modal').classList.remove('open');
+            stopTimer();
+            match = null;
+            showScreen('screen-setup');
+        });
+
+        renderTeamNameInputs();
+        updateWordsHint();
+    </script>
+</body>
+</html>
