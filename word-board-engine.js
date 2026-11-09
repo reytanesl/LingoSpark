@@ -168,23 +168,32 @@ function canAssembleFromKeptAndBag(kept, bag, word) {
     return rackCanSpell([...(kept || []), ...(bag || [])], word);
 }
 
-function remainingCandidates(words, found) {
-    const foundSet = found instanceof Set ? found : new Set(found || []);
+/** Vocab words short enough to seed a rack (list is a letter source, not a checklist). */
+function rackSeedCandidates(words) {
     return (words || [])
         .map((w) => normalizeWord(w))
-        .filter((w) => w && !foundSet.has(w) && w.length <= RACK_SIZE)
-        .sort((a, b) => a.length - b.length || a.localeCompare(b));
+        .filter((w) => w && w.length >= 2 && w.length <= RACK_SIZE);
+}
+
+function pickRandomPlayable(candidates, kept, bag, rng) {
+    const playable = (candidates || []).filter((w) => canAssembleFromKeptAndBag(kept, bag, w));
+    if (!playable.length) return null;
+    return shuffle(playable, rng)[0];
 }
 
 /**
- * Draw/refill a rack so it can always spell at least one remaining list word
- * (length ≤ 7), whenever the bag + kept tiles still allow it.
+ * Draw/refill a rack so it can spell at least one vocab word (length ≤ 7)
+ * whenever the bag still allows it. Target word is chosen at random per deal
+ * so teams get independent, often different seeds.
  */
 export function refillRack(rack, bag, words = null, opts = {}) {
     let kept = (rack || []).filter((t) => t != null);
     let need = RACK_SIZE - kept.length;
+    const rng = typeof opts.rng === 'function'
+        ? opts.rng
+        : mulberry32((Number(opts.seed) || Date.now()) + (Number(opts.salt) || 0) * 7919);
 
-    const candidates = remainingCandidates(words, opts.found);
+    const candidates = rackSeedCandidates(words);
     if (!candidates.length) {
         if (need > 0) return kept.concat(drawTiles(bag, need));
         return kept.slice(0, RACK_SIZE);
@@ -195,22 +204,21 @@ export function refillRack(rack, bag, words = null, opts = {}) {
         return kept.slice(0, RACK_SIZE);
     }
 
-    // Prefer a word we can finish without discarding kept tiles.
-    let target = candidates.find((w) => canAssembleFromKeptAndBag(kept, bag, w)) || null;
+    // Independent random seed word among those still formable with kept + bag.
+    let target = pickRandomPlayable(candidates, kept, bag, rng);
 
-    // If kept tiles block every word (or the full rack is dead), recycle into the bag.
+    // If kept tiles block every vocab word, recycle and deal a fresh independent seed.
     let base = kept;
     if (!target) {
         bag.push(...kept);
         base = [];
         need = RACK_SIZE;
-        target = candidates.find((w) => canAssembleFromKeptAndBag([], bag, w)) || null;
+        target = pickRandomPlayable(candidates, [], bag, rng);
         if (!target) {
             // Bag too thin — best effort random draw from whatever is left.
             return drawTiles(bag, RACK_SIZE);
         }
     } else if (need <= 0) {
-        // Playable enough via bag+kept math but rack is full — keep as-is.
         return kept.slice(0, RACK_SIZE);
     }
 
@@ -272,15 +280,13 @@ function boardHasAny(board) {
 
 /**
  * placements: [{row, col, letter, blankAs?}] — new tiles only.
- * Returns { ok, error, words, score, placements } where words are formed strings.
+ * Any letter string of length ≥ 2 is allowed (teacher decides challenges).
+ * The pasted vocab list is only for the letter bag / rack seeding — not required to play.
  */
-export function evaluatePlacement(board, placements, wordSet) {
+export function evaluatePlacement(board, placements) {
     if (!Array.isArray(placements) || !placements.length) {
         return { ok: false, error: 'Place at least one tile.' };
     }
-    const set = wordSet instanceof Set
-        ? wordSet
-        : new Set((wordSet || []).map((w) => normalizeWord(w)));
 
     const occupied = new Set();
     for (const p of placements) {
@@ -389,10 +395,8 @@ export function evaluatePlacement(board, placements, wordSet) {
         uniq.push(w);
     }
 
-    for (const w of uniq) {
-        if (!set.has(w.word)) {
-            return { ok: false, error: `“${w.word}” is not on your word list.` };
-        }
+    if (!uniq.length) {
+        return { ok: false, error: 'Play must form a word of at least 2 letters.' };
     }
 
     let score = 0;
@@ -454,25 +458,23 @@ export function createMatch({
         throw new Error('Choose 2–4 teams.');
     }
     const bag = buildBagFromWords(list, seed);
-    const found = new Set();
     const teams = names.map((name, i) => ({
         id: `t${i}`,
         name,
         score: 0,
-        rack: refillRack([], bag, list, { found }),
+        // Independent random seed word per team (can differ).
+        rack: refillRack([], bag, list, { seed, salt: (i + 1) * 104729 }),
         wordsPlayed: [],
     }));
-    // Opening racks must each be able to open with a list word.
-    for (const team of teams) {
+    for (let i = 0; i < teams.length; i++) {
+        const team = teams[i];
         if (!rackCanFormAny(team.rack, list)) {
             bag.push(...team.rack);
-            team.rack = refillRack([], bag, list, { found });
+            team.rack = refillRack([], bag, list, { seed, salt: (i + 1) * 104729 + 17 });
         }
     }
     return {
         words: list,
-        wordSet: new Set(list),
-        found,
         board: emptyBoard(),
         bag,
         teams,
@@ -503,26 +505,23 @@ export function playMove(match, placements) {
         rackCopy.splice(idx, 1);
     }
 
-    const result = evaluatePlacement(match.board, placements, match.wordSet);
+    const result = evaluatePlacement(match.board, placements);
     if (!result.ok) return result;
 
     match.board = applyPlacement(match.board, result.placements);
     team.score += result.score;
-    for (const w of result.words) {
-        team.wordsPlayed.push(w);
-        match.found.add(w);
-    }
-    team.rack = refillRack(rackCopy, match.bag, match.words, { found: match.found });
+    for (const w of result.words) team.wordsPlayed.push(w);
+    const teamIndex = match.teams.findIndex((t) => t.id === team.id);
+    team.rack = refillRack(rackCopy, match.bag, match.words, {
+        seed: match.seed,
+        salt: match.turn * 131 + (teamIndex + 1) * 104729,
+    });
     match.moves.push({
         teamId: team.id,
         words: result.words,
         score: result.score,
     });
     match.turn += 1;
-
-    if (match.found.size >= match.words.length) {
-        finishMatch(match);
-    }
     return { ok: true, result, team, matchFinished: match.finished };
 }
 
@@ -543,7 +542,11 @@ export function exchangeTiles(match, indices) {
     const kept = team.rack.filter((_, i) => !idxs.includes(i));
     match.bag.push(...returning);
     match.bag = shuffle(match.bag, mulberry32(Date.now() + match.turn));
-    team.rack = refillRack(kept, match.bag, match.words, { found: match.found });
+    const teamIndex = match.teams.findIndex((t) => t.id === team.id);
+    team.rack = refillRack(kept, match.bag, match.words, {
+        seed: match.seed,
+        salt: match.turn * 211 + (teamIndex + 1) * 104729,
+    });
     match.turn += 1;
     match.moves.push({ teamId: team.id, exchange: returning.length, score: 0 });
     return { ok: true };
@@ -571,7 +574,6 @@ export function publicSummary(match) {
         timerSec: match.timerSec,
         bagLeft: match.bag.length,
         wordsTotal: match.words.length,
-        wordsFound: match.found.size,
         finished: match.finished,
         winnerId: match.winnerId,
         currentTeamId: currentTeam(match)?.id,

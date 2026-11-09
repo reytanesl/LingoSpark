@@ -270,11 +270,11 @@
     <section id="screen-setup" class="screen active">
         <div class="setup-wrap">
             <h1>Word Board</h1>
-            <p class="sub">A classic word game for teams — with your vocabulary list.</p>
+            <p class="sub">A classic word game for teams — your list builds the letter bag.</p>
 
             <label class="field" for="wb-words">Word list <small>one per line, or comma-separated · min 5</small></label>
             <textarea id="wb-words" placeholder="apple&#10;banana&#10;cherry&#10;grape&#10;orange&#10;lemon"></textarea>
-            <p class="hint" id="wb-words-hint">Students may only form words from this list. Letters in the bag come from your words.</p>
+            <p class="hint" id="wb-words-hint">Builds the letter bag and seeds each team’s rack independently. Players may also play other words — you decide what’s valid.</p>
 
             <label class="field" for="wb-teams">Number of teams</label>
             <select id="wb-teams">
@@ -327,11 +327,11 @@
                 </div>
             </div>
             <aside class="side">
-                <h2>Word list</h2>
-                <p id="wb-found-label">0 / 0 found</p>
+                <h2>Vocab reference</h2>
+                <p id="wb-found-label">Letter-bag source — not a checklist</p>
                 <div class="word-list" id="wb-word-list"></div>
                 <div class="side-actions">
-                    <button type="button" class="btn btn-ghost" id="wb-toggle-list">Hide words from class</button>
+                    <button type="button" class="btn btn-ghost" id="wb-toggle-list">Hide list from class</button>
                     <button type="button" class="btn btn-danger" id="wb-end">End game</button>
                 </div>
             </aside>
@@ -454,8 +454,8 @@
         function updateWordsHint() {
             const list = parseWordList($('wb-words').value);
             $('wb-words-hint').textContent = list.length
-                ? `${list.length} unique words ready · students may only play these.`
-                : 'Students may only form words from this list. Letters in the bag come from your words.';
+                ? `${list.length} unique words · letter bag + independent rack seeds (other words allowed).`
+                : 'Builds the letter bag and seeds each team’s rack independently. Players may also play other words — you decide what’s valid.';
         }
 
         function premiumLabel(p) {
@@ -523,17 +523,19 @@
             `).join('');
             $('wb-turn-label').textContent = `${cur.name}'s turn`;
             $('wb-bag-label').textContent = `Bag ${match.bag.length}`;
-            $('wb-found-label').textContent = `${match.found.size} / ${match.words.length} found`;
+            $('wb-found-label').textContent = listHidden
+                ? 'Vocab list hidden'
+                : `${match.words.length} words · reference only (not a checklist)`;
         }
 
         function renderWordList() {
             const host = $('wb-word-list');
             if (listHidden) {
-                host.innerHTML = `<span class="word-chip">${match.found.size} found · list hidden</span>`;
+                host.innerHTML = `<span class="word-chip">List hidden from class</span>`;
                 return;
             }
             host.innerHTML = match.words.map((w) =>
-                `<span class="word-chip${match.found.has(w) ? ' found' : ''}">${esc(w)}</span>`
+                `<span class="word-chip">${esc(w)}</span>`
             ).join('');
         }
 
@@ -699,7 +701,7 @@
                 exchangeMode = false;
                 exchangeSet.clear();
                 listHidden = false;
-                $('wb-toggle-list').textContent = 'Hide words from class';
+                $('wb-toggle-list').textContent = 'Hide list from class';
                 showScreen('screen-game');
                 renderAll();
                 startTurnTimer();
@@ -808,7 +810,8 @@
         });
         $('wb-toggle-list').addEventListener('click', () => {
             listHidden = !listHidden;
-            $('wb-toggle-list').textContent = listHidden ? 'Show word list' : 'Hide words from class';
+            $('wb-toggle-list').textContent = listHidden ? 'Show vocab list' : 'Hide list from class';
+            renderScoreboard();
             renderWordList();
         });
         $('wb-end').addEventListener('click', () => showEnd());
