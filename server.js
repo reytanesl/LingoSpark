@@ -226,7 +226,9 @@ async function start() {
 
     if (googleReady) {
         app.get('/auth/google', (req, res, next) => {
-            const returnTo = req.query.returnTo || '/';
+            const raw = String(req.query.returnTo || '/');
+            // Only same-site relative paths (no //host or backslash tricks).
+            const returnTo = /^\/(?![\/\\])/.test(raw) ? raw : '/';
             req.session.returnTo = returnTo;
             passport.authenticate('google', {
                 scope: ['profile', 'email'],
@@ -236,7 +238,9 @@ async function start() {
 
         app.get(
             '/auth/google/callback',
-            passport.authenticate('google', { failureRedirect: '/?auth=failed' }),
+            // keepSessionInfo: passport 0.6+ regenerates the session on login, which
+            // otherwise drops returnTo (the app bridge then lands on the homepage).
+            passport.authenticate('google', { failureRedirect: '/?auth=failed', keepSessionInfo: true }),
             (req, res) => {
                 const returnTo = req.session.returnTo || '/';
                 delete req.session.returnTo;
