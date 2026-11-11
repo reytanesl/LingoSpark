@@ -12,7 +12,7 @@ const ROOT = new URL('.', import.meta.url).pathname;
 export const BLOCKED = [
     '/server.js', '/db.js', '/auth.js', '/billing.js', '/mailer.js', '/password-reset.js',
     '/live-game.js', '/lucky-lanterns.js', '/word-cannon.js', '/vocab-quiz-utils.js',
-    '/odyssey-prompts.js', '/static-allowlist.js',
+    '/odyssey-prompts.js', '/static-allowlist.js', '/services/study-bridge/auth-app-bridge.js', '/services/study-bridge/', '/services/',
     '/static-allowlist.test.js', '/penalty-match.test.js', '/live-layout-fit.test.js',
     '/package.json', '/package-lock.json', '/render.yaml', '/railway.toml', '/DEPLOY.md', '/README.md',
     '/.env', '/.env.example', '/.gitignore', '/.nvmrc', '/.git/config', '/.git/HEAD',

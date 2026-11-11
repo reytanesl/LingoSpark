@@ -84,6 +84,7 @@ import {
     releaseOwnTimeExtra,
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
+import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
 import { createMailer } from './mailer.js';
 import { registerPasswordResetRoutes, createPgResetStore } from './password-reset.js';
 import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, publicWorksheetMakerPack, checkoutUrls } from './billing.js';
@@ -243,6 +244,9 @@ async function start() {
             }
         );
     }
+
+    // Mobile-app Google handoff. Safe if STUDY_BRIDGE_SECRET is unset (route returns 503).
+    mountAppBridge(app);
 
     app.post('/auth/register', async (req, res, next) => {
         try {

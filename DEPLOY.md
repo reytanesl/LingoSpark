@@ -63,6 +63,7 @@ URL example: `https://lingospark.onrender.com`
 | `GOOGLE_CLIENT_ID` | Google Cloud OAuth client |
 | `GOOGLE_CLIENT_SECRET` | Google Cloud OAuth secret |
 | `GOOGLE_CALLBACK_URL` | `https://your-app.onrender.com/auth/google/callback` |
+| `STUDY_BRIDGE_SECRET` | same long random string (16+ chars) as the mobile app; enables `/auth/app-bridge` Google handoff |
 | `ADMIN_EMAIL` | your Gmail (admin panel) |
 | `BMC_PAYMENT_URL` | `https://buymeacoffee.com/lingospark/extras` |
 | `BMC_WEEK_URL` | optional direct Extra for the week plan |
@@ -88,6 +89,7 @@ The `password_reset_tokens` table is created automatically on start (`CREATE TAB
 1. Google Cloud Console → APIs & Services → Credentials → Create OAuth client (Web)
 2. Authorized redirect URIs: your `GOOGLE_CALLBACK_URL` (and localhost for local testing)
 3. OAuth consent screen: add your app; for testing, add test users
+4. For the mobile app “Continue with Google” flow, set `STUDY_BRIDGE_SECRET` to the same value as in the app secrets. The site then signs a short-lived handoff at `/auth/app-bridge` back to `https://lingospark.apps.grok.bot/api/study/google/done` (or localhost during development). If the secret is missing, that route returns 503 and the rest of the site is unchanged.
 
 ### Buy Me a Coffee setup
 
