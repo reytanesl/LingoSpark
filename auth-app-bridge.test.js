@@ -180,7 +180,10 @@ test('signed-in request issues a signed handoff redirect to the app done URL', a
     const payload = parseHandoff(handoff, TEST_SECRET);
     assert.equal(payload.c, cookie);
     assert.ok(payload.exp > after, 'exp must be in the future');
-    assert.ok(payload.exp <= before + 2 * 60 * 1000 + 2000, 'exp is ~2 minutes');
+    assert.ok(payload.exp <= before + 60 * 1000 + 2000, 'exp is at most ~60 seconds');
+    assert.ok(payload.iat >= before && payload.iat <= after, 'iat is issue time');
+    assert.equal(payload.state, state, 'state is bound into the signed payload');
+    assert.match(payload.jti, /^[0-9a-f-]{36}$/, 'jti is a random UUID');
 });
 
 test('signed-in request without a session cookie returns 401', async (t) => {

@@ -30,9 +30,16 @@ function b64url(buf) {
         .replace(/=+$/, '');
 }
 
-function signHandoff(cookieHeader, secret) {
+function signHandoff(cookieHeader, secret, state) {
+    const iat = Date.now();
     const body = b64url(
-        JSON.stringify({ c: cookieHeader, exp: Date.now() + 2 * 60 * 1000 }),
+        JSON.stringify({
+            c: cookieHeader,
+            iat,
+            exp: iat + 60 * 1000,
+            jti: crypto.randomUUID(),
+            state: String(state || ''),
+        }),
     );
     const sig = b64url(crypto.createHmac('sha256', secret).update(body).digest());
     return `${body}.${sig}`;
@@ -88,7 +95,7 @@ export function mountAppBridge(app) {
             return;
         }
 
-        const handoff = signHandoff(cookieHeader, secret);
+        const handoff = signHandoff(cookieHeader, secret, state);
         const target = new URL(redirect);
         target.searchParams.set('handoff', handoff);
         if (state) target.searchParams.set('state', state);
