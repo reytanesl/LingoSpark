@@ -2,21 +2,20 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import express from 'express';
 import {
-    readPrewarmConfig, inferSetLevel, adjacentLevels, planFromSets, collectSources, createMemoryPrewarmStore,
-    createPrewarmWorker, createTrackPrewarmHandler, PREWARM_PATH,
+    readPrewarmConfig, createMemoryPrewarmStore, createPrewarmWorker, createTrackPrewarmHandler, PREWARM_PATH,
 } from './track-prewarm.js';
 import {
     createTrackGenerator, typesForLevel, signBridgeRequest, BRIDGE_HEADERS, createBank, termKeyOf, LIMITS,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
-const CFG = { ...readPrewarmConfig({ CURSOR_API_KEY: 'x' }), startDelayMs: 0 };
+const CFG = readPrewarmConfig({ CURSOR_API_KEY: 'x' });
 
 /** Mock model: writes a valid item for every wanted slot (parses the prompt). */
 function model({ skip = () => false, counter = { calls: 0 } } = {}) {
     const mk = (termId, en, slot) => {
         switch (slot) {
-            case 'gapTranslate': case 'sentenceGap': return { termId, type: slot, sentence: `She was really ${en} about the news yesterday.`, answer: en, distractors: ['angry', 'tired', 'nervous'], plTranslation: 'Była naprawdę zadowolona z wiadomości wczoraj.' };
+            case 'gapTranslate': case 'sentenceGap': return { termId, type: slot, sentence: `She was really ${en} about the news yesterday.`, answer: en, distractors: [`d1${en}`, `d2${en}`, `d3${en}`], plTranslation: 'Była naprawdę zadowolona z wiadomości wczoraj.' };
             case 'sentenceOrder': return { termId, type: slot, sentence: `I was ${en} about the news today.` };
             case 'meaningPick:pl-en': return { termId, type: 'meaningPick', direction: 'pl-en', distractors: [`a1${en}`, `b1${en}`, `c1${en}`] };
             case 'meaningPick:en-pl': return { termId, type: 'meaningPick', direction: 'en-pl', distractors: [`a2${en}`, `b2${en}`, `c2${en}`] };
@@ -38,90 +37,37 @@ function model({ skip = () => false, counter = { calls: 0 } } = {}) {
         return { items, skipped: [] };
     };
 }
-const row = (en, level = 'B1', priority = 2) => ({ termKey: termKeyOf({ en, pl: `pl-${en}` }), en, pl: `pl-${en}`, level, priority });
+const row = (en, level = 'B1') => ({ termKey: termKeyOf({ en, pl: `pl-${en}` }), en, pl: `pl-${en}`, level });
 const WORDS = ['grateful', 'happy', 'proud', 'upset', 'calm', 'eager', 'tired', 'brave'];
-
-/* ---------------------------------------------------------------- levels and plan */
-
-test('inferSetLevel: explicit CEFR in the name wins, then exam/series hints, then the default', () => {
-    assert.equal(inferSetLevel({ name: 'Unit 4 B2 travel' }), 'B2');
-    assert.equal(inferSetLevel({ name: 'Matura podstawowa - Człowiek' }), 'B1');
-    assert.equal(inferSetLevel({ name: 'Matura rozszerzona - Człowiek' }), 'B2');
-    assert.equal(inferSetLevel({ name: 'E8 słownictwo' }), 'A2');
-    assert.equal(inferSetLevel({ name: 'Beginner animals' }), 'A1');
-    assert.equal(inferSetLevel({ name: 'Advanced idioms' }), 'C1');
-    assert.equal(inferSetLevel({ name: 'Random words' }), 'B1');
-    assert.equal(inferSetLevel({ name: 'Random words' }, 'A2'), 'A2');
-    assert.deepEqual(adjacentLevels('A1'), ['A2']);
-    assert.deepEqual(adjacentLevels('B1'), ['A2', 'B2']);
-    assert.deepEqual(adjacentLevels('C1'), ['B2']);
-});
-
-test('planFromSets: recent + built-in sets first, adjacent levels last, duplicates merged, junk skipped', () => {
-    const now = Date.UTC(2026, 10, 12);
-    const day = 24 * 3600_000;
-    const sets = [
-        { name: 'old B2 set', lastActive: now - 90 * day, items: [{ term: 'brave', definition: 'odważny' }, { term: 'calm', definition: 'spokojny' }] },
-        { name: 'fresh B1 set', lastActive: now - 2 * day, items: [{ term: 'brave', definition: 'odważny' }, { term: '  Proud ', definition: 'dumny' }, { term: '123', definition: 'x' }, { term: 'noPl', definition: '' }, { term: 'x'.repeat(80), definition: 'za długie' }] },
-        { name: 'Built-in Matura', builtIn: true, items: [{ term: 'eager', definition: 'chętny' }] },
-    ];
-    const plan = planFromSets(sets, CFG, now);
-    const at = (en, level) => plan.find((r) => r.en.trim().toLowerCase() === en && r.level === level);
-    assert.equal(at('brave', 'B1').priority, 1);
-    assert.equal(at('brave', 'B2').priority, 2, 'also its own level in the old set');
-    assert.equal(at('calm', 'B2').priority, 2);
-    assert.equal(at('proud', 'B1').priority, 1);
-    assert.equal(at('proud', 'A2').priority, 3, 'adjacent of a recent term');
-    assert.equal(at('calm', 'C1').priority, 4);
-    assert.equal(at('eager', 'B1').priority, 1);
-    assert.ok(!plan.some((r) => r.en === '123' || r.en === 'noPl' || r.en.startsWith('xxxx')));
-    assert.deepEqual(plan.map((r) => r.priority), [...plan.map((r) => r.priority)].sort((a, b) => a - b), 'sorted by priority');
-    const noAdj = planFromSets(sets, { ...CFG, adjacent: false }, now);
-    assert.ok(noAdj.every((r) => r.priority <= 2));
-});
-
-test('collectSources: reads sets + items from the database and the built-in sets', async () => {
-    const calls = [];
-    const pool = { query: async (sql) => {
-        calls.push(sql);
-        if (/FROM word_sets/.test(sql)) return { rows: [{ id: 1, name: 'Fresh B1', category: '', class_name: '', last_active: new Date().toISOString() }] };
-        return { rows: [{ set_id: 1, term: 'grateful', definition: 'wdzięczny' }, { set_id: 99, term: 'orphan', definition: 'x' }] };
-    } };
-    const plan = await collectSources({ getPool: () => pool, config: CFG, loadDemoSets: async () => [{ name: 'Demo', description: '', items: [{ term: 'brave', definition: 'odważny' }] }] });
-    assert.ok(plan.some((r) => r.en === 'grateful' && r.level === 'B1' && r.priority === 1));
-    assert.ok(plan.some((r) => r.en === 'brave' && r.priority === 1));
-    assert.ok(!plan.some((r) => r.en === 'orphan'));
-});
 
 /* ---------------------------------------------------------------- queue (memory store; the Postgres store has the same contract) */
 
-test('queue: idempotent enqueue, priority order, same-level batches, app requests jump ahead, leases are reclaimed', async () => {
+test('queue: idempotent enqueue, FIFO in set order, one level per batch, finished terms re-open, leases are reclaimed', async () => {
     let t = 1_000_000;
     const store = createMemoryPrewarmStore({ now: () => t });
-    assert.equal(await store.enqueue([...WORDS.slice(0, 3).map((w) => row(w, 'B1', 2)), ...WORDS.slice(3, 5).map((w) => row(w, 'A2', 1))]), 5);
-    assert.equal(await store.enqueue(WORDS.slice(0, 3).map((w) => row(w, 'B1', 2))), 0, 'scan twice = no duplicates');
-    const first = await store.claim({ limit: 10, leaseMs: 60_000 });
-    assert.deepEqual([...new Set(first.map((r) => r.level))], ['A2'], 'one level per batch, best priority first');
-    assert.equal(first.length, 2);
-    await store.enqueue([row('brave', 'B1', 0)], { bump: true });
-    const top = await store.claim({ limit: 10, leaseMs: 60_000 });
-    assert.deepEqual(top.map((r) => r.en), ['brave'], 'priority 0 is claimed alone, ahead of the rest');
+    assert.equal(await store.enqueue([...WORDS.slice(0, 3).map((w) => row(w, 'B1')), ...WORDS.slice(3, 5).map((w) => row(w, 'A2'))]), 5);
+    assert.equal(await store.enqueue(WORDS.slice(0, 3).map((w) => row(w, 'B1'))), 0, 'asking twice = no duplicates');
+    const first = await store.claim({ limit: 2, leaseMs: 60_000 });
+    assert.deepEqual(first.map((r) => r.en), ['grateful', 'happy'], 'set order');
+    const rest = await store.claim({ limit: 10, leaseMs: 60_000 });
+    assert.deepEqual(rest.map((r) => r.en), ['proud'], 'same level only');
     // crash: leases expire -> claimable again (resumable)
     t += 61_000;
-    assert.deepEqual((await store.claim({ limit: 10, leaseMs: 60_000 })).map((r) => r.en), ['brave'], 'the crashed top-priority batch is reclaimed first');
     const again = await store.claim({ limit: 10, leaseMs: 60_000 });
-    assert.equal(again.length, 2, 'then the crashed A2 batch');
+    assert.deepEqual(again.map((r) => r.en), ['grateful', 'happy', 'proud']);
     await store.finish(again[0], { status: 'done' });
     assert.equal((await store.counts()).done, 1);
-    // an app request for a finished term re-opens it; a recently failed one stays failed (no endless retries)
+    // a learner opening the set again re-opens a finished term; a recently failed one stays failed (no endless retries)
     await store.finish(again[1], { status: 'failed', nextTryMs: 10 * 3600_000, note: 'x' });
-    assert.equal(await store.enqueue([{ ...again[0], priority: 0 }, { ...again[1], priority: 0 }], { bump: true }), 1);
+    assert.equal(await store.enqueue([again[0], again[1]]), 1);
     assert.equal(store.rows.get(`${again[1].level}|${again[1].termKey}`).status, 'failed');
+    t += 7 * 3600_000;
+    assert.equal(await store.enqueue([again[1]]), 1, 'after 6 h a new request re-opens it');
 });
 
 /* ---------------------------------------------------------------- worker */
 
-function setup({ cfg = {}, skip, fg = 0, terms = WORDS.slice(0, 6), level = 'B1', priority = 2 } = {}) {
+function setup({ cfg = {}, skip, fg = 0, terms = WORDS.slice(0, 6), level = 'B1' } = {}) {
     const counter = { calls: 0 };
     const generate = createTrackGenerator({ runPrompt: model({ skip, counter }), bank: createBank(), limits: { ...LIMITS, budgetMs: 4000 } });
     const realStats = generate.stats;
@@ -130,7 +76,7 @@ function setup({ cfg = {}, skip, fg = 0, terms = WORDS.slice(0, 6), level = 'B1'
     const logs = [];
     const config = { ...CFG, ...cfg };
     const worker = createPrewarmWorker({ store, generate, config, log: (m) => logs.push(m) });
-    return { counter, generate, store, worker, logs, enqueue: () => store.enqueue(terms.map((w) => row(w, level, priority))) };
+    return { counter, generate, store, worker, logs, enqueue: () => store.enqueue(terms.map((w) => row(w, level))) };
 }
 
 test('worker: fills the bank for queued terms, marks them done, counts AI calls against the daily budget, logs progress', async () => {
@@ -149,7 +95,7 @@ test('worker: fills the bank for queued terms, marks them done, counts AI calls 
     assert.equal((await s.worker.tick()).state, 'idle');
 });
 
-test('worker: kill switch, missing key, foreground traffic and the daily cap each stop AI spending', async () => {
+test('worker: kill switch, missing key, foreground traffic and the daily safety cap each stop AI spending', async () => {
     const off = setup({ cfg: { enabled: false, killSwitch: true } });
     await off.enqueue();
     assert.equal((await off.worker.tick()).state, 'off');
@@ -171,16 +117,6 @@ test('worker: kill switch, missing key, foreground traffic and the daily cap eac
     assert.equal((await capped.worker.tick()).state, 'capped');
     assert.equal(capped.counter.calls, 0);
     assert.equal((await capped.store.counts()).pending, 6, 'claimed rows were handed back');
-    // app-requested terms may go over the daily cap (up to the hard cap), background work may not
-    const top = setup({ cfg: { dailyCalls: 5 }, priority: 0 });
-    await top.enqueue();
-    await top.store.addCalls(5);
-    assert.equal((await top.worker.tick()).state, 'work');
-    assert.ok(top.counter.calls > 0);
-    const hard = setup({ cfg: { dailyCalls: 5 }, priority: 0 });
-    await hard.enqueue();
-    await hard.store.addCalls(10);
-    assert.equal((await hard.worker.tick()).state, 'capped');
 });
 
 test('worker: a term that stays incomplete is retried with back-off, then parked as failed (no endless AI spend); a restart resumes the queue', async () => {
@@ -212,15 +148,13 @@ test('worker: a term that stays incomplete is retried with back-off, then parked
     void w2;
 });
 
-test('worker.enqueueTerms: app terms go to the front; beyond maxTopPending they queue at priority 1', async () => {
-    const s = setup({ cfg: { maxTopPending: 2 } });
-    await s.enqueue();
-    const terms = ['brave', 'tired', 'calm'].map((en, i) => ({ id: String(i), en, pl: `pl-${en}` }));
-    const r1 = await s.worker.enqueueTerms({ level: 'B1', terms: terms.slice(0, 2), priority: 0 });
-    assert.equal(r1.queued, 2);
-    assert.equal([...s.store.rows.values()].filter((x) => x.priority === 0).length, 2);
-    await s.worker.enqueueTerms({ level: 'B1', terms: terms.slice(2), priority: 0 });
-    assert.equal([...s.store.rows.values()].find((x) => x.en === 'calm').priority, 1);
+test('worker.enqueueTerms: queues a set in order, de-duplicates, and wakes the worker; nothing is queued by itself', async () => {
+    const s = setup();
+    assert.equal((await s.store.counts()).pending, 0, 'no global walk: the queue starts empty');
+    const terms = ['brave', 'tired', 'calm', 'Brave'].map((en, i) => ({ id: String(i), en, pl: `pl-${en.toLowerCase()}` }));
+    const r = await s.worker.enqueueTerms({ level: 'B1', terms });
+    assert.equal(r.queued, 3);
+    assert.deepEqual((await s.store.claim({ limit: 10, leaseMs: 1000 })).map((x) => x.en), ['brave', 'tired', 'calm']);
 });
 
 /* ---------------------------------------------------------------- HTTP */
@@ -264,8 +198,7 @@ test('http prewarm: needs the same auth as track-generate; signed app and sessio
         assert.equal(j.ready['1'].ready, false);
         assert.equal(j.queue.dailyCap, 1500);
         assert.equal((await s.store.counts()).pending, 3);
-        assert.ok([...s.store.rows.values()].every((x) => x.priority === 0), 'queued at top priority');
-        assert.equal(s.counter.calls, 0, 'the endpoint itself spends no AI');
+                assert.equal(s.counter.calls, 0, 'the endpoint itself spends no AI');
         assert.equal((await s.signed({ ...BODY, level: 'Z9' })).status, 400);
     } finally { await s.close(); }
     const u = await serve({ user: { id: 3 } });

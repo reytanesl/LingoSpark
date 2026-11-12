@@ -34,6 +34,7 @@ export const LIMITS = {
     maxAttempts: 3, // 1 try + 2 retries per batch for invalid / missing items
     perCallTimeoutMs: 70_000,
     deadlineMs: 85_000, // hard cap for a request (Render/Cloudflare cut at ~100 s); also the largest `budgetMs` a client may ask for
+    warmupMin: 3, warmupMax: 6, warmupDefault: 4, // warm-up station size (mode "warmup")
     budgetMs: 9_000, // default foreground budget: answer with what is validated by then, the rest keeps going into the bank
     minBudgetMs: 1_500,
     retryMinRemainingMs: 4_500, // a retry only holds the response if at least this much of the budget is left
@@ -235,7 +236,20 @@ export function validateTrackRequest(body) {
         if (!Number.isFinite(n) || n < LIMITS.minBudgetMs || n > LIMITS.deadlineMs) return bad(`budgetMs must be ${LIMITS.minBudgetMs}–${LIMITS.deadlineMs} (milliseconds the server may spend before answering).`);
         budgetMs = Math.round(n);
     }
-    return { ok: true, value: { setId, level, terms, types, userRef, ...(budgetMs ? { budgetMs } : {}) } };
+    // additive: mode "warmup" = answer with a small first station (3–6 questions, default 4) as fast as possible and
+    // queue the whole set for background generation; default "full" is the original behaviour
+    let mode;
+    let warmupSize;
+    if (body.mode != null) {
+        if (body.mode !== 'warmup' && body.mode !== 'full') return bad('mode must be "warmup" or "full".');
+        mode = body.mode;
+    }
+    if (body.warmupSize != null) {
+        const n = Number(body.warmupSize);
+        if (!Number.isInteger(n) || n < LIMITS.warmupMin || n > LIMITS.warmupMax) return bad(`warmupSize must be an integer ${LIMITS.warmupMin}–${LIMITS.warmupMax}.`);
+        warmupSize = n;
+    }
+    return { ok: true, value: { setId, level, terms, types, userRef, ...(budgetMs ? { budgetMs } : {}), ...(mode && mode !== 'full' ? { mode } : {}), ...(warmupSize ? { warmupSize } : {}) } };
 }
 
 // ---------------------------------------------------------------- prompt
@@ -840,6 +854,32 @@ const SLOT_WEIGHT = {
 };
 const weightOf = (slot) => SLOT_WEIGHT[slot] ?? 90;
 
+/**
+ * Warm-up station: one easy item per term for the first few terms, mixed types, tiny output (meaningPick/listenPick only need
+ * distractors). Each row lists the slots to try for that position, best first; banked ones are preferred over generating.
+ */
+const WARMUP_PREFS = [
+    ['meaningPick:pl-en', 'listenPick', 'meaningPick:en-pl'],
+    ['sentenceGap', 'meaningPick:en-pl', 'listenPick'],
+    ['listenPick', 'meaningPick:pl-en', 'sentenceGap'],
+    ['meaningPick:en-pl', 'sentenceGap', 'meaningPick:pl-en'],
+    ['meaningPick:pl-en', 'sentenceGap', 'listenPick'],
+    ['listenPick', 'meaningPick:en-pl', 'sentenceGap'],
+];
+export function planWarmup({ terms, size, lists, has }) {
+    const plan = []; const used = new Set();
+    for (let j = 0; j < size; j++) {
+        const term = terms[j % terms.length];
+        const prefs = WARMUP_PREFS[j % WARMUP_PREFS.length].filter((sl) => !used.has(`${term.id}|${sl}`));
+        const banked = prefs.find((sl) => has(lists.get(term.id), sl));
+        const slot = banked || prefs[0];
+        if (!slot) continue;
+        used.add(`${term.id}|${slot}`);
+        plan.push({ term, slot, banked: Boolean(banked) });
+    }
+    return plan;
+}
+
 /** A counting semaphore with two priorities (foreground requests before background growth). */
 function createSemaphore(max) {
     let free = max;
@@ -1100,9 +1140,101 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         return { aiCalls: stats.aiCalls, aiErrors: stats.aiErrors, added, ready: done, total: terms.length, missing: left };
     }
 
-    async function generate({ setId, level, terms, types, budgetMs }) {
+    async function generate(v) {
+        // a warm-up request is the same learner as the background job it starts: it must not make the worker yield
+        if (v.mode === 'warmup') return generateWarmup(v);
         fgActive++;
-        try { return await generateInner({ setId, level, terms, types, budgetMs }); } finally { fgActive--; }
+        try { return await generateInner(v); } finally { fgActive--; }
+    }
+
+    /** Which warm-up items would be served, and are they all banked already? (bank only, no AI) */
+    async function warmupPlanFor({ level, terms, warmupSize }) {
+        const size = Math.min(limits.warmupMax ?? 6, Math.max(limits.warmupMin ?? 3, warmupSize || limits.warmupDefault || 4));
+        const lists = new Map();
+        await Promise.all(terms.map(async (t) => lists.set(t.id, await bank.entries(termKeyOf(t), level))));
+        const plan = planWarmup({ terms, size, lists, has: (list, sl) => usable(list, sl).length > 0 });
+        return { size, lists, plan };
+    }
+    async function warmupReadiness(v) {
+        const { plan } = await warmupPlanFor(v);
+        return { banked: plan.length > 0 && plan.every((p) => p.banked), plan: plan.length };
+    }
+
+    /**
+     * mode "warmup": a small first station (default 4 easy items over the first terms) as fast as possible, and the whole set
+     * queued for background generation at the same moment. Bank first; whatever is not banked is ONE small AI call.
+     */
+    async function generateWarmup({ setId, level, terms, budgetMs, warmupSize }) {
+        const started = now();
+        const budget = Math.min(limits.deadlineMs, Math.max(limits.minBudgetMs ?? 1500, budgetMs || limits.budgetMs || limits.deadlineMs));
+        const fgDeadlineAt = started + budget;
+        const jobDeadlineAt = started + Math.max(limits.jobDeadlineMs ?? limits.deadlineMs, budget);
+        const stats = { aiCalls: 0, aiErrors: 0, timedOut: false };
+        const { size, lists, plan } = await warmupPlanFor({ level, terms, warmupSize });
+        const allTypes = typesForLevel(level);
+        const slotsOf = new Map(terms.map((t) => [t.id, wantedSlots(t, allTypes)]));
+        // (b) the rest of the set goes to the background queue right now, in set order
+        const gapTerms = terms.filter((t) => !termState(level, t, lists.get(t.id), slotsOf.get(t.id)).ready);
+        if (gapTerms.length && onTopUp) { try { onTopUp({ level, terms: gapTerms }); } catch (e) { log(`warm-up queue hook failed: ${e?.message || e}`); } }
+        // (a) warm-up items the bank cannot serve: one small call for all of them (mixed easy types, tiny output)
+        const jobs = []; const waitFor = [];
+        const byTerm = new Map();
+        for (const p of plan) {
+            if (p.banked) continue;
+            const f = inflight.get(flightKey(level, p.term, p.slot));
+            if (f) { waitFor.push(f); continue; }
+            if (!byTerm.has(p.term.id)) { const job = { term: p.term, slots: new Set(), avoid: [] }; byTerm.set(p.term.id, job); jobs.push(job); }
+            byTerm.get(p.term.id).slots.add(p.slot);
+        }
+        let newItems = 0; let pendingCalls = 0;
+        if (jobs.length || waitFor.length) {
+            const run = jobs.length ? fill({ level, jobs, setTerms: terms, fgDeadlineAt, jobDeadlineAt, stats, concurrency: 1, callWeight: 1e9 }) : { fg: Promise.resolve(), all: Promise.resolve(), counters: { newItems: 0, open: 0 } };
+            let timer;
+            const onTime = new Promise((resolve) => { timer = setTimeout(() => resolve('budget'), Math.max(1, fgDeadlineAt - now())); });
+            const outcome = await Promise.race([Promise.all([run.fg, ...waitFor]).then(() => 'done'), onTime]);
+            clearTimeout(timer);
+            run.all.catch(() => {});
+            if (outcome === 'budget') stats.timedOut = true;
+            newItems = run.counters.newItems;
+            pendingCalls = run.counters.open;
+        }
+        // serve: the planned slot, else another easy slot of the same term that is banked
+        const items = []; const served = []; const dropped = []; const used = new Set();
+        let fromBank = 0;
+        for (const p of plan) {
+            const list = await bank.entries(termKeyOf(p.term), level);
+            const tryOrder = [p.slot, ...WARMUP_PREFS.flat().filter((sl, i, a) => a.indexOf(sl) === i && sl !== p.slot)];
+            let hit = null;
+            for (const slot of tryOrder) {
+                if (used.has(`${p.term.id}|${slot}`)) continue;
+                for (const c of usable(list, slot).slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))) {
+                    const finished = reshuffleOptions(c.item, p.term, terms, rand);
+                    if (finished) { hit = { slot, entry: c, finished }; break; }
+                }
+                if (hit) break;
+            }
+            if (!hit) { dropped.push({ lexiconId: p.term.id, type: p.slot }); continue; }
+            used.add(`${p.term.id}|${hit.slot}`);
+            served.push(hit.entry);
+            if (p.banked && hit.slot === p.slot) fromBank++;
+            items.push({ ...hit.finished, id: `ai-${p.term.id}-${hit.slot.replace(':', '-')}-${hit.entry.id}`, lexiconId: p.term.id });
+        }
+        bank.markServed(served);
+        const ready = metaReady(level, terms, lists, slotsOf);
+        return {
+            items,
+            meta: {
+                setId, level, promptVersion: PROMPT_VERSION, types: [...new Set(items.map((i) => i.type))],
+                requestedTerms: terms.length, bankHits: fromBank, newItems,
+                aiCalls: stats.aiCalls, growthScheduled: 0,
+                dropped, missingTerms: [...new Set(plan.map((p) => p.term.id))].filter((id) => !items.some((i) => i.lexiconId === id)),
+                timedOut: stats.timedOut, pendingCalls, budgetMs: budget, elapsedMs: now() - started,
+                ready, allReady: terms.every((t) => ready[t.id].ready), topUpQueued: gapTerms.length,
+                mode: 'warmup',
+                warmup: { size, requested: plan.length, returned: items.length, fromBank, generated: items.length - fromBank, queuedTerms: gapTerms.length },
+            },
+            stats, growPlan: [], grow: async () => ({ added: 0, aiCalls: 0 }),
+        };
     }
 
     async function generateInner({ setId, level, terms, types, budgetMs }) {
@@ -1215,6 +1347,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
     }
 
     generate.readiness = readiness;
+    generate.warmupReadiness = warmupReadiness;
     generate.prewarm = prewarm;
     generate.stats = () => ({ fgActive, inflight: inflight.size });
     return generate;
@@ -1253,9 +1386,12 @@ export function createTrackGenerateHandler({
         const v = checked.value;
         const limitKey = principal === 'app' ? (v.userRef ? `app:${v.userRef}` : 'app') : principal;
         // 3a. fast path: every term already has enough banked task types -> no AI wait, no AI quota, no `busy` lock
-        let peek = null;
-        try { peek = await generate.readiness?.(v); } catch (e) { console.warn('[track-ai] readiness failed:', e?.message || e); }
-        if (peek?.allSufficient) {
+        let fast = false;
+        try {
+            if (v.mode === 'warmup') fast = Boolean((await generate.warmupReadiness?.(v))?.banked);
+            else fast = Boolean((await generate.readiness?.(v))?.allSufficient);
+        } catch (e) { console.warn('[track-ai] readiness failed:', e?.message || e); }
+        if (fast) {
             const cheapGate = limiter.checkCheap(limitKey);
             if (!cheapGate.ok) {
                 res.set('Retry-After', String(cheapGate.retryAfterSec));

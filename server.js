@@ -87,7 +87,7 @@ import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAc
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
 import { createTrackGenerator, createTrackGenerateHandler, createBank, createPgBankStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
 import {
-    PREWARM_PATH, PREWARM_BODY_LIMIT, readPrewarmConfig, collectSources, createPgPrewarmStore, createMemoryPrewarmStore,
+    PREWARM_PATH, PREWARM_BODY_LIMIT, readPrewarmConfig, createPgPrewarmStore, createMemoryPrewarmStore,
     createPrewarmWorker, createTrackPrewarmHandler,
 } from './track-prewarm.js';
 import { createMailer } from './mailer.js';
@@ -264,9 +264,9 @@ async function start() {
      * Mobile-app Track exercises written by Cursor AI (no templates). Callable by the app server
      * (HMAC with STUDY_BRIDGE_SECRET) or with a study session cookie. See track-ai.js.
      */
-    let prewarmWorker = null; // created below; the generator hands it terms whose bank is incomplete (top-up at priority 0)
+    let prewarmWorker = null; // created below; the generator hands it the terms of a warm-up request and terms whose bank is incomplete
     const trackGenerate = createTrackGenerator({
-        onTopUp: ({ level, terms }) => { prewarmWorker?.enqueueTerms({ level, terms, priority: 0 }).catch((e) => console.warn('[track-prewarm] top-up enqueue failed:', e?.message || e)); },
+        onTopUp: ({ level, terms }) => { prewarmWorker?.enqueueTerms({ level, terms }).catch((e) => console.warn('[track-prewarm] top-up enqueue failed:', e?.message || e)); },
         // TRACK_AI_MODEL (optional): model id for Track generation only, e.g. a smaller/faster one; default = AI_MODEL (composer-2.5, "fast" variant).
         runPrompt: (prompt, label) => runVisionJsonPrompt({
             apiKey: process.env.CURSOR_API_KEY, prompt, label,
@@ -287,13 +287,13 @@ async function start() {
         isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
     }));
 
-    // Prewarm: fills the question bank ahead of time (Postgres-backed queue, daily AI-call cap, kill switch TRACK_PREWARM=off).
-    // Terms come from word_sets/word_set_items + the built-in demo sets; POST /api/study/track-prewarm lets the app push a set to the front.
+    // On-demand background generation (no global walk over word sets): the terms of a set the learner just opened
+    // (track-generate mode "warmup", or POST /api/study/track-prewarm) are queued and filled into the bank by a worker.
+    // Safety cap TRACK_PREWARM_DAILY_CALLS (default 1500 AI calls/day), kill switch TRACK_PREWARM=off.
     const prewarmStore = dbReady ? createPgPrewarmStore({ getPool }) : createMemoryPrewarmStore();
     prewarmWorker = createPrewarmWorker({
         store: prewarmStore,
         generate: trackGenerate,
-        collect: dbReady ? (config) => collectSources({ getPool, config }) : null,
         config: () => readPrewarmConfig(process.env),
         log: (m) => console.warn('[track-prewarm]', m),
     });
@@ -304,7 +304,7 @@ async function start() {
         isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
         getConfig: () => readPrewarmConfig(process.env),
     }));
-    if (dbReady) prewarmWorker.start();
+    prewarmWorker.start();
 
     app.post('/auth/register', async (req, res, next) => {
         try {

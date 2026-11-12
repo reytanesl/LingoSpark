@@ -1,22 +1,18 @@
-/* Track question prewarming (server-side only; imported by server.js and the tests).
-   Goal: Track requests from the mobile app are answered from the question bank in milliseconds, so the bank is
-   filled AHEAD of time by Cursor AI (@cursor/sdk via the generator's runPrompt) instead of while a learner waits.
+/* On-demand background generation for Track (server-side only; imported by server.js and the tests).
+   AI is spent ONLY for words a learner is actually about to use: when the app opens a set and the learner picks a
+   question level, track-generate (mode "warmup") or POST /api/study/track-prewarm puts the set's terms into a small
+   Postgres queue, and a worker fills the question bank for them (every task type of that level), so the next stations
+   are bank hits by the time the warm-up station is finished. There is NO global walk over all word sets.
 
-   Pieces
-     - queue    : Postgres table `track_prewarm_queue` (one row per term+level, resumable, priority ordered) and
-                  `track_prewarm_budget` (AI calls spent per UTC day). Memory implementations exist for tests / no-DB mode.
-     - sources  : collectSources() walks every word set (word_sets/word_set_items) and the built-in demo sets, infers a
-                  CEFR level per set and queues each term at that level (+ adjacent levels at lower priority).
+     - queue    : Postgres table `track_prewarm_queue` (one row per term+level, FIFO, resumable after a restart) and
+                  `track_prewarm_budget` (AI calls spent per UTC day). Memory implementation for tests / no-DB mode.
      - worker   : createPrewarmWorker() claims a batch of same-level terms, asks generator.prewarm() to fill every missing
-                  task type, records the AI calls against the daily cap, and yields to foreground requests.
-     - endpoint : POST /api/study/track-prewarm (same auth as track-generate) enqueues terms at top priority (0).
-   Priorities: 0 = requested by the app (set opened / level picked), 1 = recently used sets + built-in sets (primary level),
-               2 = all other sets (primary level), 3 = adjacent levels of priority-1 terms, 4 = adjacent levels of the rest.
-   Env: TRACK_PREWARM=off (kill switch), TRACK_PREWARM_DAILY_CALLS (default 1500), TRACK_PREWARM_CONCURRENCY (2),
-        TRACK_PREWARM_TOP_CONCURRENCY (6), TRACK_PREWARM_TOP_CALL_WEIGHT (1000), TRACK_PREWARM_TERMS_PER_RUN (10), TRACK_PREWARM_CALL_WEIGHT (2000),
-        TRACK_PREWARM_ADJACENT=off, TRACK_PREWARM_DEFAULT_LEVEL (B1), TRACK_PREWARM_RECENT_DAYS (30). */
+                  task type, records the AI calls against the daily safety cap, and yields to cold foreground requests.
+     - endpoint : POST /api/study/track-prewarm (same auth as track-generate) enqueues terms and answers 202.
+   Env: TRACK_PREWARM=off (kill switch for the background jobs), TRACK_PREWARM_DAILY_CALLS (safety cap, default 1500),
+        TRACK_PREWARM_CONCURRENCY (8), TRACK_PREWARM_TERMS_PER_RUN (8), TRACK_PREWARM_CALL_WEIGHT (1000). */
 import {
-    LEVELS, typesForLevel, termKeyOf, termTokens, validateTrackRequest, verifyBridgeRequest, createNonceStore, LIMITS,
+    typesForLevel, termKeyOf, validateTrackRequest, verifyBridgeRequest, createNonceStore,
 } from './track-ai.js';
 
 export const PREWARM_PATH = '/api/study/track-prewarm';
@@ -24,105 +20,21 @@ export const PREWARM_BODY_LIMIT = 64 * 1024;
 
 export function readPrewarmConfig(env = process.env) {
     const num = (v, d, min = 0, max = Infinity) => { const n = Number(v); return Number.isFinite(n) && n >= min ? Math.min(Math.floor(n), max) : d; };
-    const level = String(env.TRACK_PREWARM_DEFAULT_LEVEL || 'B1').toUpperCase();
+    const off = String(env.TRACK_PREWARM || '').trim().toLowerCase() === 'off';
     return {
-        enabled: String(env.TRACK_PREWARM || '').trim().toLowerCase() !== 'off' && Boolean(env.CURSOR_API_KEY),
-        killSwitch: String(env.TRACK_PREWARM || '').trim().toLowerCase() === 'off',
-        dailyCalls: num(env.TRACK_PREWARM_DAILY_CALLS, 1500, 0),
-        hardCapFactor: 2, // app-requested (priority 0) work may exceed the daily cap up to this many times
-        concurrency: num(env.TRACK_PREWARM_CONCURRENCY, 2, 1, 6),
-        topConcurrency: num(env.TRACK_PREWARM_TOP_CONCURRENCY, 6, 1, 8),
-        topCallWeight: num(env.TRACK_PREWARM_TOP_CALL_WEIGHT, 1000, 300, 6000), // app-requested terms: smaller calls, more in parallel = faster
-        termsPerRun: num(env.TRACK_PREWARM_TERMS_PER_RUN, 10, 1, 40),
-        callWeight: num(env.TRACK_PREWARM_CALL_WEIGHT, 2000, 300, 6000),
-        adjacent: String(env.TRACK_PREWARM_ADJACENT || '').trim().toLowerCase() !== 'off',
-        defaultLevel: LEVELS.includes(level) ? level : 'B1',
-        recentDays: num(env.TRACK_PREWARM_RECENT_DAYS, 30, 1),
+        enabled: !off && Boolean(env.CURSOR_API_KEY),
+        killSwitch: off,
+        dailyCalls: num(env.TRACK_PREWARM_DAILY_CALLS, 1500, 0), // safety cap on background AI calls per UTC day
+        concurrency: num(env.TRACK_PREWARM_CONCURRENCY, 8, 1, 12), // parallel AI calls of one batch (small calls: the learner is waiting for the next stations)
+        termsPerRun: num(env.TRACK_PREWARM_TERMS_PER_RUN, 8, 1, 40),
+        callWeight: num(env.TRACK_PREWARM_CALL_WEIGHT, 1000, 300, 6000), // ~1 term per call
         maxAttempts: 3,
-        backoffMs: 15 * 60_000, // after a partial attempt: attempt n waits n * 15 min
+        backoffMs: 5 * 60_000, // after a partial attempt: attempt n waits n * 5 min
         retryFailedMs: 24 * 3600_000, // a term that stayed incomplete after maxAttempts is tried again after a day
-        rebumpFailedMs: 6 * 3600_000,
+        rebumpFailedMs: 6 * 3600_000, // ...unless a learner asks for it again (not sooner than 6 h after the failure)
         leaseMs: 10 * 60_000,
-        scanIntervalMs: 6 * 3600_000,
-        startDelayMs: 30_000,
-        idleMs: 60_000, busyYieldMs: 3_000, cappedMs: 10 * 60_000, offMs: 60_000, aiErrorMs: 5 * 60_000, betweenRunsMs: 1_500,
-        maxTopPending: 1000, // beyond this many pending priority-0 rows, further requests queue at priority 1
+        idleMs: 60_000, busyYieldMs: 3_000, cappedMs: 10 * 60_000, offMs: 60_000, aiErrorMs: 2 * 60_000, betweenRunsMs: 200,
     };
-}
-
-// ---------------------------------------------------------------- level inference
-
-/** CEFR level of a word set from its name/category/class (sets carry no explicit level). */
-export function inferSetLevel({ name = '', category = '', className = '' } = {}, fallback = 'B1') {
-    const t = ` ${[name, category, className].join(' ').toLowerCase()} `;
-    const explicit = /(?:^|[^a-z0-9])(a1|a2|b1|b2|c1)(?![a-z0-9])/.exec(t);
-    if (explicit) return explicit[1].toUpperCase();
-    if (/\bc2\b|advanced|zaawansowan|\bcae\b|\bcpe\b/.test(t)) return 'C1';
-    if (/rozszerzon|upper[- ]?intermediate|\bfce\b|b2\/c1|\bpe\b/.test(t)) return 'B2';
-    if (/matura|podstawow(?:a|y|e)\b.*\bmatur|intermediate|\bpet\b/.test(t)) return 'B1';
-    if (/ósmoklasist|osmoklasist|\be8\b|egzamin ósm/.test(t)) return 'A2';
-    if (/beginner|starter|początkując|poczatkujac/.test(t)) return 'A1';
-    if (/\beasy\b|elementary|podstawow/.test(t)) return 'A2';
-    return LEVELS.includes(fallback) ? fallback : 'B1';
-}
-
-export function adjacentLevels(level) {
-    const i = LEVELS.indexOf(level);
-    return [LEVELS[i - 1], LEVELS[i + 1]].filter(Boolean);
-}
-
-const cleanTxt = (s) => String(s ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
-const validTerm = (en, pl) => en && pl && en.length <= LIMITS.maxEnChars && pl.length <= LIMITS.maxPlChars && termTokens(en).length > 0;
-
-/**
- * Every (term, level) the worker should fill, best priority first. `sets`: [{ name, category, className, lastActive(ms), items:[{term, definition}], builtIn }]
- */
-export function planFromSets(sets, config, nowMs = Date.now()) {
-    const recentMs = config.recentDays * 24 * 3600_000;
-    const best = new Map(); // `${level}|${termKey}` -> row
-    const put = (row) => {
-        const k = `${row.level}|${row.termKey}`;
-        const cur = best.get(k);
-        if (!cur || row.priority < cur.priority || (row.priority === cur.priority && row.activity > cur.activity)) best.set(k, row);
-    };
-    for (const set of sets) {
-        const level = inferSetLevel(set, config.defaultLevel);
-        const recent = set.builtIn || (nowMs - (set.lastActive || 0) < recentMs);
-        const activity = set.builtIn ? nowMs : (set.lastActive || 0);
-        for (const it of set.items || []) {
-            const en = cleanTxt(it.term);
-            const pl = cleanTxt(it.definition);
-            if (!validTerm(en, pl)) continue;
-            const termKey = termKeyOf({ en, pl });
-            put({ termKey, en, pl, level, priority: recent ? 1 : 2, activity });
-            if (config.adjacent) for (const adj of adjacentLevels(level)) put({ termKey, en, pl, level: adj, priority: recent ? 3 : 4, activity });
-        }
-    }
-    return [...best.values()].sort((a, b) => (a.priority - b.priority) || (b.activity - a.activity));
-}
-
-/** Read word sets from Postgres (+ built-in demo sets) and return the prewarm plan. */
-export async function collectSources({ getPool, config, loadDemoSets = defaultDemoSets, nowMs = Date.now() }) {
-    const pool = getPool();
-    const sets = new Map();
-    const setRows = await pool.query(`
-        SELECT ws.id, ws.name, ws.category, ws.class_name,
-               GREATEST(ws.updated_at, COALESCE(MAX(ugs.played_at), ws.updated_at)) AS last_active
-        FROM word_sets ws LEFT JOIN user_game_sessions ugs ON ugs.word_set_id = ws.id
-        GROUP BY ws.id`);
-    for (const r of setRows.rows) sets.set(r.id, { name: r.name, category: r.category, className: r.class_name, lastActive: new Date(r.last_active).getTime(), items: [] });
-    const itemRows = await pool.query(`SELECT set_id, term, definition FROM word_set_items WHERE definition IS NOT NULL AND btrim(definition) <> ''`);
-    for (const r of itemRows.rows) sets.get(r.set_id)?.items.push({ term: r.term, definition: r.definition });
-    const all = [...sets.values()];
-    try {
-        for (const d of await loadDemoSets()) all.push({ name: d.name, category: d.description || '', className: '', builtIn: true, items: d.items || [] });
-    } catch { /* demo sets are optional */ }
-    return planFromSets(all, config, nowMs);
-}
-
-async function defaultDemoSets() {
-    await import('./demo-sets.js'); // defines globalThis.LINGOSPARK_DEMO_SETS
-    return globalThis.LINGOSPARK_DEMO_SETS || [];
 }
 
 // ---------------------------------------------------------------- stores
@@ -139,36 +51,32 @@ export function createMemoryPrewarmStore({ now = () => Date.now() } = {}) {
     return {
         rows,
         async ensure() {},
-        async enqueue(list, { bump = false } = {}) {
+        /** Adds new rows (FIFO in the given order). A finished row is re-opened; a recently failed one is not. Returns rows added or re-opened. */
+        async enqueue(list, { rebumpMs = 6 * 3600_000 } = {}) {
             const t = now(); let n = 0;
             for (const r of list) {
                 const cur = rows.get(key(r));
-                if (!cur) { rows.set(key(r), { termKey: r.termKey, en: r.en, pl: r.pl, level: r.level, priority: r.priority, status: 'pending', attempts: 0, seq: ++seq, nextTryAt: t, leaseUntil: 0, updatedAt: t, note: '' }); n++; continue; }
-                if (!bump) continue;
-                cur.priority = Math.min(cur.priority, r.priority);
-                const reset = cur.status === 'done' || (cur.status === 'failed' && t - cur.updatedAt > (r.rebumpMs ?? 6 * 3600_000));
-                if (reset) { cur.status = 'pending'; cur.attempts = 0; cur.nextTryAt = t; cur.seq = ++seq; n++; }
+                if (!cur) { rows.set(key(r), { termKey: r.termKey, en: r.en, pl: r.pl, level: r.level, status: 'pending', attempts: 0, seq: ++seq, nextTryAt: t, leaseUntil: 0, updatedAt: t, note: '' }); n++; continue; }
+                if (cur.status === 'done' || (cur.status === 'failed' && t - cur.updatedAt > rebumpMs)) { cur.status = 'pending'; cur.attempts = 0; cur.nextTryAt = t; cur.seq = ++seq; cur.updatedAt = t; n++; }
             }
             return n;
         },
         async claim({ limit, leaseMs }) {
             const t = now();
-            const cands = [...rows.values()].filter((r) => eligible(r, t)).sort((a, b) => (a.priority - b.priority) || (a.seq - b.seq));
-            const head = cands[0];
-            if (!head) return [];
-            const picked = cands.filter((r) => r.level === head.level && (r.priority === 0) === (head.priority === 0)).slice(0, limit);
+            const cands = [...rows.values()].filter((r) => eligible(r, t)).sort((a, b) => a.seq - b.seq);
+            if (!cands.length) return [];
+            const picked = cands.filter((r) => r.level === cands[0].level).slice(0, limit);
             for (const r of picked) { r.status = 'running'; r.leaseUntil = t + leaseMs; r.updatedAt = t; }
-            return picked.map((r) => ({ termKey: r.termKey, en: r.en, pl: r.pl, level: r.level, priority: r.priority, attempts: r.attempts }));
+            return picked.map((r) => ({ termKey: r.termKey, en: r.en, pl: r.pl, level: r.level, attempts: r.attempts }));
         },
         async release(list) { for (const r of list) { const cur = rows.get(key(r)); if (cur && cur.status === 'running') { cur.status = 'pending'; cur.updatedAt = now(); } } },
         async finish(r, { status, nextTryMs = 0, note = '' }) {
             const cur = rows.get(key(r)); if (!cur) return;
             cur.status = status; cur.nextTryAt = now() + nextTryMs; cur.note = note; cur.updatedAt = now();
-            if (status !== 'done') cur.attempts = r.attempts + 1; else cur.attempts = 0;
+            cur.attempts = status === 'done' ? 0 : r.attempts + 1;
         },
         async addCalls(n) { if (n > 0) budget.set(dayKey(now()), (budget.get(dayKey(now())) || 0) + n); },
         async callsToday() { return budget.get(dayKey(now())) || 0; },
-        async pendingTop() { return [...rows.values()].filter((r) => r.priority === 0 && r.status !== 'done' && r.status !== 'failed').length; },
         async counts() {
             const c = { pending: 0, running: 0, done: 0, failed: 0 };
             for (const r of rows.values()) c[r.status]++;
@@ -184,38 +92,31 @@ export function createPgPrewarmStore({ getPool } = {}) {
     const ensure = () => (ready ||= (async () => {
         await q(`CREATE TABLE IF NOT EXISTS track_prewarm_queue (
             term_key TEXT NOT NULL, level TEXT NOT NULL, en TEXT NOT NULL, pl TEXT NOT NULL,
-            priority SMALLINT NOT NULL DEFAULT 2, status TEXT NOT NULL DEFAULT 'pending', attempts INTEGER NOT NULL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'pending', attempts INTEGER NOT NULL DEFAULT 0,
             seq BIGSERIAL, next_try_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), lease_until TIMESTAMPTZ,
             note TEXT NOT NULL DEFAULT '', updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             PRIMARY KEY (term_key, level))`);
-        await q('CREATE INDEX IF NOT EXISTS track_prewarm_queue_pick ON track_prewarm_queue (status, priority, seq)');
+        await q('CREATE INDEX IF NOT EXISTS track_prewarm_queue_pick ON track_prewarm_queue (status, seq)');
         await q(`CREATE TABLE IF NOT EXISTS track_prewarm_budget (day DATE PRIMARY KEY, calls INTEGER NOT NULL DEFAULT 0)`);
     })().catch((e) => { ready = null; throw e; }));
-    const ELIG = `((status IN ('pending','failed') AND next_try_at <= NOW()) OR (status = 'running' AND lease_until < NOW()))`;
+    const ELIG = (a) => `((${a}status IN ('pending','failed') AND ${a}next_try_at <= NOW()) OR (${a}status = 'running' AND ${a}lease_until < NOW()))`;
     return {
         ensure,
-        async enqueue(list, { bump = false, rebumpMs = 6 * 3600_000 } = {}) {
+        async enqueue(list, { rebumpMs = 6 * 3600_000 } = {}) {
             await ensure();
             let n = 0;
             for (let i = 0; i < list.length; i += 400) {
                 const part = list.slice(i, i + 400);
-                const cols = [part.map((r) => r.termKey), part.map((r) => r.en), part.map((r) => r.pl), part.map((r) => r.level), part.map((r) => r.priority)];
-                const reset = `(track_prewarm_queue.status = 'done' OR (track_prewarm_queue.status = 'failed' AND track_prewarm_queue.updated_at < NOW() - make_interval(secs => $6::double precision / 1000)))`;
-                const sql = bump
-                    ? `INSERT INTO track_prewarm_queue (term_key, en, pl, level, priority)
-                       SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
-                       ON CONFLICT (term_key, level) DO UPDATE SET
-                         priority = LEAST(track_prewarm_queue.priority, EXCLUDED.priority),
-                         status = CASE WHEN ${reset} THEN 'pending' ELSE track_prewarm_queue.status END,
-                         attempts = CASE WHEN ${reset} THEN 0 ELSE track_prewarm_queue.attempts END,
-                         next_try_at = CASE WHEN ${reset} THEN NOW() ELSE track_prewarm_queue.next_try_at END,
-                         seq = CASE WHEN ${reset} THEN nextval(pg_get_serial_sequence('track_prewarm_queue','seq')) ELSE track_prewarm_queue.seq END,
-                         updated_at = CASE WHEN ${reset} THEN NOW() ELSE track_prewarm_queue.updated_at END
-                       RETURNING (xmax = 0) AS inserted`
-                    : `INSERT INTO track_prewarm_queue (term_key, en, pl, level, priority)
-                       SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
-                       ON CONFLICT (term_key, level) DO NOTHING RETURNING true AS inserted`;
-                const r = await q(sql, bump ? [...cols, rebumpMs] : cols);
+                const reopen = `(track_prewarm_queue.status = 'done' OR (track_prewarm_queue.status = 'failed' AND track_prewarm_queue.updated_at < NOW() - make_interval(secs => $5::double precision / 1000)))`;
+                const r = await q(`
+                    INSERT INTO track_prewarm_queue (term_key, en, pl, level)
+                    SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+                    ON CONFLICT (term_key, level) DO UPDATE SET
+                        status = 'pending', attempts = 0, next_try_at = NOW(), updated_at = NOW(),
+                        seq = nextval(pg_get_serial_sequence('track_prewarm_queue','seq'))
+                    WHERE ${reopen}
+                    RETURNING true AS changed`,
+                [part.map((r) => r.termKey), part.map((r) => r.en), part.map((r) => r.pl), part.map((r) => r.level), rebumpMs]);
                 n += r.rows.length;
             }
             return n;
@@ -223,16 +124,15 @@ export function createPgPrewarmStore({ getPool } = {}) {
         async claim({ limit, leaseMs }) {
             await ensure();
             const r = await q(`
-                WITH head AS (SELECT level, priority FROM track_prewarm_queue WHERE ${ELIG} ORDER BY priority, seq LIMIT 1),
+                WITH head AS (SELECT level FROM track_prewarm_queue WHERE ${ELIG('')} ORDER BY seq LIMIT 1),
                 picked AS (
                     SELECT t.term_key, t.level FROM track_prewarm_queue t, head
-                    WHERE t.level = head.level AND ${ELIG.replace(/\bstatus\b/g, 't.status').replace(/\bnext_try_at\b/g, 't.next_try_at').replace(/\blease_until\b/g, 't.lease_until')}
-                      AND ((head.priority = 0) = (t.priority = 0))
-                    ORDER BY t.priority, t.seq LIMIT $1 FOR UPDATE OF t SKIP LOCKED)
+                    WHERE t.level = head.level AND ${ELIG('t.')}
+                    ORDER BY t.seq LIMIT $1 FOR UPDATE OF t SKIP LOCKED)
                 UPDATE track_prewarm_queue u SET status = 'running', lease_until = NOW() + make_interval(secs => $2::double precision / 1000), updated_at = NOW()
                 FROM picked WHERE u.term_key = picked.term_key AND u.level = picked.level
-                RETURNING u.term_key, u.en, u.pl, u.level, u.priority, u.attempts`, [limit, leaseMs]);
-            return r.rows.map((x) => ({ termKey: x.term_key, en: x.en, pl: x.pl, level: x.level, priority: x.priority, attempts: x.attempts }));
+                RETURNING u.term_key, u.en, u.pl, u.level, u.attempts, u.seq`, [limit, leaseMs]);
+            return r.rows.sort((a, b) => Number(a.seq) - Number(b.seq)).map((x) => ({ termKey: x.term_key, en: x.en, pl: x.pl, level: x.level, attempts: x.attempts }));
         },
         async release(list) {
             if (!list.length) return;
@@ -254,11 +154,6 @@ export function createPgPrewarmStore({ getPool } = {}) {
             const r = await q(`SELECT calls FROM track_prewarm_budget WHERE day = (NOW() AT TIME ZONE 'UTC')::date`);
             return r.rows[0]?.calls || 0;
         },
-        async pendingTop() {
-            await ensure();
-            const r = await q(`SELECT count(*)::int AS n FROM track_prewarm_queue WHERE priority = 0 AND status IN ('pending','running')`);
-            return r.rows[0].n;
-        },
         async counts() {
             await ensure();
             const r = await q(`SELECT status, count(*)::int AS n FROM track_prewarm_queue GROUP BY status`);
@@ -272,44 +167,30 @@ export function createPgPrewarmStore({ getPool } = {}) {
 // ---------------------------------------------------------------- worker
 
 /**
- * createPrewarmWorker({ store, generate, collect, config, log }) -> { start, stop, kick, tick, scan, enqueueTerms }.
+ * createPrewarmWorker({ store, generate, config, log }) -> { start, stop, kick, tick, enqueueTerms }.
  * `generate` is the track generator (needs .prewarm and .stats). `config` is a function (read each tick, so the
  * TRACK_PREWARM kill switch and cap are honoured without code changes) or an object.
  */
-export function createPrewarmWorker({ store, generate, collect = null, config = readPrewarmConfig, log = () => {}, now = () => Date.now() }) {
+export function createPrewarmWorker({ store, generate, config = readPrewarmConfig, log = () => {}, now = () => Date.now() }) {
     const cfgOf = () => (typeof config === 'function' ? config() : config);
     let running = false;
     let wake = null;
-    let lastScan = 0;
-    let started = 0;
     const sleep = (ms) => new Promise((resolve) => { const t = setTimeout(() => { wake = null; resolve(); }, ms); t.unref?.(); wake = () => { clearTimeout(t); wake = null; resolve(); }; });
 
-    async function scan() {
-        if (!collect) return { queued: 0, planned: 0 };
+    /** Terms a learner is about to use (set opened + level picked, or gaps found while serving): queue them, in set order. */
+    async function enqueueTerms({ level, terms }) {
         const cfg = cfgOf();
-        const plan = await collect(cfg);
-        const queued = await store.enqueue(plan.map((r) => ({ termKey: r.termKey, en: r.en, pl: r.pl, level: r.level, priority: r.priority })), { bump: false });
-        lastScan = now();
-        log(`scan: ${plan.length} term/level pairs from word sets, ${queued} new in the queue`);
-        return { queued, planned: plan.length };
-    }
-
-    /** App-requested (priority 0) or top-up terms: put them at the front. */
-    async function enqueueTerms({ level, terms, priority = 0 }) {
-        const cfg = cfgOf();
-        let p = priority;
-        if (p === 0 && (await store.pendingTop()) >= cfg.maxTopPending) p = 1;
         const seen = new Set();
         const rows = [];
         for (const t of terms) {
             const termKey = termKeyOf(t);
             if (seen.has(termKey)) continue;
             seen.add(termKey);
-            rows.push({ termKey, en: t.en, pl: t.pl, level, priority: p });
+            rows.push({ termKey, en: t.en, pl: t.pl, level });
         }
-        const n = await store.enqueue(rows, { bump: true, rebumpMs: cfg.rebumpFailedMs });
-        if (n || rows.length) wake?.();
-        return { queued: rows.length, changed: n };
+        const changed = await store.enqueue(rows, { rebumpMs: cfg.rebumpFailedMs });
+        if (rows.length) wake?.();
+        return { queued: rows.length, changed };
     }
 
     async function tick() {
@@ -317,16 +198,14 @@ export function createPrewarmWorker({ store, generate, collect = null, config = 
         if (!cfg.enabled) return { state: 'off' };
         if (generate.stats().fgActive > 0) return { state: 'yield' };
         const used = await store.callsToday();
-        if (used >= cfg.dailyCalls * cfg.hardCapFactor) return { state: 'capped', used };
+        if (used >= cfg.dailyCalls) return { state: 'capped', used };
         const rows = await store.claim({ limit: cfg.termsPerRun, leaseMs: cfg.leaseMs });
         if (!rows.length) return { state: 'idle' };
-        const top = rows[0].priority === 0;
-        if (!top && used >= cfg.dailyCalls) { await store.release(rows); return { state: 'capped', used }; }
         const level = rows[0].level;
         const terms = rows.map((r, i) => ({ id: String(i + 1), en: r.en, pl: r.pl }));
         let res;
         try {
-            res = await generate.prewarm({ level, terms, concurrency: top ? cfg.topConcurrency : cfg.concurrency, callWeight: top ? cfg.topCallWeight : cfg.callWeight });
+            res = await generate.prewarm({ level, terms, concurrency: cfg.concurrency, callWeight: cfg.callWeight });
         } catch (e) {
             log(`run crashed: ${e?.message || e}`);
             for (const r of rows) await store.finish(r, { status: 'pending', nextTryMs: cfg.backoffMs, note: `crashed: ${String(e?.message || e).slice(0, 120)}` }).catch(() => {});
@@ -345,19 +224,15 @@ export function createPrewarmWorker({ store, generate, collect = null, config = 
             else await store.finish(r, { status: 'pending', nextTryMs: cfg.backoffMs * attempts, note });
         }
         const counts = await store.counts().catch(() => null);
-        log(`${level} p${rows[0].priority}: ${done}/${rows.length} terms complete${partial ? `, ${partial} partial` : ''}, ${res.aiCalls} AI calls (today ${used + res.aiCalls}/${cfg.dailyCalls})${counts ? `, queue pending ${counts.pending} done ${counts.done} failed ${counts.failed}` : ''}`);
+        log(`${level}: ${done}/${rows.length} terms complete${partial ? `, ${partial} partial` : ''}, ${res.aiCalls} AI calls (today ${used + res.aiCalls}/${cfg.dailyCalls})${counts ? `, queue pending ${counts.pending} done ${counts.done} failed ${counts.failed}` : ''}`);
         if (res.aiCalls > 0 && res.aiErrors >= res.aiCalls) return { state: 'ai_errors', res };
         return { state: 'work', res };
     }
 
     async function loop() {
         while (running) {
-            let r = { state: 'idle' };
-            try {
-                const cfg = cfgOf();
-                if (cfg.enabled && collect && (!lastScan || now() - lastScan > cfg.scanIntervalMs) && now() - started >= cfg.startDelayMs) await scan();
-                r = await tick();
-            } catch (e) { log(`tick failed: ${e?.message || e}`); r = { state: 'ai_errors' }; }
+            let r;
+            try { r = await tick(); } catch (e) { log(`tick failed: ${e?.message || e}`); r = { state: 'ai_errors' }; }
             const cfg = cfgOf();
             const wait = { work: cfg.betweenRunsMs, yield: cfg.busyYieldMs, idle: cfg.idleMs, capped: cfg.cappedMs, off: cfg.offMs, ai_errors: cfg.aiErrorMs }[r.state] ?? cfg.idleMs;
             await sleep(wait);
@@ -365,13 +240,13 @@ export function createPrewarmWorker({ store, generate, collect = null, config = 
     }
 
     return {
-        scan, tick, enqueueTerms, loop,
+        tick, enqueueTerms, loop,
         start() {
             if (running) return;
-            running = true; started = now();
+            running = true;
             const cfg = cfgOf();
-            log(`worker started (${cfg.killSwitch ? 'OFF by TRACK_PREWARM=off' : cfg.enabled ? 'on' : 'off: no CURSOR_API_KEY'}; cap ${cfg.dailyCalls} AI calls/day, concurrency ${cfg.concurrency})`);
-            sleep(cfg.startDelayMs).then(() => (running ? loop() : null));
+            log(`worker started (${cfg.killSwitch ? 'OFF by TRACK_PREWARM=off' : cfg.enabled ? 'on, on-demand only' : 'off: no CURSOR_API_KEY'}; safety cap ${cfg.dailyCalls} AI calls/day)`);
+            loop();
         },
         stop() { running = false; wake?.(); },
         kick() { wake?.(); },
@@ -396,7 +271,8 @@ function createWindowLimiter({ max, windowMs, now = () => Date.now() }) {
 
 /**
  * Same auth as track-generate (signed bridge headers, or a study session). Body: { terms:[{id,en,pl}], level, setId?, userRef? }.
- * Enqueues the terms that are not fully banked at top priority and answers 202 straight away.
+ * Enqueues the terms that are not fully banked (in the given order) and answers 202 straight away. For sets larger than
+ * the 40 terms track-generate accepts, use this for the terms after the first 40.
  */
 export function createTrackPrewarmHandler({
     generate, worker, store = null, isConfigured = () => true, getConfig = readPrewarmConfig,
@@ -429,12 +305,12 @@ export function createTrackPrewarmHandler({
             const todo = v.terms.filter((t) => !state.ready[t.id]?.ready);
             const cfg = getConfig();
             let queued = 0;
-            if (todo.length) queued = (await worker.enqueueTerms({ level: v.level, terms: todo, priority: 0 })).queued;
+            if (todo.length) queued = (await worker.enqueueTerms({ level: v.level, terms: todo })).queued;
             const queue = store ? await store.counts().catch(() => null) : null;
             return res.status(202).json({
                 accepted: true, level: v.level, requestedTerms: v.terms.length,
                 alreadyReady: state.readyCount, queued, enabled: cfg.enabled,
-                ...(cfg.killSwitch ? { note: 'prewarm worker is switched off (TRACK_PREWARM=off); track-generate still works on demand' } : {}),
+                ...(cfg.killSwitch ? { note: 'background generation is switched off (TRACK_PREWARM=off); track-generate still works on demand' } : {}),
                 ready: state.ready,
                 ...(queue ? { queue: { pending: queue.pending, running: queue.running, done: queue.done, failed: queue.failed, callsToday: queue.callsToday, dailyCap: cfg.dailyCalls } } : {}),
             });

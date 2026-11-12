@@ -4,7 +4,7 @@ import express from 'express';
 import {
     validateTrackRequest, buildItem, findTermForm, makeTemplate, typesForLevel, buildTrackPrompt,
     createTrackGenerator, createTrackGenerateHandler, createTrackLimiter, createNonceStore, createLruCache,
-    createBank, termKeyOf, itemText, BANK_TARGET, planCalls,
+    createBank, termKeyOf, itemText, BANK_TARGET, planCalls, planWarmup,
     signBridgeRequest, verifyBridgeRequest, BRIDGE_HEADERS, TRACK_PATH, LIMITS, ALL_TYPES,
 } from './track-ai.js';
 
@@ -245,11 +245,11 @@ test('verifyBridgeRequest: good, tampered, stale, replayed, wrong secret, unconf
 
 /* ---------------------------------------------------------------- HTTP handler */
 
-async function serve({ runPrompt, isConfigured = () => true, user = null, limiter, secret = SECRET, deadlineMs, now, schedule = () => {} } = {}) {
+async function serve({ runPrompt, isConfigured = () => true, user = null, limiter, secret = SECRET, deadlineMs, now, schedule = () => {}, onTopUp } = {}) {
     const app = express();
     app.use((req, _res, next) => { req.isAuthenticated = () => Boolean(user); if (user) req.user = user; next(); });
     app.use(PATH, express.json({ limit: LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
-    const generate = createTrackGenerator({ runPrompt, limits: { ...LIMITS, ...(deadlineMs ? { deadlineMs } : {}) } });
+    const generate = createTrackGenerator({ runPrompt, onTopUp, limits: { ...LIMITS, ...(deadlineMs ? { deadlineMs } : {}) } });
     app.post(PATH, createTrackGenerateHandler({ generate, isConfigured, getSecret: () => secret, limiter: limiter || createTrackLimiter(), now, schedule }));
     const server = await new Promise((res) => { const s = app.listen(0, '127.0.0.1', () => res(s)); });
     const base = `http://127.0.0.1:${server.address().port}`;
@@ -674,7 +674,7 @@ test('prompt: a big set lists at most promptSetTerms words (targets always inclu
 /** A mock model that writes a valid item for every wanted slot of every target term in the prompt (by parsing the prompt). */
 function fullModel({ skip = () => false, onPrompt = () => {} } = {}) {
     const mk = (termId, en, slot) => {
-        const s = { sentence: `She was really ${en} about the news yesterday.`, answer: en, distractors: ['angry', 'tired', 'nervous'], plTranslation: 'Była naprawdę zadowolona z wiadomości wczoraj.' };
+        const s = { sentence: `She was really ${en} about the news yesterday.`, answer: en, distractors: [`d1${en}`, `d2${en}`, `d3${en}`], plTranslation: 'Była naprawdę zadowolona z wiadomości wczoraj.' };
         switch (slot) {
             case 'gapTranslate': return { termId, type: slot, ...s, sentence: `Everybody was ${en} about the plan today.`, plTranslation: 'Wszyscy byli dziś zadowoleni z planu.' };
             case 'sentenceGap': return { termId, type: slot, ...s };
@@ -830,5 +830,118 @@ test('http: bank-only requests use the loose window and skip the AI quota / busy
             assert.equal(j.meta.aiCalls, 0);
             assert.equal(j.meta.allReady, true);
         }
+    } finally { await s.close(); }
+});
+
+/* ---------------------------------------------------------------- warm-up mode (hybrid flow: level picked -> small station now, rest in background) */
+
+const SET20 = Array.from({ length: 20 }, (_, i) => T(String(i + 1), ['grateful', 'happy', 'proud', 'upset', 'calm', 'eager', 'tired', 'brave', 'angry', 'lazy', 'nervous', 'glad', 'shy', 'bored', 'kind', 'rude', 'wise', 'loud', 'fair', 'tidy'][i], `pl-${i}`));
+const WARM = (over = {}) => validateTrackRequest({ setId: 'set', level: 'B1', terms: SET20, mode: 'warmup', ...over }).value;
+
+test('warm-up: validation is additive (mode / warmupSize optional, strict when present)', () => {
+    assert.equal(validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG] }).value.mode, undefined);
+    assert.equal(validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG], mode: 'full' }).value.mode, undefined);
+    const w = validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG], mode: 'warmup', warmupSize: 3 }).value;
+    assert.equal(w.mode, 'warmup'); assert.equal(w.warmupSize, 3);
+    for (const bad of [{ mode: 'turbo' }, { mode: 'warmup', warmupSize: 2 }, { mode: 'warmup', warmupSize: 7 }, { warmupSize: 'x' }]) {
+        assert.equal(validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG], ...bad }).ok, false, JSON.stringify(bad));
+    }
+});
+
+test('warm-up: cold bank = exactly ONE small AI call for 4 mixed easy items over the first terms; whole set queued at the same moment', async () => {
+    const events = [];
+    const prompts = [];
+    const base = fullModel();
+    const gen = createTrackGenerator({
+        runPrompt: async (p) => { prompts.push(p); events.push('ai'); await new Promise((r) => setTimeout(r, 40)); return base(p); },
+        onTopUp: ({ level, terms }) => events.push(`queue:${level}:${terms.length}`),
+    });
+    const r = await gen(WARM());
+    assert.deepEqual(events.slice(0, 2), ['queue:B1:20', 'ai'], 'the rest of the set is queued before/while the AI call runs');
+    assert.equal(prompts.length, 1, 'one AI call');
+    assert.equal(r.items.length, 4);
+    assert.equal(new Set(r.items.map((i) => i.lexiconId)).size, 4, 'one item per term, the first four terms');
+    assert.deepEqual(r.items.map((i) => i.lexiconId), ['1', '2', '3', '4']);
+    assert.ok(new Set(r.items.map((i) => i.type)).size >= 2, 'mixed types');
+    assert.ok(r.items.every((i) => ['meaningPick', 'listenPick', 'sentenceGap'].includes(i.type)), 'easy types only');
+    const wanted = [...prompts[0].matchAll(/→ wanted: (.*)$/gm)].flatMap((m) => m[1].split(', '));
+    assert.equal(wanted.length, 4, 'the prompt asks for 4 items only (small output)');
+    assert.equal(r.meta.mode, 'warmup');
+    assert.deepEqual({ requested: r.meta.warmup.requested, returned: r.meta.warmup.returned, fromBank: r.meta.warmup.fromBank, generated: r.meta.warmup.generated, queuedTerms: r.meta.warmup.queuedTerms }, { requested: 4, returned: 4, fromBank: 0, generated: 4, queuedTerms: 20 });
+    assert.equal(r.meta.aiCalls, 1);
+    assert.equal(r.meta.timedOut, false);
+    assert.equal(Object.keys(r.meta.ready).length, 20);
+    assert.equal(r.meta.allReady, false);
+    assert.equal(r.meta.topUpQueued, 20);
+});
+
+test('warm-up: banked items are served with no AI at all; size is honoured; later stations are then bank hits via the fast path', async () => {
+    const bank = createBank();
+    const gen = createTrackGenerator({ runPrompt: fullModel(), bank, limits: { ...LIMITS, budgetMs: 4000 } });
+    await gen(validateTrackRequest({ setId: 's', level: 'B1', terms: SET20.slice(0, 8) }).value); // as the background worker would
+    let calls = 0;
+    const gen2 = createTrackGenerator({ runPrompt: async () => { calls++; return { items: [] }; }, bank });
+    const t0 = Date.now();
+    const r = await gen2(WARM({ warmupSize: 3 }));
+    assert.ok(Date.now() - t0 < 500);
+    assert.equal(calls, 0);
+    assert.equal(r.items.length, 3);
+    assert.equal(r.meta.warmup.fromBank, 3);
+    assert.equal(r.meta.warmup.generated, 0);
+    assert.ok((await gen2.warmupReadiness(WARM())).banked);
+    // next station: terms 1-8 are fully banked -> track-generate fast path, no AI wait
+    const next = await gen2(validateTrackRequest({ setId: 's', level: 'B1', terms: SET20.slice(0, 8) }).value);
+    assert.equal(next.meta.aiCalls, 0);
+    assert.equal(next.meta.allReady, true);
+    assert.equal(calls, 0);
+});
+
+test('warm-up: a short set reuses terms with different types; planWarmup never repeats a (term, type)', () => {
+    const lists = new Map([['1', []], ['2', []]]);
+    const plan = planWarmup({ terms: [FOG, NET], size: 4, lists, has: () => false });
+    assert.equal(plan.length, 4);
+    assert.equal(new Set(plan.map((p) => `${p.term.id}|${p.slot}`)).size, 4);
+});
+
+test('warm-up: a slow model answers at the budget; HTTP gives 504 + Retry-After, the work still lands, and the repeat is a bank hit', async () => {
+    const base = fullModel();
+    const s = await serve({ runPrompt: async (p) => { await new Promise((r) => setTimeout(r, 1800)); return base(p); }, user: { id: 9 } });
+    try {
+        const body = { setId: 's', level: 'B1', terms: SET20.slice(0, 6), mode: 'warmup', budgetMs: 1500 };
+        const t0 = Date.now();
+        const r = await s.post(body);
+        assert.equal(r.status, 504);
+        assert.ok(Date.now() - t0 < 2500);
+        assert.equal(r.headers.get('retry-after'), '5');
+        const j = await r.json();
+        assert.equal(j.code, 'ai_timeout');
+        assert.equal(j.meta.mode, 'warmup');
+        await new Promise((res) => setTimeout(res, 600)); // the call that outlived the response finishes
+        const again = await s.post(body);
+        assert.equal(again.status, 200);
+        const a = await again.json();
+        assert.equal(a.items.length, 4);
+        assert.equal(a.meta.aiCalls, 0);
+        assert.equal(a.meta.warmup.fromBank, 4);
+    } finally { await s.close(); }
+});
+
+test('warm-up: does not count as a foreground request (the background worker must not yield to it); a banked warm-up skips the AI quota', async () => {
+    let release; const gate = new Promise((r) => { release = r; });
+    const base = fullModel();
+    const gen = createTrackGenerator({ runPrompt: async (p) => { await gate; return base(p); }, limits: { ...LIMITS, budgetMs: 4000 } });
+    const pending = gen(WARM());
+    await new Promise((r) => setTimeout(r, 30));
+    assert.equal(gen.stats().fgActive, 0, 'warm-up in flight');
+    const full = gen(validateTrackRequest({ setId: 's', level: 'B1', terms: SET20.slice(10, 12) }).value);
+    await new Promise((r) => setTimeout(r, 30));
+    assert.equal(gen.stats().fgActive, 1, 'a normal cold request does count');
+    release(); await Promise.all([pending, full]);
+    const limiter = createTrackLimiter({ limits: { ...LIMITS, userMax: 1, globalMax: 1 } });
+    const s = await serve({ runPrompt: base, user: { id: 4 }, limiter });
+    try {
+        const body = { setId: 's', level: 'B1', terms: SET20.slice(0, 5), mode: 'warmup' };
+        assert.equal((await s.post(body)).status, 200);
+        for (let i = 0; i < 4; i++) assert.equal((await s.post(body)).status, 200, 'banked warm-up is not limited by the AI quota (userMax 1)');
     } finally { await s.close(); }
 });
