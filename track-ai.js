@@ -31,11 +31,18 @@ export const LIMITS = {
     maxPlChars: 100,
     maxIdChars: 64,
     maxSetIdChars: 80,
-    batchSize: 3,
-    batchConcurrency: 3,
     maxAttempts: 3, // 1 try + 2 retries per batch for invalid / missing items
     perCallTimeoutMs: 70_000,
-    deadlineMs: 85_000, // Render/Cloudflare cut requests at ~100 s
+    deadlineMs: 85_000, // hard cap for a request (Render/Cloudflare cut at ~100 s); also the largest `budgetMs` a client may ask for
+    budgetMs: 9_000, // default foreground budget: answer with what is validated by then, the rest keeps going into the bank
+    minBudgetMs: 1_500,
+    retryMinRemainingMs: 4_500, // a retry only holds the response if at least this much of the budget is left
+    jobDeadlineMs: 70_000, // calls that outlive the response may run this long (from the request start) and still fill the bank
+    callWeight: 500, // approx. output tokens per AI call (one call = a small slice of one term, or several small slices)
+    callConcurrency: 12, // parallel AI calls per request
+    globalCallConcurrency: 16, // parallel AI calls in the whole process (foreground first, background gets the rest)
+    bgCallConcurrency: 3, // parallel AI calls of one background growth run
+    promptSetTerms: 16, // max words listed as "whole set" (distractor source) in one prompt
     userMax: 10, userWindowMs: 10 * 60_000, // generation requests that reach the AI, per user
     globalMax: 120, globalWindowMs: 60 * 60_000,
     globalConcurrent: 4,
@@ -222,7 +229,13 @@ export function validateTrackRequest(body) {
         userRef = clean(body.userRef);
         if (userRef.length > 64) return bad('userRef is too long.');
     }
-    return { ok: true, value: { setId, level, terms, types, userRef } };
+    let budgetMs;
+    if (body.budgetMs != null) {
+        const n = Number(body.budgetMs);
+        if (!Number.isFinite(n) || n < LIMITS.minBudgetMs || n > LIMITS.deadlineMs) return bad(`budgetMs must be ${LIMITS.minBudgetMs}–${LIMITS.deadlineMs} (milliseconds the server may spend before answering).`);
+        budgetMs = Math.round(n);
+    }
+    return { ok: true, value: { setId, level, terms, types, userRef, ...(budgetMs ? { budgetMs } : {}) } };
 }
 
 // ---------------------------------------------------------------- prompt
@@ -245,6 +258,16 @@ const TYPE_SPECS = {
     keyTransform: '{"termId","type":"keyTransform","sourceSentence":original sentence,"keyWord":UPPERCASE word that must be used UNCHANGED in the answer,"template":second sentence with ONE gap ___ that must be filled with 2–5 words INCLUDING the key word (key word not outside the gap),"answer":the 2–5 words,"answers":[the answer plus up to 2 other correct 2–5 word solutions with the key word]} (same meaning as the source sentence; the target term appears in the source or in the completed sentence)',
 };
 
+/** Keep prompts small for big sets: the targets plus the words around them, at most LIMITS.promptSetTerms. */
+function capSetTerms(setTerms, targets, max = LIMITS.promptSetTerms) {
+    if (setTerms.length <= max) return setTerms;
+    const ids = new Set(targets.map((t) => t.id));
+    const at = Math.max(0, setTerms.findIndex((t) => ids.has(t.id)));
+    const picked = new Set(setTerms.filter((t) => ids.has(t.id)).map((t) => t.id));
+    for (let d = 1; picked.size < max && d < setTerms.length; d++) for (const i of [at + d, at - d]) if (setTerms[i] && picked.size < max) picked.add(setTerms[i].id);
+    return setTerms.filter((t) => picked.has(t.id));
+}
+
 export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [], avoid = new Map() }) {
     const [lo, hi] = SENT_WORDS[level];
     const lines = terms.map((t) => {
@@ -261,7 +284,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         'TARGET TERMS (write exercises ONLY for these; every item needs the termId):',
         ...lines,
         '',
-        `WHOLE SET (use these English/Polish words as distractors when they fit the type): ${setTerms.map((t) => `${t.en} = ${t.pl}`).join('; ')}`,
+        `WHOLE SET (use these English/Polish words as distractors when they fit the type): ${capSetTerms(setTerms, terms).map((t) => `${t.en} = ${t.pl}`).join('; ')}`,
         ...(avoid.size ? ['', 'ALREADY WRITTEN (write something clearly DIFFERENT: another situation, other words around the target, not a paraphrase):', ...[...avoid].flatMap(([termId, list]) => list.map((a) => `- termId ${JSON.stringify(termId)} ${a.slot}: ${JSON.stringify(a.text.slice(0, 140))}`))] : []),
         '',
         'ITEM FORMATS (JSON objects inside "items"):',
@@ -755,6 +778,7 @@ export function verifyBridgeRequest(req, { secret, nonces, now = () => Date.now(
 class TimeoutError extends Error { constructor(m) { super(m); this.name = 'TimeoutError'; } }
 const withTimeout = (promise, ms, label) => new Promise((resolve, reject) => {
     const t = setTimeout(() => reject(new TimeoutError(`${label} timed out after ${ms} ms`)), Math.max(1, ms));
+    t.unref?.();
     promise.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
 });
 
@@ -791,11 +815,70 @@ function reshuffleOptions(item, term, setTerms, rand) {
  * Items come from the term-keyed bank; the AI is only called for slots the bank cannot serve
  * (foreground) or, after the response, to grow the bank (grow()).
  */
+/** Rough output size (tokens) of one slot; used to cut a term's work into small, parallel AI calls. */
+const SLOT_WEIGHT = {
+    letterScramble: 30, 'meaningPick:pl-en': 55, 'meaningPick:en-pl': 55, sentenceGap: 70, gapTranslate: 100, sentenceOrder: 80,
+    translateType: 100, listenPick: 55, dictation: 45, contextTrueFalse: 140, collocationPick: 55, wordFormation: 70, keyTransform: 140,
+};
+const weightOf = (slot) => SLOT_WEIGHT[slot] ?? 90;
+
+/** A counting semaphore with two priorities (foreground requests before background growth). */
+function createSemaphore(max) {
+    let free = max;
+    const queues = { hi: [], lo: [] };
+    const pump = () => {
+        while (free > 0) {
+            const next = queues.hi.shift() || queues.lo.shift();
+            if (!next) return;
+            free--; next();
+        }
+    };
+    return {
+        acquire(prio = 'hi') { return new Promise((resolve) => { queues[prio === 'lo' ? 'lo' : 'hi'].push(resolve); pump(); }); },
+        release() { free++; pump(); },
+    };
+}
+
+/**
+ * Cut jobs ([{ term, slots:Set, avoid }]) into AI calls of about `callWeight` output tokens each, in term order:
+ * a term with many slots becomes several parallel calls, terms with few slots share one call.
+ */
+export function planCalls(jobs, callWeight = LIMITS.callWeight) {
+    const calls = [];
+    let cur = null;
+    const flush = () => { if (cur && cur.parts.size) calls.push([...cur.parts.values()]); cur = null; };
+    for (const job of jobs) {
+        const slots = [...job.slots].sort((x, y) => weightOf(y) - weightOf(x));
+        const total = slots.reduce((n, sl) => n + weightOf(sl), 0);
+        const nChunks = Math.max(1, Math.ceil(total / callWeight - 0.2));
+        const chunks = Array.from({ length: nChunks }, () => ({ slots: [], w: 0 }));
+        for (const sl of slots) { chunks.sort((x, y) => x.w - y.w); chunks[0].slots.push(sl); chunks[0].w += weightOf(sl); }
+        chunks.sort((x, y) => y.w - x.w);
+        for (const ch of chunks) {
+            if (!ch.slots.length) continue;
+            if (cur && cur.w + ch.w > callWeight * 1.25) flush();
+            cur = cur || { w: 0, parts: new Map() };
+            const part = cur.parts.get(job.term.id) || { term: job.term, slots: new Set(), avoid: [] };
+            ch.slots.forEach((sl) => part.slots.add(sl));
+            part.avoid = job.avoid.filter((a) => part.slots.has(a.slot));
+            cur.parts.set(job.term.id, part);
+            cur.w += ch.w;
+        }
+    }
+    flush();
+    return calls;
+}
+
 export function createTrackGenerator({ runPrompt, bank = createBank(), limits = LIMITS, now = () => Date.now(), log = () => {}, rand = Math.random } = {}) {
     const cooldown = new Map(); // `${level}|${termKey}|${slot}` -> failed-at
     const cool = (level, term, slot) => { const t = cooldown.get(`${level}|${termKeyOf(term)}|${slot}`); return t && now() - t < limits.failCooldownMs; };
+    const sem = createSemaphore(limits.globalCallConcurrency ?? 12);
 
-    async function runBatch({ level, batch, setTerms, slotsByTerm, avoid, deadlineAt, stats }) {
+    /**
+     * One AI call (plus retries for what failed validation). `onFirstPass(stillNeeded)` fires after the first answer
+     * has been processed; retries continue after the response has gone out (they only fill the bank then).
+     */
+    async function runBatch({ level, batch, setTerms, slotsByTerm, avoid, jobDeadlineAt, stats, prio, onFirstPass, counters }) {
         const found = new Map(batch.map((t) => [t.id, new Map()])); // termId -> slot -> built item
         const skipped = new Set(); // `${termId}|${slot}`
         let feedback = [];
@@ -807,19 +890,24 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 if (sl.size) need.set(t.id, sl);
             }
             if (!need.size) break;
-            const remaining = deadlineAt - now();
-            if (remaining < 2000) { stats.timedOut = true; break; }
+            if (jobDeadlineAt - now() < 2000) { stats.timedOut = true; break; }
             const prompt = buildTrackPrompt({ level, terms: batch.filter((t) => need.has(t.id)), setTerms, wants: need, feedback, avoid });
+            const nSlots = [...need.values()].reduce((n, x) => n + x.size, 0);
             let raw;
+            await sem.acquire(prio);
+            const t0 = now();
             try {
+                if (jobDeadlineAt - now() < 2000) { stats.timedOut = true; break; }
                 stats.aiCalls++;
-                raw = await withTimeout(runPrompt(prompt, `track-${level}-b${batch.length}${attempt ? `-r${attempt}` : ''}`), Math.min(limits.perCallTimeoutMs, remaining), 'AI call');
+                raw = await withTimeout(runPrompt(prompt, `track-${level}-${need.size}t${nSlots}s${attempt ? `-r${attempt}` : ''}`), Math.min(limits.perCallTimeoutMs, jobDeadlineAt - now()), 'AI call');
+                log(`call ${need.size}t/${nSlots}s attempt ${attempt} ${now() - t0}ms`);
             } catch (e) {
                 if (e instanceof TimeoutError) stats.timedOut = true; else stats.aiErrors++;
-                log(`track batch attempt ${attempt} failed: ${e.message}`);
+                log(`track call attempt ${attempt} failed after ${now() - t0}ms: ${e.message}`);
                 feedback = [];
+                if (attempt === 0) onFirstPass?.(true);
                 continue;
-            }
+            } finally { sem.release(); }
             feedback = [];
             for (const sk of Array.isArray(raw?.skipped) ? raw.skipped : []) {
                 const termId = String(sk?.termId ?? '');
@@ -842,37 +930,70 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 }
                 if (!found.get(termId).has(built.slot)) found.get(termId).set(built.slot, built.item);
             }
+            if (attempt === 0) {
+                // store the first pass right away so the response (and other requests) can already use it
+                counters.newItems += await storeResults({ level, batch, wants, found, skipped, final: false });
+                const missing = batch.some((t) => [...wants.get(t.id)].some((x) => !found.get(t.id).has(x) && !skipped.has(`${t.id}|${x}`)));
+                onFirstPass?.(missing);
+            }
         }
         return { found, skipped };
     }
 
-    /** Run batches (limited parallelism) and store what validated in the bank. Returns counts. */
-    async function fill({ level, jobs, setTerms, deadlineAt, stats }) {
-        // jobs: [{ term, slots:Set, avoid:[{slot,text}] }]
-        const batches = [];
-        for (let i = 0; i < jobs.length; i += limits.batchSize) batches.push(jobs.slice(i, i + limits.batchSize));
-        let next = 0;
-        let newItems = 0;
-        const worker = async () => {
-            while (next < batches.length) {
-                const b = batches[next++];
-                const batch = b.map((j) => j.term);
-                const avoid = new Map(b.filter((j) => j.avoid.length).map((j) => [j.term.id, j.avoid]));
-                const slotsByTerm = new Map(b.map((j) => [j.term.id, j.slots]));
-                const { found, skipped } = await runBatch({ level, batch, setTerms, slotsByTerm, avoid, deadlineAt, stats });
-                for (const j of b) {
-                    const adds = [...found.get(j.term.id)].map(([slot, item]) => ({ slot, item }));
-                    for (const sk of skipped) { const [id, slot] = [sk.slice(0, sk.indexOf('|')), sk.slice(sk.indexOf('|') + 1)]; if (id === j.term.id) adds.push({ slot, skipped: true }); }
-                    const added = await bank.add(j.term, level, adds);
-                    newItems += added.filter((e) => !e.skipped).length;
-                    for (const slot of j.slots) {
-                        if (!found.get(j.term.id).has(slot) && !skipped.has(`${j.term.id}|${slot}`)) cooldown.set(`${level}|${termKeyOf(j.term)}|${slot}`, now());
-                    }
+    /** Write what validated into the bank (idempotent: dedupe keeps repeated adds harmless). */
+    const stored = new WeakMap(); // found-map -> Set of `${termId}|${slot}` already written
+    async function storeResults({ level, batch, wants, found, skipped, final }) {
+        const done = stored.get(found) || new Set();
+        stored.set(found, done);
+        let added = 0;
+        for (const term of batch) {
+            const adds = [];
+            for (const [slot, item] of found.get(term.id)) { if (!done.has(`${term.id}|${slot}`)) { done.add(`${term.id}|${slot}`); adds.push({ slot, item }); } }
+            for (const sk of skipped) {
+                const i = sk.indexOf('|');
+                if (sk.slice(0, i) === term.id && !done.has(sk)) { done.add(sk); adds.push({ slot: sk.slice(i + 1), skipped: true }); }
+            }
+            if (adds.length) added += (await bank.add(term, level, adds)).filter((e) => !e.skipped).length;
+            if (final) {
+                for (const slot of wants.get(term.id)) {
+                    if (!found.get(term.id).has(slot) && !skipped.has(`${term.id}|${slot}`)) cooldown.set(`${level}|${termKeyOf(term)}|${slot}`, now());
                 }
             }
+        }
+        return added;
+    }
+
+    /**
+     * Cut jobs into small AI calls and run them in parallel (request order, `callConcurrency` at a time).
+     * Returns at once: `fg` resolves when every call has had its first pass (a retry that could not finish inside the
+     * foreground budget no longer holds it back), `all` when every call and retry has ended. Calls are never
+     * cancelled: whatever finishes after the response still lands in the bank.
+     */
+    function fill({ level, jobs, setTerms, fgDeadlineAt = null, jobDeadlineAt, stats, prio = 'hi', concurrency = limits.callConcurrency ?? 12 }) {
+        const calls = planCalls(jobs, limits.callWeight ?? LIMITS.callWeight);
+        const counters = { newItems: 0, open: calls.length };
+        const gates = calls.map(() => { let resolve; const promise = new Promise((r) => { resolve = r; }); return { promise, resolve }; });
+        let next = 0;
+        const worker = async () => {
+            while (next < calls.length) {
+                const idx = next++;
+                const parts = calls[idx];
+                const batch = parts.map((p) => p.term);
+                const avoid = new Map(parts.filter((p) => p.avoid.length).map((p) => [p.term.id, p.avoid]));
+                const slotsByTerm = new Map(parts.map((p) => [p.term.id, p.slots]));
+                const onFirstPass = (stillNeeded) => {
+                    if (!stillNeeded || fgDeadlineAt == null || fgDeadlineAt - now() < limits.retryMinRemainingMs) gates[idx].resolve();
+                };
+                try {
+                    const { found, skipped } = await runBatch({ level, batch, setTerms, slotsByTerm, avoid, jobDeadlineAt, stats, prio, onFirstPass, counters });
+                    counters.newItems += await storeResults({ level, batch, wants: slotsByTerm, found, skipped, final: true });
+                } catch (e) {
+                    log(`track call crashed: ${e?.message || e}`);
+                } finally { counters.open--; gates[idx].resolve(); }
+            }
         };
-        await Promise.all(Array.from({ length: Math.min(limits.batchConcurrency, batches.length) }, worker));
-        return newItems;
+        const all = Promise.all(Array.from({ length: Math.min(concurrency, calls.length) }, worker));
+        return { fg: Promise.all(gates.map((g) => g.promise)), all, calls: calls.length, counters };
     }
 
     const wantedSlots = (term, types) => {
@@ -884,9 +1005,13 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         return out;
     };
 
-    return async function generate({ setId, level, terms, types }) {
+    return async function generate({ setId, level, terms, types, budgetMs }) {
         const started = now();
-        const deadlineAt = started + limits.deadlineMs;
+        // Answer after `budgetMs` at the latest (default ~9 s) with everything validated by then; AI calls still running
+        // keep going and fill the bank, so a second request is served from it.
+        const budget = Math.min(limits.deadlineMs, Math.max(limits.minBudgetMs ?? 1500, budgetMs || limits.budgetMs || limits.deadlineMs));
+        const fgDeadlineAt = started + budget;
+        const jobDeadlineAt = started + Math.max(limits.jobDeadlineMs ?? limits.deadlineMs, budget);
         const stats = { aiCalls: 0, aiErrors: 0, timedOut: false };
         const lists = new Map();
         const slotsOf = new Map();
@@ -903,7 +1028,21 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             if (!miss.length) { bankHits++; continue; }
             jobs.push({ term, slots: new Set(miss), avoid: [] });
         }
-        const newItems = jobs.length ? await fill({ level, jobs, setTerms: terms, deadlineAt, stats }) : 0;
+        let newItems = 0;
+        let pendingCalls = 0;
+        if (jobs.length) {
+            const run = fill({ level, jobs, setTerms: terms, fgDeadlineAt, jobDeadlineAt, stats });
+            let timer;
+            const onTime = new Promise((resolve) => { timer = setTimeout(() => resolve('budget'), Math.max(1, fgDeadlineAt - now())); });
+            const outcome = await Promise.race([run.fg.then(() => 'done'), onTime]);
+            clearTimeout(timer);
+            run.all.catch(() => {}); // never an unhandled rejection from calls that outlive the response
+            if (outcome === 'budget') stats.timedOut = true;
+            newItems = run.counters.newItems;
+            pendingCalls = run.counters.open;
+            // calls that outlive the response may have added to the bank meanwhile; serve from the current lists
+            for (const term of terms) lists.set(term.id, await bank.entries(termKeyOf(term), level));
+        }
         // 2. serve: least-served first, ids rewritten to this set's term ids
         const items = [];
         const served = [];
@@ -943,8 +1082,9 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 term, slots,
                 avoid: [...slots].flatMap((sl) => usable(lists.get(term.id), sl).slice(0, 4).map((e) => ({ slot: sl, text: itemText(e.item) }))),
             }));
-            const added = await fill({ level, jobs: gJobs, setTerms: terms, deadlineAt: now() + limits.bgDeadlineMs, stats: gStats });
-            return { added, aiCalls: gStats.aiCalls };
+            const run = fill({ level, jobs: gJobs, setTerms: terms, jobDeadlineAt: now() + limits.bgDeadlineMs, stats: gStats, prio: 'lo', concurrency: limits.bgCallConcurrency ?? 3 });
+            await run.all;
+            return { added: run.counters.newItems, aiCalls: gStats.aiCalls };
         };
         return {
             items,
@@ -953,7 +1093,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 requestedTerms: terms.length, bankHits, newItems,
                 aiCalls: stats.aiCalls, growthScheduled: growPlan.length,
                 dropped, missingTerms: terms.filter((t) => !items.some((i) => i.lexiconId === t.id)).map((t) => t.id),
-                timedOut: stats.timedOut, elapsedMs: now() - started,
+                timedOut: stats.timedOut, pendingCalls, budgetMs: budget, elapsedMs: now() - started,
             },
             stats, growPlan, grow,
         };
@@ -1003,7 +1143,10 @@ export function createTrackGenerateHandler({
         try {
             const out = await generate(v);
             if (!out.items.length) {
-                if (out.stats.timedOut) return err(504, 'ai_timeout', 'The AI did not answer in time. Try again; finished terms are cached.', { meta: out.meta });
+                if (out.stats.timedOut) {
+                    res.set('Retry-After', '5');
+                    return err(504, 'ai_timeout', 'The AI did not answer in time. Try again in a few seconds; the work continues and finished terms are cached.', { retryAfterSec: 5, meta: out.meta });
+                }
                 if (out.stats.aiErrors && out.stats.aiErrors >= out.stats.aiCalls) return err(502, 'ai_failed', 'The AI request failed.', { meta: out.meta });
                 return err(502, 'ai_invalid', 'The AI answers did not pass validation.', { meta: out.meta });
             }

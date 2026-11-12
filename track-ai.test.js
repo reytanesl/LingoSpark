@@ -4,7 +4,7 @@ import express from 'express';
 import {
     validateTrackRequest, buildItem, findTermForm, makeTemplate, typesForLevel, buildTrackPrompt,
     createTrackGenerator, createTrackGenerateHandler, createTrackLimiter, createNonceStore, createLruCache,
-    createBank, termKeyOf, itemText, BANK_TARGET,
+    createBank, termKeyOf, itemText, BANK_TARGET, planCalls,
     signBridgeRequest, verifyBridgeRequest, BRIDGE_HEADERS, TRACK_PATH, LIMITS, ALL_TYPES,
 } from './track-ai.js';
 
@@ -542,4 +542,126 @@ test('http: background growth runs after the response, within the background bud
     assert.equal(limiter.tryStartBackground(), true);
     limiter.finishBackground();
     assert.equal(limiter.tryStartBackground(), false, 'hourly background budget used up');
+});
+
+/* ---------------------------------------------------------------- speed: parallel small calls, response budget */
+
+const WORDS = [['1', 'fog', 'mgła'], ['2', 'boat', 'łódź'], ['3', 'lake', 'jezioro'], ['4', 'sand', 'piasek'], ['5', 'wave', 'fala'], ['6', 'shore', 'brzeg']];
+const SPEED_TERMS = WORDS.map(([id, en, pl]) => T(id, en, pl));
+const speedReq = (over = {}) => ({ setId: 'speed', level: 'A2', terms: SPEED_TERMS, types: ['sentenceGap'], userRef: '', ...over });
+/** Mock model: answers every wanted sentenceGap in the prompt, after `delayFor(prompt)` ms. */
+function slowAi({ delayFor = () => 50, bad = () => false } = {}) {
+    const state = { calls: [], running: 0, maxRunning: 0, perTerm: new Map() };
+    const fn = async (prompt) => {
+        state.calls.push(prompt);
+        state.running++; state.maxRunning = Math.max(state.maxRunning, state.running);
+        await new Promise((r) => setTimeout(r, delayFor(prompt, state.calls.length)));
+        state.running--;
+        const items = [];
+        for (const m of prompt.matchAll(/- termId "([^"]+)": en "([^"]+)"/g)) {
+            const [, termId, en] = m;
+            const nth = (state.perTerm.get(termId) || 0) + 1; state.perTerm.set(termId, nth);
+            items.push({ termId, type: 'sentenceGap', sentence: `We saw the ${en} from the old bridge.`, answer: bad(termId, nth) ? 'bridge' : en, distractors: ['table', 'window', 'garden'] });
+        }
+        return { items, skipped: [] };
+    };
+    fn.state = state;
+    return fn;
+}
+const mkGen = (ai, limits = {}) => createTrackGenerator({ runPrompt: ai, limits: { ...LIMITS, ...limits } });
+
+test('planCalls: small calls in term order, every slot exactly once, big terms split, small ones share a call', () => {
+    const slots = (t) => new Set(['letterScramble', 'meaningPick:pl-en', 'meaningPick:en-pl', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType', 'listenPick', 'dictation', 'contextTrueFalse', 'collocationPick', 'wordFormation', 'keyTransform'].map((x) => x));
+    const jobs = SPEED_TERMS.map((term) => ({ term, slots: slots(), avoid: [] }));
+    const calls = planCalls(jobs);
+    assert.ok(calls.length >= SPEED_TERMS.length * 2, `a B1 term is cut into at least 2 calls (got ${calls.length} calls for ${SPEED_TERMS.length} terms)`);
+    const seen = new Map();
+    for (const call of calls) for (const p of call) for (const sl of p.slots) { const k = `${p.term.id}|${sl}`; assert.ok(!seen.has(k), `${k} planned twice`); seen.set(k, 1); }
+    assert.equal(seen.size, SPEED_TERMS.length * 13);
+    const order = calls.map((c) => Number(c[0].term.id));
+    assert.deepEqual(order, [...order].sort((a, b) => a - b), 'calls follow the term order (first stations first)');
+    // tiny jobs (one slot each) are packed together instead of one call per term
+    const tiny = planCalls(SPEED_TERMS.map((term) => ({ term, slots: new Set(['listenPick']), avoid: [] })));
+    assert.ok(tiny.length < SPEED_TERMS.length);
+    assert.equal(tiny.flat().length, SPEED_TERMS.length);
+});
+
+test('speed: calls run in parallel, not one after another', async () => {
+    const ai = slowAi({ delayFor: () => 300 });
+    const gen = mkGen(ai, { callWeight: 60 }); // one sentenceGap (70) per call => 6 calls
+    const t0 = Date.now();
+    const r = await gen(validateTrackRequest(speedReq()).value);
+    const ms = Date.now() - t0;
+    assert.equal(r.items.length, 6);
+    assert.equal(ai.state.calls.length, 6);
+    assert.ok(ai.state.maxRunning >= 6, `all calls overlapped (max ${ai.state.maxRunning})`);
+    assert.ok(ms < 900, `took ${ms} ms, a sequential run would need 1800`);
+    assert.equal(r.meta.timedOut, false);
+    assert.equal(r.meta.pendingCalls, 0);
+});
+
+test('speed: process-wide call limit is respected', async () => {
+    const ai = slowAi({ delayFor: () => 60 });
+    const gen = mkGen(ai, { callWeight: 60, callConcurrency: 6, globalCallConcurrency: 2 });
+    const r = await gen(validateTrackRequest(speedReq()).value);
+    assert.equal(r.items.length, 6);
+    assert.equal(ai.state.maxRunning, 2);
+});
+
+test('budget: answers at the budget with what is ready; slow calls keep going and land in the bank', async () => {
+    const ai = slowAi({ delayFor: (p) => (/en "(shore|wave)"/.test(p) ? 900 : 40) });
+    const gen = mkGen(ai, { callWeight: 60, minBudgetMs: 100 });
+    const t0 = Date.now();
+    const r = await gen({ ...validateTrackRequest(speedReq()).value, budgetMs: 300 });
+    const ms = Date.now() - t0;
+    assert.ok(ms < 700, `answered after ${ms} ms, not after the slow calls`);
+    assert.equal(r.items.length, 4);
+    assert.deepEqual(r.meta.missingTerms.sort(), ['5', '6']);
+    assert.equal(r.meta.timedOut, true);
+    assert.equal(r.meta.budgetMs, 300);
+    assert.equal(r.meta.pendingCalls, 2);
+    await new Promise((res) => setTimeout(res, 1100));
+    const callsBefore = ai.state.calls.length;
+    const again = await gen(validateTrackRequest(speedReq()).value);
+    assert.equal(again.items.length, 6, 'the late answers were stored');
+    assert.equal(again.meta.bankHits, 6);
+    assert.equal(ai.state.calls.length, callsBefore, 'second request needs no AI');
+});
+
+test('budget: default is 9 s, a request may ask for less (1.5 s) up to the hard deadline, nothing else', () => {
+    assert.equal(LIMITS.budgetMs, 9000);
+    assert.equal(validateTrackRequest(speedReq()).value.budgetMs, undefined);
+    assert.equal(validateTrackRequest(speedReq({ budgetMs: 4000 })).value.budgetMs, 4000);
+    assert.equal(validateTrackRequest(speedReq({ budgetMs: 20 })).ok, false);
+    assert.equal(validateTrackRequest(speedReq({ budgetMs: 'soon' })).ok, false);
+    assert.equal(validateTrackRequest(speedReq({ budgetMs: LIMITS.deadlineMs + 1 })).ok, false);
+});
+
+test('retries: a failed validation is retried inside the request while there is time, and in the background when there is not', async () => {
+    // plenty of time: retry fixes it inside the request
+    const ai = slowAi({ delayFor: () => 20, bad: (id, nth) => id === '1' && nth === 1 });
+    const gen = mkGen(ai, { callWeight: 60 });
+    const r = await gen(validateTrackRequest(speedReq()).value);
+    assert.equal(r.items.length, 6, 'term 1 was retried before answering');
+    assert.equal(ai.state.calls.length, 7);
+    // not enough time left for a retry (retryMinRemainingMs > budget): answer first, retry lands in the bank afterwards
+    const ai2 = slowAi({ delayFor: () => 20, bad: (id, nth) => id === '1' && nth === 1 });
+    const gen2 = mkGen(ai2, { callWeight: 60, retryMinRemainingMs: 60_000 });
+    const t0 = Date.now();
+    const r2 = await gen2(validateTrackRequest(speedReq({ setId: 'speed2' })).value);
+    assert.equal(r2.items.length, 5, 'answered without waiting for the retry');
+    assert.deepEqual(r2.meta.missingTerms, ['1']);
+    assert.ok(Date.now() - t0 < 500);
+    await new Promise((res) => setTimeout(res, 200));
+    const r3 = await gen2(validateTrackRequest(speedReq({ setId: 'speed2' })).value);
+    assert.equal(r3.items.length, 6, 'background retry filled the bank');
+    assert.equal(ai2.state.calls.length, 7);
+});
+
+test('prompt: a big set lists at most promptSetTerms words (targets always included)', () => {
+    const many = Array.from({ length: 40 }, (_, i) => T(String(i), `word${i}`, `słowo${i}`));
+    const p = buildTrackPrompt({ level: 'A2', terms: [many[30]], setTerms: many, wants: new Map([['30', new Set(['sentenceGap'])]]) });
+    const line = p.split('\n').find((l) => l.startsWith('WHOLE SET'));
+    assert.equal(line.split(';').length, LIMITS.promptSetTerms);
+    assert.match(line, /word30 = /);
 });

@@ -130,10 +130,10 @@ try {
 
 const AI_MODEL = { id: 'composer-2.5' };
 
-function aiAgentOptions(apiKey) {
+function aiAgentOptions(apiKey, model = AI_MODEL) {
     return {
         apiKey,
-        model: AI_MODEL,
+        model,
         local: {
             cwd: AI_CWD,
             // Inline config only — do not load project/user rules from the host.
@@ -142,12 +142,12 @@ function aiAgentOptions(apiKey) {
     };
 }
 
-function logAiUsage(label, result) {
+function logAiUsage(label, result, ms) {
     const u = result?.usage;
     if (!u) return;
     console.log(
         `[ai] ${label}: in=${u.inputTokens ?? 0} out=${u.outputTokens ?? 0} total=${u.totalTokens ?? 0}` +
-            (u.cacheReadTokens ? ` cacheRead=${u.cacheReadTokens}` : ''),
+            (u.cacheReadTokens ? ` cacheRead=${u.cacheReadTokens}` : '') + (ms != null ? ` ms=${ms}` : ''),
     );
 }
 
@@ -260,8 +260,19 @@ async function start() {
      * (HMAC with STUDY_BRIDGE_SECRET) or with a study session cookie. See track-ai.js.
      */
     const trackGenerate = createTrackGenerator({
-        runPrompt: (prompt, label) => runVisionJsonPrompt({ apiKey: process.env.CURSOR_API_KEY, prompt, label }),
+        // TRACK_AI_MODEL (optional): model id for Track generation only, e.g. a smaller/faster one; default = AI_MODEL (composer-2.5, "fast" variant).
+        runPrompt: (prompt, label) => runVisionJsonPrompt({
+            apiKey: process.env.CURSOR_API_KEY, prompt, label,
+            model: (process.env.TRACK_AI_MODEL || '').trim() ? { id: process.env.TRACK_AI_MODEL.trim() } : undefined,
+        }),
         bank: createBank({ store: dbReady ? createPgBankStore({ getPool }) : null }),
+        // Tunables (env, optional): TRACK_AI_BUDGET_MS (default 9000), TRACK_AI_CALL_CONCURRENCY (12 per request), TRACK_AI_GLOBAL_CONCURRENCY (16 per process).
+        limits: {
+            ...TRACK_LIMITS,
+            ...(Number(process.env.TRACK_AI_BUDGET_MS) >= 1500 ? { budgetMs: Math.min(Number(process.env.TRACK_AI_BUDGET_MS), TRACK_LIMITS.deadlineMs) } : {}),
+            ...(Number(process.env.TRACK_AI_CALL_CONCURRENCY) >= 1 ? { callConcurrency: Math.floor(Number(process.env.TRACK_AI_CALL_CONCURRENCY)) } : {}),
+            ...(Number(process.env.TRACK_AI_GLOBAL_CONCURRENCY) >= 1 ? { globalCallConcurrency: Math.floor(Number(process.env.TRACK_AI_GLOBAL_CONCURRENCY)) } : {}),
+        },
         log: (m) => console.warn('[track-ai]', m),
     });
     app.post(TRACK_PATH, createTrackGenerateHandler({
@@ -1005,15 +1016,16 @@ function cleanVisionImages(images) {
     });
 }
 
-async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'generate' }) {
+async function runVisionJsonPrompt({ apiKey, prompt, images = [], label = 'generate', model }) {
     const cleanImages = cleanVisionImages(images);
     const alreadyJsonOnly = /return only valid json/i.test(prompt);
     const fullPrompt = alreadyJsonOnly
         ? `${prompt}\n\nNo markdown fences. No tool use. Reply with JSON only.`
         : `${prompt}\n\nReturn ONLY valid JSON. No markdown fences, no explanation, no tool use.`;
     if (!cleanImages.length) {
-        const result = await Agent.prompt(fullPrompt, aiAgentOptions(apiKey));
-        logAiUsage(label, result);
+        const started = Date.now();
+        const result = await Agent.prompt(fullPrompt, aiAgentOptions(apiKey, model || AI_MODEL));
+        logAiUsage(label, result, Date.now() - started);
         if (result.status !== 'finished' || !result.result) {
             throw new Error(result.error?.message || 'Cursor AI generation failed');
         }
