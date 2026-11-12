@@ -85,6 +85,7 @@ import {
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
+import { createTrackGenerator, createTrackGenerateHandler, createPgCacheStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
 import { createMailer } from './mailer.js';
 import { registerPasswordResetRoutes, createPgResetStore } from './password-reset.js';
 import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, publicWorksheetMakerPack, checkoutUrls } from './billing.js';
@@ -183,6 +184,8 @@ app.post(
     }
 );
 
+// Track AI generation: small body cap + raw bytes kept for the HMAC check (must run before the global parser).
+app.use(TRACK_PATH, express.json({ limit: TRACK_LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -251,6 +254,20 @@ async function start() {
 
     // Mobile-app Google handoff. Safe if STUDY_BRIDGE_SECRET is unset (route returns 503).
     mountAppBridge(app);
+
+    /**
+     * Mobile-app Track exercises written by Cursor AI (no templates). Callable by the app server
+     * (HMAC with STUDY_BRIDGE_SECRET) or with a study session cookie. See track-ai.js.
+     */
+    const trackGenerate = createTrackGenerator({
+        runPrompt: (prompt, label) => runVisionJsonPrompt({ apiKey: process.env.CURSOR_API_KEY, prompt, label }),
+        store: dbReady ? createPgCacheStore({ getPool }) : null,
+        log: (m) => console.warn('[track-ai]', m),
+    });
+    app.post(TRACK_PATH, createTrackGenerateHandler({
+        generate: trackGenerate,
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
+    }));
 
     app.post('/auth/register', async (req, res, next) => {
         try {
