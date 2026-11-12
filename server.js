@@ -86,6 +86,10 @@ import {
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
 import { createTrackGenerator, createTrackGenerateHandler, createBank, createPgBankStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
+import {
+    PREWARM_PATH, PREWARM_BODY_LIMIT, readPrewarmConfig, collectSources, createPgPrewarmStore, createMemoryPrewarmStore,
+    createPrewarmWorker, createTrackPrewarmHandler,
+} from './track-prewarm.js';
 import { createMailer } from './mailer.js';
 import { registerPasswordResetRoutes, createPgResetStore } from './password-reset.js';
 import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, publicWorksheetMakerPack, checkoutUrls } from './billing.js';
@@ -186,6 +190,7 @@ app.post(
 
 // Track AI generation: small body cap + raw bytes kept for the HMAC check (must run before the global parser).
 app.use(TRACK_PATH, express.json({ limit: TRACK_LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
+app.use(PREWARM_PATH, express.json({ limit: PREWARM_BODY_LIMIT, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -259,7 +264,9 @@ async function start() {
      * Mobile-app Track exercises written by Cursor AI (no templates). Callable by the app server
      * (HMAC with STUDY_BRIDGE_SECRET) or with a study session cookie. See track-ai.js.
      */
+    let prewarmWorker = null; // created below; the generator hands it terms whose bank is incomplete (top-up at priority 0)
     const trackGenerate = createTrackGenerator({
+        onTopUp: ({ level, terms }) => { prewarmWorker?.enqueueTerms({ level, terms, priority: 0 }).catch((e) => console.warn('[track-prewarm] top-up enqueue failed:', e?.message || e)); },
         // TRACK_AI_MODEL (optional): model id for Track generation only, e.g. a smaller/faster one; default = AI_MODEL (composer-2.5, "fast" variant).
         runPrompt: (prompt, label) => runVisionJsonPrompt({
             apiKey: process.env.CURSOR_API_KEY, prompt, label,
@@ -279,6 +286,25 @@ async function start() {
         generate: trackGenerate,
         isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
     }));
+
+    // Prewarm: fills the question bank ahead of time (Postgres-backed queue, daily AI-call cap, kill switch TRACK_PREWARM=off).
+    // Terms come from word_sets/word_set_items + the built-in demo sets; POST /api/study/track-prewarm lets the app push a set to the front.
+    const prewarmStore = dbReady ? createPgPrewarmStore({ getPool }) : createMemoryPrewarmStore();
+    prewarmWorker = createPrewarmWorker({
+        store: prewarmStore,
+        generate: trackGenerate,
+        collect: dbReady ? (config) => collectSources({ getPool, config }) : null,
+        config: () => readPrewarmConfig(process.env),
+        log: (m) => console.warn('[track-prewarm]', m),
+    });
+    app.post(PREWARM_PATH, createTrackPrewarmHandler({
+        generate: trackGenerate,
+        worker: prewarmWorker,
+        store: prewarmStore,
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
+        getConfig: () => readPrewarmConfig(process.env),
+    }));
+    if (dbReady) prewarmWorker.start();
 
     app.post('/auth/register', async (req, res, next) => {
         try {

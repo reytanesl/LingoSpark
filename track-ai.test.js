@@ -306,12 +306,15 @@ test('http: oversized body is refused (413) before any AI call', async () => {
 });
 
 test('http: per-user and global rate limits answer 429 with Retry-After', async () => {
+    // each request needs the AI (a new homonym), because bank-only requests use the looser "cheap" window
+    let n = 0;
+    const fresh = () => ({ ...BODY, terms: [{ id: '1', en: 'fog', pl: `mgła-${++n}` }] });
     const limiter = createTrackLimiter({ limits: { ...LIMITS, userMax: 2, globalMax: 3 } });
     const s = await serve({ runPrompt: okAi, user: { id: 1 }, limiter });
     try {
-        assert.equal((await s.post(BODY)).status, 200);
-        assert.equal((await s.post(BODY)).status, 200);
-        const r = await s.post(BODY);
+        assert.equal((await s.post(fresh())).status, 200);
+        assert.equal((await s.post(fresh())).status, 200);
+        const r = await s.post(fresh());
         assert.equal(r.status, 429);
         assert.equal((await r.json()).code, 'rate_limited');
         assert.ok(Number(r.headers.get('retry-after')) > 0);
@@ -319,8 +322,8 @@ test('http: per-user and global rate limits answer 429 with Retry-After', async 
     const l2 = createTrackLimiter({ limits: { ...LIMITS, userMax: 10, globalMax: 2 } });
     const s2 = await serve({ runPrompt: okAi, user: { id: 1 }, limiter: l2 });
     try {
-        await s2.post(BODY); await s2.post(BODY);
-        const r = await s2.post(BODY);
+        await s2.post(fresh()); await s2.post(fresh());
+        const r = await s2.post(fresh());
         assert.equal(r.status, 429);
         assert.equal((await r.json()).code, 'rate_limited_global');
     } finally { await s2.close(); }
@@ -664,4 +667,168 @@ test('prompt: a big set lists at most promptSetTerms words (targets always inclu
     const line = p.split('\n').find((l) => l.startsWith('WHOLE SET'));
     assert.equal(line.split(';').length, LIMITS.promptSetTerms);
     assert.match(line, /word30 = /);
+});
+
+/* ---------------------------------------------------------------- gapTranslate regression + fast path (pre-warmed bank) */
+
+/** A mock model that writes a valid item for every wanted slot of every target term in the prompt (by parsing the prompt). */
+function fullModel({ skip = () => false, onPrompt = () => {} } = {}) {
+    const mk = (termId, en, slot) => {
+        const s = { sentence: `She was really ${en} about the news yesterday.`, answer: en, distractors: ['angry', 'tired', 'nervous'], plTranslation: 'Była naprawdę zadowolona z wiadomości wczoraj.' };
+        switch (slot) {
+            case 'gapTranslate': return { termId, type: slot, ...s, sentence: `Everybody was ${en} about the plan today.`, plTranslation: 'Wszyscy byli dziś zadowoleni z planu.' };
+            case 'sentenceGap': return { termId, type: slot, ...s };
+            case 'sentenceOrder': return { termId, type: slot, sentence: `I was ${en} about the news today.`, plTranslation: 'Dziś byłem zadowolony z wiadomości.' };
+            case 'meaningPick:pl-en': return { termId, type: 'meaningPick', direction: 'pl-en', distractors: [`a1${en}`, `b1${en}`, `c1${en}`] };
+            case 'meaningPick:en-pl': return { termId, type: 'meaningPick', direction: 'en-pl', distractors: [`a2${en}`, `b2${en}`, `c2${en}`] };
+            case 'listenPick': return { termId, type: slot, distractors: [`q${en}`, `w${en}`, `e${en}`] };
+            case 'dictation': return { termId, type: slot, sentence: `I was ${en} today.` };
+            case 'translateType': return { termId, type: slot, source: 'Byłem dziś zadowolony.', answer: `I was ${en} today.`, answers: [] };
+            case 'letterScramble': return { termId, type: slot, answer: en, hint: 'uczucie' };
+            case 'contextTrueFalse': return { termId, type: slot, passage: `Tom was ${en} for the help. He said thanks twice.`, statement: 'Tom said thanks once.', correctTrue: false };
+            case 'collocationPick': return { termId, type: slot, phrase: `very ${en} person`, answer: en, distractors: [`x1${en}`, `x2${en}`, `x3${en}`] };
+            case 'wordFormation': return { termId, type: slot, stem: en.toUpperCase(), sentence: `All of us saw his ${en}ness today.`, answer: `${en}ness` };
+            case 'keyTransform': return { termId, type: slot, sourceSentence: `She was ${en} to her friend.`, keyWord: 'BEING', template: `She felt ___ to her friend.`, answer: `like being ${en}`, answers: [] };
+            default: return null;
+        }
+    };
+    return async (prompt) => {
+        onPrompt(prompt);
+        const items = [];
+        for (const [, id, en, w] of prompt.matchAll(/- termId "(\d+)": en "([^"]+)".*→ wanted: (.*)$/gm)) {
+            for (const sl of w.split(', ')) { if (skip(id, sl, prompt)) continue; const it = mk(id, en, sl); if (it) items.push(it); }
+        }
+        return { items, skipped: [] };
+    };
+}
+const FEEL = ['grateful', 'happy', 'proud', 'upset', 'calm', 'eager'].map((en, i) => T(String(i + 1), en, `pl-${en}`));
+const B1REQ = (terms = FEEL) => validateTrackRequest({ setId: 's', level: 'B1', terms }).value;
+
+test('gapTranslate: its spec is self-contained (a call without sentenceGap still knows every field) and specs keep a stable order', () => {
+    const only = buildTrackPrompt({ level: 'B1', terms: [FOG], setTerms: [FOG], wants: new Map([['1', new Set(['gapTranslate'])]]) });
+    const spec = only.split('ITEM FORMATS')[1].split('RULES')[0];
+    assert.ok(!/as sentenceGap/.test(spec), 'no forward reference to a spec that is not in the prompt');
+    assert.match(spec, /"type":"gapTranslate".*NOT at the very start/);
+    assert.match(spec, /"distractors":\[3 wrong options/);
+    assert.match(spec, /"plTranslation":natural Polish translation of the WHOLE sentence \(always required/);
+    const both = buildTrackPrompt({ level: 'B1', terms: [FOG], setTerms: [FOG], wants: new Map([['1', new Set(['keyTransform', 'gapTranslate', 'sentenceGap'])]]) }).split('ITEM FORMATS')[1];
+    assert.ok(both.indexOf('"type":"sentenceGap"') < both.indexOf('"type":"gapTranslate"') && both.indexOf('"type":"gapTranslate"') < both.indexOf('"type":"keyTransform"'));
+});
+
+test('gapTranslate: tolerates a mis-spelled type name and a near-miss translation key, still rejects a missing translation', () => {
+    const raw = { termId: '1', ...good.sentenceGap, plTranslation: 'Gęsta mgła przykryła port.' };
+    assert.ok(buildItem({ ...raw, type: 'gapTranslate' }, FOG, 'A2').ok);
+    for (const type of ['gap-translate', 'GapTranslate', 'gap_translate']) assert.equal(buildItem({ ...raw, type }, FOG, 'A2').slot, 'gapTranslate');
+    const { plTranslation, ...noPl } = raw;
+    assert.equal(buildItem({ ...noPl, type: 'gapTranslate', translation: 'Gęsta mgła przykryła port.' }, FOG, 'A2').item.plTranslation, 'Gęsta mgła przykryła port.');
+    const miss = buildItem({ ...noPl, type: 'gapTranslate' }, FOG, 'A2');
+    assert.equal(miss.ok, false);
+    assert.match(miss.reason, /plTranslation/);
+});
+
+test('gapTranslate: every term of a B1 set gets one, wherever planCalls puts it (own call or shared)', async () => {
+    const seen = [];
+    // a model that follows the spec it is shown: it only writes gapTranslate when the prompt carries the complete gapTranslate spec
+    const model = fullModel({ onPrompt: (p) => seen.push(p), skip: (_id, slot, prompt) => slot === 'gapTranslate' && !/"type":"gapTranslate".*NOT at the very start/.test(prompt) });
+    const gen = createTrackGenerator({ runPrompt: model, limits: { ...LIMITS, budgetMs: 4000 } });
+    const r = await gen(B1REQ());
+    for (const t of FEEL) assert.ok(r.items.some((i) => i.lexiconId === t.id && i.type === 'gapTranslate' && i.plTranslation), `gapTranslate for ${t.en}`);
+    assert.ok(!r.meta.dropped.some((d) => d.type === 'gapTranslate'));
+    assert.ok(seen.some((p) => /wanted: gapTranslate$/m.test(p) || /wanted: [^\n]*gapTranslate/.test(p)));
+});
+
+test('retry: an item the model simply forgot is named in the retry feedback and then delivered', async () => {
+    const prompts = [];
+    let n = 0;
+    const base = fullModel();
+    const gen = createTrackGenerator({ runPrompt: async (p) => {
+        prompts.push(p); n++;
+        const out = await base(p);
+        return /PREVIOUS ATTEMPT/.test(p) ? out : { ...out, items: out.items.filter((i) => i.type !== 'gapTranslate') }; // the first answers forget every gapTranslate
+    } });
+    const r = await gen(B1REQ([FEEL[0]]));
+    assert.ok(r.items.some((i) => i.type === 'gapTranslate'));
+    const retry = prompts.find((p) => /PREVIOUS ATTEMPT/.test(p));
+    assert.ok(retry, 'a retry prompt exists');
+    assert.match(retry, /gapTranslate: missing/);
+});
+
+test('fast path: a fully banked request never waits for the AI and reports meta.ready per term', async () => {
+    const gen = createTrackGenerator({ runPrompt: fullModel(), limits: { ...LIMITS, budgetMs: 4000 } });
+    const cold = await gen(B1REQ());
+    assert.ok(cold.meta.ready['1'].want >= 12);
+    const t0 = Date.now();
+    const warm = await gen(B1REQ());
+    assert.ok(Date.now() - t0 < 500);
+    assert.equal(warm.meta.aiCalls, 0);
+    assert.equal(warm.meta.bankHits, FEEL.length);
+    assert.equal(warm.meta.allReady, true);
+    assert.ok(FEEL.every((t) => warm.meta.ready[t.id].ready === true && warm.meta.ready[t.id].have === warm.meta.ready[t.id].want));
+});
+
+test('sufficiency: a term with most task types banked is answered at once; its gaps go to the top-up hook, not to the 9 s wait', async () => {
+    const bank = createBank();
+    const slotsAll = ['letterScramble', 'meaningPick:pl-en', 'meaningPick:en-pl', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType', 'listenPick', 'dictation', 'contextTrueFalse', 'collocationPick', 'wordFormation', 'keyTransform'];
+    // fill everything except gapTranslate + keyTransform (11/13 ≈ 85 %)
+    const filler = createTrackGenerator({ runPrompt: fullModel({ skip: (_i, sl) => sl === 'gapTranslate' || sl === 'keyTransform' }), bank, limits: { ...LIMITS, budgetMs: 4000 } });
+    await filler(B1REQ([FEEL[0]]));
+    const topUps = [];
+    let aiCalls = 0;
+    const gen = createTrackGenerator({ runPrompt: async () => { aiCalls++; return new Promise(() => {}); }, bank, onTopUp: (x) => topUps.push(x) });
+    const t0 = Date.now();
+    const r = await gen(B1REQ([FEEL[0]]));
+    assert.ok(Date.now() - t0 < 500, 'did not spend the budget');
+    assert.equal(aiCalls, 0, 'no foreground AI call for a sufficient term');
+    assert.equal(r.meta.timedOut, false);
+    assert.equal(r.meta.ready['1'].ready, false);
+    assert.ok(r.meta.ready['1'].have >= 11 && r.meta.ready['1'].have < slotsAll.length);
+    assert.equal(r.meta.topUpQueued, 1);
+    assert.equal(topUps.length, 1);
+    assert.deepEqual(topUps[0].terms.map((t) => t.en), ['grateful']);
+    assert.ok(!r.items.some((i) => i.type === 'gapTranslate'), 'missing type is simply absent');
+});
+
+test('in flight: overlapping requests for the same cold slots share one AI call instead of starting another', async () => {
+    let calls = 0;
+    const base = fullModel();
+    const gen = createTrackGenerator({ runPrompt: async (p) => { calls++; await new Promise((r) => setTimeout(r, 120)); return base(p); }, limits: { ...LIMITS, budgetMs: 4000 } });
+    const [a, b] = await Promise.all([gen(B1REQ([FEEL[0]])), (async () => { await new Promise((r) => setTimeout(r, 30)); return gen(B1REQ([FEEL[0]])); })()]);
+    const perRequest = planCalls([{ term: FEEL[0], slots: new Set(['letterScramble', 'meaningPick:pl-en', 'meaningPick:en-pl', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType', 'listenPick', 'dictation', 'contextTrueFalse', 'collocationPick', 'wordFormation', 'keyTransform']), avoid: [] }]).length;
+    assert.equal(calls, perRequest, 'the second request started no new calls');
+    assert.equal(a.items.length, b.items.length);
+    assert.ok(a.items.length >= 12);
+});
+
+test('prewarm(): fills every missing slot with bigger calls, no response budget; reports what is still missing', async () => {
+    let calls = 0;
+    const base = fullModel({ skip: (id, sl) => id === '2' && sl === 'keyTransform' });
+    const gen = createTrackGenerator({ runPrompt: async (p) => { calls++; return base(p); } });
+    const res = await gen.prewarm({ level: 'B1', terms: FEEL.slice(0, 4), callWeight: 1500 });
+    assert.equal(res.total, 4);
+    assert.equal(res.ready, 3);
+    assert.deepEqual(Object.keys(res.missing), ['2']);
+    assert.deepEqual(res.missing['2'], ['keyTransform']);
+    assert.ok(res.aiCalls === calls && calls >= 1 && calls <= 8, `calls ${calls}`);
+    const again = await gen.prewarm({ level: 'B1', terms: FEEL.slice(0, 1) });
+    assert.equal(again.aiCalls, 0, 'nothing missing -> no AI');
+    const small = createTrackGenerator({ runPrompt: base });
+    const r500 = await small.prewarm({ level: 'B1', terms: FEEL.slice(0, 4), callWeight: 500 });
+    assert.ok(r500.aiCalls > res.aiCalls - 1, 'smaller calls need at least as many calls');
+});
+
+test('http: bank-only requests use the loose window and skip the AI quota / busy lock', async () => {
+    const limiter = createTrackLimiter({ limits: { ...LIMITS, userMax: 1, globalMax: 1 } });
+    const s = await serve({ runPrompt: fullModel(), user: { id: 5 }, limiter });
+    try {
+        const body = { setId: 's', level: 'B1', terms: FEEL.slice(0, 2) };
+        const first = await s.post(body);
+        assert.equal(first.status, 200);
+        for (let i = 0; i < 5; i++) {
+            const r = await s.post(body);
+            assert.equal(r.status, 200, 'banked repeat is not rate limited by the AI quota (userMax 1)');
+            const j = await r.json();
+            assert.equal(j.meta.aiCalls, 0);
+            assert.equal(j.meta.allReady, true);
+        }
+    } finally { await s.close(); }
 });

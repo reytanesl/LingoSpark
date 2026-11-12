@@ -245,7 +245,7 @@ const slotType = (slot) => slot.split(':')[0];
 
 const TYPE_SPECS = {
     sentenceGap: '{"termId","type":"sentenceGap","sentence":full English sentence using the target in a form that fits the grammar,"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence]}',
-    gapTranslate: '{"termId","type":"gapTranslate","sentence":as sentenceGap,"answer","distractors":[3],"plTranslation":natural Polish translation of the whole sentence}',
+    gapTranslate: '{"termId","type":"gapTranslate","sentence":full English sentence (no gap marks) using the target in a form that fits the grammar,"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence],"plTranslation":natural Polish translation of the WHOLE sentence (always required, a non-empty string)} (use a different sentence than the sentenceGap item of the same term)',
     sentenceOrder: '{"termId","type":"sentenceOrder","sentence":one sentence with the target (punctuation attached to the last word),"plTranslation":Polish translation as a hint}',
     meaningPick: '{"termId","type":"meaningPick","direction":"pl-en" or "en-pl","distractors":[3 wrong options in the ANSWER language: other terms of the set when sensible]} (the question is the term itself; the answer is its translation exactly as listed in the term)',
     collocationPick: '{"termId","type":"collocationPick","phrase":a natural 2–6 word collocation/chunk containing the target (target NOT first),"answer":the target as written in the phrase,"distractors":[3 words that do NOT collocate here]}',
@@ -275,7 +275,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         const slots = [...ts].join(', ');
         return `- termId ${JSON.stringify(t.id)}: en ${JSON.stringify(t.en)} | pl ${JSON.stringify(t.pl)}${t.pos ? ` | pos ${t.pos}` : ''} → wanted: ${slots}`;
     });
-    const typeNames = [...new Set([...wants.values()].flatMap((s) => [...s].map(slotType)))];
+    const typeNames = [...new Set([...wants.values()].flatMap((s) => [...s].map(slotType)))].sort((a, b) => ALL_TYPES.indexOf(a) - ALL_TYPES.indexOf(b));
     return [
         'You write language-learning exercises for a mobile vocabulary app. Learners are Polish speakers learning English.',
         `CEFR level of the exercises: ${level}. ${LEVEL_NOTES[level]}`,
@@ -307,6 +307,12 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
 
 const REASON = (m) => ({ ok: false, reason: m });
 
+/** "gap-translate", "Gap_Translate", "gaptranslate" -> "gapTranslate" (models drift on the casing of a type name). */
+const TYPE_BY_FLAT = new Map(ALL_TYPES.map((t) => [t.toLowerCase(), t]));
+export const canonType = (t) => TYPE_BY_FLAT.get(String(t ?? '').toLowerCase().replace(/[^a-z]/g, '')) || t;
+/** The Polish translation of a gap sentence: the documented key, or a near-miss key the model may use. */
+const plTranslationOf = (raw) => raw.plTranslation ?? raw.translation ?? raw.plSentence ?? raw.polishTranslation ?? raw.polish ?? raw.pl;
+
 function checkOptions(options, answer) {
     if (!Array.isArray(options) || options.length !== 4) return 'needs exactly 4 options';
     const ns = options.map((o) => norm(o));
@@ -336,7 +342,7 @@ function promptLeaks(prompt, answer) {
  */
 export function buildItem(raw, term, level) {
     if (!raw || typeof raw !== 'object') return REASON('not an object');
-    const type = raw.type;
+    const type = canonType(raw.type);
     if (!ALL_TYPES.includes(type)) return REASON('unknown type');
     const [lo, hi] = SENT_WORDS[level];
     const rng = rngFrom(`${term.id}|${type}|${raw.direction || ''}|${norm(raw.sentence || raw.phrase || raw.stem || '')}`);
@@ -368,8 +374,9 @@ export function buildItem(raw, term, level) {
             const prompt = type === 'gapTranslate' ? 'Fill the gap. Use the Polish translation to help.' : 'Choose the word that fits the gap.';
             const item = { prompt, template, answer: clean(raw.answer), options };
             if (type === 'gapTranslate') {
-                if (!isStr(raw.plTranslation, 4, 260)) return REASON('plTranslation missing');
-                item.plTranslation = clean(raw.plTranslation);
+                const pl = plTranslationOf(raw);
+                if (!isStr(pl, 4, 260)) return REASON('plTranslation missing: add "plTranslation" (Polish translation of the whole sentence)');
+                item.plTranslation = clean(pl);
             }
             return tag(type, item);
         }
@@ -383,7 +390,8 @@ export function buildItem(raw, term, level) {
             for (let i = 0; i < 5 && tokens.every((t, k) => t === correct[k]); i++) tokens = shuffled(correct, rng);
             if (tokens.every((t, k) => t === correct[k])) return REASON('cannot shuffle sentence');
             const item = { prompt: 'Put the words in order.', tokens, correctOrder: correct };
-            if (isStr(raw.plTranslation, 2, 260)) item.plTranslation = clean(raw.plTranslation);
+            const plHint = plTranslationOf(raw);
+            if (isStr(plHint, 2, 260)) item.plTranslation = clean(plHint);
             return tag('sentenceOrder', item);
         }
         case 'meaningPick': {
@@ -692,6 +700,7 @@ export function pickLeastServed(entries, rand = Math.random) {
 /** Sliding-window per-key + global limiter, one concurrent job per key, bounded global concurrency. */
 export function createTrackLimiter({ now = () => Date.now(), limits = LIMITS } = {}) {
     const hits = new Map();
+    const cheap = new Map();
     const busy = new Set();
     let globalHits = [];
     let bgHits = [];
@@ -706,6 +715,15 @@ export function createTrackLimiter({ now = () => Date.now(), limits = LIMITS } =
             if (running >= limits.globalConcurrent) return { ok: false, code: 'server_busy', error: 'The generator is busy. Try again shortly.', retryAfterSec: 10 };
             if (list.length >= limits.userMax) return { ok: false, code: 'rate_limited', error: 'Too many generation requests. Slow down.', retryAfterSec: Math.ceil((limits.userWindowMs - (t - list[0])) / 1000) };
             if (globalHits.length >= limits.globalMax) return { ok: false, code: 'rate_limited_global', error: 'The generator is over its hourly capacity.', retryAfterSec: Math.ceil((limits.globalWindowMs - (t - globalHits[0])) / 1000) };
+            return { ok: true };
+        },
+        /** Bank-only requests (no AI work): a much looser per-user window; never blocked by `busy`/`running`. */
+        checkCheap(key) {
+            const t = now();
+            const list = (cheap.get(key) || []).filter((x) => t - x < limits.userWindowMs);
+            if (list.length >= (limits.cheapMax ?? 120)) { cheap.set(key, list); return { ok: false, code: 'rate_limited', error: 'Too many requests. Slow down.', retryAfterSec: Math.ceil((limits.userWindowMs - (t - list[0])) / 1000) }; }
+            list.push(t); cheap.set(key, list);
+            if (cheap.size > 5000) for (const k of cheap.keys()) { cheap.delete(k); if (cheap.size <= 4000) break; }
             return { ok: true };
         },
         start(key) { const t = now(); busy.add(key); running++; globalHits.push(t); hits.set(key, [...(hits.get(key) || []), t]); },
@@ -869,10 +887,13 @@ export function planCalls(jobs, callWeight = LIMITS.callWeight) {
     return calls;
 }
 
-export function createTrackGenerator({ runPrompt, bank = createBank(), limits = LIMITS, now = () => Date.now(), log = () => {}, rand = Math.random } = {}) {
+export function createTrackGenerator({ runPrompt, bank = createBank(), limits = LIMITS, now = () => Date.now(), log = () => {}, rand = Math.random, onTopUp = null } = {}) {
     const cooldown = new Map(); // `${level}|${termKey}|${slot}` -> failed-at
     const cool = (level, term, slot) => { const t = cooldown.get(`${level}|${termKeyOf(term)}|${slot}`); return t && now() - t < limits.failCooldownMs; };
     const sem = createSemaphore(limits.globalCallConcurrency ?? 12);
+    const inflight = new Map(); // `${level}|${termKey}|${slot}` -> promise that settles once that call stored its first pass
+    const flightKey = (level, term, slot) => `${level}|${termKeyOf(term)}|${slot}`;
+    let fgActive = 0; // foreground generate() requests currently running (the prewarm worker yields to them)
 
     /**
      * One AI call (plus retries for what failed validation). `onFirstPass(stillNeeded)` fires after the first answer
@@ -918,8 +939,9 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 const term = batch.find((t) => t.id === termId);
                 if (!term || !need.has(termId)) continue;
                 const built = buildItem(r, term, level);
-                const slot = built.slot || (r?.type === 'meaningPick' ? `meaningPick:${r.direction}` : r?.type);
-                if (!built.ok) { feedback.push({ termId, slot, reason: built.reason }); continue; }
+                const rType = canonType(r?.type);
+                const slot = built.slot || (rType === 'meaningPick' ? `meaningPick:${r.direction}` : rType);
+                if (!built.ok) { feedback.push({ termId, slot, reason: built.reason }); log(`rejected ${level} "${term.en}" ${slot}: ${built.reason}`); continue; }
                 if (!need.get(termId).has(built.slot)) continue;
                 const fc = finalCheck(built.item);
                 if (fc) { feedback.push({ termId, slot, reason: fc }); continue; }
@@ -929,6 +951,14 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                     continue;
                 }
                 if (!found.get(termId).has(built.slot)) found.get(termId).set(built.slot, built.item);
+            }
+            // a wanted item the model simply did not write gets feedback too (otherwise the retry repeats the same prompt)
+            for (const [termId, slots] of need) {
+                for (const sl of slots) {
+                    if (found.get(termId).has(sl) || skipped.has(`${termId}|${sl}`) || feedback.some((f) => f.termId === termId && f.slot === sl)) continue;
+                    feedback.push({ termId, slot: sl, reason: `missing: no valid "${slotType(sl)}" item was returned for this term${sl.includes(':') ? ` (direction ${sl.split(':')[1]})` : ''}; write it with exactly the fields of its format` });
+                    log(`missing ${level} "${batch.find((t) => t.id === termId)?.en}" ${sl}`);
+                }
             }
             if (attempt === 0) {
                 // store the first pass right away so the response (and other requests) can already use it
@@ -969,8 +999,8 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
      * foreground budget no longer holds it back), `all` when every call and retry has ended. Calls are never
      * cancelled: whatever finishes after the response still lands in the bank.
      */
-    function fill({ level, jobs, setTerms, fgDeadlineAt = null, jobDeadlineAt, stats, prio = 'hi', concurrency = limits.callConcurrency ?? 12 }) {
-        const calls = planCalls(jobs, limits.callWeight ?? LIMITS.callWeight);
+    function fill({ level, jobs, setTerms, fgDeadlineAt = null, jobDeadlineAt, stats, prio = 'hi', concurrency = limits.callConcurrency ?? 12, callWeight = limits.callWeight ?? LIMITS.callWeight }) {
+        const calls = planCalls(jobs, callWeight);
         const counters = { newItems: 0, open: calls.length };
         const gates = calls.map(() => { let resolve; const promise = new Promise((r) => { resolve = r; }); return { promise, resolve }; });
         let next = 0;
@@ -981,7 +1011,11 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 const batch = parts.map((p) => p.term);
                 const avoid = new Map(parts.filter((p) => p.avoid.length).map((p) => [p.term.id, p.avoid]));
                 const slotsByTerm = new Map(parts.map((p) => [p.term.id, p.slots]));
+                let flightDone; const flight = new Promise((r) => { flightDone = r; });
+                const keys = parts.flatMap((p) => [...p.slots].map((sl) => flightKey(level, p.term, sl)));
+                keys.forEach((k) => { if (!inflight.has(k)) inflight.set(k, flight); });
                 const onFirstPass = (stillNeeded) => {
+                    flightDone();
                     if (!stillNeeded || fgDeadlineAt == null || fgDeadlineAt - now() < limits.retryMinRemainingMs) gates[idx].resolve();
                 };
                 try {
@@ -989,7 +1023,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                     counters.newItems += await storeResults({ level, batch, wants: slotsByTerm, found, skipped, final: true });
                 } catch (e) {
                     log(`track call crashed: ${e?.message || e}`);
-                } finally { counters.open--; gates[idx].resolve(); }
+                } finally { counters.open--; gates[idx].resolve(); flightDone(); keys.forEach((k) => { if (inflight.get(k) === flight) inflight.delete(k); }); }
             }
         };
         const all = Promise.all(Array.from({ length: Math.min(concurrency, calls.length) }, worker));
@@ -1005,7 +1039,73 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         return out;
     };
 
-    return async function generate({ setId, level, terms, types, budgetMs }) {
+    /** Bank state of one term: which wanted slots are served (usable or remembered as skipped), in flight, or cooling down. */
+    function termState(level, term, list, wanted) {
+        const have = []; const missing = [];
+        for (const sl of wanted) (usable(list, sl).length || isSkipped(list, sl) ? have : missing).push(sl);
+        const open = missing.filter((sl) => !cool(level, term, sl));
+        const ratio = wanted.length ? have.length / wanted.length : 1;
+        // "sufficient": enough of the term's task types are banked to serve a station without waiting for the AI
+        const sufficient = !wanted.length || ratio >= (limits.fgSufficientRatio ?? 0.7) || !open.length;
+        return { have, missing, open, sufficient, ready: !missing.length };
+    }
+    const metaReady = (level, terms, lists, slotsOf) => {
+        const ready = {};
+        for (const term of terms) {
+            const st = termState(level, term, lists.get(term.id), slotsOf.get(term.id));
+            ready[term.id] = {
+                ready: st.ready, have: st.have.length, want: slotsOf.get(term.id).length,
+                pending: st.missing.some((sl) => inflight.has(flightKey(level, term, sl))),
+            };
+        }
+        return ready;
+    };
+
+    /** Bank-only look (no AI): can this request be answered at once? */
+    async function readiness({ level, terms, types }) {
+        const lists = new Map(); const slotsOf = new Map();
+        for (const term of terms) { lists.set(term.id, await bank.entries(termKeyOf(term), level)); slotsOf.set(term.id, wantedSlots(term, types)); }
+        const ready = metaReady(level, terms, lists, slotsOf);
+        const allSufficient = terms.every((t) => termState(level, t, lists.get(t.id), slotsOf.get(t.id)).sufficient);
+        const readyCount = terms.filter((t) => ready[t.id].ready).length;
+        return { allSufficient, allReady: readyCount === terms.length, readyCount, ready };
+    }
+
+    /**
+     * Fill the bank for `terms` at `level` until every wanted slot is served or skipped (no response, no time budget).
+     * Used by the prewarm worker (low priority, own call weight). Returns what is still missing per term id.
+     */
+    async function prewarm({ level, terms, types = typesForLevel(level), concurrency = limits.bgCallConcurrency ?? 3, callWeight = limits.prewarmCallWeight ?? limits.callWeight ?? LIMITS.callWeight, prio = 'lo' }) {
+        const stats = { aiCalls: 0, aiErrors: 0, timedOut: false };
+        const jobs = []; let waiting = [];
+        for (const term of terms) {
+            const list = await bank.entries(termKeyOf(term), level);
+            const want = wantedSlots(term, types);
+            const st = termState(level, term, list, want);
+            const todo = st.missing.filter((sl) => { const f = inflight.get(flightKey(level, term, sl)); if (f) waiting.push(f); return !f; });
+            if (todo.length) jobs.push({ term, slots: new Set(todo), avoid: [] });
+        }
+        let added = 0;
+        if (jobs.length) {
+            const run = fill({ level, jobs, setTerms: terms, jobDeadlineAt: now() + (limits.prewarmDeadlineMs ?? 150_000), stats, prio, concurrency, callWeight });
+            await run.all.catch(() => {});
+            added = run.counters.newItems;
+        }
+        await Promise.all(waiting);
+        const left = {}; let done = 0;
+        for (const term of terms) {
+            const st = termState(level, term, await bank.entries(termKeyOf(term), level), wantedSlots(term, types));
+            if (st.ready) done++; else left[term.id] = st.missing;
+        }
+        return { aiCalls: stats.aiCalls, aiErrors: stats.aiErrors, added, ready: done, total: terms.length, missing: left };
+    }
+
+    async function generate({ setId, level, terms, types, budgetMs }) {
+        fgActive++;
+        try { return await generateInner({ setId, level, terms, types, budgetMs }); } finally { fgActive--; }
+    }
+
+    async function generateInner({ setId, level, terms, types, budgetMs }) {
         const started = now();
         // Answer after `budgetMs` at the latest (default ~9 s) with everything validated by then; AI calls still running
         // keep going and fill the bank, so a second request is served from it.
@@ -1019,22 +1119,29 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             lists.set(term.id, await bank.entries(termKeyOf(term), level));
             slotsOf.set(term.id, wantedSlots(term, types));
         }
-        // 1. foreground: only slots the bank cannot serve at all
+        // 1. foreground: only terms that are NOT sufficiently banked wait for the AI (their missing slots, nothing already in flight).
+        //    Terms with most task types banked are answered at once; their gaps are topped up in the background.
         const jobs = [];
+        const waitFor = [];
+        const topUp = [];
         let bankHits = 0;
         for (const term of terms) {
-            const list = lists.get(term.id);
-            const miss = slotsOf.get(term.id).filter((sl) => !usable(list, sl).length && !isSkipped(list, sl) && !cool(level, term, sl));
-            if (!miss.length) { bankHits++; continue; }
-            jobs.push({ term, slots: new Set(miss), avoid: [] });
+            const st = termState(level, term, lists.get(term.id), slotsOf.get(term.id));
+            if (st.sufficient) {
+                bankHits++;
+                if (st.missing.length) topUp.push(term);
+                continue;
+            }
+            const todo = st.open.filter((sl) => { const f = inflight.get(flightKey(level, term, sl)); if (f) waitFor.push(f); return !f; });
+            if (todo.length) jobs.push({ term, slots: new Set(todo), avoid: [] });
         }
         let newItems = 0;
         let pendingCalls = 0;
-        if (jobs.length) {
-            const run = fill({ level, jobs, setTerms: terms, fgDeadlineAt, jobDeadlineAt, stats });
+        if (jobs.length || waitFor.length) {
+            const run = jobs.length ? fill({ level, jobs, setTerms: terms, fgDeadlineAt, jobDeadlineAt, stats }) : { fg: Promise.resolve(), all: Promise.resolve(), counters: { newItems: 0, open: 0 } };
             let timer;
             const onTime = new Promise((resolve) => { timer = setTimeout(() => resolve('budget'), Math.max(1, fgDeadlineAt - now())); });
-            const outcome = await Promise.race([run.fg.then(() => 'done'), onTime]);
+            const outcome = await Promise.race([Promise.all([run.fg, ...waitFor]).then(() => 'done'), onTime]);
             clearTimeout(timer);
             run.all.catch(() => {}); // never an unhandled rejection from calls that outlive the response
             if (outcome === 'budget') stats.timedOut = true;
@@ -1063,6 +1170,12 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             }
         }
         bank.markServed(served);
+        // gaps in terms we answered without waiting (and terms the foreground could not finish) -> background top-up at top priority
+        const gapTerms = terms.filter((t) => {
+            const st = termState(level, t, lists.get(t.id), slotsOf.get(t.id));
+            return st.open.some((sl) => !inflight.has(flightKey(level, t, sl)));
+        });
+        if (gapTerms.length && onTopUp) { try { onTopUp({ level, terms: gapTerms }); } catch (e) { log(`top-up hook failed: ${e?.message || e}`); } }
         // 3. growth plan for the background: below the target, or a small chance to add one more
         const plan = [];
         for (const term of terms) {
@@ -1086,6 +1199,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             await run.all;
             return { added: run.counters.newItems, aiCalls: gStats.aiCalls };
         };
+        const ready = metaReady(level, terms, lists, slotsOf);
         return {
             items,
             meta: {
@@ -1094,10 +1208,16 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 aiCalls: stats.aiCalls, growthScheduled: growPlan.length,
                 dropped, missingTerms: terms.filter((t) => !items.some((i) => i.lexiconId === t.id)).map((t) => t.id),
                 timedOut: stats.timedOut, pendingCalls, budgetMs: budget, elapsedMs: now() - started,
+                ready, allReady: terms.every((t) => ready[t.id].ready), topUpQueued: gapTerms.length,
             },
             stats, growPlan, grow,
         };
-    };
+    }
+
+    generate.readiness = readiness;
+    generate.prewarm = prewarm;
+    generate.stats = () => ({ fgActive, inflight: inflight.size });
+    return generate;
 }
 
 // ---------------------------------------------------------------- express handler
@@ -1132,7 +1252,24 @@ export function createTrackGenerateHandler({
         if (!checked.ok) return err(400, checked.code, checked.error);
         const v = checked.value;
         const limitKey = principal === 'app' ? (v.userRef ? `app:${v.userRef}` : 'app') : principal;
-        // 3. serve from cache when complete, otherwise gate AI work
+        // 3a. fast path: every term already has enough banked task types -> no AI wait, no AI quota, no `busy` lock
+        let peek = null;
+        try { peek = await generate.readiness?.(v); } catch (e) { console.warn('[track-ai] readiness failed:', e?.message || e); }
+        if (peek?.allSufficient) {
+            const cheapGate = limiter.checkCheap(limitKey);
+            if (!cheapGate.ok) {
+                res.set('Retry-After', String(cheapGate.retryAfterSec));
+                return err(429, cheapGate.code, cheapGate.error, { retryAfterSec: cheapGate.retryAfterSec });
+            }
+            try {
+                const out = await generate(v);
+                return res.json({ items: out.items, meta: out.meta });
+            } catch (e) {
+                console.error('track-generate (bank) failed:', e?.message || e);
+                return err(500, 'internal', 'Generation failed.');
+            }
+        }
+        // 3b. otherwise gate AI work
         const gate = limiter.check(limitKey);
         if (!gate.ok) {
             res.set('Retry-After', String(gate.retryAfterSec));
