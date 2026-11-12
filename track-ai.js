@@ -5,7 +5,7 @@
    sent back. There are NO template fallbacks: an exercise that cannot be validated is dropped.
    Contract (summary):
      auth     : HMAC-signed server-to-server headers (STUDY_BRIDGE_SECRET) OR a study session cookie
-     cache    : per term, keyed by setId + term(id,en,pl) hash + level + types + PROMPT_VERSION
+     bank     : validated items stored per TERM (en+pl) + level, shared by all sets (Postgres track_ai_bank + memory)
      limits   : see LIMITS */
 import crypto from 'node:crypto';
 
@@ -39,9 +39,14 @@ export const LIMITS = {
     userMax: 10, userWindowMs: 10 * 60_000, // generation requests that reach the AI, per user
     globalMax: 120, globalWindowMs: 60 * 60_000,
     globalConcurrent: 4,
+    bgMax: 40, // background bank-growth runs per hour
+    bgDeadlineMs: 80_000,
+    growTerms: 6, // terms per background run
+    growProbability: 0.15, // chance to add one more item to a slot that already reached the target
+    failCooldownMs: 30 * 60_000,
     signatureSkewMs: 60_000,
     nonceTtlMs: 5 * 60_000,
-    cacheMax: 4000, cacheTtlMs: 7 * 24 * 3600_000,
+    cacheMax: 4000, cacheTtlMs: 7 * 24 * 3600_000, // generic LRU defaults
 };
 
 /** Sentence length (words) per level. */
@@ -240,7 +245,7 @@ const TYPE_SPECS = {
     keyTransform: '{"termId","type":"keyTransform","sourceSentence":original sentence,"keyWord":UPPERCASE word that must be used UNCHANGED in the answer,"template":second sentence with ONE gap ___ that must be filled with 2–5 words INCLUDING the key word (key word not outside the gap),"answer":the 2–5 words,"answers":[the answer plus up to 2 other correct 2–5 word solutions with the key word]} (same meaning as the source sentence; the target term appears in the source or in the completed sentence)',
 };
 
-export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [] }) {
+export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [], avoid = new Map() }) {
     const [lo, hi] = SENT_WORDS[level];
     const lines = terms.map((t) => {
         const ts = wants.get(t.id);
@@ -257,13 +262,14 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [] 
         ...lines,
         '',
         `WHOLE SET (use these English/Polish words as distractors when they fit the type): ${setTerms.map((t) => `${t.en} = ${t.pl}`).join('; ')}`,
+        ...(avoid.size ? ['', 'ALREADY WRITTEN (write something clearly DIFFERENT: another situation, other words around the target, not a paraphrase):', ...[...avoid].flatMap(([termId, list]) => list.map((a) => `- termId ${JSON.stringify(termId)} ${a.slot}: ${JSON.stringify(a.text.slice(0, 140))}`))] : []),
         '',
         'ITEM FORMATS (JSON objects inside "items"):',
         ...typeNames.map((t) => `- ${TYPE_SPECS[t]}`),
         '',
         'RULES:',
         '- Write one item for every wanted type of every term. For meaningPick write one item per wanted direction.',
-        '- If a type makes no sense for a term (for example wordFormation for a phrasal verb, letterScramble for a multi-word phrase, a keyTransform that would be forced), do NOT force it: add {"termId","type","reason"} to "skipped" instead.',
+        '- Only wordFormation, keyTransform, collocationPick and letterScramble may be skipped: if one of them makes no sense for a term (for example wordFormation for a phrasal verb, a keyTransform that would be forced), do NOT force it, add {"termId","type","reason"} to "skipped" instead. All other types must always be written.',
         '- The target must really be tested: the sentence/answer must contain the target term (inflected if the grammar needs it).',
         '- Never reveal the answer in the question text, the hint, the other options or the Polish instruction. Exactly one option may be correct; distractors must be clearly wrong in context but plausible (same word class/form).',
         '- Options must be distinct. No duplicate sentences across items of one term.',
@@ -517,27 +523,147 @@ export function createLruCache({ max = LIMITS.cacheMax, ttlMs = LIMITS.cacheTtlM
     };
 }
 
-/** Optional Postgres persistence (table created lazily). Every failure is swallowed: cache only. */
-export function createPgCacheStore({ getPool, ttlMs = LIMITS.cacheTtlMs } = {}) {
+// ---------------------------------------------------------------- the question bank
+
+/** Bank entries written by these prompt versions may be served; bump PROMPT_VERSION and drop a version here to retire it. */
+export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1']);
+/** Only these may be recorded as "makes no sense for this term" (a permanent skip in the bank). */
+export const SKIPPABLE_TYPES = new Set(['wordFormation', 'keyTransform', 'collocationPick', 'letterScramble']);
+/** How many different items per (term, level, slot) the bank is grown to, and its hard cap. */
+export const BANK_TARGET = 3;
+const SLOT_MAX = { letterScramble: 1, meaningPick: 3, listenPick: 3 };
+const slotMax = (slot) => SLOT_MAX[slotType(slot)] ?? 8;
+const slotTarget = (slot) => Math.min(BANK_TARGET, slotMax(slot));
+
+/** Term identity in the bank: normalised English form + normalised Polish meaning (homonyms stay apart). */
+export function termKeyOf(term) {
+    return `${norm(term.en).replace(/\s+/g, ' ')}|${norm(term.pl).replace(/\s+/g, ' ')}`;
+}
+
+/** Text used to detect repeated / near-identical items. */
+export function itemText(item) {
+    const fill = (t, a) => String(t || '').replace(/_{3,}/, a || '');
+    switch (item.type) {
+        case 'sentenceGap': case 'gapTranslate': case 'collocationPick': case 'wordFormation': return fill(item.template, item.answer);
+        case 'sentenceOrder': return (item.correctOrder || []).join(' ');
+        case 'contextTrueFalse': return `${item.passage} ${item.statement}`;
+        case 'translateType': case 'dictation': case 'letterScramble': return String(item.answer || '');
+        case 'keyTransform': return `${item.sourceSentence} ${item.answer}`;
+        case 'meaningPick': case 'listenPick': return `${item.direction || ''} ${[...(item.options || [])].map(norm).sort().join(' ')}`;
+        default: return JSON.stringify(item);
+    }
+}
+function jaccard(a, b) {
+    const A = new Set(words(a)); const B = new Set(words(b));
+    if (!A.size || !B.size) return 0;
+    let i = 0; for (const w of A) if (B.has(w)) i++;
+    return i / (A.size + B.size - i);
+}
+const fingerprint = (slot, text) => crypto.createHash('sha1').update(`${slot}\u0001${norm(text)}`).digest('hex').slice(0, 20);
+export const NEAR_DUPLICATE = 0.8;
+
+/** Postgres persistence for the bank (table created lazily). Every failure is swallowed: the in-memory bank still works. */
+export function createPgBankStore({ getPool } = {}) {
     let ready = null;
-    const ensure = () => (ready ||= getPool().query(
-        'CREATE TABLE IF NOT EXISTS track_ai_cache (key TEXT PRIMARY KEY, value JSONB NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())',
-    ).catch((e) => { ready = null; throw e; }));
+    const ensure = () => (ready ||= (async () => {
+        const q = (sql) => getPool().query(sql);
+        await q(`CREATE TABLE IF NOT EXISTS track_ai_bank (
+            id BIGSERIAL PRIMARY KEY, term_key TEXT NOT NULL, en TEXT NOT NULL, pl TEXT NOT NULL, level TEXT NOT NULL,
+            type TEXT NOT NULL, slot TEXT NOT NULL, fp TEXT NOT NULL, item JSONB NOT NULL, prompt_version TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), served_count INTEGER NOT NULL DEFAULT 0, last_served_at TIMESTAMPTZ,
+            UNIQUE (term_key, level, fp))`);
+        await q('CREATE INDEX IF NOT EXISTS track_ai_bank_term_idx ON track_ai_bank (term_key, level)');
+    })().catch((e) => { ready = null; throw e; }));
     return {
-        async get(key) {
+        async loadTerm(termKey, level) {
             try {
                 await ensure();
-                const r = await getPool().query('SELECT value FROM track_ai_cache WHERE key = $1 AND created_at > NOW() - ($2 || \' milliseconds\')::interval', [key, String(ttlMs)]);
-                return r.rows[0]?.value;
-            } catch (e) { console.warn('[track-ai] pg cache get failed:', e.message); return undefined; }
+                const r = await getPool().query('SELECT id, slot, type, fp, item, prompt_version, served_count, last_served_at FROM track_ai_bank WHERE term_key = $1 AND level = $2', [termKey, level]);
+                return r.rows.map((x) => ({ id: String(x.id), slot: x.slot, type: x.type, fp: x.fp, item: x.item, promptVersion: x.prompt_version, servedCount: x.served_count, lastServedAt: x.last_served_at ? new Date(x.last_served_at).getTime() : 0 }));
+            } catch (e) { console.warn('[track-ai] bank load failed:', e.message); return null; }
         },
-        async set(key, value) {
+        /** Inserts one row; returns its id, or null when it already exists (or on error). */
+        async insert(row) {
             try {
                 await ensure();
-                await getPool().query('INSERT INTO track_ai_cache (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, created_at = NOW()', [key, JSON.stringify(value)]);
-            } catch (e) { console.warn('[track-ai] pg cache set failed:', e.message); }
+                const r = await getPool().query(
+                    'INSERT INTO track_ai_bank (term_key, en, pl, level, type, slot, fp, item, prompt_version) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (term_key, level, fp) DO NOTHING RETURNING id',
+                    [row.termKey, row.en, row.pl, row.level, row.type, row.slot, row.fp, JSON.stringify(row.item), row.promptVersion]);
+                return r.rows[0] ? String(r.rows[0].id) : null;
+            } catch (e) { console.warn('[track-ai] bank insert failed:', e.message); return undefined; }
+        },
+        async markServed(ids) {
+            if (!ids.length) return;
+            try {
+                await ensure();
+                await getPool().query('UPDATE track_ai_bank SET served_count = served_count + 1, last_served_at = NOW() WHERE id = ANY($1::bigint[])', [ids.filter((i) => /^\d+$/.test(i))]);
+            } catch (e) { console.warn('[track-ai] bank markServed failed:', e.message); }
         },
     };
+}
+
+/**
+ * Growing question bank keyed by TERM (en+pl) + CEFR level, independent of any word set.
+ * Entries: { id, slot, type, fp, item, promptVersion, servedCount, lastServedAt, skipped? }.
+ * `item` never carries id/lexiconId (rewritten per requesting set when served).
+ */
+export function createBank({ store = null, now = () => Date.now(), maxTerms = 5000, ttlMs = 10 * 60_000 } = {}) {
+    const mem = createLruCache({ max: maxTerms, ttlMs, now });
+    let seq = 0;
+    return {
+        async entries(termKey, level) {
+            const k = `${level}|${termKey}`;
+            let list = mem.get(k);
+            if (list) return list;
+            list = store ? ((await store.loadTerm(termKey, level)) || []) : [];
+            for (const e of list) if (e.item && e.item.skipped === true) e.skipped = true;
+            const again = mem.get(k); // another request may have loaded it meanwhile
+            if (again) return again;
+            mem.set(k, list);
+            return list;
+        },
+        /** Add validated items; exact and near-duplicates are refused. Returns the entries actually added. */
+        async add(term, level, newOnes) {
+            const termKey = termKeyOf(term);
+            const list = await this.entries(termKey, level);
+            const added = [];
+            for (const n of newOnes) {
+                const slot = n.slot;
+                const skipped = Boolean(n.skipped);
+                const text = skipped ? 'skip' : itemText(n.item);
+                const fp = skipped ? `skip|${slot}` : fingerprint(slot, text);
+                const same = list.filter((e) => e.slot === slot);
+                if (same.some((e) => e.fp === fp)) continue;
+                if (skipped && same.length) continue;
+                if (!skipped && same.filter((e) => !e.skipped).length >= slotMax(slot)) continue;
+                if (!skipped && same.some((e) => !e.skipped && n.item.type !== 'meaningPick' && n.item.type !== 'listenPick' && jaccard(itemText(e.item), text) >= NEAR_DUPLICATE)) continue;
+                const { id: _i, lexiconId: _l, ...bare } = n.item || {};
+                const entry = { id: `m${++seq}`, slot, type: slotType(slot), fp, item: bare, promptVersion: n.promptVersion || PROMPT_VERSION, servedCount: 0, lastServedAt: 0, ...(skipped ? { skipped: true } : {}) };
+                if (store) {
+                    const id = await store.insert({ termKey, en: term.en, pl: term.pl, level, type: entry.type, slot, fp, item: skipped ? { skipped: true } : entry.item, promptVersion: entry.promptVersion });
+                    if (id === null) continue; // already stored by another instance
+                    if (id) entry.id = id;
+                }
+                list.push(entry);
+                added.push(entry);
+            }
+            return added;
+        },
+        markServed(entries) {
+            const t = now();
+            for (const e of entries) { e.servedCount++; e.lastServedAt = t; }
+            if (store) store.markServed(entries.map((e) => e.id)).catch(() => {});
+        },
+    };
+}
+
+/** Compatible, non-skip entries per slot. */
+const usable = (list, slot) => list.filter((e) => e.slot === slot && !e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion));
+const isSkipped = (list, slot) => list.some((e) => e.slot === slot && e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion));
+
+/** Least-served first, then least recently served, random tie-break. */
+export function pickLeastServed(entries, rand = Math.random) {
+    return entries.slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))[0];
 }
 
 /** Sliding-window per-key + global limiter, one concurrent job per key, bounded global concurrency. */
@@ -545,6 +671,7 @@ export function createTrackLimiter({ now = () => Date.now(), limits = LIMITS } =
     const hits = new Map();
     const busy = new Set();
     let globalHits = [];
+    let bgHits = [];
     let running = 0;
     return {
         check(key) {
@@ -560,7 +687,16 @@ export function createTrackLimiter({ now = () => Date.now(), limits = LIMITS } =
         },
         start(key) { const t = now(); busy.add(key); running++; globalHits.push(t); hits.set(key, [...(hits.get(key) || []), t]); },
         finish(key) { busy.delete(key); running = Math.max(0, running - 1); },
-        stats() { return { running, global: globalHits.length }; },
+        /** Background bank growth: bounded per hour, and always leaves one slot free for real requests. */
+        tryStartBackground() {
+            const t = now();
+            bgHits = bgHits.filter((x) => t - x < limits.globalWindowMs);
+            if (bgHits.length >= limits.bgMax || running >= limits.globalConcurrent - 1) return false;
+            bgHits.push(t); running++;
+            return true;
+        },
+        finishBackground() { running = Math.max(0, running - 1); },
+        stats() { return { running, global: globalHits.length, background: bgHits.length }; },
     };
 }
 
@@ -622,51 +758,58 @@ const withTimeout = (promise, ms, label) => new Promise((resolve, reject) => {
     promise.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
 });
 
-const termCacheKey = ({ setId, level, types, term }) =>
-    `${PROMPT_VERSION}|${setId}|${level}|${types.join(',')}|${term.id}|${hashTerm(term)}`;
+const SKIP_SLOTS = (type) => slotsFor(type);
+
+/** Pick distractors from the other terms of the requesting set when that keeps the item valid. */
+function reshuffleOptions(item, term, setTerms, rand) {
+    const out = { ...item };
+    if (!Array.isArray(out.options)) return out;
+    const answer = out.answer;
+    let options = out.options.slice();
+    if (out.type === 'meaningPick' || out.type === 'listenPick') {
+        const field = out.type === 'meaningPick' && out.direction === 'en-pl' ? 'pl' : 'en';
+        const wc = wordCount(answer);
+        const pool = setTerms.filter((t) => t.id !== term.id).map((t) => clean(t[field]))
+            .filter((v) => v && norm(v) !== norm(answer) && Math.abs(wordCount(v) - wc) <= 1);
+        const uniq = [...new Map(pool.map((v) => [norm(v), v])).values()];
+        if (uniq.length >= 3 && rand() < 0.5) {
+            const picked = shuffled(uniq, rand).slice(0, 3);
+            const swapped = [answer, ...picked];
+            if (!checkOptions(swapped, answer)) options = swapped;
+        }
+    }
+    if (checkOptions(options, answer)) return null; // stored options are broken: unusable
+    options = shuffled(options, rand);
+    out.options = options;
+    if ('correctIndex' in out) out.correctIndex = options.findIndex((o) => norm(o) === norm(answer));
+    return out;
+}
 
 /**
- * createTrackGenerator({ runPrompt, cache, store }) -> generate(request) -> { items, meta }.
+ * createTrackGenerator({ runPrompt, bank }) -> generate(request) -> { items, meta, growPlan, grow }.
  * runPrompt(prompt, label) must resolve to parsed JSON ({items:[],skipped:[]}).
+ * Items come from the term-keyed bank; the AI is only called for slots the bank cannot serve
+ * (foreground) or, after the response, to grow the bank (grow()).
  */
-export function createTrackGenerator({ runPrompt, cache = createLruCache(), store = null, limits = LIMITS, now = () => Date.now(), log = () => {} } = {}) {
-    async function readCache(key) {
-        const hit = cache.get(key);
-        if (hit) return hit;
-        if (store) {
-            const v = await store.get(key);
-            if (v && Array.isArray(v.items)) { cache.set(key, v); return v; }
-        }
-        return undefined;
-    }
-    async function writeCache(key, value) {
-        cache.set(key, value);
-        if (store) await store.set(key, value);
-    }
+export function createTrackGenerator({ runPrompt, bank = createBank(), limits = LIMITS, now = () => Date.now(), log = () => {}, rand = Math.random } = {}) {
+    const cooldown = new Map(); // `${level}|${termKey}|${slot}` -> failed-at
+    const cool = (level, term, slot) => { const t = cooldown.get(`${level}|${termKeyOf(term)}|${slot}`); return t && now() - t < limits.failCooldownMs; };
 
-    async function runBatch({ level, batch, setTerms, types, deadlineAt, stats }) {
-        const found = new Map(batch.map((t) => [t.id, new Map()])); // termId -> slot -> item
-        const wants = new Map(batch.map((t) => {
-            const slots = new Set();
-            for (const ty of types) {
-                if (ty === 'letterScramble' && !/^[a-z]{3,14}$/.test(norm(t.en))) continue; // impossible by definition, not a template: no scramble of phrases
-                for (const s of slotsFor(ty)) slots.add(s);
-            }
-            return [t.id, slots];
-        }));
+    async function runBatch({ level, batch, setTerms, slotsByTerm, avoid, deadlineAt, stats }) {
+        const found = new Map(batch.map((t) => [t.id, new Map()])); // termId -> slot -> built item
         const skipped = new Set(); // `${termId}|${slot}`
         let feedback = [];
-        const dropped = [];
+        const wants = slotsByTerm;
         for (let attempt = 0; attempt < limits.maxAttempts; attempt++) {
             const need = new Map();
             for (const t of batch) {
-                const s = new Set([...wants.get(t.id)].filter((x) => !found.get(t.id).has(x) && !skipped.has(`${t.id}|${x}`)));
-                if (s.size) need.set(t.id, s);
+                const sl = new Set([...wants.get(t.id)].filter((x) => !found.get(t.id).has(x) && !skipped.has(`${t.id}|${x}`)));
+                if (sl.size) need.set(t.id, sl);
             }
             if (!need.size) break;
             const remaining = deadlineAt - now();
             if (remaining < 2000) { stats.timedOut = true; break; }
-            const prompt = buildTrackPrompt({ level, terms: batch.filter((t) => need.has(t.id)), setTerms, wants: need, feedback });
+            const prompt = buildTrackPrompt({ level, terms: batch.filter((t) => need.has(t.id)), setTerms, wants: need, feedback, avoid });
             let raw;
             try {
                 stats.aiCalls++;
@@ -678,14 +821,11 @@ export function createTrackGenerator({ runPrompt, cache = createLruCache(), stor
                 continue;
             }
             feedback = [];
-            const items = Array.isArray(raw?.items) ? raw.items : [];
             for (const sk of Array.isArray(raw?.skipped) ? raw.skipped : []) {
-                if (sk && need.has(String(sk.termId)) && ALL_TYPES.includes(sk.type)) {
-                    if (sk.type === 'meaningPick') slotsFor('meaningPick').forEach((s) => skipped.add(`${sk.termId}|${s}`));
-                    else skipped.add(`${sk.termId}|${sk.type}`);
-                }
+                const termId = String(sk?.termId ?? '');
+                if (sk && need.has(termId) && SKIPPABLE_TYPES.has(sk.type)) SKIP_SLOTS(sk.type).forEach((sl) => skipped.add(`${termId}|${sl}`));
             }
-            for (const r of items) {
+            for (const r of Array.isArray(raw?.items) ? raw.items : []) {
                 const termId = String(r?.termId ?? '');
                 const term = batch.find((t) => t.id === termId);
                 if (!term || !need.has(termId)) continue;
@@ -695,60 +835,127 @@ export function createTrackGenerator({ runPrompt, cache = createLruCache(), stor
                 if (!need.get(termId).has(built.slot)) continue;
                 const fc = finalCheck(built.item);
                 if (fc) { feedback.push({ termId, slot, reason: fc }); continue; }
+                const prior = avoid.get(termId) || [];
+                if (prior.some((a) => a.slot === built.slot && jaccard(a.text, itemText(built.item)) >= NEAR_DUPLICATE)) {
+                    feedback.push({ termId, slot, reason: 'too similar to an item that already exists; write a different one' });
+                    continue;
+                }
                 if (!found.get(termId).has(built.slot)) found.get(termId).set(built.slot, built.item);
-                // reject duplicate sentences inside one term
             }
         }
-        for (const t of batch) {
-            for (const s of wants.get(t.id)) {
-                if (!found.get(t.id).has(s) && !skipped.has(`${t.id}|${s}`)) dropped.push({ lexiconId: t.id, slot: s, reason: 'failed validation or not returned' });
-            }
-        }
-        return { found, dropped };
+        return { found, skipped };
     }
 
-    return async function generate({ setId, level, terms, types }) {
-        const started = now();
-        const deadlineAt = started + limits.deadlineMs;
-        const stats = { aiCalls: 0, aiErrors: 0, timedOut: false, cachedTerms: 0 };
-        const perTerm = new Map(); // term.id -> items[]
-        const pending = [];
-        for (const term of terms) {
-            const key = termCacheKey({ setId, level, types, term });
-            const hit = await readCache(key);
-            if (hit) { perTerm.set(term.id, hit.items); stats.cachedTerms++; } else pending.push({ term, key });
-        }
-        const dropped = [];
+    /** Run batches (limited parallelism) and store what validated in the bank. Returns counts. */
+    async function fill({ level, jobs, setTerms, deadlineAt, stats }) {
+        // jobs: [{ term, slots:Set, avoid:[{slot,text}] }]
         const batches = [];
-        for (let i = 0; i < pending.length; i += limits.batchSize) batches.push(pending.slice(i, i + limits.batchSize));
+        for (let i = 0; i < jobs.length; i += limits.batchSize) batches.push(jobs.slice(i, i + limits.batchSize));
         let next = 0;
+        let newItems = 0;
         const worker = async () => {
             while (next < batches.length) {
                 const b = batches[next++];
-                const { found, dropped: d } = await runBatch({ level, batch: b.map((x) => x.term), setTerms: terms, types, deadlineAt, stats });
-                dropped.push(...d);
-                for (const { term, key } of b) {
-                    const slotMap = found.get(term.id);
-                    const items = [...slotMap.values()];
-                    perTerm.set(term.id, items);
-                    if (items.length) await writeCache(key, { items });
+                const batch = b.map((j) => j.term);
+                const avoid = new Map(b.filter((j) => j.avoid.length).map((j) => [j.term.id, j.avoid]));
+                const slotsByTerm = new Map(b.map((j) => [j.term.id, j.slots]));
+                const { found, skipped } = await runBatch({ level, batch, setTerms, slotsByTerm, avoid, deadlineAt, stats });
+                for (const j of b) {
+                    const adds = [...found.get(j.term.id)].map(([slot, item]) => ({ slot, item }));
+                    for (const sk of skipped) { const [id, slot] = [sk.slice(0, sk.indexOf('|')), sk.slice(sk.indexOf('|') + 1)]; if (id === j.term.id) adds.push({ slot, skipped: true }); }
+                    const added = await bank.add(j.term, level, adds);
+                    newItems += added.filter((e) => !e.skipped).length;
+                    for (const slot of j.slots) {
+                        if (!found.get(j.term.id).has(slot) && !skipped.has(`${j.term.id}|${slot}`)) cooldown.set(`${level}|${termKeyOf(j.term)}|${slot}`, now());
+                    }
                 }
             }
         };
         await Promise.all(Array.from({ length: Math.min(limits.batchConcurrency, batches.length) }, worker));
+        return newItems;
+    }
+
+    const wantedSlots = (term, types) => {
+        const out = [];
+        for (const ty of types) {
+            if (ty === 'letterScramble' && !/^[a-z]{3,14}$/.test(norm(term.en))) continue; // a phrase cannot be scrambled
+            out.push(...slotsFor(ty));
+        }
+        return out;
+    };
+
+    return async function generate({ setId, level, terms, types }) {
+        const started = now();
+        const deadlineAt = started + limits.deadlineMs;
+        const stats = { aiCalls: 0, aiErrors: 0, timedOut: false };
+        const lists = new Map();
+        const slotsOf = new Map();
+        for (const term of terms) {
+            lists.set(term.id, await bank.entries(termKeyOf(term), level));
+            slotsOf.set(term.id, wantedSlots(term, types));
+        }
+        // 1. foreground: only slots the bank cannot serve at all
+        const jobs = [];
+        let bankHits = 0;
+        for (const term of terms) {
+            const list = lists.get(term.id);
+            const miss = slotsOf.get(term.id).filter((sl) => !usable(list, sl).length && !isSkipped(list, sl) && !cool(level, term, sl));
+            if (!miss.length) { bankHits++; continue; }
+            jobs.push({ term, slots: new Set(miss), avoid: [] });
+        }
+        const newItems = jobs.length ? await fill({ level, jobs, setTerms: terms, deadlineAt, stats }) : 0;
+        // 2. serve: least-served first, ids rewritten to this set's term ids
         const items = [];
-        const order = (it) => ALL_TYPES.indexOf(it.type) * 10 + (it.direction === 'en-pl' ? 1 : 0);
-        for (const term of terms) items.push(...(perTerm.get(term.id) || []).slice().sort((a, b) => order(a) - order(b)));
-        const missingTerms = terms.filter((t) => !(perTerm.get(t.id) || []).length).map((t) => t.id);
+        const served = [];
+        const dropped = [];
+        for (const term of terms) {
+            const list = lists.get(term.id);
+            for (const slot of slotsOf.get(term.id)) {
+                const cands = usable(list, slot);
+                let entry = null;
+                let finished = null;
+                for (const c of cands.slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))) {
+                    finished = reshuffleOptions(c.item, term, terms, rand);
+                    if (finished) { entry = c; break; }
+                }
+                if (!entry) { if (!isSkipped(list, slot)) dropped.push({ lexiconId: term.id, type: slot }); continue; }
+                served.push(entry);
+                items.push({ ...finished, id: `ai-${term.id}-${slot.replace(':', '-')}-${entry.id}`, lexiconId: term.id });
+            }
+        }
+        bank.markServed(served);
+        // 3. growth plan for the background: below the target, or a small chance to add one more
+        const plan = [];
+        for (const term of terms) {
+            const list = lists.get(term.id);
+            const slots = slotsOf.get(term.id).filter((sl) => {
+                const n = usable(list, sl).length;
+                if (isSkipped(list, sl) || cool(level, term, sl) || n >= slotMax(sl)) return false;
+                if (n === 0) return false; // foreground already tried and failed
+                return n < slotTarget(sl) || rand() < limits.growProbability;
+            });
+            if (slots.length) plan.push({ term, slots: new Set(slots) });
+        }
+        const growPlan = shuffled(plan, rand).slice(0, limits.growTerms);
+        const grow = async () => {
+            const gStats = { aiCalls: 0, aiErrors: 0, timedOut: false };
+            const gJobs = growPlan.map(({ term, slots }) => ({
+                term, slots,
+                avoid: [...slots].flatMap((sl) => usable(lists.get(term.id), sl).slice(0, 4).map((e) => ({ slot: sl, text: itemText(e.item) }))),
+            }));
+            const added = await fill({ level, jobs: gJobs, setTerms: terms, deadlineAt: now() + limits.bgDeadlineMs, stats: gStats });
+            return { added, aiCalls: gStats.aiCalls };
+        };
         return {
             items,
             meta: {
                 setId, level, promptVersion: PROMPT_VERSION, types,
-                requestedTerms: terms.length, cachedTerms: stats.cachedTerms, aiCalls: stats.aiCalls,
-                dropped: dropped.map((d) => ({ lexiconId: d.lexiconId, type: d.slot })),
-                missingTerms, timedOut: stats.timedOut, elapsedMs: now() - started,
+                requestedTerms: terms.length, bankHits, newItems,
+                aiCalls: stats.aiCalls, growthScheduled: growPlan.length,
+                dropped, missingTerms: terms.filter((t) => !items.some((i) => i.lexiconId === t.id)).map((t) => t.id),
+                timedOut: stats.timedOut, elapsedMs: now() - started,
             },
-            stats,
+            stats, growPlan, grow,
         };
     };
 }
@@ -765,6 +972,7 @@ export const TRACK_PATH = '/api/study/track-generate';
 export function createTrackGenerateHandler({
     generate, isConfigured = () => true, getSecret = () => (process.env.STUDY_BRIDGE_SECRET || '').trim(),
     limiter = createTrackLimiter(), nonces = createNonceStore(), now = () => Date.now(), path = TRACK_PATH,
+    schedule = (fn) => setImmediate(fn),
 } = {}) {
     return async function trackGenerate(req, res) {
         const err = (status, code, error, extra = {}) => res.status(status).json({ error, code, ...extra });
@@ -799,7 +1007,14 @@ export function createTrackGenerateHandler({
                 if (out.stats.aiErrors && out.stats.aiErrors >= out.stats.aiCalls) return err(502, 'ai_failed', 'The AI request failed.', { meta: out.meta });
                 return err(502, 'ai_invalid', 'The AI answers did not pass validation.', { meta: out.meta });
             }
-            return res.json({ items: out.items, meta: out.meta });
+            res.json({ items: out.items, meta: out.meta });
+            // Grow the bank after answering (never blocks the learner; bounded by the background budget).
+            if (out.growPlan?.length && !out.stats.timedOut && isConfigured() && limiter.tryStartBackground()) {
+                schedule(() => out.grow()
+                    .catch((e) => console.warn('[track-ai] bank growth failed:', e?.message || e))
+                    .finally(() => limiter.finishBackground()));
+            }
+            return;
         } catch (e) {
             console.error('track-generate failed:', e?.message || e);
             return err(500, 'internal', 'Generation failed.');

@@ -85,7 +85,7 @@ import {
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
-import { createTrackGenerator, createTrackGenerateHandler, createPgCacheStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
+import { createTrackGenerator, createTrackGenerateHandler, createBank, createPgBankStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
 import { createMailer } from './mailer.js';
 import { registerPasswordResetRoutes, createPgResetStore } from './password-reset.js';
 import { verifyBmcSignature, handleBmcWebhook, publicAccessPlans, publicMaturaAssessPack, publicWorksheetMakerPack, checkoutUrls } from './billing.js';
@@ -261,7 +261,7 @@ async function start() {
      */
     const trackGenerate = createTrackGenerator({
         runPrompt: (prompt, label) => runVisionJsonPrompt({ apiKey: process.env.CURSOR_API_KEY, prompt, label }),
-        store: dbReady ? createPgCacheStore({ getPool }) : null,
+        bank: createBank({ store: dbReady ? createPgBankStore({ getPool }) : null }),
         log: (m) => console.warn('[track-ai]', m),
     });
     app.post(TRACK_PATH, createTrackGenerateHandler({

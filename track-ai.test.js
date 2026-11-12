@@ -4,6 +4,7 @@ import express from 'express';
 import {
     validateTrackRequest, buildItem, findTermForm, makeTemplate, typesForLevel, buildTrackPrompt,
     createTrackGenerator, createTrackGenerateHandler, createTrackLimiter, createNonceStore, createLruCache,
+    createBank, termKeyOf, itemText, BANK_TARGET,
     signBridgeRequest, verifyBridgeRequest, BRIDGE_HEADERS, TRACK_PATH, LIMITS, ALL_TYPES,
 } from './track-ai.js';
 
@@ -163,7 +164,7 @@ function aiFor({ level, terms }) {
 
 const REQ = (over = {}) => ({ setId: 'lake', level: 'B2', terms: [{ id: '1', en: 'fog', pl: 'mgła' }], types: ['sentenceGap', 'wordFormation', 'meaningPick'], userRef: '', ...over });
 
-test('generator: returns validated items, caches per term, never calls AI for cached terms', async () => {
+test('generator: returns validated items, banks them per term, never calls AI for banked terms', async () => {
     let calls = 0;
     const gen = createTrackGenerator({ runPrompt: async (prompt) => { calls++; assert.match(prompt, /CEFR level/); assert.ok(!/\[object/.test(prompt)); return aiFor({ level: 'B2', terms: [{ id: '1' }] }); } });
     const r = await gen(validateTrackRequest(REQ()).value);
@@ -173,7 +174,7 @@ test('generator: returns validated items, caches per term, never calls AI for ca
     const again = await gen(validateTrackRequest(REQ()).value);
     assert.equal(again.items.length, 4);
     assert.equal(calls, 1, 'second request served from cache');
-    assert.equal(again.meta.cachedTerms, 1);
+    assert.equal(again.meta.bankHits, 1);
     // different level or changed term text = different cache entry
     await gen(validateTrackRequest(REQ({ level: 'B1' })).value);
     assert.equal(calls, 2);
@@ -244,12 +245,12 @@ test('verifyBridgeRequest: good, tampered, stale, replayed, wrong secret, unconf
 
 /* ---------------------------------------------------------------- HTTP handler */
 
-async function serve({ runPrompt, isConfigured = () => true, user = null, limiter, secret = SECRET, deadlineMs, now } = {}) {
+async function serve({ runPrompt, isConfigured = () => true, user = null, limiter, secret = SECRET, deadlineMs, now, schedule = () => {} } = {}) {
     const app = express();
     app.use((req, _res, next) => { req.isAuthenticated = () => Boolean(user); if (user) req.user = user; next(); });
     app.use(PATH, express.json({ limit: LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
     const generate = createTrackGenerator({ runPrompt, limits: { ...LIMITS, ...(deadlineMs ? { deadlineMs } : {}) } });
-    app.post(PATH, createTrackGenerateHandler({ generate, isConfigured, getSecret: () => secret, limiter: limiter || createTrackLimiter(), now }));
+    app.post(PATH, createTrackGenerateHandler({ generate, isConfigured, getSecret: () => secret, limiter: limiter || createTrackLimiter(), now, schedule }));
     const server = await new Promise((res) => { const s = app.listen(0, '127.0.0.1', () => res(s)); });
     const base = `http://127.0.0.1:${server.address().port}`;
     return {
@@ -369,4 +370,176 @@ test('lru cache evicts oldest and expires', () => {
     assert.equal(c.get('c'), 3);
     t = 500;
     assert.equal(c.get('c'), undefined);
+});
+
+
+/* ---------------------------------------------------------------- the question bank */
+
+const gapReq = (over = {}) => ({ setId: 'lake', level: 'A2', terms: [{ id: '1', en: 'fog', pl: 'mgła' }], types: ['sentenceGap'], userRef: '', ...over });
+const gapItem = (sentence, answer = 'fog', distractors = ['rain', 'wind', 'sand']) => ({ termId: '1', type: 'sentenceGap', sentence, answer, distractors });
+const seqAi = (...replies) => { const calls = []; const fn = async (prompt) => { calls.push(prompt); return replies[Math.min(calls.length - 1, replies.length - 1)]; }; fn.calls = calls; return fn; };
+
+test('bank: items are keyed by the term (en+pl) + level, not by setId; ids are rewritten to the requesting set', async () => {
+    const ai = seqAi({ items: [gapItem('Thick fog covered the harbour.')] });
+    const gen = createTrackGenerator({ runPrompt: ai });
+    const a = await gen(validateTrackRequest(gapReq()).value);
+    assert.equal(a.items[0].lexiconId, '1');
+    assert.equal(ai.calls.length, 1);
+    const b = await gen(validateTrackRequest(gapReq({ setId: 'a-totally-different-set', terms: [{ id: 'w-77', en: '  FOG ', pl: 'Mgła' }] })).value);
+    assert.equal(ai.calls.length, 1, 'same word + meaning + level reuses the bank in another set');
+    assert.equal(b.meta.bankHits, 1);
+    assert.equal(b.items[0].lexiconId, 'w-77');
+    assert.match(b.items[0].id, /^ai-w-77-sentenceGap-/);
+    assert.equal(b.items[0].template, 'Thick ___ covered the harbour.');
+    // homonym (different meaning) and other level are separate bank entries
+    await gen(validateTrackRequest(gapReq({ terms: [{ id: '1', en: 'fog', pl: 'zamglenie umysłu' }] })).value);
+    assert.equal(ai.calls.length, 2);
+    await gen(validateTrackRequest(gapReq({ level: 'B1' })).value);
+    assert.equal(ai.calls.length, 3);
+    assert.equal(termKeyOf({ en: ' Fog ', pl: 'MGŁA' }), termKeyOf({ en: 'fog', pl: 'mgła' }));
+    assert.notEqual(termKeyOf({ en: 'fog', pl: 'mgła' }), termKeyOf({ en: 'fog', pl: 'inne' }));
+});
+
+test('bank growth: grow() appends new items, refuses exact and near duplicates, tells the model what exists', async () => {
+    const ai = seqAi({ items: [gapItem('Thick fog covered the harbour.')] });
+    const bank = createBank();
+    const gen = createTrackGenerator({ runPrompt: ai, bank, rand: () => 0 }); // rand 0 => growth always planned
+    const first = await gen(validateTrackRequest(gapReq()).value);
+    assert.equal(first.meta.newItems, 1);
+    assert.equal(first.growPlan.length, 1, 'below the target, so growth is planned');
+    const entries = () => bank.entries(termKeyOf({ en: 'fog', pl: 'mgła' }), 'A2');
+    assert.equal((await entries()).length, 1);
+    // exact duplicate and near-duplicate are both refused (retries exhausted, nothing added)
+    ai.calls.length = 0;
+    const dupAi = seqAi({ items: [gapItem('Thick fog covered the harbour.')] }, { items: [gapItem('Thick fog covered the whole harbour.')] });
+    const gen2 = createTrackGenerator({ runPrompt: dupAi, bank, rand: () => 0 });
+    const second = await gen2(validateTrackRequest(gapReq()).value);
+    const g = await second.grow();
+    assert.equal(g.added, 0);
+    assert.match(dupAi.calls[0], /ALREADY WRITTEN/);
+    assert.match(dupAi.calls[0], /Thick fog covered the harbour/);
+    assert.equal((await entries()).length, 1);
+    // a genuinely different item is appended
+    const newAi = seqAi({ items: [gapItem('We could not see the road because of the fog.', 'fog', ['sun', 'ice', 'sky'])] });
+    const gen3 = createTrackGenerator({ runPrompt: newAi, bank, rand: () => 0 });
+    const third = await gen3(validateTrackRequest(gapReq()).value);
+    assert.equal((await third.grow()).added, 1);
+    assert.equal((await entries()).length, 2);
+    // no growth is planned once the target is reached (probability 1 would still add, so use rand=1)
+    const gen4 = createTrackGenerator({ runPrompt: seqAi({ items: [gapItem('Heavy fog made the morning ride very slow today.', 'fog', ['hay', 'ice', 'mud'])] }), bank, rand: () => 0 });
+    await (await gen4(validateTrackRequest(gapReq()).value)).grow();
+    assert.equal((await entries()).length, BANK_TARGET);
+    const gen5 = createTrackGenerator({ runPrompt: seqAi({ items: [] }), bank, rand: () => 0.99 });
+    assert.equal((await gen5(validateTrackRequest(gapReq()).value)).growPlan.length, 0, 'target reached and no lucky roll');
+});
+
+test('bank serving: varied selection, least-served first, so repeat learners get different questions', async () => {
+    const bank = createBank();
+    const term = { id: '1', en: 'fog', pl: 'mgła' };
+    const sentences = ['Thick fog covered the harbour.', 'We could not see the road because of the fog.', 'Heavy fog made the morning ride very slow today.'];
+    for (const [i, sen] of sentences.entries()) {
+        const gen = createTrackGenerator({ runPrompt: seqAi({ items: [gapItem(sen, 'fog', [['rain', 'wind', 'sand'], ['sun', 'ice', 'sky'], ['hay', 'ice', 'mud']][i])] }), bank });
+        // seed the bank directly through the generator's grow path
+        await bank.add(term, 'A2', [{ slot: 'sentenceGap', item: buildItem({ termId: '1', ...gapItem(sen, 'fog', [['rain', 'wind', 'sand'], ['sun', 'ice', 'sky'], ['hay', 'ice', 'mud']][i]) }, term, 'A2').item }]);
+        void gen;
+    }
+    const never = async () => { throw new Error('AI must not be called when the bank can serve'); };
+    const gen = createTrackGenerator({ runPrompt: never, bank, rand: Math.random });
+    const seen = [];
+    for (let i = 0; i < 6; i++) {
+        const r = await gen(validateTrackRequest(gapReq()).value);
+        assert.equal(r.meta.bankHits, 1);
+        seen.push(r.items[0].template);
+    }
+    assert.equal(new Set(seen.slice(0, 3)).size, 3, 'first three requests serve three different items');
+    assert.equal(new Set(seen.slice(3, 6)).size, 3, 'then the cycle repeats evenly');
+    const list = await bank.entries(termKeyOf(term), 'A2');
+    assert.deepEqual(list.map((e) => e.servedCount), [2, 2, 2]);
+});
+
+test('bank reuse keeps options valid: 4 distinct, include the answer, distractors may come from the current set', async () => {
+    const bank = createBank();
+    const gen0 = createTrackGenerator({ runPrompt: seqAi({ items: [
+        { termId: '1', type: 'meaningPick', direction: 'pl-en', distractors: ['rain', 'wind', 'sand'] },
+        { termId: '1', type: 'meaningPick', direction: 'en-pl', distractors: ['deszcz', 'wiatr', 'piasek'] },
+        { termId: '1', ...good.sentenceGap },
+    ] }), bank });
+    await gen0(validateTrackRequest(gapReq({ types: ['meaningPick', 'sentenceGap'] })).value);
+    const bigSet = ['lake', 'net', 'boat', 'harbour', 'storm', 'island'].map((en, i) => ({ id: `s${i}`, en, pl: ['jezioro', 'sieć', 'łódź', 'port', 'burza', 'wyspa'][i] }));
+    const never = async () => { throw new Error('no AI'); };
+    const gen = createTrackGenerator({ runPrompt: never, bank });
+    const swappedSeen = new Set();
+    for (let i = 0; i < 40; i++) {
+        const r = await gen(validateTrackRequest(gapReq({ setId: 'other', terms: [{ id: 'f', en: 'fog', pl: 'mgła' }, ...bigSet], types: ['meaningPick', 'sentenceGap'] })).value);
+        for (const it of r.items.filter((x) => x.lexiconId === 'f')) {
+            assert.equal(it.options.length, 4);
+            assert.equal(new Set(it.options.map((o) => o.toLowerCase())).size, 4);
+            assert.ok(it.options.includes(it.answer));
+            if ('correctIndex' in it) assert.equal(it.options[it.correctIndex], it.answer);
+            if (it.type === 'meaningPick' && it.direction === 'pl-en' && it.options.some((o) => ['lake', 'net', 'boat', 'harbour', 'storm', 'island'].includes(o))) swappedSeen.add('swap');
+        }
+    }
+    assert.ok(swappedSeen.has('swap'), 'distractors are sometimes swapped for words of the current set');
+});
+
+test('bank persistence: a new process (new bank on the same store) reuses stored items; incompatible versions are not served', async () => {
+    const rows = [];
+    let nextId = 1;
+    const store = {
+        async loadTerm(termKey, level) { return rows.filter((r) => r.termKey === termKey && r.level === level).map((r) => ({ id: r.id, slot: r.slot, type: r.type, fp: r.fp, item: r.item, promptVersion: r.promptVersion, servedCount: r.served, lastServedAt: 0 })); },
+        async insert(row) { if (rows.some((r) => r.termKey === row.termKey && r.level === row.level && r.fp === row.fp)) return null; const id = String(nextId++); rows.push({ ...row, id, served: 0 }); return id; },
+        async markServed(ids) { for (const r of rows) if (ids.includes(r.id)) r.served++; },
+    };
+    const ai = seqAi({ items: [gapItem('Thick fog covered the harbour.')] });
+    await createTrackGenerator({ runPrompt: ai, bank: createBank({ store }) })(validateTrackRequest(gapReq()).value);
+    assert.equal(rows.length, 1);
+    assert.equal(ai.calls.length, 1);
+    const never = async () => { throw new Error('no AI'); };
+    const r = await createTrackGenerator({ runPrompt: never, bank: createBank({ store }) })(validateTrackRequest(gapReq({ setId: 'x' })).value);
+    assert.equal(r.items.length, 1);
+    await new Promise((res) => setTimeout(res, 5));
+    assert.equal(rows[0].served, 2, 'served_count persisted (once per request)');
+    // retired prompt version: row stays in the table but is not served; the slot is regenerated
+    rows[0].promptVersion = 'tg0-retired';
+    const ai2 = seqAi({ items: [gapItem('We could not see the road because of the fog.', 'fog', ['sun', 'ice', 'sky'])] });
+    const r2 = await createTrackGenerator({ runPrompt: ai2, bank: createBank({ store }) })(validateTrackRequest(gapReq()).value);
+    assert.equal(ai2.calls.length, 1);
+    assert.match(r2.items[0].template, /road/);
+});
+
+test('bank: model-declared skips (wordFormation for a phrasal verb) are remembered and not asked again', async () => {
+    const bank = createBank();
+    const step = { id: '3', en: 'step out of', pl: 'wyjść z' };
+    const ai = seqAi({ items: [{ termId: '3', type: 'sentenceGap', sentence: 'They had to step out of the room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }], skipped: [{ termId: '3', type: 'wordFormation', reason: 'phrasal verb' }] });
+    const req = validateTrackRequest({ setId: 's', level: 'B1', terms: [step], types: ['sentenceGap', 'wordFormation'] }).value;
+    const gen = createTrackGenerator({ runPrompt: ai, bank });
+    const a = await gen(req);
+    assert.equal(a.items.length, 1);
+    assert.equal(a.meta.dropped.length, 0);
+    const b = await gen(req);
+    assert.equal(ai.calls.length, 1, 'second request is fully served from the bank, skip remembered');
+    assert.equal(b.meta.bankHits, 1);
+    // the skip survives a restart (loaded from the store)
+});
+
+test('http: background growth runs after the response, within the background budget', async () => {
+    const jobs = [];
+    const aiCalls = [];
+    const s = await serve({
+        runPrompt: async (prompt) => { aiCalls.push(prompt); return okAi(); }, user: { id: 1 }, schedule: (fn) => jobs.push(fn),
+    });
+    try {
+        const r = await s.post({ ...BODY, setId: 'grow-set' });
+        assert.equal(r.status, 200);
+        assert.equal((await r.json()).meta.newItems, 4);
+        assert.equal(aiCalls.length, 1, 'foreground only');
+        assert.equal(jobs.length, 1, 'growth scheduled for after the response');
+        await jobs[0]();
+        assert.equal(aiCalls.length >= 2, true, 'growth asked the AI for more items');
+        assert.match(aiCalls[1], /ALREADY WRITTEN/);
+    } finally { await s.close(); }
+    const limiter = createTrackLimiter({ limits: { ...LIMITS, bgMax: 1 } });
+    assert.equal(limiter.tryStartBackground(), true);
+    limiter.finishBackground();
+    assert.equal(limiter.tryStartBackground(), false, 'hourly background budget used up');
 });
