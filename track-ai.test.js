@@ -1609,6 +1609,34 @@ test('scaffold: A1/A2 long typed answers get a unique wordBank, gapped sentence,
     assert.equal(high.item.wordBank, undefined);
 });
 
+test('scaffold wordBank: distractors are unique for a visible grammatical reason', () => {
+    const shirt = T('52', 'T-shirt', 'koszulka');
+    const dict = buildItem({ type: 'dictation', sentence: 'This is my T-shirt.' }, shirt, 'A1');
+    assert.ok(dict.ok, dict.reason);
+    assert.ok(dict.item.wordBank, 'this is + number-mismatch distractors should still scaffold');
+    assert.match(dict.item.scaffoldGapped, /___/);
+    const bank = dict.item.wordBank.join(' | ');
+    assert.match(bank, /this is/i);
+    assert.ok(!dict.item.wordBank.some((w) => /^that is$/i.test(w)), `that is also fits without a distance cue: ${bank}`);
+    assert.ok(dict.item.wordBank.some((w) => /these are|those are/i.test(w)), `number-mismatch distractor expected: ${bank}`);
+
+    const far = buildItem({ type: 'dictation', sentence: 'That is my bike over there.' }, T('53', 'bike', 'rower'), 'A1');
+    assert.ok(far.ok && far.item.wordBank, far.reason);
+    assert.ok(far.item.wordBank.some((w) => /^this is$/i.test(w)), `over there rules out this is: ${far.item.wordBank.join(' | ')}`);
+
+    const glasses = T('50', 'glasses', 'okulary');
+    const where = buildItem({ type: 'dictation', sentence: 'Where are my glasses now?' }, glasses, 'A1');
+    assert.ok(where.ok && where.item.wordBank, where.reason);
+    const wbank = where.item.wordBank;
+    assert.ok(!wbank.some((w) => /^(what|who|when|why|which) are$/i.test(w)), `same-aux question words also fit: ${wbank.join(' | ')}`);
+    assert.ok(wbank.some((w) => /how many|what do|why do|what kind|did he|did you|where is|what is/i.test(w)), `structural or number-mismatch distractor: ${wbank.join(' | ')}`);
+
+    // Polish "Ta" / "To" rules out far "That is" on a translateType item even without here/there
+    const trNear = buildItem({ type: 'translateType', source: 'To jest moja koszulka.', answer: 'This is my T-shirt.' }, shirt, 'A1');
+    assert.ok(trNear.ok && trNear.item.wordBank, trNear.reason);
+    assert.ok(trNear.item.wordBank.some((w) => /^that is$/i.test(w)), `Polish To rules out That is: ${trNear.item.wordBank.join(' | ')}`);
+});
+
 test('copyTaskReason rejects a letterScramble whose letters already spell the word', () => {
     const reason = copyTaskReason({ type: 'letterScramble', prompt: 'Unscramble the word.', letters: ['f', 'o', 'g'], answer: 'fog', clue: 'mgła' });
     assert.match(reason, /not scrambled|already shown/i);

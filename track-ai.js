@@ -640,7 +640,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- VARIANTS: if a term lists alternatives separated by "/", "," or "or" (English) / "lub" or "albo" (Polish) — e.g. "be grounded / get grounded", "present/gift" — every item must use exactly ONE of those forms, the one that fits the sentence or task. Put that English form in "variantUsed". NEVER write the listed slash/comma form in the sentence, the answer, the options, the gap, the letters, the tiles, the typed answer, the hint, the source, or the question (not "present/gift", not "be grounded / get grounded"). Distractors must not be other variants of the same term. Leave frozen compounds such as "and/or" or "w/o" alone — they are not variants.',
         '- NO COPY TASKS: never ask the learner to type a word or sentence that is already shown on the card in the same form and the same language (copying from the prompt, the source, or a visible sentence is pointless). A translation must change language; a gap must hide the target; wordFormation must change the stem (fog → foggy, not fog → fog). Dictation is listen-and-type only — do not also write the sentence on the card. Genuine transformations are required: the other language, a different word form, a derived word, or a reshaped sentence.',
         '- ANSWER LANGUAGE: every typed, gap or choice item must make the answer language unmistakable. The site sets "answerLang" to "en" or "pl" and writes a short Polish instruction (e.g. "Przetłumacz na polski:", "Napisz po angielsku:", "Posłuchaj i napisz po angielsku:"). Do not write an English-only prompt that could be read either way. A card that shows an English word and wants a Polish answer must say so; a card where the learner types English as-is must say "po angielsku".',
-        '- SCAFFOLD: for A1/A2 typed sentences longer than 3 words (dictation or a full-sentence translation), you may add "wordBank" (the key structures/chunks to place in the gaps, plus 2–4 same-kind distractors such as other question words) and "scaffoldGapped" (the answer with those chunks replaced by ___). The site will also add these when it can. wordBank must contain each gap chunk exactly once; a distractor must not be valid in any gap. Keep "speak" equal to the full unsplit answer so the learner can hear it.',
+        '- SCAFFOLD: for A1/A2 typed sentences longer than 3 words (dictation or a full-sentence translation), you may add "wordBank" (the key structures/chunks to place in the gaps, plus 2–4 same-kind distractors such as other question words) and "scaffoldGapped" (the answer with those chunks replaced by ___). The site will also add these when it can. wordBank must contain each gap chunk exactly once; a distractor must be wrong for a visible grammatical reason (number or person agreement, word order, or a question word that does not fit the structure). Never offer this is / that is (or these are / those are) without a here / over there cue, and never Where are vs What are when both fit the sentence. Keep "speak" equal to the full unsplit answer so the learner can hear it.',
         ...(feedback.length ? ['', 'PREVIOUS ATTEMPT — these items were rejected, write them again and fix the problem:', ...feedback.map((f) => `- termId ${JSON.stringify(f.termId)} ${f.slot}: ${f.reason}`)] : []),
         '',
         'Return ONLY valid JSON of the form {"items":[...],"skipped":[...]}. No markdown, no commentary.',
@@ -1159,16 +1159,207 @@ function fillScaffold(tokens, spans, chunks) {
     return out.join(' ');
 }
 
-function uniqueScaffold(answer, tokens, spans, bank) {
+const SCAFFOLD_QWORDS = new Set('what where when who why which how'.split(' '));
+const SCAFFOLD_AUX = new Set('is are was were do does did have has had can could would will'.split(' '));
+const SCAFFOLD_PERSON = new Set('i you he she we they'.split(' '));
+const SCAFFOLD_BE_SG = new Set(['is', 'was', 'does', 'has']);
+const SCAFFOLD_BE_PL = new Set(['are', 'were']);
+
+function auxClassOf(aux) {
+    if (['is', 'are', 'was', 'were'].includes(aux)) return 'be';
+    if (['do', 'does', 'did'].includes(aux)) return 'do';
+    if (['have', 'has', 'had'].includes(aux)) return 'have';
+    if (['can', 'could', 'would', 'will'].includes(aux)) return 'modal';
+    return aux || '';
+}
+
+function parseScaffoldChunk(s) {
+    const f = foldCopyText(s);
+    if (!f) return null;
+    const parts = f.split(' ').filter(Boolean);
+    const deictic = parseDeicticOption(s);
+    if (deictic) return { family: 'deictic', ...deictic, parts };
+    if (SCAFFOLD_QWORDS.has(parts[0])) {
+        const aux = parts.find((p) => SCAFFOLD_AUX.has(p)) || '';
+        const person = parts.find((p) => SCAFFOLD_PERSON.has(p)) || '';
+        let num = '';
+        if (parts.some((p) => SCAFFOLD_BE_SG.has(p))) num = 'sg';
+        else if (parts.some((p) => SCAFFOLD_BE_PL.has(p))) num = 'pl';
+        return { family: 'question', qword: parts[0], aux, person, num, parts };
+    }
+    if (f.includes('have got') || f.includes('has got')) {
+        const person = parts.find((p) => SCAFFOLD_PERSON.has(p)) || '';
+        return { family: 'haveGot', person, aux: parts.includes('has') ? 'has' : 'have', hasSubject: SCAFFOLD_PERSON.has(parts[0]), parts };
+    }
+    if (parts.length >= 2 && SCAFFOLD_PERSON.has(parts[0]) && ['like', 'wear', 'want', 'need', 'have'].includes(parts[1])) {
+        return { family: 'like', person: parts[0], verb: parts[1], parts };
+    }
+    if (['put', 'take', 'get'].includes(parts[0]) && parts[1] === 'your') {
+        return { family: 'putTake', verb: parts[0], parts };
+    }
+    return { family: 'other', parts };
+}
+
+/** Near/far from a Polish source (Ta/To vs Tamta/Tamten, tutaj vs tam). */
+function polishDeicticDist(source) {
+    const toks = new Set(foldCopyText(source).split(' ').filter(Boolean));
+    const far = 'tamten tamta tamto tamte tamci tamtym tamtej tamtymi tamtych'.split(' ');
+    if (far.some((w) => toks.has(w)) || toks.has('tam')) return 'far';
+    const near = 'ten ta to te tego tej tych tymi oto tutaj tu'.split(' ');
+    if (near.some((w) => toks.has(w))) return 'near';
+    return '';
+}
+
+function polishPerson(source) {
+    const s = ` ${foldCopyText(source)} `;
+    const rules = [
+        ['i', /\b(mam|jestem|lubie|nosze|zakladam|biore|ide|robie|widze|mieszkam)\b/],
+        ['we', /\b(mamy|jestesmy|lubimy|nosimy|zakladamy|bierzemy|idziemy|robimy)\b/],
+        ['you', /\b(masz|jestes|lubisz|nosisz|zakladasz|bierzesz|idziesz|robisz)\b/],
+        ['they', /\b(maja|sa|lubia|nosza|zakladaja|biora|ida|robia)\b/],
+        ['he', /\b(ma|jest|lubi|nosi|zaklada|bierze|idzie|robi)\b/],
+    ];
+    for (const [person, re] of rules) if (re.test(s)) return person;
+    return '';
+}
+
+function polishLikeVerb(source) {
+    const s = ` ${foldCopyText(source)} `;
+    if (/\b(lubie|lubi|lubimy|lubisz|lubia|lubicie)\b/.test(s)) return 'like';
+    if (/\b(nosze|nosi|nosimy|nosisz|nosza|zakladam|zaklada|zakladamy|ubieram|ubiera)\b/.test(s)) return 'wear';
+    if (/\b(potrzebuje|potrzebujemy|potrzebujesz|potrzebuja|potrzebuje)\b/.test(s)) return 'need';
+    if (/\b(chce|chcemy|chcesz|chca)\b/.test(s)) return 'want';
+    if (/\b(mam|ma|mamy|masz|maja)\b/.test(s)) return 'have';
+    return '';
+}
+
+function polishRulesOut(item, candMeta, correctMeta) {
+    if (!item || item.type !== 'translateType' || !item.source || !candMeta || !correctMeta) return false;
+    const src = item.source;
+    if (candMeta.family === 'deictic' && correctMeta.family === 'deictic') {
+        const d = polishDeicticDist(src);
+        if (d && candMeta.dist && d !== candMeta.dist) return true;
+    }
+    if ((candMeta.family === 'haveGot' || candMeta.family === 'like') && candMeta.person && correctMeta.person && candMeta.person !== correctMeta.person) {
+        const p = polishPerson(src);
+        if (p && p !== candMeta.person) return true;
+    }
+    if (candMeta.family === 'like' && correctMeta.family === 'like' && candMeta.verb && correctMeta.verb && candMeta.verb !== correctMeta.verb) {
+        const v = polishLikeVerb(src);
+        if (v && v !== candMeta.verb) return true;
+    }
+    return false;
+}
+
+function remainderParticle(template) {
+    const t = clean(template);
+    const at = t.indexOf(GAP);
+    if (at < 0) return '';
+    const after = words(t.slice(at + GAP.length));
+    const particles = new Set('on off in out up down away'.split(' '));
+    return after.find((w) => particles.has(w)) || '';
+}
+
+function qwordRemainderRejects(qword, template) {
+    const t = clean(template);
+    const at = t.indexOf(GAP);
+    if (at < 0) return false;
+    const after = foldCopyText(t.slice(at + GAP.length));
+    if (!after) return false;
+    const locVerb = /\b(live|lives|lived|go|goes|went|sit|sits|stay|stays|come|comes|stand|stands|belong|belongs)\b/;
+    const doActivity = /\b(do|doing|does)\b/;
+    if (locVerb.test(after) && qword === 'what') return true;
+    if (doActivity.test(after) && (qword === 'where' || qword === 'when' || qword === 'who')) return true;
+    return false;
+}
+
+/**
+ * true when a learner could still pick `cand` from the gapped sentence alone
+ * (or the Polish source does not rule it out). Such a candidate is not a valid distractor.
+ */
+function scaffoldCandidateFits(cand, tokens, spans, gap, correctChunks, item) {
+    const correct = correctChunks[gap];
+    if (sameCopyForm(cand, correct)) return true;
+    const trial = correctChunks.slice();
+    trial[gap] = cand;
+    const filled = fillScaffold(tokens, spans, trial);
+    if (sameCopyForm(filled, clean(item.answer || ''))) return true;
+    const template = fillScaffold(tokens, spans, correctChunks.map((ch, i) => (i === gap ? '___' : ch)));
+    const cues = deicticCues(template);
+    const a = parseScaffoldChunk(correct);
+    const c = parseScaffoldChunk(cand);
+    if (!c) return false;
+
+    if (c.family === 'deictic') {
+        if (!c.grammatical) return false;
+        if (cues.num && c.num && cues.num !== c.num) return false;
+        if (cues.dist && c.dist && cues.dist !== c.dist) return false;
+        return true;
+    }
+    if (a && a.family === 'question') {
+        if (c.family !== 'question') return false;
+        if (c.num && cues.num && c.num !== cues.num) return false;
+        if (auxClassOf(a.aux) && auxClassOf(c.aux) && auxClassOf(a.aux) !== auxClassOf(c.aux)) return false;
+        if (c.qword && qwordRemainderRejects(c.qword, template)) return false;
+        if (c.qword && a.qword && c.qword !== a.qword && auxClassOf(a.aux) === auxClassOf(c.aux) && (!c.num || !a.num || c.num === a.num) && (!cues.num || !c.num || c.num === cues.num)) {
+            return true;
+        }
+        if (auxClassOf(a.aux) === auxClassOf(c.aux) && (!c.num || !cues.num || c.num === cues.num)) return true;
+        return false;
+    }
+    if (a && a.family === 'haveGot') {
+        if (c.family !== 'haveGot') return false;
+        if (!c.hasSubject) return false;
+        return true;
+    }
+    if (a && a.family === 'like') {
+        if (c.family !== 'like') return false;
+        return true;
+    }
+    if (a && a.family === 'putTake') {
+        if (c.family !== 'putTake') return false;
+        const part = remainderParticle(template);
+        if (part === 'on' && c.verb === 'take') return false;
+        if (part === 'off' && c.verb === 'put') return false;
+        return true;
+    }
+    if (c.family !== (a && a.family)) return false;
+    return true;
+}
+
+/** true when `cand` is a unique-answer distractor for this gap (wrong for a visible reason, or ruled out by the Polish source). */
+function isValidScaffoldDistractor(cand, tokens, spans, gap, correctChunks, item) {
+    if (scaffoldCandidateFits(cand, tokens, spans, gap, correctChunks, item)) {
+        const a = parseScaffoldChunk(correctChunks[gap]);
+        const c = parseScaffoldChunk(cand);
+        if (!a || !c) return false;
+        const template = fillScaffold(tokens, spans, correctChunks.map((ch, i) => (i === gap ? '___' : ch)));
+        const cues = deicticCues(template);
+        // near/far this/that without a distance cue: never, unless the Polish source (translateType) rules it out
+        if (a.family === 'deictic' && c.family === 'deictic' && a.dist && c.dist && a.dist !== c.dist && a.num === c.num && !cues.dist) {
+            return polishRulesOut(item, c, a);
+        }
+        // person or verb alternatives that fit the English remainder
+        const personAlt = (a.family === 'haveGot' || a.family === 'like') && a.person && c.person && a.person !== c.person;
+        const verbAlt = a.family === 'like' && a.verb && c.verb && a.verb !== c.verb;
+        if (personAlt || verbAlt) {
+            if (item && item.type === 'translateType' && polishRulesOut(item, c, a)) return true;
+            // dictation: the audio disambiguates clearly distinct person/verb forms (not near/far this/that)
+            if (item && item.type === 'dictation') return true;
+        }
+        return false;
+    }
+    return !sameCopyForm(cand, correctChunks[gap]);
+}
+
+function uniqueScaffold(answer, tokens, spans, bank, item) {
     const correct = spans.map((s) => s.text);
     const gaps = spans.length;
     if (!gaps) return false;
     for (let g = 0; g < gaps; g++) {
         for (const cand of bank) {
             if (sameCopyForm(cand, correct[g])) continue;
-            const trial = correct.slice();
-            trial[g] = cand;
-            if (sameCopyForm(fillScaffold(tokens, spans, trial), answer)) return false;
+            if (!isValidScaffoldDistractor(cand, tokens, spans, g, correct, item || { answer })) return false;
         }
     }
     return true;
@@ -1196,8 +1387,9 @@ export function buildScaffold(item, level, term, rand = Math.random) {
         let shown = c;
         if (spans[0].start === 0) shown = c.charAt(0).toUpperCase() + c.slice(1);
         if (distractors.some((d) => sameCopyForm(d, shown))) continue;
+        if (!chunks.every((_, g) => isValidScaffoldDistractor(shown, tokens, spans, g, chunks, item))) continue;
         const trialBank = [...chunks, ...distractors, shown];
-        if (!uniqueScaffold(answer, tokens, spans, trialBank)) continue;
+        if (!uniqueScaffold(answer, tokens, spans, trialBank, item)) continue;
         distractors.push(shown);
         if (distractors.length >= 3) break;
     }
@@ -1205,7 +1397,7 @@ export function buildScaffold(item, level, term, rand = Math.random) {
     const wordBank = shuffled([...chunks, ...distractors.slice(0, 4)], rng);
     const gapped = fillScaffold(tokens, spans, chunks);
     if (!gapped.includes('___')) return null;
-    if (!uniqueScaffold(answer, tokens, spans, wordBank)) return null;
+    if (!uniqueScaffold(answer, tokens, spans, wordBank, item)) return null;
     const counts = new Map();
     for (const ch of chunks) {
         const k = foldCopyText(ch);
