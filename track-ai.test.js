@@ -1631,10 +1631,24 @@ test('scaffold wordBank: distractors are unique for a visible grammatical reason
     assert.ok(!wbank.some((w) => /^(what|who|when|why|which) are$/i.test(w)), `same-aux question words also fit: ${wbank.join(' | ')}`);
     assert.ok(wbank.some((w) => /how many|what do|why do|what kind|did he|did you|where is|what is/i.test(w)), `structural or number-mismatch distractor: ${wbank.join(' | ')}`);
 
-    // Polish "Ta" / "To" rules out far "That is" on a translateType item even without here/there
-    const trNear = buildItem({ type: 'translateType', source: 'To jest moja koszulka.', answer: 'This is my T-shirt.' }, shirt, 'A1');
+    // Bare "To jest" does not mark near vs far — That is must not be a distractor
+    const trNeutral = buildItem({ type: 'translateType', source: 'To jest moja koszulka.', answer: 'This is my T-shirt.' }, shirt, 'A1');
+    assert.ok(trNeutral.ok, trNeutral.reason);
+    if (trNeutral.item.wordBank) {
+        assert.ok(!trNeutral.item.wordBank.some((w) => /^that is$/i.test(w)), `bare To jest does not rule out That is: ${trNeutral.item.wordBank.join(' | ')}`);
+        assert.ok(trNeutral.item.wordBank.some((w) => /these are|those are/i.test(w)), `number-mismatch distractor expected: ${trNeutral.item.wordBank.join(' | ')}`);
+    }
+    assert.ok((trNeutral.item.acceptedAnswers || []).some((a) => /^that is my t-shirt\.?$/i.test(a)), `typed To jest must also accept That is: ${JSON.stringify(trNeutral.item.acceptedAnswers)}`);
+
+    // Explicit tutaj/tu on the Polish source does rule out the far form
+    const trNear = buildItem({ type: 'translateType', source: 'To jest moja koszulka tutaj.', answer: 'This is my T-shirt.' }, shirt, 'A1');
     assert.ok(trNear.ok && trNear.item.wordBank, trNear.reason);
-    assert.ok(trNear.item.wordBank.some((w) => /^that is$/i.test(w)), `Polish To rules out That is: ${trNear.item.wordBank.join(' | ')}`);
+    assert.ok(trNear.item.wordBank.some((w) => /^that is$/i.test(w)), `Polish tutaj rules out That is: ${trNear.item.wordBank.join(' | ')}`);
+    assert.ok(!(trNear.item.acceptedAnswers || []).some((a) => /^that is my t-shirt\.?$/i.test(a)), 'tutaj should not also accept That is');
+
+    const trFar = buildItem({ type: 'translateType', source: 'Tamto jest moja koszulka.', answer: 'That is my T-shirt.' }, shirt, 'A1');
+    assert.ok(trFar.ok && trFar.item.wordBank, trFar.reason);
+    assert.ok(trFar.item.wordBank.some((w) => /^this is$/i.test(w)), `Polish Tamto rules out This is: ${trFar.item.wordBank.join(' | ')}`);
 });
 
 test('copyTaskReason rejects a letterScramble whose letters already spell the word', () => {

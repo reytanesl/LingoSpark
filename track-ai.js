@@ -640,7 +640,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- VARIANTS: if a term lists alternatives separated by "/", "," or "or" (English) / "lub" or "albo" (Polish) — e.g. "be grounded / get grounded", "present/gift" — every item must use exactly ONE of those forms, the one that fits the sentence or task. Put that English form in "variantUsed". NEVER write the listed slash/comma form in the sentence, the answer, the options, the gap, the letters, the tiles, the typed answer, the hint, the source, or the question (not "present/gift", not "be grounded / get grounded"). Distractors must not be other variants of the same term. Leave frozen compounds such as "and/or" or "w/o" alone — they are not variants.',
         '- NO COPY TASKS: never ask the learner to type a word or sentence that is already shown on the card in the same form and the same language (copying from the prompt, the source, or a visible sentence is pointless). A translation must change language; a gap must hide the target; wordFormation must change the stem (fog → foggy, not fog → fog). Dictation is listen-and-type only — do not also write the sentence on the card. Genuine transformations are required: the other language, a different word form, a derived word, or a reshaped sentence.',
         '- ANSWER LANGUAGE: every typed, gap or choice item must make the answer language unmistakable. The site sets "answerLang" to "en" or "pl" and writes a short Polish instruction (e.g. "Przetłumacz na polski:", "Napisz po angielsku:", "Posłuchaj i napisz po angielsku:"). Do not write an English-only prompt that could be read either way. A card that shows an English word and wants a Polish answer must say so; a card where the learner types English as-is must say "po angielsku".',
-        '- SCAFFOLD: for A1/A2 typed sentences longer than 3 words (dictation or a full-sentence translation), you may add "wordBank" (the key structures/chunks to place in the gaps, plus 2–4 same-kind distractors such as other question words) and "scaffoldGapped" (the answer with those chunks replaced by ___). The site will also add these when it can. wordBank must contain each gap chunk exactly once; a distractor must be wrong for a visible grammatical reason (number or person agreement, word order, or a question word that does not fit the structure). Never offer this is / that is (or these are / those are) without a here / over there cue, and never Where are vs What are when both fit the sentence. Keep "speak" equal to the full unsplit answer so the learner can hear it.',
+        '- SCAFFOLD: for A1/A2 typed sentences longer than 3 words (dictation or a full-sentence translation), you may add "wordBank" (the key structures/chunks to place in the gaps, plus 2–4 same-kind distractors such as other question words) and "scaffoldGapped" (the answer with those chunks replaced by ___). The site will also add these when it can. wordBank must contain each gap chunk exactly once; a distractor must be wrong for a visible grammatical reason (number or person agreement, word order, or a question word that does not fit the structure). Never offer this is / that is (or these are / those are) without a here / over there cue (a Polish source only rules the other distance out when it has tutaj/tu, or tamten/tamta/tamto/tamci/tamte/tam — bare "to jest" does not mark near vs far), and never Where are vs What are when both fit the sentence. Keep "speak" equal to the full unsplit answer so the learner can hear it.',
         ...(feedback.length ? ['', 'PREVIOUS ATTEMPT — these items were rejected, write them again and fix the problem:', ...feedback.map((f) => `- termId ${JSON.stringify(f.termId)} ${f.slot}: ${f.reason}`)] : []),
         '',
         'Return ONLY valid JSON of the form {"items":[...],"skipped":[...]}. No markdown, no commentary.',
@@ -1200,14 +1200,50 @@ function parseScaffoldChunk(s) {
     return { family: 'other', parts };
 }
 
-/** Near/far from a Polish source (Ta/To vs Tamta/Tamten, tutaj vs tam). */
+/**
+ * Near/far from a Polish source. Bare "to jest" / "to są" (and ten/ta/to alone)
+ * does not mark distance — only an explicit cue does:
+ * near = tutaj/tu (e.g. "ten/ta/to" + "tutaj"); far = tamten/tamta/tamto/tamci/tamte (and declined forms) or tam.
+ */
 function polishDeicticDist(source) {
     const toks = new Set(foldCopyText(source).split(' ').filter(Boolean));
-    const far = 'tamten tamta tamto tamte tamci tamtym tamtej tamtymi tamtych'.split(' ');
-    if (far.some((w) => toks.has(w)) || toks.has('tam')) return 'far';
-    const near = 'ten ta to te tego tej tych tymi oto tutaj tu'.split(' ');
-    if (near.some((w) => toks.has(w))) return 'near';
+    const far = 'tamten tamta tamto tamte tamci tamtym tamtej tamtymi tamtych tamtego tamtemu'.split(' ');
+    const isFar = far.some((w) => toks.has(w)) || toks.has('tam');
+    const isNear = toks.has('tutaj') || toks.has('tu');
+    if (isFar && !isNear) return 'far';
+    if (isNear && !isFar) return 'near';
     return '';
+}
+
+const DEICTIC_LEAD = /^(this is|that is|these are|those are)\b/i;
+const DEICTIC_SWAP = { 'this is': 'That is', 'that is': 'This is', 'these are': 'Those are', 'those are': 'These are' };
+
+/** The other near/far wording of a This is / That is (or These are / Those are) sentence, or ''. */
+function otherDeicticSentence(answer) {
+    const a = clean(answer);
+    const m = DEICTIC_LEAD.exec(a);
+    if (!m) return '';
+    return a.replace(DEICTIC_LEAD, DEICTIC_SWAP[m[1].toLowerCase()]);
+}
+
+function polishToJestCopula(source) {
+    const f = foldCopyText(source);
+    return /\bto jest\b/.test(f) || /\bto sa\b/.test(f);
+}
+
+/**
+ * On a typed translateType of a distance-neutral "To jest…" / "To są…" sentence,
+ * both This is and That is (or These are / Those are) are accepted translations.
+ */
+function attachDeicticAcceptedAnswers(item) {
+    if (!item || item.type !== 'translateType' || !item.source || !item.answer) return;
+    if (item.direction === 'en-pl' || item.answerLang === 'pl') return;
+    if (!polishToJestCopula(item.source)) return;
+    if (polishDeicticDist(item.source)) return;
+    const alt = otherDeicticSentence(item.answer);
+    if (!alt) return;
+    item.acceptedAnswers = uniqueClean([item.answer, ...(item.acceptedAnswers || []), ...(item.answers || []), alt]);
+    item.answers = uniqueClean([...(item.answers || [item.answer]), alt]);
 }
 
 function polishPerson(source) {
@@ -1335,7 +1371,7 @@ function isValidScaffoldDistractor(cand, tokens, spans, gap, correctChunks, item
         if (!a || !c) return false;
         const template = fillScaffold(tokens, spans, correctChunks.map((ch, i) => (i === gap ? '___' : ch)));
         const cues = deicticCues(template);
-        // near/far this/that without a distance cue: never, unless the Polish source (translateType) rules it out
+        // near/far this/that without a distance cue: never, unless the Polish source has an explicit tutaj/tu or tamten/tam cue
         if (a.family === 'deictic' && c.family === 'deictic' && a.dist && c.dist && a.dist !== c.dist && a.num === c.num && !cues.dist) {
             return polishRulesOut(item, c, a);
         }
@@ -1423,6 +1459,7 @@ export function decorateItem(item, level, term, rand = Math.random) {
         delete item.wordBank;
         delete item.scaffoldGapped;
     }
+    attachDeicticAcceptedAnswers(item);
     return item;
 }
 
