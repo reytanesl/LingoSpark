@@ -312,6 +312,8 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- Never reveal the answer in the question text, the hint, the other options or the Polish instruction. Exactly one option may be correct; distractors must be clearly wrong in context but plausible (same word class/form).',
         '- Options must be distinct. No duplicate sentences across items of one term.',
         '- UNIQUE ANSWER for every gap/choice item (sentenceGap, gapTranslate, collocationPick): the sentence must contain enough context (a defining clue, a collocation, a cause/effect or a meaning cue) that ONLY the target fits; every distractor must be clearly wrong in that sentence (grammatically or semantically) while looking plausible. If two options could both fit, rewrite the sentence or change the distractor. NEVER write generic sentences such as "There is a ___ here.", "I like ___.", "This is my ___.", "It is a ___." — these have no single answer.',
+        '- SELF-CONTAINED CONTEXT: the learner must be able to choose the answer from the sentence alone, with no picture and no previous sentence. The sentence itself must name the facts that make the target the only fit. Do not write sentences that point at something unnamed (e.g. "Your belt is long and ___ short") — the second referent is missing, so "this is" / "that is" / "these are" are all guesswork.',
+        '- DEMONSTRATIVES and PRONOUN + BE (this/that/these/those, this is/that is/these are/those are, it is/they are): disambiguate with an explicit cue in the same sentence. Put a singular or plural noun right after the gap so number is obvious ("Look, ___ my shoes here." not "... and ___ short"). For this vs that or these vs those, add a distance cue (here / over there). Never put this is and that is (or these are and those are) together as options unless the sentence has such a cue. Distractors must be wrong for a reason visible in the sentence (number or distance). Do not use ungrammatical junk such as "these is" / "this are" as the only way to make the answer unique.',
         ...(level === 'A1' || level === 'A2' ? [
             `- A1/A2 VOCABULARY: introduce new words gradually. Besides the single target term, use ONLY very common words (be, have got, pronouns, articles, simple verbs and everyday nouns). Do not add other words from the set, and do not add unnecessary adjectives or harder verbs. Prefer the simplest frame that works: "We have got a tracksuit." not "We need a warm tracksuit." Keep sentences short (about ${lo}–${hi} words). At most ONE word from the set in each sentence.`,
             '- EXCEPTION for sentenceGap, gapTranslate and collocationPick: the UNIQUE ANSWER rule still applies — never write a generic frame such as "We have got a ___." / "There is a ___ here." Give a short defining clue, but the clue itself must use only those same basic words (e.g. "The boy wears this tracksuit at school.").',
@@ -375,6 +377,117 @@ export function genericGapReason(template) {
     if (rest.filter((w) => !GAP_STOPWORDS.has(w)).length < 3) return 'gap sentence has too few meaningful words around the gap: add a defining clue or collocation so only the target fits';
     return '';
 }
+
+/** this/that/these/those and pronoun+be chunks (this is, these are, it is, they are, …). */
+const DET_HEAD = { this: { num: 'sg', dist: 'near' }, that: { num: 'sg', dist: 'far' }, these: { num: 'pl', dist: 'near' }, those: { num: 'pl', dist: 'far' } };
+const PRON_HEAD = { it: { num: 'sg' }, they: { num: 'pl' }, he: { num: 'sg' }, she: { num: 'sg' } };
+const BE_SG = new Set(['is', 'was']);
+const BE_PL = new Set(['are', 'were']);
+const BE_ANY = new Set(['is', 'are', 'was', 'were']);
+const DEICTIC_ADJ = new Set(('long short big small little large new old young warm cold hot cool nice good bad fine great pretty clean dirty heavy light dark bright soft hard easy difficult fast slow strong weak tall high low full empty busy free early late ready right wrong happy sad tired hungry thirsty red blue green yellow black white brown pink orange grey gray thick thin').split(' '));
+const DEICTIC_PL_NOUNS = new Set(('trousers jeans shorts pants scissors people children men women feet teeth mice glasses clothes police shoes trainers socks gloves boots pyjamas pajamas stairs goods surroundings leftovers').split(' '));
+const DEICTIC_DET = new Set('a an the my your his her its our their this that these those'.split(' '));
+const SINGULAR_S = new Set('this that his hers ours yours theirs its news maths physics bus glass class grass miss dress'.split(' '));
+
+/** Parse a choice like "these are" / "this" / "it's" / "they are". Null if it is not a deictic/pronoun(+be) chunk. */
+export function parseDeicticOption(option) {
+    const raw = norm(option);
+    if (!raw) return null;
+    const s = raw.replace(/[.,!?]+$/g, '').replace(/\b(it|that|this|he|she|there)'s\b/g, '$1 is');
+    const parts = s.split(/\s+/).filter(Boolean);
+    if (!parts.length || parts.length > 2) return null;
+    const head = parts[0];
+    const second = parts[1] || '';
+    const be = BE_ANY.has(second) ? second : '';
+    if (second && !be) return null;
+    const beNum = be ? (BE_SG.has(be) ? 'sg' : 'pl') : null;
+    if (DET_HEAD[head]) {
+        const meta = DET_HEAD[head];
+        return { kind: 'det', head, num: meta.num, dist: meta.dist, be, grammatical: !beNum || beNum === meta.num };
+    }
+    if (PRON_HEAD[head]) {
+        const meta = PRON_HEAD[head];
+        return { kind: 'pron', head, num: meta.num, dist: null, be, grammatical: !beNum || beNum === meta.num };
+    }
+    return null;
+}
+
+function deicticCues(template) {
+    const t = clean(template);
+    const at = t.indexOf(GAP);
+    if (at < 0) return { num: '', dist: '' };
+    const after = t.slice(at + GAP.length);
+    const before = t.slice(0, at);
+    const afterToks = words(after);
+    const nearRe = /\b(?:right\s+)?here\b|\bover\s+here\b|\bnear\s+(?:me|us|here)\b|\bnext\s+to\s+me\b/i;
+    const farRe = /\bover\s+there\b|\bright\s+there\b|\bfar\s+away\b|\bin\s+the\s+distance\b/i;
+    // a bare "there" after the gap is a far cue; before the gap only "over/right there" counts (not existential "there is")
+    let dist = '';
+    if (nearRe.test(after) || nearRe.test(before)) dist = 'near';
+    const far = farRe.test(after) || farRe.test(before) || /(?:^|[\s,;:—-])there(?:$|[\s,;:.!?])/i.test(after);
+    if (far) dist = dist === 'near' ? '' : 'far';
+    // a pointing "here" / "there" immediately before the gap (Look there, ___ …) — not existential "there is/are"
+    const tail = words(before);
+    const last = tail[tail.length - 1] || '';
+    const prev = tail[tail.length - 2] || '';
+    if (last === 'here' || (prev === 'here' && last === 'then')) dist = (dist === 'far') ? '' : 'near';
+    if (last === 'there' && prev !== 'is' && prev !== 'are' && prev !== 'was' && prev !== 'were') dist = (dist === 'near') ? '' : 'far';
+
+    let k = 0;
+    while (k < afterToks.length && ['over', 'right', 'here', 'there', 'away', 'far'].includes(afterToks[k])) k++;
+    let det = '';
+    while (k < afterToks.length && DEICTIC_DET.has(afterToks[k])) { det = afterToks[k]; k++; }
+    while (k < afterToks.length && DEICTIC_ADJ.has(afterToks[k])) k++;
+    let num = '';
+    if (k < afterToks.length && BE_ANY.has(afterToks[k])) {
+        num = BE_SG.has(afterToks[k]) ? 'sg' : 'pl';
+    } else if (k < afterToks.length) {
+        const n = afterToks[k];
+        const next = afterToks[k + 1] || '';
+        const isNoun = !DEICTIC_ADJ.has(n) && !BE_ANY.has(n) && !GAP_STOPWORDS.has(n) && (
+            DEICTIC_PL_NOUNS.has(n)
+            || BE_ANY.has(next)
+            || det === 'a' || det === 'an' || DEICTIC_DET.has(det)
+            || (/(?:s|es|ies)$/.test(n) && n.length > 3)
+        );
+        if (isNoun) {
+            const plural = DEICTIC_PL_NOUNS.has(n) || (/(?:s|es|ies)$/.test(n) && n.length > 3 && !SINGULAR_S.has(n));
+            num = plural ? 'pl' : 'sg';
+        }
+    }
+    return { num, dist };
+}
+
+/**
+ * '' when a demonstrative / pronoun+be gap is uniquely determined by a number or distance cue,
+ * else the reason the sentence is guesswork (Karol's "Your belt is long and ___ short" case).
+ * Items whose answer is not a deictic/pronoun chunk are left alone.
+ */
+export function demonstrativeGapReason(template, answer, options) {
+    const ans = parseDeicticOption(answer);
+    if (!ans) return '';
+    if (countGaps(template || '') !== 1) return '';
+    const cues = deicticCues(template);
+    const opts = Array.isArray(options) && options.length ? options : [answer];
+    const fits = (meta) => {
+        if (!meta || !meta.grammatical) return false;
+        if (cues.num && meta.num && cues.num !== meta.num) return false;
+        if (cues.dist && meta.dist && cues.dist !== meta.dist) return false;
+        return true;
+    };
+    if (!cues.num && !cues.dist) {
+        return 'demonstrative/pronoun gap has no disambiguating cue: add a noun for number, or here/over there for distance, so the sentence alone makes only one option correct';
+    }
+    if (!fits(ans)) {
+        return 'demonstrative/pronoun answer does not match the number or distance cue in the sentence';
+    }
+    const others = opts.filter((o) => norm(o) !== norm(answer) && fits(parseDeicticOption(o)));
+    if (others.length) {
+        return 'this/that/these/those (or pronoun + be) options are not uniquely determined by the sentence; add a number or distance cue, or change the distractors';
+    }
+    return '';
+}
+
 /** Types whose English sentence is checked for A1/A2 vocabulary load. */
 const VOCAB_TYPES = new Set(['sentenceGap', 'gapTranslate', 'sentenceOrder', 'dictation', 'translateType', 'collocationPick']);
 /** Extra non-list, non-basic content words allowed in an A1/A2 sentence (0 = only basic words + the target). */
@@ -431,7 +544,10 @@ export function simpleVocabReason(text, level, term, setTerms = []) {
 /** A banked item that must no longer be served (generic gaps, or an A1/A2 sentence that is too hard). */
 export function bankedItemBad(item, level, term, setTerms) {
     if (!item) return false;
-    if ((item.type === 'sentenceGap' || item.type === 'gapTranslate') && typeof item.template === 'string' && genericGapReason(item.template)) return true;
+    if ((item.type === 'sentenceGap' || item.type === 'gapTranslate' || item.type === 'collocationPick') && typeof item.template === 'string') {
+        if ((item.type === 'sentenceGap' || item.type === 'gapTranslate') && genericGapReason(item.template)) return true;
+        if (demonstrativeGapReason(item.template, item.answer, item.options)) return true;
+    }
     if ((level === 'A1' || level === 'A2') && VOCAB_TYPES.has(item.type)) {
         const text = englishTextOf(item);
         if (text && simpleVocabReason(text, level, term, setTerms)) return true;
@@ -621,6 +737,8 @@ export function buildItem(raw, term, level, setTerms = []) {
             if (!options) return REASON('needs 3 distinct distractors');
             const oe = checkOptions(options, raw.answer);
             if (oe) return REASON(oe);
+            const deictic = demonstrativeGapReason(template, raw.answer, options);
+            if (deictic) return REASON(deictic);
             const prompt = type === 'gapTranslate' ? 'Fill the gap. Use the Polish translation to help.' : 'Choose the word that fits the gap.';
             const item = { prompt, template, answer: clean(raw.answer), options };
             if (type === 'gapTranslate') {
@@ -673,6 +791,8 @@ export function buildItem(raw, term, level, setTerms = []) {
             if (!options) return REASON('needs 3 distinct distractors');
             const oe = checkOptions(options, raw.answer);
             if (oe) return REASON(oe);
+            const deictic = demonstrativeGapReason(template, raw.answer, options);
+            if (deictic) return REASON(deictic);
             return tag('collocationPick', {
                 prompt: 'Which word goes with it?', template, answer: clean(raw.answer), options,
                 correctIndex: options.findIndex((o) => norm(o) === norm(raw.answer)),

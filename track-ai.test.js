@@ -7,6 +7,7 @@ import {
     createBank, termKeyOf, itemText, BANK_TARGET, planCalls, planWarmup,
     signBridgeRequest, verifyBridgeRequest, BRIDGE_HEADERS, TRACK_PATH, LIMITS, ALL_TYPES,
     simpleVocabReason, cheapHint, hintReason, shownText, bankedItemBad, VOCAB_EXTRA_MAX,
+    demonstrativeGapReason, parseDeicticOption,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
@@ -1033,6 +1034,71 @@ test('unique answer: a generic gap sentence that is already in the bank is never
     const r2 = await createTrackGenerator({ runPrompt: dead, bank: bank2, limits: { ...LIMITS, budgetMs: 1500 } })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
     assert.equal(r2.items.length, 0);
     assert.deepEqual(r2.meta.dropped, [{ lexiconId: '9', type: 'sentenceGap' }]);
+});
+
+/* ---------------------------------------------------------------- demonstrative / pronoun+be unique-answer gaps */
+
+const THISIS = T('20', 'this is', 'to jest');
+const THESEARE = T('21', 'these are', 'to są');
+const THOSEARE = T('22', 'those are', 'tamte są');
+const DEICTIC_OPTS = ['this is', 'that is', 'these are', 'these is'];
+
+test('unique answer: "Your belt is long and ___ short" is rejected — no cue, this is / that is are both guesswork', () => {
+    const reason = demonstrativeGapReason('Your belt is long and ___ short', 'this is', DEICTIC_OPTS);
+    assert.match(reason, /no disambiguating cue/);
+    // the live item (A2 clothes/grammar set): generic-frame check lets it through, the new check does not
+    const r = buildItem({ type: 'sentenceGap', sentence: 'Your belt is long and this is short.', answer: 'this is', distractors: ['that is', 'these are', 'these is'] }, THISIS, 'A2');
+    assert.equal(r.ok, false);
+    assert.match(r.reason, /no disambiguating cue/);
+    const a1 = buildItem({ type: 'sentenceGap', sentence: 'Your bag is long and this is short.', answer: 'this is', distractors: ['that is', 'these are', 'these is'] }, THISIS, 'A1');
+    assert.equal(a1.ok, false);
+    assert.match(a1.reason, /no disambiguating cue/);
+    // gapTranslate too
+    const g = buildItem({ type: 'gapTranslate', sentence: 'Your belt is long and this is short.', answer: 'this is', distractors: ['that is', 'these are', 'these is'], plTranslation: 'Twój pasek jest długi, a to jest krótkie.' }, THISIS, 'A2');
+    assert.equal(g.ok, false);
+});
+
+test('unique answer: a demonstrative gap with an explicit number or distance cue is accepted, and this vs that without a cue is not', () => {
+    const these = buildItem({ type: 'sentenceGap', sentence: 'Look, these are my new shoes here.', answer: 'these are', distractors: ['this is', 'that is', 'these is'] }, THESEARE, 'A1');
+    assert.ok(these.ok, these.reason);
+    assert.equal(these.item.template, 'Look, ___ my new shoes here.');
+    const ths = buildItem({ type: 'sentenceGap', sentence: 'Look, this is my new bag here.', answer: 'this is', distractors: ['that is', 'these are', 'these is'] }, THISIS, 'A1');
+    assert.ok(ths.ok, ths.reason);
+    const those = buildItem({ type: 'sentenceGap', sentence: 'Look, those are my new shoes over there.', answer: 'those are', distractors: ['this is', 'that is', 'these are'] }, THOSEARE, 'A1');
+    assert.ok(those.ok, those.reason);
+    // plural noun but no distance cue: these are / those are both fit
+    const amb = buildItem({ type: 'sentenceGap', sentence: 'Please look, these are my new shoes today.', answer: 'these are', distractors: ['this is', 'that is', 'those are'] }, THESEARE, 'A1');
+    assert.equal(amb.ok, false);
+    assert.match(amb.reason, /not uniquely determined/);
+    // non-deictic gaps are unchanged
+    assert.equal(demonstrativeGapReason('The boy wears this ___ at school.', 'tracksuit', ['trainers', 'dress', 'hoodie', 'tracksuit']), '');
+    assert.ok(parseDeicticOption('these is') && parseDeicticOption('these is').grammatical === false);
+});
+
+test('unique answer: the prompt requires self-contained context and a demonstrative cue', () => {
+    const p = buildTrackPrompt({ level: 'A1', terms: [THISIS], setTerms: [THISIS], wants: new Map([['20', new Set(['sentenceGap'])]]) });
+    assert.match(p, /SELF-CONTAINED CONTEXT/);
+    assert.match(p, /Your belt is long and ___ short/);
+    assert.match(p, /DEMONSTRATIVES and PRONOUN/);
+    assert.match(p, /here \/ over there/);
+    assert.match(p, /UNIQUE ANSWER/);
+});
+
+test('unique answer: a banked "and ___ short" demonstrative gap is never served and the slot is regenerated', async () => {
+    const bank = createBank();
+    await bank.add(THISIS, 'A2', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'Choose the word that fits the gap.', template: 'Your belt is long and ___ short', answer: 'this is', options: DEICTIC_OPTS } }]);
+    assert.equal(bankedItemBad({ type: 'sentenceGap', template: 'Your belt is long and ___ short', answer: 'this is', options: DEICTIC_OPTS }, 'A2', THISIS), true);
+    const calls = [];
+    const ai = async (prompt) => { calls.push(prompt); return { items: [{ termId: '20', type: 'sentenceGap', sentence: 'Look, this is my new bag here.', answer: 'this is', distractors: ['that is', 'these are', 'these is'] }] }; };
+    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'A2', terms: [THISIS], types: ['sentenceGap'] }).value);
+    assert.equal(calls.length, 1, 'the underspecified bank item counts as missing, so the AI is asked again');
+    assert.equal(r.items.length, 1);
+    assert.equal(r.items[0].template, 'Look, ___ my new bag here.');
+    const bank2 = createBank();
+    await bank2.add(THISIS, 'A2', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'x', template: 'Your belt is long and ___ short', answer: 'this is', options: DEICTIC_OPTS } }]);
+    const r2 = await createTrackGenerator({ runPrompt: async () => ({ items: [] }), bank: bank2, limits: { ...LIMITS, budgetMs: 1500 } })(validateTrackRequest({ setId: 's', level: 'A2', terms: [THISIS], types: ['sentenceGap'] }).value);
+    assert.equal(r2.items.length, 0);
+    assert.deepEqual(r2.meta.dropped, [{ lexiconId: '20', type: 'sentenceGap' }]);
 });
 
 /* ---------------------------------------------------------------- A1/A2 gradual vocabulary + hintHelp */
