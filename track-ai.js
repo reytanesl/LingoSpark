@@ -1400,6 +1400,14 @@ export function createPgBankStore({ getPool } = {}) {
                 await getPool().query('UPDATE track_ai_bank SET served_count = served_count + 1, last_served_at = NOW() WHERE id = ANY($1::bigint[])', [ids.filter((i) => /^\d+$/.test(i))]);
             } catch (e) { console.warn('[track-ai] bank markServed failed:', e.message); }
         },
+        async updateItem(id, item) {
+            try {
+                await ensure();
+                if (!/^\d+$/.test(String(id))) return false;
+                const r = await getPool().query('UPDATE track_ai_bank SET item = $2::jsonb WHERE id = $1', [id, JSON.stringify(item)]);
+                return r.rowCount > 0;
+            } catch (e) { console.warn('[track-ai] bank update failed:', e.message); return false; }
+        },
     };
 }
 
@@ -1454,6 +1462,44 @@ export function createBank({ store = null, now = () => Date.now(), maxTerms = 50
             const t = now();
             for (const e of entries) { e.servedCount++; e.lastServedAt = t; }
             if (store) store.markServed(entries.map((e) => e.id)).catch(() => {});
+        },
+        /**
+         * Append a newly accepted typed form to a banked item's acceptedAnswers (in memory + Postgres).
+         * `itemId` may be the served id (`ai-<termId>-<slot>-<bankId>`) or the raw bank id.
+         */
+        async appendAcceptedAnswer(term, level, form, { itemId, taskType, expected } = {}) {
+            const formClean = clean(form);
+            if (!formClean) return false;
+            const list = await this.entries(termKeyOf(term), level);
+            const rows = list.filter((e) => e && !e.skipped && e.item);
+            const id = clean(itemId);
+            let entry = null;
+            if (id) {
+                const tail = id.includes('-') ? id.slice(id.lastIndexOf('-') + 1) : id;
+                entry = rows.find((e) => String(e.id) === id || String(e.id) === tail) || null;
+            }
+            if (!entry && taskType) {
+                const ofType = rows.filter((e) => e.item.type === taskType || e.slot === taskType || String(e.slot).startsWith(`${taskType}:`));
+                const want = [];
+                if (typeof expected === 'string') want.push(expected);
+                else if (Array.isArray(expected)) want.push(...expected);
+                else if (expected && typeof expected === 'object') want.push(expected.answer, ...(expected.acceptedAnswers || []), ...(expected.answers || []));
+                const n = (x) => norm(x).replace(/[.,;:!?]/g, '').replace(/\s+/g, ' ').trim();
+                entry = ofType.find((e) => {
+                    const have = [e.item.answer, ...(e.item.acceptedAnswers || []), ...(e.item.answers || [])];
+                    return want.some((w) => w && have.some((h) => h && n(h) === n(w)));
+                }) || ofType[0] || null;
+            }
+            if (!entry?.item) return false;
+            const same = (a, b) => a && b && norm(a).replace(/[.,;:!?]/g, '').trim() === norm(b).replace(/[.,;:!?]/g, '').trim();
+            const already = [entry.item.answer, ...(entry.item.acceptedAnswers || []), ...(entry.item.answers || [])].some((a) => same(a, formClean));
+            if (already) return false;
+            const acceptedAnswers = [...(entry.item.acceptedAnswers || []), formClean];
+            entry.item = { ...entry.item, acceptedAnswers };
+            if (store && typeof store.updateItem === 'function') {
+                await store.updateItem(entry.id, entry.item).catch((e) => console.warn('[track-ai] bank append failed:', e?.message || e));
+            }
+            return true;
         },
     };
 }

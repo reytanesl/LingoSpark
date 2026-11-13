@@ -21,6 +21,7 @@ export const SESSION_COOKIE_NAME = 'connect.sid';
 export const APP_DIRECT_ROUTES = [
     '/api/study/track-generate',
     '/api/study/track-prewarm',
+    '/api/study/track-verify',
     '/auth/login',
     '/auth/register',
     '/auth/logout',

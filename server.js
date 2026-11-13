@@ -87,6 +87,7 @@ import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAc
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
 import { createStudyCors, createBearerSession, skipOnAppRoutes, tokenForAppOrigin } from './study-direct.js';
 import { createTrackGenerator, createTrackGenerateHandler, createBank, createPgBankStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
+import { TRACK_VERIFY_PATH, VERIFY_LIMITS, createTrackVerifyHandler, createPgVerifyCache, createMemoryVerifyCache } from './track-verify.js';
 import {
     PREWARM_PATH, PREWARM_BODY_LIMIT, readPrewarmConfig, createPgPrewarmStore, createMemoryPrewarmStore,
     createPrewarmWorker, createTrackPrewarmHandler,
@@ -199,6 +200,7 @@ app.post(
 // Track AI generation: small body cap + raw bytes kept for the HMAC check (must run before the global parser).
 app.use(TRACK_PATH, express.json({ limit: TRACK_LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(PREWARM_PATH, express.json({ limit: PREWARM_BODY_LIMIT, verify: (req, _res, buf) => { req.rawBody = buf; } }));
+app.use(TRACK_VERIFY_PATH, express.json({ limit: VERIFY_LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -274,6 +276,7 @@ async function start() {
      * (HMAC with STUDY_BRIDGE_SECRET) or with a study session cookie. See track-ai.js.
      */
     let prewarmWorker = null; // created below; the generator hands it the terms of a warm-up request and terms whose bank is incomplete
+    const trackBank = createBank({ store: dbReady ? createPgBankStore({ getPool }) : null });
     const trackGenerate = createTrackGenerator({
         onTopUp: ({ level, terms }) => { prewarmWorker?.enqueueTerms({ level, terms }).catch((e) => console.warn('[track-prewarm] top-up enqueue failed:', e?.message || e)); },
         // TRACK_AI_MODEL (optional): model id for Track generation only, e.g. a smaller/faster one; default = AI_MODEL (composer-2.5, "fast" variant).
@@ -281,7 +284,7 @@ async function start() {
             apiKey: process.env.CURSOR_API_KEY, prompt, label,
             model: (process.env.TRACK_AI_MODEL || '').trim() ? { id: process.env.TRACK_AI_MODEL.trim() } : undefined,
         }),
-        bank: createBank({ store: dbReady ? createPgBankStore({ getPool }) : null }),
+        bank: trackBank,
         // Tunables (env, optional): TRACK_AI_BUDGET_MS (default 9000), TRACK_AI_CALL_CONCURRENCY (12 per request), TRACK_AI_GLOBAL_CONCURRENCY (16 per process).
         limits: {
             ...TRACK_LIMITS,
@@ -314,6 +317,24 @@ async function start() {
         getConfig: () => readPrewarmConfig(process.env),
     }));
     prewarmWorker.start();
+
+    // "Mam rację!" typed-answer appeal: same auth as track-generate, short Cursor AI judgement, cached in Postgres.
+    const verifyCache = dbReady ? createPgVerifyCache({ getPool }) : createMemoryVerifyCache();
+    const verifyBudget = {
+        callsToday: () => prewarmStore.callsToday(),
+        addCalls: (n) => prewarmStore.addCalls(n),
+        get dailyCalls() { return readPrewarmConfig(process.env).dailyCalls; },
+    };
+    app.post(TRACK_VERIFY_PATH, createTrackVerifyHandler({
+        runPrompt: (prompt, label) => runVisionJsonPrompt({
+            apiKey: process.env.CURSOR_API_KEY, prompt, label,
+            model: (process.env.TRACK_AI_MODEL || '').trim() ? { id: process.env.TRACK_AI_MODEL.trim() } : undefined,
+        }),
+        bank: trackBank,
+        cache: verifyCache,
+        budget: verifyBudget,
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
+    }));
 
     app.post('/auth/register', async (req, res, next) => {
         try {

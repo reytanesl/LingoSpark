@@ -53,7 +53,7 @@ test('parseAllowedOrigins: default app origin, env additions, junk rejected', ()
     assert.deepEqual(parseAllowedOrigins({}), [APP]);
     const o = parseAllowedOrigins({ STUDY_CORS_ORIGINS: ' https://x.example , *, null, http://evil.com, https://p.example/path, http://localhost:8081, https://user@u.example' });
     assert.deepEqual(o.sort(), [APP, 'http://localhost:8081', 'https://x.example'].sort());
-    assert.ok(isAppDirectPath('/api/study/track-generate') && isAppDirectPath('/api/word-sets/12') && !isAppDirectPath('/api/admin/users') && !isAppDirectPath('/api/word-setsX'));
+    assert.ok(isAppDirectPath('/api/study/track-generate') && isAppDirectPath('/api/study/track-verify') && isAppDirectPath('/api/word-sets/12') && !isAppDirectPath('/api/admin/users') && !isAppDirectPath('/api/word-setsX'));
 });
 
 test('CORS preflight from the app origin: 204 + exact headers, no credentials', async (t) => {
