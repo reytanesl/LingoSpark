@@ -258,12 +258,12 @@ const slotsFor = (type) => (type === 'meaningPick' ? MEANING_DIRECTIONS.map((d) 
 const slotType = (slot) => slot.split(':')[0];
 
 const TYPE_SPECS = {
-    sentenceGap: '{"termId","type":"sentenceGap","sentence":full English sentence using the target in a form that fits the grammar,"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence]}',
-    gapTranslate: '{"termId","type":"gapTranslate","sentence":full English sentence (no gap marks) using the target in a form that fits the grammar,"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence],"plTranslation":natural Polish translation of the WHOLE sentence (always required, a non-empty string)} (use a different sentence than the sentenceGap item of the same term)',
+    sentenceGap: '{"termId","type":"sentenceGap","sentence":full English sentence using the target in a form that fits the grammar AND carrying a clear clue (a defining detail, a typical collocation or situation) so that ONLY the target fits the gap; never a generic frame like "There is a ___ here" / "I like ___" / "This is my ___","answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence]}',
+    gapTranslate: '{"termId","type":"gapTranslate","sentence":full English sentence (no gap marks) using the target in a form that fits the grammar, with a clear clue so that ONLY the target fits the gap (never a generic frame like "There is a ___ here"),"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence],"plTranslation":natural Polish translation of the WHOLE sentence (always required, a non-empty string)} (use a different sentence than the sentenceGap item of the same term)',
     sentenceOrder: '{"termId","type":"sentenceOrder","sentence":one sentence with the target (punctuation attached to the last word),"plTranslation":Polish translation as a hint}',
     meaningPick: '{"termId","type":"meaningPick","direction":"pl-en" or "en-pl","distractors":[3 wrong options in the ANSWER language: other terms of the set when sensible]} (the question is the term itself; the answer is its translation exactly as listed in the term)',
-    collocationPick: '{"termId","type":"collocationPick","phrase":a natural 2–6 word collocation/chunk containing the target (target NOT first),"answer":the target as written in the phrase,"distractors":[3 words that do NOT collocate here]}',
-    contextTrueFalse: '{"termId","type":"contextTrueFalse","passage":2–3 connected sentences using the target,"statement":one sentence about the passage that is clearly true or clearly false,"correctTrue":boolean}',
+    collocationPick: '{"termId","type":"collocationPick","phrase":a natural 2–6 word collocation/chunk containing the target (target NOT first),"answer":the target as written in the phrase,"distractors":[3 words that do NOT collocate here (clearly wrong in this exact phrase, but the same word class)]}',
+    contextTrueFalse: '{"termId","type":"contextTrueFalse","passage":2–3 connected sentences using the target with enough concrete detail that the statement can be judged without guessing,"statement":one sentence about the passage that is clearly true or clearly false,"correctTrue":boolean}',
     letterScramble: '{"termId","type":"letterScramble","answer":the English term exactly as listed (single word only),"hint":short Polish or English clue that does not contain the answer}',
     translateType: '{"termId","type":"translateType","source":Polish sentence,"answer":the natural English translation containing the target,"answers":[0–3 other acceptable English translations that also contain the target]}',
     dictation: '{"termId","type":"dictation","sentence":one English sentence with the target, easy to pronounce}',
@@ -310,6 +310,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- The target must really be tested: the sentence/answer must contain the target term (inflected if the grammar needs it).',
         '- Never reveal the answer in the question text, the hint, the other options or the Polish instruction. Exactly one option may be correct; distractors must be clearly wrong in context but plausible (same word class/form).',
         '- Options must be distinct. No duplicate sentences across items of one term.',
+        '- UNIQUE ANSWER for every gap/choice item (sentenceGap, gapTranslate, collocationPick): the sentence must contain enough context (a defining clue, a collocation, a cause/effect or a meaning cue) that ONLY the target fits; every distractor must be clearly wrong in that sentence (grammatically or semantically) while looking plausible. If two options could both fit, rewrite the sentence or change the distractor. NEVER write generic sentences such as "There is a ___ here.", "I like ___.", "This is my ___.", "It is a ___." — these have no single answer.',
         '- Use the term\'s given English form and Polish meaning; do not change the meaning of the term.',
         ...(feedback.length ? ['', 'PREVIOUS ATTEMPT — these items were rejected, write them again and fix the problem:', ...feedback.map((f) => `- termId ${JSON.stringify(f.termId)} ${f.slot}: ${f.reason}`)] : []),
         '',
@@ -343,6 +344,33 @@ function buildOptions(answer, distractors, rng) {
     if (uniq.length < 3) return null;
     return shuffled([clean(answer), ...uniq.slice(0, 3)], rng);
 }
+
+
+// ---------------------------------------------------------------- gap uniqueness (generic frames)
+
+const GAP_STOPWORDS = new Set(('a an the is are am was were be been being do does did have has had will would can could shall should may might must i you he she it we they me him her us them my your his its our their ' +
+    'this that these those there here to of in on at for with and or but so as by from into about very too not no some any one then now just also').split(' '));
+/** Frames with no clue about the missing word: "There is a ___ here.", "This is my ___.", "I like ___.", "It's a ___ today." */
+const GENERIC_GAP_FRAME = new RegExp(
+    '^(?:' +
+    '(?:there|here)\\s+(?:is|are|was|were)(?:\\s+(?:a|an|the|some|one|my|your))?|' +
+    '(?:this|that|it|he|she)(?:\\s+(?:is|was)|\\\'s)(?:\\s+(?:a|an|the|my|your|his|her|our|their))?|' +
+    '(?:i|we|you|they)(?:\\s+(?:like|love|have|had|see|saw|want|need|got|have\\s+got|can\\s+see|don\\\'t\\s+like))(?:\\s+(?:a|an|the|some|my|your|our))?|' +
+    '(?:look\\s+at|give\\s+me|show\\s+me|i\\s+am\\s+looking\\s+for)(?:\\s+(?:a|an|the|this|that|my|your))?' +
+    ')\\s+___(?:\\s+(?:here|there|today|now|too|again|please|everywhere))*$', 'i');
+/** '' when a gap template has enough context to single out one answer, else the reason it is too generic. */
+export function genericGapReason(template) {
+    const t = clean(template);
+    if (countGaps(t) !== 1) return '';
+    const bare = t.replace(/[.!?…]+$/g, '').replace(/[\u2018\u2019]/g, "'").replace(/\s*[,;:]\s*/g, ' ').trim();
+    if (GENERIC_GAP_FRAME.test(bare)) return 'generic sentence frame: several options fit the gap; add a clue so only the target fits';
+    const rest = bare.replace(GAP, ' ').split(/\s+/).map((w) => w.toLowerCase().replace(/[^a-z']/g, '')).filter(Boolean);
+    if (rest.length < 4) return `gap sentence is too short (${rest.length} words besides the gap): add context so only the target fits`;
+    if (rest.filter((w) => !GAP_STOPWORDS.has(w)).length < 3) return 'gap sentence has too few meaningful words around the gap: add a defining clue or collocation so only the target fits';
+    return '';
+}
+/** A banked item that must no longer be served (written before the uniqueness rule). */
+const bankedItemBad = (item) => Boolean(item && (item.type === 'sentenceGap' || item.type === 'gapTranslate') && typeof item.template === 'string' && genericGapReason(item.template));
 
 /** The prompt shown to the learner never contains the answer. */
 function promptLeaks(prompt, answer) {
@@ -381,6 +409,8 @@ export function buildItem(raw, term, level) {
             if (!template) return REASON('answer not found inside the sentence (or gap at sentence start)');
             if (countGaps(template) !== 1) return REASON('template needs exactly one gap');
             if (hasWord(template.replace(GAP, ' '), raw.answer)) return REASON('answer also appears outside the gap (leak)');
+            const generic = genericGapReason(template);
+            if (generic) return REASON(generic);
             const options = buildOptions(raw.answer, raw.distractors, rng);
             if (!options) return REASON('needs 3 distinct distractors');
             const oe = checkOptions(options, raw.answer);
@@ -419,7 +449,7 @@ export function buildItem(raw, term, level) {
             if (oe) return REASON(oe);
             if (options.some((o) => o.length > 80)) return REASON('option too long');
             return tag(`meaningPick:${direction}`, {
-                prompt: direction === 'pl-en' ? 'What is the English word?' : 'What does it mean in Polish?',
+                prompt: meaningPrompt(direction, question),
                 direction, question, answer, options, correctIndex: options.findIndex((o) => norm(o) === norm(answer)),
             });
         }
@@ -544,7 +574,9 @@ export function buildItem(raw, term, level) {
 
 /** Final safety net on a built item: no gap answer leaks into prompt; required fields. */
 function finalCheck(item) {
-    if (item.answer && promptLeaks(item.prompt, item.answer)) return 'answer appears in the prompt';
+    // a meaningPick prompt quotes the question word on purpose; only the ANSWER must not show up around it
+    const shown = item.type === 'meaningPick' && item.question ? String(item.prompt || '').split(String(item.question)).join(' ') : item.prompt;
+    if (item.answer && promptLeaks(shown, item.answer)) return 'answer appears in the prompt';
     return '';
 }
 
@@ -680,7 +712,7 @@ export function createBank({ store = null, now = () => Date.now(), maxTerms = 50
                 const same = list.filter((e) => e.slot === slot);
                 if (same.some((e) => e.fp === fp)) continue;
                 if (skipped && same.length) continue;
-                if (!skipped && same.filter((e) => !e.skipped).length >= slotMax(slot)) continue;
+                if (!skipped && same.filter((e) => !e.skipped && !bankedItemBad(e.item)).length >= slotMax(slot)) continue;
                 if (!skipped && same.some((e) => !e.skipped && n.item.type !== 'meaningPick' && n.item.type !== 'listenPick' && jaccard(itemText(e.item), text) >= NEAR_DUPLICATE)) continue;
                 const { id: _i, lexiconId: _l, ...bare } = n.item || {};
                 const entry = { id: `m${++seq}`, slot, type: slotType(slot), fp, item: bare, promptVersion: n.promptVersion || PROMPT_VERSION, servedCount: 0, lastServedAt: 0, ...(skipped ? { skipped: true } : {}) };
@@ -703,7 +735,7 @@ export function createBank({ store = null, now = () => Date.now(), maxTerms = 50
 }
 
 /** Compatible, non-skip entries per slot. */
-const usable = (list, slot) => list.filter((e) => e.slot === slot && !e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion));
+const usable = (list, slot) => list.filter((e) => e.slot === slot && !e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion) && !bankedItemBad(e.item)); // generic gap sentences count as missing -> regenerated
 const isSkipped = (list, slot) => list.some((e) => e.slot === slot && e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion));
 
 /** Least-served first, then least recently served, random tie-break. */
@@ -816,9 +848,17 @@ const withTimeout = (promise, ms, label) => new Promise((resolve, reject) => {
 
 const SKIP_SLOTS = (type) => slotsFor(type);
 
+function meaningPrompt(direction, question) {
+    const q = clean(question || '');
+    if (direction === 'pl-en') return q ? `English word for "${q}"` : 'English word for this?';
+    return q ? `What does "${q}" mean in Polish?` : 'What does it mean in Polish?';
+}
+
 /** Pick distractors from the other terms of the requesting set when that keeps the item valid. */
 function reshuffleOptions(item, term, setTerms, rand) {
+    if (bankedItemBad(item)) return null; // generic gap sentence banked before the uniqueness rule: treated as missing
     const out = { ...item };
+    if (out.type === 'meaningPick') out.prompt = meaningPrompt(out.direction, out.question); // banked items keep old wording
     if (!Array.isArray(out.options)) return out;
     const answer = out.answer;
     let options = out.options.slice();

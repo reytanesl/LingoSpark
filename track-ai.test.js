@@ -23,7 +23,7 @@ test('findTermForm: inflections, irregular verbs, separable phrasal verbs', () =
     assert.ok(findTermForm('Two fishermen sat on the pier.', 'fisherman'));
     assert.ok(findTermForm('She gave up smoking last year.', 'give up'));
     assert.ok(findTermForm('He gave it up in the end.', 'give up'));
-    assert.ok(findTermForm('They had to step out of the room.', 'step out of'));
+    assert.ok(findTermForm('The firefighters told us to step out of the burning room.', 'step out of'));
     assert.ok(findTermForm('The fish was caught with nets.', 'net'));
     assert.ok(!findTermForm('The lake was calm.', 'fog'));
     assert.ok(!findTermForm('Please give me the book.', 'give up'));
@@ -144,7 +144,7 @@ test('buildItem: rejects leaks, wrong forms and bad options', () => {
     no({ type: 'letterScramble', answer: 'fog', hint: 'thick fog outside' }, FOG, 'A1', /reveals/);
     assert.ok(buildItem({ type: 'letterScramble', answer: 'fog', hint: 'mgła' }, FOG, 'A1').ok);
     // phrasal verb gap
-    assert.ok(buildItem({ type: 'sentenceGap', sentence: 'They had to step out of the room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }, STEP, 'A2').ok);
+    assert.ok(buildItem({ type: 'sentenceGap', sentence: 'The firefighters told us to step out of the burning room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }, STEP, 'A2').ok);
 });
 
 /* ---------------------------------------------------------------- generator (mock AI) */
@@ -513,7 +513,7 @@ test('bank persistence: a new process (new bank on the same store) reuses stored
 test('bank: model-declared skips (wordFormation for a phrasal verb) are remembered and not asked again', async () => {
     const bank = createBank();
     const step = { id: '3', en: 'step out of', pl: 'wyjść z' };
-    const ai = seqAi({ items: [{ termId: '3', type: 'sentenceGap', sentence: 'They had to step out of the room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }], skipped: [{ termId: '3', type: 'wordFormation', reason: 'phrasal verb' }] });
+    const ai = seqAi({ items: [{ termId: '3', type: 'sentenceGap', sentence: 'The firefighters told us to step out of the burning room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }], skipped: [{ termId: '3', type: 'wordFormation', reason: 'phrasal verb' }] });
     const req = validateTrackRequest({ setId: 's', level: 'B1', terms: [step], types: ['sentenceGap', 'wordFormation'] }).value;
     const gen = createTrackGenerator({ runPrompt: ai, bank });
     const a = await gen(req);
@@ -944,4 +944,92 @@ test('warm-up: does not count as a foreground request (the background worker mus
         assert.equal((await s.post(body)).status, 200);
         for (let i = 0; i < 4; i++) assert.equal((await s.post(body)).status, 200, 'banked warm-up is not limited by the AI quota (userMax 1)');
     } finally { await s.close(); }
+});
+
+/* ---------------------------------------------------------------- meaningPick wording + unique-answer gaps */
+
+test('meaningPick: the prompt shows the word that is asked about (both directions), the answer never appears in it', () => {
+    const plEn = buildItem({ type: 'meaningPick', direction: 'pl-en', distractors: ['rain', 'wind', 'sand'] }, FOG, 'A1');
+    assert.ok(plEn.ok, plEn.reason);
+    assert.equal(plEn.item.prompt, 'English word for "mgła"');
+    const enPl = buildItem({ type: 'meaningPick', direction: 'en-pl', distractors: ['deszcz', 'wiatr', 'piasek'] }, FOG, 'A1');
+    assert.ok(enPl.ok, enPl.reason);
+    assert.equal(enPl.item.prompt, 'What does "fog" mean in Polish?');
+    assert.ok(!/What is the English word|What does it mean/.test(plEn.item.prompt + enPl.item.prompt));
+});
+
+test('meaningPick: a question word that contains the answer (hyphenated, cognate-like) is fine; the quoted question is not a leak', async () => {
+    const term = T('7', 'grateful', 'pl-grateful');
+    const gen = createTrackGenerator({ runPrompt: seqAi({ items: [{ termId: '7', type: 'meaningPick', direction: 'pl-en', distractors: ['happy', 'proud', 'upset'] }] }) });
+    const r = await gen(validateTrackRequest({ setId: 's', level: 'A2', terms: [term], types: ['meaningPick'] }).value);
+    const mp = r.items.find((i) => i.type === 'meaningPick' && i.direction === 'pl-en');
+    assert.ok(mp, 'item kept');
+    assert.equal(mp.prompt, 'English word for "pl-grateful"');
+});
+
+test('meaningPick: banked items with the old wording are rewritten when served', async () => {
+    const bank = createBank();
+    const term = { id: '1', en: 'fog', pl: 'mgła' };
+    await bank.add(term, 'A1', [
+        { slot: 'meaningPick:pl-en', item: { type: 'meaningPick', direction: 'pl-en', prompt: 'What is the English word?', question: 'mgła', answer: 'fog', options: ['fog', 'rain', 'wind', 'sand'], correctIndex: 0 } },
+        { slot: 'meaningPick:en-pl', item: { type: 'meaningPick', direction: 'en-pl', prompt: 'What does it mean in Polish?', question: 'fog', answer: 'mgła', options: ['mgła', 'deszcz', 'wiatr', 'piasek'], correctIndex: 0 } },
+    ]);
+    const never = async () => { throw new Error('no AI'); };
+    const r = await createTrackGenerator({ runPrompt: never, bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [term], types: ['meaningPick'] }).value);
+    assert.equal(r.items.find((i) => i.direction === 'pl-en').prompt, 'English word for "mgła"');
+    assert.equal(r.items.find((i) => i.direction === 'en-pl').prompt, 'What does "fog" mean in Polish?');
+    for (const i of r.items) assert.equal(i.options[i.correctIndex], i.answer);
+});
+
+const TRACK = T('9', 'tracksuit', 'dres');
+
+test('unique answer: generic gap frames are rejected (the "There is a ___ here." screenshot case)', () => {
+    const tryS = (sentence, answer = 'tracksuit') => buildItem({ type: 'sentenceGap', sentence, answer, distractors: ['trainers', 'dress', 'hoodie'] }, TRACK, 'A1');
+    for (const s of ['There is a tracksuit here.', 'There are some tracksuit there.', 'This is my tracksuit.', 'I like tracksuit.', 'I have a tracksuit.', "It's a tracksuit today.", 'That is the tracksuit.']) {
+        const r = tryS(s);
+        assert.equal(r.ok, false, s);
+        assert.match(r.reason, /generic|too short|few meaningful/, s);
+    }
+    // gapTranslate gets the same check
+    const g = buildItem({ type: 'gapTranslate', sentence: 'There is a tracksuit here.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'], plTranslation: 'Tutaj jest dres.' }, TRACK, 'A1');
+    assert.equal(g.ok, false);
+    // a sentence with a clue that only the target fits is accepted
+    const ok = tryS('After the match he put on his warm tracksuit.');
+    assert.ok(ok.ok, ok.reason);
+    assert.equal(ok.item.template, 'After the match he put on his warm ___.');
+});
+
+test('unique answer: the prompt asks for a sentence in which only the target fits and the retry feedback carries the reason', async () => {
+    const p = buildTrackPrompt({ level: 'A1', terms: [TRACK], setTerms: [TRACK], wants: new Map([['9', new Set(['sentenceGap', 'gapTranslate', 'collocationPick'])]]) });
+    assert.match(p, /ONLY the target fits/);
+    assert.match(p, /There is a ___ here/);
+    assert.match(p, /UNIQUE ANSWER/);
+    const prompts = [];
+    const ai = async (prompt) => {
+        prompts.push(prompt);
+        return /PREVIOUS ATTEMPT/.test(prompt)
+            ? { items: [{ termId: '9', type: 'sentenceGap', sentence: 'After the match he put on his warm tracksuit.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }] }
+            : { items: [{ termId: '9', type: 'sentenceGap', sentence: 'There is a tracksuit here.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }] };
+    };
+    const r = await createTrackGenerator({ runPrompt: ai })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
+    assert.match(prompts.find((x) => /PREVIOUS ATTEMPT/.test(x)), /generic sentence frame/);
+    assert.equal(r.items[0].template, 'After the match he put on his warm ___.');
+});
+
+test('unique answer: a generic gap sentence that is already in the bank is never served and the slot is regenerated', async () => {
+    const bank = createBank();
+    await bank.add(TRACK, 'A1', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'Choose the word that fits the gap.', template: 'There is a ___ here.', answer: 'tracksuit', options: ['tracksuit', 'trainers', 'dress', 'hoodie'] } }]);
+    const calls = [];
+    const ai = async (prompt) => { calls.push(prompt); return { items: [{ termId: '9', type: 'sentenceGap', sentence: 'After the match he put on his warm tracksuit.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }] }; };
+    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
+    assert.equal(calls.length, 1, 'the generic bank item counts as missing, so the AI is asked again');
+    assert.equal(r.items.length, 1);
+    assert.equal(r.items[0].template, 'After the match he put on his warm ___.');
+    // and when the AI cannot help, the generic item is dropped rather than served
+    const bank2 = createBank();
+    await bank2.add(TRACK, 'A1', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'x', template: 'There is a ___ here.', answer: 'tracksuit', options: ['tracksuit', 'trainers', 'dress', 'hoodie'] } }]);
+    const dead = async () => ({ items: [] });
+    const r2 = await createTrackGenerator({ runPrompt: dead, bank: bank2, limits: { ...LIMITS, budgetMs: 1500 } })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
+    assert.equal(r2.items.length, 0);
+    assert.deepEqual(r2.meta.dropped, [{ lexiconId: '9', type: 'sentenceGap' }]);
 });
