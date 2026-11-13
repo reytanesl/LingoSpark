@@ -153,7 +153,7 @@ test('unauthenticated allowed redirect goes to /auth/google with returnTo the br
     assert.equal(back.searchParams.get('state'), state);
 });
 
-test('signed-in request issues a signed handoff redirect to the app done URL', async (t) => {
+test('signed-in request with delivery=redirect issues a signed handoff redirect to the app done URL', async (t) => {
     const prev = process.env.STUDY_BRIDGE_SECRET;
     process.env.STUDY_BRIDGE_SECRET = TEST_SECRET;
     t.after(() => {
@@ -167,7 +167,7 @@ test('signed-in request issues a signed handoff redirect to the app done URL', a
     const state = 'g_test1';
     const before = Date.now();
     const r = await get(
-        `/auth/app-bridge?redirect=${encodeURIComponent(LOCAL_DONE)}&state=${state}`,
+        `/auth/app-bridge?redirect=${encodeURIComponent(LOCAL_DONE)}&state=${state}&delivery=redirect`,
         { cookie },
     );
     const after = Date.now();
@@ -211,4 +211,25 @@ test('https production done URL is allowed', async (t) => {
     t.after(close);
     const r = await get(`/auth/app-bridge?redirect=${encodeURIComponent(DONE)}`);
     assert.equal(r.status, 302);
+});
+
+test('signed-in request defaults to an auto-submitted form POST (handoff never in the URL)', async (t) => {
+    const prev = process.env.STUDY_BRIDGE_SECRET;
+    process.env.STUDY_BRIDGE_SECRET = TEST_SECRET;
+    t.after(() => {
+        if (prev === undefined) delete process.env.STUDY_BRIDGE_SECRET;
+        else process.env.STUDY_BRIDGE_SECRET = prev;
+    });
+    const { get, close } = await listen(appWithBridge({ loggedIn: true }));
+    t.after(close);
+    const cookie = 'connect.sid=s%3Asigned-session.signature';
+    const r = await get(`/auth/app-bridge?redirect=${encodeURIComponent(DONE)}&state=g%22x`, { cookie });
+    assert.equal(r.status, 200);
+    assert.equal(r.headers.get('cache-control'), 'private, no-store');
+    assert.equal(r.headers.get('referrer-policy'), 'no-referrer');
+    const html = await r.text();
+    assert.match(html, new RegExp(`method="POST" action="${DONE.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}"`));
+    const handoff = /name="handoff" value="([^"]+)"/.exec(html)[1];
+    assert.equal(parseHandoff(handoff, TEST_SECRET).c, cookie);
+    assert.ok(!html.includes('g"x'), 'state is escaped');
 });

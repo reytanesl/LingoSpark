@@ -85,6 +85,7 @@ import {
 } from './db.js';
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
+import { createStudyCors, createBearerSession, skipOnAppRoutes, tokenForAppOrigin } from './study-direct.js';
 import { createTrackGenerator, createTrackGenerateHandler, createBank, createPgBankStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
 import {
     PREWARM_PATH, PREWARM_BODY_LIMIT, readPrewarmConfig, createPgPrewarmStore, createMemoryPrewarmStore,
@@ -160,7 +161,14 @@ const PORT = process.env.PORT || 3000;
 const APP_BASE_URL = (process.env.APP_BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 
 app.set('trust proxy', 1);
-app.use(cors({ origin: true, credentials: true }));
+// Strict CORS for the routes the mobile web app calls directly (exact origin allow list, Bearer auth, no credentials).
+// The legacy permissive cors() below is skipped on those routes. Env override: STUDY_CORS_ORIGINS (comma list of exact origins).
+app.use(createStudyCors());
+app.use(skipOnAppRoutes(cors({ origin: true, credentials: true })));
+const SESSION_SECRET = process.env.SESSION_SECRET || 'lingospark-dev-secret-change-me';
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) console.warn('[security] SESSION_SECRET is not set: sessions and app bearer tokens use the dev secret!');
+// App-origin-only: the session token for `Authorization: Bearer` (never exposed to the site's own pages).
+const appToken = (req) => { const token = tokenForAppOrigin(req, { secret: SESSION_SECRET }); return token ? { token } : {}; };
 
 // BMC webhook needs raw body for signature verification
 app.post(
@@ -207,7 +215,7 @@ async function start() {
 
     const PgSession = connectPgSimple(session);
     const sessionConfig = {
-        secret: process.env.SESSION_SECRET || 'lingospark-dev-secret-change-me',
+        secret: SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
@@ -226,6 +234,7 @@ async function start() {
         });
     }
 
+    app.use(createBearerSession()); // `Authorization: Bearer <token>` -> session cookie (app routes only), before express-session
     app.use(session(sessionConfig));
 
     const { googleReady } = configurePassport();
@@ -258,7 +267,7 @@ async function start() {
     }
 
     // Mobile-app Google handoff. Safe if STUDY_BRIDGE_SECRET is unset (route returns 503).
-    mountAppBridge(app);
+    mountAppBridge(app, { sessionSecret: () => SESSION_SECRET });
 
     /**
      * Mobile-app Track exercises written by Cursor AI (no templates). Callable by the app server
@@ -323,6 +332,7 @@ async function start() {
                     user: publicUser(user),
                     hasAccess: hasWritingAccess(user),
                     status: getAccessStatus(user),
+                    ...appToken(req),
                 });
             });
         } catch (err) {
@@ -348,6 +358,7 @@ async function start() {
                     user: publicUser(user),
                     hasAccess: hasWritingAccess(user),
                     status: getAccessStatus(user),
+                    ...appToken(req),
                 });
             });
         })(req, res, next);
