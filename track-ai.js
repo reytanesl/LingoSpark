@@ -10,7 +10,7 @@
 import crypto from 'node:crypto';
 import { isBasicEn, basicPl, BASIC_EN_PHRASES } from './track-basic-en.js';
 
-export const PROMPT_VERSION = 'tg4';
+export const PROMPT_VERSION = 'tg5';
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export const ALL_TYPES = [
     'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
@@ -639,6 +639,8 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- Use the term\'s given English form and Polish meaning; do not change the meaning of the term.',
         '- VARIANTS: if a term lists alternatives separated by "/", "," or "or" (English) / "lub" or "albo" (Polish) — e.g. "be grounded / get grounded", "present/gift" — every item must use exactly ONE of those forms, the one that fits the sentence or task. Put that English form in "variantUsed". NEVER write the listed slash/comma form in the sentence, the answer, the options, the gap, the letters, the tiles, the typed answer, the hint, the source, or the question (not "present/gift", not "be grounded / get grounded"). Distractors must not be other variants of the same term. Leave frozen compounds such as "and/or" or "w/o" alone — they are not variants.',
         '- NO COPY TASKS: never ask the learner to type a word or sentence that is already shown on the card in the same form and the same language (copying from the prompt, the source, or a visible sentence is pointless). A translation must change language; a gap must hide the target; wordFormation must change the stem (fog → foggy, not fog → fog). Dictation is listen-and-type only — do not also write the sentence on the card. Genuine transformations are required: the other language, a different word form, a derived word, or a reshaped sentence.',
+        '- ANSWER LANGUAGE: every typed, gap or choice item must make the answer language unmistakable. The site sets "answerLang" to "en" or "pl" and writes a short Polish instruction (e.g. "Przetłumacz na polski:", "Napisz po angielsku:", "Posłuchaj i napisz po angielsku:"). Do not write an English-only prompt that could be read either way. A card that shows an English word and wants a Polish answer must say so; a card where the learner types English as-is must say "po angielsku".',
+        '- SCAFFOLD: for A1/A2 typed sentences longer than 3 words (dictation or a full-sentence translation), you may add "wordBank" (the key structures/chunks to place in the gaps, plus 2–4 same-kind distractors such as other question words) and "scaffoldGapped" (the answer with those chunks replaced by ___). The site will also add these when it can. wordBank must contain each gap chunk exactly once; a distractor must not be valid in any gap. Keep "speak" equal to the full unsplit answer so the learner can hear it.',
         ...(feedback.length ? ['', 'PREVIOUS ATTEMPT — these items were rejected, write them again and fix the problem:', ...feedback.map((f) => `- termId ${JSON.stringify(f.termId)} ${f.slot}: ${f.reason}`)] : []),
         '',
         'Return ONLY valid JSON of the form {"items":[...],"skipped":[...]}. No markdown, no commentary.',
@@ -915,7 +917,7 @@ function sameCopyLanguage(shown, answer) {
 }
 
 /** Visible prompt/source/template text (not the audio, not the hidden typed answer, not a filled gap). */
-function visibleCopyText(item) {
+function visibleCopyFields(item) {
     if (!item) return '';
     const bits = [];
     const add = (s) => { const c = clean(s); if (c) bits.push(c); };
@@ -952,7 +954,11 @@ function visibleCopyText(item) {
         default:
             break;
     }
-    return bits.join(' · ');
+    return bits;
+}
+
+function visibleCopyText(item) {
+    return visibleCopyFields(item).join(' · ');
 }
 
 /**
@@ -965,6 +971,9 @@ export function copyTaskReason(item) {
     if (!item || !COPY_TASK_TYPES.has(item.type)) return '';
     const answer = clean(item.answer || '');
     if (!answer) return '';
+    if (item.type === 'letterScramble' && Array.isArray(item.letters) && item.letters.length && sameCopyForm(item.letters.join(''), answer)) {
+        return 'letters are not scrambled; the word is already shown in order';
+    }
     if (item.type === 'wordFormation') {
         const stem = clean(item.stem || '');
         if (stem && sameCopyForm(stem, answer)) return 'wordFormation answer equals the given stem; use a derived form, not a copy of the base word';
@@ -985,13 +994,244 @@ export function copyTaskReason(item) {
         const filled = clean(item.template || '').replace(/_{3,}/g, answer);
         if (src && filled && sameCopyForm(src, filled)) return 'completed sentence is identical to the source sentence';
     }
-    const visible = visibleCopyText(item);
-    if (visible && containsCopyForm(visible, answer) && (sameCopyForm(visible, answer) || sameCopyLanguage(visible, answer))) {
+    const fields = visibleCopyFields(item);
+    if (fields.some((f) => containsCopyForm(f, answer) && (sameCopyForm(f, answer) || sameCopyLanguage(f, answer)))) {
         if (item.type === 'dictation') return 'dictation shows the text to type; the learner should only hear it';
         if (item.type === 'letterScramble') return 'the clue or prompt already shows the word to unscramble';
         return 'the card already shows the answer in the same form and language; this is just copying';
     }
     return '';
+}
+
+
+/** Types whose answer is typed, arranged, or chosen in a specific language. */
+export const ANSWER_LANG_TYPES = new Set([
+    'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
+    'listenPick', 'dictation', 'collocationPick', 'wordFormation', 'keyTransform',
+]);
+const SCAFFOLD_TYPES = new Set(['dictation', 'translateType']);
+
+export function answerLangOf(item) {
+    if (!item || !ANSWER_LANG_TYPES.has(item.type)) return '';
+    if (item.type === 'meaningPick' && item.direction === 'en-pl') return 'pl';
+    if (item.type === 'translateType' && (item.direction === 'en-pl' || item.answerLang === 'pl')) return 'pl';
+    return 'en';
+}
+
+/** Short Polish instruction that states the answer language. Banked English prompts are rewritten at serve time. */
+export function instructionPrompt(item) {
+    if (!item || !item.type) return '';
+    const q = clean(item.question || '');
+    switch (item.type) {
+        case 'meaningPick':
+            if (item.direction === 'en-pl') return q ? `Przetłumacz na polski: "${q}"` : 'Przetłumacz na polski:';
+            return q ? `Wybierz słowo po angielsku: "${q}"` : 'Wybierz słowo po angielsku:';
+        case 'translateType':
+            return answerLangOf(item) === 'pl' ? 'Przetłumacz na polski:' : 'Przetłumacz na angielski:';
+        case 'dictation':
+            return 'Posłuchaj i napisz po angielsku:';
+        case 'letterScramble':
+            return 'Ułóż i napisz słowo po angielsku:';
+        case 'listenPick':
+            return 'Posłuchaj i wybierz słowo po angielsku:';
+        case 'sentenceGap':
+        case 'collocationPick':
+            return 'Wybierz słowo po angielsku:';
+        case 'gapTranslate':
+            return 'Uzupełnij lukę po angielsku:';
+        case 'sentenceOrder':
+            return 'Ułóż zdanie po angielsku:';
+        case 'wordFormation':
+            return 'Utwórz wyraz po angielsku:';
+        case 'keyTransform':
+            return 'Dokończ zdanie po angielsku:';
+        default:
+            return '';
+    }
+}
+
+const ENGLISH_AS_IS = new Set(['letterScramble', 'dictation']);
+
+/** Group Polish-answer items first, then English-answer items, so en→pl never follows a type-English-as-is card. */
+export function sortTrackItems(items) {
+    if (!Array.isArray(items) || items.length < 2) return items || [];
+    const decorated = items.map((it, i) => ({ it, i, lang: answerLangOf(it) || 'en' }));
+    const pl = decorated.filter((x) => x.lang === 'pl').sort((a, b) => a.i - b.i);
+    const en = decorated.filter((x) => x.lang !== 'pl').sort((a, b) => a.i - b.i);
+    return [...pl, ...en].map((x) => x.it);
+}
+
+const SCAFFOLD_GROUPS = {
+    question: [
+        'how many', 'how much', 'how often', 'how old', 'how long', 'how far',
+        'what time', 'what colour', 'what color', 'what kind',
+        'is there', 'are there',
+        'have you got', 'has he got', 'has she got',
+        'do you', 'does he', 'does she', 'did you', 'did he', 'did she',
+        'have you', 'has he', 'has she',
+        'where are', 'where is', 'where do', 'where does',
+        'what is', 'what are', 'what do', 'what does',
+        'who is', 'who are', 'who do',
+        'when do', 'when is', 'when does', 'when are',
+        'why do', 'why is', 'why are', 'why does',
+        'which is', 'which are',
+        'can you', 'can i', 'could you',
+        'would you', 'will you',
+        'what', 'where', 'when', 'who', 'why', 'which', 'how',
+    ],
+    deictic: ['these are', 'those are', 'this is', 'that is'],
+    haveGot: ['i have got', 'she has got', 'he has got', 'we have got', 'they have got', 'you have got', 'have got', 'has got'],
+    like: ['i like', 'i wear', 'i want', 'i need', 'i have'],
+    putTake: ['put your', 'take your', 'get your'],
+};
+const SCAFFOLD_KINDS = Object.keys(SCAFFOLD_GROUPS);
+const SCAFFOLD_ALL = SCAFFOLD_KINDS.flatMap((k) => SCAFFOLD_GROUPS[k].map((c) => ({ kind: k, chunk: c, n: c.split(' ').length })))
+    .sort((a, b) => b.n - a.n || a.chunk.localeCompare(b.chunk));
+
+function answerTokens(s) {
+    return clean(s).split(' ').filter(Boolean).map((raw) => {
+        const m = raw.match(/^([\s\S]*?)([.,!?;:]+)?$/);
+        return { raw, word: (m[1] || raw), punct: m[2] || '', fold: foldCopyText(m[1] || raw) };
+    });
+}
+
+function chunkKind(chunk) {
+    const f = foldCopyText(chunk);
+    for (const kind of SCAFFOLD_KINDS) {
+        if (SCAFFOLD_GROUPS[kind].some((c) => foldCopyText(c) === f)) return kind;
+    }
+    return 'question';
+}
+
+function targetFolds(term, answer) {
+    const out = new Set();
+    const add = (s) => { const f = foldCopyText(s); if (f) out.add(f); };
+    if (term) {
+        add(term.en);
+        for (const w of clean(term.en).split(' ').filter(Boolean)) add(w);
+    }
+    return out;
+}
+
+function findScaffoldSpans(tokens, term) {
+    const used = new Set();
+    const spans = [];
+    const blocked = targetFolds(term);
+    for (let i = 0; i < tokens.length; i++) {
+        if (used.has(i)) continue;
+        for (const { chunk, n, kind } of SCAFFOLD_ALL) {
+            if (i + n > tokens.length) continue;
+            const folds = [];
+            let ok = true;
+            for (let k = 0; k < n; k++) {
+                if (used.has(i + k) || !tokens[i + k].fold) { ok = false; break; }
+                if (blocked.has(tokens[i + k].fold)) { ok = false; break; }
+                folds.push(tokens[i + k].fold);
+            }
+            if (!ok) continue;
+            if (folds.join(' ') !== foldCopyText(chunk)) continue;
+            const text = tokens.slice(i, i + n).map((t, idx) => (idx === n - 1 ? t.word : t.raw)).join(' ');
+            for (let k = 0; k < n; k++) used.add(i + k);
+            spans.push({ start: i, n, kind, text });
+            break;
+        }
+        if (spans.length >= 2) break;
+    }
+    return spans;
+}
+
+function fillScaffold(tokens, spans, chunks) {
+    const byStart = new Map(spans.map((sp, i) => [sp.start, chunks[i]]));
+    const out = [];
+    let i = 0;
+    while (i < tokens.length) {
+        const sp = spans.find((s) => s.start === i);
+        if (sp) {
+            out.push('___');
+            const last = tokens[i + sp.n - 1];
+            if (last?.punct) out[out.length - 1] = `___${last.punct}`;
+            i += sp.n;
+        } else {
+            out.push(tokens[i].raw);
+            i++;
+        }
+    }
+    return out.join(' ');
+}
+
+function uniqueScaffold(answer, tokens, spans, bank) {
+    const correct = spans.map((s) => s.text);
+    const gaps = spans.length;
+    if (!gaps) return false;
+    for (let g = 0; g < gaps; g++) {
+        for (const cand of bank) {
+            if (sameCopyForm(cand, correct[g])) continue;
+            const trial = correct.slice();
+            trial[g] = cand;
+            if (sameCopyForm(fillScaffold(tokens, spans, trial), answer)) return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * For A1/A2 typed sentences longer than 3 words: gap key structures and give a word bank + listening text.
+ * Returns { wordBank, scaffoldGapped } or null.
+ */
+export function buildScaffold(item, level, term, rand = Math.random) {
+    if (!item || !SCAFFOLD_TYPES.has(item.type)) return null;
+    if (level !== 'A1' && level !== 'A2') return null;
+    const answer = clean(item.answer || '');
+    if (wordCount(answer) <= 3) return null;
+    const tokens = answerTokens(answer);
+    const spans = findScaffoldSpans(tokens, term);
+    if (!spans.length) return null;
+    const chunks = spans.map((s) => s.text);
+    const kind = spans[0].kind;
+    const pool = SCAFFOLD_GROUPS[kind].filter((c) => !chunks.some((ch) => sameCopyForm(c, ch)));
+    const distractors = [];
+    const rng = typeof rand === 'function' ? rand : Math.random;
+    for (const c of shuffled(pool, rng)) {
+        // Capitalise like a sentence starter when the gap is at the beginning.
+        let shown = c;
+        if (spans[0].start === 0) shown = c.charAt(0).toUpperCase() + c.slice(1);
+        if (distractors.some((d) => sameCopyForm(d, shown))) continue;
+        const trialBank = [...chunks, ...distractors, shown];
+        if (!uniqueScaffold(answer, tokens, spans, trialBank)) continue;
+        distractors.push(shown);
+        if (distractors.length >= 3) break;
+    }
+    if (distractors.length < 2) return null;
+    const wordBank = shuffled([...chunks, ...distractors.slice(0, 4)], rng);
+    const gapped = fillScaffold(tokens, spans, chunks);
+    if (!gapped.includes('___')) return null;
+    if (!uniqueScaffold(answer, tokens, spans, wordBank)) return null;
+    const counts = new Map();
+    for (const ch of chunks) {
+        const k = foldCopyText(ch);
+        const n = wordBank.filter((w) => foldCopyText(w) === k).length;
+        if (n !== 1) return null;
+        counts.set(k, n);
+    }
+    return { wordBank, scaffoldGapped: gapped };
+}
+
+export function decorateItem(item, level, term, rand = Math.random) {
+    if (!item || !item.type) return item;
+    const lang = answerLangOf(item);
+    if (lang) item.answerLang = lang;
+    const prompt = instructionPrompt(item);
+    if (prompt) item.prompt = prompt;
+    const sc = buildScaffold(item, level, term, rand);
+    if (sc) {
+        item.wordBank = sc.wordBank;
+        item.scaffoldGapped = sc.scaffoldGapped;
+        if (SCAFFOLD_TYPES.has(item.type)) item.speak = clean(item.speak || item.answer || '');
+    } else {
+        delete item.wordBank;
+        delete item.scaffoldGapped;
+    }
+    return item;
 }
 
 /** A banked item that must no longer be served (generic gaps, too-hard A1/A2 sentences, a slash-form listing, or a copy task). */
@@ -1188,6 +1428,7 @@ export function buildItem(raw, term, level, setTerms = []) {
         if (variants.enVars.length > 1) item.variantUsed = variants.used;
         if (variants.plVars.length > 1) item.variantUsedPl = variants.usedPl;
         const wrapped = withHint({ ok: true, slot, item: { id: `ai-${term.id}-${slot.replace(':', '-')}`, ...base, ...item } }, raw, term, setTerms);
+        decorateItem(wrapped.item, level, term, rng);
         const slash = displayedSlashReason(wrapped.item, term);
         if (slash) return REASON(slash);
         const sib = siblingOptionReason(wrapped.item, term, variants.used, variants.usedPl);
@@ -1467,7 +1708,7 @@ export function createLruCache({ max = LIMITS.cacheMax, ttlMs = LIMITS.cacheTtlM
 // ---------------------------------------------------------------- the question bank
 
 /** Bank entries written by these prompt versions may be served; bump PROMPT_VERSION and drop a version here to retire it. */
-export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3', 'tg4']);
+export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3', 'tg4', 'tg5']);
 /** Only these may be recorded as "makes no sense for this term" (a permanent skip in the bank). */
 export const SKIPPABLE_TYPES = new Set(['wordFormation', 'keyTransform', 'collocationPick', 'letterScramble']);
 /** How many different items per (term, level, slot) the bank is grown to, and its hard cap. */
@@ -1769,12 +2010,12 @@ function reshuffleOptions(item, term, setTerms, rand, level) {
     let out = { ...item };
     if (out.type === 'meaningPick' || out.type === 'listenPick') out = collapseChoiceItem(out, term);
     if (bankedItemBad(out, level, term, setTerms)) return null; // generic, too-hard A1/A2, or unfixable slash form: treated as missing
-    if (out.type === 'meaningPick') out.prompt = meaningPrompt(out.direction, out.question); // banked items keep old wording
     if (!out.hintHelp || hintReason(out.hintHelp, out, term, setTerms)) {
         const cheap = cheapHint(out, term, setTerms);
         if (cheap) out.hintHelp = cheap;
         else delete out.hintHelp;
     }
+    decorateItem(out, level, term, rand);
     if (!Array.isArray(out.options)) return out;
     const answer = out.answer;
     let options = out.options.slice();
@@ -2177,10 +2418,11 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         }
         bank.markServed(served);
         const ready = metaReady(level, terms, lists, slotsOf);
+        const ordered = sortTrackItems(items);
         return {
-            items,
+            items: ordered,
             meta: {
-                setId, level, promptVersion: PROMPT_VERSION, types: [...new Set(items.map((i) => i.type))],
+                setId, level, promptVersion: PROMPT_VERSION, types: [...new Set(ordered.map((i) => i.type))],
                 requestedTerms: terms.length, bankHits: fromBank, newItems,
                 aiCalls: stats.aiCalls, growthScheduled: 0,
                 dropped, missingTerms: [...new Set(plan.map((p) => p.term.id))].filter((id) => !items.some((i) => i.lexiconId === id)),
@@ -2288,8 +2530,9 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             return { added: run.counters.newItems, aiCalls: gStats.aiCalls };
         };
         const ready = metaReady(level, terms, lists, slotsOf);
+        const ordered = sortTrackItems(items);
         return {
-            items,
+            items: ordered,
             meta: {
                 setId, level, promptVersion: PROMPT_VERSION, types,
                 requestedTerms: terms.length, bankHits, newItems,

@@ -11,6 +11,7 @@ import {
     parseTermVariants, isVariantList, slashFormReason, pickTermVariant, variantUsedIn,
     scrambleWordOf, isIsolatedGloss, displayedSlashReason, collapseChoiceItem, canCollapseChoiceItem,
     copyTaskReason, foldCopyText, sameCopyForm,
+    answerLangOf, instructionPrompt, sortTrackItems, buildScaffold, decorateItem,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
@@ -866,7 +867,8 @@ test('warm-up: cold bank = exactly ONE small AI call for 4 mixed easy items over
     assert.equal(prompts.length, 1, 'one AI call');
     assert.equal(r.items.length, 4);
     assert.equal(new Set(r.items.map((i) => i.lexiconId)).size, 4, 'one item per term, the first four terms');
-    assert.deepEqual(r.items.map((i) => i.lexiconId), ['1', '2', '3', '4']);
+    assert.deepEqual([...new Set(r.items.map((i) => i.lexiconId))].sort(), ['1', '2', '3', '4']);
+    // serve order groups Polish-answer items first (direction must stay unambiguous)
     assert.ok(new Set(r.items.map((i) => i.type)).size >= 2, 'mixed types');
     assert.ok(r.items.every((i) => ['meaningPick', 'listenPick', 'sentenceGap'].includes(i.type)), 'easy types only');
     const wanted = [...prompts[0].matchAll(/→ wanted: (.*)$/gm)].flatMap((m) => m[1].split(', '));
@@ -956,10 +958,10 @@ test('warm-up: does not count as a foreground request (the background worker mus
 test('meaningPick: the prompt shows the word that is asked about (both directions), the answer never appears in it', () => {
     const plEn = buildItem({ type: 'meaningPick', direction: 'pl-en', distractors: ['rain', 'wind', 'sand'] }, FOG, 'A1');
     assert.ok(plEn.ok, plEn.reason);
-    assert.equal(plEn.item.prompt, 'English word for "mgła"');
+    assert.equal(plEn.item.prompt, 'Wybierz słowo po angielsku: "mgła"');
     const enPl = buildItem({ type: 'meaningPick', direction: 'en-pl', distractors: ['deszcz', 'wiatr', 'piasek'] }, FOG, 'A1');
     assert.ok(enPl.ok, enPl.reason);
-    assert.equal(enPl.item.prompt, 'What does "fog" mean in Polish?');
+    assert.equal(enPl.item.prompt, 'Przetłumacz na polski: "fog"');
     assert.ok(!/What is the English word|What does it mean/.test(plEn.item.prompt + enPl.item.prompt));
 });
 
@@ -969,7 +971,7 @@ test('meaningPick: a question word that contains the answer (hyphenated, cognate
     const r = await gen(validateTrackRequest({ setId: 's', level: 'A2', terms: [term], types: ['meaningPick'] }).value);
     const mp = r.items.find((i) => i.type === 'meaningPick' && i.direction === 'pl-en');
     assert.ok(mp, 'item kept');
-    assert.equal(mp.prompt, 'English word for "pl-grateful"');
+    assert.equal(mp.prompt, 'Wybierz słowo po angielsku: "pl-grateful"');
 });
 
 test('meaningPick: banked items with the old wording are rewritten when served', async () => {
@@ -981,8 +983,8 @@ test('meaningPick: banked items with the old wording are rewritten when served',
     ]);
     const never = async () => { throw new Error('no AI'); };
     const r = await createTrackGenerator({ runPrompt: never, bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [term], types: ['meaningPick'] }).value);
-    assert.equal(r.items.find((i) => i.direction === 'pl-en').prompt, 'English word for "mgła"');
-    assert.equal(r.items.find((i) => i.direction === 'en-pl').prompt, 'What does "fog" mean in Polish?');
+    assert.equal(r.items.find((i) => i.direction === 'pl-en').prompt, 'Wybierz słowo po angielsku: "mgła"');
+    assert.equal(r.items.find((i) => i.direction === 'en-pl').prompt, 'Przetłumacz na polski: "fog"');
     for (const i of r.items) assert.equal(i.options[i.correctIndex], i.answer);
 });
 
@@ -1295,7 +1297,7 @@ test('buildItem: meaningPick, listenPick and letterScramble use only one variant
     assert.equal(mp.item.question, 'prezent');
     assert.equal(mp.item.answer, 'present');
     assert.equal(mp.item.variantUsed, 'present');
-    assert.equal(mp.item.prompt, 'English word for "prezent"');
+    assert.equal(mp.item.prompt, 'Wybierz słowo po angielsku: "prezent"');
     assert.ok(!mp.item.options.some((o) => /\//.test(o)));
     assert.equal(displayedSlashReason(mp.item, PRESENT), '');
 
@@ -1385,7 +1387,7 @@ test('variants: a banked meaningPick/listenPick with slash forms is rewritten to
     assert.ok(mp, 'meaningPick served after collapse');
     assert.equal(mp.question, 'prezent');
     assert.equal(mp.answer, 'present');
-    assert.equal(mp.prompt, 'English word for "prezent"');
+    assert.equal(mp.prompt, 'Wybierz słowo po angielsku: "prezent"');
     assert.ok(mp.options.includes('present'));
     assert.ok(!mp.options.some((o) => /\//.test(o)));
     assert.equal(mp.options[mp.correctIndex], 'present');
@@ -1516,4 +1518,107 @@ test('copy tasks: a banked same-language type-in is never served and the slot is
     assert.equal(r.items[0].source, 'Słucham radia wieczorem.');
     assert.ok(!sameCopyForm(r.items[0].source, r.items[0].answer));
     assert.equal(copyTaskReason(r.items[0]), '');
+});
+
+test('answerLang and Polish instructions are set on typed and gap items', () => {
+    const tr = buildItem({ type: 'translateType', source: 'prezent', answer: 'present' }, PRESENT, 'A2');
+    assert.ok(tr.ok, tr.reason);
+    assert.equal(tr.item.answerLang, 'en');
+    assert.equal(tr.item.prompt, 'Przetłumacz na angielski:');
+    const dict = buildItem({ type: 'dictation', sentence: 'Where are my glasses now?' }, T('50', 'glasses', 'okulary'), 'A1');
+    assert.ok(dict.ok, dict.reason);
+    assert.equal(dict.item.answerLang, 'en');
+    assert.equal(dict.item.prompt, 'Posłuchaj i napisz po angielsku:');
+    const ls = buildItem({ type: 'letterScramble', answer: 'fog', hint: 'mgła' }, FOG, 'A1');
+    assert.ok(ls.ok, ls.reason);
+    assert.equal(ls.item.answerLang, 'en');
+    assert.equal(ls.item.prompt, 'Ułóż i napisz słowo po angielsku:');
+    const plEn = buildItem({ type: 'meaningPick', direction: 'pl-en', distractors: ['rain', 'wind', 'sand'] }, FOG, 'A1');
+    const enPl = buildItem({ type: 'meaningPick', direction: 'en-pl', distractors: ['deszcz', 'wiatr', 'piasek'] }, FOG, 'A1');
+    assert.ok(plEn.ok && enPl.ok, plEn.reason || enPl.reason);
+    assert.equal(plEn.item.answerLang, 'en');
+    assert.equal(enPl.item.answerLang, 'pl');
+    assert.match(plEn.item.prompt, /Wybierz słowo po angielsku/);
+    assert.match(enPl.item.prompt, /Przetłumacz na polski/);
+    assert.equal(answerLangOf(enPl.item), 'pl');
+    assert.equal(instructionPrompt({ type: 'dictation' }), 'Posłuchaj i napisz po angielsku:');
+});
+
+test('serve path rewrites a banked English prompt and adds answerLang', async () => {
+    const bank = createBank();
+    await bank.add(FOG, 'A1', [{
+        slot: 'meaningPick:en-pl',
+        item: { type: 'meaningPick', direction: 'en-pl', prompt: 'What does "fog" mean in Polish?', question: 'fog', answer: 'mgła', options: ['mgła', 'deszcz', 'wiatr', 'piasek'], correctIndex: 0 },
+        promptVersion: 'tg3',
+    }]);
+    const r = await createTrackGenerator({ runPrompt: async () => ({ items: [] }), bank })(validateTrackRequest({
+        setId: 's', level: 'A1', terms: [FOG], types: ['meaningPick'],
+    }).value);
+    const item = r.items.find((i) => i.direction === 'en-pl');
+    assert.ok(item);
+    assert.equal(item.answerLang, 'pl');
+    assert.equal(item.prompt, 'Przetłumacz na polski: "fog"');
+});
+
+test('sortTrackItems groups Polish-answer items first so en→pl is never right after typing English as-is', () => {
+    const ls = { type: 'letterScramble', answerLang: 'en', answer: 'fog' };
+    const dict = { type: 'dictation', answerLang: 'en', answer: 'I like this skirt.' };
+    const enPl = { type: 'meaningPick', direction: 'en-pl', answerLang: 'pl', question: 'skirt', answer: 'spódniczka' };
+    const plEn = { type: 'meaningPick', direction: 'pl-en', answerLang: 'en', question: 'spódniczka', answer: 'skirt' };
+    const ordered = sortTrackItems([ls, dict, enPl, plEn]);
+    assert.deepEqual(ordered.map((i) => i.type + (i.direction || '')), ['meaningPicken-pl', 'letterScramble', 'dictation', 'meaningPickpl-en']);
+    const idxPl = ordered.findIndex((i) => i.direction === 'en-pl');
+    const idxAsIs = ordered.findIndex((i) => i.type === 'letterScramble' || i.type === 'dictation');
+    assert.ok(idxPl < idxAsIs);
+});
+
+test('scaffold: A1/A2 long typed answers get a unique wordBank, gapped sentence, and full speak', () => {
+    const glasses = T('50', 'glasses', 'okulary');
+    const dict = buildItem({ type: 'dictation', sentence: 'Where are my glasses now?' }, glasses, 'A1');
+    assert.ok(dict.ok, dict.reason);
+    assert.ok(Array.isArray(dict.item.wordBank) && dict.item.wordBank.length >= 3, dict.item.wordBank);
+    assert.match(dict.item.scaffoldGapped, /___/);
+    assert.ok(!/glasses/i.test(dict.item.scaffoldGapped.replace(/glasses/ig, 'TARGET')) || /glasses/i.test(dict.item.scaffoldGapped), 'target stays visible');
+    assert.match(dict.item.scaffoldGapped, /glasses/i);
+    assert.equal(dict.item.speak, 'Where are my glasses now?');
+    const chunks = dict.item.scaffoldGapped.split(/___/).length - 1;
+    const hits = dict.item.wordBank.filter((w) => foldCopyText('Where are my glasses now?').includes(foldCopyText(w)) && dict.item.scaffoldGapped.includes('___'));
+    assert.ok(hits.length >= 1);
+    // every gap chunk appears in the bank exactly once; filling the gaps recreates the answer
+    const gapped = dict.item.scaffoldGapped;
+    // uniqueness: swapping a distractor into a gap does not recreate the answer
+    const sc = buildScaffold(dict.item, 'A1', glasses, () => 0.2);
+    assert.ok(sc);
+    assert.equal(sc.scaffoldGapped, dict.item.scaffoldGapped);
+    const belt = T('51', 'belt', 'pasek');
+    const got = buildItem({ type: 'dictation', sentence: 'I have got a new belt.' }, belt, 'A1');
+    assert.ok(got.ok, got.reason);
+    assert.match(got.item.scaffoldGapped, /___/);
+    assert.match(got.item.scaffoldGapped, /belt/i);
+    assert.ok(got.item.wordBank.some((w) => /have got/i.test(w)));
+    const tr = buildItem({ type: 'translateType', source: 'Gdzie są moje okulary?', answer: 'Where are my glasses now?' }, glasses, 'A1');
+    assert.ok(tr.ok, tr.reason);
+    assert.equal(tr.item.speak, 'Where are my glasses now?');
+    assert.match(tr.item.scaffoldGapped, /___/);
+    // short / higher-level answers are not scaffolded
+    const short = buildItem({ type: 'translateType', source: 'prezent', answer: 'present' }, PRESENT, 'A2');
+    assert.ok(short.ok, short.reason);
+    assert.equal(short.item.wordBank, undefined);
+    const high = buildItem({ type: 'dictation', sentence: 'Where are my glasses now?' }, glasses, 'B1');
+    assert.ok(high.ok, high.reason);
+    assert.equal(high.item.wordBank, undefined);
+});
+
+test('copyTaskReason rejects a letterScramble whose letters already spell the word', () => {
+    const reason = copyTaskReason({ type: 'letterScramble', prompt: 'Unscramble the word.', letters: ['f', 'o', 'g'], answer: 'fog', clue: 'mgła' });
+    assert.match(reason, /not scrambled|already shown/i);
+});
+
+test('prompt: answer-language and scaffold rules are included', () => {
+    const p = buildTrackPrompt({ level: 'A2', terms: [FOG], setTerms: [FOG], wants: new Map([['1', new Set(['translateType', 'dictation', 'meaningPick:en-pl'])]]) });
+    assert.match(p, /ANSWER LANGUAGE/);
+    assert.match(p, /Przetłumacz na polski/);
+    assert.match(p, /SCAFFOLD/);
+    assert.match(p, /wordBank/);
+    assert.match(p, /scaffoldGapped/);
 });
