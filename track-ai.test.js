@@ -6,6 +6,7 @@ import {
     createTrackGenerator, createTrackGenerateHandler, createTrackLimiter, createNonceStore, createLruCache,
     createBank, termKeyOf, itemText, BANK_TARGET, planCalls, planWarmup,
     signBridgeRequest, verifyBridgeRequest, BRIDGE_HEADERS, TRACK_PATH, LIMITS, ALL_TYPES,
+    simpleVocabReason, cheapHint, hintReason, shownText, bankedItemBad, VOCAB_EXTRA_MAX,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
@@ -144,7 +145,7 @@ test('buildItem: rejects leaks, wrong forms and bad options', () => {
     no({ type: 'letterScramble', answer: 'fog', hint: 'thick fog outside' }, FOG, 'A1', /reveals/);
     assert.ok(buildItem({ type: 'letterScramble', answer: 'fog', hint: 'mgła' }, FOG, 'A1').ok);
     // phrasal verb gap
-    assert.ok(buildItem({ type: 'sentenceGap', sentence: 'The firefighters told us to step out of the burning room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }, STEP, 'A2').ok);
+    assert.ok(buildItem({ type: 'sentenceGap', sentence: 'The men told us to step out of the room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }, STEP, 'A2').ok);
 });
 
 /* ---------------------------------------------------------------- generator (mock AI) */
@@ -1032,4 +1033,135 @@ test('unique answer: a generic gap sentence that is already in the bank is never
     const r2 = await createTrackGenerator({ runPrompt: dead, bank: bank2, limits: { ...LIMITS, budgetMs: 1500 } })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
     assert.equal(r2.items.length, 0);
     assert.deepEqual(r2.meta.dropped, [{ lexiconId: '9', type: 'sentenceGap' }]);
+});
+
+/* ---------------------------------------------------------------- A1/A2 gradual vocabulary + hintHelp */
+
+test('A1/A2 vocab: simple frames with basic words are accepted; hard extra words are rejected', () => {
+    const clothes = [TRACK, T('10', 'hoodie', 'bluza z kapturem'), T('11', 'trainers', 'buty sportowe')];
+    const order = (sentence) => buildItem({ type: 'sentenceOrder', sentence, plTranslation: 'Mamy dres.' }, TRACK, 'A1', clothes);
+    const ok = order('We have got a tracksuit.');
+    assert.ok(ok.ok, ok.reason);
+    const hard = order('We purchased an insulated tracksuit yesterday after training.');
+    assert.equal(hard.ok, false, hard.reason);
+    assert.match(hard.reason, /new words|purchased|insulated/);
+    // another set word in the same sentence is rejected even if the rest is simple
+    const two = order('We have got a tracksuit and a hoodie.');
+    assert.equal(two.ok, false);
+    assert.match(two.reason, /another set word|hoodie/);
+    // dictation / type-in (English side) use the same rule; Polish source length is not held to the English cap
+    const typ = buildItem({ type: 'translateType', source: 'Ta bluzka bez rękawów jest nowa i naprawdę bardzo ładna dzisiaj rano.', answer: 'We have got a tracksuit.' }, TRACK, 'A1');
+    assert.ok(typ.ok, typ.reason);
+    const typHard = buildItem({ type: 'translateType', source: 'Mamy dres.', answer: 'We purchased an insulated tracksuit.' }, TRACK, 'A1');
+    assert.equal(typHard.ok, false);
+});
+
+test('A1/A2 vocab: gap sentences still need a unique-answer clue, but only with basic words', () => {
+    const tryS = (sentence) => buildItem({ type: 'sentenceGap', sentence, answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }, TRACK, 'A1');
+    // simple unique-answer sentence that uses only basic words
+    const ok = tryS('The boy wears this tracksuit at school.');
+    assert.ok(ok.ok, ok.reason);
+    assert.equal(ok.item.template, 'The boy wears this ___ at school.');
+    // unique-answer but with hard extra vocabulary is rejected
+    const hard = tryS('After the tournament he donned his insulated tracksuit.');
+    assert.equal(hard.ok, false);
+    assert.match(hard.reason, /new words|donned|insulated|tournament/);
+    // generic simple frames are still rejected by the uniqueness rule (not the vocab rule)
+    const generic = tryS('We have got a tracksuit.');
+    assert.equal(generic.ok, false);
+    assert.match(generic.reason, /generic|too short|few meaningful/);
+});
+
+test('A1/A2 vocab: the prompt asks for gradual vocabulary and the existing unique-answer rule together', () => {
+    const p = buildTrackPrompt({ level: 'A1', terms: [TRACK], setTerms: [TRACK], wants: new Map([['9', new Set(['sentenceGap', 'sentenceOrder', 'translateType'])]]) });
+    assert.match(p, /A1\/A2 VOCABULARY/);
+    assert.match(p, /We have got a tracksuit/);
+    assert.match(p, /UNIQUE ANSWER/);
+    assert.match(p, /HINT:/);
+    const b1 = buildTrackPrompt({ level: 'B1', terms: [FOG], setTerms: [FOG], wants: new Map([['1', new Set(['sentenceGap'])]]) });
+    assert.ok(!/A1\/A2 VOCABULARY/.test(b1));
+});
+
+test('A1/A2 vocab: a too-hard banked sentence is never served and the slot is regenerated', async () => {
+    const bank = createBank();
+    await bank.add(TRACK, 'A1', [{ slot: 'sentenceOrder', item: { type: 'sentenceOrder', prompt: 'Put the words in order.', tokens: ['purchased', 'an', 'insulated', 'tracksuit.'], correctOrder: ['We', 'purchased', 'an', 'insulated', 'tracksuit.'], plTranslation: 'Kupiliśmy ocieplany dres.' } }]);
+    assert.equal(bankedItemBad({ type: 'sentenceOrder', correctOrder: ['We', 'purchased', 'an', 'insulated', 'tracksuit.'] }, 'A1', TRACK), true);
+    const calls = [];
+    const ai = async (prompt) => { calls.push(prompt); return { items: [{ termId: '9', type: 'sentenceOrder', sentence: 'We have got a tracksuit.', plTranslation: 'Mamy dres.' }] }; };
+    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceOrder'] }).value);
+    assert.equal(calls.length, 1, 'the hard bank item counts as missing, so the AI is asked again');
+    assert.equal(r.items.length, 1);
+    assert.deepEqual(r.items[0].correctOrder, ['We', 'have', 'got', 'a', 'tracksuit.']);
+});
+
+test('hintHelp: valid AI hint is kept; invalid or missing hint is backfilled when possible, never rejects the item', () => {
+    const raw = {
+        type: 'sentenceOrder',
+        sentence: 'We have got a tracksuit.',
+        plTranslation: 'Mamy dres.',
+        hint: {
+            translation: 'Mamy dres.',
+            segments: [
+                { text: 'We', translation: 'My' },
+                { text: 'have got', translation: 'mamy' },
+                { text: 'a', translation: 'jakiś' },
+                { text: 'tracksuit.', translation: 'dres' },
+            ],
+        },
+    };
+    const ok = buildItem(raw, TRACK, 'A1');
+    assert.ok(ok.ok, ok.reason);
+    assert.equal(ok.item.hintHelp.translation, 'Mamy dres.');
+    assert.deepEqual(ok.item.hintHelp.segments.map((s) => s.text), ['We', 'have got', 'a', 'tracksuit.']);
+    assert.equal(ok.item.hintHelp.segments.map((s) => s.text).join(' '), shownText(ok.item));
+    assert.equal(hintReason(ok.item.hintHelp, ok.item, TRACK), '');
+
+    // a split set term is dropped and a cheap one-segment hint is used instead
+    const split = buildItem({
+        ...raw,
+        hint: { translation: 'Mamy dres.', segments: [{ text: 'We have got a', translation: 'Mamy' }, { text: 'track', translation: 'dres' }, { text: 'suit.', translation: 'dres' }] },
+    }, TRACK, 'A1');
+    assert.ok(split.ok, split.reason);
+    assert.ok(split.item.hintHelp);
+    assert.ok(split.item.hintHelp.segments.some((s) => /tracksuit/i.test(s.text) && s.translation === 'dres'));
+
+    // letterScramble keeps the short clue string on `hint` (live app) and adds structured hintHelp
+    const ls = buildItem({ type: 'letterScramble', answer: 'fog', hint: 'mgła' }, FOG, 'A1');
+    assert.ok(ls.ok, ls.reason);
+    assert.equal(ls.item.hint, 'mgła');
+    assert.equal(ls.item.clue, 'mgła');
+    assert.deepEqual(ls.item.hintHelp, { translation: 'mgła', segments: [{ text: 'fog', translation: 'mgła' }] });
+
+    // Polish type-in source: multi-word set term is one segment
+    const sleeve = T('12', 'sleeveless top', 'bluzka bez rękawów');
+    const typ = buildItem({
+        type: 'translateType',
+        source: 'Ta bluzka bez rękawów jest nowa',
+        answer: 'This sleeveless top is new.',
+        hint: {
+            translation: 'This sleeveless top is new.',
+            segments: [
+                { text: 'Ta', translation: 'This' },
+                { text: 'bluzka bez rękawów', translation: 'sleeveless top' },
+                { text: 'jest', translation: 'is' },
+                { text: 'nowa', translation: 'new' },
+            ],
+        },
+    }, sleeve, 'A1');
+    assert.ok(typ.ok, typ.reason);
+    assert.deepEqual(typ.item.hintHelp.segments.map((s) => s.text), ['Ta', 'bluzka bez rękawów', 'jest', 'nowa']);
+});
+
+test('hintHelp: serving a banked item without a hint backfills it and does not block', async () => {
+    const bank = createBank();
+    const built = buildItem({ type: 'sentenceOrder', sentence: 'We have got a tracksuit.', plTranslation: 'Mamy dres.' }, TRACK, 'A1');
+    const bare = { ...built.item };
+    delete bare.hintHelp;
+    await bank.add(TRACK, 'A1', [{ slot: 'sentenceOrder', item: bare }]);
+    const never = async () => { throw new Error('no AI'); };
+    const r = await createTrackGenerator({ runPrompt: never, bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceOrder'] }).value);
+    assert.equal(r.items.length, 1);
+    assert.ok(r.items[0].hintHelp, 'cheap backfill on the serve path');
+    assert.equal(r.items[0].hintHelp.segments.map((s) => s.text).join(' '), 'We have got a tracksuit.');
+    assert.ok(r.items[0].hintHelp.segments.some((s) => /tracksuit/i.test(s.text)));
 });

@@ -8,8 +8,9 @@
      bank     : validated items stored per TERM (en+pl) + level, shared by all sets (Postgres track_ai_bank + memory)
      limits   : see LIMITS */
 import crypto from 'node:crypto';
+import { isBasicEn, basicPl, BASIC_EN_PHRASES } from './track-basic-en.js';
 
-export const PROMPT_VERSION = 'tg1';
+export const PROMPT_VERSION = 'tg2';
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export const ALL_TYPES = [
     'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
@@ -60,8 +61,8 @@ export const LIMITS = {
 /** Sentence length (words) per level. */
 const SENT_WORDS = { A1: [4, 7], A2: [5, 9], B1: [6, 11], B2: [7, 13], C1: [8, 15] };
 const LEVEL_NOTES = {
-    A1: 'A1: present simple, to be, have got, there is/are, imperatives; only the 500 most common words around the target; very short, concrete, everyday sentences.',
-    A2: 'A2: past simple, present continuous, going to, can/must/should, comparatives; common everyday vocabulary around the target; short, clear sentences.',
+    A1: 'A1: present simple, to be, have got, there is/are, imperatives; only the most common words around the target; very short, concrete, everyday sentences (about 4–7 words); at most one set word per sentence; no extra adjectives when a simple frame works (We have got a tracksuit, not We need a warm tracksuit).',
+    A2: 'A2: past simple, present continuous, going to, can/must/should, comparatives; only very common everyday words around the target; short, clear sentences (about 5–9 words); at most one set word per sentence; prefer simple frames (have got, be) over extra adjectives and harder verbs.',
     B1: 'B1: present perfect, first/second conditional, simple passive, used to, relative clauses; everyday-to-general vocabulary; clear connected sentences.',
     B2: 'B2: passive in several tenses, reported speech, third conditional, wish/if only, modal perfects, linking devices; fairly abstract vocabulary allowed around the target.',
     C1: 'C1: inversion, mixed conditionals, cleft sentences, nuance, idiom and register; less frequent vocabulary around the target; longer, more complex sentences.',
@@ -264,7 +265,7 @@ const TYPE_SPECS = {
     meaningPick: '{"termId","type":"meaningPick","direction":"pl-en" or "en-pl","distractors":[3 wrong options in the ANSWER language: other terms of the set when sensible]} (the question is the term itself; the answer is its translation exactly as listed in the term)',
     collocationPick: '{"termId","type":"collocationPick","phrase":a natural 2–6 word collocation/chunk containing the target (target NOT first),"answer":the target as written in the phrase,"distractors":[3 words that do NOT collocate here (clearly wrong in this exact phrase, but the same word class)]}',
     contextTrueFalse: '{"termId","type":"contextTrueFalse","passage":2–3 connected sentences using the target with enough concrete detail that the statement can be judged without guessing,"statement":one sentence about the passage that is clearly true or clearly false,"correctTrue":boolean}',
-    letterScramble: '{"termId","type":"letterScramble","answer":the English term exactly as listed (single word only),"hint":short Polish or English clue that does not contain the answer}',
+    letterScramble: '{"termId","type":"letterScramble","answer":the English term exactly as listed (single word only),"clue":short Polish or English clue that does not contain the answer (also accepted under the key "hint" if it is a string)}',
     translateType: '{"termId","type":"translateType","source":Polish sentence,"answer":the natural English translation containing the target,"answers":[0–3 other acceptable English translations that also contain the target]}',
     dictation: '{"termId","type":"dictation","sentence":one English sentence with the target, easy to pronounce}',
     listenPick: '{"termId","type":"listenPick","distractors":[3 English words/phrases that sound or look similar or are in the same topic; other terms of the set when sensible]} (the learner hears the term itself)',
@@ -311,6 +312,11 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- Never reveal the answer in the question text, the hint, the other options or the Polish instruction. Exactly one option may be correct; distractors must be clearly wrong in context but plausible (same word class/form).',
         '- Options must be distinct. No duplicate sentences across items of one term.',
         '- UNIQUE ANSWER for every gap/choice item (sentenceGap, gapTranslate, collocationPick): the sentence must contain enough context (a defining clue, a collocation, a cause/effect or a meaning cue) that ONLY the target fits; every distractor must be clearly wrong in that sentence (grammatically or semantically) while looking plausible. If two options could both fit, rewrite the sentence or change the distractor. NEVER write generic sentences such as "There is a ___ here.", "I like ___.", "This is my ___.", "It is a ___." — these have no single answer.',
+        ...(level === 'A1' || level === 'A2' ? [
+            `- A1/A2 VOCABULARY: introduce new words gradually. Besides the single target term, use ONLY very common words (be, have got, pronouns, articles, simple verbs and everyday nouns). Do not add other words from the set, and do not add unnecessary adjectives or harder verbs. Prefer the simplest frame that works: "We have got a tracksuit." not "We need a warm tracksuit." Keep sentences short (about ${lo}–${hi} words). At most ONE word from the set in each sentence.`,
+            '- EXCEPTION for sentenceGap, gapTranslate and collocationPick: the UNIQUE ANSWER rule still applies — never write a generic frame such as "We have got a ___." / "There is a ___ here." Give a short defining clue, but the clue itself must use only those same basic words (e.g. "The boy wears this tracksuit at school.").',
+        ] : []),
+        '- HINT: every item should also include "hint":{"translation":"<the other language of the shown word or sentence>","segments":[{"text":"<segment>","translation":"<other language>"}]}. Segments in order, joined with single spaces, must equal the word or sentence shown to the learner (for gap items: the full sentence with the target filled in; punctuation may stay on the last segment). A multi-word set term is ONE segment (e.g. "bluzka bez rękawów", "step out of"), never split. letterScramble, listenPick and meaningPick have one segment — the word itself. translation is Polish when the shown text is English, and English when the shown text is Polish. This hint is help for the learner, so it may contain the answer.',
         '- Use the term\'s given English form and Polish meaning; do not change the meaning of the term.',
         ...(feedback.length ? ['', 'PREVIOUS ATTEMPT — these items were rejected, write them again and fix the problem:', ...feedback.map((f) => `- termId ${JSON.stringify(f.termId)} ${f.slot}: ${f.reason}`)] : []),
         '',
@@ -369,8 +375,206 @@ export function genericGapReason(template) {
     if (rest.filter((w) => !GAP_STOPWORDS.has(w)).length < 3) return 'gap sentence has too few meaningful words around the gap: add a defining clue or collocation so only the target fits';
     return '';
 }
-/** A banked item that must no longer be served (written before the uniqueness rule). */
-const bankedItemBad = (item) => Boolean(item && (item.type === 'sentenceGap' || item.type === 'gapTranslate') && typeof item.template === 'string' && genericGapReason(item.template));
+/** Types whose English sentence is checked for A1/A2 vocabulary load. */
+const VOCAB_TYPES = new Set(['sentenceGap', 'gapTranslate', 'sentenceOrder', 'dictation', 'translateType', 'collocationPick']);
+/** Extra non-list, non-basic content words allowed in an A1/A2 sentence (0 = only basic words + the target). */
+export const VOCAB_EXTRA_MAX = { A1: 0, A2: 1 };
+
+const CORE_WORD = (s) => clean(s).replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+
+/** English sentence (target filled in) for vocabulary checks on a built item. */
+export function englishTextOf(item) {
+    if (!item) return '';
+    switch (item.type) {
+        case 'sentenceGap': case 'gapTranslate': case 'collocationPick': case 'wordFormation':
+            return typeof item.template === 'string' ? clean(item.template).replace(GAP, clean(item.answer || '')) : '';
+        case 'sentenceOrder':
+            return Array.isArray(item.correctOrder) ? item.correctOrder.join(' ') : '';
+        case 'dictation':
+            return clean(item.speak || item.answer || '');
+        case 'translateType':
+            return clean(item.answer || '');
+        case 'keyTransform':
+            return clean(item.sourceSentence || '');
+        default:
+            return '';
+    }
+}
+
+function allowsTermToken(tok, term) {
+    if (!term) return false;
+    return termTokens(term.en).some((base) => tokenMatches(tok, base));
+}
+
+/** '' when an A1/A2 English sentence only uses basic words + the target; else the reason to reject it. */
+export function simpleVocabReason(text, level, term, setTerms = []) {
+    if (level !== 'A1' && level !== 'A2') return '';
+    const s = clean(text);
+    if (!s) return '';
+    const [lo, hi] = SENT_WORDS[level];
+    const n = wordCount(s);
+    if (n > hi + 2) return `${level} sentence has ${n} words; keep it to about ${lo}–${hi} words`;
+    const others = (setTerms || []).filter((t) => t && t.en && (!term || norm(t.en) !== norm(term.en)));
+    for (const t of others) {
+        if (findTermForm(s, t.en)) return `sentence uses another set word ("${t.en}") besides the target; use only the target word from the list`;
+    }
+    const extra = [];
+    for (const w of words(s)) {
+        if (isBasicEn(w) || allowsTermToken(w, term)) continue;
+        if (!extra.includes(w)) extra.push(w);
+    }
+    const max = VOCAB_EXTRA_MAX[level] ?? 0;
+    if (extra.length > max) return `${level} sentence has too many new words (${extra.slice(0, 6).join(', ')}); use only very common words around the target`;
+    return '';
+}
+
+/** A banked item that must no longer be served (generic gaps, or an A1/A2 sentence that is too hard). */
+export function bankedItemBad(item, level, term, setTerms) {
+    if (!item) return false;
+    if ((item.type === 'sentenceGap' || item.type === 'gapTranslate') && typeof item.template === 'string' && genericGapReason(item.template)) return true;
+    if ((level === 'A1' || level === 'A2') && VOCAB_TYPES.has(item.type)) {
+        const text = englishTextOf(item);
+        if (text && simpleVocabReason(text, level, term, setTerms)) return true;
+    }
+    return false;
+}
+
+/** The word or sentence the learner sees (gap items: full sentence with the target filled in). */
+export function shownText(item) {
+    if (!item) return '';
+    switch (item.type) {
+        case 'letterScramble': return clean(item.answer || '');
+        case 'meaningPick': return clean(item.question || '');
+        case 'listenPick': return clean(item.speak || item.answer || '');
+        case 'sentenceOrder': return Array.isArray(item.correctOrder) ? item.correctOrder.join(' ') : '';
+        case 'translateType': return clean(item.source || '');
+        case 'dictation': return clean(item.speak || item.answer || '');
+        case 'sentenceGap': case 'gapTranslate': case 'collocationPick': case 'wordFormation':
+            return typeof item.template === 'string' ? clean(item.template).replace(GAP, clean(item.answer || '')) : '';
+        case 'contextTrueFalse': return clean(item.passage || '');
+        case 'keyTransform': return clean(item.sourceSentence || '');
+        default: return clean(item.answer || '');
+    }
+}
+
+const shownIsPolish = (item) => item.type === 'translateType' || (item.type === 'meaningPick' && item.direction === 'pl-en');
+
+function segmentCovers(segText, termText) {
+    const core = CORE_WORD(segText);
+    if (!core || !termText) return false;
+    if (norm(core) === norm(termText)) return true;
+    return findTermForm(core, termText);
+}
+
+/** '' when hintHelp is well-formed for this item, else the reason it is invalid. */
+export function hintReason(hint, item, term, setTerms = []) {
+    if (!hint || typeof hint !== 'object') return 'hint missing';
+    if (!isStr(hint.translation, 1, 400)) return 'hint.translation missing';
+    if (!Array.isArray(hint.segments) || !hint.segments.length) return 'hint.segments missing';
+    const segs = hint.segments.map((x) => ({ text: clean(x?.text), translation: clean(x?.translation) }));
+    if (segs.some((x) => !x.text || !x.translation)) return 'hint segment is missing text or translation';
+    const shown = shownText(item);
+    if (shown && segs.map((x) => x.text).join(' ') !== shown) return 'hint segments do not rejoin the shown text';
+    const terms = [...(setTerms || [])];
+    if (term && !terms.some((t) => t && term && (t.id === term.id || (t.en && norm(t.en) === norm(term.en))))) terms.push(term);
+    const pl = shownIsPolish(item);
+    for (const t of terms) {
+        const needle = pl ? t.pl : t.en;
+        if (!needle) continue;
+        const appears = findTermForm(shown, needle) || (pl && new RegExp(`(^|[^\\p{L}])${escRe(norm(needle))}($|[^\\p{L}])`, 'iu').test(norm(shown)));
+        if (!appears) continue;
+        if (!segs.some((x) => segmentCovers(x.text, needle))) return `set term "${needle}" must be a single hint segment`;
+    }
+    return '';
+}
+
+const POLISH_BASIC = {
+    ta: 'this', ten: 'this', to: 'it', te: 'these', taż: 'this',
+    jest: 'is', są: 'are', być: 'be', ma: 'has', mają: 'have', mam: 'I have', mamy: 'we have', masz: 'you have',
+    nowa: 'new', nowy: 'new', nowe: 'new', nowi: 'new',
+    i: 'and', w: 'in', na: 'on', z: 'with', do: 'to', nie: 'not', o: 'about', od: 'from', po: 'after',
+    jestem: 'I am', jesteś: 'you are', jesteśmy: 'we are',
+    tu: 'here', tutaj: 'here', tam: 'there', już: 'already', też: 'too', bardzo: 'very',
+    mój: 'my', moja: 'my', moje: 'my', twój: 'your', twoja: 'your', twoje: 'your',
+    ten: 'this', ta: 'this', to: 'this',
+};
+
+export function segmentByTerms(text, terms, langPl) {
+    const tokens = clean(text).split(' ').filter(Boolean);
+    const phrases = (terms || []).map((t) => clean(langPl ? t.pl : t.en)).filter(Boolean);
+    if (!langPl) phrases.push(...BASIC_EN_PHRASES);
+    phrases.sort((a, b) => wordCount(b) - wordCount(a) || b.length - a.length);
+    const segs = [];
+    let i = 0;
+    while (i < tokens.length) {
+        let took = 0;
+        for (const ph of phrases) {
+            const pw = ph.split(' ').filter(Boolean);
+            if (!pw.length || i + pw.length > tokens.length) continue;
+            const slice = tokens.slice(i, i + pw.length);
+            const ok = pw.every((p, k) => {
+                const core = CORE_WORD(slice[k]);
+                return norm(core) === norm(p) || tokenMatches(norm(core), norm(p));
+            });
+            if (ok) { segs.push(slice.join(' ')); took = pw.length; break; }
+        }
+        if (took) i += took;
+        else { segs.push(tokens[i]); i++; }
+    }
+    return segs;
+}
+
+/** Deterministic hint from the term list + basic glossary. Null if a segment cannot be translated. */
+export function cheapHint(item, term, setTerms = []) {
+    const shown = shownText(item);
+    if (!shown) return null;
+    const pl = shownIsPolish(item);
+    const terms = [...(setTerms || [])];
+    if (term && !terms.some((t) => t && (t.id === term.id || (t.en && term.en && norm(t.en) === norm(term.en))))) terms.push(term);
+    let translation = clean(item.plTranslation || '');
+    if (!translation) {
+        if (item.type === 'translateType' || item.type === 'meaningPick') translation = clean(item.answer || '');
+        else if (term && (item.type === 'letterScramble' || item.type === 'listenPick')) translation = pl ? clean(term.en) : clean(term.pl);
+    }
+    const parts = segmentByTerms(shown, terms, pl);
+    const segs = [];
+    for (const text of parts) {
+        const core = CORE_WORD(text);
+        const hit = terms.find((t) => segmentCovers(text, pl ? t.pl : t.en));
+        let tr = '';
+        if (hit) tr = clean(pl ? hit.en : hit.pl);
+        else if (!pl) tr = basicPl(core);
+        else tr = POLISH_BASIC[norm(core)] || '';
+        if (!tr) return null;
+        segs.push({ text, translation: tr });
+    }
+    if (!translation) translation = segs.map((x) => x.translation).join(' ');
+    const hint = { translation, segments: segs };
+    return hintReason(hint, item, term, terms) ? null : hint;
+}
+
+function rawHintObject(raw) {
+    const h = raw?.hint;
+    if (h && typeof h === 'object' && !Array.isArray(h)) return h;
+    const alt = raw?.hintHelp || raw?.help;
+    return alt && typeof alt === 'object' && !Array.isArray(alt) ? alt : null;
+}
+
+function withHint(result, raw, term, setTerms) {
+    if (!result?.ok) return result;
+    const parsed = rawHintObject(raw);
+    let hint = null;
+    if (parsed) {
+        const candidate = {
+            translation: clean(parsed.translation),
+            segments: Array.isArray(parsed.segments) ? parsed.segments.map((x) => ({ text: clean(x?.text), translation: clean(x?.translation) })) : [],
+        };
+        if (!hintReason(candidate, result.item, term, setTerms)) hint = candidate;
+    }
+    if (!hint) hint = cheapHint(result.item, term, setTerms);
+    if (hint) result.item.hintHelp = hint;
+    return result;
+}
 
 /** The prompt shown to the learner never contains the answer. */
 function promptLeaks(prompt, answer) {
@@ -382,19 +586,21 @@ function promptLeaks(prompt, answer) {
  * Validate one raw model item for a term and turn it into the app's shape.
  * Returns { ok:true, slot, item } or { ok:false, reason }.
  */
-export function buildItem(raw, term, level) {
+export function buildItem(raw, term, level, setTerms = []) {
     if (!raw || typeof raw !== 'object') return REASON('not an object');
     const type = canonType(raw.type);
     if (!ALL_TYPES.includes(type)) return REASON('unknown type');
     const [lo, hi] = SENT_WORDS[level];
     const rng = rngFrom(`${term.id}|${type}|${raw.direction || ''}|${norm(raw.sentence || raw.phrase || raw.stem || '')}`);
     const base = { type, lexiconId: term.id, skill: SKILL[type] };
-    const tag = (slot, item) => ({ ok: true, slot, item: { id: `ai-${term.id}-${slot.replace(':', '-')}`, ...base, ...item } });
+    const tag = (slot, item) => withHint({ ok: true, slot, item: { id: `ai-${term.id}-${slot.replace(':', '-')}`, ...base, ...item } }, raw, term, setTerms);
     const sentenceOk = (s, label = 'sentence') => {
         if (!isStr(s, 6, 220)) return `${label} missing or too long`;
         if (countGaps(s)) return `${label} must not contain a gap`;
         const n = wordCount(s);
         if (n < 3 || n > hi + 2) return `${label} has ${n} words; ${level} sentences should be at most ${hi} words`;
+        const vr = simpleVocabReason(s, level, term, setTerms);
+        if (vr) return vr;
         return '';
     };
 
@@ -457,6 +663,8 @@ export function buildItem(raw, term, level) {
             if (!isStr(raw.phrase, 5, 80)) return REASON('phrase missing or too long');
             const n = wordCount(raw.phrase);
             if (n < 2 || n > 7) return REASON('phrase must have 2–6 words');
+            const vr = simpleVocabReason(raw.phrase, level, term, setTerms);
+            if (vr) return REASON(vr);
             if (!isStr(raw.answer, 1, 60) || !findTermForm(raw.answer, term.en)) return REASON('answer is not a form of the target term');
             const template = makeTemplate(raw.phrase, raw.answer);
             if (!template) return REASON('answer not inside the phrase (or phrase starts with it)');
@@ -485,13 +693,14 @@ export function buildItem(raw, term, level) {
             const w = norm(term.en);
             if (!/^[a-z]{3,14}$/.test(w)) return REASON('letterScramble needs a single-word term of 3–14 letters');
             if (norm(raw.answer) !== w) return REASON('answer must equal the term');
-            if (!isStr(raw.hint, 2, 80)) return REASON('hint missing');
-            if (hasWord(raw.hint, w)) return REASON('hint reveals the answer');
+            const clue = typeof raw.clue === 'string' ? raw.clue : (typeof raw.hint === 'string' ? raw.hint : '');
+            if (!isStr(clue, 2, 80)) return REASON('hint missing');
+            if (hasWord(clue, w)) return REASON('hint reveals the answer');
             const chars = w.split('');
             let letters = shuffled(chars, rng);
             for (let i = 0; i < 6 && letters.join('') === w; i++) letters = shuffled(chars, rng);
             if (letters.join('') === w) return REASON('cannot scramble term');
-            return tag('letterScramble', { prompt: 'Unscramble the word.', hint: clean(raw.hint), letters, answer: clean(term.en) });
+            return tag('letterScramble', { prompt: 'Unscramble the word.', hint: clean(clue), clue: clean(clue), letters, answer: clean(term.en) });
         }
         case 'translateType': {
             if (!isStr(raw.source, 4, 200)) return REASON('source (Polish sentence) missing');
@@ -603,7 +812,7 @@ export function createLruCache({ max = LIMITS.cacheMax, ttlMs = LIMITS.cacheTtlM
 // ---------------------------------------------------------------- the question bank
 
 /** Bank entries written by these prompt versions may be served; bump PROMPT_VERSION and drop a version here to retire it. */
-export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1']);
+export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2']);
 /** Only these may be recorded as "makes no sense for this term" (a permanent skip in the bank). */
 export const SKIPPABLE_TYPES = new Set(['wordFormation', 'keyTransform', 'collocationPick', 'letterScramble']);
 /** How many different items per (term, level, slot) the bank is grown to, and its hard cap. */
@@ -712,7 +921,7 @@ export function createBank({ store = null, now = () => Date.now(), maxTerms = 50
                 const same = list.filter((e) => e.slot === slot);
                 if (same.some((e) => e.fp === fp)) continue;
                 if (skipped && same.length) continue;
-                if (!skipped && same.filter((e) => !e.skipped && !bankedItemBad(e.item)).length >= slotMax(slot)) continue;
+                if (!skipped && same.filter((e) => !e.skipped && !bankedItemBad(e.item, level, term)).length >= slotMax(slot)) continue;
                 if (!skipped && same.some((e) => !e.skipped && n.item.type !== 'meaningPick' && n.item.type !== 'listenPick' && jaccard(itemText(e.item), text) >= NEAR_DUPLICATE)) continue;
                 const { id: _i, lexiconId: _l, ...bare } = n.item || {};
                 const entry = { id: `m${++seq}`, slot, type: slotType(slot), fp, item: bare, promptVersion: n.promptVersion || PROMPT_VERSION, servedCount: 0, lastServedAt: 0, ...(skipped ? { skipped: true } : {}) };
@@ -735,7 +944,7 @@ export function createBank({ store = null, now = () => Date.now(), maxTerms = 50
 }
 
 /** Compatible, non-skip entries per slot. */
-const usable = (list, slot) => list.filter((e) => e.slot === slot && !e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion) && !bankedItemBad(e.item)); // generic gap sentences count as missing -> regenerated
+const usable = (list, slot, level, term, setTerms) => list.filter((e) => e.slot === slot && !e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion) && !bankedItemBad(e.item, level, term, setTerms)); // generic / too-hard A1-A2 sentences count as missing -> regenerated
 const isSkipped = (list, slot) => list.some((e) => e.slot === slot && e.skipped && BANK_COMPATIBLE_VERSIONS.has(e.promptVersion));
 
 /** Least-served first, then least recently served, random tie-break. */
@@ -855,10 +1064,15 @@ function meaningPrompt(direction, question) {
 }
 
 /** Pick distractors from the other terms of the requesting set when that keeps the item valid. */
-function reshuffleOptions(item, term, setTerms, rand) {
-    if (bankedItemBad(item)) return null; // generic gap sentence banked before the uniqueness rule: treated as missing
+function reshuffleOptions(item, term, setTerms, rand, level) {
+    if (bankedItemBad(item, level, term, setTerms)) return null; // generic or too-hard A1/A2 banked item: treated as missing
     const out = { ...item };
     if (out.type === 'meaningPick') out.prompt = meaningPrompt(out.direction, out.question); // banked items keep old wording
+    if (!out.hintHelp || hintReason(out.hintHelp, out, term, setTerms)) {
+        const cheap = cheapHint(out, term, setTerms);
+        if (cheap) out.hintHelp = cheap;
+        else delete out.hintHelp;
+    }
     if (!Array.isArray(out.options)) return out;
     const answer = out.answer;
     let options = out.options.slice();
@@ -911,7 +1125,7 @@ export function planWarmup({ terms, size, lists, has }) {
     for (let j = 0; j < size; j++) {
         const term = terms[j % terms.length];
         const prefs = WARMUP_PREFS[j % WARMUP_PREFS.length].filter((sl) => !used.has(`${term.id}|${sl}`));
-        const banked = prefs.find((sl) => has(lists.get(term.id), sl));
+        const banked = prefs.find((sl) => has(lists.get(term.id), sl, term));
         const slot = banked || prefs[0];
         if (!slot) continue;
         used.add(`${term.id}|${slot}`);
@@ -1018,7 +1232,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 const termId = String(r?.termId ?? '');
                 const term = batch.find((t) => t.id === termId);
                 if (!term || !need.has(termId)) continue;
-                const built = buildItem(r, term, level);
+                const built = buildItem(r, term, level, setTerms);
                 const rType = canonType(r?.type);
                 const slot = built.slot || (rType === 'meaningPick' ? `meaningPick:${r.direction}` : rType);
                 if (!built.ok) { feedback.push({ termId, slot, reason: built.reason }); log(`rejected ${level} "${term.en}" ${slot}: ${built.reason}`); continue; }
@@ -1120,9 +1334,9 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
     };
 
     /** Bank state of one term: which wanted slots are served (usable or remembered as skipped), in flight, or cooling down. */
-    function termState(level, term, list, wanted) {
+    function termState(level, term, list, wanted, setTerms) {
         const have = []; const missing = [];
-        for (const sl of wanted) (usable(list, sl).length || isSkipped(list, sl) ? have : missing).push(sl);
+        for (const sl of wanted) (usable(list, sl, level, term, setTerms).length || isSkipped(list, sl) ? have : missing).push(sl);
         const open = missing.filter((sl) => !cool(level, term, sl));
         const ratio = wanted.length ? have.length / wanted.length : 1;
         // "sufficient": enough of the term's task types are banked to serve a station without waiting for the AI
@@ -1132,7 +1346,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
     const metaReady = (level, terms, lists, slotsOf) => {
         const ready = {};
         for (const term of terms) {
-            const st = termState(level, term, lists.get(term.id), slotsOf.get(term.id));
+            const st = termState(level, term, lists.get(term.id), slotsOf.get(term.id), terms);
             ready[term.id] = {
                 ready: st.ready, have: st.have.length, want: slotsOf.get(term.id).length,
                 pending: st.missing.some((sl) => inflight.has(flightKey(level, term, sl))),
@@ -1146,7 +1360,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         const lists = new Map(); const slotsOf = new Map();
         for (const term of terms) { lists.set(term.id, await bank.entries(termKeyOf(term), level)); slotsOf.set(term.id, wantedSlots(term, types)); }
         const ready = metaReady(level, terms, lists, slotsOf);
-        const allSufficient = terms.every((t) => termState(level, t, lists.get(t.id), slotsOf.get(t.id)).sufficient);
+        const allSufficient = terms.every((t) => termState(level, t, lists.get(t.id), slotsOf.get(t.id), terms).sufficient);
         const readyCount = terms.filter((t) => ready[t.id].ready).length;
         return { allSufficient, allReady: readyCount === terms.length, readyCount, ready };
     }
@@ -1161,7 +1375,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         for (const term of terms) {
             const list = await bank.entries(termKeyOf(term), level);
             const want = wantedSlots(term, types);
-            const st = termState(level, term, list, want);
+            const st = termState(level, term, list, want, terms);
             const todo = st.missing.filter((sl) => { const f = inflight.get(flightKey(level, term, sl)); if (f) waiting.push(f); return !f; });
             if (todo.length) jobs.push({ term, slots: new Set(todo), avoid: [] });
         }
@@ -1174,7 +1388,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         await Promise.all(waiting);
         const left = {}; let done = 0;
         for (const term of terms) {
-            const st = termState(level, term, await bank.entries(termKeyOf(term), level), wantedSlots(term, types));
+            const st = termState(level, term, await bank.entries(termKeyOf(term), level), wantedSlots(term, types), terms);
             if (st.ready) done++; else left[term.id] = st.missing;
         }
         return { aiCalls: stats.aiCalls, aiErrors: stats.aiErrors, added, ready: done, total: terms.length, missing: left };
@@ -1192,7 +1406,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         const size = Math.min(limits.warmupMax ?? 6, Math.max(limits.warmupMin ?? 3, warmupSize || limits.warmupDefault || 4));
         const lists = new Map();
         await Promise.all(terms.map(async (t) => lists.set(t.id, await bank.entries(termKeyOf(t), level))));
-        const plan = planWarmup({ terms, size, lists, has: (list, sl) => usable(list, sl).length > 0 });
+        const plan = planWarmup({ terms, size, lists, has: (list, sl, term) => usable(list, sl, level, term, terms).length > 0 });
         return { size, lists, plan };
     }
     async function warmupReadiness(v) {
@@ -1214,7 +1428,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         const allTypes = typesForLevel(level);
         const slotsOf = new Map(terms.map((t) => [t.id, wantedSlots(t, allTypes)]));
         // (b) the rest of the set goes to the background queue right now, in set order
-        const gapTerms = terms.filter((t) => !termState(level, t, lists.get(t.id), slotsOf.get(t.id)).ready);
+        const gapTerms = terms.filter((t) => !termState(level, t, lists.get(t.id), slotsOf.get(t.id), terms).ready);
         if (gapTerms.length && onTopUp) { try { onTopUp({ level, terms: gapTerms }); } catch (e) { log(`warm-up queue hook failed: ${e?.message || e}`); } }
         // (a) warm-up items the bank cannot serve: one small call for all of them (mixed easy types, tiny output)
         const jobs = []; const waitFor = [];
@@ -1247,8 +1461,8 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             let hit = null;
             for (const slot of tryOrder) {
                 if (used.has(`${p.term.id}|${slot}`)) continue;
-                for (const c of usable(list, slot).slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))) {
-                    const finished = reshuffleOptions(c.item, p.term, terms, rand);
+                for (const c of usable(list, slot, level, p.term, terms).slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))) {
+                    const finished = reshuffleOptions(c.item, p.term, terms, rand, level);
                     if (finished) { hit = { slot, entry: c, finished }; break; }
                 }
                 if (hit) break;
@@ -1298,7 +1512,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         const topUp = [];
         let bankHits = 0;
         for (const term of terms) {
-            const st = termState(level, term, lists.get(term.id), slotsOf.get(term.id));
+            const st = termState(level, term, lists.get(term.id), slotsOf.get(term.id), terms);
             if (st.sufficient) {
                 bankHits++;
                 if (st.missing.length) topUp.push(term);
@@ -1329,11 +1543,11 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         for (const term of terms) {
             const list = lists.get(term.id);
             for (const slot of slotsOf.get(term.id)) {
-                const cands = usable(list, slot);
+                const cands = usable(list, slot, level, term, terms);
                 let entry = null;
                 let finished = null;
                 for (const c of cands.slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))) {
-                    finished = reshuffleOptions(c.item, term, terms, rand);
+                    finished = reshuffleOptions(c.item, term, terms, rand, level);
                     if (finished) { entry = c; break; }
                 }
                 if (!entry) { if (!isSkipped(list, slot)) dropped.push({ lexiconId: term.id, type: slot }); continue; }
@@ -1344,7 +1558,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         bank.markServed(served);
         // gaps in terms we answered without waiting (and terms the foreground could not finish) -> background top-up at top priority
         const gapTerms = terms.filter((t) => {
-            const st = termState(level, t, lists.get(t.id), slotsOf.get(t.id));
+            const st = termState(level, t, lists.get(t.id), slotsOf.get(t.id), terms);
             return st.open.some((sl) => !inflight.has(flightKey(level, t, sl)));
         });
         if (gapTerms.length && onTopUp) { try { onTopUp({ level, terms: gapTerms }); } catch (e) { log(`top-up hook failed: ${e?.message || e}`); } }
@@ -1353,7 +1567,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         for (const term of terms) {
             const list = lists.get(term.id);
             const slots = slotsOf.get(term.id).filter((sl) => {
-                const n = usable(list, sl).length;
+                const n = usable(list, sl, level, term, terms).length;
                 if (isSkipped(list, sl) || cool(level, term, sl) || n >= slotMax(sl)) return false;
                 if (n === 0) return false; // foreground already tried and failed
                 return n < slotTarget(sl) || rand() < limits.growProbability;
@@ -1365,7 +1579,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             const gStats = { aiCalls: 0, aiErrors: 0, timedOut: false };
             const gJobs = growPlan.map(({ term, slots }) => ({
                 term, slots,
-                avoid: [...slots].flatMap((sl) => usable(lists.get(term.id), sl).slice(0, 4).map((e) => ({ slot: sl, text: itemText(e.item) }))),
+                avoid: [...slots].flatMap((sl) => usable(lists.get(term.id), sl, level, term, terms).slice(0, 4).map((e) => ({ slot: sl, text: itemText(e.item) }))),
             }));
             const run = fill({ level, jobs: gJobs, setTerms: terms, jobDeadlineAt: now() + limits.bgDeadlineMs, stats: gStats, prio: 'lo', concurrency: limits.bgCallConcurrency ?? 3 });
             await run.all;
