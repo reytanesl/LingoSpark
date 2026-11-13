@@ -10,7 +10,7 @@
 import crypto from 'node:crypto';
 import { isBasicEn, basicPl, BASIC_EN_PHRASES } from './track-basic-en.js';
 
-export const PROMPT_VERSION = 'tg2';
+export const PROMPT_VERSION = 'tg3';
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export const ALL_TYPES = [
     'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
@@ -145,8 +145,15 @@ function tokenMatches(form, base) {
     return p >= Math.max(3, Math.min(form.length, base.length) - 2);
 }
 
-/** Does `text` contain some form of the term (inflected, separable phrasal verb allowed)? */
+/** Does `text` contain some form of the term (inflected, separable phrasal verb allowed)?
+    If the term lists variants ("present/gift"), any one variant counts. */
 export function findTermForm(text, termEn) {
+    const list = parseTermVariants(termEn);
+    const variants = list.length ? list : [termEn];
+    return variants.some((v) => findOneForm(text, v));
+}
+
+function findOneForm(text, termEn) {
     const tt = termTokens(termEn);
     if (!tt.length) return false;
     const ws = words(text);
@@ -159,6 +166,312 @@ export function findTermForm(text, termEn) {
         if (k === tt.length) return true;
     }
     return false;
+}
+
+// ---------------------------------------------------------------- term variants (slash / comma / "or" lists)
+
+const SLASH_ATOMS = [
+    { re: /\band\s*\/\s*or\b/gi, canon: 'and/or' },
+    { re: /\bw\s*\/\s*o\b/gi, canon: 'w/o' },
+    { re: /\bc\s*\/\s*o\b/gi, canon: 'c/o' },
+    { re: /\bn\s*\/\s*a\b/gi, canon: 'n/a' },
+    { re: /\bi\s*\/\s*o\b/gi, canon: 'i/o' },
+    { re: /\bs\s*\/\s*he\b/gi, canon: 's/he' },
+];
+const FROZEN_OR = [
+    'more or less', 'sooner or later', 'take it or leave it', 'make or break',
+    'do or die', 'all or nothing', 'now or never', 'hit or miss', 'sink or swim',
+    'yes or no', 'either or', 'whether or not', 'once or twice', 'one or two',
+    'plus or minus', 'give or take', 'rain or shine',
+];
+const SLASH_CHAR = /[/\u2044\u2215\uFF0F]/;
+const SLASH_SPLIT = /\s*[/\u2044\u2215\uFF0F]\s*/;
+const ALT_SPLIT = /\s+(?:or|lub|albo)\s+/i;
+const ALT_MARK = /(?:[/\u2044\u2215\uFF0F]|,|\s+(?:or|lub|albo)\s+)/i;
+
+function protectSlashAtoms(s) {
+    const held = [];
+    let out = String(s ?? '');
+    for (const { re, canon } of SLASH_ATOMS) {
+        out = out.replace(re, () => {
+            held.push(canon);
+            return `\u27e6${held.length - 1}\u27e7`;
+        });
+    }
+    return { out, held };
+}
+function restoreHeld(s, held) {
+    return String(s ?? '').replace(/\u27e6(\d+)\u27e7/g, (_, i) => held[Number(i)] || _);
+}
+
+function looksLikeClause(s) {
+    const n = wordCount(s);
+    if (n >= 5) return true;
+    if (n >= 3 && /^(i|you|he|she|we|they|it|this|that|there|do|does|did|is|are|was|were|can|will|please|to)\b/i.test(clean(s))) return true;
+    return false;
+}
+function canSplitAltParts(bits) {
+    if (bits.length < 2) return false;
+    if (bits.some((b) => !b || wordCount(b) > 4 || /[.!?]/.test(b) || looksLikeClause(b))) return false;
+    return true;
+}
+function splitOrWord(part) {
+    const raw = clean(part);
+    if (!raw) return [];
+    const lower = raw.toLowerCase();
+    if (FROZEN_OR.some((p) => lower === p || lower.includes(p))) return [raw];
+    if (ALT_SPLIT.test(raw)) {
+        const bits = raw.split(ALT_SPLIT).map((t) => t.trim()).filter(Boolean);
+        if (canSplitAltParts(bits)) return bits;
+    }
+    return [raw];
+}
+function splitOrComma(part) {
+    const raw = clean(part);
+    if (!raw) return [];
+    const lower = raw.toLowerCase();
+    if (FROZEN_OR.some((p) => lower === p || lower.includes(p))) return [raw];
+    if (/[,;]/.test(raw)) {
+        const bits = raw.split(/\s*[,;]\s*/).map((t) => t.trim()).filter(Boolean);
+        if (canSplitAltParts(bits)) return bits.flatMap(splitOrWord);
+    }
+    return splitOrWord(raw);
+}
+
+/** Split a dictionary-style term into alternative forms. "present/gift" → ["present","gift"].
+    Leaves frozen compounds such as "and/or" and idioms such as "more or less" alone. */
+export function parseTermVariants(text) {
+    const original = clean(text);
+    if (!original) return [];
+    const { out, held } = protectSlashAtoms(original);
+    const slashParts = out.split(SLASH_SPLIT).map((p) => restoreHeld(p, held).trim()).filter(Boolean);
+    const parts = [];
+    for (const p of slashParts) {
+        const sub = (slashParts.length > 1 || ALT_MARK.test(p)) ? splitOrComma(p) : [p];
+        for (const s of sub) {
+            const c = clean(restoreHeld(s, held));
+            if (c && !parts.some((x) => norm(x) === norm(c))) parts.push(c);
+        }
+    }
+    return parts.length ? parts : [original];
+}
+
+/** True when the whole string is a term listing ("present/gift"), not a sentence. */
+export function isVariantList(text) {
+    const s = clean(text);
+    if (!s || /[.!?…]/.test(s)) return false;
+    if (wordCount(s) > 10) return false;
+    if (parseTermVariants(s).length < 2) return false;
+    const { out } = protectSlashAtoms(s);
+    return ALT_MARK.test(out);
+}
+
+/** '' when `text` does not display a slash/list form, else a rejection reason. */
+export function slashFormReason(text, label = 'text') {
+    if (text == null) return '';
+    const s = String(text);
+    if (isVariantList(s)) return `${label} lists several variants; use only one form`;
+    const { out } = protectSlashAtoms(s);
+    if (/\p{L}(?:\s*[/\u2044\u2215\uFF0F]\s*)+\p{L}/u.test(out)) return `${label} contains a slash form; use only one variant`;
+    return '';
+}
+
+function hasWordUni(text, w) {
+    const x = norm(w);
+    if (!x) return false;
+    return new RegExp(`(^|[^\\p{L}'])${escRe(x)}($|[^\\p{L}'])`, 'iu').test(norm(text));
+}
+
+function matchesVariant(text, variant) {
+    if (!text || !variant) return false;
+    return norm(text) === norm(variant) || findOneForm(text, variant) || hasWordUni(text, variant);
+}
+
+/** Which listed variant appears in `text` (longest hit). Empty if none. */
+export function variantUsedIn(text, termText) {
+    const vs = parseTermVariants(termText);
+    if (!vs.length) return '';
+    if (vs.length === 1) return findOneForm(text, vs[0]) || hasWordUni(text, vs[0]) || norm(text) === norm(vs[0]) ? vs[0] : '';
+    const hits = vs.filter((v) => matchesVariant(text, v));
+    hits.sort((a, b) => wordCount(b) - wordCount(a) || b.length - a.length);
+    return hits[0] || '';
+}
+
+/** Stable single-variant pick for a listing (the first listed form). */
+export function pickTermVariant(text) {
+    const vs = parseTermVariants(text);
+    return vs[0] || clean(text);
+}
+
+export function pairVariant(used, fromText, toText) {
+    const from = parseTermVariants(fromText);
+    const to = parseTermVariants(toText);
+    if (from.length === to.length && from.length) {
+        const i = from.findIndex((v) => matchesVariant(used, v) || matchesVariant(v, used));
+        if (i >= 0) return to[i];
+    }
+    return '';
+}
+
+function findPlForm(text, termPl) {
+    return parseTermVariants(termPl).some((v) => matchesVariant(text, v));
+}
+
+export function resolveUsedVariant(raw, term) {
+    const enVars = parseTermVariants(term?.en);
+    const plVars = parseTermVariants(term?.pl);
+    let used = clean(raw?.variantUsed || raw?.usedVariant || raw?.enVariant || '');
+    let usedPl = clean(raw?.plVariantUsed || raw?.variantUsedPl || '');
+    if (used && !enVars.some((v) => matchesVariant(used, v))) {
+        if (plVars.some((v) => matchesVariant(used, v))) {
+            if (!usedPl) usedPl = used;
+        }
+        used = '';
+    }
+    if (usedPl && !plVars.some((v) => matchesVariant(usedPl, v))) usedPl = '';
+    const blob = [raw?.sentence, raw?.phrase, raw?.passage, raw?.sourceSentence, raw?.speak, raw?.answer].filter(Boolean).join(' ');
+    if (!used) used = variantUsedIn(blob, term?.en);
+    if (!used) used = enVars[0] || clean(term?.en);
+    if (!usedPl) usedPl = pairVariant(used, term?.en, term?.pl) || variantUsedIn(raw?.source || raw?.question || '', term?.pl);
+    if (!usedPl) usedPl = plVars[0] || clean(term?.pl);
+    return { used, usedPl, enVars, plVars };
+}
+
+/** A single-word English variant suitable for letterScramble, or ''. */
+export function scrambleWordOf(term, preferred) {
+    const vs = parseTermVariants(term?.en || term).filter((v) => /^[a-z]{3,14}$/.test(norm(v)));
+    if (!vs.length) return '';
+    const p = clean(preferred);
+    if (p && vs.some((v) => norm(v) === norm(p))) return vs.find((v) => norm(v) === norm(p));
+    return vs[0];
+}
+
+/** Source is just the Polish word (or a short gloss), not a context sentence. */
+export function isIsolatedGloss(source, term) {
+    const s = clean(source);
+    if (!s || /[.!?…]/.test(s)) return false;
+    const plVars = parseTermVariants(term?.pl);
+    if (plVars.some((v) => norm(v) === norm(s))) return true;
+    if (isVariantList(s) && parseTermVariants(s).every((v) => plVars.some((p) => norm(p) === norm(v)))) return true;
+    if (wordCount(s) > 4) return false;
+    return plVars.some((v) => wordCount(s) === wordCount(v) && matchesVariant(s, v));
+}
+
+function uniqueClean(list) {
+    const out = [];
+    for (const x of list) {
+        const c = clean(x);
+        if (c && !out.some((y) => norm(y) === norm(c))) out.push(c);
+    }
+    return out;
+}
+
+function isFormOfTerm(text, termText) {
+    return parseTermVariants(termText).some((v) => matchesVariant(text, v));
+}
+
+function isSiblingVariant(option, term, usedEn, usedPl) {
+    const o = clean(option);
+    if (!o || !term) return false;
+    if (usedEn && isFormOfTerm(o, term.en) && !matchesVariant(o, usedEn) && norm(o) !== norm(usedEn)) return true;
+    if (usedPl && isFormOfTerm(o, term.pl) && !matchesVariant(o, usedPl) && norm(o) !== norm(usedPl)) return true;
+    return false;
+}
+
+function filterVariantDistractors(distractors, term, answer, usedEn, usedPl) {
+    return (Array.isArray(distractors) ? distractors : []).filter((d) => {
+        if (!clean(d) || isVariantList(d) || slashFormReason(d)) return false;
+        if (norm(d) === norm(answer)) return false;
+        if (term && isSiblingVariant(d, term, usedEn, usedPl)) return false;
+        return true;
+    });
+}
+
+function hitsMultipleVariants(text, termText) {
+    const vs = parseTermVariants(termText);
+    if (vs.length < 2 || !text) return false;
+    const hits = vs.filter((v) => matchesVariant(text, v));
+    const independent = hits.filter((h) => !hits.some((o) => o !== h && (matchesVariant(o, h)) && (wordCount(o) > wordCount(h) || o.length > h.length)));
+    return independent.length >= 2;
+}
+
+const VARIANT_DISPLAY_FIELDS = ['answer', 'question', 'prompt', 'template', 'speak', 'source', 'sourceSentence', 'passage', 'statement', 'phrase', 'plTranslation', 'clue', 'stem', 'keyWord'];
+
+function eachDisplayString(item, fn) {
+    if (!item) return;
+    for (const f of VARIANT_DISPLAY_FIELDS) {
+        if (typeof item[f] === 'string') fn(item[f], f);
+    }
+    // letterScramble keeps a short clue string on `hint`
+    if (typeof item.hint === 'string') fn(item.hint, 'hint');
+    for (const f of ['options', 'tokens', 'correctOrder', 'answers', 'acceptedAnswers']) {
+        if (Array.isArray(item[f])) item[f].forEach((x) => { if (typeof x === 'string') fn(x, f); });
+    }
+    if (item.hintHelp) {
+        if (typeof item.hintHelp.translation === 'string') fn(item.hintHelp.translation, 'hintHelp');
+        for (const s of item.hintHelp.segments || []) {
+            if (typeof s?.text === 'string') fn(s.text, 'hintHelp');
+            if (typeof s?.translation === 'string') fn(s.translation, 'hintHelp');
+        }
+    }
+}
+
+/** '' when every displayed field uses at most one variant, else a rejection reason. */
+export function displayedSlashReason(item, term) {
+    if (!item) return '';
+    let reason = '';
+    eachDisplayString(item, (val, label) => {
+        if (reason) return;
+        const sl = slashFormReason(val, label);
+        if (sl) { reason = sl; return; }
+        if (term?.en && hitsMultipleVariants(val, term.en)) reason = `${label} uses more than one variant of the term; keep only the one that fits`;
+        else if (term?.pl && hitsMultipleVariants(val, term.pl)) reason = `${label} uses more than one variant of the term; keep only the one that fits`;
+    });
+    return reason;
+}
+
+function siblingOptionReason(item, term, usedEn, usedPl) {
+    if (!item || !Array.isArray(item.options) || !term) return '';
+    const bad = item.options.filter((o) => isSiblingVariant(o, term, usedEn || item.variantUsed, usedPl || item.variantUsedPl));
+    if (bad.length) return `distractors must not be other variants of the same term (${bad[0]})`;
+    return '';
+}
+
+function canCollapseText(s) {
+    if (!s) return true;
+    if (!slashFormReason(s) && !isVariantList(s)) return true;
+    return isVariantList(s);
+}
+
+export function canCollapseChoiceItem(item) {
+    if (!item || (item.type !== 'meaningPick' && item.type !== 'listenPick')) return false;
+    const fields = [item.question, item.answer, item.speak, ...(item.options || [])];
+    return fields.every(canCollapseText);
+}
+
+/** Serve-time: rewrite a banked meaningPick/listenPick so every shown field is a single variant. */
+export function collapseChoiceItem(item, term) {
+    const collapse = (s) => (s && isVariantList(s) ? pickTermVariant(s) : (s == null ? s : clean(s)));
+    const out = { ...item, options: Array.isArray(item.options) ? item.options.slice() : item.options };
+    if (out.question) out.question = collapse(out.question);
+    if (out.answer) out.answer = collapse(out.answer);
+    if (out.speak) out.speak = collapse(out.speak);
+    if (Array.isArray(out.options)) {
+        const seen = new Set();
+        const kept = [];
+        for (const raw of out.options) {
+            const o = collapse(raw);
+            const n = norm(o);
+            if (!n || seen.has(n)) continue;
+            if (out.answer && n !== norm(out.answer) && term && isSiblingVariant(o, term, out.answer, out.answer)) continue;
+            seen.add(n);
+            kept.push(o);
+        }
+        out.options = kept;
+    }
+    if (out.type === 'meaningPick') out.prompt = meaningPrompt(out.direction, out.question);
+    if ('correctIndex' in out && Array.isArray(out.options)) out.correctIndex = out.options.findIndex((o) => norm(o) === norm(out.answer));
+    return out;
 }
 
 function hasWord(text, w) {
@@ -262,13 +575,13 @@ const TYPE_SPECS = {
     sentenceGap: '{"termId","type":"sentenceGap","sentence":full English sentence using the target in a form that fits the grammar AND carrying a clear clue (a defining detail, a typical collocation or situation) so that ONLY the target fits the gap; never a generic frame like "There is a ___ here" / "I like ___" / "This is my ___","answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence]}',
     gapTranslate: '{"termId","type":"gapTranslate","sentence":full English sentence (no gap marks) using the target in a form that fits the grammar, with a clear clue so that ONLY the target fits the gap (never a generic frame like "There is a ___ here"),"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence],"plTranslation":natural Polish translation of the WHOLE sentence (always required, a non-empty string)} (use a different sentence than the sentenceGap item of the same term)',
     sentenceOrder: '{"termId","type":"sentenceOrder","sentence":one sentence with the target (punctuation attached to the last word),"plTranslation":Polish translation as a hint}',
-    meaningPick: '{"termId","type":"meaningPick","direction":"pl-en" or "en-pl","distractors":[3 wrong options in the ANSWER language: other terms of the set when sensible]} (the question is the term itself; the answer is its translation exactly as listed in the term)',
+    meaningPick: '{"termId","type":"meaningPick","direction":"pl-en" or "en-pl","variantUsed":the one English form you picked,"distractors":[3 wrong options in the ANSWER language: other terms of the set when sensible]} (the question is one variant of the term; the answer is the matching variant in the other language, never a slash list such as "present/gift")',
     collocationPick: '{"termId","type":"collocationPick","phrase":a natural 2–6 word collocation/chunk containing the target (target NOT first),"answer":the target as written in the phrase,"distractors":[3 words that do NOT collocate here (clearly wrong in this exact phrase, but the same word class)]}',
     contextTrueFalse: '{"termId","type":"contextTrueFalse","passage":2–3 connected sentences using the target with enough concrete detail that the statement can be judged without guessing,"statement":one sentence about the passage that is clearly true or clearly false,"correctTrue":boolean}',
-    letterScramble: '{"termId","type":"letterScramble","answer":the English term exactly as listed (single word only),"clue":short Polish or English clue that does not contain the answer (also accepted under the key "hint" if it is a string)}',
-    translateType: '{"termId","type":"translateType","source":Polish sentence,"answer":the natural English translation containing the target,"answers":[0–3 other acceptable English translations that also contain the target]}',
+    letterScramble: '{"termId","type":"letterScramble","answer":one single-word English variant of the term (3–14 letters, never the slash list),"variantUsed":that same form,"clue":short Polish or English clue that does not contain the answer (also accepted under the key "hint" if it is a string)}',
+    translateType: '{"termId","type":"translateType","source":Polish sentence (or, for a plain word translation, just the Polish word — one variant),"answer":the natural English translation containing exactly one variant of the target,"variantUsed":that English form,"answers":[0–3 other acceptable English translations that also use that same variant]}',
     dictation: '{"termId","type":"dictation","sentence":one English sentence with the target, easy to pronounce}',
-    listenPick: '{"termId","type":"listenPick","distractors":[3 English words/phrases that sound or look similar or are in the same topic; other terms of the set when sensible]} (the learner hears the term itself)',
+    listenPick: '{"termId","type":"listenPick","variantUsed":the one English form the learner hears,"distractors":[3 English words/phrases that sound or look similar or are in the same topic; other terms of the set when sensible]} (the learner hears one English variant of the term, never the slash list)',
     wordFormation: '{"termId","type":"wordFormation","stem":UPPERCASE base word,"sentence":full sentence containing the correctly formed derived word,"answer":the derived word exactly as in the sentence (differs from the stem, NOT at the very start)}',
     keyTransform: '{"termId","type":"keyTransform","sourceSentence":original sentence,"keyWord":UPPERCASE word that must be used UNCHANGED in the answer,"template":second sentence with ONE gap ___ that must be filled with 2–5 words INCLUDING the key word (key word not outside the gap),"answer":the 2–5 words,"answers":[the answer plus up to 2 other correct 2–5 word solutions with the key word]} (same meaning as the source sentence; the target term appears in the source or in the completed sentence)',
 };
@@ -288,7 +601,11 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
     const lines = terms.map((t) => {
         const ts = wants.get(t.id);
         const slots = [...ts].join(', ');
-        return `- termId ${JSON.stringify(t.id)}: en ${JSON.stringify(t.en)} | pl ${JSON.stringify(t.pl)}${t.pos ? ` | pos ${t.pos}` : ''} → wanted: ${slots}`;
+        const ev = parseTermVariants(t.en);
+        const pv = parseTermVariants(t.pl);
+        const evNote = ev.length > 1 ? ` (English variants: ${ev.map((v) => JSON.stringify(v)).join(' | ')}; pick exactly one and return it as variantUsed)` : '';
+        const pvNote = pv.length > 1 ? ` (Polish variants: ${pv.map((v) => JSON.stringify(v)).join(' | ')})` : '';
+        return `- termId ${JSON.stringify(t.id)}: en ${JSON.stringify(t.en)}${evNote} | pl ${JSON.stringify(t.pl)}${pvNote}${t.pos ? ` | pos ${t.pos}` : ''} → wanted: ${slots}`;
     });
     const typeNames = [...new Set([...wants.values()].flatMap((s) => [...s].map(slotType)))].sort((a, b) => ALL_TYPES.indexOf(a) - ALL_TYPES.indexOf(b));
     return [
@@ -320,6 +637,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         ] : []),
         '- HINT: every item should also include "hint":{"translation":"<the other language of the shown word or sentence>","segments":[{"text":"<segment>","translation":"<other language>"}]}. Segments in order, joined with single spaces, must equal the word or sentence shown to the learner (for gap items: the full sentence with the target filled in; punctuation may stay on the last segment). A multi-word set term is ONE segment (e.g. "bluzka bez rękawów", "step out of"), never split. letterScramble, listenPick and meaningPick have one segment — the word itself. translation is Polish when the shown text is English, and English when the shown text is Polish. This hint is help for the learner, so it may contain the answer.',
         '- Use the term\'s given English form and Polish meaning; do not change the meaning of the term.',
+        '- VARIANTS: if a term lists alternatives separated by "/", "," or "or" (English) / "lub" or "albo" (Polish) — e.g. "be grounded / get grounded", "present/gift" — every item must use exactly ONE of those forms, the one that fits the sentence or task. Put that English form in "variantUsed". NEVER write the listed slash/comma form in the sentence, the answer, the options, the gap, the letters, the tiles, the typed answer, the hint, the source, or the question (not "present/gift", not "be grounded / get grounded"). Distractors must not be other variants of the same term. Leave frozen compounds such as "and/or" or "w/o" alone — they are not variants.',
         ...(feedback.length ? ['', 'PREVIOUS ATTEMPT — these items were rejected, write them again and fix the problem:', ...feedback.map((f) => `- termId ${JSON.stringify(f.termId)} ${f.slot}: ${f.reason}`)] : []),
         '',
         'Return ONLY valid JSON of the form {"items":[...],"skipped":[...]}. No markdown, no commentary.',
@@ -345,8 +663,8 @@ function checkOptions(options, answer) {
     return '';
 }
 
-function buildOptions(answer, distractors, rng) {
-    const ds = (Array.isArray(distractors) ? distractors : []).map(clean).filter(Boolean);
+function buildOptions(answer, distractors, rng, term, usedEn, usedPl) {
+    const ds = filterVariantDistractors(distractors, term, answer, usedEn, usedPl).map(clean).filter(Boolean);
     const uniq = [];
     for (const d of ds) if (norm(d) !== norm(answer) && !uniq.some((u) => norm(u) === norm(d))) uniq.push(d);
     if (uniq.length < 3) return null;
@@ -541,7 +859,7 @@ export function simpleVocabReason(text, level, term, setTerms = []) {
     return '';
 }
 
-/** A banked item that must no longer be served (generic gaps, or an A1/A2 sentence that is too hard). */
+/** A banked item that must no longer be served (generic gaps, too-hard A1/A2 sentences, or a slash-form listing). */
 export function bankedItemBad(item, level, term, setTerms) {
     if (!item) return false;
     if ((item.type === 'sentenceGap' || item.type === 'gapTranslate' || item.type === 'collocationPick') && typeof item.template === 'string') {
@@ -551,6 +869,12 @@ export function bankedItemBad(item, level, term, setTerms) {
     if ((level === 'A1' || level === 'A2') && VOCAB_TYPES.has(item.type)) {
         const text = englishTextOf(item);
         if (text && simpleVocabReason(text, level, term, setTerms)) return true;
+    }
+    const slash = displayedSlashReason(item, term);
+    if (slash) {
+        // meaningPick / listenPick with a whole-string listing can be collapsed at serve time
+        if ((item.type === 'meaningPick' || item.type === 'listenPick') && canCollapseChoiceItem(item)) return false;
+        return true;
     }
     return false;
 }
@@ -597,9 +921,10 @@ export function hintReason(hint, item, term, setTerms = []) {
     for (const t of terms) {
         const needle = pl ? t.pl : t.en;
         if (!needle) continue;
-        const appears = findTermForm(shown, needle) || (pl && new RegExp(`(^|[^\\p{L}])${escRe(norm(needle))}($|[^\\p{L}])`, 'iu').test(norm(shown)));
+        const needles = parseTermVariants(needle);
+        const appears = needles.some((v) => findTermForm(shown, v) || (pl && new RegExp(`(^|[^\\p{L}])${escRe(norm(v))}($|[^\\p{L}])`, 'iu').test(norm(shown))));
         if (!appears) continue;
-        if (!segs.some((x) => segmentCovers(x.text, needle))) return `set term "${needle}" must be a single hint segment`;
+        if (!segs.some((x) => needles.some((v) => segmentCovers(x.text, v)))) return `set term "${pickTermVariant(needle)}" must be a single hint segment`;
     }
     return '';
 }
@@ -617,7 +942,10 @@ const POLISH_BASIC = {
 
 export function segmentByTerms(text, terms, langPl) {
     const tokens = clean(text).split(' ').filter(Boolean);
-    const phrases = (terms || []).map((t) => clean(langPl ? t.pl : t.en)).filter(Boolean);
+    const phrases = (terms || []).flatMap((t) => {
+        const forms = parseTermVariants(langPl ? t.pl : t.en);
+        return forms.length ? forms : [clean(langPl ? t.pl : t.en)];
+    }).filter(Boolean);
     if (!langPl) phrases.push(...BASIC_EN_PHRASES);
     phrases.sort((a, b) => wordCount(b) - wordCount(a) || b.length - a.length);
     const segs = [];
@@ -650,15 +978,25 @@ export function cheapHint(item, term, setTerms = []) {
     let translation = clean(item.plTranslation || '');
     if (!translation) {
         if (item.type === 'translateType' || item.type === 'meaningPick') translation = clean(item.answer || '');
-        else if (term && (item.type === 'letterScramble' || item.type === 'listenPick')) translation = pl ? clean(term.en) : clean(term.pl);
+        else if (term && (item.type === 'letterScramble' || item.type === 'listenPick')) {
+            const shownForm = clean(item.answer || item.speak || '');
+            translation = pl
+                ? (pairVariant(shownForm, term.pl, term.en) || pickTermVariant(term.en))
+                : (pairVariant(shownForm, term.en, term.pl) || pickTermVariant(term.pl));
+        }
     }
     const parts = segmentByTerms(shown, terms, pl);
     const segs = [];
     for (const text of parts) {
         const core = CORE_WORD(text);
-        const hit = terms.find((t) => segmentCovers(text, pl ? t.pl : t.en));
+        const hit = terms.find((t) => parseTermVariants(pl ? t.pl : t.en).some((v) => segmentCovers(text, v)));
         let tr = '';
-        if (hit) tr = clean(pl ? hit.en : hit.pl);
+        if (hit) {
+            const from = pl ? hit.pl : hit.en;
+            const to = pl ? hit.en : hit.pl;
+            const used = variantUsedIn(CORE_WORD(text) || text, from) || pickTermVariant(from);
+            tr = pairVariant(used, from, to) || pickTermVariant(to);
+        }
         else if (!pl) tr = basicPl(core);
         else tr = POLISH_BASIC[norm(core)] || '';
         if (!tr) return null;
@@ -709,7 +1047,17 @@ export function buildItem(raw, term, level, setTerms = []) {
     const [lo, hi] = SENT_WORDS[level];
     const rng = rngFrom(`${term.id}|${type}|${raw.direction || ''}|${norm(raw.sentence || raw.phrase || raw.stem || '')}`);
     const base = { type, lexiconId: term.id, skill: SKILL[type] };
-    const tag = (slot, item) => withHint({ ok: true, slot, item: { id: `ai-${term.id}-${slot.replace(':', '-')}`, ...base, ...item } }, raw, term, setTerms);
+    const variants = resolveUsedVariant(raw, term);
+    const tag = (slot, item) => {
+        if (variants.enVars.length > 1) item.variantUsed = variants.used;
+        if (variants.plVars.length > 1) item.variantUsedPl = variants.usedPl;
+        const wrapped = withHint({ ok: true, slot, item: { id: `ai-${term.id}-${slot.replace(':', '-')}`, ...base, ...item } }, raw, term, setTerms);
+        const slash = displayedSlashReason(wrapped.item, term);
+        if (slash) return REASON(slash);
+        const sib = siblingOptionReason(wrapped.item, term, variants.used, variants.usedPl);
+        if (sib) return REASON(sib);
+        return wrapped;
+    };
     const sentenceOk = (s, label = 'sentence') => {
         if (!isStr(s, 6, 220)) return `${label} missing or too long`;
         if (countGaps(s)) return `${label} must not contain a gap`;
@@ -726,14 +1074,17 @@ export function buildItem(raw, term, level, setTerms = []) {
             const e = sentenceOk(raw.sentence);
             if (e) return REASON(e);
             if (!isStr(raw.answer, 1, 60)) return REASON('answer missing');
+            if (isVariantList(raw.answer) || slashFormReason(raw.answer, 'answer')) return REASON('answer lists several variants; use only the form that fits the sentence');
             if (!findTermForm(raw.answer, term.en)) return REASON('answer is not a form of the target term');
+            variants.used = variantUsedIn(raw.answer, term.en) || variants.used;
+            variants.usedPl = pairVariant(variants.used, term.en, term.pl) || variants.usedPl;
             const template = makeTemplate(raw.sentence, raw.answer);
             if (!template) return REASON('answer not found inside the sentence (or gap at sentence start)');
             if (countGaps(template) !== 1) return REASON('template needs exactly one gap');
             if (hasWord(template.replace(GAP, ' '), raw.answer)) return REASON('answer also appears outside the gap (leak)');
             const generic = genericGapReason(template);
             if (generic) return REASON(generic);
-            const options = buildOptions(raw.answer, raw.distractors, rng);
+            const options = buildOptions(raw.answer, raw.distractors, rng, term, variants.used, variants.usedPl);
             if (!options) return REASON('needs 3 distinct distractors');
             const oe = checkOptions(options, raw.answer);
             if (oe) return REASON(oe);
@@ -765,9 +1116,17 @@ export function buildItem(raw, term, level, setTerms = []) {
         case 'meaningPick': {
             const direction = raw.direction;
             if (!MEANING_DIRECTIONS.includes(direction)) return REASON('direction must be pl-en or en-pl');
-            const answer = direction === 'pl-en' ? term.en : term.pl;
-            const question = direction === 'pl-en' ? term.pl : term.en;
-            const options = buildOptions(answer, raw.distractors, rng);
+            if (direction === 'pl-en') {
+                if (raw.answer && !isVariantList(raw.answer) && variants.enVars.some((v) => norm(v) === norm(raw.answer) || matchesVariant(raw.answer, v))) variants.used = clean(raw.answer);
+                if (raw.question && !isVariantList(raw.question) && variants.plVars.some((v) => norm(v) === norm(raw.question) || matchesVariant(raw.question, v))) variants.usedPl = clean(raw.question);
+            } else {
+                if (raw.answer && !isVariantList(raw.answer) && variants.plVars.some((v) => norm(v) === norm(raw.answer) || matchesVariant(raw.answer, v))) variants.usedPl = clean(raw.answer);
+                if (raw.question && !isVariantList(raw.question) && variants.enVars.some((v) => norm(v) === norm(raw.question) || matchesVariant(raw.question, v))) variants.used = clean(raw.question);
+            }
+            if (!variants.usedPl) variants.usedPl = pairVariant(variants.used, term.en, term.pl) || variants.plVars[0] || clean(term.pl);
+            const answer = direction === 'pl-en' ? variants.used : variants.usedPl;
+            const question = direction === 'pl-en' ? variants.usedPl : variants.used;
+            const options = buildOptions(answer, raw.distractors, rng, term, variants.used, variants.usedPl);
             if (!options) return REASON('needs 3 distinct distractors');
             const oe = checkOptions(options, answer);
             if (oe) return REASON(oe);
@@ -783,11 +1142,13 @@ export function buildItem(raw, term, level, setTerms = []) {
             if (n < 2 || n > 7) return REASON('phrase must have 2–6 words');
             const vr = simpleVocabReason(raw.phrase, level, term, setTerms);
             if (vr) return REASON(vr);
-            if (!isStr(raw.answer, 1, 60) || !findTermForm(raw.answer, term.en)) return REASON('answer is not a form of the target term');
+            if (!isStr(raw.answer, 1, 60) || isVariantList(raw.answer) || slashFormReason(raw.answer, 'answer') || !findTermForm(raw.answer, term.en)) return REASON('answer is not a form of the target term');
+            variants.used = variantUsedIn(raw.answer, term.en) || variants.used;
+            variants.usedPl = pairVariant(variants.used, term.en, term.pl) || variants.usedPl;
             const template = makeTemplate(raw.phrase, raw.answer);
             if (!template) return REASON('answer not inside the phrase (or phrase starts with it)');
             if (hasWord(template.replace(GAP, ' '), raw.answer)) return REASON('answer also appears outside the gap (leak)');
-            const options = buildOptions(raw.answer, raw.distractors, rng);
+            const options = buildOptions(raw.answer, raw.distractors, rng, term, variants.used, variants.usedPl);
             if (!options) return REASON('needs 3 distinct distractors');
             const oe = checkOptions(options, raw.answer);
             if (oe) return REASON(oe);
@@ -810,9 +1171,21 @@ export function buildItem(raw, term, level, setTerms = []) {
             });
         }
         case 'letterScramble': {
-            const w = norm(term.en);
-            if (!/^[a-z]{3,14}$/.test(w)) return REASON('letterScramble needs a single-word term of 3–14 letters');
-            if (norm(raw.answer) !== w) return REASON('answer must equal the term');
+            const preferred = clean(raw.answer || raw.variantUsed || '');
+            const singles = variants.enVars.filter((v) => /^[a-z]{3,14}$/.test(norm(v)));
+            if (!singles.length) return REASON('letterScramble needs a single-word variant of 3–14 letters');
+            let chosen;
+            if (preferred && !isVariantList(preferred) && singles.some((v) => norm(v) === norm(preferred))) {
+                chosen = singles.find((v) => norm(v) === norm(preferred));
+            } else if (!preferred || isVariantList(preferred) || norm(preferred) === norm(term.en)) {
+                chosen = scrambleWordOf(term, raw.variantUsed);
+            } else {
+                return REASON('answer must be a single-word variant of the term');
+            }
+            if (!chosen) return REASON('letterScramble needs a single-word variant of 3–14 letters');
+            variants.used = chosen;
+            variants.usedPl = pairVariant(chosen, term.en, term.pl) || variants.usedPl;
+            const w = norm(chosen);
             const clue = typeof raw.clue === 'string' ? raw.clue : (typeof raw.hint === 'string' ? raw.hint : '');
             if (!isStr(clue, 2, 80)) return REASON('hint missing');
             if (hasWord(clue, w)) return REASON('hint reveals the answer');
@@ -820,17 +1193,34 @@ export function buildItem(raw, term, level, setTerms = []) {
             let letters = shuffled(chars, rng);
             for (let i = 0; i < 6 && letters.join('') === w; i++) letters = shuffled(chars, rng);
             if (letters.join('') === w) return REASON('cannot scramble term');
-            return tag('letterScramble', { prompt: 'Unscramble the word.', hint: clean(clue), clue: clean(clue), letters, answer: clean(term.en) });
+            return tag('letterScramble', { prompt: 'Unscramble the word.', hint: clean(clue), clue: clean(clue), letters, answer: clean(chosen) });
         }
         case 'translateType': {
+            const isolated = isIsolatedGloss(raw.source, term);
+            if (isolated) {
+                if (!isStr(raw.source, 1, 200) || isVariantList(raw.source) || slashFormReason(raw.source, 'source')) return REASON('source must show only one Polish variant, not a slash list');
+                const ans = clean(raw.answer);
+                if (!ans || isVariantList(ans) || slashFormReason(ans, 'answer')) return REASON('answer must be one variant, not the slash list');
+                if (!findTermForm(ans, term.en) && !variants.enVars.some((v) => norm(v) === norm(ans))) return REASON('answer is not a form of the target term');
+                variants.used = variantUsedIn(ans, term.en) || ans;
+                variants.usedPl = pairVariant(variants.used, term.en, term.pl) || variantUsedIn(raw.source, term.pl) || variants.usedPl;
+                const accepted = uniqueClean([ans, ...variants.enVars, ...(Array.isArray(raw.answers) ? raw.answers : [])]).filter((a) => !isVariantList(a) && !slashFormReason(a) && (findTermForm(a, term.en) || variants.enVars.some((v) => norm(v) === norm(a))));
+                return tag('translateType', {
+                    prompt: 'Translate into English.', source: clean(raw.source), answer: ans, answers: accepted, acceptedAnswers: accepted,
+                });
+            }
             if (!isStr(raw.source, 4, 200)) return REASON('source (Polish sentence) missing');
             const e = sentenceOk(raw.answer, 'answer');
             if (e) return REASON(e);
+            if (isVariantList(raw.answer) || slashFormReason(raw.answer, 'answer')) return REASON('answer lists several variants; use only the form that fits the sentence');
             if (!findTermForm(raw.answer, term.en)) return REASON('answer does not contain the target term');
+            variants.used = variantUsedIn(raw.answer, term.en) || variants.used;
+            variants.usedPl = pairVariant(variants.used, term.en, term.pl) || variantUsedIn(raw.source, term.pl) || variants.usedPl;
             const alts = [];
             for (const a of Array.isArray(raw.answers) ? raw.answers : []) {
-                if (!isStr(a, 4, 220) || countGaps(a)) continue;
+                if (!isStr(a, 4, 220) || countGaps(a) || isVariantList(a) || slashFormReason(a)) continue;
                 if (!findTermForm(a, term.en)) continue;
+                if (hitsMultipleVariants(a, term.en)) continue;
                 if (norm(a) === norm(raw.answer) || alts.some((x) => norm(x) === norm(a))) continue;
                 alts.push(clean(a));
             }
@@ -845,13 +1235,16 @@ export function buildItem(raw, term, level, setTerms = []) {
             return tag('dictation', { prompt: 'Listen and type what you hear.', speak: clean(raw.sentence), answer: clean(raw.sentence) });
         }
         case 'listenPick': {
-            const options = buildOptions(term.en, raw.distractors, rng);
+            if (raw.answer && !isVariantList(raw.answer) && variants.enVars.some((v) => norm(v) === norm(raw.answer) || matchesVariant(raw.answer, v))) variants.used = clean(raw.answer);
+            const spoken = variants.used || pickTermVariant(term.en);
+            variants.used = spoken;
+            const options = buildOptions(spoken, raw.distractors, rng, term, variants.used, variants.usedPl);
             if (!options) return REASON('needs 3 distinct distractors');
-            const oe = checkOptions(options, term.en);
+            const oe = checkOptions(options, spoken);
             if (oe) return REASON(oe);
             return tag('listenPick', {
-                prompt: 'Listen and pick the word you hear.', speak: clean(term.en), options, answer: clean(term.en),
-                correctIndex: options.findIndex((o) => norm(o) === norm(term.en)),
+                prompt: 'Listen and pick the word you hear.', speak: clean(spoken), options, answer: clean(spoken),
+                correctIndex: options.findIndex((o) => norm(o) === norm(spoken)),
             });
         }
         case 'wordFormation': {
@@ -902,10 +1295,12 @@ export function buildItem(raw, term, level, setTerms = []) {
 }
 
 /** Final safety net on a built item: no gap answer leaks into prompt; required fields. */
-function finalCheck(item) {
+function finalCheck(item, term) {
     // a meaningPick prompt quotes the question word on purpose; only the ANSWER must not show up around it
     const shown = item.type === 'meaningPick' && item.question ? String(item.prompt || '').split(String(item.question)).join(' ') : item.prompt;
     if (item.answer && promptLeaks(shown, item.answer)) return 'answer appears in the prompt';
+    const slash = displayedSlashReason(item, term);
+    if (slash) return slash;
     return '';
 }
 
@@ -932,7 +1327,7 @@ export function createLruCache({ max = LIMITS.cacheMax, ttlMs = LIMITS.cacheTtlM
 // ---------------------------------------------------------------- the question bank
 
 /** Bank entries written by these prompt versions may be served; bump PROMPT_VERSION and drop a version here to retire it. */
-export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2']);
+export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3']);
 /** Only these may be recorded as "makes no sense for this term" (a permanent skip in the bank). */
 export const SKIPPABLE_TYPES = new Set(['wordFormation', 'keyTransform', 'collocationPick', 'letterScramble']);
 /** How many different items per (term, level, slot) the bank is grown to, and its hard cap. */
@@ -1042,7 +1437,7 @@ export function createBank({ store = null, now = () => Date.now(), maxTerms = 50
                 if (same.some((e) => e.fp === fp)) continue;
                 if (skipped && same.length) continue;
                 if (!skipped && same.filter((e) => !e.skipped && !bankedItemBad(e.item, level, term)).length >= slotMax(slot)) continue;
-                if (!skipped && same.some((e) => !e.skipped && n.item.type !== 'meaningPick' && n.item.type !== 'listenPick' && jaccard(itemText(e.item), text) >= NEAR_DUPLICATE)) continue;
+                if (!skipped && same.some((e) => !e.skipped && !bankedItemBad(e.item, level, term) && n.item.type !== 'meaningPick' && n.item.type !== 'listenPick' && jaccard(itemText(e.item), text) >= NEAR_DUPLICATE)) continue;
                 const { id: _i, lexiconId: _l, ...bare } = n.item || {};
                 const entry = { id: `m${++seq}`, slot, type: slotType(slot), fp, item: bare, promptVersion: n.promptVersion || PROMPT_VERSION, servedCount: 0, lastServedAt: 0, ...(skipped ? { skipped: true } : {}) };
                 if (store) {
@@ -1185,8 +1580,9 @@ function meaningPrompt(direction, question) {
 
 /** Pick distractors from the other terms of the requesting set when that keeps the item valid. */
 function reshuffleOptions(item, term, setTerms, rand, level) {
-    if (bankedItemBad(item, level, term, setTerms)) return null; // generic or too-hard A1/A2 banked item: treated as missing
-    const out = { ...item };
+    let out = { ...item };
+    if (out.type === 'meaningPick' || out.type === 'listenPick') out = collapseChoiceItem(out, term);
+    if (bankedItemBad(out, level, term, setTerms)) return null; // generic, too-hard A1/A2, or unfixable slash form: treated as missing
     if (out.type === 'meaningPick') out.prompt = meaningPrompt(out.direction, out.question); // banked items keep old wording
     if (!out.hintHelp || hintReason(out.hintHelp, out, term, setTerms)) {
         const cheap = cheapHint(out, term, setTerms);
@@ -1199,10 +1595,10 @@ function reshuffleOptions(item, term, setTerms, rand, level) {
     if (out.type === 'meaningPick' || out.type === 'listenPick') {
         const field = out.type === 'meaningPick' && out.direction === 'en-pl' ? 'pl' : 'en';
         const wc = wordCount(answer);
-        const pool = setTerms.filter((t) => t.id !== term.id).map((t) => clean(t[field]))
-            .filter((v) => v && norm(v) !== norm(answer) && Math.abs(wordCount(v) - wc) <= 1);
+        const pool = setTerms.filter((t) => t.id !== term.id).map((t) => pickTermVariant(clean(t[field])))
+            .filter((v) => v && norm(v) !== norm(answer) && Math.abs(wordCount(v) - wc) <= 1 && !isSiblingVariant(v, term, answer, answer));
         const uniq = [...new Map(pool.map((v) => [norm(v), v])).values()];
-        if (uniq.length >= 3 && rand() < 0.5) {
+        if (uniq.length >= 3 && (rand() < 0.5 || options.length < 4)) {
             const picked = shuffled(uniq, rand).slice(0, 3);
             const swapped = [answer, ...picked];
             if (!checkOptions(swapped, answer)) options = swapped;
@@ -1357,7 +1753,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 const slot = built.slot || (rType === 'meaningPick' ? `meaningPick:${r.direction}` : rType);
                 if (!built.ok) { feedback.push({ termId, slot, reason: built.reason }); log(`rejected ${level} "${term.en}" ${slot}: ${built.reason}`); continue; }
                 if (!need.get(termId).has(built.slot)) continue;
-                const fc = finalCheck(built.item);
+                const fc = finalCheck(built.item, term);
                 if (fc) { feedback.push({ termId, slot, reason: fc }); continue; }
                 const prior = avoid.get(termId) || [];
                 if (prior.some((a) => a.slot === built.slot && jaccard(a.text, itemText(built.item)) >= NEAR_DUPLICATE)) {
@@ -1447,7 +1843,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
     const wantedSlots = (term, types) => {
         const out = [];
         for (const ty of types) {
-            if (ty === 'letterScramble' && !/^[a-z]{3,14}$/.test(norm(term.en))) continue; // a phrase cannot be scrambled
+            if (ty === 'letterScramble' && !scrambleWordOf(term)) continue; // a phrase cannot be scrambled unless one variant is a single word
             out.push(...slotsFor(ty));
         }
         return out;

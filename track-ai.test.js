@@ -8,6 +8,8 @@ import {
     signBridgeRequest, verifyBridgeRequest, BRIDGE_HEADERS, TRACK_PATH, LIMITS, ALL_TYPES,
     simpleVocabReason, cheapHint, hintReason, shownText, bankedItemBad, VOCAB_EXTRA_MAX,
     demonstrativeGapReason, parseDeicticOption,
+    parseTermVariants, isVariantList, slashFormReason, pickTermVariant, variantUsedIn,
+    scrambleWordOf, isIsolatedGloss, displayedSlashReason, collapseChoiceItem, canCollapseChoiceItem,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
@@ -1230,4 +1232,182 @@ test('hintHelp: serving a banked item without a hint backfills it and does not b
     assert.ok(r.items[0].hintHelp, 'cheap backfill on the serve path');
     assert.equal(r.items[0].hintHelp.segments.map((s) => s.text).join(' '), 'We have got a tracksuit.');
     assert.ok(r.items[0].hintHelp.segments.some((s) => /tracksuit/i.test(s.text)));
+});
+
+/* ---------------------------------------------------------------- term variants (slash / comma / "or" lists) */
+
+const PRESENT = T('30', 'present/gift', 'prezent / upominek');
+const GROUNDED = T('31', 'be grounded / get grounded', 'być uziemionym / dostać szlaban');
+
+test('parseTermVariants: slash, spaced slash, comma, or, Polish lub; leaves and/or and frozen phrases alone', () => {
+    assert.deepEqual(parseTermVariants('present/gift'), ['present', 'gift']);
+    assert.deepEqual(parseTermVariants('present / gift'), ['present', 'gift']);
+    assert.deepEqual(parseTermVariants('be grounded / get grounded'), ['be grounded', 'get grounded']);
+    assert.deepEqual(parseTermVariants('present, gift'), ['present', 'gift']);
+    assert.deepEqual(parseTermVariants('present or gift'), ['present', 'gift']);
+    assert.deepEqual(parseTermVariants('prezent / upominek'), ['prezent', 'upominek']);
+    assert.deepEqual(parseTermVariants('prezent lub upominek'), ['prezent', 'upominek']);
+    assert.deepEqual(parseTermVariants('prezent albo upominek'), ['prezent', 'upominek']);
+    assert.deepEqual(parseTermVariants('and/or'), ['and/or']);
+    assert.deepEqual(parseTermVariants('accept and/or decline'), ['accept and/or decline']);
+    assert.deepEqual(parseTermVariants('w/o'), ['w/o']);
+    assert.deepEqual(parseTermVariants('more or less'), ['more or less']);
+    assert.deepEqual(parseTermVariants('Do you want tea or coffee'), ['Do you want tea or coffee']);
+    assert.deepEqual(parseTermVariants('fog'), ['fog']);
+    assert.deepEqual(parseTermVariants('give up'), ['give up']);
+    assert.equal(isVariantList('present/gift'), true);
+    assert.equal(isVariantList('be grounded / get grounded'), true);
+    assert.equal(isVariantList('and/or'), false);
+    assert.equal(isVariantList('fog'), false);
+    assert.equal(slashFormReason('present/gift'), 'text lists several variants; use only one form');
+    assert.equal(slashFormReason('You can have tea and/or coffee.'), '');
+    assert.match(slashFormReason('She wrapped the present/gift carefully.'), /slash form/);
+    assert.equal(pickTermVariant('present/gift'), 'present');
+    assert.equal(pickTermVariant('be grounded / get grounded'), 'be grounded');
+    assert.equal(variantUsedIn('He got grounded after the party at school.', 'be grounded / get grounded'), 'get grounded');
+    assert.equal(scrambleWordOf(PRESENT), 'present');
+    assert.equal(scrambleWordOf(GROUNDED), '');
+    assert.equal(isIsolatedGloss('prezent', PRESENT), true);
+    assert.equal(isIsolatedGloss('Ten prezent jest nowy.', PRESENT), false);
+});
+
+test('findTermForm: a slash term matches any one of its variants, including inflected forms', () => {
+    assert.ok(findTermForm('I bought a present yesterday.', 'present/gift'));
+    assert.ok(findTermForm('The gift was wrapped.', 'present/gift'));
+    assert.ok(findTermForm('He got grounded after school last night.', 'be grounded / get grounded'));
+    assert.ok(findTermForm('They are grounded this week for sure.', 'be grounded / get grounded'));
+    assert.ok(!findTermForm('The weather was foggy.', 'present/gift'));
+});
+
+test('prompt: VARIANTS rule and per-term variant list for slash terms', () => {
+    const p = buildTrackPrompt({ level: 'A2', terms: [PRESENT], setTerms: [PRESENT, FOG], wants: new Map([['30', new Set(['meaningPick:pl-en', 'listenPick'])]]) });
+    assert.match(p, /VARIANTS/);
+    assert.match(p, /variantUsed/);
+    assert.match(p, /English variants: "present" \| "gift"/);
+    assert.match(p, /Polish variants: "prezent" \| "upominek"/);
+    assert.match(p, /present\/gift/);
+});
+
+test('buildItem: meaningPick, listenPick and letterScramble use only one variant, never the slash list', () => {
+    const mp = buildItem({ type: 'meaningPick', direction: 'pl-en', distractors: ['fog', 'net', 'rain'] }, PRESENT, 'A2');
+    assert.ok(mp.ok, mp.reason);
+    assert.equal(mp.item.question, 'prezent');
+    assert.equal(mp.item.answer, 'present');
+    assert.equal(mp.item.variantUsed, 'present');
+    assert.equal(mp.item.prompt, 'English word for "prezent"');
+    assert.ok(!mp.item.options.some((o) => /\//.test(o)));
+    assert.equal(displayedSlashReason(mp.item, PRESENT), '');
+
+    const picked = buildItem({ type: 'meaningPick', direction: 'pl-en', answer: 'gift', question: 'upominek', distractors: ['fog', 'net', 'rain'] }, PRESENT, 'A2');
+    assert.ok(picked.ok, picked.reason);
+    assert.equal(picked.item.answer, 'gift');
+    assert.equal(picked.item.question, 'upominek');
+    assert.equal(picked.item.variantUsed, 'gift');
+
+    const sib = buildItem({ type: 'meaningPick', direction: 'pl-en', distractors: ['gift', 'fog', 'net'] }, PRESENT, 'A2');
+    assert.equal(sib.ok, false);
+    assert.match(sib.reason, /distractor|needs 3 distinct/i);
+
+    const lp = buildItem({ type: 'listenPick', distractors: ['fog', 'net', 'rain'] }, PRESENT, 'A2');
+    assert.ok(lp.ok, lp.reason);
+    assert.equal(lp.item.speak, 'present');
+    assert.equal(lp.item.answer, 'present');
+    assert.ok(!/\//.test(lp.item.speak));
+
+    const ls = buildItem({ type: 'letterScramble', answer: 'present', hint: 'prezent' }, PRESENT, 'A2');
+    assert.ok(ls.ok, ls.reason);
+    assert.equal(ls.item.answer, 'present');
+    assert.ok(ls.item.letters.every((ch) => ch.length === 1));
+    const lsSlash = buildItem({ type: 'letterScramble', answer: 'present/gift', hint: 'prezent' }, PRESENT, 'A2');
+    assert.ok(lsSlash.ok, lsSlash.reason);
+    assert.equal(lsSlash.item.answer, 'present');
+    const lsPhrase = buildItem({ type: 'letterScramble', answer: 'be grounded', hint: 'szlaban' }, GROUNDED, 'B1');
+    assert.equal(lsPhrase.ok, false);
+});
+
+test('buildItem: gap and sentence items reject the slash list and sibling-variant distractors; they keep one fitting variant', () => {
+    const ok = buildItem({ type: 'sentenceGap', sentence: 'She wrapped the present carefully for her mum.', answer: 'present', distractors: ['letter', 'parcel', 'card'] }, PRESENT, 'B1');
+    assert.ok(ok.ok, ok.reason);
+    assert.equal(ok.item.answer, 'present');
+    assert.equal(ok.item.variantUsed, 'present');
+    assert.equal(ok.item.template, 'She wrapped the ___ carefully for her mum.');
+    assert.ok(!ok.item.options.includes('gift'));
+
+    const slashAns = buildItem({ type: 'sentenceGap', sentence: 'She wrapped the present carefully for her mum.', answer: 'present/gift', distractors: ['letter', 'parcel', 'card'] }, PRESENT, 'B1');
+    assert.equal(slashAns.ok, false);
+    assert.match(slashAns.reason, /variant/i);
+
+    const sib = buildItem({ type: 'sentenceGap', sentence: 'She wrapped the present carefully for her mum.', answer: 'present', distractors: ['gift', 'parcel', 'card'] }, PRESENT, 'B1');
+    assert.equal(sib.ok, false);
+
+    const both = buildItem({ type: 'dictation', sentence: 'He bought a present and a gift for her.' }, PRESENT, 'B1');
+    assert.equal(both.ok, false);
+    assert.match(both.reason, /more than one variant/i);
+
+    const dict = buildItem({ type: 'dictation', sentence: 'He got grounded after the party at school.' }, GROUNDED, 'B1');
+    assert.ok(dict.ok, dict.reason);
+    assert.equal(dict.item.variantUsed, 'get grounded');
+    assert.ok(!/\//.test(dict.item.answer));
+});
+
+test('translateType: a plain word translation accepts every variant; a context sentence does not', () => {
+    const iso = buildItem({ type: 'translateType', source: 'prezent', answer: 'present' }, PRESENT, 'A2');
+    assert.ok(iso.ok, iso.reason);
+    assert.deepEqual(iso.item.acceptedAnswers, ['present', 'gift']);
+    assert.deepEqual(iso.item.answers, ['present', 'gift']);
+    assert.equal(iso.item.answer, 'present');
+    assert.equal(iso.item.source, 'prezent');
+    assert.ok(!iso.item.acceptedAnswers.some((a) => /\//.test(a)));
+
+    const sent = buildItem({ type: 'translateType', source: 'Ona wręczyła prezent swojej mamie wczoraj.', answer: 'She gave a present to her mum yesterday.' }, PRESENT, 'B1');
+    assert.ok(sent.ok, sent.reason);
+    assert.equal(sent.item.acceptedAnswers, undefined);
+    assert.equal(sent.item.variantUsed, 'present');
+    assert.deepEqual(sent.item.answers, ['She gave a present to her mum yesterday.']);
+
+    const slashSrc = buildItem({ type: 'translateType', source: 'prezent / upominek', answer: 'present' }, PRESENT, 'A2');
+    assert.equal(slashSrc.ok, false);
+});
+
+test('variants: a banked meaningPick/listenPick with slash forms is rewritten to one variant when served', async () => {
+    const bank = createBank();
+    await bank.add(PRESENT, 'A2', [
+        { slot: 'meaningPick:pl-en', item: { type: 'meaningPick', direction: 'pl-en', prompt: 'What is the English word?', question: 'prezent / upominek', answer: 'present/gift', options: ['present/gift', 'fog', 'net', 'rain'], correctIndex: 0 }, promptVersion: 'tg2' },
+        { slot: 'listenPick', item: { type: 'listenPick', prompt: 'Listen and pick the word you hear.', speak: 'present/gift', answer: 'present/gift', options: ['present/gift', 'fog', 'net', 'rain'], correctIndex: 0 }, promptVersion: 'tg2' },
+    ]);
+    assert.equal(bankedItemBad({ type: 'meaningPick', direction: 'pl-en', question: 'prezent / upominek', answer: 'present/gift', options: ['present/gift', 'fog', 'net', 'rain'] }, 'A2', PRESENT), false);
+    assert.equal(canCollapseChoiceItem({ type: 'meaningPick', question: 'prezent / upominek', answer: 'present/gift', options: ['present/gift', 'fog', 'net', 'rain'] }), true);
+    const never = async () => { throw new Error('no AI'); };
+    const r = await createTrackGenerator({ runPrompt: never, bank })(validateTrackRequest({ setId: 's', level: 'A2', terms: [PRESENT], types: ['meaningPick', 'listenPick'] }).value);
+    const mp = r.items.find((i) => i.type === 'meaningPick');
+    const lp = r.items.find((i) => i.type === 'listenPick');
+    assert.ok(mp, 'meaningPick served after collapse');
+    assert.equal(mp.question, 'prezent');
+    assert.equal(mp.answer, 'present');
+    assert.equal(mp.prompt, 'English word for "prezent"');
+    assert.ok(mp.options.includes('present'));
+    assert.ok(!mp.options.some((o) => /\//.test(o)));
+    assert.equal(mp.options[mp.correctIndex], 'present');
+    assert.ok(lp);
+    assert.equal(lp.speak, 'present');
+    assert.equal(lp.answer, 'present');
+    assert.ok(!/\//.test(lp.speak));
+});
+
+test('variants: a banked gap with a slash form is never served and the slot is regenerated', async () => {
+    const bank = createBank();
+    const bad = { type: 'sentenceGap', prompt: 'Choose the word that fits the gap.', template: 'She wrapped the present/gift carefully for her mum.', answer: 'present/gift', options: ['present/gift', 'letter', 'parcel', 'card'] };
+    await bank.add(PRESENT, 'B1', [{ slot: 'sentenceGap', item: bad, promptVersion: 'tg2' }]);
+    assert.equal(bankedItemBad(bad, 'B1', PRESENT), true);
+    const prompts = [];
+    const ai = async (prompt) => {
+        prompts.push(prompt);
+        return { items: [{ termId: '30', type: 'sentenceGap', sentence: 'She wrapped the present carefully for her mum.', answer: 'present', distractors: ['letter', 'parcel', 'card'] }] };
+    };
+    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'B1', terms: [PRESENT], types: ['sentenceGap'] }).value);
+    assert.ok(prompts.length >= 1, 'the slash bank item was treated as missing');
+    assert.equal(r.items.length, 1);
+    assert.equal(r.items[0].answer, 'present');
+    assert.ok(!/\//.test(r.items[0].template));
+    assert.ok(!r.items[0].options.includes('present/gift'));
 });
