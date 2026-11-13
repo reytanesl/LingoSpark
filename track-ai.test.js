@@ -10,6 +10,7 @@ import {
     demonstrativeGapReason, parseDeicticOption,
     parseTermVariants, isVariantList, slashFormReason, pickTermVariant, variantUsedIn,
     scrambleWordOf, isIsolatedGloss, displayedSlashReason, collapseChoiceItem, canCollapseChoiceItem,
+    copyTaskReason, foldCopyText, sameCopyForm,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
@@ -1410,4 +1411,109 @@ test('variants: a banked gap with a slash form is never served and the slot is r
     assert.equal(r.items[0].answer, 'present');
     assert.ok(!/\//.test(r.items[0].template));
     assert.ok(!r.items[0].options.includes('present/gift'));
+});
+
+/* ---------------------------------------------------------------- no copy tasks (same form, same language already shown) */
+
+const RADIO = T('41', 'radio', 'radio');
+const SKIRT = T('42', 'skirt', 'spódniczka');
+
+test('foldCopyText / sameCopyForm: case, diacritics and punctuation are ignored', () => {
+    assert.equal(foldCopyText('Spódnica!'), 'spodnica');
+    assert.ok(sameCopyForm('FOG', 'fog'));
+    assert.ok(sameCopyForm("It's a dog.", 'its a dog'));
+    assert.ok(!sameCopyForm('spódnica', 'spódniczka'));
+});
+
+test('copyTaskReason: genuine translations, derived forms and listen-only dictation pass', () => {
+    const tr = buildItem({ type: 'translateType', source: 'prezent', answer: 'present' }, PRESENT, 'A2');
+    assert.ok(tr.ok, tr.reason);
+    assert.equal(copyTaskReason(tr.item), '');
+    const sent = buildItem({ type: 'translateType', source: 'Ona wręczyła prezent swojej mamie wczoraj.', answer: 'She gave a present to her mum yesterday.' }, PRESENT, 'B1');
+    assert.ok(sent.ok, sent.reason);
+    const wf = buildItem({ type: 'wordFormation', stem: 'FOG', sentence: 'It was a cold, foggy morning.', answer: 'foggy' }, FOG, 'B1');
+    assert.ok(wf.ok, wf.reason);
+    const dict = buildItem({ type: 'dictation', sentence: 'Thick fog covered the harbour.' }, FOG, 'B1');
+    assert.ok(dict.ok, dict.reason);
+    assert.equal(copyTaskReason(dict.item), '');
+    const gap = buildItem({ type: 'sentenceGap', sentence: 'She wrapped the present carefully for her mum.', answer: 'present', distractors: ['letter', 'parcel', 'card'] }, PRESENT, 'B1');
+    assert.ok(gap.ok, gap.reason);
+    const key = buildItem({
+        type: 'keyTransform',
+        sourceSentence: 'She travels to the office by bus every morning.',
+        keyWord: 'COMMUTE',
+        template: 'She has to ___ every morning to reach the office.',
+        answer: 'commute by bus',
+    }, T('3', 'commute', 'dojeżdżać do pracy'), 'B1');
+    assert.ok(key.ok, key.reason);
+    assert.equal(copyTaskReason(key.item), '');
+});
+
+test('copyTaskReason / buildItem: reject typing a form already shown in the same language', () => {
+    assert.equal(copyTaskReason({ type: 'translateType', prompt: 'Translate into English.', source: 'skirt', answer: 'skirt' }), 'source and answer are the same form; write a real translation into the other language');
+    const radio = buildItem({ type: 'translateType', source: 'radio', answer: 'radio' }, RADIO, 'A2');
+    assert.equal(radio.ok, false);
+    assert.match(radio.reason, /same form|translation/i);
+
+    const sameLang = buildItem({ type: 'translateType', source: 'I have got a new skirt.', answer: 'I have a new skirt at home.' }, SKIRT, 'A1');
+    assert.equal(sameLang.ok, false);
+    assert.match(sameLang.reason, /same language/i);
+
+    const wf = buildItem({ type: 'wordFormation', stem: 'FOG', sentence: 'The fog was thick this morning.', answer: 'fog' }, FOG, 'B1');
+    assert.equal(wf.ok, false);
+    assert.match(wf.reason, /stem|derived form|copy/i);
+    assert.match(copyTaskReason({ type: 'wordFormation', stem: 'FOG', template: 'The ___ was thick this morning.', answer: 'fog', prompt: 'Use the word in capitals to form a word that fits the gap.' }), /stem|derived form/i);
+
+    const dictShown = { type: 'dictation', prompt: 'Listen and type: Thick fog covered the harbour.', speak: 'Thick fog covered the harbour.', answer: 'Thick fog covered the harbour.' };
+    assert.match(copyTaskReason(dictShown), /dictation shows the text/i);
+    assert.equal(bankedItemBad(dictShown, 'B1', FOG), true);
+
+    const copyTr = { type: 'translateType', prompt: 'Translate into English.', source: 'skirt', answer: 'skirt' };
+    assert.equal(bankedItemBad(copyTr, 'A1', SKIRT), true);
+
+    const thimble = T('43', 'thimble', 'naparstek');
+    const keyCopy = {
+        type: 'keyTransform',
+        prompt: 'Finish the second sentence so it means the same. Use 2–5 words including the key word.',
+        sourceSentence: 'You need a thimble to protect your finger while sewing.',
+        keyWord: 'THIMBLE',
+        template: 'To protect your finger while sewing, you need ___.',
+        answer: 'a THIMBLE',
+    };
+    assert.match(copyTaskReason(keyCopy), /already shows the answer|copying/i);
+    assert.equal(bankedItemBad(keyCopy, 'B1', thimble), true);
+    const keyBuilt = buildItem({
+        type: 'keyTransform',
+        sourceSentence: keyCopy.sourceSentence,
+        keyWord: 'THIMBLE',
+        template: keyCopy.template,
+        answer: 'a THIMBLE',
+    }, thimble, 'B1');
+    assert.equal(keyBuilt.ok, false);
+    assert.match(keyBuilt.reason, /already shows the answer|copying/i);
+});
+
+test('prompt: NO COPY TASKS rule is included', () => {
+    const p = buildTrackPrompt({ level: 'A2', terms: [FOG], setTerms: [FOG], wants: new Map([['1', new Set(['translateType', 'dictation', 'wordFormation'])]]) });
+    assert.match(p, /NO COPY TASKS/);
+    assert.match(p, /change language/);
+    assert.match(p, /listen-and-type/);
+});
+
+test('copy tasks: a banked same-language type-in is never served and the slot is regenerated', async () => {
+    const bank = createBank();
+    const bad = { type: 'translateType', prompt: 'Translate into English.', source: 'radio', answer: 'radio', answers: ['radio'] };
+    await bank.add(RADIO, 'A2', [{ slot: 'translateType', item: bad, promptVersion: 'tg3' }]);
+    assert.equal(bankedItemBad(bad, 'A2', RADIO), true);
+    const prompts = [];
+    const ai = async (prompt) => {
+        prompts.push(prompt);
+        return { items: [{ termId: '41', type: 'translateType', source: 'Słucham radia wieczorem.', answer: 'I listen to the radio in the evening.' }] };
+    };
+    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'A2', terms: [RADIO], types: ['translateType'] }).value);
+    assert.ok(prompts.length >= 1, 'the copy-task bank item was treated as missing');
+    assert.equal(r.items.length, 1);
+    assert.equal(r.items[0].source, 'Słucham radia wieczorem.');
+    assert.ok(!sameCopyForm(r.items[0].source, r.items[0].answer));
+    assert.equal(copyTaskReason(r.items[0]), '');
 });

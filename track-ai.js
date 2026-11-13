@@ -10,7 +10,7 @@
 import crypto from 'node:crypto';
 import { isBasicEn, basicPl, BASIC_EN_PHRASES } from './track-basic-en.js';
 
-export const PROMPT_VERSION = 'tg3';
+export const PROMPT_VERSION = 'tg4';
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export const ALL_TYPES = [
     'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
@@ -638,6 +638,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- HINT: every item should also include "hint":{"translation":"<the other language of the shown word or sentence>","segments":[{"text":"<segment>","translation":"<other language>"}]}. Segments in order, joined with single spaces, must equal the word or sentence shown to the learner (for gap items: the full sentence with the target filled in; punctuation may stay on the last segment). A multi-word set term is ONE segment (e.g. "bluzka bez rękawów", "step out of"), never split. letterScramble, listenPick and meaningPick have one segment — the word itself. translation is Polish when the shown text is English, and English when the shown text is Polish. This hint is help for the learner, so it may contain the answer.',
         '- Use the term\'s given English form and Polish meaning; do not change the meaning of the term.',
         '- VARIANTS: if a term lists alternatives separated by "/", "," or "or" (English) / "lub" or "albo" (Polish) — e.g. "be grounded / get grounded", "present/gift" — every item must use exactly ONE of those forms, the one that fits the sentence or task. Put that English form in "variantUsed". NEVER write the listed slash/comma form in the sentence, the answer, the options, the gap, the letters, the tiles, the typed answer, the hint, the source, or the question (not "present/gift", not "be grounded / get grounded"). Distractors must not be other variants of the same term. Leave frozen compounds such as "and/or" or "w/o" alone — they are not variants.',
+        '- NO COPY TASKS: never ask the learner to type a word or sentence that is already shown on the card in the same form and the same language (copying from the prompt, the source, or a visible sentence is pointless). A translation must change language; a gap must hide the target; wordFormation must change the stem (fog → foggy, not fog → fog). Dictation is listen-and-type only — do not also write the sentence on the card. Genuine transformations are required: the other language, a different word form, a derived word, or a reshaped sentence.',
         ...(feedback.length ? ['', 'PREVIOUS ATTEMPT — these items were rejected, write them again and fix the problem:', ...feedback.map((f) => `- termId ${JSON.stringify(f.termId)} ${f.slot}: ${f.reason}`)] : []),
         '',
         'Return ONLY valid JSON of the form {"items":[...],"skipped":[...]}. No markdown, no commentary.',
@@ -859,7 +860,141 @@ export function simpleVocabReason(text, level, term, setTerms = []) {
     return '';
 }
 
-/** A banked item that must no longer be served (generic gaps, too-hard A1/A2 sentences, or a slash-form listing). */
+/** Fold for copy-task comparison: lower case, no diacritics, no punctuation. */
+export function foldCopyText(s) {
+    return norm(s)
+        .normalize('NFD')
+        .replace(/\p{M}+/gu, '')
+        .replace(/['’]/g, '')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+const COPY_PL_FUNC = new Set('i w na z do nie jest sa to ta ten te ze sie jak od po za czy ale juz tylko ma mam mamy jestem jestes tutaj tam bardzo mozna moze tej tym tych tego'.split(' '));
+const COPY_EN_FUNC = new Set('the a an is are was were be been being have has had do does did i you he she we they it this that these those there here to of in on at for with and or but so as by from into about my your his her its our their not no'.split(' '));
+
+function langHint(s) {
+    if (/[ąćęłńóśźż]/i.test(s)) return 'pl';
+    const toks = foldCopyText(s).split(' ').filter(Boolean);
+    if (!toks.length) return '';
+    const plN = toks.filter((w) => COPY_PL_FUNC.has(w)).length;
+    const enN = toks.filter((w) => COPY_EN_FUNC.has(w)).length;
+    if (plN >= 2 && plN > enN) return 'pl';
+    if (enN >= 2 && enN > plN) return 'en';
+    if (plN >= 1 && toks.length <= 3 && enN === 0) return 'pl';
+    if (enN >= 1 && toks.length >= 3 && plN === 0) return 'en';
+    return '';
+}
+
+export function sameCopyForm(a, b) {
+    const x = foldCopyText(a);
+    const y = foldCopyText(b);
+    return Boolean(x) && x === y;
+}
+
+function containsCopyForm(shown, answer) {
+    const hay = foldCopyText(shown);
+    const needle = foldCopyText(answer);
+    if (!needle || needle.length < 3 || !hay) return false;
+    if (hay === needle) return true;
+    const h = hay.split(' ');
+    const n = needle.split(' ');
+    for (let i = 0; i <= h.length - n.length; i++) if (n.every((w, k) => h[i + k] === w)) return true;
+    return false;
+}
+
+function sameCopyLanguage(shown, answer) {
+    const a = langHint(shown);
+    const b = langHint(answer);
+    if (a && b) return a === b;
+    // a clearly English sentence already showing an ASCII word the learner must type
+    if (!b && a === 'en' && /^[\p{L}\p{N}'’ -]+$/u.test(clean(answer))) return true;
+    if (!b && a === 'pl' && /[ąćęłńóśźż]/i.test(answer)) return true;
+    return false;
+}
+
+/** Visible prompt/source/template text (not the audio, not the hidden typed answer, not a filled gap). */
+function visibleCopyText(item) {
+    if (!item) return '';
+    const bits = [];
+    const add = (s) => { const c = clean(s); if (c) bits.push(c); };
+    add(item.prompt);
+    switch (item.type) {
+        case 'translateType':
+            add(item.source);
+            break;
+        case 'dictation':
+            // audio is item.speak; showing the sentence on the card is the bug we reject
+            add(item.source);
+            add(item.question);
+            add(item.template);
+            break;
+        case 'wordFormation':
+            add(item.stem);
+            add(item.template && String(item.template).replace(/_{3,}/g, ' '));
+            break;
+        case 'letterScramble':
+            add(item.clue);
+            if (typeof item.hint === 'string') add(item.hint);
+            break;
+        case 'sentenceGap':
+        case 'gapTranslate':
+        case 'collocationPick':
+            add(item.template && String(item.template).replace(/_{3,}/g, ' '));
+            if (item.type === 'gapTranslate') add(item.plTranslation);
+            break;
+        case 'keyTransform':
+            add(item.sourceSentence);
+            add(item.source);
+            add(item.template && String(item.template).replace(/_{3,}/g, ' '));
+            break;
+        default:
+            break;
+    }
+    return bits.join(' · ');
+}
+
+/**
+ * '' when the learner must transform, translate, or listen; else why this is a pointless copy task
+ * (typing a form already shown in the same language).
+ */
+const COPY_TASK_TYPES = new Set(['translateType', 'dictation', 'wordFormation', 'letterScramble', 'sentenceGap', 'gapTranslate', 'collocationPick', 'keyTransform']);
+
+export function copyTaskReason(item) {
+    if (!item || !COPY_TASK_TYPES.has(item.type)) return '';
+    const answer = clean(item.answer || '');
+    if (!answer) return '';
+    if (item.type === 'wordFormation') {
+        const stem = clean(item.stem || '');
+        if (stem && sameCopyForm(stem, answer)) return 'wordFormation answer equals the given stem; use a derived form, not a copy of the base word';
+    }
+    if (item.type === 'translateType') {
+        const src = clean(item.source || '');
+        if (src && sameCopyForm(src, answer)) return 'source and answer are the same form; write a real translation into the other language';
+        if (src && containsCopyForm(src, answer) && sameCopyLanguage(src, answer)) return 'the source already shows the answer in the same language; do not ask the learner to type it again';
+        const srcLang = langHint(src);
+        const ansLang = langHint(answer);
+        if (srcLang && ansLang && srcLang === ansLang && (wordCount(src) >= 2 || wordCount(answer) >= 2)) {
+            return 'a translate item must change language; source and answer are in the same language';
+        }
+    }
+    if (item.type === 'keyTransform') {
+        const src = clean(item.sourceSentence || '');
+        if (src && sameCopyForm(src, answer)) return 'answer is just a copy of the source sentence';
+        const filled = clean(item.template || '').replace(/_{3,}/g, answer);
+        if (src && filled && sameCopyForm(src, filled)) return 'completed sentence is identical to the source sentence';
+    }
+    const visible = visibleCopyText(item);
+    if (visible && containsCopyForm(visible, answer) && (sameCopyForm(visible, answer) || sameCopyLanguage(visible, answer))) {
+        if (item.type === 'dictation') return 'dictation shows the text to type; the learner should only hear it';
+        if (item.type === 'letterScramble') return 'the clue or prompt already shows the word to unscramble';
+        return 'the card already shows the answer in the same form and language; this is just copying';
+    }
+    return '';
+}
+
+/** A banked item that must no longer be served (generic gaps, too-hard A1/A2 sentences, a slash-form listing, or a copy task). */
 export function bankedItemBad(item, level, term, setTerms) {
     if (!item) return false;
     if ((item.type === 'sentenceGap' || item.type === 'gapTranslate' || item.type === 'collocationPick') && typeof item.template === 'string') {
@@ -876,6 +1011,7 @@ export function bankedItemBad(item, level, term, setTerms) {
         if ((item.type === 'meaningPick' || item.type === 'listenPick') && canCollapseChoiceItem(item)) return false;
         return true;
     }
+    if (copyTaskReason(item)) return true;
     return false;
 }
 
@@ -1056,6 +1192,8 @@ export function buildItem(raw, term, level, setTerms = []) {
         if (slash) return REASON(slash);
         const sib = siblingOptionReason(wrapped.item, term, variants.used, variants.usedPl);
         if (sib) return REASON(sib);
+        const copy = copyTaskReason(wrapped.item);
+        if (copy) return REASON(copy);
         return wrapped;
     };
     const sentenceOk = (s, label = 'sentence') => {
@@ -1301,6 +1439,8 @@ function finalCheck(item, term) {
     if (item.answer && promptLeaks(shown, item.answer)) return 'answer appears in the prompt';
     const slash = displayedSlashReason(item, term);
     if (slash) return slash;
+    const copy = copyTaskReason(item);
+    if (copy) return copy;
     return '';
 }
 
@@ -1327,7 +1467,7 @@ export function createLruCache({ max = LIMITS.cacheMax, ttlMs = LIMITS.cacheTtlM
 // ---------------------------------------------------------------- the question bank
 
 /** Bank entries written by these prompt versions may be served; bump PROMPT_VERSION and drop a version here to retire it. */
-export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3']);
+export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3', 'tg4']);
 /** Only these may be recorded as "makes no sense for this term" (a permanent skip in the bank). */
 export const SKIPPABLE_TYPES = new Set(['wordFormation', 'keyTransform', 'collocationPick', 'letterScramble']);
 /** How many different items per (term, level, slot) the bank is grown to, and its hard cap. */
