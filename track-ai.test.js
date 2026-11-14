@@ -11,7 +11,7 @@ import {
     parseTermVariants, isVariantList, slashFormReason, pickTermVariant, variantUsedIn,
     scrambleWordOf, isIsolatedGloss, displayedSlashReason, collapseChoiceItem, canCollapseChoiceItem,
     copyTaskReason, foldCopyText, sameCopyForm,
-    answerLangOf, instructionPrompt, sortTrackItems, buildScaffold, decorateItem,
+    answerLangOf, instructionPrompt, sortTrackItems, buildScaffold, decorateItem, stepOf, TYPE_STEP,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
@@ -1663,4 +1663,63 @@ test('prompt: answer-language and scaffold rules are included', () => {
     assert.match(p, /SCAFFOLD/);
     assert.match(p, /wordBank/);
     assert.match(p, /scaffoldGapped/);
+});
+
+/* ---------------------------------------------------------------- difficulty step (0 recognise, 1 assemble, 2 produce, 3 use) */
+
+test('stepOf: derived from type and scaffold presence', () => {
+    assert.equal(stepOf({ type: 'meaningPick', options: ['a', 'b'] }), 0);
+    assert.equal(stepOf({ type: 'listenPick', options: ['a', 'b'] }), 0);
+    assert.equal(stepOf({ type: 'sentenceGap', options: ['a', 'b'] }), 0);
+    assert.equal(stepOf({ type: 'letterScramble' }), 1);
+    assert.equal(stepOf({ type: 'sentenceOrder' }), 1);
+    assert.equal(stepOf({ type: 'translateType', answer: 'present' }), 2);
+    assert.equal(stepOf({ type: 'dictation' }), 2);
+    assert.equal(stepOf({ type: 'wordFormation' }), 2);
+    assert.equal(stepOf({ type: 'keyTransform' }), 3);
+    assert.equal(stepOf({ type: 'speak' }), 3);
+    // scaffold lifts a typed item down to "assemble"
+    assert.equal(stepOf({ type: 'dictation', wordBank: ['a', 'b'], scaffoldGapped: 'x ___ y' }), 1);
+    assert.equal(stepOf({ type: 'translateType', scaffoldGapped: 'Where ___ my glasses?' }), 1);
+    assert.equal(TYPE_STEP.contextTrueFalse, 0);
+    for (const t of ALL_TYPES) assert.ok([0, 1, 2, 3].includes(TYPE_STEP[t]), t);
+});
+
+test('step is on every served item, also for banked items that never had one', async () => {
+    const bank = createBank();
+    await bank.add(FOG, 'A1', [{
+        slot: 'meaningPick:en-pl',
+        item: { type: 'meaningPick', direction: 'en-pl', prompt: 'x', question: 'fog', answer: 'mgła', options: ['mgła', 'deszcz', 'wiatr', 'piasek'], correctIndex: 0 },
+        promptVersion: 'tg3',
+    }]);
+    const r = await createTrackGenerator({ runPrompt: async () => ({ items: [] }), bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [FOG], types: ['meaningPick'] }).value);
+    assert.equal(r.items.length, 1);
+    assert.equal(r.items[0].step, 0);
+    const dict = buildItem({ type: 'dictation', sentence: 'Where are my glasses now?' }, T('50', 'glasses', 'okulary'), 'A1');
+    assert.equal(dict.item.step, 1, 'scaffolded A1 dictation is an assemble task');
+    const plain = buildItem({ type: 'translateType', source: 'prezent', answer: 'present' }, T('9', 'present', 'prezent'), 'A2');
+    assert.equal(plain.item.step, 2);
+});
+
+test('steps request param: validated, optional, prefers matching banked items and falls back otherwise', async () => {
+    assert.equal(validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG] }).value.steps, undefined);
+    assert.equal(validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG], steps: [] }).value.steps, undefined);
+    assert.deepEqual(validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG], steps: [2, '3', 2] }).value.steps, [2, 3]);
+    for (const bad of [4, 'x', [4], [-1], [1.5], [0, 1, 2, 3, 0]]) {
+        assert.equal(validateTrackRequest({ setId: 's', level: 'B1', terms: [FOG], steps: bad }).ok, false, JSON.stringify(bad));
+    }
+    const bank = createBank();
+    await bank.add(FOG, 'A1', [
+        { slot: 'meaningPick:en-pl', item: { type: 'meaningPick', direction: 'en-pl', prompt: 'x', question: 'fog', answer: 'mgła', options: ['mgła', 'deszcz', 'wiatr', 'piasek'], correctIndex: 0 }, promptVersion: 'tg3' },
+        { slot: 'letterScramble', item: { type: 'letterScramble', prompt: 'x', letters: ['g', 'o', 'f'], answer: 'fog', hint: 'mgła' }, promptVersion: 'tg3' },
+    ]);
+    const gen = createTrackGenerator({ runPrompt: async () => ({ items: [] }), bank });
+    const base = { setId: 's', level: 'A1', terms: [FOG], types: ['meaningPick', 'letterScramble'] };
+    const all = await gen(validateTrackRequest(base).value);
+    assert.deepEqual(all.items.map((i) => i.step).sort(), [0, 1], 'no param = both slots served as before');
+    const pref = await gen(validateTrackRequest({ ...base, steps: [1] }).value);
+    assert.ok(pref.items.length >= 1);
+    // fallback: no step-3 item exists, the slot is still served
+    const none = await gen(validateTrackRequest({ ...base, steps: [3] }).value);
+    assert.deepEqual(none.items.map((i) => i.step).sort(), [0, 1]);
 });

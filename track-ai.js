@@ -24,6 +24,13 @@ const SKILL = {
     sentenceOrder: 'production', translateType: 'production', listenPick: 'listening', dictation: 'listening',
     contextTrueFalse: 'discourse', collocationPick: 'recognition', wordFormation: 'production', keyTransform: 'production',
 };
+/** Default difficulty ladder step from the item type (0 recognise … 3 use). Scaffolded items become step 1 at serve time. */
+export const TYPE_STEP = {
+    meaningPick: 0, listenPick: 0, sentenceGap: 0, gapTranslate: 0, collocationPick: 0, contextTrueFalse: 0,
+    letterScramble: 1, sentenceOrder: 1,
+    translateType: 2, dictation: 2, wordFormation: 2,
+    keyTransform: 3, speak: 3,
+};
 
 export const LIMITS = {
     maxBodyBytes: 64 * 1024,
@@ -563,7 +570,20 @@ export function validateTrackRequest(body) {
         if (!Number.isInteger(n) || n < LIMITS.warmupMin || n > LIMITS.warmupMax) return bad(`warmupSize must be an integer ${LIMITS.warmupMin}–${LIMITS.warmupMax}.`);
         warmupSize = n;
     }
-    return { ok: true, value: { setId, level, terms, types, userRef, ...(budgetMs ? { budgetMs } : {}), ...(mode && mode !== 'full' ? { mode } : {}), ...(warmupSize ? { warmupSize } : {}) } };
+    // optional: prefer banked items of these difficulty steps (0–3); missing/empty = current behaviour
+    let steps;
+    if (body.steps != null) {
+        if (!Array.isArray(body.steps) || body.steps.length > 4) return bad('steps must be an array of difficulty steps 0–3.', 'bad_steps');
+        const out = [];
+        const seen = new Set();
+        for (const x of body.steps) {
+            const n = Number(x);
+            if (!Number.isInteger(n) || n < 0 || n > 3) return bad('steps must be integers 0–3.', 'bad_steps');
+            if (!seen.has(n)) { seen.add(n); out.push(n); }
+        }
+        if (out.length) steps = out;
+    }
+    return { ok: true, value: { setId, level, terms, types, userRef, ...(budgetMs ? { budgetMs } : {}), ...(mode && mode !== 'full' ? { mode } : {}), ...(warmupSize ? { warmupSize } : {}), ...(steps ? { steps } : {}) } };
 }
 
 // ---------------------------------------------------------------- prompt
@@ -1444,6 +1464,26 @@ export function buildScaffold(item, level, term, rand = Math.random) {
     return { wordBank, scaffoldGapped: gapped };
 }
 
+function hasScaffold(item) {
+    return Boolean(item && ((Array.isArray(item.wordBank) && item.wordBank.length) || (typeof item.scaffoldGapped === 'string' && item.scaffoldGapped.includes('___'))));
+}
+
+/**
+ * Difficulty ladder step, 0–3, derived from the item type and whether a scaffold is present.
+ * Computed on every serve (and at build time) so banked items do not need a DB rewrite.
+ *   0 recognise — MCQ, meaningPick, listenPick, true/false
+ *   1 assemble  — letterScramble, sentenceOrder, or any item with wordBank / scaffoldGapped
+ *   2 produce   — typed translation, dictation, or typed gap without a scaffold
+ *   3 use       — key-word transformation, sentence production, speak
+ */
+export function stepOf(item) {
+    if (!item || !item.type) return 0;
+    if (hasScaffold(item)) return 1;
+    if (TYPE_STEP[item.type] != null) return TYPE_STEP[item.type];
+    if (Array.isArray(item.options) && item.options.length) return 0;
+    return 2;
+}
+
 export function decorateItem(item, level, term, rand = Math.random) {
     if (!item || !item.type) return item;
     const lang = answerLangOf(item);
@@ -1460,6 +1500,7 @@ export function decorateItem(item, level, term, rand = Math.random) {
         delete item.scaffoldGapped;
     }
     attachDeicticAcceptedAnswers(item);
+    item.step = stepOf(item);
     return item;
 }
 
@@ -2123,6 +2164,50 @@ export function pickLeastServed(entries, rand = Math.random) {
     return entries.slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))[0];
 }
 
+const leastServedCmp = (a, b, rand) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5);
+
+/**
+ * Pick a usable bank entry for a slot. When `steps` is set, prefer a candidate whose
+ * served `step` is in that list; if none match, fall back to the least-served usable entry
+ * (same as the no-param behaviour).
+ */
+function pickServedCandidate(cands, { term, setTerms, rand, level, steps } = {}) {
+    const sorted = (cands || []).slice().sort((a, b) => leastServedCmp(a, b, rand));
+    const prefer = Array.isArray(steps) && steps.length ? new Set(steps) : null;
+    if (!prefer) {
+        for (const c of sorted) {
+            const finished = reshuffleOptions(c.item, term, setTerms, rand, level);
+            if (finished) return { entry: c, finished };
+        }
+        return null;
+    }
+    const ready = [];
+    for (const c of sorted) {
+        const finished = reshuffleOptions(c.item, term, setTerms, rand, level);
+        if (finished) ready.push({ entry: c, finished });
+    }
+    return ready.find((x) => prefer.has(x.finished.step)) || ready[0] || null;
+}
+
+/** Warm-up slot try-order: planned slot, then easy prefs, then the rest of the level. Preferred steps first when `steps` is set. */
+function warmupTryOrder(plannedSlot, level, steps) {
+    const easy = WARMUP_PREFS.flat().filter((sl, i, a) => a.indexOf(sl) === i);
+    const all = typesForLevel(level).flatMap((t) => slotsFor(t));
+    const seen = new Set();
+    const order = [];
+    for (const sl of [plannedSlot, ...easy, ...all]) {
+        if (!sl || seen.has(sl)) continue;
+        seen.add(sl);
+        order.push(sl);
+    }
+    if (!Array.isArray(steps) || !steps.length) return order;
+    const want = new Set(steps);
+    const pref = (sl) => want.has(TYPE_STEP[slotType(sl)] ?? -1);
+    const hit = order.filter(pref);
+    const rest = order.filter((sl) => !pref(sl));
+    return hit.length ? [...hit, ...rest] : order;
+}
+
 /** Sliding-window per-key + global limiter, one concurrent job per key, bounded global concurrency. */
 export function createTrackLimiter({ now = () => Date.now(), limits = LIMITS } = {}) {
     const hits = new Map();
@@ -2590,7 +2675,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
      * mode "warmup": a small first station (default 4 easy items over the first terms) as fast as possible, and the whole set
      * queued for background generation at the same moment. Bank first; whatever is not banked is ONE small AI call.
      */
-    async function generateWarmup({ setId, level, terms, budgetMs, warmupSize }) {
+    async function generateWarmup({ setId, level, terms, budgetMs, warmupSize, steps }) {
         const started = now();
         const budget = Math.min(limits.deadlineMs, Math.max(limits.minBudgetMs ?? 1500, budgetMs || limits.budgetMs || limits.deadlineMs));
         const fgDeadlineAt = started + budget;
@@ -2629,15 +2714,12 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         let fromBank = 0;
         for (const p of plan) {
             const list = await bank.entries(termKeyOf(p.term), level);
-            const tryOrder = [p.slot, ...WARMUP_PREFS.flat().filter((sl, i, a) => a.indexOf(sl) === i && sl !== p.slot)];
+            const tryOrder = warmupTryOrder(p.slot, level, steps);
             let hit = null;
             for (const slot of tryOrder) {
                 if (used.has(`${p.term.id}|${slot}`)) continue;
-                for (const c of usable(list, slot, level, p.term, terms).slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))) {
-                    const finished = reshuffleOptions(c.item, p.term, terms, rand, level);
-                    if (finished) { hit = { slot, entry: c, finished }; break; }
-                }
-                if (hit) break;
+                const picked = pickServedCandidate(usable(list, slot, level, p.term, terms), { term: p.term, setTerms: terms, rand, level, steps });
+                if (picked) { hit = { slot, entry: picked.entry, finished: picked.finished }; break; }
             }
             if (!hit) { dropped.push({ lexiconId: p.term.id, type: p.slot }); continue; }
             used.add(`${p.term.id}|${hit.slot}`);
@@ -2664,7 +2746,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         };
     }
 
-    async function generateInner({ setId, level, terms, types, budgetMs }) {
+    async function generateInner({ setId, level, terms, types, budgetMs, steps }) {
         const started = now();
         // Answer after `budgetMs` at the latest (default ~9 s) with everything validated by then; AI calls still running
         // keep going and fill the bank, so a second request is served from it.
@@ -2717,15 +2799,10 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             const list = lists.get(term.id);
             for (const slot of slotsOf.get(term.id)) {
                 const cands = usable(list, slot, level, term, terms);
-                let entry = null;
-                let finished = null;
-                for (const c of cands.slice().sort((a, b) => (a.servedCount - b.servedCount) || ((a.lastServedAt || 0) - (b.lastServedAt || 0)) || (rand() - 0.5))) {
-                    finished = reshuffleOptions(c.item, term, terms, rand, level);
-                    if (finished) { entry = c; break; }
-                }
-                if (!entry) { if (!isSkipped(list, slot)) dropped.push({ lexiconId: term.id, type: slot }); continue; }
-                served.push(entry);
-                items.push({ ...finished, id: `ai-${term.id}-${slot.replace(':', '-')}-${entry.id}`, lexiconId: term.id });
+                const picked = pickServedCandidate(cands, { term, setTerms: terms, rand, level, steps });
+                if (!picked) { if (!isSkipped(list, slot)) dropped.push({ lexiconId: term.id, type: slot }); continue; }
+                served.push(picked.entry);
+                items.push({ ...picked.finished, id: `ai-${term.id}-${slot.replace(':', '-')}-${picked.entry.id}`, lexiconId: term.id });
             }
         }
         bank.markServed(served);
