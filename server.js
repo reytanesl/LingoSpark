@@ -87,6 +87,7 @@ import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAc
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
 import { createStudyCors, createBearerSession, skipOnAppRoutes, tokenForAppOrigin } from './study-direct.js';
 import { createTrackGenerator, createTrackGenerateHandler, createBank, createPgBankStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
+import { createClarityJudge } from './track-clarity.js';
 import { TRACK_VERIFY_PATH, VERIFY_LIMITS, createTrackVerifyHandler, createPgVerifyCache, createMemoryVerifyCache } from './track-verify.js';
 import {
     PREWARM_PATH, PREWARM_BODY_LIMIT, readPrewarmConfig, createPgPrewarmStore, createMemoryPrewarmStore,
@@ -277,7 +278,24 @@ async function start() {
      */
     let prewarmWorker = null; // created below; the generator hands it the terms of a warm-up request and terms whose bank is incomplete
     const trackBank = createBank({ store: dbReady ? createPgBankStore({ getPool }) : null });
+    // Task-clarity judge: batched AI check of banked rows (is it clear what the player must do?), one cached verdict per row,
+    // counted toward the prewarm daily cap. Widens acceptedAnswers; marks confusing rows unclear (kept, never served).
+    const trackClarity = createClarityJudge({
+        runPrompt: (prompt, label) => runVisionJsonPrompt({
+            apiKey: process.env.CURSOR_API_KEY, prompt, label,
+            model: (process.env.TRACK_AI_MODEL || '').trim() ? { id: process.env.TRACK_AI_MODEL.trim() } : undefined,
+        }),
+        bank: trackBank,
+        budget: {
+            callsToday: () => prewarmStore.callsToday(),
+            addCalls: (n) => prewarmStore.addCalls(n),
+            get dailyCalls() { return readPrewarmConfig(process.env).dailyCalls; },
+        },
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY) && (process.env.TRACK_CLARITY || '').trim().toLowerCase() !== 'off',
+        log: (m) => console.warn('[track-clarity]', m),
+    });
     const trackGenerate = createTrackGenerator({
+        clarity: trackClarity,
         onTopUp: ({ level, terms }) => { prewarmWorker?.enqueueTerms({ level, terms }).catch((e) => console.warn('[track-prewarm] top-up enqueue failed:', e?.message || e)); },
         // TRACK_AI_MODEL (optional): model id for Track generation only, e.g. a smaller/faster one; default = AI_MODEL (composer-2.5, "fast" variant).
         runPrompt: (prompt, label) => runVisionJsonPrompt({

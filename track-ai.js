@@ -649,6 +649,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- Never reveal the answer in the question text, the hint, the other options or the Polish instruction. Exactly one option may be correct; distractors must be clearly wrong in context but plausible (same word class/form).',
         '- Options must be distinct. No duplicate sentences across items of one term.',
         '- UNIQUE ANSWER for every gap/choice item (sentenceGap, gapTranslate, collocationPick): the sentence must contain enough context (a defining clue, a collocation, a cause/effect or a meaning cue) that ONLY the target fits; every distractor must be clearly wrong in that sentence (grammatically or semantically) while looking plausible. If two options could both fit, rewrite the sentence or change the distractor. NEVER write generic sentences such as "There is a ___ here.", "I like ___.", "This is my ___.", "It is a ___." — these have no single answer.',
+        '- TASK CLARITY: the learner must know exactly what is expected: which word or gap, one word or a whole sentence, which form, and which language to answer in. Several correct answers are acceptable (especially at B1+), but then list them in "answers" for typed items; never write vague tasks, never make the learner guess whether to copy a word or translate it, and at A1/A2 no distractor may also be correct.',
         '- SELF-CONTAINED CONTEXT: the learner must be able to choose the answer from the sentence alone, with no picture and no previous sentence. The sentence itself must name the facts that make the target the only fit. Do not write sentences that point at something unnamed (e.g. "Your belt is long and ___ short") — the second referent is missing, so "this is" / "that is" / "these are" are all guesswork.',
         '- DEMONSTRATIVES and PRONOUN + BE (this/that/these/those, this is/that is/these are/those are, it is/they are): disambiguate with an explicit cue in the same sentence. Put a singular or plural noun right after the gap so number is obvious ("Look, ___ my shoes here." not "... and ___ short"). For this vs that or these vs those, add a distance cue (here / over there). Never put this is and that is (or these are and those are) together as options unless the sentence has such a cue. Distractors must be wrong for a reason visible in the sentence (number or distance). Do not use ungrammatical junk such as "these is" / "this are" as the only way to make the answer unique.',
         ...(level === 'A1' || level === 'A2' ? [
@@ -1504,9 +1505,50 @@ export function decorateItem(item, level, term, rand = Math.random) {
     return item;
 }
 
+/** Bump when the judge rules change: rows judged under an older version are judged again. */
+export const CLARITY_VERSION = 1;
+
+/** True when the AI task-clarity judge marked this banked item as unclear / confusing (the row stays, it is just not served). */
+export function clarityBlocked(item) {
+    return Boolean(item && item.clarity && item.clarity.verdict === 'unclear');
+}
+
+const sortedKey = (arr) => arr.map((x) => String(x)).sort().join('\u0001');
+
+/**
+ * Cheap, deterministic "is the setup of this task coherent" check (no AI, no cap). Returns '' when fine, else a short reason.
+ * It only catches broken setups the learner cannot make sense of; whether several answers fit is NOT a defect (see the judge).
+ */
+export function taskStructureReason(item) {
+    if (!item || !item.type) return '';
+    const t = item.type;
+    // meaningPick / listenPick options are collapsed and re-picked from the set at serve time and checked there (checkOptions)
+    if (['sentenceGap', 'gapTranslate', 'collocationPick'].includes(t)) {
+        const opts = Array.isArray(item.options) ? item.options.map((o) => norm(o)) : [];
+        if (opts.length < 2) return 'choice task without options';
+        if (new Set(opts).size !== opts.length) return 'duplicate options';
+        if (!opts.includes(norm(item.answer))) return 'the correct answer is not among the options';
+    }
+    if (['sentenceGap', 'gapTranslate', 'collocationPick', 'wordFormation', 'keyTransform'].includes(t)) {
+        if (typeof item.template !== 'string' || countGaps(item.template) !== 1) return 'task needs exactly one clearly marked gap';
+    }
+    if (t === 'gapTranslate' && !isStr(item.plTranslation, 2, 300)) return 'the instruction points at a Polish translation that is missing';
+    if (t === 'letterScramble') {
+        const letters = Array.isArray(item.letters) ? item.letters.map((x) => norm(x)) : [];
+        if (!letters.length || sortedKey(letters) !== sortedKey(norm(item.answer).split(''))) return 'scrambled letters do not spell the answer';
+    }
+    if (t === 'sentenceOrder') {
+        if (!Array.isArray(item.tokens) || !Array.isArray(item.correctOrder) || item.tokens.length < 3 || sortedKey(item.tokens) !== sortedKey(item.correctOrder)) return 'words to order do not match the sentence';
+    }
+    if (t === 'translateType' && (!isStr(item.source, 1, 260) || !isStr(item.answer, 1, 260))) return 'translation task without a source or answer';
+    return '';
+}
+
 /** A banked item that must no longer be served (generic gaps, too-hard A1/A2 sentences, a slash-form listing, or a copy task). */
 export function bankedItemBad(item, level, term, setTerms) {
     if (!item) return false;
+    if (clarityBlocked(item)) return true; // the task-clarity judge found an unclear or confusing task (row is kept, never served)
+    if (taskStructureReason(item)) return true;
     if ((item.type === 'sentenceGap' || item.type === 'gapTranslate' || item.type === 'collocationPick') && typeof item.template === 'string') {
         if ((item.type === 'sentenceGap' || item.type === 'gapTranslate') && genericGapReason(item.template)) return true;
         if (demonstrativeGapReason(item.template, item.answer, item.options)) return true;
@@ -2109,6 +2151,18 @@ export function createBank({ store = null, now = () => Date.now(), maxTerms = 50
             }
             return added;
         },
+        /**
+         * Merge `patch` into a banked row's item (memory + Postgres). Used by the task-clarity judge to store its verdict and
+         * extra accepted answers on the row itself. Never deletes the row.
+         */
+        async annotateItem(entry, patch) {
+            if (!entry || !entry.item || !patch) return false;
+            entry.item = { ...entry.item, ...patch };
+            if (store && typeof store.updateItem === 'function') {
+                await store.updateItem(entry.id, entry.item).catch((e) => console.warn('[track-ai] bank annotate failed:', e?.message || e));
+            }
+            return true;
+        },
         markServed(entries) {
             const t = now();
             for (const e of entries) { e.servedCount++; e.lastServedAt = t; }
@@ -2323,7 +2377,8 @@ function meaningPrompt(direction, question) {
 function reshuffleOptions(item, term, setTerms, rand, level) {
     let out = { ...item };
     if (out.type === 'meaningPick' || out.type === 'listenPick') out = collapseChoiceItem(out, term);
-    if (bankedItemBad(out, level, term, setTerms)) return null; // generic, too-hard A1/A2, or unfixable slash form: treated as missing
+    if (bankedItemBad(out, level, term, setTerms)) return null; // generic, too-hard A1/A2, unclear task, or unfixable slash form: treated as missing
+    delete out.clarity; // judge bookkeeping stays server-side
     if (!out.hintHelp || hintReason(out.hintHelp, out, term, setTerms)) {
         const cheap = cheapHint(out, term, setTerms);
         if (cheap) out.hintHelp = cheap;
@@ -2438,13 +2493,18 @@ export function planCalls(jobs, callWeight = LIMITS.callWeight) {
     return calls;
 }
 
-export function createTrackGenerator({ runPrompt, bank = createBank(), limits = LIMITS, now = () => Date.now(), log = () => {}, rand = Math.random, onTopUp = null } = {}) {
+export function createTrackGenerator({ runPrompt, bank = createBank(), limits = LIMITS, now = () => Date.now(), log = () => {}, rand = Math.random, onTopUp = null, clarity = null } = {}) {
     const cooldown = new Map(); // `${level}|${termKey}|${slot}` -> failed-at
     const cool = (level, term, slot) => { const t = cooldown.get(`${level}|${termKeyOf(term)}|${slot}`); return t && now() - t < limits.failCooldownMs; };
     const sem = createSemaphore(limits.globalCallConcurrency ?? 12);
     const inflight = new Map(); // `${level}|${termKey}|${slot}` -> promise that settles once that call stored its first pass
     const flightKey = (level, term, slot) => `${level}|${termKeyOf(term)}|${slot}`;
     let fgActive = 0; // foreground generate() requests currently running (the prewarm worker yields to them)
+    /** Task-clarity judge (optional): rows that were just served and have no verdict yet are judged in the background; a bad verdict takes effect on the next read. */
+    const reviewLater = (level, pairs, setTerms) => {
+        if (!clarity || typeof clarity.reviewEntries !== 'function' || !pairs.length) return;
+        try { Promise.resolve(clarity.reviewEntries({ level, pairs, setTerms })).catch((e) => log(`clarity review failed: ${e?.message || e}`)); } catch (e) { log(`clarity review failed: ${e?.message || e}`); }
+    };
 
     /**
      * One AI call (plus retries for what failed validation). `onFirstPass(stillNeeded)` fires after the first answer
@@ -2643,6 +2703,12 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             added = run.counters.newItems;
         }
         await Promise.all(waiting);
+        // the judge looks at the rows this run (or earlier runs) banked before any learner sees them; its AI calls are counted by the judge itself
+        if (clarity && typeof clarity.reviewEntries === 'function') {
+            const pairs = [];
+            for (const term of terms) for (const entry of await bank.entries(termKeyOf(term), level)) pairs.push({ entry, term });
+            await Promise.resolve(clarity.reviewEntries({ level, pairs, setTerms: terms, maxBatches: 12 })).catch((e) => log(`clarity review failed: ${e?.message || e}`));
+        }
         const left = {}; let done = 0;
         for (const term of terms) {
             const st = termState(level, term, await bank.entries(termKeyOf(term), level), wantedSlots(term, types), terms);
@@ -2710,7 +2776,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             pendingCalls = run.counters.open;
         }
         // serve: the planned slot, else another easy slot of the same term that is banked
-        const items = []; const served = []; const dropped = []; const used = new Set();
+        const items = []; const served = []; const servedTerms = []; const dropped = []; const used = new Set();
         let fromBank = 0;
         for (const p of plan) {
             const list = await bank.entries(termKeyOf(p.term), level);
@@ -2724,10 +2790,12 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
             if (!hit) { dropped.push({ lexiconId: p.term.id, type: p.slot }); continue; }
             used.add(`${p.term.id}|${hit.slot}`);
             served.push(hit.entry);
+            servedTerms.push(p.term);
             if (p.banked && hit.slot === p.slot) fromBank++;
             items.push({ ...hit.finished, id: `ai-${p.term.id}-${hit.slot.replace(':', '-')}-${hit.entry.id}`, lexiconId: p.term.id });
         }
         bank.markServed(served);
+        reviewLater(level, served.map((entry, i) => ({ entry, term: servedTerms[i] })), terms);
         const ready = metaReady(level, terms, lists, slotsOf);
         const ordered = sortTrackItems(items);
         return {
@@ -2794,6 +2862,7 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
         // 2. serve: least-served first, ids rewritten to this set's term ids
         const items = [];
         const served = [];
+        const servedTerms = [];
         const dropped = [];
         for (const term of terms) {
             const list = lists.get(term.id);
@@ -2802,10 +2871,12 @@ export function createTrackGenerator({ runPrompt, bank = createBank(), limits = 
                 const picked = pickServedCandidate(cands, { term, setTerms: terms, rand, level, steps });
                 if (!picked) { if (!isSkipped(list, slot)) dropped.push({ lexiconId: term.id, type: slot }); continue; }
                 served.push(picked.entry);
+                servedTerms.push(term);
                 items.push({ ...picked.finished, id: `ai-${term.id}-${slot.replace(':', '-')}-${picked.entry.id}`, lexiconId: term.id });
             }
         }
         bank.markServed(served);
+        reviewLater(level, served.map((entry, k) => ({ entry, term: servedTerms[k] })), terms);
         // gaps in terms we answered without waiting (and terms the foreground could not finish) -> background top-up at top priority
         const gapTerms = terms.filter((t) => {
             const st = termState(level, t, lists.get(t.id), slotsOf.get(t.id), terms);
