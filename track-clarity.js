@@ -31,8 +31,10 @@ export const CLARITY_ISSUES = {
     form_unclear: 'it is unclear which grammatical form is wanted',
     no_defensible_option: 'no option is clearly correct',
     distractor_also_correct: 'a wrong option is also correct',
+    answer_not_identifiable: 'the expected word cannot be identified from what is shown (no gap, no Polish cue, nothing says which word)',
+    bad_translation: 'the Polish translation shown as help is ungrammatical or word-by-word',
 };
-const BLOCKING = new Set(['instruction_unclear', 'language_unclear', 'which_gap_unclear', 'copy_confusion', 'vague_prompt', 'form_unclear', 'no_defensible_option']);
+const BLOCKING = new Set(['instruction_unclear', 'language_unclear', 'which_gap_unclear', 'copy_confusion', 'vague_prompt', 'form_unclear', 'no_defensible_option', 'answer_not_identifiable', 'bad_translation']);
 const YOUNG = new Set(['A1', 'A2']);
 const CHOICE_TYPES = new Set(['meaningPick', 'sentenceGap', 'gapTranslate', 'collocationPick']); // listenPick: homophone-style widening is not done
 const TYPED_WIDEN = new Set(['translateType', 'wordFormation', 'keyTransform']);
@@ -40,6 +42,14 @@ const TYPED_WIDEN = new Set(['translateType', 'wordFormation', 'keyTransform']);
 const clean = (s) => String(s ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
 const clip = (s, n) => clean(s).slice(0, n);
 const same = (a, b) => norm(a).replace(/[.,;:!?]/g, '').replace(/\s+/g, ' ').trim() === norm(b).replace(/[.,;:!?]/g, '').replace(/\s+/g, ' ').trim();
+
+/** The help translation the learner can open (Przystanek na żądanie), labelled by its language, so the judge can check its grammar. */
+function helpForJudge(v, s) {
+    const t = v.hintHelp && typeof v.hintHelp.translation === 'string' ? v.hintHelp.translation : '';
+    if (!t) return {};
+    const polishShown = v.type === 'translateType' || (v.type === 'meaningPick' && v.direction === 'pl-en');
+    return polishShown ? { helpTranslationInEnglish: s(t) } : { helpTranslationInPolish: s(t) };
+}
 
 /** What the learner sees, as compact JSON for the judge (decorated like the serve path, no verdict / bookkeeping fields). */
 export function describeForJudge(item, level, term, id) {
@@ -55,7 +65,8 @@ export function describeForJudge(item, level, term, id) {
         answerLanguage: v.answerLang === 'pl' ? 'Polish' : v.answerLang === 'en' ? 'English' : undefined,
         question: s(v.question),
         source: s(v.source),
-        sentenceWithGap: s(v.template),
+        sentenceWithGap: s(v.templateCue || v.template),
+        polishCueInBrackets: s(v.cue),
         sourceSentence: s(v.sourceSentence),
         keyWord: s(v.keyWord),
         stem: s(v.stem),
@@ -69,6 +80,7 @@ export function describeForJudge(item, level, term, id) {
         passage: s(v.passage),
         statement: s(v.statement),
         learnerHears: (v.type === 'dictation' || v.type === 'listenPick') ? s(v.speak) : undefined,
+        ...helpForJudge(v, s),
         storedAnswer: s(v.answer),
         alsoAccepted: arr([...(v.acceptedAnswers || []), ...(v.answers || [])].filter((a) => !same(a, v.answer))),
         term: { en: clip(term.en, 60), pl: clip(term.pl, 100) },
@@ -81,11 +93,11 @@ export function buildClarityPrompt(rows, level) {
     const young = YOUNG.has(level);
     return [
         `You review tasks of a language-learning app for Polish learners of English (level ${level}; ${young ? 'children and younger teens' : 'older teens'}).`,
-        'Each task is described as JSON exactly as the learner sees it ("instruction" is shown in Polish above the card). Judge ONLY the clarity of the task.',
+        'Each task is described as JSON exactly as the learner sees it ("instruction" is shown in Polish above the card). Judge ONLY the clarity of the task and the quality of any Polish help translation shown with it.',
         'IMPORTANT: several correct answers are fine and must NOT make a task unclear: a "Mam rację!" AI check accepts valid alternatives. Never reject a task just because more than one answer fits.',
-        'For every task answer these four questions:',
+        'For every task answer these questions:',
         '1. "clear": can the learner tell exactly what is expected? (which word or gap, one word or a whole sentence, which form, which language to answer in) false only if a learner at this level could genuinely be confused.',
-        '2. "issues": codes from [instruction_unclear, language_unclear, which_gap_unclear, copy_confusion, vague_prompt, form_unclear, no_defensible_option, distractor_also_correct]. copy_confusion = an English word is shown that looks like something to copy or retype while a translation is expected (or vice versa). vague_prompt = e.g. "Complete" without saying with what. no_defensible_option = for choice/chip tasks, no option is clearly correct. distractor_also_correct = a wrong option is also correct. [] when none.',
+        '2. "issues": codes from [instruction_unclear, language_unclear, which_gap_unclear, copy_confusion, vague_prompt, form_unclear, no_defensible_option, distractor_also_correct, answer_not_identifiable, bad_translation]. answer_not_identifiable = the learner cannot tell WHICH word is expected from what is shown: there is no gap, or the gap has no Polish cue in brackets (polishCueInBrackets) and nothing in the sentence points at one word, or an English sentence is shown with nothing marking the word to type; judge this strictly. bad_translation = helpTranslationInPolish is not a natural, grammatical Polish sentence (word-by-word, uninflected, e.g. "ona nosić jakiś długi szalik w zimny pogoda" instead of "Ona nosi długi szalik w zimną pogodę"), or polishTranslationShown / helpTranslationInEnglish is clearly wrong or ungrammatical; check every Polish translation given. copy_confusion = an English word is shown that looks like something to copy or retype while a translation is expected (or vice versa). vague_prompt = e.g. "Complete" without saying with what. no_defensible_option = for choice/chip tasks, no option is clearly correct. distractor_also_correct = a wrong option is also correct. [] when none.',
         '3. "defensibleOptions": for choice tasks, every option other than storedAnswer that is also a correct, natural answer (copy the option text exactly). [] when none or not a choice task.',
         '4. "otherAnswers": for typed tasks (translateType, wordFormation, keyTransform), up to 4 other fully correct answers a learner could type, in the same language and form as storedAnswer. [] otherwise.',
         '5. "note": at most 120 characters: why, only when clear is false or something was flagged.',

@@ -62,7 +62,7 @@ test('parseClarityReply / buildClarityPrompt / describeForJudge', () => {
     assert.equal(parseClarityReply('```json\n{"verdicts":[{"id":2,"clear":false}]}\n```').get(2).clear, false);
     const d = describeForJudge(gapItem, 'A2', SKIRT, 0);
     assert.equal(d.answerLanguage, 'English');
-    assert.match(d.instruction, /Wybierz słowo po angielsku/);
+    assert.match(d.instruction, /Wybierz angielskie słowo do luki/);
     assert.ok(!('clarity' in d));
     const p = buildClarityPrompt([d], 'B1');
     assert.match(p, /several correct answers are fine/);
@@ -229,4 +229,29 @@ test('generation prompt carries the TASK CLARITY rule and still allows several c
     const p = buildTrackPrompt({ level: 'B1', terms: [SKIRT], setTerms: [SKIRT], wants: new Map([['1', new Set(['translateType'])]]) });
     assert.match(p, /TASK CLARITY/);
     assert.match(p, /Several correct answers are acceptable/);
+});
+
+test('judge v2: unidentifiable words and bad Polish help translations are blocking issues, shown to the judge', () => {
+    const item = { ...gapItem, template: 'The girl wears a ___ to school.', hintHelp: { translation: 'dziewczyna nosić jakiś spódniczka do szkoła', segments: [{ text: 'The', translation: 'ten' }] } };
+    const d = describeForJudge(item, 'A1', SKIRT, 0);
+    assert.equal(d.polishCueInBrackets, 'spódniczka');
+    assert.equal(d.sentenceWithGap, 'The girl wears a ___ (spódniczka) to school.');
+    assert.equal(d.helpTranslationInPolish, 'dziewczyna nosić jakiś spódniczka do szkoła');
+    assert.equal(describeForJudge({ ...typed, hintHelp: { translation: 'I have a new skirt.', segments: [{ text: 'Mam', translation: 'I have' }] } }, 'A1', SKIRT, 1).helpTranslationInEnglish, 'I have a new skirt.');
+    const p = buildClarityPrompt([d], 'B1');
+    assert.match(p, /answer_not_identifiable/);
+    assert.match(p, /bad_translation/);
+    assert.match(p, /ona nosić jakiś długi szalik w zimny pogoda/);
+    assert.match(p, /polishCueInBrackets/);
+    for (const code of ['answer_not_identifiable', 'bad_translation']) {
+        const r = applyClarityRules({ item: gapItem, level: 'B2', verdict: V({ clear: true, issues: [code] }) });
+        assert.equal(r.verdict.verdict, 'unclear', `${code} blocks even at B2`);
+    }
+    assert.equal(parseClarityReply({ verdicts: [{ id: 0, clear: false, issues: ['bad_translation', 'answer_not_identifiable'] }] }).get(0).issues.length, 2);
+    // rows judged by the v1 judge are judged again
+    assert.equal(CLARITY_VERSION, 2);
+    assert.equal(needsReview({ promptVersion: 'tg5', item: { ...gapItem, clarity: { v: 1, verdict: 'ok' } } }), true);
+    assert.equal(needsReview({ promptVersion: 'tg6', item: { ...gapItem, clarity: { v: 2, verdict: 'ok' } } }), false);
+    // an old "unclear" verdict (v1) no longer blocks by itself once it is re-judged; the banked row is just flagged for review
+    assert.equal(needsReview({ promptVersion: 'tg6', item: gapItem }), true);
 });

@@ -10,7 +10,7 @@
 import crypto from 'node:crypto';
 import { isBasicEn, basicPl, BASIC_EN_PHRASES } from './track-basic-en.js';
 
-export const PROMPT_VERSION = 'tg5';
+export const PROMPT_VERSION = 'tg6';
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export const ALL_TYPES = [
     'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
@@ -592,8 +592,8 @@ const slotsFor = (type) => (type === 'meaningPick' ? MEANING_DIRECTIONS.map((d) 
 const slotType = (slot) => slot.split(':')[0];
 
 const TYPE_SPECS = {
-    sentenceGap: '{"termId","type":"sentenceGap","sentence":full English sentence using the target in a form that fits the grammar AND carrying a clear clue (a defining detail, a typical collocation or situation) so that ONLY the target fits the gap; never a generic frame like "There is a ___ here" / "I like ___" / "This is my ___","answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence]}',
-    gapTranslate: '{"termId","type":"gapTranslate","sentence":full English sentence (no gap marks) using the target in a form that fits the grammar, with a clear clue so that ONLY the target fits the gap (never a generic frame like "There is a ___ here"),"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence],"plTranslation":natural Polish translation of the WHOLE sentence (always required, a non-empty string)} (use a different sentence than the sentenceGap item of the same term)',
+    sentenceGap: '{"termId","type":"sentenceGap","sentence":full English sentence using the target in a form that fits the grammar AND carrying a clear clue (a defining detail, a typical collocation or situation) so that ONLY the target fits the gap; never a generic frame like "There is a ___ here" / "I like ___" / "This is my ___" (except at A1/A2, where a very short basic frame such as "I have a red ___" is right: the site adds the Polish word in brackets after the gap),"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence]}',
+    gapTranslate: '{"termId","type":"gapTranslate","sentence":full English sentence (no gap marks) using the target in a form that fits the grammar, with a clear clue so that ONLY the target fits the gap (never a generic frame like "There is a ___ here", except at A1/A2 where a very short basic frame is right: the site adds the Polish word in brackets after the gap),"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence],"plTranslation":natural Polish translation of the WHOLE sentence (always required, a non-empty string)} (use a different sentence than the sentenceGap item of the same term)',
     sentenceOrder: '{"termId","type":"sentenceOrder","sentence":one sentence with the target (punctuation attached to the last word),"plTranslation":Polish translation as a hint}',
     meaningPick: '{"termId","type":"meaningPick","direction":"pl-en" or "en-pl","variantUsed":the one English form you picked,"distractors":[3 wrong options in the ANSWER language: other terms of the set when sensible]} (the question is one variant of the term; the answer is the matching variant in the other language, never a slash list such as "present/gift")',
     collocationPick: '{"termId","type":"collocationPick","phrase":a natural 2–6 word collocation/chunk containing the target (target NOT first),"answer":the target as written in the phrase,"distractors":[3 words that do NOT collocate here (clearly wrong in this exact phrase, but the same word class)]}',
@@ -648,15 +648,19 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '- The target must really be tested: the sentence/answer must contain the target term (inflected if the grammar needs it).',
         '- Never reveal the answer in the question text, the hint, the other options or the Polish instruction. Exactly one option may be correct; distractors must be clearly wrong in context but plausible (same word class/form).',
         '- Options must be distinct. No duplicate sentences across items of one term.',
-        '- UNIQUE ANSWER for every gap/choice item (sentenceGap, gapTranslate, collocationPick): the sentence must contain enough context (a defining clue, a collocation, a cause/effect or a meaning cue) that ONLY the target fits; every distractor must be clearly wrong in that sentence (grammatically or semantically) while looking plausible. If two options could both fit, rewrite the sentence or change the distractor. NEVER write generic sentences such as "There is a ___ here.", "I like ___.", "This is my ___.", "It is a ___." — these have no single answer.',
+        (level === 'A1' || level === 'A2'
+            ? '- UNIQUE ANSWER at A1/A2: the Polish word in brackets after the gap makes the answer unique (see A1/A2 GAP SENTENCES), so a short frame like "I have a red ___." is fine. Distractors must still be clearly different words, never synonyms of the answer.'
+            : '- UNIQUE ANSWER for every gap/choice item (sentenceGap, gapTranslate, collocationPick): the sentence must contain enough context (a defining clue, a collocation, a cause/effect or a meaning cue) that ONLY the target fits; every distractor must be clearly wrong in that sentence (grammatically or semantically) while looking plausible. If two options could both fit, rewrite the sentence or change the distractor. NEVER write generic sentences such as "There is a ___ here.", "I like ___.", "This is my ___.", "It is a ___." — these have no single answer.'),
         '- TASK CLARITY: the learner must know exactly what is expected: which word or gap, one word or a whole sentence, which form, and which language to answer in. Several correct answers are acceptable (especially at B1+), but then list them in "answers" for typed items; never write vague tasks, never make the learner guess whether to copy a word or translate it, and at A1/A2 no distractor may also be correct.',
-        '- SELF-CONTAINED CONTEXT: the learner must be able to choose the answer from the sentence alone, with no picture and no previous sentence. The sentence itself must name the facts that make the target the only fit. Do not write sentences that point at something unnamed (e.g. "Your belt is long and ___ short") — the second referent is missing, so "this is" / "that is" / "these are" are all guesswork.',
+        '- SELF-CONTAINED CONTEXT: the learner must be able to choose the answer from the sentence alone (at A1/A2: the sentence plus the Polish word in brackets), with no picture and no previous sentence. The sentence itself must name the facts that make the target the only fit. Do not write sentences that point at something unnamed (e.g. "Your belt is long and ___ short") — the second referent is missing, so "this is" / "that is" / "these are" are all guesswork.',
         '- DEMONSTRATIVES and PRONOUN + BE (this/that/these/those, this is/that is/these are/those are, it is/they are): disambiguate with an explicit cue in the same sentence. Put a singular or plural noun right after the gap so number is obvious ("Look, ___ my shoes here." not "... and ___ short"). For this vs that or these vs those, add a distance cue (here / over there). Never put this is and that is (or these are and those are) together as options unless the sentence has such a cue. Distractors must be wrong for a reason visible in the sentence (number or distance). Do not use ungrammatical junk such as "these is" / "this are" as the only way to make the answer unique.',
         ...(level === 'A1' || level === 'A2' ? [
             `- A1/A2 VOCABULARY: introduce new words gradually. Besides the single target term, use ONLY very common words (be, have got, pronouns, articles, simple verbs and everyday nouns). Do not add other words from the set, and do not add unnecessary adjectives or harder verbs. Prefer the simplest frame that works: "We have got a tracksuit." not "We need a warm tracksuit." Keep sentences short (about ${lo}–${hi} words). At most ONE word from the set in each sentence.`,
-            '- EXCEPTION for sentenceGap, gapTranslate and collocationPick: the UNIQUE ANSWER rule still applies — never write a generic frame such as "We have got a ___." / "There is a ___ here." Give a short defining clue, but the clue itself must use only those same basic words (e.g. "The boy wears this tracksuit at school.").',
+            `- A1/A2 GAP SENTENCES (sentenceGap, gapTranslate, collocationPick): VERY SHORT, at most ${GAP_MAX_WORDS[level]} words including the answer, using only the target plus the most basic words (I, you, he, she, we, have, like, want, wear, my, your, a, an, the, is, are, colours, big, small, new, old). The site shows the Polish word in brackets right after the gap, e.g. "I have a red ___ (szalik)." or "She has a long ___ (sukienka).", so a short frame is fine and needs NO defining clue: the Polish word makes the answer unique. NEVER build the sentence from other vocabulary of the set (no tie, belt, gloves ... around a scarf) and never use weather, seasons or other topic words as a clue; the learner has not practised them yet. Distractors: three words of the same kind that are clearly different words.`,
+            '- A1/A2 TRANSLATIONS: "hint.translation" and "plTranslation" must be natural, grammatical Polish (correct case endings and verb forms), not a gloss of each word.',
         ] : []),
-        '- HINT: every item should also include "hint":{"translation":"<the other language of the shown word or sentence>","segments":[{"text":"<segment>","translation":"<other language>"}]}. Segments in order, joined with single spaces, must equal the word or sentence shown to the learner (for gap items: the full sentence with the target filled in; punctuation may stay on the last segment). A multi-word set term is ONE segment (e.g. "bluzka bez rękawów", "step out of"), never split. letterScramble, listenPick and meaningPick have one segment — the word itself. translation is Polish when the shown text is English, and English when the shown text is Polish. This hint is help for the learner, so it may contain the answer.',
+        '- HINT: every item should also include "hint":{"translation":"<the other language of the shown word or sentence>","segments":[{"text":"<segment>","translation":"<other language>"}]}. Segments in order, joined with single spaces, must equal the word or sentence shown to the learner (for gap items: the full sentence with the target filled in; punctuation may stay on the last segment). A multi-word set term is ONE segment (e.g. "bluzka bez rękawów", "step out of"), never split. letterScramble, listenPick and meaningPick have one segment — the word itself. translation is Polish when the shown text is English, and English when the shown text is Polish. This hint is help for the learner, so it may contain the answer. HINT TRANSLATION QUALITY: "translation" must be ONE natural, fluent, grammatical sentence written by you for the WHOLE sentence (Polish: correct case, gender, number, verb form and word order, e.g. "She wears a long scarf in cold weather" -> "Ona nosi długi szalik w zimną pogodę"). NEVER join the segment translations word by word (not "ona nosić jakiś długi szalik w zimny pogoda"). Segments are only short glosses; the translation field is the real translation.',
+        '- GAP SENTENCES (sentenceGap, gapTranslate, collocationPick): write the full sentence with the target in it exactly once; the site turns the target into the gap and shows the Polish word in brackets after it ("She has a long ___ (sukienka)."). The target must never appear anywhere else in the sentence, and the sentence must make clear which word is wanted.',
         '- Use the term\'s given English form and Polish meaning; do not change the meaning of the term.',
         '- VARIANTS: if a term lists alternatives separated by "/", "," or "or" (English) / "lub" or "albo" (Polish) — e.g. "be grounded / get grounded", "present/gift" — every item must use exactly ONE of those forms, the one that fits the sentence or task. Put that English form in "variantUsed". NEVER write the listed slash/comma form in the sentence, the answer, the options, the gap, the letters, the tiles, the typed answer, the hint, the source, or the question (not "present/gift", not "be grounded / get grounded"). Distractors must not be other variants of the same term. Leave frozen compounds such as "and/or" or "w/o" alone — they are not variants.',
         '- NO COPY TASKS: never ask the learner to type a word or sentence that is already shown on the card in the same form and the same language (copying from the prompt, the source, or a visible sentence is pointless). A translation must change language; a gap must hide the target; wordFormation must change the stem (fog → foggy, not fog → fog). Dictation is listen-and-type only — do not also write the sentence on the card. Genuine transformations are required: the other language, a different word form, a derived word, or a reshaped sentence.',
@@ -1057,9 +1061,9 @@ export function instructionPrompt(item) {
             return 'Posłuchaj i wybierz słowo po angielsku:';
         case 'sentenceGap':
         case 'collocationPick':
-            return 'Wybierz słowo po angielsku:';
         case 'gapTranslate':
-            return 'Uzupełnij lukę po angielsku:';
+            // a choice item: never say "wpisz" (type); the Polish word in brackets after the gap is the cue
+            return 'Wybierz angielskie słowo do luki (w nawiasie: polskie słowo):';
         case 'sentenceOrder':
             return 'Ułóż zdanie po angielsku:';
         case 'wordFormation':
@@ -1485,12 +1489,71 @@ export function stepOf(item) {
     return 2;
 }
 
+/** Gap items shown with a Polish cue in brackets right after the gap. */
+export const CUE_GAP_TYPES = new Set(['sentenceGap', 'gapTranslate', 'collocationPick']);
+/** Instruction for the SAME gap shown as a typed task (the app decides the input mode; `prompt` is for the choice form). */
+export const TYPED_GAP_PROMPT = 'Wpisz angielskie słowo w lukę (w nawiasie: polskie słowo):';
+
+/** The Polish word (one variant, base form) that names the target of a gap item, e.g. "sukienka". '' when unknown. */
+export function cueOf(item, term) {
+    if (!term || !term.pl) return '';
+    const answer = clean(item?.answer || '');
+    const used = clean(item?.variantUsed || '') || (answer ? variantUsedIn(answer, term.en) : '');
+    const fromEn = used ? pairVariant(used, term.en, term.pl) : '';
+    return clean(item?.variantUsedPl || '') || fromEn || pickTermVariant(term.pl);
+}
+
+/** "She has a long ___." + "sukienka" -> "She has a long ___ (sukienka)." */
+export function cueTemplate(template, cue) {
+    const t = clean(template);
+    const c = clean(cue);
+    if (!c || countGaps(t) !== 1) return t;
+    return t.replace(/_{3,}/, (m) => `${m} (${c})`);
+}
+
+/** Dictation sentence with the target as a gap + Polish cue, for the app's listening-off mode. Null when the target is not one contiguous phrase. */
+export function silentGapOf(item, term) {
+    if (!item || item.type !== 'dictation' || !term) return null;
+    const sentence = clean(item.speak || item.answer || '');
+    const vars = parseTermVariants(term.en);
+    const tryVariants = vars.length ? vars : [term.en];
+    const toks = [...sentence.matchAll(/[A-Za-z]+(?:['\u2019][A-Za-z]+)?/g)].map((m) => ({ w: norm(m[0]), at: m.index, end: m.index + m[0].length }));
+    for (const v of tryVariants) {
+        const base = termTokens(v);
+        if (!base.length) continue;
+        for (let i = 0; i + base.length <= toks.length; i++) {
+            if (!base.every((b, k) => tokenMatches(toks[i + k].w, b))) continue;
+            // contiguous words only (a separated phrasal verb cannot be a single gap)
+            const between = sentence.slice(toks[i].at, toks[i + base.length - 1].end);
+            if (/[.,!?;:]/.test(between)) continue;
+            const template = sentence.slice(0, toks[i].at) + GAP + sentence.slice(toks[i + base.length - 1].end);
+            const cue = pairVariant(v, term.en, term.pl) || pickTermVariant(term.pl);
+            if (!cue || countGaps(template) !== 1) continue;
+            const surface = between;
+            if (hasWord(template.replace(GAP, ' '), surface)) continue;
+            return { template, templateCue: cueTemplate(template, cue), cue, answer: surface, prompt: TYPED_GAP_PROMPT };
+        }
+    }
+    return null;
+}
+
 export function decorateItem(item, level, term, rand = Math.random) {
     if (!item || !item.type) return item;
     const lang = answerLangOf(item);
     if (lang) item.answerLang = lang;
     const prompt = instructionPrompt(item);
     if (prompt) item.prompt = prompt;
+    if (CUE_GAP_TYPES.has(item.type) && typeof item.template === 'string') {
+        const cue = cueOf(item, term);
+        item.inputMode = 'choice';
+        item.promptTyped = TYPED_GAP_PROMPT;
+        if (cue) { item.cue = cue; item.templateCue = cueTemplate(item.template, cue); }
+        else { delete item.cue; delete item.templateCue; }
+    }
+    if (item.type === 'dictation') {
+        const sg = silentGapOf(item, term);
+        if (sg) item.silentGap = sg; else delete item.silentGap;
+    }
     const sc = buildScaffold(item, level, term, rand);
     if (sc) {
         item.wordBank = sc.wordBank;
@@ -1506,7 +1569,7 @@ export function decorateItem(item, level, term, rand = Math.random) {
 }
 
 /** Bump when the judge rules change: rows judged under an older version are judged again. */
-export const CLARITY_VERSION = 1;
+export const CLARITY_VERSION = 2;
 
 /** True when the AI task-clarity judge marked this banked item as unclear / confusing (the row stays, it is just not served). */
 export function clarityBlocked(item) {
@@ -1544,15 +1607,81 @@ export function taskStructureReason(item) {
     return '';
 }
 
+/** Max words of the FILLED gap sentence (A1/A2 gap and choice items are very short; the Polish word in brackets does the disambiguation). */
+export const GAP_MAX_WORDS = { A1: 6, A2: 8 };
+/** A1 gap sentences may only use these words around the target (pronouns, articles, be/have/like/wear, colours, size, a few nouns). */
+const A1_CORE = new Set(`a an the this that these those i you he she we they it me him us them my your his her our their
+am is are was be have has got had like likes want wants wear wears see look can
+and but not no yes in on at here there with of to too very also please
+red blue green yellow black white pink brown grey gray orange purple
+big small new old nice good long short little one two three four five
+today now every day school home boy girl man woman mum dad friend friends
+it's i'm he's she's we're they're you're that's isn't aren't don't doesn't
+what where who how many much some any`.split(/\s+/));
+
+export const isYoung = (level) => level === 'A1' || level === 'A2';
+
+/** '' when an A1/A2 gap/choice sentence is short and uses only the set word + very basic words; else the reason. */
+export function youngGapSentenceReason(text, level, term, setTerms = []) {
+    if (!isYoung(level)) return '';
+    const s = clean(text);
+    if (!s) return '';
+    const n = wordCount(s);
+    const max = GAP_MAX_WORDS[level];
+    if (n > max) return `${level} gap sentence has ${n} words; keep it to at most ${max} (e.g. "I have a red ___.")`;
+    const base = simpleVocabReason(s, level, term, setTerms);
+    if (base) return base;
+    if (level === 'A1') {
+        const extra = [];
+        for (const w of words(s)) {
+            if (A1_CORE.has(w) || allowsTermToken(w, term)) continue;
+            if (!extra.includes(w)) extra.push(w);
+        }
+        if (extra.length) return `A1 gap sentence uses words beyond the very basic ones (${extra.slice(0, 5).join(', ')}); use only I, you, have, like, my, a, is, colours, ...`;
+    }
+    return '';
+}
+
+/**
+ * '' when a gap / choice item shows exactly one gap, never shows the answer ungapped, can show its Polish cue in brackets,
+ * and (A1/A2) is a very short sentence of basic words. Else the reason it must not be served.
+ */
+export function gapShapeReason(item, level, term, setTerms = []) {
+    if (!item || !CUE_GAP_TYPES.has(item.type)) return '';
+    if (typeof item.template !== 'string' || countGaps(item.template) !== 1) return 'task needs exactly one clearly marked gap';
+    const answer = clean(item.answer || '');
+    if (answer && hasWord(item.template.replace(/_{3,}/g, ' '), answer)) return 'the answer is also written outside the gap, so there is nothing to find';
+    if (term && !cueOf(item, term)) return 'no Polish cue is available for the bracket after the gap';
+    return youngGapSentenceReason(englishTextOf(item), level, term, setTerms);
+}
+
+const normGloss = (s) => norm(s).replace(/[.,;:!?]/g, '').replace(/\s+/g, ' ').trim();
+
+/**
+ * The hint translation of an English sentence was built by joining the word glosses ("ona nosić jakiś długi szalik w zimny pogoda").
+ * '' when it is not that, else the reason.
+ */
+export function wordByWordHintReason(hint, item) {
+    if (!hint || !Array.isArray(hint.segments) || hint.segments.length < 2) return '';
+    if (shownIsPolish(item)) return '';
+    const joined = normGloss(hint.segments.map((x) => x?.translation || '').join(' '));
+    if (joined && joined === normGloss(hint.translation || '')) return 'hint translation is just the segment glosses joined word by word, not a natural Polish sentence';
+    return '';
+}
+
 /** A banked item that must no longer be served (generic gaps, too-hard A1/A2 sentences, a slash-form listing, or a copy task). */
 export function bankedItemBad(item, level, term, setTerms) {
     if (!item) return false;
     if (clarityBlocked(item)) return true; // the task-clarity judge found an unclear or confusing task (row is kept, never served)
     if (taskStructureReason(item)) return true;
     if ((item.type === 'sentenceGap' || item.type === 'gapTranslate' || item.type === 'collocationPick') && typeof item.template === 'string') {
-        if ((item.type === 'sentenceGap' || item.type === 'gapTranslate') && genericGapReason(item.template)) return true;
+        // A1/A2 frames such as "I have a red ___ (szalik)." are fine: the Polish word in brackets names the answer
+        const cued = isYoung(level) && Boolean(term && term.pl);
+        if ((item.type === 'sentenceGap' || item.type === 'gapTranslate') && !cued && genericGapReason(item.template)) return true;
         if (demonstrativeGapReason(item.template, item.answer, item.options)) return true;
+        if (gapShapeReason(item, level, term, setTerms)) return true;
     }
+    if (item.hintHelp && wordByWordHintReason(item.hintHelp, item)) return true; // old banked hints: word-by-word Polish, regenerate
     if ((level === 'A1' || level === 'A2') && VOCAB_TYPES.has(item.type)) {
         const text = englishTextOf(item);
         if (text && simpleVocabReason(text, level, term, setTerms)) return true;
@@ -1603,6 +1732,8 @@ export function hintReason(hint, item, term, setTerms = []) {
     if (segs.some((x) => !x.text || !x.translation)) return 'hint segment is missing text or translation';
     const shown = shownText(item);
     if (shown && segs.map((x) => x.text).join(' ') !== shown) return 'hint segments do not rejoin the shown text';
+    const wbw = wordByWordHintReason({ translation: hint.translation, segments: segs }, item);
+    if (wbw) return wbw;
     const terms = [...(setTerms || [])];
     if (term && !terms.some((t) => t && term && (t.id === term.id || (t.en && norm(t.en) === norm(term.en))))) terms.push(term);
     const pl = shownIsPolish(item);
@@ -1657,13 +1788,13 @@ export function segmentByTerms(text, terms, langPl) {
 }
 
 /** Deterministic hint from the term list + basic glossary. Null if a segment cannot be translated. */
-export function cheapHint(item, term, setTerms = []) {
+export function cheapHint(item, term, setTerms = [], givenTranslation = '') {
     const shown = shownText(item);
     if (!shown) return null;
     const pl = shownIsPolish(item);
     const terms = [...(setTerms || [])];
     if (term && !terms.some((t) => t && (t.id === term.id || (t.en && term.en && norm(t.en) === norm(term.en))))) terms.push(term);
-    let translation = clean(item.plTranslation || '');
+    let translation = clean(item.plTranslation || '') || clean(givenTranslation || '');
     if (!translation) {
         if (item.type === 'translateType' || item.type === 'meaningPick') translation = clean(item.answer || '');
         else if (term && (item.type === 'letterScramble' || item.type === 'listenPick')) {
@@ -1690,7 +1821,11 @@ export function cheapHint(item, term, setTerms = []) {
         if (!tr) return null;
         segs.push({ text, translation: tr });
     }
-    if (!translation) translation = segs.map((x) => x.translation).join(' ');
+    if (!translation) {
+        // Joined word glosses are not a translation ("ona nosić jakiś długi szalik w zimny pogoda"): only a single segment can stand alone.
+        if (segs.length > 1) return null;
+        translation = segs.map((x) => x.translation).join(' ');
+    }
     const hint = { translation, segments: segs };
     return hintReason(hint, item, term, terms) ? null : hint;
 }
@@ -1712,6 +1847,10 @@ function withHint(result, raw, term, setTerms) {
             segments: Array.isArray(parsed.segments) ? parsed.segments.map((x) => ({ text: clean(x?.text), translation: clean(x?.translation) })) : [],
         };
         if (!hintReason(candidate, result.item, term, setTerms)) hint = candidate;
+        // the model's whole-sentence translation is kept even when its segments are unusable (segments then come from the glossary)
+        else if (candidate.translation && !wordByWordHintReason({ translation: candidate.translation, segments: candidate.segments }, result.item)) {
+            hint = cheapHint(result.item, term, setTerms, candidate.translation);
+        }
     }
     if (!hint) hint = cheapHint(result.item, term, setTerms);
     if (hint) result.item.hintHelp = hint;
@@ -1747,6 +1886,8 @@ export function buildItem(raw, term, level, setTerms = []) {
         if (sib) return REASON(sib);
         const copy = copyTaskReason(wrapped.item);
         if (copy) return REASON(copy);
+        const gapShape = gapShapeReason(wrapped.item, level, term, setTerms);
+        if (gapShape) return REASON(gapShape);
         return wrapped;
     };
     const sentenceOk = (s, label = 'sentence') => {
@@ -1773,7 +1914,7 @@ export function buildItem(raw, term, level, setTerms = []) {
             if (!template) return REASON('answer not found inside the sentence (or gap at sentence start)');
             if (countGaps(template) !== 1) return REASON('template needs exactly one gap');
             if (hasWord(template.replace(GAP, ' '), raw.answer)) return REASON('answer also appears outside the gap (leak)');
-            const generic = genericGapReason(template);
+            const generic = isYoung(level) ? '' : genericGapReason(template); // A1/A2: the Polish cue in brackets makes a short frame unique
             if (generic) return REASON(generic);
             const options = buildOptions(raw.answer, raw.distractors, rng, term, variants.used, variants.usedPl);
             if (!options) return REASON('needs 3 distinct distractors');
@@ -2020,7 +2161,7 @@ export function createLruCache({ max = LIMITS.cacheMax, ttlMs = LIMITS.cacheTtlM
 // ---------------------------------------------------------------- the question bank
 
 /** Bank entries written by these prompt versions may be served; bump PROMPT_VERSION and drop a version here to retire it. */
-export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3', 'tg4', 'tg5']);
+export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3', 'tg4', 'tg5', 'tg6']);
 /** Only these may be recorded as "makes no sense for this term" (a permanent skip in the bank). */
 export const SKIPPABLE_TYPES = new Set(['wordFormation', 'keyTransform', 'collocationPick', 'letterScramble']);
 /** How many different items per (term, level, slot) the bank is grown to, and its hard cap. */
@@ -2380,7 +2521,8 @@ function reshuffleOptions(item, term, setTerms, rand, level) {
     if (bankedItemBad(out, level, term, setTerms)) return null; // generic, too-hard A1/A2, unclear task, or unfixable slash form: treated as missing
     delete out.clarity; // judge bookkeeping stays server-side
     if (!out.hintHelp || hintReason(out.hintHelp, out, term, setTerms)) {
-        const cheap = cheapHint(out, term, setTerms);
+        const keep = out.hintHelp && !wordByWordHintReason(out.hintHelp, out) ? clean(out.hintHelp.translation) : '';
+        const cheap = cheapHint(out, term, setTerms, keep);
         if (cheap) out.hintHelp = cheap;
         else delete out.hintHelp;
     }

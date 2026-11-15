@@ -12,6 +12,7 @@ import {
     scrambleWordOf, isIsolatedGloss, displayedSlashReason, collapseChoiceItem, canCollapseChoiceItem,
     copyTaskReason, foldCopyText, sameCopyForm,
     answerLangOf, instructionPrompt, sortTrackItems, buildScaffold, decorateItem, stepOf, TYPE_STEP,
+    cueOf, cueTemplate, silentGapOf, gapShapeReason, youngGapSentenceReason, wordByWordHintReason, GAP_MAX_WORDS, PROMPT_VERSION, CLARITY_VERSION, BANK_COMPATIBLE_VERSIONS,
 } from './track-ai.js';
 
 const SECRET = 'unit-test-bridge-secret-0123456789';
@@ -150,7 +151,7 @@ test('buildItem: rejects leaks, wrong forms and bad options', () => {
     no({ type: 'letterScramble', answer: 'fog', hint: 'thick fog outside' }, FOG, 'A1', /reveals/);
     assert.ok(buildItem({ type: 'letterScramble', answer: 'fog', hint: 'mgła' }, FOG, 'A1').ok);
     // phrasal verb gap
-    assert.ok(buildItem({ type: 'sentenceGap', sentence: 'The men told us to step out of the room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }, STEP, 'A2').ok);
+    assert.ok(buildItem({ type: 'sentenceGap', sentence: 'We step out of the room.', answer: 'step out of', distractors: ['give up', 'look for', 'run out'] }, STEP, 'A2').ok);
 });
 
 /* ---------------------------------------------------------------- generator (mock AI) */
@@ -429,13 +430,13 @@ test('bank growth: grow() appends new items, refuses exact and near duplicates, 
     assert.match(dupAi.calls[0], /Thick fog covered the harbour/);
     assert.equal((await entries()).length, 1);
     // a genuinely different item is appended
-    const newAi = seqAi({ items: [gapItem('We could not see the road because of the fog.', 'fog', ['sun', 'ice', 'sky'])] });
+    const newAi = seqAi({ items: [gapItem('We see fog on the road.', 'fog', ['sun', 'ice', 'sky'])] });
     const gen3 = createTrackGenerator({ runPrompt: newAi, bank, rand: () => 0 });
     const third = await gen3(validateTrackRequest(gapReq()).value);
     assert.equal((await third.grow()).added, 1);
     assert.equal((await entries()).length, 2);
     // no growth is planned once the target is reached (probability 1 would still add, so use rand=1)
-    const gen4 = createTrackGenerator({ runPrompt: seqAi({ items: [gapItem('Heavy fog made the morning ride very slow today.', 'fog', ['hay', 'ice', 'mud'])] }), bank, rand: () => 0 });
+    const gen4 = createTrackGenerator({ runPrompt: seqAi({ items: [gapItem('The fog is very thick today.', 'fog', ['hay', 'ice', 'mud'])] }), bank, rand: () => 0 });
     await (await gen4(validateTrackRequest(gapReq()).value)).grow();
     assert.equal((await entries()).length, BANK_TARGET);
     const gen5 = createTrackGenerator({ runPrompt: seqAi({ items: [] }), bank, rand: () => 0.99 });
@@ -445,7 +446,7 @@ test('bank growth: grow() appends new items, refuses exact and near duplicates, 
 test('bank serving: varied selection, least-served first, so repeat learners get different questions', async () => {
     const bank = createBank();
     const term = { id: '1', en: 'fog', pl: 'mgła' };
-    const sentences = ['Thick fog covered the harbour.', 'We could not see the road because of the fog.', 'Heavy fog made the morning ride very slow today.'];
+    const sentences = ['Thick fog covered the harbour.', 'We see fog on the road.', 'The fog is very thick today.'];
     for (const [i, sen] of sentences.entries()) {
         const gen = createTrackGenerator({ runPrompt: seqAi({ items: [gapItem(sen, 'fog', [['rain', 'wind', 'sand'], ['sun', 'ice', 'sky'], ['hay', 'ice', 'mud']][i])] }), bank });
         // seed the bank directly through the generator's grow path
@@ -510,7 +511,7 @@ test('bank persistence: a new process (new bank on the same store) reuses stored
     assert.equal(rows[0].served, 2, 'served_count persisted (once per request)');
     // retired prompt version: row stays in the table but is not served; the slot is regenerated
     rows[0].promptVersion = 'tg0-retired';
-    const ai2 = seqAi({ items: [gapItem('We could not see the road because of the fog.', 'fog', ['sun', 'ice', 'sky'])] });
+    const ai2 = seqAi({ items: [gapItem('We see fog on the road.', 'fog', ['sun', 'ice', 'sky'])] });
     const r2 = await createTrackGenerator({ runPrompt: ai2, bank: createBank({ store }) })(validateTrackRequest(gapReq()).value);
     assert.equal(ai2.calls.length, 1);
     assert.match(r2.items[0].template, /road/);
@@ -990,24 +991,28 @@ test('meaningPick: banked items with the old wording are rewritten when served',
 
 const TRACK = T('9', 'tracksuit', 'dres');
 
-test('unique answer: generic gap frames are rejected (the "There is a ___ here." screenshot case)', () => {
-    const tryS = (sentence, answer = 'tracksuit') => buildItem({ type: 'sentenceGap', sentence, answer, distractors: ['trainers', 'dress', 'hoodie'] }, TRACK, 'A1');
+test('unique answer: generic gap frames are rejected from B1 up (A1/A2 get the Polish cue in brackets instead)', () => {
+    const tryS = (sentence, answer = 'tracksuit', level = 'B1') => buildItem({ type: 'sentenceGap', sentence, answer, distractors: ['trainers', 'dress', 'hoodie'] }, TRACK, level);
     for (const s of ['There is a tracksuit here.', 'There are some tracksuit there.', 'This is my tracksuit.', 'I like tracksuit.', 'I have a tracksuit.', "It's a tracksuit today.", 'That is the tracksuit.']) {
         const r = tryS(s);
         assert.equal(r.ok, false, s);
         assert.match(r.reason, /generic|too short|few meaningful/, s);
     }
     // gapTranslate gets the same check
-    const g = buildItem({ type: 'gapTranslate', sentence: 'There is a tracksuit here.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'], plTranslation: 'Tutaj jest dres.' }, TRACK, 'A1');
+    const g = buildItem({ type: 'gapTranslate', sentence: 'There is a tracksuit here.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'], plTranslation: 'Tutaj jest dres.' }, TRACK, 'B1');
     assert.equal(g.ok, false);
     // a sentence with a clue that only the target fits is accepted
     const ok = tryS('After the match he put on his warm tracksuit.');
     assert.ok(ok.ok, ok.reason);
     assert.equal(ok.item.template, 'After the match he put on his warm ___.');
+    // A1: the short frame is fine because the Polish word in brackets names the answer
+    const a1 = tryS('I have a tracksuit.', 'tracksuit', 'A1');
+    assert.ok(a1.ok, a1.reason);
+    assert.equal(a1.item.templateCue, 'I have a ___ (dres).');
 });
 
 test('unique answer: the prompt asks for a sentence in which only the target fits and the retry feedback carries the reason', async () => {
-    const p = buildTrackPrompt({ level: 'A1', terms: [TRACK], setTerms: [TRACK], wants: new Map([['9', new Set(['sentenceGap', 'gapTranslate', 'collocationPick'])]]) });
+    const p = buildTrackPrompt({ level: 'B1', terms: [TRACK], setTerms: [TRACK], wants: new Map([['9', new Set(['sentenceGap', 'gapTranslate', 'collocationPick'])]]) });
     assert.match(p, /ONLY the target fits/);
     assert.match(p, /There is a ___ here/);
     assert.match(p, /UNIQUE ANSWER/);
@@ -1018,25 +1023,25 @@ test('unique answer: the prompt asks for a sentence in which only the target fit
             ? { items: [{ termId: '9', type: 'sentenceGap', sentence: 'After the match he put on his warm tracksuit.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }] }
             : { items: [{ termId: '9', type: 'sentenceGap', sentence: 'There is a tracksuit here.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }] };
     };
-    const r = await createTrackGenerator({ runPrompt: ai })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
+    const r = await createTrackGenerator({ runPrompt: ai })(validateTrackRequest({ setId: 's', level: 'B1', terms: [TRACK], types: ['sentenceGap'] }).value);
     assert.match(prompts.find((x) => /PREVIOUS ATTEMPT/.test(x)), /generic sentence frame/);
     assert.equal(r.items[0].template, 'After the match he put on his warm ___.');
 });
 
 test('unique answer: a generic gap sentence that is already in the bank is never served and the slot is regenerated', async () => {
     const bank = createBank();
-    await bank.add(TRACK, 'A1', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'Choose the word that fits the gap.', template: 'There is a ___ here.', answer: 'tracksuit', options: ['tracksuit', 'trainers', 'dress', 'hoodie'] } }]);
+    await bank.add(TRACK, 'B1', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'Choose the word that fits the gap.', template: 'There is a ___ here.', answer: 'tracksuit', options: ['tracksuit', 'trainers', 'dress', 'hoodie'] } }]);
     const calls = [];
     const ai = async (prompt) => { calls.push(prompt); return { items: [{ termId: '9', type: 'sentenceGap', sentence: 'After the match he put on his warm tracksuit.', answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }] }; };
-    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
+    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'B1', terms: [TRACK], types: ['sentenceGap'] }).value);
     assert.equal(calls.length, 1, 'the generic bank item counts as missing, so the AI is asked again');
     assert.equal(r.items.length, 1);
     assert.equal(r.items[0].template, 'After the match he put on his warm ___.');
     // and when the AI cannot help, the generic item is dropped rather than served
     const bank2 = createBank();
-    await bank2.add(TRACK, 'A1', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'x', template: 'There is a ___ here.', answer: 'tracksuit', options: ['tracksuit', 'trainers', 'dress', 'hoodie'] } }]);
+    await bank2.add(TRACK, 'B1', [{ slot: 'sentenceGap', item: { type: 'sentenceGap', prompt: 'x', template: 'There is a ___ here.', answer: 'tracksuit', options: ['tracksuit', 'trainers', 'dress', 'hoodie'] } }]);
     const dead = async () => ({ items: [] });
-    const r2 = await createTrackGenerator({ runPrompt: dead, bank: bank2, limits: { ...LIMITS, budgetMs: 1500 } })(validateTrackRequest({ setId: 's', level: 'A1', terms: [TRACK], types: ['sentenceGap'] }).value);
+    const r2 = await createTrackGenerator({ runPrompt: dead, bank: bank2, limits: { ...LIMITS, budgetMs: 1500 } })(validateTrackRequest({ setId: 's', level: 'B1', terms: [TRACK], types: ['sentenceGap'] }).value);
     assert.equal(r2.items.length, 0);
     assert.deepEqual(r2.meta.dropped, [{ lexiconId: '9', type: 'sentenceGap' }]);
 });
@@ -1064,15 +1069,15 @@ test('unique answer: "Your belt is long and ___ short" is rejected — no cue, t
 });
 
 test('unique answer: a demonstrative gap with an explicit number or distance cue is accepted, and this vs that without a cue is not', () => {
-    const these = buildItem({ type: 'sentenceGap', sentence: 'Look, these are my new shoes here.', answer: 'these are', distractors: ['this is', 'that is', 'these is'] }, THESEARE, 'A1');
+    const these = buildItem({ type: 'sentenceGap', sentence: 'Look, these are my new shoes here.', answer: 'these are', distractors: ['this is', 'that is', 'these is'] }, THESEARE, 'B1');
     assert.ok(these.ok, these.reason);
     assert.equal(these.item.template, 'Look, ___ my new shoes here.');
-    const ths = buildItem({ type: 'sentenceGap', sentence: 'Look, this is my new bag here.', answer: 'this is', distractors: ['that is', 'these are', 'these is'] }, THISIS, 'A1');
+    const ths = buildItem({ type: 'sentenceGap', sentence: 'Look, this is my new bag here.', answer: 'this is', distractors: ['that is', 'these are', 'these is'] }, THISIS, 'B1');
     assert.ok(ths.ok, ths.reason);
-    const those = buildItem({ type: 'sentenceGap', sentence: 'Look, those are my new shoes over there.', answer: 'those are', distractors: ['this is', 'that is', 'these are'] }, THOSEARE, 'A1');
+    const those = buildItem({ type: 'sentenceGap', sentence: 'Look, those are my new shoes over there.', answer: 'those are', distractors: ['this is', 'that is', 'these are'] }, THOSEARE, 'B1');
     assert.ok(those.ok, those.reason);
     // plural noun but no distance cue: these are / those are both fit
-    const amb = buildItem({ type: 'sentenceGap', sentence: 'Please look, these are my new shoes today.', answer: 'these are', distractors: ['this is', 'that is', 'those are'] }, THESEARE, 'A1');
+    const amb = buildItem({ type: 'sentenceGap', sentence: 'Please look, these are my new shoes today.', answer: 'these are', distractors: ['this is', 'that is', 'those are'] }, THESEARE, 'B1');
     assert.equal(amb.ok, false);
     assert.match(amb.reason, /not uniquely determined/);
     // non-deictic gaps are unchanged
@@ -1127,20 +1132,32 @@ test('A1/A2 vocab: simple frames with basic words are accepted; hard extra words
     assert.equal(typHard.ok, false);
 });
 
-test('A1/A2 vocab: gap sentences still need a unique-answer clue, but only with basic words', () => {
-    const tryS = (sentence) => buildItem({ type: 'sentenceGap', sentence, answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }, TRACK, 'A1');
-    // simple unique-answer sentence that uses only basic words
-    const ok = tryS('The boy wears this tracksuit at school.');
+test('A1/A2 vocab: gap sentences are very short and use only basic words; the Polish cue replaces the defining clue', () => {
+    const tryS = (sentence, level = 'A1') => buildItem({ type: 'sentenceGap', sentence, answer: 'tracksuit', distractors: ['trainers', 'dress', 'hoodie'] }, TRACK, level);
+    // very short, basic words
+    const ok = tryS('The boy wears this tracksuit.');
     assert.ok(ok.ok, ok.reason);
-    assert.equal(ok.item.template, 'The boy wears this ___ at school.');
-    // unique-answer but with hard extra vocabulary is rejected
+    assert.equal(ok.item.template, 'The boy wears this ___.');
+    assert.equal(ok.item.templateCue, 'The boy wears this ___ (dres).');
+    // too long for A1 (more than 6 words), even with basic words
+    const long = tryS('The boy wears this tracksuit at school.');
+    assert.equal(long.ok, false);
+    assert.match(long.reason, /7 words/);
+    // hard extra vocabulary is rejected
     const hard = tryS('After the tournament he donned his insulated tracksuit.');
     assert.equal(hard.ok, false);
-    assert.match(hard.reason, /new words|donned|insulated|tournament/);
-    // generic simple frames are still rejected by the uniqueness rule (not the vocab rule)
+    assert.match(hard.reason, /new words|donned|insulated|tournament|words/);
+    // a generic frame is fine at A1: "(dres)" tells the learner which word to choose
     const generic = tryS('We have got a tracksuit.');
-    assert.equal(generic.ok, false);
-    assert.match(generic.reason, /generic|too short|few meaningful/);
+    assert.ok(generic.ok, generic.reason);
+    assert.equal(generic.item.templateCue, 'We have got a ___ (dres).');
+    // A1 words beyond the basics (weather talk around a clothes word) are rejected
+    const weather = buildItem({ type: 'sentenceGap', sentence: 'She wears a long scarf in cold weather.', answer: 'scarf', distractors: ['tie', 'belt', 'gloves'] }, T('12', 'scarf', 'szalik'), 'A1');
+    assert.equal(weather.ok, false);
+    assert.match(weather.reason, /8 words|beyond the very basic/);
+    // A2 allows 8 words
+    assert.equal(tryS('The boy wears this tracksuit at school.', 'A2').ok, true);
+    assert.equal(youngGapSentenceReason('I have a red scarf.', 'A1', T('12', 'scarf', 'szalik')), '');
 });
 
 test('A1/A2 vocab: the prompt asks for gradual vocabulary and the existing unique-answer rule together', () => {
@@ -1722,4 +1739,128 @@ test('steps request param: validated, optional, prefers matching banked items an
     // fallback: no step-3 item exists, the slot is still served
     const none = await gen(validateTrackRequest({ ...base, steps: [3] }).value);
     assert.deepEqual(none.items.map((i) => i.step).sort(), [0, 1]);
+});
+
+/* ---------------------------------------------------------------- tg6: Polish cue in brackets, short A1/A2 gaps, natural hint translations */
+
+const SCARF = T('30', 'scarf', 'szalik');
+const DRESS = T('31', 'dress', 'sukienka');
+
+test('tg6: prompt version, clarity version and compatible bank versions', () => {
+    assert.equal(PROMPT_VERSION, 'tg6');
+    assert.equal(CLARITY_VERSION, 2, 'every banked row is judged again under the new judge rules');
+    for (const v of ['tg1', 'tg2', 'tg3', 'tg4', 'tg5', 'tg6']) assert.ok(BANK_COMPATIBLE_VERSIONS.has(v), v);
+});
+
+test('cue: every gap item carries the Polish word in brackets after the gap, and a choice instruction that matches the item', () => {
+    assert.equal(cueTemplate('She has a long ___.', 'sukienka'), 'She has a long ___ (sukienka).');
+    assert.equal(cueTemplate('I have a red ___ and a hat.', 'szalik'), 'I have a red ___ (szalik) and a hat.');
+    const r = buildItem({ type: 'sentenceGap', sentence: 'I have a red scarf.', answer: 'scarf', distractors: ['tie', 'belt', 'hat'] }, SCARF, 'A1');
+    assert.ok(r.ok, r.reason);
+    assert.equal(r.item.template, 'I have a red ___.');
+    assert.equal(r.item.cue, 'szalik');
+    assert.equal(r.item.templateCue, 'I have a red ___ (szalik).');
+    assert.equal(r.item.inputMode, 'choice');
+    assert.match(r.item.prompt, /^Wybierz angielskie słowo do luki/);
+    assert.ok(!/Wpisz/.test(r.item.prompt), 'a choice item never tells the learner to type');
+    assert.match(r.item.promptTyped, /^Wpisz angielskie słowo w lukę/);
+    // gapTranslate and collocationPick get the same fields and the same choice wording
+    const g = buildItem({ type: 'gapTranslate', sentence: 'She has a long dress.', answer: 'dress', distractors: ['skirt', 'coat', 'sock'], plTranslation: 'Ona ma długą sukienkę.' }, DRESS, 'A1');
+    assert.ok(g.ok, g.reason);
+    assert.equal(g.item.templateCue, 'She has a long ___ (sukienka).');
+    assert.equal(g.item.prompt, r.item.prompt);
+    // slash variants: the cue is the Polish variant that pairs with the English variant used
+    const v = T('32', 'jumper / sweater', 'sweter / pulower');
+    const cv = cueOf({ answer: 'sweater', type: 'sentenceGap', template: 'I like my ___.' }, v);
+    assert.equal(cv, 'pulower');
+    // banked items are decorated at serve time too
+    const d = decorateItem({ type: 'sentenceGap', prompt: 'Choose the word that fits the gap.', template: 'We have a ___.', answer: 'scarf', options: ['scarf', 'tie', 'hat', 'belt'] }, 'A1', SCARF, () => 0.5);
+    assert.equal(d.templateCue, 'We have a ___ (szalik).');
+});
+
+test('typed gap guard: a sentence with the answer written out (no gap, or the answer twice) is never served; banked ones are skipped', () => {
+    const base = { type: 'sentenceGap', prompt: 'x', answer: 'scarf', options: ['scarf', 'tie', 'hat', 'belt'], correctIndex: 0 };
+    // "I like my scarf." as a card: nothing to find, no clue which word to type
+    assert.equal(bankedItemBad({ ...base, template: 'I like my scarf.' }, 'A1', SCARF), true);
+    assert.equal(gapShapeReason({ ...base, template: 'I like my scarf.' }, 'A1', SCARF), 'task needs exactly one clearly marked gap');
+    // the answer also appears next to the gap
+    assert.match(gapShapeReason({ ...base, template: 'My scarf is a red ___.' }, 'A1', SCARF), /outside the gap/);
+    assert.equal(bankedItemBad({ ...base, template: 'My scarf is a red ___.' }, 'A1', SCARF), true);
+    // a proper gap is fine
+    assert.equal(bankedItemBad({ ...base, template: 'I have a red ___.' }, 'A1', SCARF), false);
+    // generation refuses it too, with the reason as retry feedback
+    const gen = buildItem({ type: 'sentenceGap', sentence: 'My scarf is a red scarf.', answer: 'scarf', distractors: ['tie', 'belt', 'hat'] }, SCARF, 'A1');
+    assert.equal(gen.ok, false);
+});
+
+test('A1/A2 gap sentences: short, basic words, no other set vocabulary (the "long scarf in cold weather" case)', async () => {
+    assert.deepEqual(GAP_MAX_WORDS, { A1: 6, A2: 8 });
+    const item = { type: 'sentenceGap', prompt: 'x', template: 'She wears a long ___ in cold weather.', answer: 'scarf', options: ['tie', 'belt', 'gloves', 'scarf'], correctIndex: 3 };
+    assert.equal(bankedItemBad(item, 'A1', SCARF), true, 'A1: 8 words and weather vocabulary');
+    assert.match(gapShapeReason(item, 'A1', SCARF), /8 words/);
+    assert.equal(bankedItemBad(item, 'A2', SCARF), false, 'A2 allows 8 words of basic vocabulary');
+    assert.equal(bankedItemBad({ ...item, template: 'I have a red ___.' }, 'A1', SCARF), false);
+    assert.equal(bankedItemBad({ ...item, template: 'I have a red ___ and a long tie.' }, 'A1', SCARF, [SCARF, T('33', 'tie', 'krawat')]), true, 'another set word in the sentence');
+    assert.match(youngGapSentenceReason('We admire an elegant scarf.', 'A1', SCARF), /beyond the very basic|new words/);
+    assert.equal(youngGapSentenceReason('A very long sentence that goes on and on with scarf.', 'B1', SCARF), '', 'B1+ is not capped');
+    // a banked too-long A1 gap is skipped and the slot regenerated with a short one
+    const bank = createBank();
+    await bank.add(SCARF, 'A1', [{ slot: 'sentenceGap', item }]);
+    const calls = [];
+    const ai = async (prompt) => { calls.push(prompt); return { items: [{ termId: '30', type: 'sentenceGap', sentence: 'I have a red scarf.', answer: 'scarf', distractors: ['tie', 'belt', 'hat'] }] }; };
+    const r = await createTrackGenerator({ runPrompt: ai, bank })(validateTrackRequest({ setId: 's', level: 'A1', terms: [SCARF], types: ['sentenceGap'] }).value);
+    assert.equal(calls.length, 1);
+    assert.equal(r.items[0].templateCue, 'I have a red ___ (szalik).');
+    assert.equal((await bank.entries(termKeyOf(SCARF), 'A1')).length, 2, 'the bad row is kept, never deleted');
+    // the A1/A2 prompt asks for exactly this
+    const p = buildTrackPrompt({ level: 'A1', terms: [SCARF], setTerms: [SCARF], wants: new Map([['30', new Set(['sentenceGap'])]]) });
+    assert.match(p, /A1\/A2 GAP SENTENCES/);
+    assert.match(p, /at most 6 words/);
+    assert.match(p, /\(szalik\)/);
+    assert.match(p, /HINT TRANSLATION QUALITY/);
+});
+
+test('dictation: the silent form gives the same sentence as a gap with the Polish cue (for listening-off mode)', () => {
+    const sg = silentGapOf({ type: 'dictation', speak: 'She has a long dress.', answer: 'She has a long dress.' }, DRESS);
+    assert.deepEqual(sg, { template: 'She has a long ___.', templateCue: 'She has a long ___ (sukienka).', cue: 'sukienka', answer: 'dress', prompt: 'Wpisz angielskie słowo w lukę (w nawiasie: polskie słowo):' });
+    const plural = silentGapOf({ type: 'dictation', speak: 'I like my scarves.', answer: 'I like my scarves.' }, SCARF);
+    assert.equal(plural.templateCue, 'I like my ___ (szalik).');
+    assert.equal(plural.answer, 'scarves', 'the inflected form in the sentence is the gap answer');
+    assert.equal(silentGapOf({ type: 'dictation', speak: 'We sit at the table.', answer: 'We sit at the table.' }, DRESS), null, 'no target in the sentence: never invent a gap');
+    const built = buildItem({ type: 'dictation', sentence: 'She has a long dress.' }, DRESS, 'A1');
+    assert.ok(built.ok, built.reason);
+    assert.equal(built.item.silentGap.templateCue, 'She has a long ___ (sukienka).');
+    assert.equal(built.item.silentGap.answer, 'dress');
+    assert.equal(silentGapOf({ type: 'translateType', source: 'x', answer: 'y' }, DRESS), null);
+});
+
+test('hint translation: word-by-word glosses are not a translation; the model sentence wins and bad banked hints are regenerated', () => {
+    const shown = 'She wears a long scarf.';
+    const wbw = { translation: 'ona nosić jakiś długi szalik', segments: [['She', 'ona'], ['wears', 'nosić'], ['a', 'jakiś'], ['long', 'długi'], ['scarf.', 'szalik']].map(([text, translation]) => ({ text, translation })) };
+    const item = { type: 'sentenceGap', template: 'She wears a long ___.', answer: 'scarf', options: ['scarf', 'tie', 'hat', 'belt'] };
+    assert.match(wordByWordHintReason(wbw, item), /word by word/);
+    assert.match(hintReason(wbw, item, SCARF, [SCARF]), /word by word/);
+    assert.equal(wordByWordHintReason({ ...wbw, translation: 'Ona nosi długi szalik.' }, item), '');
+    assert.equal(hintReason({ ...wbw, translation: 'Ona nosi długi szalik.' }, item, SCARF, [SCARF]), '');
+    // Polish shown text: the translation is the English answer, never flagged
+    assert.equal(wordByWordHintReason({ translation: 'a b', segments: [{ text: 'x', translation: 'a' }, { text: 'y', translation: 'b' }] }, { type: 'translateType' }), '');
+    // the deterministic fallback no longer joins glosses for a sentence...
+    assert.equal(cheapHint(item, SCARF, [SCARF]), null);
+    // ...but keeps the model's whole-sentence translation when only the segments are usable from the glossary
+    const kept = cheapHint(item, SCARF, [SCARF], 'Ona nosi długi szalik.');
+    assert.equal(kept.translation, 'Ona nosi długi szalik.');
+    assert.deepEqual(kept.segments.map((s) => s.text), shown.split(' '));
+    // a single word may still use its own gloss
+    assert.equal(cheapHint({ type: 'letterScramble', answer: 'scarf' }, SCARF, [SCARF]).translation, 'szalik');
+    // through buildItem: the model's translation is natural -> served; its segments are broken -> glossary segments + model translation
+    const good = buildItem({ type: 'sentenceGap', sentence: 'She wears a long scarf.', answer: 'scarf', distractors: ['tie', 'belt', 'hat'], hint: { translation: 'Ona nosi długi szalik.', segments: [{ text: 'She wears', translation: 'Ona nosi' }] } }, SCARF, 'A2');
+    assert.ok(good.ok, good.reason);
+    assert.equal(good.item.hintHelp.translation, 'Ona nosi długi szalik.');
+    assert.equal(good.item.hintHelp.segments.map((s) => s.text).join(' '), 'She wears a long scarf.');
+    // the model joined the glosses: the hint is dropped (item stays; the app hides Przystanek) instead of showing the bad Polish
+    const bad = buildItem({ type: 'sentenceGap', sentence: 'She wears a long scarf.', answer: 'scarf', distractors: ['tie', 'belt', 'hat'], hint: wbw }, SCARF, 'A2');
+    assert.ok(bad.ok, bad.reason);
+    assert.equal(bad.item.hintHelp, undefined);
+    // old banked rows that carry the joined translation are caught and regenerated
+    assert.equal(bankedItemBad({ ...item, template: 'She wears a long ___.', hintHelp: { translation: 'ona nosić jakiś długi szalik', segments: [['She', 'ona'], ['wears', 'nosić'], ['a', 'jakiś'], ['long', 'długi'], ['scarf.', 'szalik']].map(([text, translation]) => ({ text, translation })) } }, 'A2', SCARF), true);
 });
