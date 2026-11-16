@@ -86,6 +86,7 @@ import {
 import { configurePassport, registerLocalAccount, requireAdmin, requireWritingAccess, requireLogin, hashPassword, MIN_PASSWORD_LENGTH } from './auth.js';
 import { mountAppBridge } from './services/study-bridge/auth-app-bridge.js';
 import { createStudyCors, createBearerSession, skipOnAppRoutes, tokenForAppOrigin } from './study-direct.js';
+import { createTrackStageHandler, createStageGenerator, STAGE_PATH, STAGE_LIMITS } from './track-stage.js';
 import { createTrackGenerator, createTrackGenerateHandler, createBank, createPgBankStore, LIMITS as TRACK_LIMITS, TRACK_PATH } from './track-ai.js';
 import { createClarityJudge } from './track-clarity.js';
 import { TRACK_VERIFY_PATH, VERIFY_LIMITS, createTrackVerifyHandler, createPgVerifyCache, createMemoryVerifyCache } from './track-verify.js';
@@ -200,6 +201,7 @@ app.post(
 
 // Track AI generation: small body cap + raw bytes kept for the HMAC check (must run before the global parser).
 app.use(TRACK_PATH, express.json({ limit: TRACK_LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
+app.use(STAGE_PATH, express.json({ limit: STAGE_LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(PREWARM_PATH, express.json({ limit: PREWARM_BODY_LIMIT, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(TRACK_VERIFY_PATH, express.json({ limit: VERIFY_LIMITS.maxBodyBytes, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.json({ limit: '25mb' }));
@@ -316,6 +318,38 @@ async function start() {
         generate: trackGenerate,
         isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
     }));
+
+    // Fresh per-stage generation (tg7): no bank reads or writes. Words / task types are planned from the learner's SRS state sent by the app,
+    // items are written by the AI, validated, judged (a second clarity judge on a throw-away bank: verdicts only live on the item), and answered;
+    // a deterministic stage from the set's own words is the fallback. AI calls count toward the same daily cap as prewarm / verify / clarity.
+    const stageBudget = {
+        callsToday: () => prewarmStore.callsToday(),
+        addCalls: (n) => prewarmStore.addCalls(n),
+        get dailyCalls() { return readPrewarmConfig(process.env).dailyCalls; },
+    };
+    const stageRunPrompt = (prompt, label) => runVisionJsonPrompt({
+        apiKey: process.env.CURSOR_API_KEY, prompt, label,
+        model: (process.env.TRACK_AI_MODEL || '').trim() ? { id: process.env.TRACK_AI_MODEL.trim() } : undefined,
+    });
+    const stageJudge = createClarityJudge({
+        runPrompt: stageRunPrompt,
+        bank: { annotateItem: async (entry, patch) => { Object.assign(entry.item, patch); } },
+        budget: stageBudget,
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY) && (process.env.TRACK_CLARITY || '').trim().toLowerCase() !== 'off',
+        log: (m) => console.warn('[track-stage]', m),
+    });
+    const stageGenerate = createStageGenerator({
+        runPrompt: stageRunPrompt,
+        judge: stageJudge,
+        budget: stageBudget,
+        isConfigured: () => Boolean(process.env.CURSOR_API_KEY),
+        limits: {
+            ...STAGE_LIMITS,
+            ...(Number(process.env.TRACK_STAGE_BUDGET_MS) >= STAGE_LIMITS.minBudgetMs ? { defaultBudgetMs: Math.min(Number(process.env.TRACK_STAGE_BUDGET_MS), STAGE_LIMITS.maxBudgetMs) } : {}),
+        },
+        log: (m) => console.warn('[track-stage]', m),
+    });
+    app.post(STAGE_PATH, createTrackStageHandler({ generate: stageGenerate }));
 
     // On-demand background generation (no global walk over word sets): the terms of a set the learner just opened
     // (track-generate mode "warmup", or POST /api/study/track-prewarm) are queued and filled into the bank by a worker.

@@ -10,7 +10,7 @@
 import crypto from 'node:crypto';
 import { isBasicEn, basicPl, BASIC_EN_PHRASES } from './track-basic-en.js';
 
-export const PROMPT_VERSION = 'tg6';
+export const PROMPT_VERSION = 'tg7';
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export const ALL_TYPES = [
     'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
@@ -588,8 +588,8 @@ export function validateTrackRequest(body) {
 
 // ---------------------------------------------------------------- prompt
 
-const slotsFor = (type) => (type === 'meaningPick' ? MEANING_DIRECTIONS.map((d) => `meaningPick:${d}`) : [type]);
-const slotType = (slot) => slot.split(':')[0];
+export const slotsFor = (type) => (type === 'meaningPick' ? MEANING_DIRECTIONS.map((d) => `meaningPick:${d}`) : [type]);
+export const slotType = (slot) => slot.split(':')[0];
 
 const TYPE_SPECS = {
     sentenceGap: '{"termId","type":"sentenceGap","sentence":full English sentence using the target in a form that fits the grammar AND carrying a clear clue (a defining detail, a typical collocation or situation) so that ONLY the target fits the gap; never a generic frame like "There is a ___ here" / "I like ___" / "This is my ___" (except at A1/A2, where a very short basic frame such as "I have a red ___" is right: the site adds the Polish word in brackets after the gap),"answer":the exact words of the target as written in the sentence (NOT at the very start of the sentence),"distractors":[3 wrong options of the same word class and form that cannot fit the sentence]}',
@@ -616,7 +616,7 @@ function capSetTerms(setTerms, targets, max = LIMITS.promptSetTerms) {
     return setTerms.filter((t) => picked.has(t.id));
 }
 
-export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [], avoid = new Map() }) {
+export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [], avoid = new Map(), notes = [] }) {
     const [lo, hi] = SENT_WORDS[level];
     const lines = terms.map((t) => {
         const ts = wants.get(t.id);
@@ -638,6 +638,7 @@ export function buildTrackPrompt({ level, terms, setTerms, wants, feedback = [],
         '',
         `WHOLE SET (use these English/Polish words as distractors when they fit the type): ${capSetTerms(setTerms, terms).map((t) => `${t.en} = ${t.pl}`).join('; ')}`,
         ...(avoid.size ? ['', 'ALREADY WRITTEN (write something clearly DIFFERENT: another situation, other words around the target, not a paraphrase):', ...[...avoid].flatMap(([termId, list]) => list.map((a) => `- termId ${JSON.stringify(termId)} ${a.slot}: ${JSON.stringify(a.text.slice(0, 140))}`))] : []),
+        ...(notes.length ? ['', ...notes] : []),
         '',
         'ITEM FORMATS (JSON objects inside "items"):',
         ...typeNames.map((t) => `- ${TYPE_SPECS[t]}`),
@@ -2127,7 +2128,7 @@ export function buildItem(raw, term, level, setTerms = []) {
 }
 
 /** Final safety net on a built item: no gap answer leaks into prompt; required fields. */
-function finalCheck(item, term) {
+export function finalCheck(item, term) {
     // a meaningPick prompt quotes the question word on purpose; only the ANSWER must not show up around it
     const shown = item.type === 'meaningPick' && item.question ? String(item.prompt || '').split(String(item.question)).join(' ') : item.prompt;
     if (item.answer && promptLeaks(shown, item.answer)) return 'answer appears in the prompt';
@@ -2161,7 +2162,7 @@ export function createLruCache({ max = LIMITS.cacheMax, ttlMs = LIMITS.cacheTtlM
 // ---------------------------------------------------------------- the question bank
 
 /** Bank entries written by these prompt versions may be served; bump PROMPT_VERSION and drop a version here to retire it. */
-export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3', 'tg4', 'tg5', 'tg6']);
+export const BANK_COMPATIBLE_VERSIONS = new Set(['tg1', 'tg2', 'tg3', 'tg4', 'tg5', 'tg6', 'tg7']);
 /** Only these may be recorded as "makes no sense for this term" (a permanent skip in the bank). */
 export const SKIPPABLE_TYPES = new Set(['wordFormation', 'keyTransform', 'collocationPick', 'letterScramble']);
 /** How many different items per (term, level, slot) the bank is grown to, and its hard cap. */
@@ -2188,7 +2189,7 @@ export function itemText(item) {
         default: return JSON.stringify(item);
     }
 }
-function jaccard(a, b) {
+export function jaccard(a, b) {
     const A = new Set(words(a)); const B = new Set(words(b));
     if (!A.size || !B.size) return 0;
     let i = 0; for (const w of A) if (B.has(w)) i++;
@@ -2515,7 +2516,7 @@ function meaningPrompt(direction, question) {
 }
 
 /** Pick distractors from the other terms of the requesting set when that keeps the item valid. */
-function reshuffleOptions(item, term, setTerms, rand, level) {
+export function reshuffleOptions(item, term, setTerms, rand, level) {
     let out = { ...item };
     if (out.type === 'meaningPick' || out.type === 'listenPick') out = collapseChoiceItem(out, term);
     if (bankedItemBad(out, level, term, setTerms)) return null; // generic, too-hard A1/A2, unclear task, or unfixable slash form: treated as missing

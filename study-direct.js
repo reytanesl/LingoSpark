@@ -20,6 +20,7 @@ export const SESSION_COOKIE_NAME = 'connect.sid';
 /** Routes the app may call directly. Exact paths or prefixes ending in "/*". */
 export const APP_DIRECT_ROUTES = [
     '/api/study/track-generate',
+    '/api/study/track-stage',
     '/api/study/track-prewarm',
     '/api/study/track-verify',
     '/auth/login',

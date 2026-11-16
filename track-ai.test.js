@@ -1747,9 +1747,9 @@ const SCARF = T('30', 'scarf', 'szalik');
 const DRESS = T('31', 'dress', 'sukienka');
 
 test('tg6: prompt version, clarity version and compatible bank versions', () => {
-    assert.equal(PROMPT_VERSION, 'tg6');
+    assert.equal(PROMPT_VERSION, 'tg7');
     assert.equal(CLARITY_VERSION, 2, 'every banked row is judged again under the new judge rules');
-    for (const v of ['tg1', 'tg2', 'tg3', 'tg4', 'tg5', 'tg6']) assert.ok(BANK_COMPATIBLE_VERSIONS.has(v), v);
+    for (const v of ['tg1', 'tg2', 'tg3', 'tg4', 'tg5', 'tg6', 'tg7']) assert.ok(BANK_COMPATIBLE_VERSIONS.has(v), v);
 });
 
 test('cue: every gap item carries the Polish word in brackets after the gap, and a choice instruction that matches the item', () => {
