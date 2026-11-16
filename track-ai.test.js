@@ -1822,7 +1822,7 @@ test('A1/A2 gap sentences: short, basic words, no other set vocabulary (the "lon
 
 test('dictation: the silent form gives the same sentence as a gap with the Polish cue (for listening-off mode)', () => {
     const sg = silentGapOf({ type: 'dictation', speak: 'She has a long dress.', answer: 'She has a long dress.' }, DRESS);
-    assert.deepEqual(sg, { template: 'She has a long ___.', templateCue: 'She has a long ___ (sukienka).', cue: 'sukienka', answer: 'dress', prompt: 'Wpisz angielskie słowo w lukę (w nawiasie: polskie słowo):' });
+    assert.deepEqual(sg, { template: 'She has a long ___.', templateCue: 'She has a long ___ (sukienka).', cue: 'sukienka', answer: 'dress', prompt: 'Wpisz angielskie słowo w lukę:' });
     const plural = silentGapOf({ type: 'dictation', speak: 'I like my scarves.', answer: 'I like my scarves.' }, SCARF);
     assert.equal(plural.templateCue, 'I like my ___ (szalik).');
     assert.equal(plural.answer, 'scarves', 'the inflected form in the sentence is the gap answer');

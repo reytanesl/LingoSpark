@@ -1064,7 +1064,7 @@ export function instructionPrompt(item) {
         case 'collocationPick':
         case 'gapTranslate':
             // a choice item: never say "wpisz" (type); the Polish word in brackets after the gap is the cue
-            return 'Wybierz angielskie słowo do luki (w nawiasie: polskie słowo):';
+            return 'Wybierz angielskie słowo do luki:';
         case 'sentenceOrder':
             return 'Ułóż zdanie po angielsku:';
         case 'wordFormation':
@@ -1493,7 +1493,7 @@ export function stepOf(item) {
 /** Gap items shown with a Polish cue in brackets right after the gap. */
 export const CUE_GAP_TYPES = new Set(['sentenceGap', 'gapTranslate', 'collocationPick']);
 /** Instruction for the SAME gap shown as a typed task (the app decides the input mode; `prompt` is for the choice form). */
-export const TYPED_GAP_PROMPT = 'Wpisz angielskie słowo w lukę (w nawiasie: polskie słowo):';
+export const TYPED_GAP_PROMPT = 'Wpisz angielskie słowo w lukę:';
 
 /** The Polish word (one variant, base form) that names the target of a gap item, e.g. "sukienka". '' when unknown. */
 export function cueOf(item, term) {
