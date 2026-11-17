@@ -11,6 +11,9 @@ import {
     itemText, jaccard, NEAR_DUPLICATE, norm, answerLangOf, slotsFor, slotType, scrambleWordOf, pickTermVariant, termTokens,
     verifyBridgeRequest, createNonceStore,
 } from './track-ai.js';
+import {
+    SENTENCE_PICK, isSentenceTerm, buildSentencePick, ruleSentencePick, sentencePickFingerprints, buildSentencePickPrompt, SENTENCE_PICK_KINDS,
+} from './track-sentence-pick.js';
 
 export const STAGE_PATH = '/api/study/track-stage';
 export const STAGE_KINDS = ['station', 'recap', 'daily', 'boss'];
@@ -151,10 +154,13 @@ export function validateStageRequest(body) {
 // ---------------------------------------------------------------- fingerprints
 
 const WORD_LEVEL = new Set(['meaningPick', 'listenPick', 'letterScramble']);
+/** Items whose text is the set word itself (it has to come back in the SRS): never dropped as "already seen sentence", no frame / text memory. */
+const REPEATABLE = new Set([...WORD_LEVEL, SENTENCE_PICK]);
 const sentenceKey = (item) => norm(itemText(item)).replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
 
 /** `fp` = sentence + type (word-level tasks: type + direction + word). `textFp` = the sentence alone (any type). The app stores both strings of every item it saw. */
 export function fingerprintsOf(item) {
+    if (item.type === SENTENCE_PICK) return sentencePickFingerprints(item);
     if (WORD_LEVEL.has(item.type)) {
         const fp = H(`w|${item.type}${item.direction ? `:${item.direction}` : ''}|${item.lexiconId}`);
         return { fp, textFp: fp };
@@ -163,7 +169,7 @@ export function fingerprintsOf(item) {
     return { fp: H(`${item.type}|${text}`), textFp: H(`s|${text}`) };
 }
 
-const frameOf = (item) => (WORD_LEVEL.has(item.type) ? '' : sentenceKey(item).split(' ').slice(0, 3).join(' '));
+const frameOf = (item) => (REPEATABLE.has(item.type) ? '' : sentenceKey(item).split(' ').slice(0, 3).join(' '));
 
 // ---------------------------------------------------------------- word weights (SRS)
 
@@ -248,6 +254,8 @@ export function planStage({ level, terms, progress = [], size, kind = 'station',
     const slotCapReal = Math.max(2, Math.ceil(size / 2)); const slotCapSpare = Math.max(2, Math.ceil((size + spares) / 2));
     const typeUse = new Map();
     const chooseSlot = (term, taken, spare) => {
+        // Karol's rule: a sentence / question term is always practised as "Wybierz poprawne zdanie:" (two alternatives, one with a mistake)
+        if (isSentenceTerm(term)) return taken.has(SENTENCE_PICK) ? null : SENTENCE_PICK;
         const inf = info.get(term.id);
         let cand = slots.filter((sl) => !taken.has(sl) && !(slotType(sl) === 'letterScramble' && !scrambleWordOf(term))
             && !(slotType(sl) === 'sentenceOrder' && termTokens(term.en).length > 3));
@@ -360,8 +368,9 @@ const optionPool = (term, terms, field, answer) => {
 };
 
 /** meaningPick / listenPick (and letterScramble from A2) built from the set's own words, validated by the normal builders. null when it cannot be built. */
-export function templateItem(term, slot, terms, level, rand = Math.random) {
+export function templateItem(term, slot, terms, level, rand = Math.random, { avoidWrong = [] } = {}) {
     const ty = slotType(slot);
+    if (ty === SENTENCE_PICK) return ruleSentencePick(term, level, rand, { avoidWrong });
     let raw;
     if (ty === 'meaningPick') {
         const direction = slot.split(':')[1];
@@ -399,7 +408,7 @@ export function createStageMemory({ limits = STAGE_LIMITS, now = () => Date.now(
             const e = get(key) || { fps: [], texts: [], items: [], at: now() };
             for (const it of served) {
                 e.fps.push(it.fp, it.textFp);
-                if (!WORD_LEVEL.has(it.type)) e.texts.push(sentenceKey(it).slice(0, 160));
+                if (!REPEATABLE.has(it.type)) e.texts.push(sentenceKey(it).slice(0, 160));
                 if (it.source === 'ai') e.items.push(it);
             }
             e.fps = e.fps.slice(-limits.memoryFps); e.texts = e.texts.slice(-limits.memoryTexts); e.items = e.items.slice(-limits.memoryItems);
@@ -470,15 +479,69 @@ export function createStageGenerator({
         cands.push({ entry, term, slot: entry.slot, item: finished, spare: entry.spare, ok: true, judged: false, ...fp });
     }
 
+    /** One AI wrong copy for a sentence term -> a sentencePick candidate (validated in track-sentence-pick.js). */
+    function acceptSentencePick(raw, ctx) {
+        const { level, terms, wantsByTerm, cands, recent, rejects, stats } = ctx;
+        const termId = String(raw?.termId ?? '');
+        const term = terms.find((t) => t.id === termId);
+        const entry = (wantsByTerm.get(termId) || []).find((e) => e.slot === SENTENCE_PICK && !e.done);
+        if (!term || !entry) return;
+        const built = buildSentencePick(raw, term, level, rand, { source: 'ai' });
+        if (!built.ok) { rejects.push({ termId, reason: built.reason }); stats.rejected.validator++; return; }
+        const fp = fingerprintsOf(built.item);
+        if (recent.has(fp.fp)) { stats.rejected.duplicate++; return; } // this exact pair was shown lately: a rule-built one with another mistake replaces it
+        entry.done = true;
+        cands.push({ entry, term, slot: SENTENCE_PICK, item: built.item, spare: entry.spare, ok: true, judged: false, ...fp });
+    }
+
+    /** Every wanted sentencePick that has no usable candidate gets a rule-built one (another mistake than the ones already tried). */
+    function fillSentencePicks(ctx, { skipJudge = false } = {}) {
+        for (const list of ctx.wantsByTerm.values()) {
+            for (const entry of list) {
+                if (entry.slot !== SENTENCE_PICK) continue;
+                const mine = ctx.cands.filter((c) => c.entry === entry);
+                if (mine.some((c) => c.ok)) continue;
+                const avoidWrong = mine.map((c) => c.item.wrongOption);
+                let item = ruleSentencePick(entry.term, ctx.level, rand, { avoidWrong });
+                if (item && ctx.recent.has(fingerprintsOf(item).fp)) item = ruleSentencePick(entry.term, ctx.level, rand, { avoidWrong: [...avoidWrong, item.wrongOption] }) || item;
+                if (!item) continue;
+                entry.done = true;
+                ctx.stats.ruleSentencePicks = (ctx.stats.ruleSentencePicks || 0) + 1;
+                ctx.cands.push({ entry, term: entry.term, slot: SENTENCE_PICK, item, spare: entry.spare, ok: true, judged: false, skipJudge, ...fingerprintsOf(item) });
+            }
+        }
+    }
+
     async function genRound(ctx, entries, deadlineAt, round) {
         const { level, terms, stats, recentTexts } = ctx;
         const wantsByTerm = new Map();
         for (const e of entries) { const arr = wantsByTerm.get(e.term.id) || []; arr.push({ slot: e.slot, spare: e.spare, term: e.term }); wantsByTerm.set(e.term.id, arr); }
         ctx.wantsByTerm = wantsByTerm;
-        const jobs = [...wantsByTerm.entries()].map(([id, list]) => ({ term: list[0].term, slots: new Set(list.map((x) => x.slot)), avoid: [] }));
-        const calls = planCalls(jobs, limits.callWeight);
+        const jobs = [...wantsByTerm.entries()].map(([id, list]) => ({ term: list[0].term, slots: new Set(list.map((x) => x.slot).filter((sl) => sl !== SENTENCE_PICK)), avoid: [] }))
+            .filter((j) => j.slots.size);
+        const calls = jobs.length ? planCalls(jobs, limits.callWeight) : [];
         const notes = STAGE_NOTES(level, recentTexts);
-        await Promise.all(calls.map(async (parts, idx) => {
+        // sentence / question terms: one small call of their own (the wrong copy with one typical mistake), in parallel with the others
+        const spJobs = [...wantsByTerm.values()].flatMap((list) => list.filter((x) => x.slot === SENTENCE_PICK)).map((x) => x.term)
+            .filter((t, i, arr) => arr.findIndex((u) => u.id === t.id) === i)
+            .map((term, i) => ({ term, preferKind: SENTENCE_PICK_KINDS[(i + Math.floor(rand() * SENTENCE_PICK_KINDS.length)) % SENTENCE_PICK_KINDS.length] }));
+        const spCall = spJobs.length ? (async () => {
+            await sem.acquire();
+            const t0 = now();
+            let called = false;
+            try {
+                const remaining = deadlineAt - now();
+                if (remaining < 2500) { stats.timedOut = true; return; }
+                called = true; stats.aiCalls++; stats.genCalls++;
+                const raw = await withTimeout(runPrompt(buildSentencePickPrompt({ level, jobs: spJobs }), `stage-${level}-r${round}-sentencePick-${spJobs.length}`), Math.min(limits.perCallTimeoutMs, remaining), 'AI call');
+                log(`stage sentencePick call round ${round} ${now() - t0}ms`);
+                for (const r of Array.isArray(raw?.items) ? raw.items : []) acceptSentencePick(r, ctx);
+            } catch (e) {
+                if (e instanceof TimeoutError) stats.timedOut = true; else stats.aiErrors++;
+                log(`stage sentencePick call failed after ${now() - t0}ms: ${e?.message || e}`);
+            } finally { sem.release(); if (called) await count(1); }
+        })() : null;
+        await Promise.all([...(spCall ? [spCall] : []), ...calls.map(async (parts, idx) => {
             const batchTerms = parts.map((p) => p.term);
             const wants = new Map(parts.map((p) => [p.term.id, p.slots]));
             const prompt = buildTrackPrompt({ level, terms: batchTerms, setTerms: terms, wants, feedback: [], avoid: new Map(), notes });
@@ -496,7 +559,7 @@ export function createStageGenerator({
                 if (e instanceof TimeoutError) stats.timedOut = true; else stats.aiErrors++;
                 log(`stage gen call ${idx} failed after ${now() - t0}ms: ${e?.message || e}`);
             } finally { sem.release(); if (called) await count(1); }
-        }));
+        })]);
     }
 
     async function judgeRound(ctx, deadlineAt) {
@@ -573,7 +636,9 @@ export function createStageGenerator({
                 rounds++;
                 const genDeadline = deadlineAt - (useJudge ? limits.judgeReserveMs : 1200);
                 await genRound(ctx, entries, Math.max(genDeadline, now() + 4000), round);
+                fillSentencePicks(ctx); // AI copy missing / invalid -> rule-built copy (judged with the rest)
                 if (useJudge) await judgeRound(ctx, deadlineAt);
+                fillSentencePicks(ctx, { skipJudge: true }); // the judge found the wrong copy acceptable English -> another, rule-built mistake
                 final = selectFinal(ctx.cands, v.size, plan.meta.maxPerWord);
                 if (final.length >= v.size) break;
                 // round 2: what is still missing, as other words / task types than the ones that just failed
@@ -590,8 +655,9 @@ export function createStageGenerator({
                 if (!entries.length) break;
             }
         }
-        const sources = { ai: final.length, template: 0, reuse: 0 };
-        let outItems = final.map((c) => ({ ...c.item, source: 'ai', judged: c.judged, fp: c.fp, textFp: c.textFp }));
+        const ruleBuilt = (c) => c.item.type === SENTENCE_PICK && c.item.variantSource === 'rule';
+        const sources = { ai: final.filter((c) => !ruleBuilt(c)).length, template: final.filter(ruleBuilt).length, reuse: 0 };
+        let outItems = final.map((c) => ({ ...c.item, source: ruleBuilt(c) ? 'template' : 'ai', judged: c.judged, fp: c.fp, textFp: c.textFp }));
         let fallback = null;
         // fallback 1: the set's own words as meaningPick / listenPick (no sentences, always valid)
         if (outItems.length < v.size) {
@@ -610,12 +676,13 @@ export function createStageGenerator({
                 const fresh = open.filter((t) => !used.has(t.id) || !used.get(t.id));
                 const t = weightedSample(fresh.length ? fresh : open, (x) => info.get(x.id).w, 1, rand)[0];
                 const rot = outItems.length % prefs.length;
-                const order = [...prefs.slice(rot), ...prefs.slice(0, rot)]; // rotate the task types so the plain stage still varies
+                const sentence = isSentenceTerm(t);
+                const order = sentence ? [SENTENCE_PICK] : [...prefs.slice(rot), ...prefs.slice(0, rot)]; // rotate the task types so the plain stage still varies
                 let made = null; let backup = null;
                 for (const sl of order) {
-                    if (outItems.some((i) => i.lexiconId === t.id && `${i.type}${i.direction ? `:${i.direction}` : ''}` === sl)) continue;
+                    if (!sentence && outItems.some((i) => i.lexiconId === t.id && `${i.type}${i.direction ? `:${i.direction}` : ''}` === sl)) continue;
                     if (sl === 'meaningPick:en-pl' && outItems.filter((i) => i.type === 'meaningPick' && i.direction === 'en-pl').length >= PL_ANSWER_CAP(v.size)) continue;
-                    const it = templateItem(t, sl, v.terms, level, rand);
+                    const it = templateItem(t, sl, v.terms, level, rand, { avoidWrong: outItems.filter((i) => i.lexiconId === t.id && i.type === SENTENCE_PICK).map((i) => i.wrongOption) });
                     if (!it) continue;
                     it.lexiconId = t.id;
                     const fp = fingerprintsOf(it);
@@ -655,6 +722,7 @@ export function createStageGenerator({
                 source: sources, fallback, aiConfigured, dailyCapReached: capReached,
                 aiCalls: stats.aiCalls, genCalls: stats.genCalls, judgeCalls: stats.judgeCalls, aiErrors: stats.aiErrors, rounds,
                 judged: ordered.filter((i) => i.judged).length, rejected: stats.rejected, timedOut: stats.timedOut,
+                sentencePick: { served: ordered.filter((i) => i.type === SENTENCE_PICK).length, ruleBuilt: ordered.filter((i) => i.type === SENTENCE_PICK && i.variantSource === 'rule').length },
                 distinctTerms: termIds.length, termIds, maxPerWord: plan.meta.maxPerWord, plan: { states: plan.meta.states, planned },
                 budgetMs, elapsedMs,
             },

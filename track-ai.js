@@ -30,6 +30,7 @@ export const TYPE_STEP = {
     letterScramble: 1, sentenceOrder: 1,
     translateType: 2, dictation: 2, wordFormation: 2,
     keyTransform: 3, speak: 3,
+    sentencePick: 0, // stage-only type (track-stage.js / track-sentence-pick.js): pick the correct one of two sentences
 };
 
 export const LIMITS = {
@@ -1033,7 +1034,7 @@ export function copyTaskReason(item) {
 /** Types whose answer is typed, arranged, or chosen in a specific language. */
 export const ANSWER_LANG_TYPES = new Set([
     'letterScramble', 'meaningPick', 'sentenceGap', 'gapTranslate', 'sentenceOrder', 'translateType',
-    'listenPick', 'dictation', 'collocationPick', 'wordFormation', 'keyTransform',
+    'listenPick', 'dictation', 'collocationPick', 'wordFormation', 'keyTransform', 'sentencePick',
 ]);
 const SCAFFOLD_TYPES = new Set(['dictation', 'translateType']);
 
@@ -1071,6 +1072,8 @@ export function instructionPrompt(item) {
             return 'Utwórz wyraz po angielsku:';
         case 'keyTransform':
             return 'Dokończ zdanie po angielsku:';
+        case 'sentencePick':
+            return 'Wybierz poprawne zdanie:';
         default:
             return '';
     }
@@ -1595,6 +1598,11 @@ export function taskStructureReason(item) {
     }
     if (['sentenceGap', 'gapTranslate', 'collocationPick', 'wordFormation', 'keyTransform'].includes(t)) {
         if (typeof item.template !== 'string' || countGaps(item.template) !== 1) return 'task needs exactly one clearly marked gap';
+    }
+    if (t === 'sentencePick') {
+        const opts = Array.isArray(item.options) ? item.options.map((o) => norm(o)) : [];
+        if (opts.length !== 2 || opts[0] === opts[1]) return 'needs two different sentences';
+        if (opts[item.correctIndex] !== norm(item.answer)) return 'correctIndex does not point at the correct sentence';
     }
     if (t === 'gapTranslate' && !isStr(item.plTranslation, 2, 300)) return 'the instruction points at a Polish translation that is missing';
     if (t === 'letterScramble') {
@@ -2185,6 +2193,7 @@ export function itemText(item) {
         case 'contextTrueFalse': return `${item.passage} ${item.statement}`;
         case 'translateType': case 'dictation': case 'letterScramble': return String(item.answer || '');
         case 'keyTransform': return `${item.sourceSentence} ${item.answer}`;
+        case 'sentencePick': return String(item.answer || '');
         case 'meaningPick': case 'listenPick': return `${item.direction || ''} ${[...(item.options || [])].map(norm).sort().join(' ')}`;
         default: return JSON.stringify(item);
     }
