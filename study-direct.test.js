@@ -12,6 +12,7 @@ import {
 } from './study-direct.js';
 
 const APP = 'https://lingospark.apps.grok.bot';
+const TWOJA = 'https://twoja-linia.apps.grok.bot';
 const EVIL = 'https://evil.apps.grok.bot';
 const SECRET = 'unit-test-session-secret-0123456789';
 const TERMS = [{ id: '1', en: 'fog', pl: 'mgła', pos: 'noun' }];
@@ -49,10 +50,10 @@ async function serve({ authedLimiter } = {}) {
 
 const j = (body, extra = {}) => ({ method: 'POST', headers: { 'content-type': 'application/json', ...extra }, body: JSON.stringify(body) });
 
-test('parseAllowedOrigins: default app origin, env additions, junk rejected', () => {
-    assert.deepEqual(parseAllowedOrigins({}), [APP]);
+test('parseAllowedOrigins: default app origins, env additions, junk rejected', () => {
+    assert.deepEqual(parseAllowedOrigins({}).sort(), [APP, TWOJA].sort());
     const o = parseAllowedOrigins({ STUDY_CORS_ORIGINS: ' https://x.example , *, null, http://evil.com, https://p.example/path, http://localhost:8081, https://user@u.example' });
-    assert.deepEqual(o.sort(), [APP, 'http://localhost:8081', 'https://x.example'].sort());
+    assert.deepEqual(o.sort(), [APP, TWOJA, 'http://localhost:8081', 'https://x.example'].sort());
     assert.ok(isAppDirectPath('/api/study/track-generate') && isAppDirectPath('/api/study/track-verify') && isAppDirectPath('/api/word-sets/12') && !isAppDirectPath('/api/admin/users') && !isAppDirectPath('/api/word-setsX'));
 });
 
@@ -203,6 +204,11 @@ test('app bridge (PKCE): delivery=post form, bad challenge, wrong-redirect, expi
     for (const redirect of [`${EVIL}/api/study/google/done`, 'https://apps.grok.bot/api/study/google/done', 'https://lingospark.apps.grok.bot/other']) {
         assert.equal((await fetch(`${s.base}/auth/app-bridge?redirect=${encodeURIComponent(redirect)}&code_challenge=${challenge}`, { headers: { cookie } })).status, 400, redirect);
     }
+    // twoja-linia published app origin is on the default allow list
+    const twojaDone = `${TWOJA}/study/google/done`;
+    const twojaOk = await fetch(`${s.base}/auth/app-bridge?redirect=${encodeURIComponent(twojaDone)}&code_challenge=${challenge}`, { redirect: 'manual', headers: { cookie } });
+    assert.equal(twojaOk.status, 302, twojaDone);
+    assert.equal(new URL(twojaOk.headers.get('location')).origin + new URL(twojaOk.headers.get('location')).pathname, twojaDone);
     let t0 = 1_000_000;
     const redeem = createCodeRedeemer({ secret: () => SECRET, now: () => t0 });
     const code = sealAppCode({ token: 's:abc.def', challenge, secret: SECRET, now: t0 });

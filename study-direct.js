@@ -14,7 +14,10 @@
 import crypto from 'node:crypto';
 import cookieSignature from 'cookie-signature';
 
-export const DEFAULT_APP_ORIGINS = ['https://lingospark.apps.grok.bot'];
+export const DEFAULT_APP_ORIGINS = [
+    'https://lingospark.apps.grok.bot',
+    'https://twoja-linia.apps.grok.bot',
+];
 export const SESSION_COOKIE_NAME = 'connect.sid';
 
 /** Routes the app may call directly. Exact paths or prefixes ending in "/*". */
