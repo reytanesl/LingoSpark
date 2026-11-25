@@ -12,8 +12,9 @@
  *  B. Legacy handoff mode (needs STUDY_BRIDGE_SECRET): signed `handoff` carrying the session cookie, delivered by HTML form
  *     POST by default (never in the URL) or by GET with `delivery=redirect`. The app must redeem it once (jti), POST only.
  *
- * Redirect allow list is EXACT (no wildcard subdomains): app origins (default https://lingospark.apps.grok.bot plus
- * STUDY_CORS_ORIGINS), path /api/study/google/done or /study/google/done; http://localhost for development.
+ * Redirect allow list is EXACT (no wildcard subdomains): app origins (default
+ * https://lingospark.apps.grok.bot + https://twoja-linia.apps.grok.bot plus STUDY_CORS_ORIGINS),
+ * path /api/study/google/done or /study/google/done; http://localhost for development.
  *
  * www vs apex: the Google OAuth callbackURL must be on the host that set connect.sid before the Google redirect
  * (https://www.lingospark.study/auth/google/callback), otherwise returnTo is lost and the user lands on the homepage.
